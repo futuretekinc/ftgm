@@ -7,9 +7,11 @@ typedef	FTGM_EP_ID	*	FTGM_EP_ID_PTR;
 typedef	char			FTGM_DEVICE_URL[256];
 typedef	char			FTGM_DEVICE_LOC[256];
 typedef	char *			FTGM_STRING;
+typedef	unsigned short	FTGM_USHORT, * FTGM_USHORT_PTR;
 typedef	unsigned long	FTGM_ULONG, * FTGM_ULONG_PTR;
 typedef	int				FTGM_INT, * FTGM_INT_PTR;
 typedef	int				FTGM_BOOL, * FTGM_BOOL_PTR;
+typedef	unsigned char	FTGM_BYTE, * FTGM_BYTE_PTR;
 #define	FTGM_BOOL_FALSE	0
 #define	FTGM_BOOL_TRUE	(!FTGM_BOOL_FALSE)
 

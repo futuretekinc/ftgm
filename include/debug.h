@@ -5,6 +5,6 @@
 
 #define ERROR(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
 #define TRACE(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
-
+#define	ASSERT(...)
 #endif
 

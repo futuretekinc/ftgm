@@ -5,17 +5,7 @@
 #include <getopt.h>
 #include "ftgm_type.h"
 #include "libftdm.h"
-
-typedef enum
-{
-	FTDM_CMD_UNKNOWN = 0,
-	FTDM_CMD_DAEMON,
-	FTDM_CMD_USAGE,
-	FTDM_CMD_VERSION 
-}	FTDM_CMD;
-
-void	FTDM_printVersion(FTGM_STRING strProgramName);
-void	FTDM_printUsage(FTGM_STRING strProgramName);
+#include "ftdm_cmd.h"
 
 int	main(int argc, char *argv[])
 {
@@ -44,40 +34,25 @@ int	main(int argc, char *argv[])
 	{
 	case	FTDM_CMD_VERSION:
 		{
-			FTDM_printVersion(argv[0]);
+			FTDM_cmdVersion(argv[0]);
 			return	0;
 		}
 		break;
-	
+
+	case	FTDM_CMD_DAEMON:
+		{
+			FTDM_cmdStartDaemon();
+		}
+		break;
+
 	default:
 		{
-			FTDM_printUsage(argv[0]);	
+			FTDM_cmdUsage(argv[0]);	
 			return	0;
 		}
 	}
-
-	FTDM_init();
-
-	while(1)
-	{
-	
-	}
-
-
-	FTDM_final();
 
 	return	0;
 }
 
-void	FTDM_printVersion(FTGM_STRING strProgramName)
-{
-	printf("%s v1.0.0.0\n", strProgramName);
-}
-
-void	FTDM_printUsage(FTGM_STRING strProgramName)
-{
-	printf("Usage : %s [OPTIONS]\n", strProgramName);
-	printf("OPTIONS include:\n");
-	printf("    -v           Show version\n");
-}
 
