@@ -9,8 +9,8 @@ typedef enum
 	FTDM_CMD_VERSION 
 }	FTDM_CMD;
 
-void	FTDM_cmdVersion(FTGM_STRING strProgramName);
-void	FTDM_cmdUsage(FTGM_STRING strProgramName);
-void	FTDM_cmdStartDaemon(void);
+FTGM_RET FTDM_cmdVersion(FTGM_STRING strProgramName);
+FTGM_RET FTDM_cmdUsage(FTGM_STRING strProgramName);
+FTGM_RET FTDM_cmdStartDaemon(void);
 
 #endif

@@ -7,16 +7,16 @@ CFLAGS=-c -Wall -DDEBUG -I/usr/local/include -I../include
 LDFLAGS= -L/usr/local/lib -L. -lconfig  -lftdm -lsqlite3 -lpthread
 
 TARGET=ftdm
-TARGET_SRCS=main.c ftdm_cmd.c ftdm.c
+TARGET_SRCS=ftdm_server.c ftdm_cmd.c ftdm.c
 TARGET_OBJS=$(TARGET_SRCS:.c=.o)
 
 CLIENT=ftdmc
-CLIENT_SRCS=ftdm_client.c
+CLIENT_SRCS=ftdmc.c ftdm_client.c
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 
 LIB_TARGET=libftdm.so.1.0.1
-LIB_INCS= libftdm.h	sqlite_if.h
-LIB_SRCS= libftdm.c sqlite_if.c
+LIB_INCS= ftdm.h sqlite_if.h
+LIB_SRCS= ftdm.c sqlite_if.c
 LIB_OBJS=$(LIB_SRCS:.c=.o)
 
 
@@ -30,12 +30,12 @@ $(CLIENT): $(CLIENT_OBJS)
 
 $(LIB_TARGET): $(LIB_OBJS)
 	$(AR) rcs lib$(TARGET).a $(LIB_OBJS)
-	$(CC) -shared -Wl,-soname,lib$(TARGET).so.1 -o lib$(TARGET).so.1.0.1 $(LIB_OBJS)
+	$(CC) -shared -Wl -o lib$(TARGET).so.1.0.1 $(LIB_OBJS) $(LDFLAGS)
 
-main.o: main.c libftdm.o libftdm.h
+ftdm_server.o: ftdm_server.c ftdm.o ftdm.h
 	$(CC) $(CFLAGS) $< -o $@
 
-libftdm.o: libftdm.c libftdm.h
+ftdm.o: ftdm.c ftdm.h
 	$(CC) $(CFLAGS) $< -o $@
 
 .c.o: 

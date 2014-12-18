@@ -1,81 +1,171 @@
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <pthread.h>
+#include "ftgm_type.h"
+#include "libftdm.h"
+#include "sqlite_if.h"
 #include "debug.h"
 
-#define	FTDM_SERVICE_PORT	8888
-
-void *FTDM_serviceHandler(void *pData);
-
-int FTDM_main(void)
+FTGM_RET 	FTDM_init(void)
 {
-	int					nRet;
-	int					hSocket;
-	struct sockaddr_in	xServer, xClient;
-
-	hSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (hSocket == -1)
+	if ((FTDM_DBIF_init() != FTGM_RET_OK) ||
+		(FTDM_DBIF_initDeviceInfoTable() != FTGM_RET_OK) ||
+		(FTDM_DBIF_initEndPointInfoTable() != FTGM_RET_OK) ||
+		(FTDM_DBIF_initEndPointLogTable() != FTGM_RET_OK))
 	{
-		ERROR("Could not create socket\n");
-		return	1;
-	}
+		TRACE("FTDM initialization failed.\n");
 
-	xServer.sin_family = AF_INET;
-	xServer.sin_addr.s_addr = INADDR_ANY;
-	xServer.sin_port = htons( FTDM_SERVICE_PORT );
-
-	nRet = bind( hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
-	if (nRet < 0)
-	{
-		ERROR("bin failed.\n");
-		return	1;	
-	}
-
-	listen(hSocket, 3);
-
-	puts("Waiting for incomint connections ...\n");
-
-	while(1)
-	{
-		int hClient;
-		int	nSockAddrInLen = sizeof(struct sockaddr_in);	
-
-		hClient = accept(hSocket, (struct sockaddr *)&xClient, (socklen_t *)&nSockAddrInLen);
-		if (hClient != 0)
-		{
-			pthread_t xPthread;	
-
-			puts("Accept ...\n");
-			pthread_create(&xPthread, NULL, FTDM_serviceHandler, (void *)hClient);
-		}
-		
+		return	FTGM_RET_ERROR;
 	
 	}
+
+	TRACE("FTDM initialization completed successfully.\n");
+
+	return	FTGM_RET_OK;
 }
 
-void *FTDM_serviceHandler(void *pData)
+FTGM_RET	FTDM_final(void)
 {
-	int		hSock = (int)pData;
-	int		nLen;
-	char	pBuff[2048];
-
-	while(1)
+	if (FTDM_DBIF_final() != FTGM_RET_OK)
 	{
-		int	nLen;
+		TRACE("FTDM finalization failed.\n");
 
-		nLen = recv(hSock, pBuff, sizeof(pBuff), 0);
-		if (nLen == 0)
-		{
-			break;	
-		}
-		else if (nLen < 0)
-		{
-			break;	
-		}
+		return	FTGM_RET_OK;
 	}
 
-	close(hSock);
-	return	0;
+	TRACE("FTDM finalization completed successfully.\n");
+
+	return	FTGM_RET_OK;
 }
+
+FTGM_RET	FTDM_devInsert
+(
+	FTGM_DEVICE_ID 		xDID, 
+	FTGM_DEVICE_TYPE 	xType, 
+	FTGM_STRING 		strURL, 
+	FTGM_STRING 		strLocation
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET 	FTDM_devRemove
+(
+	FTGM_DEVICE_ID 			xDID
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET	FTDM_devInfo
+(
+	FTGM_DEVICE_ID 			xDID, 
+	FTGM_DEVICE_INFO_PTR 	pInfo
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET	FTDM_devType
+(
+	FTGM_DEVICE_ID 			xDID, 
+	FTGM_DEVICE_TYPE_PTR 	pType
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET 	FTDM_devURL
+(
+	FTGM_DEVICE_ID 		xDID, 
+	FTGM_STRING 		strBuff, 
+	FTGM_INT 			nBuffLen
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET 	FTDM_devURLSet
+(
+	FTGM_DEVICE_ID 		xDID, 
+	FTGM_STRING 		strBuff
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET 	FTDM_devLocation
+(
+	FTGM_DEVICE_ID 		xDID, 
+	FTGM_STRING 		strBuff, 
+	FTGM_INT 			nBuffLen
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET 	FTDM_devLocationSet
+(
+	FTGM_DEVICE_ID 		xDID, 
+	FTGM_STRING 		strBuff
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET	FTDM_epInsert
+(
+	FTGM_EP_ID 			xEPID, 
+	FTGM_EP_INFO_PTR 	pInfo
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET	FTDM_epRemove
+(
+	FTGM_EP_ID 			xEPID
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET	FTDM_epInfo
+(
+	FTGM_EP_ID			xEPID,
+	FTGM_EP_INFO_PTR	pInfo
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET	FTDM_epDataAppend
+(
+	FTGM_EP_ID 			xEPID, 
+	FTGM_ULONG			nTime, 
+	FTGM_ULONG 			nValue
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET	FTDM_epData
+(
+	FTGM_EP_ID 			xEPID, 
+	FTGM_ULONG 			nBeginTime, 
+	FTGM_ULONG 			nEndTime, 
+	FTGM_ULONG_PTR		pnCount, 
+	FTGM_EP_DATA_PTR 	pData
+)
+{
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET	FTDM_epDataRemove
+(
+	FTGM_EP_ID 			xEPID, 
+	FTGM_ULONG 			nBeginTime, 
+	FTGM_ULONG 			nEndTime, 
+	FTGM_ULONG_PTR		nCount
+) 
+{
+	return	FTGM_RET_OK;
+}
+

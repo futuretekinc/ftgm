@@ -4,61 +4,16 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h>
 #include "ftgm_type.h"
+#include "ftdm_client.h"
+#include "ftdm_if.h"
 #include "debug.h"
 
-typedef struct 
-{
-	FTGM_INT	hSock;
-}	FTDM_CLIENT, * FTDM_CLIENT_PTR;
-
-FTGM_RET FTDMC_connect(FTGM_STRING strAddress, FTGM_USHORT nPort, FTDM_CLIENT_PTR pClient);
-
-FTGM_RET FTDMC_Request
+FTGM_RET FTDMC_connect
 (
-	FTDM_CLIENT_PTR 	pClient, 
-	FTGM_BYTE_PTR 		pData, 
-	FTGM_INT 			nDataLen, 
-	FTGM_BYTE_PTR 		pBuff, 
-	FTGM_INT_PTR 		pBuffLen
-);
-
-FTGM_STRING	_strPrompt = "FTDMC> ";
-
-int main(int argc , char *argv[])
-{
-	FTDM_CLIENT	xClient;
-	FTGM_BYTE	pSendMessage[1000], pRecvBuff[2000];
-
-	
-	if (FTDMC_connect("127.0.0.1", 8888, &xClient) != FTGM_RET_OK)
-	{
-		perror("connect failed. Error");
-		return	0;	
-	}
-
-	puts("Connected\n");
-
-	while(1)
-	{
-		FTGM_INT	nBuffLen = 0;
-		printf(_strPrompt);
-		gets(pSendMessage);
-
-		if (pSendMessage[0] == 'q')
-		{
-			break;	
-		}
-
-		nBuffLen = sizeof(pRecvBuff);
-		FTDMC_Request(&xClient, pSendMessage, strlen((char*)pSendMessage), pRecvBuff, &nBuffLen);
-	}
-
-	close(xClient.hSock);
-
-	return 0;
-}
-
-FTGM_RET FTDMC_connect(FTGM_STRING strAddress, FTGM_USHORT nPort, FTDM_CLIENT_PTR pClient)
+ 	FTGM_STRING 	strAddress, 
+	FTGM_USHORT 	nPort, 
+	FTDM_CLIENT_PTR pClient
+)
 {
 	int 	hSock;
 	struct sockaddr_in xServer;
@@ -86,7 +41,20 @@ FTGM_RET FTDMC_connect(FTGM_STRING strAddress, FTGM_USHORT nPort, FTDM_CLIENT_PT
 	return	FTGM_RET_OK;
 }
 
-FTGM_RET FTDMC_Request
+FTGM_RET FTDMC_disconnect
+(
+ 	FTDM_CLIENT_PTR	pClient
+)
+{
+	ASSERT(pClient != NULL);
+
+	close(pClient->hSock);
+	pClient->hSock = 0;
+		
+	return	FTGM_RET_OK;
+}
+
+FTGM_RET FTDMC_request
 (
 	FTDM_CLIENT_PTR 	pClient, 
 	FTGM_BYTE_PTR 		pData, 
@@ -95,7 +63,7 @@ FTGM_RET FTDMC_Request
 	FTGM_INT_PTR 		pBuffLen
 )
 {
-	FTGM_ULONG	uTimeout = 5000;
+	FTGM_INT	nTimeout;
 
 	ASSERT((pClient != NULL) && (pData != NULL) &&  (pBuff != NULL));
 
@@ -104,7 +72,8 @@ FTGM_RET FTDMC_Request
 		return	FTGM_RET_ERROR;	
 	}
 
-	while(--uTimeout > 0)
+	nTimeout = pClient->nTimeout;
+	while(--nTimeout > 0)
 	{
 		int	nLen = recv(pClient->hSock, pBuff, *pBuffLen, MSG_DONTWAIT);
 		if (nLen < 0)
@@ -117,3 +86,42 @@ FTGM_RET FTDMC_Request
 
 	return	FTGM_RET_OK;	
 }
+
+FTGM_RET FTDMC_devInsert
+(
+ 	FTGM_DEVICE_ID			xDIV,
+	FTGM_DEVICE_TYPE		xType,
+	FTGM_DEVICE_URL			xURL,
+	FTGM_DEVICE_LOC			xLoc
+)
+{
+
+}
+
+FTGM_RET FTDMC_devInfo
+(
+ 	FTDM_CLIENT_PTR			pClient,
+	FTGM_DEVICE_ID			xDID,
+	FTGM_DEVICE_INFO_PTR	pInfo
+)
+{
+	FTDM_REQ_DEVICE_INFO_PARAMS	xReq;
+	FTDM_REP_DEVICE_INFO_PARAMS	xResp;
+	FTGM_INT	nResp = sizeof(xResp);
+
+	memcpy(xReq.xDID, xDID, sizeof(FTGM_DEVICE_ID));
+	
+	if (FTDMC_request(pClient, (FTGM_BYTE_PTR)&xReq, sizeof(xReq), (FTGM_BYTE_PTR)&xResp, &nResp) != FTGM_RET_OK)
+	{
+		return	FTGM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTGM_RET_OK)
+	{
+		memcpy(pInfo, &xResp.xInfo, sizeof(FTGM_DEVICE_INFO));
+	}
+	
+	return	xResp.nRet;
+}
+	
+

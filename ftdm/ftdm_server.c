@@ -4,7 +4,7 @@
 #include <time.h>
 #include <getopt.h>
 #include "ftgm_type.h"
-#include "libftdm.h"
+#include "ftdm.h"
 #include "ftdm_cmd.h"
 
 int	main(int argc, char *argv[])
