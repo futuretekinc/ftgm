@@ -1,0 +1,67 @@
+#ifndef	__FTDM_TYPE_H__
+#define	__FTDM_TYPE_H__
+
+#define	_PTR_	*
+
+#define	FTDM_DEVICE_ID_LEN			32
+#define	FTDM_DEVICE_URL_LEN			256
+#define	FTDM_DEVICE_LOCATION_LEN	256
+
+#define	FTDM_EP_NAME_LEN			32
+#define	FTDM_EP_UNIT_LEN			32
+
+typedef	void			FTDM_VOID, _PTR_ FTDM_VOID_PTR;
+typedef	char			FTDM_CHAR, _PTR_ FTDM_CHAR_PTR;
+typedef	unsigned char	FTDM_BYTE, _PTR_ FTDM_BYTE_PTR;
+typedef	int				FTDM_INT, _PTR_ FTDM_INT_PTR;
+typedef	unsigned short 	FTDM_USHORT, _PTR_ FTDM_USHORT_PTR;
+typedef	unsigned long	FTDM_ULONG, _PTR_ FTDM_ULONG_PTR;
+typedef	int				FTDM_BOOL, _PTR_ FTDM_BOOL_PTR;
+
+#define	FTDM_BOOL_FALSE	0
+#define	FTDM_BOOL_TRUE	(!FTDM_BOOL_FALSE)
+
+typedef	unsigned long	FTDM_IP_ADDR, _PTR_ FTDM_IP_ADDR_PTR;
+
+typedef	unsigned long	FTDM_DEVICE_TYPE, _PTR_ FTDM_DEVICE_TYPE_PTR;
+typedef	unsigned long	FTDM_RET, _PTR_ FTDM_RET_PTR;
+typedef	unsigned long	FTDM_CMD, _PTR_ FTDM_CMD_PTR;
+
+typedef	unsigned long	FTDM_EP_ID, _PTR_ FTDM_EP_ID_PTR;
+
+#define	FTDM_RET_OK							0x00000000
+#define	FTDM_RET_ERROR						0x00000001
+#define	FTDM_RET_DATA_LEN_RANGE				0x00000002	
+
+#define	FTDM_RET_DBIF_ERROR					0x00010001
+#define	FTDM_RET_DBIF_ALREADY_INITIALIZED	0x00010002
+#define	FTDM_RET_DBIF_DB_ERROR				0x00020001
+
+typedef	struct 
+{
+	FTDM_BYTE			pDID[FTDM_DEVICE_ID_LEN];
+	FTDM_DEVICE_TYPE	xType;
+	FTDM_CHAR			pURL[FTDM_DEVICE_URL_LEN+1];
+	FTDM_CHAR			pLocation[FTDM_DEVICE_LOCATION_LEN+1];
+}	FTDM_DEVICE_INFO, * FTDM_DEVICE_INFO_PTR;
+
+typedef	unsigned long	FTDM_EP_TYPE, * FTDM_EP_TYPE_PTR;
+
+typedef	struct
+{
+	FTDM_EP_ID			xEPID;
+	FTDM_EP_TYPE		xType;
+	FTDM_CHAR			pName[FTDM_EP_NAME_LEN+1];
+	FTDM_CHAR			pUnit[FTDM_EP_UNIT_LEN+1];
+	FTDM_ULONG			nInterval;
+	FTDM_BYTE			pDID[FTDM_DEVICE_ID_LEN];
+	FTDM_BYTE			pPID[FTDM_DEVICE_ID_LEN];
+}	FTDM_EP_INFO, * FTDM_EP_INFO_PTR;
+
+typedef	struct
+{
+	FTDM_EP_ID			xEPID;
+	FTDM_ULONG			nTime;
+	FTDM_ULONG			nValue;
+}	FTDM_EP_DATA, * FTDM_EP_DATA_PTR;
+#endif

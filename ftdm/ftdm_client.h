@@ -1,38 +1,50 @@
 #ifndef	__FTDM_CLIENT_H__
 #define	__FTDM_CLIENT_H__
 
+#include "ftdm_type.h"
+#include "ftdm_cmd.h"
+#include "ftdm_params.h"
+
 typedef struct 
 {
-	FTGM_INT	hSock;
-	FTGM_INT	nTimeout;
+	FTDM_INT	hSock;
+	FTDM_INT	nTimeout;
 }	FTDM_CLIENT, * FTDM_CLIENT_PTR;
 
-FTGM_RET FTDMC_connect
+FTDM_RET FTDMC_connect
 (
- 	FTGM_STRING 		strAddress, 
-	FTGM_USHORT 		nPort, 
-	FTDM_CLIENT_PTR 	pClient
+	FTDM_IP_ADDR			xIP,
+	FTDM_USHORT 			nPort, 
+	FTDM_CLIENT_PTR 		pClient
 );
 
-FTGM_RET FTDMC_disconnect
+FTDM_RET FTDMC_disconnect
 (
-	FTDM_CLIENT_PTR 	pClient
+	FTDM_CLIENT_PTR 		pClient
 );
 
-FTGM_RET FTDMC_request
-(
-	FTDM_CLIENT_PTR 	pClient, 
-	FTGM_BYTE_PTR 		pData, 
-	FTGM_INT 			nDataLen, 
-	FTGM_BYTE_PTR 		pBuff, 
-	FTGM_INT_PTR 		pBuffLen
-);
-
-FTGM_RET FTDMC_devInfo
+FTDM_RET FTDMC_createDevice
 (
  	FTDM_CLIENT_PTR			pClient,
-	FTGM_DEVICE_ID			xDID,
-	FTGM_DEVICE_INFO_PTR	pInfo
+	FTDM_BYTE_PTR			pDID,
+	FTDM_DEVICE_TYPE		xType,
+	FTDM_BYTE_PTR			pURL,
+	FTDM_INT				nURLLen,
+	FTDM_BYTE_PTR			pLocation,
+	FTDM_INT				nLocationLen
+);
+
+FTDM_RET FTDMC_destroyDevice
+(
+	FTDM_CLIENT_PTR			pClient,
+	FTDM_BYTE_PTR			pDID
+);
+
+FTDM_RET FTDMC_getDeviceInfo
+(
+ 	FTDM_CLIENT_PTR			pClient,
+	FTDM_BYTE_PTR			pDID,
+	FTDM_DEVICE_INFO_PTR	pInfo
 );
 
 #endif

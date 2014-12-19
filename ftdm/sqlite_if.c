@@ -2,32 +2,33 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sqlite3.h>
-#include "ftgm_type.h"
+#include "ftdm_type.h"
 #include "sqlite_if.h"
 #include "debug.h"
 
-FTGM_RET _FTDM_BDIF_isExistTable
+FTDM_RET _FTDM_BDIF_isExistTable
 (
-	FTGM_STRING strTableName, FTGM_BOOL_PTR pExist
+	FTDM_CHAR_PTR	pTableName, 
+	FTDM_BOOL_PTR 	pExist
 );
 
-FTGM_RET _FTDM_BDIF_createDeviceInfoTable
+FTDM_RET _FTDM_BDIF_createDeviceInfoTable
 (
-	FTGM_STRING 	strTableName
+	FTDM_CHAR_PTR	pTableName
 );
 
-FTGM_RET _FTDM_DBIF_isExistDevice
+FTDM_RET _FTDM_DBIF_isExistDevice
 (	
-	FTGM_STRING 	strTableName, 
-	FTGM_DEVICE_ID 	xDID, 
-	FTGM_BOOL_PTR 	pExist
+	FTDM_CHAR_PTR	pTableName, 
+	FTDM_BYTE_PTR	pDID,
+	FTDM_BOOL_PTR 	pExist
 );
 
-static FTGM_STRING	_strDefaultDBName = "./ftdm.db";
+static FTDM_CHAR_PTR	_strDefaultDBName = "./ftdm.db";
 
 static sqlite3		*_pSQLiteDB= 0;
 
-FTGM_RET	FTDM_DBIF_init
+FTDM_RET	FTDM_DBIF_init
 (
 	void
 )
@@ -36,7 +37,7 @@ FTGM_RET	FTDM_DBIF_init
 
 	if (_pSQLiteDB)
 	{
-		return	FTGM_RET_ERROR_ALREADY_BEEN_COMPLETED;
+		return	FTDM_RET_DBIF_ALREADY_INITIALIZED;
 	}
 
 	nRet = sqlite3_open(_strDefaultDBName, &_pSQLiteDB);
@@ -44,13 +45,13 @@ FTGM_RET	FTDM_DBIF_init
 	{
 		ERROR("SQL error : %s\n", sqlite3_errmsg(_pSQLiteDB));
 
-		return	(FTGM_RET_ERROR_DB | nRet); 	
+		return	(FTDM_RET_DBIF_DB_ERROR | nRet); 	
 	}
 
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_final
+FTDM_RET	FTDM_DBIF_final
 (
 	void
 )
@@ -61,243 +62,251 @@ FTGM_RET	FTDM_DBIF_final
 		_pSQLiteDB = NULL;
 	}
 
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_initDeviceInfoTable
+FTDM_RET	FTDM_DBIF_initDeviceInfoTable
 (
 	void
 )
 {
-	FTGM_STRING	strTableName = "device_info";
-	FTGM_BOOL	bExist = FTGM_BOOL_FALSE;
+	FTDM_CHAR_PTR	pTableName = "device_info";
+	FTDM_BOOL		bExist = FTDM_BOOL_FALSE;
 
-	if (_FTDM_BDIF_isExistTable(strTableName, &bExist) != FTGM_RET_OK)
+	if (_FTDM_BDIF_isExistTable(pTableName, &bExist) != FTDM_RET_OK)
 	{
-		ERROR("_FTDM_BDIF_isExistTable(%s,bExist)\n", strTableName);  
-		return	FTGM_RET_ERROR;	
+		ERROR("_FTDM_BDIF_isExistTable(%s,bExist)\n", pTableName);  
+		return	FTDM_RET_DBIF_ERROR;	
 	}
 
-	if (bExist != FTGM_BOOL_TRUE)
+	if (bExist != FTDM_BOOL_TRUE)
 	{
-		ERROR("%s is not exist\n", strTableName);
-		if (_FTDM_BDIF_createDeviceInfoTable(strTableName) != FTGM_RET_OK)
+		ERROR("%s is not exist\n", pTableName);
+		if (_FTDM_BDIF_createDeviceInfoTable(pTableName) != FTDM_RET_OK)
 		{
-			return	FTGM_RET_ERROR;	
+			return	FTDM_RET_DBIF_ERROR;	
 		}
 	}
 
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_insertDeviceInfo
+FTDM_RET	FTDM_DBIF_insertDeviceInfo
 (
-	FTGM_DEVICE_ID 		xDID, 
-	FTGM_DEVICE_TYPE 	xType,
-	FTGM_STRING			strURL,
-	FTGM_STRING			strLOC
+	FTDM_BYTE_PTR		pDID, 
+	FTDM_DEVICE_TYPE 	xType,
+	FTDM_BYTE_PTR		pURL,
+	FTDM_INT			nURLLen,
+	FTDM_BYTE_PTR		pLocation,
+	FTDM_INT			nLocationLen
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_removeDeviceInfo
+FTDM_RET	FTDM_DBIF_removeDeviceInfo
 (
-	FTGM_DEVICE_ID		xDID
+	FTDM_BYTE_PTR		pDID
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_getDeviceInfo
+FTDM_RET	FTDM_DBIF_getDeviceInfo
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_DEVICE_TYPE_PTR	pType,
-	FTGM_STRING				strURL,
-	FTGM_ULONG_PTR			pURLLen,
-	FTGM_STRING				strLoc,
-	FTGM_ULONG_PTR			pLocLen
+	FTDM_BYTE_PTR			pDID, 
+	FTDM_DEVICE_TYPE_PTR	pType,
+	FTDM_CHAR_PTR			pURL,
+	FTDM_INT_PTR			pURLLen,
+	FTDM_CHAR_PTR			pLocation,
+	FTDM_INT_PTR			pLocLen
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_setDeviceURL
+FTDM_RET	FTDM_DBIF_setDeviceURL
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strURL
+	FTDM_BYTE_PTR		pDID, 
+	FTDM_CHAR_PTR		pURL,
+	FTDM_INT			nURLLen
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_getDeviceURL
+FTDM_RET	FTDM_DBIF_getDeviceURL
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strURL,
-	FTGM_ULONG_PTR			pURLLen
+	FTDM_BYTE_PTR		pDID, 
+	FTDM_CHAR_PTR		pURL,
+	FTDM_INT_PTR		pURLLen
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_setDeviceLocation
+FTDM_RET	FTDM_DBIF_setDeviceLocation
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strLoc
+	FTDM_BYTE_PTR		pDID, 
+	FTDM_CHAR_PTR		pLocation,
+	FTDM_INT			nLocationLen
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_getDeviceLocation
+FTDM_RET	FTDM_DBIF_getDeviceLocation
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strLoc,
-	FTGM_ULONG_PTR			pLocLen
+	FTDM_BYTE_PTR		pDID, 
+	FTDM_CHAR_PTR		pLocation,
+	FTDM_INT_PTR		pLocLen
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_initEndPointInfoTable
-(
-	void
-)
-{
-	return	FTGM_RET_OK;
-}
-
-FTGM_RET	FTDM_DBIF_insertEndPointInfo
-(
-	FTGM_EP_ID 				xEPID, 
-	FTGM_EP_TYPE 			xType,
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strName,
-	FTGM_ULONG				nInterval,
-	FTGM_STRING				strUnit,
-	FTGM_DEVICE_ID			xParentID
-)
-{
-	return	FTGM_RET_OK;
-}
-
-FTGM_RET	FTDM_DBIF_removeEndPointInfo
-(
-	FTGM_EP_ID				xEPID
-)
-{
-	return	FTGM_RET_OK;
-}
-
-FTGM_RET	FTDM_DBIF_getEndPointInfo
-(
-	FTGM_EP_ID 				xEPID, 
-	FTGM_EP_TYPE_PTR		pType,
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strName,
-	FTGM_ULONG_PTR			pNameLen,
-	FTGM_ULONG_PTR			pInterval,
-	FTGM_STRING				strUnit,
-	FTGM_ULONG_PTR			pUnit,
-	FTGM_DEVICE_ID			xParentID
-)
-{
-	return	FTGM_RET_OK;
-}
-
-FTGM_RET	FTDM_DBIF_setEndPointName
-(
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strName
-)
-{
-	return	FTGM_RET_OK;
-}
-
-FTGM_RET	FTDM_DBIF_getEndPointName
-(
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strName,
-	FTGM_ULONG_PTR			pNameLen
-)
-{
-	return	FTGM_RET_OK;
-}
-
-FTGM_RET	FTDM_DBIF_setEndPointInterval
-(
-	FTGM_EP_ID				xEPID,
-	FTGM_ULONG				nInterval
-)
-{
-	return	FTGM_RET_OK;
-}
-
-FTGM_RET	FTDM_DBIF_getEndPointInterval
-(
-	FTGM_EP_ID				xEPID,
-	FTGM_ULONG_PTR			pInterval
-)
-{
-	return	FTGM_RET_OK;
-}
-
-FTGM_RET	FTDM_DBIF_setEndPointUnit
-(
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strUnit
-)
-{
-	return	FTGM_RET_OK;
-}
-
-FTGM_RET	FTDM_DBIF_getEndPointUnit
-(
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strUnit,
-	FTGM_ULONG_PTR			pUnitLen
-)
-{
-	return	FTGM_RET_OK;
-}
-
-
-FTGM_RET	FTDM_DBIF_initEndPointLogTable
+FTDM_RET	FTDM_DBIF_initEPInfoTable
 (
 	void
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_appendEndPointLog
+FTDM_RET	FTDM_DBIF_insertEPInfo
 (
-	FTGM_ULONG				xTime,
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strValue
+	FTDM_EP_ID 				xEPID, 
+	FTDM_EP_TYPE 			xType,
+	FTDM_BYTE_PTR			pDID,
+	FTDM_CHAR_PTR			pName,
+	FTDM_INT				nNameLen,
+	FTDM_ULONG				nInterval,
+	FTDM_CHAR_PTR			pUnit,
+	FTDM_INT				nUnitLen,
+	FTDM_BYTE_PTR			pParentID
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
-FTGM_RET	FTDM_DBIF_EndPointLogCount
+FTDM_RET	FTDM_DBIF_removeEPInfo
 (
-	FTGM_ULONG				xBeginTime,
-	FTGM_ULONG				xEndTime,
-	FTGM_EP_ID_PTR			pEPID,
-	FTGM_ULONG				nEPID,
-	FTGM_ULONG_PTR			pCount
+	FTDM_EP_ID				xEPID
 )
 {
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_getEPInfo
+(
+	FTDM_EP_ID 				xEPID, 
+	FTDM_EP_TYPE_PTR		pType,
+	FTDM_BYTE_PTR			pDID,
+	FTDM_CHAR_PTR			pName,
+	FTDM_INT_PTR			pNameLen,
+	FTDM_ULONG_PTR			pInterval,
+	FTDM_CHAR_PTR			pUnit,
+	FTDM_INT_PTR			pUnitLen,
+	FTDM_BYTE_PTR			xParentID
+)
+{
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_setEPName
+(
+	FTDM_EP_ID				xEPID,
+	FTDM_CHAR_PTR			pName,
+	FTDM_INT				nNameLen
+)
+{
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_getEPName
+(
+	FTDM_EP_ID				xEPID,
+	FTDM_CHAR_PTR			pName,
+	FTDM_INT_PTR			pNameLen
+)
+{
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_setEPInterval
+(
+	FTDM_EP_ID				xEPID,
+	FTDM_ULONG				nInterval
+)
+{
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_getEPInterval
+(
+	FTDM_EP_ID				xEPID,
+	FTDM_ULONG_PTR			pInterval
+)
+{
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_setEPUnit
+(
+	FTDM_EP_ID				xEPID,
+	FTDM_CHAR_PTR			pUnit,
+	FTDM_INT				nUnit
+)
+{
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_getEPUnit
+(
+	FTDM_EP_ID				xEPID,
+	FTDM_CHAR_PTR			pUnit,
+	FTDM_INT_PTR			pUnitLen
+)
+{
+	return	FTDM_RET_OK;
+}
+
+
+FTDM_RET	FTDM_DBIF_initEPLogTable
+(
+	void
+)
+{
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_appendEPLog
+(
+	FTDM_ULONG				xTime,
+	FTDM_EP_ID				xEPID,
+	FTDM_ULONG				nValue
+)
+{
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_EPLogCount
+(
+	FTDM_ULONG				xBeginTime,
+	FTDM_ULONG				xEndTime,
+	FTDM_EP_ID_PTR			pEPID,
+	FTDM_ULONG				nEPID,
+	FTDM_ULONG_PTR			pCount
+)
+{
+	return	FTDM_RET_OK;
 }
 
 /*************************************************************************/
 typedef struct
 {
-	FTGM_BOOL		bExist;
-	FTGM_STRING		strName;
+	FTDM_BOOL		bExist;
+	FTDM_CHAR_PTR	pName;
 }   _FTDM_DBIF_CB_EXIST_TABLE_PARAMS, *  _FTDM_DBIF_CB_EXIST_TABLE_PARAMS_PTR;
 
 static int _FTDM_DBIF_CB_isExistTable(void *pData, int nArgc, char **pArgv, char **pColName)
@@ -309,9 +318,9 @@ static int _FTDM_DBIF_CB_isExistTable(void *pData, int nArgc, char **pArgv, char
     {
         for(i = 0 ; i < nArgc ; i++)
         {
-            if (strcmp(pParams->strName, pArgv[i]) == 0)
+            if (strcmp(pParams->pName, pArgv[i]) == 0)
             {
-                pParams->bExist = FTGM_BOOL_TRUE;
+                pParams->bExist = FTDM_BOOL_TRUE;
                 break;
             }
         }
@@ -321,62 +330,62 @@ static int _FTDM_DBIF_CB_isExistTable(void *pData, int nArgc, char **pArgv, char
     return  0;
 }
 
-FTGM_RET _FTDM_BDIF_isExistTable
+FTDM_RET _FTDM_BDIF_isExistTable
 (
-	FTGM_STRING 	strTableName, 
-	FTGM_BOOL_PTR 	pExist
+	FTDM_CHAR_PTR	pTableName, 
+	FTDM_BOOL_PTR 	pExist
 )
 {
     int     nRet;
-    _FTDM_DBIF_CB_EXIST_TABLE_PARAMS xParams = { .bExist = FTGM_BOOL_FALSE, .strName = strTableName};
-    FTGM_STRING	strSQL = "select name from sqlite_master where type='table' order by name";
-    FTGM_STRING	strErrMsg = NULL;
+    _FTDM_DBIF_CB_EXIST_TABLE_PARAMS xParams = { .bExist = FTDM_BOOL_FALSE, .pName = pTableName};
+    FTDM_CHAR_PTR	pSQL = "select name from sqlite_master where type='table' order by name";
+    FTDM_CHAR_PTR	pErrMsg = NULL;
 
-    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_CB_isExistTable, &xParams, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_isExistTable, &xParams, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error : %s\n", pErrMsg);
+        sqlite3_free(pErrMsg);
 
-        return  FTGM_RET_ERROR;
+        return  FTDM_RET_ERROR;
     }
 
     *pExist = xParams.bExist;
 
-    return  FTGM_RET_OK;
+    return  FTDM_RET_OK;
 }
 
-FTGM_RET	_FTDM_BDIF_createDeviceInfoTable
+FTDM_RET	_FTDM_BDIF_createDeviceInfoTable
 (
-	FTGM_STRING 	strTableName
+	FTDM_CHAR_PTR	pTableName
 )
 {
 	int	nRet;
-	FTGM_STRING	strErrMsg = NULL;
-	char		strSQL[1024];
+	FTDM_CHAR_PTR	pErrMsg = NULL;
+	char			pSQL[1024];
 
-	sprintf(strSQL, "CREATE TABLE %s ("\
+	sprintf(pSQL, "CREATE TABLE %s ("\
 						"DID	TEXT PRIMARY KEY,"\
 						"TYPE	TEXT,"\
 						"URL	TEXT,"\
-						"LOC	TEXT)", strTableName);
+						"LOC	TEXT)", pTableName);
 
-	nRet = sqlite3_exec(_pSQLiteDB, strSQL, NULL, 0, &strErrMsg);
+	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", strErrMsg);	
-		sqlite3_free(strErrMsg);
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
 
-		return	FTGM_RET_ERROR;
+		return	FTDM_RET_ERROR;
 	}
 
-	return	FTGM_RET_OK;
+	return	FTDM_RET_OK;
 }
 
 /*************************************************************************/
 typedef struct
 {
-	FTGM_BOOL	bExist;
+	FTDM_BOOL	bExist;
 }   _FTDM_DBIF_CB_IS_EXIST_PARAMS, * _FTDM_DBIF_CB_IS_EXIST_PARAMS_PTR;
 
 static int _FTDM_DBIF_CB_isExist(void *pData, int nArgc, char **pArgv, char **pColName)
@@ -387,32 +396,37 @@ static int _FTDM_DBIF_CB_isExist(void *pData, int nArgc, char **pArgv, char **pC
 	{
 		if (atoi(pArgv[0]) != 0)
 		{
-			pParams->bExist = FTGM_BOOL_TRUE;
+			pParams->bExist = FTDM_BOOL_TRUE;
 		}
     }
 
-    return  FTGM_RET_OK;
+    return  FTDM_RET_OK;
 }
 
-FTGM_RET _FTDM_DBIF_isExistDevice(FTGM_STRING strTableName, FTGM_DEVICE_ID xDID, FTGM_BOOL_PTR pExist)
+FTDM_RET _FTDM_DBIF_isExistDevice
+(
+	FTDM_CHAR_PTR	pTableName, 
+	FTDM_BYTE_PTR 	xDID, 
+	FTDM_BOOL_PTR pExist
+)
 {
-	_FTDM_DBIF_CB_IS_EXIST_PARAMS xParams = {.bExist = FTGM_BOOL_TRUE };
+	_FTDM_DBIF_CB_IS_EXIST_PARAMS xParams = {.bExist = FTDM_BOOL_TRUE };
     int     nRet;
     char    strSQL[1024];
     char    *strErrMsg = NULL;
 
-    sprintf(strSQL, "SELECT COUNT(DID) FROM %s WHERE DID = '%s'", strTableName, xDID);
+    sprintf(strSQL, "SELECT COUNT(DID) FROM %s WHERE DID = '%s'", pTableName, xDID);
     nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_CB_isExist, &xParams, &strErrMsg);
     if (nRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);
         sqlite3_free(strErrMsg);
 
-    	return  FTGM_RET_ERROR;
+    	return  FTDM_RET_ERROR;
     }
 
     *pExist = xParams.bExist;
 
-    return  FTGM_RET_OK;
+    return  FTDM_RET_OK;
 }
 

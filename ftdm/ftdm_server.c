@@ -1,58 +1,55 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include <getopt.h>
-#include "ftgm_type.h"
 #include "ftdm.h"
-#include "ftdm_cmd.h"
+#include "ftdm_params.h"
+#include "ftdm_server.h"
 
-int	main(int argc, char *argv[])
+typedef	FTDM_RET	(*FTDM_SERVICE_CALLBACK)(FTDM_REQ_PARAMS_PTR, FTDM_RESP_PARAMS_PTR);
+typedef struct
 {
-	int	nOpt;
-	FTDM_CMD	xCMD = FTDM_CMD_UNKNOWN;
+	FTDM_CMD				xCmd;
+	FTDM_SERVICE_CALLBACK	fService;
+}	FTDMS_CMD_SET, _PTR_ FTDMS_CMD_SET_PTR;
 
-	while((xCMD == FTDM_CMD_UNKNOWN) && ((nOpt = getopt(argc, argv, "dv")) != -1))
+static FTDMS_CMD_SET	pCmdSet[] =
+{
+	{	.xCmd	=	FTDM_CMD_CREATE_DEVICE,	.fService = (FTDM_SERVICE_CALLBACK)FTDMS_createDevice },
+	{	.xCmd	=	FTDM_CMD_UNKNOWN, .fService = 0}
+};
+
+FTDM_RET	FTDMS_service
+(
+	FTDM_CMD				xCmd,
+	FTDM_REQ_PARAMS_PTR		pReq,
+	FTDM_RESP_PARAMS_PTR	pResp
+)
+{
+	FTDMS_CMD_SET_PTR	pSet = pCmdSet;
+
+	while(pSet->xCmd != FTDM_CMD_UNKNOWN)
 	{
-		switch(nOpt)
+		if (pSet->xCmd == xCmd)
 		{
-		case	'd':
-			xCMD = FTDM_CMD_DAEMON;
-			break;
-
-		case	'v':
-			xCMD = FTDM_CMD_VERSION;
-			break;
-
-		default:
-			xCMD = FTDM_CMD_USAGE;
-			break;
+			return	pSet->fService(pReq, pResp);
 		}
+
+		pSet++;
 	}
 
-	switch(xCMD)
-	{
-	case	FTDM_CMD_VERSION:
-		{
-			FTDM_cmdVersion(argv[0]);
-			return	0;
-		}
-		break;
-
-	case	FTDM_CMD_DAEMON:
-		{
-			FTDM_cmdStartDaemon();
-		}
-		break;
-
-	default:
-		{
-			FTDM_cmdUsage(argv[0]);	
-			return	0;
-		}
-	}
-
-	return	0;
+	return	FTDM_RET_OK;
 }
 
+FTDM_RET	FTDMS_createDevice
+(
+	FTDM_REQ_CREATE_DEVICE_PARAMS_PTR	pReq,
+	FTDM_RESP_CREATE_DEVICE_PARAMS_PTR	pResp
+)
+{
+	pResp->nRet = FTDM_createDevice(
+					pReq->xInfo.pDID,
+					pReq->xInfo.xType, 
+					pReq->xInfo.pURL,
+					strlen(pReq->xInfo.pURL),
+					pReq->xInfo.pLocation,
+					strlen(pReq->xInfo.pLocation));
 
+	return	pResp->nRet;
+}

@@ -1,158 +1,170 @@
 #ifndef	__SQLITE_IF_H__
 #define	__SQLITE_IF_H__
 
-FTGM_RET	FTDM_DBIF_init
+FTDM_RET	FTDM_DBIF_init
 (
 	void
 );
 
-FTGM_RET	FTDM_DBIF_final
+FTDM_RET	FTDM_DBIF_final
 (
 	void
 );
 
-FTGM_RET	FTDM_DBIF_initDeviceInfoTable
+FTDM_RET	FTDM_DBIF_initDeviceInfoTable
 (
 	void
 );
 
-FTGM_RET	FTDM_DBIF_insertDeviceInfo
+FTDM_RET	FTDM_DBIF_insertDeviceInfo
 (
-	FTGM_DEVICE_ID 		xDID, 
-	FTGM_DEVICE_TYPE 	xType,
-	FTGM_STRING			strURL,
-	FTGM_STRING			strLOC
+	FTDM_BYTE_PTR			pDID,
+	FTDM_DEVICE_TYPE 		xType,
+	FTDM_BYTE_PTR			pURL,
+	FTDM_INT				nURLLen,
+	FTDM_BYTE_PTR			pLocation,
+	FTDM_INT				nLocationLen
 );
 
-FTGM_RET	FTDM_DBIF_removeDeviceInfo
+FTDM_RET	FTDM_DBIF_removeDeviceInfo
 (
-	FTGM_DEVICE_ID		xDID
+	FTDM_BYTE_PTR			pDID
 );
 
-FTGM_RET	FTDM_DBIF_getDeviceInfo
+FTDM_RET	FTDM_DBIF_getDeviceInfo
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_DEVICE_TYPE_PTR	pType,
-	FTGM_STRING				strURL,
-	FTGM_ULONG_PTR			pURLLen,
-	FTGM_STRING				strLoc,
-	FTGM_ULONG_PTR			pLocLen
+	FTDM_BYTE_PTR			pDID,
+	FTDM_DEVICE_TYPE_PTR	pType,
+	FTDM_CHAR_PTR			pURL,
+	FTDM_INT_PTR			pURLLen,
+	FTDM_CHAR_PTR			pLoc,
+	FTDM_INT_PTR			pLocLen
 );
 
-FTGM_RET	FTDM_DBIF_setDeviceURL
+FTDM_RET	FTDM_DBIF_setDeviceURL
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strURL
+	FTDM_BYTE_PTR			pDID,
+	FTDM_CHAR_PTR			pURL,
+	FTDM_INT				nURLLen
 );
 
-FTGM_RET	FTDM_DBIF_getDeviceURL
+FTDM_RET	FTDM_DBIF_getDeviceURL
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strURL,
-	FTGM_ULONG_PTR			pURLLen
+	FTDM_BYTE_PTR			pDID,
+	FTDM_CHAR_PTR			pURL,
+	FTDM_INT_PTR			pURLLen
 );
 
-FTGM_RET	FTDM_DBIF_setDeviceLocation
+FTDM_RET	FTDM_DBIF_setDeviceLocation
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strLoc
+	FTDM_BYTE_PTR			pDID,
+	FTDM_CHAR_PTR			pLocation,
+	FTDM_INT				nLocationLen
 );
 
-FTGM_RET	FTDM_DBIF_getDeviceLocation
+FTDM_RET	FTDM_DBIF_getDeviceLocation
 (
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strLoc,
-	FTGM_ULONG_PTR			pLocLen
+	FTDM_BYTE_PTR			pDID,
+	FTDM_CHAR_PTR			pLocation,
+	FTDM_INT_PTR			pLocationLen
 );
 
-FTGM_RET	FTDM_DBIF_initEndPointInfoTable
+FTDM_RET	FTDM_DBIF_initEPInfoTable
 (
 	void
 );
 
-FTGM_RET	FTDM_DBIF_insertEndPointInfo
+FTDM_RET	FTDM_DBIF_insertEPInfo
 (
-	FTGM_EP_ID 				xEPID, 
-	FTGM_EP_TYPE 			xType,
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strName,
-	FTGM_ULONG				nInterval,
-	FTGM_STRING				strUnit,
-	FTGM_DEVICE_ID			xParentID
+	FTDM_EP_ID 				xEPID, 
+	FTDM_EP_TYPE 			xType,
+	FTDM_BYTE_PTR			pDID,
+	FTDM_CHAR_PTR			pName,
+	FTDM_INT				nNameLen,
+	FTDM_ULONG				nInterval,
+	FTDM_CHAR_PTR			pUnit,
+	FTDM_INT				nUnitLen,
+	FTDM_BYTE_PTR			pParentID
 );
 
-FTGM_RET	FTDM_DBIF_removeEndPointInfo
+FTDM_RET	FTDM_DBIF_removeEPInfo
 (
-	FTGM_EP_ID				xEPID
+	FTDM_EP_ID				xEPID
 );
 
-FTGM_RET	FTDM_DBIF_getEndPointInfo
+FTDM_RET	FTDM_DBIF_getEPInfo
 (
-	FTGM_EP_ID 				xEPID, 
-	FTGM_EP_TYPE_PTR		pType,
-	FTGM_DEVICE_ID			xDID,
-	FTGM_STRING				strName,
-	FTGM_ULONG_PTR			pNameLen,
-	FTGM_ULONG_PTR			pInterval,
-	FTGM_STRING				strUnit,
-	FTGM_ULONG_PTR			pUnit,
-	FTGM_DEVICE_ID			xParentID
+	FTDM_EP_ID 				xEPID, 
+	FTDM_EP_TYPE_PTR		pType,
+	FTDM_BYTE_PTR			pDID,
+	FTDM_CHAR_PTR			pName,
+	FTDM_INT_PTR			pNameLen,
+	FTDM_ULONG_PTR			pInterval,
+	FTDM_CHAR_PTR			pUnit,
+	FTDM_INT_PTR			pUnitLen,
+	FTDM_BYTE_PTR			pParentID
 );
 
-FTGM_RET	FTDM_DBIF_setEndPointName
+FTDM_RET	FTDM_DBIF_setEPName
 (
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strName
+	FTDM_EP_ID				xEPID,
+	FTDM_CHAR_PTR			pName,
+	FTDM_INT				nNameLen
 );
 
-FTGM_RET	FTDM_DBIF_getEndPointName
+FTDM_RET	FTDM_DBIF_getEPName
 (
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strName,
-	FTGM_ULONG_PTR			pNameLen
+	FTDM_EP_ID				xEPID,
+	FTDM_CHAR_PTR			pName,
+	FTDM_INT_PTR			pNameLen
 );
 
-FTGM_RET	FTDM_DBIF_setEndPointInterval
+FTDM_RET	FTDM_DBIF_setEPInterval
 (
-	FTGM_EP_ID				xEPID,
-	FTGM_ULONG				nInterval
+	FTDM_EP_ID				xEPID,
+	FTDM_ULONG				nInterval
 );
 
-FTGM_RET	FTDM_DBIF_getEndPointInterval
+FTDM_RET	FTDM_DBIF_getEPInterval
 (
-	FTGM_EP_ID				xEPID,
-	FTGM_ULONG_PTR			pInterval
+	FTDM_EP_ID				xEPID,
+	FTDM_ULONG_PTR			pInterval
 );
 
-FTGM_RET	FTDM_DBIF_setEndPointUnit
+FTDM_RET	FTDM_DBIF_setEPUnit
 (
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strUnit
+	FTDM_EP_ID				xEPID,
+	FTDM_CHAR_PTR			pUnit,
+	FTDM_INT				nUnitLen
 );
 
-FTGM_RET	FTDM_DBIF_getEndPointUnit
+FTDM_RET	FTDM_DBIF_getEPUnit
 (
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strUnit,
-	FTGM_ULONG_PTR			pUnitLen
+	FTDM_EP_ID				xEPID,
+	FTDM_CHAR_PTR			pUnit,
+	FTDM_INT_PTR			pUnitLen
 );
 
 
-FTGM_RET	FTDM_DBIF_initEndPointLogTable(void);
-FTGM_RET	FTDM_DBIF_appendEndPointLog
+FTDM_RET	FTDM_DBIF_initEPLogTable
 (
-	FTGM_ULONG				xTime,
-	FTGM_EP_ID				xEPID,
-	FTGM_STRING				strValue
+	FTDM_VOID
 );
 
-FTGM_RET	FTDM_DBIF_EndPointLogCount
+FTDM_RET	FTDM_DBIF_appendEPLog
 (
-	FTGM_ULONG				xBeginTime,
-	FTGM_ULONG				xEndTime,
-	FTGM_EP_ID_PTR			pEPID,
-	FTGM_ULONG				nEPID,
-	FTGM_ULONG_PTR			pCount
+	FTDM_EP_ID				xEPID,
+	FTDM_ULONG				xTime,
+	FTDM_ULONG				nValue
+);
+
+FTDM_RET	FTDM_DBIF_EPLogCount
+(
+	FTDM_ULONG				xBeginTime,
+	FTDM_ULONG				xEndTime,
+	FTDM_EP_ID_PTR			pEPID,
+	FTDM_ULONG				nEPID,
+	FTDM_ULONG_PTR			pCount
 );
 
 #endif

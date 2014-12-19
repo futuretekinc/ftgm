@@ -33,6 +33,9 @@ modules.builtin
 *.gcno
 *.so.*
 *.db
+ftdm_client
+ftdm_server
+ftdm_console
 #
 # Top-level generic files
 #

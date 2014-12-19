@@ -1,18 +1,21 @@
 #ifndef	__FTGM_TYPE_H__
 #define	__FTGM_TYPE_H__
 
-typedef	unsigned char	FTGM_DEVICE_ID[32];
-typedef	unsigned char	FTGM_EP_ID[4];
-typedef	FTGM_EP_ID	*	FTGM_EP_ID_PTR;
-typedef	char			FTGM_DEVICE_URL[256];
-typedef	char			FTGM_DEVICE_LOC[256];
+typedef	void			FTGM_VOID, * FTGM_VOID_PTR;
+typedef	char 			FTGM_CHAR, * FTGM_CHAR_PTR;
 typedef	char *			FTGM_STRING;
-typedef	char 			FTGM_CHAR;
 typedef	unsigned short	FTGM_USHORT, * FTGM_USHORT_PTR;
 typedef	unsigned long	FTGM_ULONG, * FTGM_ULONG_PTR;
 typedef	int				FTGM_INT, * FTGM_INT_PTR;
 typedef	int				FTGM_BOOL, * FTGM_BOOL_PTR;
 typedef	unsigned char	FTGM_BYTE, * FTGM_BYTE_PTR;
+
+typedef	unsigned char	FTGM_DEVICE_ID[32];
+typedef	unsigned char	FTGM_EP_ID[4];
+typedef	FTGM_EP_ID	*	FTGM_EP_ID_PTR;
+typedef	char			FTGM_DEVICE_URL[256];
+typedef	char			FTGM_DEVICE_LOC[256];
+
 #define	FTGM_BOOL_FALSE	0
 #define	FTGM_BOOL_TRUE	(!FTGM_BOOL_FALSE)
 

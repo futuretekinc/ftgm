@@ -1,98 +1,105 @@
-#ifndef	__LIB_FTDM_H__
-#define	__LIB_FTDM_H__
+#ifndef	__FTDM_H__
+#define	__FTDM_H__
 
-FTGM_RET 	FTDM_init(void);
-FTGM_RET	FTDM_final(void);
+#include "ftdm_type.h"
+#include "ftdm_cmd.h"
 
-FTGM_RET	FTDM_devInsert
+FTDM_RET 	FTDM_init(void);
+FTDM_RET	FTDM_final(void);
+
+FTDM_RET	FTDM_createDevice
 (
-	FTGM_DEVICE_ID 		xDID, 
-	FTGM_DEVICE_TYPE 	xType, 
-	FTGM_STRING 		strURL, 
-	FTGM_STRING 		strLocation
+	FTDM_BYTE_PTR		pDID,
+	FTDM_DEVICE_TYPE 	xType, 
+	FTDM_BYTE_PTR		pURL,
+	FTDM_INT			nURLLen,
+	FTDM_BYTE_PTR		pLocation,
+	FTDM_INT			nLocationLen
 );
-FTGM_RET 	FTDM_devRemove
+FTDM_RET 	FTDM_destroyDevice
 (
-	FTGM_DEVICE_ID 			xDID
-);
-
-FTGM_RET	FTDM_devInfo
-(
-	FTGM_DEVICE_ID 			xDID, 
-	FTGM_DEVICE_INFO_PTR 	pInfo
-);
-
-FTGM_RET	FTDM_devType
-(
-	FTGM_DEVICE_ID 			xDID, 
-	FTGM_DEVICE_TYPE_PTR 	pType
+	FTDM_BYTE_PTR		pDID
 );
 
-FTGM_RET 	FTDM_devURL
+FTDM_RET	FTDM_getDeviceInfo
 (
-	FTGM_DEVICE_ID 		xDID, 
-	FTGM_STRING 		strBuff, 
-	FTGM_INT 			nBuffLen
+	FTDM_BYTE_PTR			pDID,
+	FTDM_DEVICE_INFO_PTR 	pInfo
 );
 
-FTGM_RET 	FTDM_devURLSet
+FTDM_RET	FTDM_getDeviceType
 (
-	FTGM_DEVICE_ID 		xDID, 
-	FTGM_STRING 		strBuff
+	FTDM_BYTE_PTR			pDID,
+	FTDM_DEVICE_TYPE_PTR 	pType
 );
 
-FTGM_RET 	FTDM_devLocation
+FTDM_RET 	FTDM_getDeviceURL
 (
-	FTGM_DEVICE_ID 		xDID, 
-	FTGM_STRING 		strBuff, 
-	FTGM_INT 			nBuffLen
+	FTDM_BYTE_PTR			pDID,
+	FTDM_BYTE_PTR			pURL,
+	FTDM_INT_PTR			nURLLen
 );
 
-FTGM_RET 	FTDM_devLocationSet
+FTDM_RET 	FTDM_setDeviceURL
 (
-	FTGM_DEVICE_ID 		xDID, 
-	FTGM_STRING 		strBuff
+	FTDM_BYTE_PTR			pDID,
+	FTDM_BYTE_PTR			pURL,
+	FTDM_INT 				nURLLen
 );
 
-FTGM_RET	FTDM_epInsert
+FTDM_RET 	FTDM_getDeviceLocation
 (
-	FTGM_EP_ID 			xEPID, 
-	FTGM_EP_INFO_PTR 	pInfo
+	FTDM_BYTE_PTR			pDID,
+	FTDM_BYTE_PTR			pLocation, 
+	FTDM_INT_PTR			pLocationLen
 );
 
-FTGM_RET	FTDM_epRemove
+FTDM_RET 	FTDM_setDeviceLocation
 (
-	FTGM_EP_ID 			xEPID
+	FTDM_BYTE_PTR			pDID,
+	FTDM_BYTE_PTR			pLocation, 
+	FTDM_INT				nLocationLen
 );
 
-FTGM_RET	FTDM_epInfo
+FTDM_RET	FTDM_createEP
 (
-	FTGM_EP_ID			xEPID,
-	FTGM_EP_INFO_PTR	pInfo
+	FTDM_EP_ID 			xEPID, 
+	FTDM_EP_INFO_PTR 	pInfo
 );
 
-FTGM_RET	FTDM_epDataAppend
+FTDM_RET	FTDM_destroyEP
 (
-	FTGM_EP_ID 			xEPID, 
-	FTGM_ULONG			nTime, 
-	FTGM_ULONG 			nValue
+	FTDM_EP_ID 			xEPID
 );
 
-FTGM_RET	FTDM_epData
+FTDM_RET	FTDM_getEPInfo
 (
-	FTGM_EP_ID 			xEPID, 
-	FTGM_ULONG 			nBeginTime, 
-	FTGM_ULONG 			nEndTime, 
-	FTGM_ULONG_PTR		pnCount, 
-	FTGM_EP_DATA_PTR 	pData
+	FTDM_EP_ID			xEPID,
+	FTDM_EP_INFO_PTR	pInfo
 );
 
-FTGM_RET	FTDM_epDataRemove
+FTDM_RET	FTDM_appendEPData
 (
-	FTGM_EP_ID 			xEPID, 
-	FTGM_ULONG 			nBeginTime, 
-	FTGM_ULONG 			nEndTime, 
-	FTGM_ULONG_PTR		nCount
+	FTDM_EP_ID 			xEPID, 
+	FTDM_ULONG			nTime, 
+	FTDM_ULONG 			nValue
+);
+
+FTDM_RET	FTDM_epData
+(
+	FTDM_EP_ID 			xEPID, 
+	FTDM_ULONG 			nBeginTime, 
+	FTDM_ULONG 			nEndTime, 
+	FTDM_ULONG_PTR		pnCount, 
+	FTDM_EP_DATA_PTR 	pData
+);
+
+FTDM_RET	FTDM_removeEPData
+(
+	FTDM_EP_ID 			xEPID, 
+	FTDM_ULONG 			nBeginTime, 
+	FTDM_ULONG 			nEndTime, 
+	FTDM_ULONG_PTR		nCount
 ); 
 #endif
 
