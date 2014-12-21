@@ -23,7 +23,7 @@ CLIENT_LDFLAGS= -L/usr/local/lib -L. -lconfig  -lsqlite3 -lpthread -lftdmc
 
 LIB_FTDM=libftdm
 LIB_FTDM_INCS= ftdm.h sqlite_if.h
-LIB_FTDM_SRCS= ftdm.c ftdm_server.c sqlite_if.c
+LIB_FTDM_SRCS= ftdm.c ftdm_server.c sqlite_if.c ftdm_device.c ftdm_ep.c
 LIB_FTDM_OBJS=$(LIB_FTDM_SRCS:.c=.o)
 
 LIB_FTDMC=libftdmc

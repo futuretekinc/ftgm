@@ -5,13 +5,23 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "ftdm.h"
+#include "ftdm_params.h"
+#include "ftdm_server.h"
 #include "debug.h"
 
 
 #define	FTDM_SERVICE_PORT	8888
+#define	FTDM_PACKET_LEN		2048
 
-static FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData);
-static FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort);
+typedef	struct
+{
+	FTDM_INT	hSocket;
+	FTDM_BYTE	pReqBuff[FTDM_PACKET_LEN];
+	FTDM_BYTE	pRespBuff[FTDM_PACKET_LEN];
+}	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
+
+static FTDM_VOID_PTR 	FTDMS_serviceHandler(FTDM_VOID_PTR pData);
+static FTDM_RET 		FTDMS_startDaemon(FTDM_USHORT nPort);
 
 int main(int argc, char *argv[])
 {
@@ -73,9 +83,17 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 		if (hClient != 0)
 		{
 			pthread_t xPthread;	
-
-			puts("Accept ...\n");
-			pthread_create(&xPthread, NULL, FTDMS_serviceHandler, (void *)hClient);
+			FTDM_SESSION_PTR pSession = (FTDM_SESSION_PTR)malloc(sizeof(FTDM_SESSION));
+			if (pSession == NULL)
+			{
+				ERROR("System memory is not enough!\n");
+			}
+			else
+			{
+				TRACE("New session connected[hSession : %08x]\n", hClient);
+				pSession->hSocket = hClient;
+				pthread_create(&xPthread, NULL, FTDMS_serviceHandler, pSession);
+			}
 		}
 	}
 
@@ -84,25 +102,43 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 
 FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
 {
-	int		hSock = (int)pData;
-	char	pBuff[2048];
+	FTDM_SESSION_PTR		pSession= (FTDM_SESSION_PTR)pData;
+	FTDM_REQ_PARAMS_PTR		pReq 	= (FTDM_REQ_PARAMS_PTR)pSession->pReqBuff;
+	FTDM_RESP_PARAMS_PTR	pResp 	= (FTDM_RESP_PARAMS_PTR)pSession->pRespBuff;
 
 	while(1)
 	{
 		int	nLen;
 
-		nLen = recv(hSock, pBuff, sizeof(pBuff), 0);
+		nLen = recv(pSession->hSocket, pSession->pReqBuff, sizeof(pSession->pReqBuff), 0);
 		if (nLen == 0)
 		{
 			break;	
 		}
 		else if (nLen < 0)
 		{
+			ERROR("recv failed[%d]\n", -nLen);
 			break;	
+		}
+
+		if (FTDM_RET_OK != FTDMS_service(pReq, pResp))
+		{
+			pResp->xCmd = pReq->xCmd;
+			pResp->nRet = FTDM_RET_INTERNAL_ERROR;
+			pResp->nLen = sizeof(FTDM_RESP_PARAMS);
+		}
+
+		nLen = send(pSession->hSocket, pSession->pRespBuff, sizeof(pSession->pRespBuff), 0);
+		if (nLen < 0)
+		{
+			ERROR("send failed[%d]\n", -nLen);	
+			break;
 		}
 	}
 
-	close(hSock);
+	TRACE("Session Closed[hSession : %08x]\n", pSession->hSocket);
+	close(pSession->hSocket);
+
 	return	0;
 }
 
