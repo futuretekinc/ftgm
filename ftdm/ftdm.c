@@ -16,6 +16,7 @@ FTDM_RET 	FTDM_init(void)
 	}
 
 	FTDM_initDevice();
+	FTDM_initEP();
 
 	TRACE("FTDM initialization completed successfully.\n");
 

@@ -393,7 +393,8 @@ FTDM_RET	FTDM_DBIF_insertEPInfo
 	FTDM_CHAR		pSQL[1024];
 
 	sprintf(pSQL, 
-			"INSERT INTO ep_info VALUES (%lu, %s, %lu, %s, 0, %lu, %s, %s)",
+			"INSERT INTO ep_info (EPID,DID,TYPE,NAME,INTERVAL,UNIT,PID) "\
+			"VALUES (%lu, \"%s\", %lu, \"%s\", %lu, \"%s\", \"%s\")",
 			pEPInfo->xEPID, 
 			pEPInfo->pDID, 
 			pEPInfo->xType, 
@@ -433,6 +434,129 @@ FTDM_RET	FTDM_DBIF_removeEPInfo
 
 		return	FTDM_RET_ERROR;
 	}
+
+	return	FTDM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+static int _FTDM_DBIF_CB_getEPCount(void *pData, int nArgc, char **pArgv, char **pColName)
+{
+	FTDM_ULONG_PTR pnCount = (FTDM_ULONG_PTR)pData;
+
+	if (nArgc != 0)
+	{
+		*pnCount = atoi(pArgv[0]);
+	}
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_getEPCount
+(
+	FTDM_ULONG_PTR		pCount
+)
+{
+    int     nRet;
+    char    strSQL[1024];
+    char    *strErrMsg = NULL;
+
+    sprintf(strSQL, "SELECT COUNT(*) FROM ep_info");
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_CB_getEPCount, pCount, &strErrMsg);
+    if (nRet != SQLITE_OK)
+    {
+        ERROR("SQL error : %s\n", strErrMsg);
+        sqlite3_free(strErrMsg);
+
+    	return  FTDM_RET_ERROR;
+    }
+
+	return	FTDM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+typedef struct
+{
+	FTDM_ULONG			nMaxCount;
+	FTDM_ULONG			nCount;
+	FTDM_EP_INFO_PTR	pInfos;
+}	FTDM_DBIF_CB_GET_EP_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_EP_LIST_PARAMS_PTR;
+
+static int _FTDM_DBIF_CB_getEPList(void *pData, int nArgc, char **pArgv, char **pColName)
+{
+	FTDM_DBIF_CB_GET_EP_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_EP_LIST_PARAMS_PTR)pData;
+
+	if (nArgc != 0)
+	{
+		FTDM_INT	i;
+
+		for(i = 0 ; i < nArgc ; i++)
+		{
+			printf("%s : %s\n", pColName[i], pArgv[i]);
+			if (strcmp(pColName[i], "EPID") == 0)
+			{
+				pParams->nCount++;
+				pParams->pInfos[pParams->nCount-1].xEPID = atoi(pArgv[i]);
+			}
+			else if (strcmp(pColName[i], "TYPE") == 0)
+			{
+				pParams->pInfos[pParams->nCount-1].xType = atoi(pArgv[i]);
+			}
+			else if (strcmp(pColName[i], "NAME") == 0)
+			{
+				strncpy(pParams->pInfos[pParams->nCount-1].pName, pArgv[i], FTDM_EP_NAME_LEN);
+			}
+			else if (strcmp(pColName[i], "UNIT") == 0)
+			{
+				strncpy(pParams->pInfos[pParams->nCount-1].pUnit, pArgv[i], FTDM_EP_UNIT_LEN);
+			}
+			else if (strcmp(pColName[i], "INTERVAL") == 0)
+			{
+				pParams->pInfos[pParams->nCount-1].nInterval = atoi(pArgv[i]);
+			}
+			else if (strcmp(pColName[i], "DID") == 0)
+			{
+				strncpy(pParams->pInfos[pParams->nCount-1].pDID, pArgv[i], FTDM_DEVICE_ID_LEN);
+			}
+			else if (strcmp(pColName[i], "PID") == 0)
+			{
+				strncpy(pParams->pInfos[pParams->nCount-1].pPID, pArgv[i], FTDM_DEVICE_ID_LEN);
+			}
+		}
+	}
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_getEPList
+(
+	FTDM_EP_INFO_PTR		pInfos, 
+	FTDM_ULONG				nMaxCount,
+	FTDM_ULONG_PTR			pCount
+)
+{
+    int     nRet;
+    char    strSQL[1024];
+    char    *strErrMsg = NULL;
+	FTDM_DBIF_CB_GET_EP_LIST_PARAMS xParams= 
+	{
+		.nMaxCount 	= nMaxCount,
+		.nCount		= 0,
+		.pInfos		= pInfos
+	};
+
+    sprintf(strSQL, "SELECT * FROM ep_info");
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_CB_getEPList, &xParams, &strErrMsg);
+    if (nRet != SQLITE_OK)
+    {
+        ERROR("SQL error : %s\n", strErrMsg);
+        sqlite3_free(strErrMsg);
+
+    	return  FTDM_RET_ERROR;
+    }
+
+	*pCount = xParams.nCount;
 
 	return	FTDM_RET_OK;
 }
@@ -1066,7 +1190,7 @@ FTDM_RET	_FTDM_BDIF_createEPInfoTable
 						"DID	TEXT,"\
 						"TYPE	INT,"\
 						"NAME	TEXT,"\
-						"STATIC	INT,"\
+						"STATUS	INT,"\
 						"INTERVAL INT,"\
 						"UNIT	TEXT,"\
 						"PID	TEXT)", pTableName);

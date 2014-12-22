@@ -159,21 +159,18 @@ FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgs[])
 	switch(nArgc)
 	{
 	case	6:
-		memset(pLocation, 0, sizeof(pLocation));
 		for(i = 0 ; i < strlen(pArgs[5]) ; i++)
 		{
 			pLocation[i] = toupper(pArgs[5][i]);	
 		}
 
 	case	5:
-		memset(pURL, 0, sizeof(pURL));
 		for(i = 0 ; i < strlen(pArgs[4]) ; i++)
 		{
 			pURL[i] = toupper(pArgs[4][i]);	
 		}
 
 	case	4:
-		memset(pDID, 0, sizeof(pDID));
 		for(i = 0 ; i < strlen(pArgs[2]) ; i++)
 		{
 			pDID[i] = toupper(pArgs[2][i]);	
@@ -292,6 +289,146 @@ FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgs[])
 
 FTDM_RET	_ep(FTDM_INT nArgc, FTDM_CHAR_PTR pArgs[])
 {
+	FTDM_RET		nRet;
+	FTDM_INT		i;
+	FTDM_BOOL		bShowUsage = FTDM_BOOL_FALSE;
+	FTDM_CHAR		pPID[FTDM_DEVICE_ID_LEN + 1];
+	FTDM_CHAR		pDID[FTDM_DEVICE_ID_LEN + 1];
+	FTDM_CHAR		pName[FTDM_EP_NAME_LEN + 1];
+	FTDM_CHAR		pUnit[FTDM_EP_UNIT_LEN + 1];
+	FTDM_ULONG		nInterval = 0;
+	FTDM_EP_TYPE	nType = 0;
+	FTDM_EP_ID		xEPID = 0;
+
+	memset(pPID, 0, sizeof(pPID));
+	memset(pDID, 0, sizeof(pDID));
+	memset(pUnit, 0, sizeof(pUnit));
+	memset(pName, 0, sizeof(pName));
+
+	switch(nArgc)
+	{
+	case	9:
+		if (strlen(pArgs[8]) > FTDM_DEVICE_ID_LEN)
+		{
+			bShowUsage = FTDM_BOOL_TRUE;
+			break;
+		}
+
+		for(i = 0 ; i < strlen(pArgs[8]) ; i++)
+		{
+			pPID[i] = toupper(pArgs[8][i]);	
+		}
+
+	case	8:
+		if (strlen(pArgs[7]) > FTDM_DEVICE_ID_LEN)
+		{
+			bShowUsage = FTDM_BOOL_TRUE;
+			break;
+		}
+
+		for(i = 0 ; i < strlen(pArgs[7]) ; i++)
+		{
+			pDID[i] = toupper(pArgs[7][i]);	
+		}
+
+	case	7:
+		nInterval = atoi(pArgs[6]);
+
+	case	6:
+		if (strlen(pArgs[5]) > FTDM_EP_UNIT_LEN)
+		{
+			bShowUsage = FTDM_BOOL_TRUE;
+			break;
+		}
+
+		for(i = 0 ; i < strlen(pArgs[5]) ; i++)
+		{
+			pUnit[i] = toupper(pArgs[5][i]);	
+		}
+
+	case	5:
+		if (strlen(pArgs[4]) > FTDM_EP_NAME_LEN)
+		{
+			bShowUsage = FTDM_BOOL_TRUE;
+			break;
+		}
+
+		for(i = 0 ; i < strlen(pArgs[4]) ; i++)
+		{
+			pName[i] = toupper(pArgs[4][i]);	
+		}
+
+	case	4:
+		nType = atoi(pArgs[3]);
+
+	case	3:
+		xEPID = atoi(pArgs[2]);
+
+	case	2:
+		{
+			if (strcmp(pArgs[1], "help") == 0)
+			{
+				printf("Usage : %s <EPID> <Type> <Name> <Unit> <Interval> <DID> <PID>\n", pArgs[0]);
+			}
+			else if (strcmp(pArgs[1], "add") == 0)
+			{
+				FTDM_EP_INFO	xInfo;
+
+				xInfo.xEPID 	= xEPID;
+				xInfo.xType 	= nType;
+				xInfo.nInterval = nInterval;
+				strcpy(xInfo.pName, pName);
+				strcpy(xInfo.pUnit, pUnit);
+				strcpy(xInfo.pPID, pPID);
+				strcpy(xInfo.pDID, pDID);
+
+				nRet = FTDMC_createEP(_hClient, &xInfo);
+				if (nRet != FTDM_RET_OK)
+				{
+					printf("%s : ERROR - %lu\n", pArgs[0], nRet);
+				}
+			}
+			else if (strcmp(pArgs[1], "del") == 0)
+			{
+				nRet = FTDMC_destroyEP(_hClient, xEPID);	
+				if (nRet != FTDM_RET_OK)
+				{
+					printf("%s : ERROR - %lu\n", pArgs[0], nRet);
+				}
+			}
+			else if (strcmp(pArgs[1], "list") == 0)
+			{
+				FTDM_ULONG	nCount;
+
+				nRet = FTDMC_getEPCount(_hClient, &nCount);
+				printf("nCount = %d\n", nCount);
+				if (nRet != FTDM_RET_OK)
+				{
+					printf("%s : ERROR - %lu\n", pArgs[0], nRet);
+					break;
+				}
+
+				for(i = 0 ; i< nCount ; i++)
+				{
+					FTDM_EP_INFO	xInfo;
+
+					nRet = FTDMC_getEPInfoByIndex(_hClient, i, &xInfo);
+					if (nRet == FTDM_RET_OK)
+					{
+						printf("%08lx %08lx %16s %16s %4lu %16s %16s\n",
+								xInfo.xEPID,
+								xInfo.xType,
+								xInfo.pName,
+								xInfo.pUnit,
+								xInfo.nInterval,
+								xInfo.pDID,
+								xInfo.pPID);
+					}
+				}
+			}
+		}
+		break;
+	}
 	return	FTDM_RET_OK;
 }
 

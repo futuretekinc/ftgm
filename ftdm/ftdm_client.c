@@ -483,6 +483,7 @@ FTDM_RET	FTDMC_getEPInfo
 		return	FTDM_RET_ERROR;	
 	}
 
+	memcpy(pInfo, &xResp.xInfo, sizeof(FTDM_EP_INFO));
 	return	xResp.nRet;
 }
 
@@ -521,6 +522,7 @@ FTDM_RET	FTDMC_getEPInfoByIndex
 		return	FTDM_RET_ERROR;	
 	}
 
+	memcpy(pInfo, &xResp.xInfo, sizeof(FTDM_EP_INFO));
 	return	xResp.nRet;
 }
 

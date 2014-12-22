@@ -4,7 +4,7 @@
 #include "ftdm.h"
 #include "ftdm_ep.h"
 #include "sqlite_if.h"
-#include "debug.h"
+#include "ftdm_debug.h"
 
 FTDM_RET	FTDM_insertEP
 (
@@ -60,7 +60,7 @@ FTDM_RET	FTDM_initEP
 				{
 					return	FTDM_RET_NOT_ENOUGH_MEMORY;	
 				}
-			
+	
 				memcpy(&pEP->xInfo, &pEPInfos[i], sizeof(FTDM_EP_INFO));
 
 				FTDM_insertEP(pEP);
@@ -153,7 +153,15 @@ FTDM_RET	FTDM_createEP
 
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTDM_EP_INFO));
 	pEP->xInfo.xEPID = xEPID;
+
+	nRet = FTDM_insertEP(pEP);
 	
+	if (nRet != FTDM_RET_OK)
+	{
+		free(pEP);
+		return	nRet;
+	}
+
 	FTDM_DBIF_insertEPInfo(pInfo);
 
 	return	FTDM_RET_OK;
@@ -235,7 +243,6 @@ FTDM_RET	FTDM_getEPInfoByIndex
 	FTDM_EP_INFO_PTR	pInfo
 )
 {
-	FTDM_RET	nRet;
 	FTDM_ULONG	nCount = 0;
 
 	if (pInfo == NULL)

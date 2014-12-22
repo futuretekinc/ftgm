@@ -46,13 +46,13 @@ FTDM_RET FTDMC_destroyDevice
 	FTDM_CHAR_PTR			pDID
 );
 
-FTDM_RET FTDMC_gtDeviceCount
+FTDM_RET FTDMC_getDeviceCount
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTDM_ULONG_PTR			pnCount
 );
 
-FTDM_RET FTDMC_gtDeviceInfoByIndex
+FTDM_RET FTDMC_getDeviceInfoByIndex
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTDM_ULONG				nIndex,
