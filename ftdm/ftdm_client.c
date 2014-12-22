@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <string.h>    
+#include <stdlib.h>    
 #include <unistd.h>    
 #include <sys/socket.h> 
 #include <arpa/inet.h>
+#include "ftdm.h"
 #include "ftdm_client.h"
-#include "debug.h"
 
 static FTDM_RET FTDMC_request
 (
@@ -20,20 +21,28 @@ static FTDM_RET FTDMC_request
  *****************************************************************/
 FTDM_RET FTDMC_connect
 (
-	FTDM_IP_ADDR	xIP,
-	FTDM_USHORT 	nPort, 
-	FTDM_CLIENT_PTR pClient
+	FTDM_IP_ADDR			xIP,
+	FTDM_USHORT 			nPort, 
+	FTDM_CLIENT_HANDLE_PTR	phClient
 )
 {
 	int 	hSock;
-	struct sockaddr_in xServer;
+	struct sockaddr_in 	xServer;
+	FTDM_CLIENT_PTR		pClient;
 
-	ASSERT( (strAddress != NULL) && (pClient != NULL) );
+	ASSERT( phClient != NULL );
+
+	pClient = (FTDM_CLIENT_PTR)malloc(sizeof(FTDM_CLIENT));
+	if (pClient == NULL)
+	{
+		return	FTDM_RET_NOT_ENOUGH_MEMORY;	
+	}
 
 	hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (hSock == -1)
 	{
 		printf("Could not create socket.\n");	
+		free(pClient);
 		return	FTDM_RET_ERROR;
 	}
 
@@ -43,10 +52,14 @@ FTDM_RET FTDMC_connect
 
 	if (connect(hSock, (struct sockaddr *)&xServer, sizeof(xServer)) < 0)
 	{
+		free(pClient);
 		return	FTDM_RET_ERROR;	
 	}
 	
 	pClient->hSock = hSock;
+	pClient->nTimeout = 5000;
+
+	*phClient = pClient;
 
 	return	FTDM_RET_OK;
 }
@@ -56,14 +69,40 @@ FTDM_RET FTDMC_connect
  *****************************************************************/
 FTDM_RET FTDMC_disconnect
 (
- 	FTDM_CLIENT_PTR	pClient
+ 	FTDM_CLIENT_HANDLE	hClient
 )
 {
-	ASSERT(pClient != NULL);
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
 
-	close(pClient->hSock);
-	pClient->hSock = 0;
-		
+	close(hClient->hSock);
+	hClient->hSock = 0;
+	
+	free(hClient);
+
+	return	FTDM_RET_OK;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTDM_RET FTDMC_isConnected
+(
+	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_BOOL_PTR			pbConnected
+)
+{
+	if ((hClient != NULL) && (hClient->hSock != 0))
+	{
+		*pbConnected = FTDM_BOOL_TRUE;	
+	}
+	else
+	{
+		*pbConnected = FTDM_BOOL_FALSE;	
+	}
+
 	return	FTDM_RET_OK;
 }
 
@@ -72,21 +111,25 @@ FTDM_RET FTDMC_disconnect
  *****************************************************************/
 FTDM_RET FTDMC_createDevice
 (
- 	FTDM_CLIENT_PTR			pClient,
-	FTDM_BYTE_PTR			pDID,
+ 	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_CHAR_PTR			pDID,
 	FTDM_DEVICE_TYPE		xType,
-	FTDM_BYTE_PTR			pURL,
-	FTDM_INT				nURLLen,
-	FTDM_BYTE_PTR			pLocation,
-	FTDM_INT				nLocationLen
+	FTDM_CHAR_PTR			pURL,
+	FTDM_CHAR_PTR			pLocation
 )
 {
 	FTDM_RET						nRet;
 	FTDM_REQ_CREATE_DEVICE_PARAMS	xReq;
 	FTDM_RESP_CREATE_DEVICE_PARAMS	xResp;
 
-	if ((nURLLen > FTDM_DEVICE_URL_LEN) || 
-		(nLocationLen > FTDM_DEVICE_LOCATION_LEN))
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	if ((strlen(pDID) > FTDM_DEVICE_ID_LEN) ||
+		(strlen(pURL) > FTDM_DEVICE_URL_LEN) || 
+		(strlen(pLocation) > FTDM_DEVICE_LOCATION_LEN))
 	{
 		return	FTDM_RET_DATA_LEN_RANGE;	
 	}
@@ -95,13 +138,13 @@ FTDM_RET FTDMC_createDevice
 
 	xReq.xCmd	=	FTDM_CMD_CREATE_DEVICE;
 	xReq.nLen	=	sizeof(xReq);
-	memcpy(xReq.xInfo.pDID, pDID, FTDM_DEVICE_ID_LEN) ;
+	strcpy(xReq.xInfo.pDID, pDID);
 	xReq.xInfo.xType = xType;
-	memcpy(xReq.xInfo.pURL, pURL, nURLLen);
-	memcpy(xReq.xInfo.pLocation, pLocation, nLocationLen);
+	strcpy(xReq.xInfo.pURL, pURL);
+	strcpy(xReq.xInfo.pLocation, pLocation);
 
 	nRet = FTDMC_request(
-				pClient, 
+				hClient, 
 				(FTDM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTDM_VOID_PTR)&xResp, 
@@ -119,22 +162,33 @@ FTDM_RET FTDMC_createDevice
  *****************************************************************/
 FTDM_RET FTDMC_destroyDevice
 (
-	FTDM_CLIENT_PTR			pClient,
-	FTDM_BYTE_PTR			pDID
+	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_CHAR_PTR			pDID
 )
 {
 	FTDM_RET						nRet;
 	FTDM_REQ_DESTROY_DEVICE_PARAMS	xReq;
 	FTDM_RESP_DESTROY_DEVICE_PARAMS	xResp;
 
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+
+	if (strlen(pDID) > FTDM_DEVICE_ID_LEN)
+	{
+		return	FTDM_RET_INVALID_ARGUMENTS;
+	}
+
 	memset(&xReq, 0, sizeof(xReq));
 
 	xReq.xCmd 	=	FTDM_CMD_DESTROY_DEVICE;
 	xReq.nLen	=	sizeof(xReq);
-	memcpy(xReq.pDID, pDID, FTDM_DEVICE_ID_LEN);
+	strcpy(xReq.pDID, pDID);
 	
 	nRet = FTDMC_request(
-				pClient, 
+				hClient, 
 				(FTDM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTDM_VOID_PTR)&xResp, 
@@ -150,10 +204,97 @@ FTDM_RET FTDMC_destroyDevice
 /*****************************************************************
  *
  *****************************************************************/
+FTDM_RET FTDMC_getDeviceCount
+(
+	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_ULONG_PTR			pnCount
+)
+{
+	FTDM_RET							nRet;
+	FTDM_REQ_GET_DEVICE_COUNT_PARAMS	xReq;
+	FTDM_RESP_GET_DEVICE_COUNT_PARAMS	xResp;
+
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	if (pnCount == NULL)
+	{
+		return	FTDM_RET_INVALID_ARGUMENTS;
+	}
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd 	=	FTDM_CMD_GET_DEVICE_COUNT;
+	xReq.nLen	=	sizeof(xReq);
+	
+	nRet = FTDMC_request(
+				hClient, 
+				(FTDM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTDM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTDM_RET_OK)
+	{
+		return	FTDM_RET_ERROR;	
+	}
+
+	*pnCount = xResp.nCount;
+
+	return	xResp.nRet;
+}
+
+
+
+FTDM_RET FTDMC_getDeviceInfoByIndex
+(
+	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_ULONG				nIndex,
+	FTDM_DEVICE_INFO_PTR	pInfo
+)
+{
+	FTDM_RET							nRet;
+	FTDM_REQ_GET_DEVICE_INFO_BY_INDEX_PARAMS		xReq;
+	FTDM_RESP_GET_DEVICE_INFO_BY_INDEX_PARAMS	xResp;
+
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd 	=	FTDM_CMD_GET_DEVICE_INFO_BY_INDEX;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.nIndex	=	nIndex;
+	
+	nRet = FTDMC_request(
+				hClient, 
+				(FTDM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTDM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTDM_RET_OK)
+	{
+		return	FTDM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTDM_RET_OK)
+	{
+		memcpy(pInfo, &xResp.xInfo, sizeof(FTDM_DEVICE_INFO));
+	}
+	
+	return	xResp.nRet;
+}
+/*****************************************************************
+ *
+ *****************************************************************/
 FTDM_RET FTDMC_getDeviceInfo
 (
- 	FTDM_CLIENT_PTR			pClient,
-	FTDM_BYTE_PTR			pDID,
+ 	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_CHAR_PTR			pDID,
 	FTDM_DEVICE_INFO_PTR	pInfo
 )
 {
@@ -161,14 +302,25 @@ FTDM_RET FTDMC_getDeviceInfo
 	FTDM_REQ_GET_DEVICE_INFO_PARAMS		xReq;
 	FTDM_RESP_GET_DEVICE_INFO_PARAMS	xResp;
 
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+
+	if (strlen(pDID) > FTDM_DEVICE_ID_LEN)
+	{
+		return	FTDM_RET_INVALID_ARGUMENTS;
+	}
+
 	memset(&xReq, 0, sizeof(xReq));
 
 	xReq.xCmd 	=	FTDM_CMD_GET_DEVICE_INFO;
 	xReq.nLen	=	sizeof(xReq);
-	memcpy(xReq.pDID, pDID, FTDM_DEVICE_ID_LEN);
+	strcpy(xReq.pDID, pDID);
 	
 	nRet = FTDMC_request(
-				pClient, 
+				hClient, 
 				(FTDM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTDM_VOID_PTR)&xResp, 
@@ -191,7 +343,7 @@ FTDM_RET FTDMC_getDeviceInfo
  *****************************************************************/
 FTDM_RET	FTDMC_createEP
 (
-	FTDM_CLIENT_PTR			pClient,
+	FTDM_CLIENT_HANDLE		hClient,
 	FTDM_EP_INFO_PTR		pInfo
 )
 {
@@ -199,14 +351,18 @@ FTDM_RET	FTDMC_createEP
 	FTDM_REQ_CREATE_EP_PARAMS	xReq;
 	FTDM_RESP_CREATE_EP_PARAMS	xResp;
 
-	ASSERT((pClient!= NULL) && (pInfo != NULL));
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
 
 	xReq.xCmd	=	FTDM_CMD_CREATE_EP;
 	xReq.nLen	=	sizeof(xReq);
 	memcpy(&xReq.xInfo, pInfo, sizeof(FTDM_EP_INFO));
 
 	nRet = FTDMC_request(
-				pClient, 
+				hClient, 
 				(FTDM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTDM_VOID_PTR)&xResp, 
@@ -224,7 +380,7 @@ FTDM_RET	FTDMC_createEP
  *****************************************************************/
 FTDM_RET	FTDMC_destroyEP
 (
-	FTDM_CLIENT_PTR			pClient,
+	FTDM_CLIENT_HANDLE		hClient,
 	FTDM_EP_ID				xEPID
 )
 {
@@ -232,12 +388,17 @@ FTDM_RET	FTDMC_destroyEP
 	FTDM_REQ_DESTROY_EP_PARAMS	xReq;
 	FTDM_RESP_DESTROY_EP_PARAMS	xResp;
 
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
 	xReq.xCmd	=	FTDM_CMD_DESTROY_EP;
 	xReq.nLen	=	sizeof(xReq);
 	xReq.xEPID	=	xEPID;
 
 	nRet = FTDMC_request(
-				pClient, 
+				hClient, 
 				(FTDM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTDM_VOID_PTR)&xResp, 
@@ -253,9 +414,46 @@ FTDM_RET	FTDMC_destroyEP
 /*****************************************************************
  *
  *****************************************************************/
+FTDM_RET	FTDMC_getEPCount
+(
+	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_ULONG_PTR			pnCount
+)
+{
+	FTDM_RET						nRet;
+	FTDM_REQ_GET_EP_COUNT_PARAMS	xReq;
+	FTDM_RESP_GET_EP_COUNT_PARAMS	xResp;
+
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	xReq.xCmd	=	FTDM_CMD_GET_EP_COUNT;
+	xReq.nLen	=	sizeof(xReq);
+
+	nRet = FTDMC_request(
+				hClient, 
+				(FTDM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTDM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTDM_RET_OK)
+	{
+		return	FTDM_RET_ERROR;	
+	}
+
+	*pnCount = xResp.nCount;
+
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
 FTDM_RET	FTDMC_getEPInfo
 (
-	FTDM_CLIENT_PTR			pClient,
+	FTDM_CLIENT_HANDLE		hClient,
 	FTDM_EP_ID				xEPID,
 	FTDM_EP_INFO_PTR		pInfo
 )
@@ -264,13 +462,56 @@ FTDM_RET	FTDMC_getEPInfo
 	FTDM_REQ_GET_EP_INFO_PARAMS		xReq;
 	FTDM_RESP_GET_EP_INFO_PARAMS	xResp;
 
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
 	xReq.xCmd	=	FTDM_CMD_GET_EP_INFO;
 	xReq.nLen	=	sizeof(xReq);
 	xReq.xEPID	=	xEPID;
 
 
 	nRet = FTDMC_request(
-				pClient, 
+				hClient, 
+				(FTDM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTDM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTDM_RET_OK)
+	{
+		return	FTDM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTDM_RET	FTDMC_getEPInfoByIndex
+(
+	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_ULONG				nIndex,
+	FTDM_EP_INFO_PTR		pInfo
+)
+{
+	FTDM_RET								nRet;
+	FTDM_REQ_GET_EP_INFO_BY_INDEX_PARAMS	xReq;
+	FTDM_RESP_GET_EP_INFO_BY_INDEX_PARAMS	xResp;
+
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	xReq.xCmd	=	FTDM_CMD_GET_EP_INFO_BY_INDEX;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.nIndex	=	nIndex;
+
+
+	nRet = FTDMC_request(
+				hClient, 
 				(FTDM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTDM_VOID_PTR)&xResp, 
@@ -288,7 +529,7 @@ FTDM_RET	FTDMC_getEPInfo
  *****************************************************************/
 FTDM_RET	FTDMC_appendEPData
 (
-	FTDM_CLIENT_PTR			pClient,
+	FTDM_CLIENT_HANDLE		hClient,
 	FTDM_EP_ID				xEPID,
 	FTDM_ULONG				nTime,
 	FTDM_ULONG				nValue
@@ -298,6 +539,11 @@ FTDM_RET	FTDMC_appendEPData
 	FTDM_REQ_APPEND_EP_DATA_PARAMS	xReq;
 	FTDM_RESP_APPEND_EP_DATA_PARAMS	xResp;
 
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
 	xReq.xCmd	=	FTDM_CMD_APPEND_EP_DATA;
 	xReq.nLen	=	sizeof(xReq);
 	xReq.xEPID	=	xEPID;
@@ -305,7 +551,7 @@ FTDM_RET	FTDMC_appendEPData
 	xReq.nValue	=	nValue;
 
 	nRet = FTDMC_request(
-				pClient, 
+				hClient, 
 				(FTDM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTDM_VOID_PTR)&xResp, 
@@ -323,27 +569,36 @@ FTDM_RET	FTDMC_appendEPData
  *****************************************************************/
 FTDM_RET	FTDMC_getEPData
 (
-	FTDM_CLIENT_PTR			pClient,
-	FTDM_EP_ID				xEPID,
+	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_EP_ID_PTR			pEPID,
+	FTDM_ULONG				nEPIDCount,
 	FTDM_ULONG				nBeginTime,
 	FTDM_ULONG				nEndTime,
-	FTDM_ULONG				nCount,
-	FTDM_EP_DATA_PTR		pData
+	FTDM_EP_DATA_PTR		pData,
+	FTDM_ULONG				nMaxCount,
+	FTDM_ULONG_PTR			pnCount
 )
 {
 	FTDM_RET						nRet;
 	FTDM_REQ_GET_EP_DATA_PARAMS		xReq;
 	FTDM_RESP_GET_EP_DATA_PARAMS	xResp;
 
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
 	xReq.xCmd		=	FTDM_CMD_GET_EP_DATA;
-	xReq.nLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	xReq.nLen		=	sizeof(xReq) + sizeof(FTDM_EP_ID) * nEPIDCount;
 	xReq.nBeginTime	=	nBeginTime;
 	xReq.nEndTime	=	nEndTime;
-	xReq.nCount		=	nCount;
+	xReq.nCount		=	nMaxCount;
+	xReq.nEPIDCount	=	nEPIDCount;
+
+	memcpy(xReq.pEPID,	pEPID, sizeof(FTDM_EP_ID) * nEPIDCount) ;
 
 	nRet = FTDMC_request(
-				pClient, 
+				hClient, 
 				(FTDM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTDM_VOID_PTR)&xResp, 
@@ -357,10 +612,12 @@ FTDM_RET	FTDMC_getEPData
 	{
 		FTDM_INT	i;
 
-		for( i = 0 ; i < nCount && i < xResp.nCount ; i++)
+		for( i = 0 ; i < xResp.nCount ; i++)
 		{
 			memcpy(&pData[i], &xResp.pData[i], sizeof(FTDM_EP_DATA));
 		}
+
+		*pnCount = xResp.nCount;
 	}
 
 	return	xResp.nRet;
@@ -371,8 +628,9 @@ FTDM_RET	FTDMC_getEPData
  *****************************************************************/
 FTDM_RET	FTDMC_removeEPData
 (
-	FTDM_CLIENT_PTR			pClient,
-	FTDM_EP_ID				xEPID,
+	FTDM_CLIENT_HANDLE		hClient,
+	FTDM_EP_ID_PTR			pEPID,
+	FTDM_ULONG				nEPIDCount,
 	FTDM_ULONG				nBeginTime,
 	FTDM_ULONG				nEndTime,
 	FTDM_ULONG				nCount
@@ -382,15 +640,21 @@ FTDM_RET	FTDMC_removeEPData
 	FTDM_REQ_REMOVE_EP_DATA_PARAMS	xReq;
 	FTDM_RESP_REMOVE_EP_DATA_PARAMS	xResp;
 
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
 	xReq.xCmd		=	FTDM_CMD_REMOVE_EP_DATA;
-	xReq.nLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	xReq.nLen		=	sizeof(xReq) + sizeof(FTDM_EP_ID) * nEPIDCount;
 	xReq.nBeginTime	=	nBeginTime;
 	xReq.nEndTime	=	nEndTime;
 	xReq.nCount		=	nCount;
+	xReq.nEPIDCount	=	nEPIDCount;
+	memcpy(xReq.pEPID, pEPID, sizeof(FTDM_EP_ID) * nEPIDCount);
 
 	nRet = FTDMC_request(
-				pClient, 
+				hClient, 
 				(FTDM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTDM_VOID_PTR)&xResp, 
@@ -408,7 +672,7 @@ FTDM_RET	FTDMC_removeEPData
  *****************************************************************/
 FTDM_RET FTDMC_request
 (
-	FTDM_CLIENT_PTR 	pClient, 
+	FTDM_CLIENT_HANDLE 	hClient, 
 	FTDM_REQ_PARAMS_PTR	pReq,
 	FTDM_INT			nReqLen,
 	FTDM_REQ_PARAMS_PTR	pResp,
@@ -417,20 +681,28 @@ FTDM_RET FTDMC_request
 {
 	FTDM_INT	nTimeout;
 
-	ASSERT((pClient != NULL) && (pReq != NULL) &&  (pResp != NULL));
 
-	if( send(pClient->hSock, pReq, nReqLen, 0) < 0)
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	if( send(hClient->hSock, pReq, nReqLen, 0) < 0)
 	{
 		return	FTDM_RET_ERROR;	
 	}
 
-	nTimeout = pClient->nTimeout;
+	nTimeout = hClient->nTimeout;
 	while(--nTimeout > 0)
 	{
-		int	nLen = recv(pClient->hSock, pResp, nRespLen, MSG_DONTWAIT);
+		int	nLen = recv(hClient->hSock, pResp, nRespLen, MSG_WAITALL);
 		if (nLen < 0)
 		{
 			return	FTDM_RET_ERROR;	
+		}
+		else if (nLen > 0)
+		{
+			break;	
 		}
 
 		usleep(1000);

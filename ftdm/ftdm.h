@@ -3,6 +3,7 @@
 
 #include "ftdm_type.h"
 #include "ftdm_cmd.h"
+#include "ftdm_debug.h"
 
 FTDM_RET 	FTDM_init(void);
 FTDM_RET	FTDM_final(void);
@@ -17,12 +18,23 @@ FTDM_RET	FTDM_createDevice
 
 FTDM_RET 	FTDM_destroyDevice
 (
-	FTDM_CHAR_PTR		pDID
+	FTDM_CHAR_PTR			pDID
+);
+
+FTDM_RET	FTDM_getDeviceCount
+(
+	FTDM_ULONG_PTR			pnCount
 );
 
 FTDM_RET	FTDM_getDeviceInfo
 (
 	FTDM_CHAR_PTR			pDID,
+	FTDM_DEVICE_INFO_PTR 	pInfo
+);
+
+FTDM_RET	FTDM_getDeviceInfoByIndex
+(
+	FTDM_ULONG				nIndex,
 	FTDM_DEVICE_INFO_PTR 	pInfo
 );
 
@@ -69,9 +81,20 @@ FTDM_RET	FTDM_destroyEP
 	FTDM_EP_ID 			xEPID
 );
 
+FTDM_RET	FTDM_getEPCount
+(
+	FTDM_ULONG_PTR		pnCount
+);
+
 FTDM_RET	FTDM_getEPInfo
 (
 	FTDM_EP_ID			xEPID,
+	FTDM_EP_INFO_PTR	pInfo
+);
+
+FTDM_RET	FTDM_getEPInfoByIndex
+(
+	FTDM_ULONG			nIndex,
 	FTDM_EP_INFO_PTR	pInfo
 );
 
@@ -89,6 +112,7 @@ FTDM_RET	FTDM_getEPData
 	FTDM_ULONG 			nBeginTime, 
 	FTDM_ULONG 			nEndTime, 
 	FTDM_EP_DATA_PTR 	pData,
+	FTDM_ULONG			nMaxCount,
 	FTDM_ULONG_PTR		pnCount 
 );
 

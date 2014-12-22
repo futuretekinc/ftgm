@@ -1,6 +1,6 @@
 #include "ftdm.h"
+#include "ftdm_debug.h"
 #include "sqlite_if.h"
-#include "debug.h"
 
 FTDM_RET 	FTDM_init(void)
 {
@@ -15,6 +15,8 @@ FTDM_RET 	FTDM_init(void)
 	
 	}
 
+	FTDM_initDevice();
+
 	TRACE("FTDM initialization completed successfully.\n");
 
 	return	FTDM_RET_OK;
@@ -22,6 +24,8 @@ FTDM_RET 	FTDM_init(void)
 
 FTDM_RET	FTDM_final(void)
 {
+	FTDM_finalDevice();
+
 	if (FTDM_DBIF_final() != FTDM_RET_OK)
 	{
 		TRACE("FTDM finalization failed.\n");

@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ftdm.h"
 #include "ftdm_device.h"
 #include "sqlite_if.h"
-#include "debug.h"
 
 static FTDM_DEVICE	_header = 
 {
-	.pPrev		=	NULL,
-	.pNext		=	NULL,
+	.pPrev		=	&_header,
+	.pNext		=	&_header,
 	.xInfo		= 
 	{
 		.pDID		=	{ 0, },
@@ -23,6 +23,66 @@ FTDM_RET	FTDM_initDevice
  	FTDM_VOID
 )
 {
+	FTDM_ULONG	nMaxDeviceCount = 0;
+
+	if (_header.pNext != &_header)
+	{
+		return	FTDM_RET_ALREADY_INITIALIZED;	
+	}
+
+	if ((FTDM_DBIF_getDeviceCount(&nMaxDeviceCount) == FTDM_RET_OK) &&
+		(nMaxDeviceCount > 0))
+	{
+
+		FTDM_DEVICE_INFO_PTR	pDeviceInfos;
+		FTDM_ULONG				nDeviceCount = 0;
+		
+		pDeviceInfos = (FTDM_DEVICE_INFO_PTR)calloc(nMaxDeviceCount, sizeof(FTDM_DEVICE_INFO));
+		if (pDeviceInfos == NULL)
+		{
+			return	FTDM_RET_NOT_ENOUGH_MEMORY;	
+		}
+	
+		if (FTDM_DBIF_getDeviceList(pDeviceInfos, nMaxDeviceCount, &nDeviceCount) == FTDM_RET_OK)
+		{
+			FTDM_INT	i;
+
+			for(i = 0 ; i < nDeviceCount ; i++)
+			{
+				FTDM_DEVICE_PTR pDevice;
+				
+				pDevice = (FTDM_DEVICE_PTR)malloc(sizeof(FTDM_DEVICE));
+				if (pDevice == NULL)
+				{
+					return	FTDM_RET_NOT_ENOUGH_MEMORY;	
+				}
+			
+				memcpy(&pDevice->xInfo, &pDeviceInfos[i], sizeof(FTDM_DEVICE_INFO));
+
+				FTDM_insertDevice(pDevice);
+			}
+		}
+
+		free(pDeviceInfos);
+	}
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_finalDevice
+(
+	FTDM_VOID
+)
+{
+	FTDM_DEVICE_PTR	pDevice = _header.pNext;
+
+	while(pDevice != &_header)
+	{
+		FTDM_removeDevice(pDevice);
+		free(pDevice);
+
+		pDevice = _header.pNext;
+	}
+
 	return	FTDM_RET_OK;
 }
 
@@ -113,7 +173,6 @@ FTDM_RET    FTDM_createDevice
 	strcpy(pDevice->xInfo.pURL, pURL);
 	strcpy(pDevice->xInfo.pLocation, pLocation);	
 
-
 	nRet = FTDM_DBIF_insertDeviceInfo(&pDevice->xInfo);
 	if (nRet != FTDM_RET_OK)
 	{
@@ -150,6 +209,25 @@ FTDM_RET 	FTDM_destroyDevice
 	return	FTDM_RET_OK;
 }
 
+FTDM_RET	FTDM_getDeviceCount
+(
+	FTDM_ULONG_PTR	pnCount
+)
+{
+	FTDM_ULONG	nCount = 0;
+	FTDM_DEVICE_PTR	pDevice = _header.pNext;
+
+	while(pDevice != &_header)
+	{
+		nCount++;
+		pDevice = pDevice->pNext;
+	}
+
+	*pnCount = nCount;
+
+	return	FTDM_RET_OK;
+}
+
 FTDM_RET	FTDM_getDeviceInfo
 (
 	FTDM_CHAR_PTR			pDID,
@@ -170,6 +248,28 @@ FTDM_RET	FTDM_getDeviceInfo
 	memcpy(pInfo, &pDevice->xInfo, sizeof(FTDM_DEVICE_INFO));
 
 	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_getDeviceInfoByIndex
+(
+	FTDM_ULONG				nIndex,
+	FTDM_DEVICE_INFO_PTR 	pInfo
+)
+{
+	FTDM_ULONG	nCount = 0;
+	FTDM_DEVICE_PTR	pDevice = _header.pNext;
+
+	while(pDevice != &_header)
+	{
+		if (nIndex == nCount++)
+		{
+			memcpy(pInfo, &pDevice->xInfo, sizeof(FTDM_DEVICE_INFO));
+			return	FTDM_RET_OK;
+		}
+		pDevice = pDevice->pNext;
+	}
+
+	return	FTDM_RET_OBJECT_NOT_FOUND;
 }
 
 FTDM_RET	FTDM_getDeviceType

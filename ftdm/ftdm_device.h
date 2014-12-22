@@ -17,5 +17,20 @@ FTDM_RET	FTDM_initDevice
  	FTDM_VOID
 );
 
+FTDM_RET	FTDM_finalDevice
+(
+ 	FTDM_VOID
+);
+
+FTDM_RET	FTDM_insertDevice
+(
+ 	FTDM_DEVICE_PTR pDevice
+);
+
+FTDM_RET	FTDM_removeDevice
+(
+ 	FTDM_DEVICE_PTR pDevice
+);
+
 #endif
 

@@ -16,6 +16,18 @@ FTDM_RET	FTDM_DBIF_initDeviceInfoTable
 	void
 );
 
+FTDM_RET	FTDM_DBIF_getDeviceCount
+(
+	FTDM_ULONG_PTR		pCount
+);
+
+FTDM_RET	FTDM_DBIF_getDeviceList
+(
+	FTDM_DEVICE_INFO_PTR	pInfos,
+	FTDM_ULONG				nMaxCount,
+	FTDM_ULONG_PTR			pCount
+);
+
 FTDM_RET	FTDM_DBIF_insertDeviceInfo
 (
  	FTDM_DEVICE_INFO_PTR	pInfo
@@ -73,6 +85,18 @@ FTDM_RET	FTDM_DBIF_removeEPInfo
 	FTDM_EP_ID				xEPID
 );
 
+FTDM_RET	FTDM_DBIF_getEPCount
+(
+	FTDM_ULONG_PTR			pCount
+);
+
+FTDM_RET	FTDM_DBIF_getEPList
+(
+	FTDM_EP_INFO_PTR		pInfos,
+	FTDM_ULONG				nMaxCount,
+	FTDM_ULONG_PTR			pCount
+);
+
 FTDM_RET	FTDM_DBIF_getEPInfo
 (
 	FTDM_EP_ID 				xEPID, 
@@ -120,7 +144,7 @@ FTDM_RET	FTDM_DBIF_getEPUnit
 );
 
 
-FTDM_RET	FTDM_DBIF_initEPLogTable
+FTDM_RET	FTDM_DBIF_initEPDataTable
 (
 	FTDM_VOID
 );
@@ -141,7 +165,7 @@ FTDM_RET	FTDM_DBIF_EPDataCount
 	FTDM_ULONG_PTR			pCount
 );
 
-FTDM_RET	FTDM_DBFI_getEPData
+FTDM_RET	FTDM_DBIF_getEPData
 (
 	FTDM_EP_ID_PTR			pEPID,
 	FTDM_ULONG				nEPIDCount,

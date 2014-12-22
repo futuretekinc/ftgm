@@ -6,6 +6,11 @@
 #include "sqlite_if.h"
 #include "debug.h"
 
+FTDM_RET	FTDM_insertEP
+(
+	FTDM_EP_PTR	pEP
+);
+
 static FTDM_EP	_header = 
 { 
 	.pPrev = &_header, 
@@ -22,6 +27,48 @@ FTDM_RET	FTDM_initEP
 	FTDM_VOID
 )
 {
+	FTDM_ULONG	nMaxEPCount = 0;
+
+	if (_header.pNext != &_header)
+	{
+		return	FTDM_RET_ALREADY_INITIALIZED;	
+	}
+
+	if ((FTDM_DBIF_getEPCount(&nMaxEPCount) == FTDM_RET_OK) &&
+		(nMaxEPCount > 0))
+	{
+
+		FTDM_EP_INFO_PTR	pEPInfos;
+		FTDM_ULONG			nEPCount = 0;
+		
+		pEPInfos = (FTDM_EP_INFO_PTR)calloc(nMaxEPCount, sizeof(FTDM_EP_INFO));
+		if (pEPInfos == NULL)
+		{
+			return	FTDM_RET_NOT_ENOUGH_MEMORY;	
+		}
+	
+		if (FTDM_DBIF_getEPList(pEPInfos, nMaxEPCount, &nEPCount) == FTDM_RET_OK)
+		{
+			FTDM_INT	i;
+
+			for(i = 0 ; i < nEPCount ; i++)
+			{
+				FTDM_EP_PTR pEP;
+				
+				pEP = (FTDM_EP_PTR)malloc(sizeof(FTDM_EP));
+				if (pEP == NULL)
+				{
+					return	FTDM_RET_NOT_ENOUGH_MEMORY;	
+				}
+			
+				memcpy(&pEP->xInfo, &pEPInfos[i], sizeof(FTDM_EP_INFO));
+
+				FTDM_insertEP(pEP);
+			}
+		}
+
+		free(pEPInfos);
+	}
 	return	FTDM_RET_OK;
 }
 
@@ -106,17 +153,8 @@ FTDM_RET	FTDM_createEP
 
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTDM_EP_INFO));
 	pEP->xInfo.xEPID = xEPID;
-
-	FTDM_DBIF_insertEPInfo(
-			xEPID,
-			pInfo->xType,
-			pInfo->pDID,
-			pInfo->pName,
-			strlen(pInfo->pName),
-			pInfo->nInterval,
-			pInfo->pUnit,
-			strlen(pInfo->pUnit),
-			pInfo->pPID);
+	
+	FTDM_DBIF_insertEPInfo(pInfo);
 
 	return	FTDM_RET_OK;
 }
@@ -147,6 +185,25 @@ FTDM_RET	FTDM_destroyEP
 	return	FTDM_RET_OK;
 }
 
+FTDM_RET	FTDM_getEPCount
+(
+	FTDM_ULONG_PTR	pnCount
+)
+{
+	FTDM_ULONG	nCount = 0;
+
+	FTDM_EP_PTR	pCurrent = _header.pNext;
+	
+	while(pCurrent != &_header)
+	{
+		nCount++;
+		pCurrent = pCurrent->pNext;
+	}
+
+	*pnCount = nCount;
+
+	return	FTDM_RET_OK;
+}
 FTDM_RET	FTDM_getEPInfo
 (
 	FTDM_EP_ID			xEPID,
@@ -172,6 +229,36 @@ FTDM_RET	FTDM_getEPInfo
 	return	FTDM_RET_OK;
 }
 
+FTDM_RET	FTDM_getEPInfoByIndex
+(
+	FTDM_ULONG			nIndex,
+	FTDM_EP_INFO_PTR	pInfo
+)
+{
+	FTDM_RET	nRet;
+	FTDM_ULONG	nCount = 0;
+
+	if (pInfo == NULL)
+	{
+		return	FTDM_RET_INVALID_ARGUMENTS;	
+	}
+
+	FTDM_EP_PTR	pCurrent = _header.pNext;
+	
+	while(pCurrent != &_header)
+	{
+		if (nIndex == nCount++)
+		{
+			memcpy(pInfo, &pCurrent->xInfo, sizeof(FTDM_EP_INFO));
+			return	FTDM_RET_OK;
+		}
+
+		pCurrent = pCurrent->pNext;
+	}
+
+	return	FTDM_RET_OBJECT_NOT_FOUND;
+}
+
 FTDM_RET	FTDM_appendEPData
 (
 	FTDM_EP_ID 			xEPID, 
@@ -189,6 +276,7 @@ FTDM_RET	FTDM_getEPData
 	FTDM_ULONG 			nBeginTime, 
 	FTDM_ULONG 			nEndTime, 
 	FTDM_EP_DATA_PTR 	pEPData,
+	FTDM_ULONG			nMaxCount,
 	FTDM_ULONG_PTR		pCount 
 )
 {

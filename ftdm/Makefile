@@ -50,7 +50,7 @@ $(LIB_FTDMC): $(LIB_FTDMC_OBJS)
 	$(AR) rcs $(LIB_FTDMC).a $(LIB_FTDMC_OBJS)
 	$(CC) -shared -Wl -o $(LIB_FTDMC).so.1.0.1 $(LIB_FTDMC_OBJS) $(LDFLAGS)
 
-.c.o: 
+.c.o:  *.c *.h
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:

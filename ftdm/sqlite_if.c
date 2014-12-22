@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sqlite3.h>
-#include "ftdm_type.h"
+#include "ftdm.h"
 #include "sqlite_if.h"
-#include "debug.h"
 
 FTDM_RET _FTDM_BDIF_isExistTable
 (
@@ -70,6 +69,9 @@ FTDM_RET	FTDM_DBIF_final
 	return	FTDM_RET_OK;
 }
 
+/***************************************************************
+ *
+ ***************************************************************/
 FTDM_RET	FTDM_DBIF_initDeviceInfoTable
 (
 	void
@@ -96,6 +98,119 @@ FTDM_RET	FTDM_DBIF_initDeviceInfoTable
 	return	FTDM_RET_OK;
 }
 
+/***************************************************************
+ *
+ ***************************************************************/
+static int _FTDM_DBIF_CB_getDeviceCount(void *pData, int nArgc, char **pArgv, char **pColName)
+{
+	FTDM_ULONG_PTR pnCount = (FTDM_ULONG_PTR)pData;
+
+	if (nArgc != 0)
+	{
+		*pnCount = atoi(pArgv[0]);
+	}
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_getDeviceCount
+(
+	FTDM_ULONG_PTR		pCount
+)
+{
+    int     nRet;
+    char    strSQL[1024];
+    char    *strErrMsg = NULL;
+
+    sprintf(strSQL, "SELECT COUNT(*) FROM device_info");
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_CB_getDeviceCount, pCount, &strErrMsg);
+    if (nRet != SQLITE_OK)
+    {
+        ERROR("SQL error : %s\n", strErrMsg);
+        sqlite3_free(strErrMsg);
+
+    	return  FTDM_RET_ERROR;
+    }
+
+	return	FTDM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+typedef struct
+{
+	FTDM_ULONG				nMaxCount;
+	FTDM_ULONG				nCount;
+	FTDM_DEVICE_INFO_PTR	pInfos;
+}	FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS_PTR;
+
+static int _FTDM_DBIF_CB_getDeviceList(void *pData, int nArgc, char **pArgv, char **pColName)
+{
+	FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS_PTR)pData;
+
+	if (nArgc != 0)
+	{
+		FTDM_INT	i;
+
+		for(i = 0 ; i < nArgc ; i++)
+		{
+			if (strcmp(pColName[i], "DID") == 0)
+			{
+				pParams->nCount++;
+				strncpy(pParams->pInfos[pParams->nCount-1].pDID, pArgv[i], 32);
+			}
+			else if (strcmp(pColName[i], "TYPE") == 0)
+			{
+				pParams->pInfos[pParams->nCount-1].xType = atoi(pArgv[i]);
+			}
+			else if (strcmp(pColName[i], "URL") == 0)
+			{
+				strncpy(pParams->pInfos[pParams->nCount-1].pURL, pArgv[i], FTDM_DEVICE_URL_LEN);
+			}
+			else if (strcmp(pColName[i], "LOC") == 0)
+			{
+				strncpy(pParams->pInfos[pParams->nCount-1].pLocation, pArgv[i], FTDM_DEVICE_LOCATION_LEN);
+			}
+		}
+	}
+	return	FTDM_RET_OK;
+}
+
+FTDM_RET	FTDM_DBIF_getDeviceList
+(
+	FTDM_DEVICE_INFO_PTR	pInfos, 
+	FTDM_ULONG				nMaxCount,
+	FTDM_ULONG_PTR			pCount
+)
+{
+    int     nRet;
+    char    strSQL[1024];
+    char    *strErrMsg = NULL;
+	FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS xParams= 
+	{
+		.nMaxCount 	= nMaxCount,
+		.nCount		= 0,
+		.pInfos		= pInfos
+	};
+
+    sprintf(strSQL, "SELECT * FROM device_info");
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_CB_getDeviceList, &xParams, &strErrMsg);
+    if (nRet != SQLITE_OK)
+    {
+        ERROR("SQL error : %s\n", strErrMsg);
+        sqlite3_free(strErrMsg);
+
+    	return  FTDM_RET_ERROR;
+    }
+
+	*pCount = xParams.nCount;
+
+	return	FTDM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
 FTDM_RET	FTDM_DBIF_insertDeviceInfo
 (
  	FTDM_DEVICE_INFO_PTR	pInfo
@@ -106,7 +221,7 @@ FTDM_RET	FTDM_DBIF_insertDeviceInfo
 	FTDM_CHAR		pSQL[1024];
 	
 	sprintf(pSQL, 
-			"INSERT INTO device_info VALUES (%s, %08lx, %s, %s)", 
+			"INSERT INTO device_info VALUES (\"%s\", %08lx, \"%s\", \"%s\")", 
 			pInfo->pDID, 
 			pInfo->xType, 
 			pInfo->pURL, 
@@ -123,6 +238,9 @@ FTDM_RET	FTDM_DBIF_insertDeviceInfo
 	return	FTDM_RET_OK;
 }
 
+/***************************************************************
+ *
+ ***************************************************************/
 FTDM_RET	FTDM_DBIF_removeDeviceInfo
 (
 	FTDM_CHAR_PTR		pDID
@@ -134,7 +252,7 @@ FTDM_RET	FTDM_DBIF_removeDeviceInfo
 
 	if (strlen(pDID) > FTDM_DEVICE_ID_LEN)
 	{
-		FTDM_RET_INVALID_ARGUMENTS;	
+		return	FTDM_RET_INVALID_ARGUMENTS;	
 	}
 
 	sprintf(pSQL, "DELETE FROM device_info WHERE DID == %s", pDID);
@@ -443,19 +561,31 @@ FTDM_RET	FTDM_DBIF_initEPDataTable
 	void
 )
 {
-	FTDM_RET		nRet;
-	FTDM_CHAR_PTR	pErrMsg = NULL;
-	FTDM_CHAR		pSQL[1024];
+	FTDM_CHAR_PTR	pTableName = "ep_info";
+	FTDM_BOOL		bExist = FTDM_BOOL_FALSE;
 
-	sprintf(pSQL, "CREATE TABLE ep_data (TIME	INT,EPID INT,VALUE	INT)");
-
-	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
-	if (nRet != SQLITE_OK)
+	if (_FTDM_BDIF_isExistTable(pTableName, &bExist) != FTDM_RET_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
-		sqlite3_free(pErrMsg);
+		ERROR("_FTDM_BDIF_isExistTable(%s,bExist)\n", pTableName);  
+		return	FTDM_RET_DBIF_ERROR;	
+	}
 
-		return	FTDM_RET_ERROR;
+	if (bExist == FTDM_BOOL_FALSE)
+	{ 
+		FTDM_RET		nRet;
+		FTDM_CHAR_PTR	pErrMsg = NULL;
+		FTDM_CHAR		pSQL[1024];
+
+		sprintf(pSQL, "CREATE TABLE ep_data (TIME	INT,EPID INT,VALUE	INT)");
+
+		nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+		if (nRet != SQLITE_OK)
+		{
+			ERROR("SQL error : %s\n", pErrMsg);	
+			sqlite3_free(pErrMsg);
+
+			return	FTDM_RET_ERROR;
+		}
 	}
 
 	return	FTDM_RET_OK;

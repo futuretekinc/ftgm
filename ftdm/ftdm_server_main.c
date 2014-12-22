@@ -52,6 +52,8 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 	int					hSocket;
 	struct sockaddr_in	xServer, xClient;
 
+	FTDM_init();
+
 	hSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (hSocket == -1)
 	{
@@ -66,7 +68,7 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 	nRet = bind( hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
 	if (nRet < 0)
 	{
-		ERROR("bin failed.\n");
+		ERROR("bind failed.\n");
 		return	FTDM_RET_ERROR;
 	}
 
@@ -110,7 +112,7 @@ FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
 	{
 		int	nLen;
 
-		nLen = recv(pSession->hSocket, pSession->pReqBuff, sizeof(pSession->pReqBuff), 0);
+		nLen = recv(pSession->hSocket, pReq, sizeof(pSession->pReqBuff), 0);
 		if (nLen == 0)
 		{
 			break;	
@@ -128,7 +130,7 @@ FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
 			pResp->nLen = sizeof(FTDM_RESP_PARAMS);
 		}
 
-		nLen = send(pSession->hSocket, pSession->pRespBuff, sizeof(pSession->pRespBuff), 0);
+		nLen = send(pSession->hSocket, pResp, pResp->nLen, 0);
 		if (nLen < 0)
 		{
 			ERROR("send failed[%d]\n", -nLen);	
