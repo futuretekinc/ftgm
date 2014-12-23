@@ -172,6 +172,7 @@ FTDM_RET	FTDM_DBIF_getEPData
 	FTDM_ULONG				xBeginTime,
 	FTDM_ULONG				xEndTime,
 	FTDM_EP_DATA_PTR		pEPData,
+	FTDM_ULONG				nMaxCount,
 	FTDM_ULONG_PTR			pCount
 );
 

@@ -50,8 +50,7 @@ FTDM_RET	FTDMS_service
 	{
 		if (pSet->xCmd == pReq->xCmd)
 		{
-			pSet->fService(pReq, pResp);
-			return	FTDM_RET_OK;
+			return	pSet->fService(pReq, pResp);
 		}
 
 		pSet++;
@@ -284,12 +283,21 @@ FTDM_RET	FTDMS_getEPData
 	FTDM_RESP_GET_EP_DATA_PARAMS_PTR	pResp
 )
 {
+	printf("CMD : %08lx, nCount : %d\n", pReq->xCmd, pReq->nCount);
 	pResp->xCmd = pReq->xCmd;
-	pResp->nLen = sizeof(*pResp);
 	pResp->nCount = pReq->nCount;
 	pResp->nRet = FTDM_getEPData(pReq->pEPID, pReq->nEPIDCount, pReq->nBeginTime, pReq->nEndTime,
 			 pResp->pData, pReq->nCount, &pResp->nCount);
 
+	if (pResp->nRet == FTDM_RET_OK)
+	{
+		pResp->nLen = sizeof(FTDM_RESP_GET_EP_DATA_PARAMS) + pResp->nCount * sizeof(FTDM_EP_DATA);
+	}
+	else
+	{
+		pResp->nLen = sizeof(FTDM_RESP_GET_EP_DATA_PARAMS);
+	}
+	printf("pResp->nCount = %d, pResp->nLen = %d\n", pResp->nCount, pResp->nLen);
 	return	pResp->nRet;
 }
 

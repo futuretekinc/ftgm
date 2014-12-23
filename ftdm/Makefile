@@ -17,7 +17,7 @@ SERVER_OBJS=$(SERVER_SRCS:.c=.o)
 SERVER_LDFLAGS=-L/usr/local/lib -L. -lconfig  -lftdm -lsqlite3 -lpthread 
 
 CLIENT=ftdm_client
-CLIENT_SRCS=ftdmc_main.c 
+CLIENT_SRCS=ftdmc_main.c  ftdm_client.c
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS= -L/usr/local/lib -L. -lconfig  -lsqlite3 -lpthread -lftdmc
 

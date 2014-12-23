@@ -581,48 +581,76 @@ FTDM_RET	FTDMC_getEPData
 	FTDM_ULONG_PTR			pnCount
 )
 {
-	FTDM_RET						nRet;
-	FTDM_REQ_GET_EP_DATA_PARAMS		xReq;
-	FTDM_RESP_GET_EP_DATA_PARAMS	xResp;
+	FTDM_RET							nRet;
+	FTDM_ULONG							nReqSize = 0;
+	FTDM_REQ_GET_EP_DATA_PARAMS_PTR		pReq = NULL;
+	FTDM_ULONG							nRespSize = 0;
+	FTDM_RESP_GET_EP_DATA_PARAMS_PTR	pResp = NULL;
 
 	if ((hClient == NULL) || (hClient->hSock == 0))
 	{
 		return	FTDM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-	xReq.xCmd		=	FTDM_CMD_GET_EP_DATA;
-	xReq.nLen		=	sizeof(xReq) + sizeof(FTDM_EP_ID) * nEPIDCount;
-	xReq.nBeginTime	=	nBeginTime;
-	xReq.nEndTime	=	nEndTime;
-	xReq.nCount		=	nMaxCount;
-	xReq.nEPIDCount	=	nEPIDCount;
+	nReqSize = sizeof(FTDM_REQ_GET_EP_DATA_PARAMS) + sizeof(FTDM_EP_ID) * nEPIDCount;
 
-	memcpy(xReq.pEPID,	pEPID, sizeof(FTDM_EP_ID) * nEPIDCount) ;
+	pReq = (FTDM_REQ_GET_EP_DATA_PARAMS_PTR)malloc(nReqSize);
+	if (pReq == NULL)
+	{
+		CALL_TRACE();
+		return	FTDM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	nRespSize = sizeof(FTDM_RESP_GET_EP_DATA_PARAMS) + sizeof(FTDM_EP_DATA) * nMaxCount;
+	pResp = (FTDM_RESP_GET_EP_DATA_PARAMS_PTR)malloc(nRespSize);
+	if (pResp == NULL)
+	{
+		CALL_TRACE();
+		free(pReq);
+		return	FTDM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pReq->xCmd		=	FTDM_CMD_GET_EP_DATA;
+	pReq->nLen		=	nReqSize;
+	pReq->nBeginTime=	nBeginTime;
+	pReq->nEndTime	=	nEndTime;
+	pReq->nCount	=	nMaxCount;
+	pReq->nEPIDCount=	nEPIDCount;
+
+	memcpy(pReq->pEPID,	pEPID, sizeof(FTDM_EP_ID) * nEPIDCount) ;
 
 	nRet = FTDMC_request(
 				hClient, 
-				(FTDM_VOID_PTR)&xReq, 
-				sizeof(xReq), 
-				(FTDM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				(FTDM_VOID_PTR)pReq, 
+				nReqSize, 
+				(FTDM_VOID_PTR)pResp, 
+				nRespSize);
 	if (nRet != FTDM_RET_OK)
 	{
+		CALL_TRACE();
+		free(pReq);
+		free(pResp);
 		return	FTDM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTDM_RET_OK)
+	nRet = pResp->nRet;
+
+	if (pResp->nRet == FTDM_RET_OK)
 	{
 		FTDM_INT	i;
 
-		for( i = 0 ; i < xResp.nCount ; i++)
+		for( i = 0 ; i < pResp->nCount ; i++)
 		{
-			memcpy(&pData[i], &xResp.pData[i], sizeof(FTDM_EP_DATA));
+			memcpy(&pData[i], &pResp->pData[i], sizeof(FTDM_EP_DATA));
 		}
 
-		*pnCount = xResp.nCount;
+		*pnCount = pResp->nCount;
 	}
 
-	return	xResp.nRet;
+	free(pReq);
+	free(pResp);
+
+	return	nRet;
 }
 
 /*****************************************************************
@@ -697,19 +725,15 @@ FTDM_RET FTDMC_request
 	nTimeout = hClient->nTimeout;
 	while(--nTimeout > 0)
 	{
-		int	nLen = recv(hClient->hSock, pResp, nRespLen, MSG_WAITALL);
-		if (nLen < 0)
+		int	nLen = recv(hClient->hSock, pResp, nRespLen, MSG_DONTWAIT);
+		if (nLen > 0)
 		{
-			return	FTDM_RET_ERROR;	
-		}
-		else if (nLen > 0)
-		{
-			break;	
+			return	FTDM_RET_OK;	
 		}
 
 		usleep(1000);
 	}
 
-	return	FTDM_RET_OK;	
+	return	FTDM_RET_COMM_TIMEOUT;	
 }
 

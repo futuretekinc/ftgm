@@ -287,7 +287,8 @@ FTDM_RET	FTDM_getEPData
 	FTDM_ULONG_PTR		pCount 
 )
 {
-	return	FTDM_DBIF_getEPData(pEPID, nEPIDCount, nBeginTime, nEndTime, pEPData, pCount);
+	CALL_TRACE();
+	return	FTDM_DBIF_getEPData(pEPID, nEPIDCount, nBeginTime, nEndTime, pEPData, nMaxCount, pCount);
 }
 
 FTDM_RET	FTDM_removeEPData

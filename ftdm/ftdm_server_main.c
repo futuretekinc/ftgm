@@ -112,6 +112,7 @@ FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
 	{
 		int	nLen;
 
+		printf("Waiting for Next Packet\n");
 		nLen = recv(pSession->hSocket, pReq, sizeof(pSession->pReqBuff), 0);
 		if (nLen == 0)
 		{
@@ -130,7 +131,8 @@ FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
 			pResp->nLen = sizeof(FTDM_RESP_PARAMS);
 		}
 
-		nLen = send(pSession->hSocket, pResp, pResp->nLen, 0);
+		printf("send(hSocket, pResp, %d, 0)\n", pResp->nLen);
+		nLen = send(pSession->hSocket, pResp, pResp->nLen, MSG_DONTWAIT);
 		if (nLen < 0)
 		{
 			ERROR("send failed[%d]\n", -nLen);	

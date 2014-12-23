@@ -856,26 +856,31 @@ static int _FTDM_DBIF_CB_getEPData(void *pData, int nArgc, char **pArgv, char **
 
 	if (nArgc != 0)
 	{
-		if (strcmp(*pColName,"TIME") == 0)
+		FTDM_INT	i;
+		for(i = 0 ; i < nArgc ; i++)
 		{
-			pParams->nCount++;
-			if (pParams->nCount <= pParams->nMaxCount)
+			printf("%s : %s\n", pColName[i], pArgv[i]);
+			if (strcmp(pColName[i],"TIME") == 0)
 			{
-				pParams->pEPData[pParams->nCount-1].nTime = atoi(pArgv[0]);
+				pParams->nCount++;
+				if (pParams->nCount <= pParams->nMaxCount)
+				{
+					pParams->pEPData[pParams->nCount-1].nTime = atoi(pArgv[i]);
+				}
 			}
-		}
-		else if (strcmp(*pColName, "EPID") == 0)
-		{
-			if (pParams->nCount <= pParams->nMaxCount)
+			else if (strcmp(pColName[i], "EPID") == 0)
 			{
-				pParams->pEPData[pParams->nCount-1].xEPID = atoi(pArgv[0]);
+				if (pParams->nCount <= pParams->nMaxCount)
+				{
+					pParams->pEPData[pParams->nCount-1].xEPID = atoi(pArgv[i]);
+				}
 			}
-		}
-		else if (strcmp(*pColName, "VALUE") == 0)
-		{
-			if (pParams->nCount <= pParams->nMaxCount)
+			else if (strcmp(pColName[i], "VALUE") == 0)
 			{
-				pParams->pEPData[pParams->nCount-1].nValue = atoi(pArgv[0]);
+				if (pParams->nCount <= pParams->nMaxCount)
+				{
+					pParams->pEPData[pParams->nCount-1].nValue = atoi(pArgv[i]);
+				}
 			}
 		}
 	}
@@ -890,6 +895,7 @@ FTDM_RET	FTDM_DBIF_getEPData
 	FTDM_ULONG				xBeginTime,
 	FTDM_ULONG				xEndTime,
 	FTDM_EP_DATA_PTR		pEPData,
+	FTDM_ULONG				nMaxCount,
 	FTDM_ULONG_PTR			pCount
 )
 {
@@ -912,7 +918,7 @@ FTDM_RET	FTDM_DBIF_getEPData
 		{
 			if (i == 0)
 			{
-				nSQLLen += sprintf(&pSQL[nSQLLen], "EPID == %lu ", pEPID[i]);
+				nSQLLen += sprintf(&pSQL[nSQLLen], "EPID == 1 ", pEPID[i]);
 			}
 			else
 			{
@@ -950,8 +956,9 @@ FTDM_RET	FTDM_DBIF_getEPData
 		nSQLLen += sprintf(&pSQL[nSQLLen], "TIME <= %lu ", xEndTime);
 	}
 
+	printf("%s\n", pSQL);
 	xParams.pEPData = pEPData;
-	xParams.nMaxCount = *pCount;
+	xParams.nMaxCount = nMaxCount;
 	xParams.nCount = 0;
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_getEPData, &xParams, &pErrMsg);
 	if (nRet != SQLITE_OK)
