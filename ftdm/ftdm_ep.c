@@ -273,7 +273,10 @@ FTDM_RET	FTDM_appendEPData
 	FTDM_ULONG 			nValue
 )
 {
-	return	FTDM_DBIF_appendEPData(nTime, xEPID, nValue);
+	return	FTDM_DBIF_appendEPData(
+				nTime, 
+				xEPID, 
+				nValue);
 }
 
 FTDM_RET	FTDM_getEPData
@@ -288,7 +291,14 @@ FTDM_RET	FTDM_getEPData
 )
 {
 	CALL_TRACE();
-	return	FTDM_DBIF_getEPData(pEPID, nEPIDCount, nBeginTime, nEndTime, pEPData, nMaxCount, pCount);
+	return	FTDM_DBIF_getEPData(
+				pEPID, 
+				nEPIDCount, 
+				nBeginTime, 
+				nEndTime, 
+				pEPData, 
+				nMaxCount, 
+				pCount);
 }
 
 FTDM_RET	FTDM_removeEPData
@@ -300,6 +310,11 @@ FTDM_RET	FTDM_removeEPData
 	FTDM_ULONG			nCount
 ) 
 {
-	return	FTDM_DBIF_removeEPData(pEPID, nEPIDCount, nBeginTime, nEndTime, nCount);
+	return	FTDM_DBIF_removeEPData(
+				pEPID, 
+				nEPIDCount, 
+				nBeginTime, 
+				nEndTime, 
+				nCount);
 }
 

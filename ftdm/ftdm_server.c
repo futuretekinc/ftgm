@@ -3,13 +3,6 @@
 #include "ftdm_params.h"
 #include "ftdm_server.h"
 
-FTDM_VOID	FTDMS_dumpPacket
-(
-	FTDM_CHAR_PTR	pName,
-	FTDM_BYTE_PTR	pPacket,
-	FTDM_INT		nLen
-);
-
 typedef	FTDM_RET	(*FTDM_SERVICE_CALLBACK)(FTDM_REQ_PARAMS_PTR, FTDM_RESP_PARAMS_PTR);
 typedef struct
 {
@@ -95,7 +88,7 @@ FTDM_RET	FTDMS_destroyDevice
 
 FTDM_RET	FTDMS_getDeviceCount
 (
- 	FTDM_REQ_GET_DEVICE_COUNT_PARAMS_PTR		pReq,
+ 	FTDM_REQ_GET_DEVICE_COUNT_PARAMS_PTR	pReq,
 	FTDM_RESP_GET_DEVICE_COUNT_PARAMS_PTR	pResp
 )
 {
@@ -181,7 +174,10 @@ FTDM_RET	FTDMS_getDeviceLocation
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nLocationLen = FTDM_DEVICE_LOCATION_LEN;
-	pResp->nRet = FTDM_getDeviceLocation(pReq->pDID, pResp->pLocation, pResp->nLocationLen);
+	pResp->nRet = FTDM_getDeviceLocation(
+					pReq->pDID, 
+					pResp->pLocation, 
+					pResp->nLocationLen);
 
 	return	pResp->nRet;
 }
@@ -194,7 +190,9 @@ FTDM_RET	FTDMS_setDeviceLocation
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_setDeviceLocation(pReq->pDID, pReq->pLocation);
+	pResp->nRet = FTDM_setDeviceLocation(
+					pReq->pDID, 
+					pReq->pLocation);
 
 	return	pResp->nRet;
 }
@@ -207,7 +205,9 @@ FTDM_RET	FTDMS_createEP
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_createEP(pReq->xInfo.xEPID, &pReq->xInfo);
+	pResp->nRet = FTDM_createEP(
+					pReq->xInfo.xEPID, 
+					&pReq->xInfo);
 
 	return	pResp->nRet;
 }
@@ -246,7 +246,9 @@ FTDM_RET	FTDMS_getEPInfo
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_getEPInfo(pReq->xEPID, &pResp->xInfo);
+	pResp->nRet = FTDM_getEPInfo(
+					pReq->xEPID, 
+					&pResp->xInfo);
 
 	return	pResp->nRet;
 }
@@ -259,7 +261,9 @@ FTDM_RET	FTDMS_getEPInfoByIndex
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_getEPInfoByIndex(pReq->nIndex, &pResp->xInfo);
+	pResp->nRet = FTDM_getEPInfoByIndex(
+					pReq->nIndex, 
+					&pResp->xInfo);
 
 	return	pResp->nRet;
 }
@@ -272,7 +276,10 @@ FTDM_RET	FTDMS_appendEPData
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_appendEPData(pReq->xEPID, pReq->nTime, pReq->nValue);
+	pResp->nRet = FTDM_appendEPData(
+					pReq->xEPID, 
+					pReq->nTime, 
+					pReq->nValue);
 
 	return	pResp->nRet;
 }
@@ -283,11 +290,16 @@ FTDM_RET	FTDMS_getEPData
 	FTDM_RESP_GET_EP_DATA_PARAMS_PTR	pResp
 )
 {
-	printf("CMD : %08lx, nCount : %d\n", pReq->xCmd, pReq->nCount);
 	pResp->xCmd = pReq->xCmd;
 	pResp->nCount = pReq->nCount;
-	pResp->nRet = FTDM_getEPData(pReq->pEPID, pReq->nEPIDCount, pReq->nBeginTime, pReq->nEndTime,
-			 pResp->pData, pReq->nCount, &pResp->nCount);
+	pResp->nRet = FTDM_getEPData(
+					pReq->pEPID, 
+					pReq->nEPIDCount, 
+					pReq->nBeginTime, 
+					pReq->nEndTime, 
+					pResp->pData, 
+					pReq->nCount, 
+					&pResp->nCount);
 
 	if (pResp->nRet == FTDM_RET_OK)
 	{
@@ -297,44 +309,24 @@ FTDM_RET	FTDMS_getEPData
 	{
 		pResp->nLen = sizeof(FTDM_RESP_GET_EP_DATA_PARAMS);
 	}
-	printf("pResp->nCount = %d, pResp->nLen = %d\n", pResp->nCount, pResp->nLen);
 	return	pResp->nRet;
 }
 
 FTDM_RET 	FTDMS_removeEPData
 (
- 	FTDM_REQ_REMOVE_EP_DATA_PARAMS_PTR		pReq,
+ 	FTDM_REQ_REMOVE_EP_DATA_PARAMS_PTR	pReq,
 	FTDM_RESP_REMOVE_EP_DATA_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_removeEPData(pReq->pEPID, pReq->nEPIDCount, pReq->nBeginTime, pReq->nEndTime, 0);
+	pResp->nRet = FTDM_removeEPData(
+					pReq->pEPID, 
+					pReq->nEPIDCount, 
+					pReq->nBeginTime, 
+					pReq->nEndTime, 
+					0);
 
 	return	pResp->nRet;
 }
 
-FTDM_VOID	FTDMS_dumpPacket
-(
-	FTDM_CHAR_PTR	pName,
-	FTDM_BYTE_PTR	pPacket,
-	FTDM_INT		nLen
-)
-{
-	FTDM_INT	i;
-
-	printf("NAME : %s\n", pName);
-	for(i = 0 ; i < nLen ; i++)
-	{
-		printf("%02x ", pPacket[i]);	
-		if ((i+1) % 8 == 0)
-		{
-			printf("\n");	
-		}
-	}
-
-	if (i % 8 != 0)
-	{
-		printf("\n");	
-	}
-}
