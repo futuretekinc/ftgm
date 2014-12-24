@@ -11,13 +11,31 @@
 #define		FTDMC_MAX_LINE	2048
 #define		FTDMC_MAX_ARGS	16
 
-#define		FTDMC_SUB_CMD_HELP	1
-#define		FTDMC_SUB_CMD_ADD	2
-#define		FTDMC_SUB_CMD_DEL	3
-#define		FTDMC_SUB_CMD_LIST	4
-#define		FTDMC_SUB_CMD_DATA	5
+typedef	enum	_FTDMC_SUB_CMD
+{ 
+	FTDMC_SUB_CMD_UNKNOWN = 0,
+	FTDMC_SUB_CMD_HELP,
+	FTDMC_SUB_CMD_SHORT_HELP,
+	FTDMC_SUB_CMD_ADD,
+	FTDMC_SUB_CMD_DEL,
+	FTDMC_SUB_CMD_COUNT,
+	FTDMC_SUB_CMD_LIST,
+	FTDMC_SUB_CMD_GET,
+	FTDMC_SUB_CMD_DATA,
+	FTDMC_SUB_CMD_CONNECT,
+	FTDMC_SUB_CMD_DISCONNECT,
+	FTDMC_SUB_CMD_RUN
 
-static FTDM_RET	_parseLine(FTDM_CHAR_PTR pLine, FTDM_CHAR_PTR pArgv[], FTDM_INT nMaxArgs, FTDM_INT_PTR pArgc);
+}	FTDMC_SUB_CMD, _PTR_ FTDMC_SUB_CMD_PTR;
+
+static FTDM_RET	_parseLine
+(
+	FTDM_CHAR_PTR 	pLine, 
+	FTDM_CHAR_PTR 	pArgv[], 
+	FTDM_INT 		nMaxArgs, 
+	FTDM_INT_PTR 	pArgc
+);
+
 static FTDM_RET	_connect(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[]);
 static FTDM_RET	_disconnect(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[]);
 static FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[]);
@@ -101,53 +119,115 @@ FTDM_RET	_parseLine(FTDM_CHAR_PTR pLine, FTDM_CHAR_PTR pArgv[], FTDM_INT nMaxArg
 
 FTDM_RET	_connect(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 {
-	in_addr_t	xAddr = 0;
-	FTDM_USHORT	nPort = 0;
+	in_addr_t		xAddr	= inet_addr("127.0.0.1");
+	FTDM_USHORT		nPort 	= 8888;
+	FTDMC_SUB_CMD	xCmd  	= FTDMC_SUB_CMD_CONNECT;
 
-	switch(nArgc)
+	if (nArgc >= 2)
 	{
-	case	1:
+		if (strcmp(pArgv[1], "help") == 0)
 		{
-			xAddr = inet_addr("127.0.0.1");
-			nPort = 8888;
+			xCmd = FTDMC_SUB_CMD_HELP;
+		}
+		else if (strcmp(pArgv[1], "short_help") == 0)
+		{
+			xCmd = FTDMC_SUB_CMD_SHORT_HELP;
+		}
+
+		switch(nArgc)
+		{
+		case	3:
+			{
+				nPort = atoi(pArgv[2]);
+			}
+
+		case	2:
+			{
+				xAddr = inet_addr(pArgv[1]);
+				if (xAddr == 0)
+				{
+					MESSAGE("Usage : %s [ip address] [port]\n", pArgv[0]);
+					xCmd = FTDMC_SUB_CMD_SHORT_HELP;
+				}
+			}
+		}
+	}
+
+	switch(xCmd)
+	{
+	case	FTDMC_SUB_CMD_CONNECT:
+		{
+			if (FTDMC_connect(xAddr, nPort, &_hClient) != FTDM_RET_OK)
+			{
+				perror("connect failed. Error");
+				return	FTDM_RET_ERROR;	
+			}
+			MESSAGE("Connected\n");
+		}
+		break;
+	
+
+	case	FTDMC_SUB_CMD_SHORT_HELP:
+		{
+			MESSAGE("%-16s [IP] [Port]\n", pArgv[0]);
 		}
 		break;
 
-	case	2:
+	default:
 		{
-			xAddr = inet_addr(pArgv[1]);
-			nPort = 8888;
-		}
-		break;
-
-	case	3:
-		{
-			xAddr = inet_addr(pArgv[1]);
-			nPort = atoi(pArgv[2]);
+			MESSAGE("Usage : %s [IP] [Port]\n", pArgv[0]);
+			MESSAGE("  %-16s Server IP\n", "IP");
+			MESSAGE("  %-16s Service Port\n", "Port");
 		}
 		break;
 	}
-
-	if (xAddr == 0)
-	{
-		printf("Usage : %s [ip address] [port]\n", pArgv[0]);
-		return	FTDM_RET_ERROR;
-	}
-
-	if (FTDMC_connect(xAddr, nPort, &_hClient) != FTDM_RET_OK)
-	{
-		perror("connect failed. Error");
-		return	FTDM_RET_ERROR;	
-	}
-
-	printf("Connected\n");
 
 	return	FTDM_RET_OK;
 }
 
 FTDM_RET	_disconnect(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 {
-	FTDMC_disconnect(_hClient);
+	FTDMC_SUB_CMD	xCmd;
+
+	switch(nArgc)
+	{
+	case	1: xCmd = FTDMC_SUB_CMD_DISCONNECT; break;
+	case	2:
+		{
+			if (strcmp(pArgv[1], "help") == 0)
+			{
+				xCmd = FTDMC_SUB_CMD_HELP;	
+				break;
+			}
+			else if (strcmp(pArgv[1], "short_help") == 0)
+			{
+				xCmd = FTDMC_SUB_CMD_SHORT_HELP;	
+				break;
+			}
+		}
+	default:
+		xCmd = FTDMC_SUB_CMD_UNKNOWN;	
+	}
+
+	switch(xCmd)
+	{
+	case	FTDMC_SUB_CMD_DISCONNECT:	
+		{
+			FTDMC_disconnect(_hClient);
+		}
+		break;
+
+	case	FTDMC_SUB_CMD_SHORT_HELP:
+		{
+			MESSAGE("%-16s\n", pArgv[0]);	
+		}
+		break;
+
+	default:	
+		{
+			MESSAGE("Usage : %s\n", pArgv[0]);
+		}
+	}
 
 	return	FTDM_RET_OK;
 }
@@ -193,11 +273,11 @@ FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 			nRet = FTDMC_createDevice(_hClient, pDID, xType, pURL, pLocation);
 			if (nRet != FTDM_RET_OK)
 			{
-				printf("%s : ERROR - %lx\n", pArgv[0], nRet);
+				ERROR("%s : ERROR - %lx\n", pArgv[0], nRet);
 			}
 			else
 			{
-				printf("%s : The device[%s] has been created successfully.\n", 
+				MESSAGE("%s : The device[%s] has been created successfully.\n", 
 					pArgv[0], pDID);
 			}
 		}
@@ -209,7 +289,7 @@ FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 
 			if (strlen(pArgv[2]) > FTDM_DEVICE_ID_LEN)
 			{
-				printf("%s : ERROR - Invalid argument\n", pArgv[0]);	
+				ERROR("%s : ERROR - Invalid argument\n", pArgv[0]);	
 				bShowUsage = FTDM_BOOL_TRUE;
 				break;
 			}
@@ -225,11 +305,11 @@ FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 				nRet = FTDMC_destroyDevice(_hClient, pDID);
 				if (nRet != FTDM_RET_OK)
 				{
-					printf("%s : ERROR - %lu\n", pArgv[0], nRet);
+					ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 				}
 				else
 				{
-					printf("%s : The device[%s] has been destroied successfully.\n", 
+					TRACE("%s : The device[%s] has been destroied successfully.\n", 
 						pArgv[0], pDID);
 				}
 			}
@@ -240,15 +320,19 @@ FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 				nRet = FTDMC_getDeviceInfo(_hClient, pDID, &xInfo);
 				if (nRet != FTDM_RET_OK)
 				{
-					printf("%s : ERROR - %lu\n", pArgv[0], nRet);
+					ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 				}
 				else
 				{
-					printf("DEVICE INFORMATION\n");
-					printf("      DID : %s\n", xInfo.pDID);
-					printf("     TYPE : %lu\n", xInfo.xType);
-					printf("      URL : %s\n", xInfo.pURL);
-					printf(" LOCATION : %s\n", xInfo.pLocation);
+					MESSAGE("DEVICE INFORMATION\n"\
+							"%16s : %s\n"\
+							"%16s : %lu\n"\
+							"%16s : %s\n"\
+							"%16s : %s\n",
+							"DID", xInfo.pDID,
+							"TYPE", xInfo.xType,
+							"URL", xInfo.pURL,
+							"LOCATION", xInfo.pLocation);
 				}
 			}
 		}
@@ -263,8 +347,10 @@ FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 				nRet = FTDMC_getDeviceCount(_hClient, &nDeviceCount);
 				if (nRet != FTDM_RET_OK)
 				{
-					printf("%s : ERROR - %lu\n", pArgv[0], nRet);
+					ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 				}
+
+				MESSAGE("%32s %8s %16s %16s\n", "DID", "TYPE", "URL", "LOCATION");
 
 				for(i = 0 ; i < nDeviceCount; i++)
 				{
@@ -273,7 +359,7 @@ FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 					nRet = FTDMC_getDeviceInfoByIndex(_hClient, i, &xInfo);
 					if (nRet == FTDM_RET_OK)
 					{
-						printf("%32s %8lu %16s %16s\n", 
+						MESSAGE("%32s %8lu %16s %16s\n", 
 							xInfo.pDID, 
 							xInfo.xType, 
 							xInfo.pURL, 
@@ -289,9 +375,9 @@ FTDM_RET	_device(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 
 	if (bShowUsage)
 	{
-		printf("Usage : %s <cmd> <DID> ...\n", pArgv[0]);
-		printf("    cmd - add, del, info\n");
-		printf("    DID - string for Device ID [Max %d] \n", FTDM_DEVICE_ID_LEN);
+		MESSAGE("Usage : %s <cmd> <DID> ...\n", pArgv[0]);
+		MESSAGE("    cmd - add, del, info\n");
+		MESSAGE("    DID - string for Device ID [Max %d] \n", FTDM_DEVICE_ID_LEN);
 	}
 
 	return	FTDM_RET_OK;
@@ -428,7 +514,7 @@ FTDM_RET	_ep(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 						nRet = FTDMC_createEP(_hClient, &xInfo);
 						if (nRet != FTDM_RET_OK)
 						{
-							printf("%s : ERROR - %lu\n", pArgv[0], nRet);
+							ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 						}
 					}
 					break;
@@ -438,7 +524,7 @@ FTDM_RET	_ep(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 						nRet = FTDMC_destroyEP(_hClient, xEPID);	
 						if (nRet != FTDM_RET_OK)
 						{
-							printf("%s : ERROR - %lu\n", pArgv[0], nRet);
+							ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 						}
 					}
 					break;
@@ -450,7 +536,7 @@ FTDM_RET	_ep(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 						nRet = FTDMC_getEPCount(_hClient, &nCount);
 						if (nRet != FTDM_RET_OK)
 						{
-							printf("%s : ERROR - %lu\n", pArgv[0], nRet);
+							ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 							break;
 						}
 
@@ -461,7 +547,7 @@ FTDM_RET	_ep(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 							nRet = FTDMC_getEPInfoByIndex(_hClient, i, &xInfo);
 							if (nRet == FTDM_RET_OK)
 							{
-								printf("%08lx %08lx %16s %16s %4lu %16s %16s\n",
+								MESSAGE("%08lx %08lx %16s %16s %4lu %16s %16s\n",
 										xInfo.xEPID,
 										xInfo.xType,
 										xInfo.pName,
@@ -482,12 +568,12 @@ FTDM_RET	_ep(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 
 	if (bShowUsage)
 	{
-		printf("Usage : %s <COMMAND> ...\n", pArgv[0]);
-		printf("EndPoint management.\n");
-		printf("COMMANDS:\n");
-		printf("  add <EPID> <Type> [Name] [Unit] [Interval] [DID] [PID]\n");
-		printf("  del <EPID>\n");
-		printf("  list\n");
+		MESSAGE("Usage : %s <COMMAND> ...\n"\
+				"\tEndPoint management.\n"\
+				"COMMANDS:\n"\
+				"\tadd <EPID> <Type> [Name] [Unit] [Interval] [DID] [PID]\n"\
+				"\tdel <EPID>\n"\
+				"\tlist\n", pArgv[0]);
 	}
 
 	return	FTDM_RET_OK;
@@ -497,168 +583,193 @@ FTDM_RET	_data(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 {
 	FTDM_RET		nRet;
 	FTDM_BOOL		bShowUsage = FTDM_BOOL_FALSE;
+	FTDMC_SUB_CMD	xCmd = FTDMC_SUB_CMD_HELP;
 
-	if (nArgc < 2)
+	if (nArgc >= 2)
 	{
-		return	FTDM_RET_INVALID_ARGUMENTS;	
-	}
-
-	if (strcmp(pArgv[1], "add") == 0)
-	{
-		if (nArgc != 5)
+		if (strcmp(pArgv[1], "add") == 0)
 		{
-			bShowUsage = FTDM_BOOL_FALSE;	
+			if (nArgc == 5)
+			{
+				xCmd =FTDMC_SUB_CMD_ADD;
+			}
+		}
+		else if (strcmp(pArgv[1], "del") == 0)
+		{
+			xCmd =FTDMC_SUB_CMD_DEL;
+		}
+		else if (strcmp(pArgv[1], "count") == 0)
+		{
+			xCmd = FTDMC_SUB_CMD_COUNT;
+		}
+		else if (strcmp(pArgv[1], "get") == 0)
+		{
+			xCmd = FTDMC_SUB_CMD_GET;
+		}
+		else if (strcmp(pArgv[1], "short_help") == 0)
+		{
+			xCmd = FTDMC_SUB_CMD_SHORT_HELP;
 		}
 		else
+		{
+			xCmd = FTDMC_SUB_CMD_HELP;
+		}
+	}
+
+	switch(xCmd)
+	{
+	case	FTDMC_SUB_CMD_ADD:
 		{
 			FTDM_EP_ID	xEPID = atoi(pArgv[2]);
 			FTDM_ULONG	nTime = atoi(pArgv[3]);
 			FTDM_ULONG	nValue= atoi(pArgv[4]);
 
 			nRet = FTDMC_appendEPData(_hClient, xEPID, nTime, nValue);
-			
+
 			if (nRet == FTDM_RET_OK)
 			{
-				printf("EndPoint data appending done successfully!\n");	
+				MESSAGE("EndPoint data appending done successfully!\n");	
 			}
 			else
 			{
-				printf("EndPoint data appending failed [ ERROR = %08lx ]\n", nRet);	
-			
+				ERROR("EndPoint data appending failed [ ERROR = %08lx ]\n", nRet);	
+
 			}
 		}
-	}
-	else if (strcmp(pArgv[1], "del") == 0)
-	{
-		FTDM_INT		opt = 0;
-		FTDM_ULONG		nMaxCount=0;
-		FTDM_ULONG		nBeginTime = 0;
-		FTDM_ULONG		nEndTime = 0;
-		FTDM_EP_ID		pEPIDs[32];
-		FTDM_ULONG		nEPIDCount=0;
-
-		optind = 0;
-		while((opt = getopt(nArgc, pArgv, "c: b: e:")) != -1)
+		break;
+	case	FTDMC_SUB_CMD_DEL:
 		{
-			printf("OPT : %c, ARG : %s\n", opt, optarg);
-			switch(opt)
+			FTDM_INT		opt = 0;
+			FTDM_ULONG		nMaxCount=0;
+			FTDM_ULONG		nBeginTime = 0;
+			FTDM_ULONG		nEndTime = 0;
+			FTDM_EP_ID		pEPIDs[32];
+			FTDM_ULONG		nEPIDCount=0;
+
+			optind = 2;
+			while((opt = getopt(nArgc, pArgv, "c: b: e:")) != -1)
 			{
-				case	'c':
-					nMaxCount = atoi(optarg);
-					break;
+				switch(opt)
+				{
+					case	'c':
+						nMaxCount = atoi(optarg);
+						break;
 
-				case	'b':
-					nBeginTime = atoi(optarg);
-					break;
+					case	'b':
+						nBeginTime = atoi(optarg);
+						break;
 
-				case	'e':
-					nEndTime = atoi(optarg);
+					case	'e':
+						nEndTime = atoi(optarg);
+				}
+			}
+
+			while((nEPIDCount < 32) && (optind < nArgc))
+			{
+				pEPIDs[nEPIDCount++] = atoi(pArgv[optind++]);	
+			}
+
+			nRet = FTDMC_removeEPData(_hClient, pEPIDs, nEPIDCount, nBeginTime, nEndTime, nMaxCount);
+			if (nRet == FTDM_RET_OK)
+			{
+				MESSAGE("EndPoint data deleted successfully!\n");	
+			}
+			else
+			{
+				ERROR("EndPoint data deleting failed [ ERROR = %08lx ]\n", nRet);	
 			}
 		}
+		break;
 
-		while((nEPIDCount < 32) && (optind < nArgc))
+	case	FTDMC_SUB_CMD_GET:
 		{
-			pEPIDs[nEPIDCount++] = pArgv[optind++];	
-		}
+			FTDM_INT		opt = 0;
+			FTDM_ULONG		nBeginTime = 0;
+			FTDM_ULONG		nEndTime = 0;
+			static FTDM_EP_ID		pEPIDs[32];
+			FTDM_ULONG		nEPIDCount=0;
+			FTDM_EP_DATA_PTR	pEPData;	
+			FTDM_ULONG		nMaxCount=100;
+			FTDM_ULONG		nCount=0;
 
-		nRet = FTDMC_removeEPData(_hClient, pEPIDs, nEPIDCount, nBeginTime, nEndTime, nMaxCount);
-		if (nRet == FTDM_RET_OK)
-		{
-			printf("EndPoint data deleted successfully!\n");	
-		}
-		else
-		{
-			printf("EndPoint data deleting failed [ ERROR = %08lx ]\n", nRet);	
-		}
-	}
-	else if (strcmp(pArgv[1], "count") == 0)
-	{
-	
-	}
-	else if (strcmp(pArgv[1], "get") == 0)
-	{
-		FTDM_INT		opt = 0;
-		FTDM_ULONG		nBeginTime = 0;
-		FTDM_ULONG		nEndTime = 0;
-		static FTDM_EP_ID		pEPIDs[32];
-		FTDM_ULONG		nEPIDCount=0;
-		FTDM_EP_DATA_PTR	pEPData;	
-		FTDM_ULONG		nMaxCount=100;
-		FTDM_ULONG		nCount=0;
-
-		optind = 0;
-		while((opt = getopt(nArgc, pArgv, "c:b:e:")) != -1)
-		{
-			switch(opt)
+			optind = 2;
+			while((opt = getopt(nArgc, pArgv, "c:b:e:")) != -1)
 			{
-				case	'c':
-					{
-						FTDM_ULONG	nNewMax = 	atoi(optarg);
-						
-						if (nNewMax < nMaxCount)
+				switch(opt)
+				{
+					case	'c':
 						{
-							nMaxCount = nNewMax;	
+							FTDM_ULONG	nNewMax = 	atoi(optarg);
+
+							if (nNewMax < nMaxCount)
+							{
+								nMaxCount = nNewMax;	
+							}
 						}
-					}
-					break;
+						break;
 
-				case	'b':
-					nBeginTime = atoi(optarg);
-					break;
+					case	'b':
+						nBeginTime = atoi(optarg);
+						break;
 
-				case	'e':
-					nEndTime = atoi(optarg);
+					case	'e':
+						nEndTime = atoi(optarg);
+				}
 			}
-		}
 
-		
-		while((nEPIDCount < 32) && (optind < nArgc))
-		{
-			pEPIDs[nEPIDCount++] = pArgv[optind++];	
-		}
 
-		pEPData = (FTDM_EP_DATA_PTR)malloc(sizeof(FTDM_EP_DATA) * nMaxCount);
-		if (pEPData == NULL)
-		{
-			printf("Not enough memory!\n");
-			return	FTDM_RET_NOT_ENOUGH_MEMORY;		
-		}
+			while((nEPIDCount < 32) && (optind < nArgc))
+			{
+				pEPIDs[nEPIDCount++] = atoi(pArgv[optind++]);
+			}
 
-		nRet = FTDMC_getEPData(_hClient, 
+			pEPData = (FTDM_EP_DATA_PTR)malloc(sizeof(FTDM_EP_DATA) * nMaxCount);
+			if (pEPData == NULL)
+			{
+				MESSAGE("System not enough memory!\n");
+				return	FTDM_RET_NOT_ENOUGH_MEMORY;		
+			}
+
+			nRet = FTDMC_getEPData(_hClient, 
 					pEPIDs, nEPIDCount, 
 					nBeginTime, nEndTime, 
 					pEPData, nMaxCount, &nCount);
-		if (nRet == FTDM_RET_OK)
-		{
-			FTDM_INT	i;
-
-			for(i = 0 ; i < nCount ; i++)
+			if (nRet == FTDM_RET_OK)
 			{
-				printf("%08lx, %d, %d\n", pEPData[i].xEPID, pEPData[i].nTime, pEPData[i].nValue);	
+				FTDM_INT	i;
+
+				for(i = 0 ; i < nCount ; i++)
+				{
+					MESSAGE("%08lx, %d, %d\n", pEPData[i].xEPID, pEPData[i].nTime, pEPData[i].nValue);	
+				}
+				MESSAGE("EndPoint data load completed!\n");	
 			}
-			printf("EndPoint data load completed!\n");	
+			else
+			{
+				MESSAGE("EndPoint data loading failed [ ERROR = %08lx ]\n", nRet);	
+			}
+
+			free(pEPData);
 		}
-		else
+		break;
+
+	case	FTDMC_SUB_CMD_SHORT_HELP:
 		{
-			printf("EndPoint data loading failed [ ERROR = %08lx ]\n", nRet);	
+			MESSAGE("%-16s <COMMAND>\n", pArgv[0]);
 		}
+		break;
 
-		free(pEPData);
-	}
-	else
-	{
-		bShowUsage = FTDM_BOOL_TRUE;	
-	}
-
-	if (bShowUsage)
-	{
-		printf("Usage : %s <COMMAND> ...\n", pArgv[0]);
-		printf("EndPoint data management.\n");
-		printf("COMMANDS:\n");
-		printf("  add <EPID> <Time> <Value>\n");
-		printf("  del [-c MaxCount] [-b BeginTime] [-e EndTime] [EPID ...]\n");
-		printf("  count [-b BeginTime] [-e EndTime] [EPID ...]\n");
-		printf("  get [-b BeginTime] [-e EndTime] [EPID ...]\n");
+	case	FTDMC_SUB_CMD_HELP:
+	default:
+		{
+			MESSAGE("Usage : %s <COMMAND> ...\n"\
+					"\tEndPoint data management.\n"\
+					"COMMANDS:\n"\
+					"\tadd <EPID> <Time> <Value>\n"\
+					"\tdel [-c MaxCount] [-b BeginTime] [-e EndTime] [EPID ...]\n"\
+					"\tcount [-b BeginTime] [-e EndTime] [EPID ...]\n"\
+					"\tget [-b BeginTime] [-e EndTime] [EPID ...]\n", pArgv[0]);
+		}
 	}
 
 	return	FTDM_RET_OK;
@@ -669,29 +780,29 @@ FTDM_RET	_help(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 
 	switch(nArgc)
 	{
-	case	1:
-		{
-			FTDMC_CMD_PTR	pCmd = _cmds; 
-			FTDM_CHAR_PTR	pArgv[2] = { NULL, "short_help"};
+		case	1:
+			{
+				FTDMC_CMD_PTR	pCmd = _cmds; 
+				FTDM_CHAR_PTR	pArgv[2] = { NULL, "short_help"};
 
-			while(pCmd->pString != NULL)
-			{
-				pArgv[0] = pCmd->pString;
-				pCmd->function(2, pArgv);
-				pCmd++;	
+				while(pCmd->pString != NULL)
+				{
+					pArgv[0] = pCmd->pString;
+					pCmd->function(2, pArgv);
+					pCmd++;	
+				}
 			}
-		}
-		break;
+			break;
 
-	case	2:
-		{
-			if (strcmp(pArgv[1], "short_help") == 0)
+		case	2:
 			{
-				printf("%s - Help\n", pArgv[0]) ;
-			}
-			else if (strcmp(pArgv[1], "help") == 0)
-			{
-				printf("%s - Help\n", pArgv[0]);
+				if (strcmp(pArgv[1], "short_help") == 0)
+				{
+					MESSAGE("%s - Help\n", pArgv[0]) ;
+				}
+				else if (strcmp(pArgv[1], "help") == 0)
+				{
+					MESSAGE("%s - Help\n", pArgv[0]);
 			}
 			else
 			{
@@ -719,9 +830,28 @@ FTDM_RET	_help(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 
 FTDM_RET	_quit(FTDM_INT nArgc, FTDM_CHAR_PTR pArgv[])
 {
+	switch (nArgc)
+	{
+	case	1:
+		{
+			FTDMC_disconnect(_hClient);
+		}
+		break;
 
-	FTDMC_disconnect(_hClient);
+	default:
+		{
+			if (strcmp(pArgv[1], "short_help") == 0)
+			{
+				MESSAGE("%-16s Exit the program.\n", pArgv[0]);	
+			}
+			else 
+			{
+				MESSAGE("Usage : %s\n"\
+						"\tExit the program.\n", pArgv[0]);
+			}
+		}
+	}	
 
-	return	FTDM_RET_ERROR;
+	return	FTDM_RET_OK;
 }
 

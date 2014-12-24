@@ -290,7 +290,6 @@ FTDM_RET	FTDM_getEPData
 	FTDM_ULONG_PTR		pCount 
 )
 {
-	CALL_TRACE();
 	return	FTDM_DBIF_getEPData(
 				pEPID, 
 				nEPIDCount, 

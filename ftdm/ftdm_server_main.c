@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -15,9 +16,10 @@
 
 typedef	struct
 {
-	FTDM_INT	hSocket;
-	FTDM_BYTE	pReqBuff[FTDM_PACKET_LEN];
-	FTDM_BYTE	pRespBuff[FTDM_PACKET_LEN];
+	FTDM_INT			hSocket;
+	struct sockaddr_in	xPeer;
+	FTDM_BYTE			pReqBuff[FTDM_PACKET_LEN];
+	FTDM_BYTE			pRespBuff[FTDM_PACKET_LEN];
 }	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
 
 static FTDM_VOID_PTR 	FTDMS_serviceHandler(FTDM_VOID_PTR pData);
@@ -28,12 +30,20 @@ int main(int argc, char *argv[])
 	FTDM_INT	nOpt;
 	FTDM_USHORT	nPort = FTDM_SERVICE_PORT;
 
-	while((nOpt = getopt(argc, argv, "P:")) != -1)
+	while((nOpt = getopt(argc, argv, "P:SV")) != -1)
 	{
 		switch(nOpt)
 		{
 		case	'P':
 			nPort = atoi(optarg);
+			break;
+
+		case	'S':
+			setPrintMode(0);
+			break;
+
+		case	'V':
+			setPrintMode(2);
 			break;
 
 		default:
@@ -61,9 +71,9 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 		return	FTDM_RET_ERROR;
 	}
 
-	xServer.sin_family = AF_INET;
+	xServer.sin_family 		= AF_INET;
 	xServer.sin_addr.s_addr = INADDR_ANY;
-	xServer.sin_port = htons( nPort );
+	xServer.sin_port 		= htons( nPort );
 
 	nRet = bind( hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
 	if (nRet < 0)
@@ -74,7 +84,7 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 
 	listen(hSocket, 3);
 
-	puts("Waiting for incomint connections ...\n");
+	MESSAGE("Waiting for incoming connections ...\n");
 
 	while(1)
 	{
@@ -89,11 +99,20 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 			if (pSession == NULL)
 			{
 				ERROR("System memory is not enough!\n");
+				close(hClient);
+				TRACE("The session(%08x) was closed.\n", hClient);
 			}
 			else
 			{
-				TRACE("New session connected[hSession : %08x]\n", hClient);
+				TRACE("The new session has beed connected\n"\
+					  "HANDLE : %08lx\n"\
+					  "  PEER : %s:%d\n", 
+					  hClient, 
+					  inet_ntoa(xClient.sin_addr), 
+					  ntohs(xClient.sin_port));
+
 				pSession->hSocket = hClient;
+				memcpy(&pSession->xPeer, &xClient, sizeof(xClient));
 				pthread_create(&xPthread, NULL, FTDMS_serviceHandler, pSession);
 			}
 		}
@@ -112,10 +131,11 @@ FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
 	{
 		int	nLen;
 
-		printf("Waiting for Next Packet\n");
 		nLen = recv(pSession->hSocket, pReq, sizeof(pSession->pReqBuff), 0);
+		TRACE("recv(%08x, pReq, %lu, MSG_DONTWAIT)\n", pSession->hSocket, nLen);
 		if (nLen == 0)
 		{
+			TRACE("The connection is terminated.\n");
 			break;	
 		}
 		else if (nLen < 0)
@@ -131,7 +151,7 @@ FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
 			pResp->nLen = sizeof(FTDM_RESP_PARAMS);
 		}
 
-		printf("send(hSocket, pResp, %d, 0)\n", pResp->nLen);
+		TRACE("send(%08x, pResp, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->nLen);
 		nLen = send(pSession->hSocket, pResp, pResp->nLen, MSG_DONTWAIT);
 		if (nLen < 0)
 		{
@@ -140,8 +160,8 @@ FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
 		}
 	}
 
-	TRACE("Session Closed[hSession : %08x]\n", pSession->hSocket);
 	close(pSession->hSocket);
+	TRACE("The session(%08x) was closed\n", pSession->hSocket);
 
 	return	0;
 }

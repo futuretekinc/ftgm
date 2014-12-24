@@ -3,10 +3,16 @@
 
 #include <stdio.h>
 
-#define ERROR(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
-#define TRACE(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
+#define	MSG_NORMAL		(1 << 0)	
+#define	MSG_TRACE		(1 << 1)
+#define	MSG_ERROR		(1 << 2)
+
+#define	MSG_ALL			(MSG_NORMAL | MSG_TRACE | MSG_ERROR)
+
+void setPrintMode(unsigned long	nMode);
+void printOut(unsigned long nLevel, char *format, ...);
+
 #define	ASSERT(...)
-#define CALL_TRACE() fprintf(stderr, "%s[%d]\n" , __func__, __LINE__)
 
 FTDM_VOID	FTDM_dumpPacket
 (
@@ -15,4 +21,8 @@ FTDM_VOID	FTDM_dumpPacket
 	FTDM_INT		nLen
 );
 
+#define MESSAGE(format, ...) printOut(MSG_NORMAL, format, ## __VA_ARGS__)
+
+#define	TRACE(format, ...) printOut(MSG_TRACE, format, ## __VA_ARGS__)
+#define	ERROR(format, ...) printOut(MSG_ERROR, format, ## __VA_ARGS__)
 #endif

@@ -12,12 +12,12 @@ CONSOLE_OBJS=$(CONSOLE_SRCS:.c=.o)
 CONSOLE_LDFLAGS=-L/usr/local/lib -L. -lconfig  -lftdm -lsqlite3 -lpthread 
 
 SERVER=ftdm_server
-SERVER_SRCS=ftdm_server_main.c ftdm_server.c sqlite_if.c
+SERVER_SRCS=ftdm_server_main.c ftdm_server.c sqlite_if.c ftdm_debug.c
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
 SERVER_LDFLAGS=-L/usr/local/lib -L. -lconfig  -lftdm -lsqlite3 -lpthread 
 
 CLIENT=ftdm_client
-CLIENT_SRCS=ftdmc_main.c  ftdm_client.c
+CLIENT_SRCS=ftdmc_main.c  ftdm_client.c ftdm_debug.c
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS= -L/usr/local/lib -L. -lconfig  -lsqlite3 -lpthread -lftdmc
 

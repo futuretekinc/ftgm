@@ -494,7 +494,6 @@ static int _FTDM_DBIF_CB_getEPList(void *pData, int nArgc, char **pArgv, char **
 
 		for(i = 0 ; i < nArgc ; i++)
 		{
-			printf("%s : %s\n", pColName[i], pArgv[i]);
 			if (strcmp(pColName[i], "EPID") == 0)
 			{
 				pParams->nCount++;
@@ -859,7 +858,6 @@ static int _FTDM_DBIF_CB_getEPData(void *pData, int nArgc, char **pArgv, char **
 		FTDM_INT	i;
 		for(i = 0 ; i < nArgc ; i++)
 		{
-			printf("%s : %s\n", pColName[i], pArgv[i]);
 			if (strcmp(pColName[i],"TIME") == 0)
 			{
 				pParams->nCount++;
@@ -956,7 +954,6 @@ FTDM_RET	FTDM_DBIF_getEPData
 		nSQLLen += sprintf(&pSQL[nSQLLen], "TIME <= %lu ", xEndTime);
 	}
 
-	printf("%s\n", pSQL);
 	xParams.pEPData = pEPData;
 	xParams.nMaxCount = nMaxCount;
 	xParams.nCount = 0;
@@ -1040,6 +1037,7 @@ FTDM_RET	FTDM_DBIF_removeEPData
 	}
 
 
+	MESSAGE("SQL : %s\n", pSQL);
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{

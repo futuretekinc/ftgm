@@ -60,7 +60,6 @@ FTDM_RET	FTDMS_createDevice
 	FTDM_RESP_CREATE_DEVICE_PARAMS_PTR	pResp
 )
 {
-	CALL_TRACE();
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nRet = FTDM_createDevice(
@@ -290,6 +289,23 @@ FTDM_RET	FTDMS_getEPData
 	FTDM_RESP_GET_EP_DATA_PARAMS_PTR	pResp
 )
 {
+	TRACE("Request Frame\n");
+	TRACE("%16s : %08lx\n", "Command", pReq->xCmd);
+	TRACE("%16s : %08lx\n", "Length", pReq->nLen);
+	TRACE("%16s : %08lx\n", "Begin Time", pReq->nBeginTime);
+	TRACE("%16s : %08lx\n", "End Time", pReq->nEndTime);
+	TRACE("%16s : %08lx\n", "Count", pReq->nEndTime);
+	TRACE("%16s : %08lx\n", "EPID Count", pReq->nEPIDCount);
+	if (pReq->nEPIDCount != 0)
+	{
+		FTDM_INT	i;
+		
+		for(i = 0 ; i < pReq->nEPIDCount ; i++)
+		{
+			TRACE("%12s[%02d] : %08lx\n", "EPID", pReq->pEPID[i]);	
+		}
+	}
+
 	pResp->xCmd = pReq->xCmd;
 	pResp->nCount = pReq->nCount;
 	pResp->nRet = FTDM_getEPData(

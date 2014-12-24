@@ -41,7 +41,7 @@ FTDM_RET FTDMC_connect
 	hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (hSock == -1)
 	{
-		printf("Could not create socket.\n");	
+		ERROR("Could not create socket.\n");	
 		free(pClient);
 		return	FTDM_RET_ERROR;
 	}
@@ -625,7 +625,6 @@ FTDM_RET	FTDMC_getEPData
 	pReq = (FTDM_REQ_GET_EP_DATA_PARAMS_PTR)malloc(nReqSize);
 	if (pReq == NULL)
 	{
-		CALL_TRACE();
 		return	FTDM_RET_NOT_ENOUGH_MEMORY;
 	}
 
@@ -633,7 +632,6 @@ FTDM_RET	FTDMC_getEPData
 	pResp = (FTDM_RESP_GET_EP_DATA_PARAMS_PTR)malloc(nRespSize);
 	if (pResp == NULL)
 	{
-		CALL_TRACE();
 		free(pReq);
 		return	FTDM_RET_NOT_ENOUGH_MEMORY;
 	}
@@ -655,7 +653,6 @@ FTDM_RET	FTDMC_getEPData
 				nRespSize);
 	if (nRet != FTDM_RET_OK)
 	{
-		CALL_TRACE();
 		free(pReq);
 		free(pResp);
 		return	FTDM_RET_ERROR;	
