@@ -1,0 +1,209 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ASSERT	ftnm_debug.h	16;"	d
+CC	Makefile	/^CC=gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-c -Wall -DDEBUG -I\/usr\/local\/include -I..\/include -I..\/ftdm$/;"	m
+EPROTO	simclist.c	78;"	d	file:
+ERROR	ftnm_debug.h	28;"	d
+FTNM_BYTE	ftnm_type.h	/^typedef	unsigned char	FTNM_BYTE, 	_PTR_ FTNM_BYTE_PTR;$/;"	t
+FTNM_BYTE_PTR	ftnm_type.h	/^typedef	unsigned char	FTNM_BYTE, 	_PTR_ FTNM_BYTE_PTR;$/;"	t
+FTNM_CHAR	ftnm_type.h	/^typedef	char			FTNM_CHAR, 	_PTR_ FTNM_CHAR_PTR;$/;"	t
+FTNM_CHAR_PTR	ftnm_type.h	/^typedef	char			FTNM_CHAR, 	_PTR_ FTNM_CHAR_PTR;$/;"	t
+FTNM_INT	ftnm_type.h	/^typedef	int				FTNM_INT,	_PTR_ FTNM_INT_PTR;$/;"	t
+FTNM_INT_PTR	ftnm_type.h	/^typedef	int				FTNM_INT,	_PTR_ FTNM_INT_PTR;$/;"	t
+FTNM_NODE	ftnm_object.h	/^}	FTNM_NODE, _PTR_ FTNM_NODE_PTR;$/;"	t	typeref:struct:_FTNM_NODE
+FTNM_NODE_PTR	ftnm_object.h	/^}	FTNM_NODE, _PTR_ FTNM_NODE_PTR;$/;"	t	typeref:struct:_FTNM_NODE
+FTNM_UINT	ftnm_type.h	/^typedef	unsigned int	FTNM_UINT, 	_PTR_ FTNM_UINT_PTR;$/;"	t
+FTNM_UINT_PTR	ftnm_type.h	/^typedef	unsigned int	FTNM_UINT, 	_PTR_ FTNM_UINT_PTR;$/;"	t
+FTNM_ULONG	ftnm_type.h	/^typedef	unsigned long	FTNM_ULONG,	_PTR_ FTNM_ULONG_PTR;$/;"	t
+FTNM_ULONG_PTR	ftnm_type.h	/^typedef	unsigned long	FTNM_ULONG,	_PTR_ FTNM_ULONG_PTR;$/;"	t
+FTNM_VOID	ftnm_type.h	/^typedef	void			FTNM_VOID, 	_PTR_ FTNM_VOID_PTR;$/;"	t
+FTNM_VOID_PTR	ftnm_type.h	/^typedef	void			FTNM_VOID, 	_PTR_ FTNM_VOID_PTR;$/;"	t
+FTNM_createNode	ftnm_object.c	/^FTM_RET	FTNM_createNode(FTDM_DEVICE_INFO_PTR pInfo)$/;"	f
+FTNM_destroyNode	ftnm_object.c	/^FTM_RET	FTNM_destroyNode(FTM_CHAR_PTR	pDID)$/;"	f
+FTNM_dumpPacket	ftnm_debug.c	/^FTNM_VOID	FTNM_dumpPacket$/;"	f
+FTNM_finalNodeManager	ftnm_object.c	/^FTM_RET FTNM_finalNodeManager(void)$/;"	f
+FTNM_getNode	ftnm_object.c	/^FTM_RET FTNM_getNode(FTDM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode)$/;"	f
+FTNM_initNodeManager	ftnm_object.c	/^FTM_RET FTNM_initNodeManager(void)$/;"	f
+FTNM_restartProcess	ftnm_process.c	/^FTM_RET	FTNM_restartProcess(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_startProcess	ftnm_process.c	/^FTM_RET	FTNM_startProcess(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_stopProcess	ftnm_process.c	/^FTM_RET	FTNM_stopProcess(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_threadMain	ftnm_process.c	/^static FTM_VOID_PTR	FTNM_threadMain(FTM_VOID_PTR pParams)$/;"	f	file:
+LDFLAGS	Makefile	/^LDFLAGS= -L\/usr\/local\/lib -L. -lconfig  -lftnm -lpthread $/;"	m
+LIB_FTNM	Makefile	/^LIB_FTNM=libftnm$/;"	m
+LIB_FTNM_INCS	Makefile	/^LIB_FTNM_INCS= ftnm.h $/;"	m
+LIB_FTNM_OBJS	Makefile	/^LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)$/;"	m
+LIB_FTNM_SRCS	Makefile	/^LIB_FTNM_SRCS= ftnm.c ftnm_server.c ftnm_object.c ftnm_process.c simclist.c$/;"	m
+MESSAGE	ftnm_debug.h	25;"	d
+MSG_ALL	ftnm_debug.h	11;"	d
+MSG_ERROR	ftnm_debug.h	9;"	d
+MSG_NORMAL	ftnm_debug.h	7;"	d
+MSG_TRACE	ftnm_debug.h	8;"	d
+NDEBUG	simclist.c	83;"	d	file:
+READ_ERRCHECK	simclist.c	186;"	d	file:
+SERVER	Makefile	/^SERVER=ftnm_server$/;"	m
+SERVER_LDFLAGS	Makefile	/^SERVER_LDFLAGS=-L\/usr\/local\/lib -L. -lconfig  -lftnm -lsqlite3 -lpthread $/;"	m
+SERVER_OBJS	Makefile	/^SERVER_OBJS=$(SERVER_SRCS:.c=.o)$/;"	m
+SERVER_SRCS	Makefile	/^SERVER_SRCS=ftnm_server_main.c ftnm_server.c ftnm_debug.c$/;"	m
+SIMCLIST_DUMPFORMAT_HEADERLEN	simclist.c	138;"	d	file:
+SIMCLIST_DUMPFORMAT_VERSION	simclist.c	136;"	d	file:
+SIMCLIST_H	simclist.h	24;"	d
+SIMCLIST_HASHCOMPUTER	simclist.c	/^SIMCLIST_HASHCOMPUTER(int8_t)$/;"	f
+SIMCLIST_HASHCOMPUTER	simclist.c	1410;"	d	file:
+SIMCLIST_MAXTHREADS	simclist.c	92;"	d	file:
+SIMCLIST_MAX_SPARE_ELEMS	simclist.c	120;"	d	file:
+SIMCLIST_METER	simclist.c	/^SIMCLIST_METER(int8_t)$/;"	f
+SIMCLIST_METER	simclist.c	1392;"	d	file:
+SIMCLIST_MINQUICKSORTELS	simclist.c	132;"	d	file:
+SIMCLIST_NUMBER_COMPARATOR	simclist.c	/^SIMCLIST_NUMBER_COMPARATOR(int8_t)$/;"	f
+SIMCLIST_NUMBER_COMPARATOR	simclist.c	1374;"	d	file:
+TRACE	ftnm_debug.h	27;"	d
+WRITE_ERRCHECK	simclist.c	182;"	d	file:
+_FTNM_NODE	ftnm_object.h	/^typedef	struct _FTNM_NODE$/;"	s
+_PTR_	ftnm_type.h	4;"	d
+__FTNM_DEBUG_H__	ftnm_debug.h	2;"	d
+__FTNM_OBJECT_H__	ftnm_object.h	2;"	d
+__FTNM_PROCESS_H__	ftnm_process.h	2;"	d
+__FTNM_TYPE_H__	ftnm_type.h	2;"	d
+__FTSM_CLIENT_H__	ftnm_client.h	2;"	d
+__FTSM_H__	ftnm.h	2;"	d
+__FTSM_SERVER_H__	ftnm_server.h	2;"	d
+__FTSM_SNMP_CLIENT_H__	ftnm_snmp_client.h	2;"	d
+_nPrintLevel	ftnm_debug.c	/^static unsigned long	_nPrintLevel = MSG_NORMAL;$/;"	v	file:
+_seeker	ftnm_object.c	/^static int _seeker(const void *el, const void *key) $/;"	f	file:
+attrs	simclist.h	/^    struct list_attributes_s attrs;$/;"	m	struct:__anon2	typeref:struct:__anon2::list_attributes_s
+comparator	simclist.h	/^    element_comparator comparator;$/;"	m	struct:list_attributes_s
+consistent	simclist.h	/^    int consistent;         \/* 1 if the dump is verified complete\/consistent; 0 otherwise *\/$/;"	m	struct:__anon1
+copy_data	simclist.h	/^    int copy_data;$/;"	m	struct:list_attributes_s
+data	simclist.h	/^    void *data;$/;"	m	struct:list_entry_s
+dumpsize	simclist.h	/^    uint32_t dumpsize;$/;"	m	struct:__anon1
+element_comparator	simclist.h	/^typedef int (*element_comparator)(const void *a, const void *b);$/;"	t
+element_hash_computer	simclist.h	/^typedef list_hash_t (*element_hash_computer)(const void *el);$/;"	t
+element_meter	simclist.h	/^typedef size_t (*element_meter)(const void *el);$/;"	t
+element_seeker	simclist.h	/^typedef int (*element_seeker)(const void *el, const void *indicator);$/;"	t
+element_serializer	simclist.h	/^typedef void *(*element_serializer)(const void *restrict el, uint32_t *restrict serializ_len);$/;"	t
+element_unserializer	simclist.h	/^typedef void *(*element_unserializer)(const void *restrict data, uint32_t *restrict data_len);$/;"	t
+elemlen	simclist.c	/^    uint32_t elemlen;           \/* bytes length of an element, for constant-size lists, <= 0 otherwise *\/$/;"	m	struct:list_dump_header_s	file:
+fel	simclist.c	/^    struct list_entry_s *fel, *lel;$/;"	m	struct:list_sort_wrappedparams	typeref:struct:list_sort_wrappedparams::list_entry_s	file:
+first	simclist.c	/^    unsigned int first, last;$/;"	m	struct:list_sort_wrappedparams	file:
+get_random	simclist.c	/^static inline long get_random() {$/;"	f	file:
+get_random	simclist.c	232;"	d	file:
+hasher	simclist.h	/^    element_hash_computer hasher;$/;"	m	struct:list_attributes_s
+head_sentinel	simclist.h	/^    struct list_entry_s *head_sentinel;$/;"	m	struct:__anon2	typeref:struct:__anon2::list_entry_s
+hton64	simclist.c	58;"	d	file:
+inline	simclist.h	38;"	d
+int16_t	simclist.c	/^typedef INT16   int16_t;$/;"	t	file:
+int32_t	simclist.c	/^typedef LONG32  int32_t;$/;"	t	file:
+int64_t	simclist.c	/^typedef INT64   int64_t;$/;"	t	file:
+int8_t	simclist.c	/^typedef INT8    int8_t;$/;"	t	file:
+iter_active	simclist.h	/^    int iter_active;$/;"	m	struct:__anon2
+iter_curentry	simclist.h	/^    struct list_entry_s *iter_curentry;$/;"	m	struct:__anon2	typeref:struct:__anon2::list_entry_s
+iter_pos	simclist.h	/^    unsigned int iter_pos;$/;"	m	struct:__anon2
+l	simclist.c	/^    list_t *restrict l;$/;"	m	struct:list_sort_wrappedparams	file:
+last	simclist.c	/^    unsigned int first, last;$/;"	m	struct:list_sort_wrappedparams	file:
+lel	simclist.c	/^    struct list_entry_s *fel, *lel;$/;"	m	struct:list_sort_wrappedparams	typeref:struct:list_sort_wrappedparams::	file:
+list_append	simclist.c	/^int list_append(list_t *restrict l, const void *data) {$/;"	f
+list_attrOk	simclist.c	/^static int list_attrOk(const list_t *restrict l) {$/;"	f	file:
+list_attributes_comparator	simclist.c	/^int list_attributes_comparator(list_t *restrict l, element_comparator comparator_fun) {$/;"	f
+list_attributes_copy	simclist.c	/^int list_attributes_copy(list_t *restrict l, element_meter metric_fun, int copy_data) {$/;"	f
+list_attributes_hash_computer	simclist.c	/^int list_attributes_hash_computer(list_t *restrict l, element_hash_computer hash_computer_fun) {$/;"	f
+list_attributes_s	simclist.h	/^struct list_attributes_s {$/;"	s
+list_attributes_seeker	simclist.c	/^int list_attributes_seeker(list_t *restrict l, element_seeker seeker_fun) {$/;"	f
+list_attributes_serializer	simclist.c	/^int list_attributes_serializer(list_t *restrict l, element_serializer serializer_fun) {$/;"	f
+list_attributes_setdefaults	simclist.c	/^int list_attributes_setdefaults(list_t *restrict l) {$/;"	f
+list_attributes_unserializer	simclist.c	/^int list_attributes_unserializer(list_t *restrict l, element_unserializer unserializer_fun) {$/;"	f
+list_clear	simclist.c	/^int list_clear(list_t *restrict l) {$/;"	f
+list_concat	simclist.c	/^int list_concat(const list_t *l1, const list_t *l2, list_t *restrict dest) {$/;"	f
+list_contains	simclist.c	/^int list_contains(const list_t *restrict l, const void *data) {$/;"	f
+list_delete	simclist.c	/^int list_delete(list_t *restrict l, const void *data) {$/;"	f
+list_delete_at	simclist.c	/^int list_delete_at(list_t *restrict l, unsigned int pos) {$/;"	f
+list_delete_range	simclist.c	/^int list_delete_range(list_t *restrict l, unsigned int posstart, unsigned int posend) {$/;"	f
+list_destroy	simclist.c	/^void list_destroy(list_t *restrict l) {$/;"	f
+list_drop_elem	simclist.c	/^static int list_drop_elem(list_t *restrict l, struct list_entry_s *tmp, unsigned int pos) {$/;"	f	file:
+list_dump_file	simclist.c	/^int list_dump_file(const list_t *restrict l, const char *restrict filename, size_t *restrict len) {$/;"	f
+list_dump_filedescriptor	simclist.c	/^int list_dump_filedescriptor(const list_t *restrict l, int fd, size_t *restrict len) {$/;"	f
+list_dump_getinfo_file	simclist.c	/^int list_dump_getinfo_file(const char *restrict filename, list_dump_info_t *restrict info) {$/;"	f
+list_dump_getinfo_filedescriptor	simclist.c	/^int list_dump_getinfo_filedescriptor(int fd, list_dump_info_t *restrict info) {$/;"	f
+list_dump_header_s	simclist.c	/^struct list_dump_header_s {$/;"	s	file:
+list_dump_info_t	simclist.h	/^} list_dump_info_t;$/;"	t	typeref:struct:__anon1
+list_empty	simclist.c	/^int list_empty(const list_t *restrict l) {$/;"	f
+list_entry_s	simclist.h	/^struct list_entry_s {$/;"	s
+list_extract_at	simclist.c	/^void *list_extract_at(list_t *restrict l, unsigned int pos) {$/;"	f
+list_fetch	simclist.c	/^void *list_fetch(list_t *restrict l) {$/;"	f
+list_findpos	simclist.c	/^static inline struct list_entry_s *list_findpos(const list_t *restrict l, int posstart) {$/;"	f	file:
+list_get_at	simclist.c	/^void *list_get_at(const list_t *restrict l, unsigned int pos) {$/;"	f
+list_get_max	simclist.c	/^void *list_get_max(const list_t *restrict l) {$/;"	f
+list_get_min	simclist.c	/^void *list_get_min(const list_t *restrict l) {$/;"	f
+list_get_minmax	simclist.c	/^static void *list_get_minmax(const list_t *restrict l, int versus) {$/;"	f	file:
+list_hash	simclist.c	/^int list_hash(const list_t *restrict l, list_hash_t *restrict hash) {$/;"	f
+list_hash	simclist.h	/^    list_hash_t list_hash;       \/* hash of the list when dumped, or 0 if invalid *\/$/;"	m	struct:__anon1
+list_hash_t	simclist.h	/^typedef int32_t list_hash_t;$/;"	t
+list_init	simclist.c	/^int list_init(list_t *restrict l) {$/;"	f
+list_insert_at	simclist.c	/^int list_insert_at(list_t *restrict l, const void *data, unsigned int pos) {$/;"	f
+list_iterator_hasnext	simclist.c	/^int list_iterator_hasnext(const list_t *restrict l) {$/;"	f
+list_iterator_next	simclist.c	/^void *list_iterator_next(list_t *restrict l) {$/;"	f
+list_iterator_start	simclist.c	/^int list_iterator_start(list_t *restrict l) {$/;"	f
+list_iterator_stop	simclist.c	/^int list_iterator_stop(list_t *restrict l) {$/;"	f
+list_locate	simclist.c	/^int list_locate(const list_t *restrict l, const void *data) {$/;"	f
+list_numels	simclist.h	/^    uint32_t list_numels;$/;"	m	struct:__anon1
+list_prepend	simclist.c	/^int list_prepend(list_t *restrict l, const void *data) {$/;"	f
+list_repOk	simclist.c	/^static int list_repOk(const list_t *restrict l) {$/;"	f	file:
+list_restore_file	simclist.c	/^int list_restore_file(list_t *restrict l, const char *restrict filename, size_t *restrict len) {$/;"	f
+list_restore_filedescriptor	simclist.c	/^int list_restore_filedescriptor(list_t *restrict l, int fd, size_t *restrict len) {$/;"	f
+list_seek	simclist.c	/^void *list_seek(list_t *restrict l, const void *indicator) {$/;"	f
+list_size	simclist.c	/^unsigned int list_size(const list_t *restrict l) {$/;"	f
+list_size	simclist.h	/^    uint32_t list_size;$/;"	m	struct:__anon1
+list_sort	simclist.c	/^int list_sort(list_t *restrict l, int versus) {$/;"	f
+list_sort_quicksort	simclist.c	/^static void list_sort_quicksort(list_t *restrict l, int versus, $/;"	f	file:
+list_sort_quicksort_threadwrapper	simclist.c	/^static void *list_sort_quicksort_threadwrapper(void *wrapped_params) {$/;"	f	file:
+list_sort_selectionsort	simclist.c	/^static inline void list_sort_selectionsort(list_t *restrict l, int versus, $/;"	f	file:
+list_sort_wrappedparams	simclist.c	/^struct list_sort_wrappedparams {$/;"	s	file:
+list_t	simclist.h	/^} list_t;$/;"	t	typeref:struct:__anon2
+listhash	simclist.c	/^    int32_t listhash;           \/* hash of the list at the time of dumping, or 0 if to be ignored *\/$/;"	m	struct:list_dump_header_s	file:
+main	ftnm_server_main.c	/^int main(int argc, char *argv[])$/;"	f
+main	main.c	/^int	main(int nArgc, char *szArgv[])$/;"	f
+meter	simclist.h	/^    element_meter meter;$/;"	m	struct:list_attributes_s
+mid	simclist.h	/^    struct list_entry_s *mid;$/;"	m	struct:__anon2	typeref:struct:__anon2::list_entry_s
+next	simclist.h	/^    struct list_entry_s *next;$/;"	m	struct:list_entry_s	typeref:struct:list_entry_s::list_entry_s
+ntoh64	simclist.c	73;"	d	file:
+numels	simclist.c	/^    uint32_t numels;            \/* number of elements *\/$/;"	m	struct:list_dump_header_s	file:
+numels	simclist.h	/^    unsigned int numels;$/;"	m	struct:__anon2
+prev	simclist.h	/^    struct list_entry_s *prev;$/;"	m	struct:list_entry_s	typeref:struct:list_entry_s::list_entry_s
+printOut	ftnm_debug.c	/^void printOut$/;"	f
+printToError	ftnm_debug.c	/^void (*printToError)(char *szMsg) = printToFile;$/;"	v
+printToFile	ftnm_debug.c	/^void printToFile(char *szMsg)$/;"	f
+printToMessage	ftnm_debug.c	/^void (*printToMessage)(char *szMsg) = printToTerm;$/;"	v
+printToTerm	ftnm_debug.c	/^void printToTerm(char *szMsg)$/;"	f
+printToTrace	ftnm_debug.c	/^void (*printToTrace)(char *szMsg) = printToFile;$/;"	v
+random_seed	simclist.c	/^static unsigned random_seed = 0;$/;"	v	file:
+restrict	simclist.h	39;"	d
+rndterm	simclist.c	/^    int32_t rndterm;            \/* random value terminator -- terminates the data sequence *\/$/;"	m	struct:list_dump_header_s	file:
+seed_random	simclist.c	/^static inline void seed_random() {$/;"	f	file:
+seed_random	simclist.c	231;"	d	file:
+seeker	simclist.h	/^    element_seeker seeker;$/;"	m	struct:list_attributes_s
+serializer	simclist.h	/^    element_serializer serializer;$/;"	m	struct:list_attributes_s
+setPrintMode	ftnm_debug.c	/^void setPrintMode$/;"	f
+spareels	simclist.h	/^    struct list_entry_s **spareels;$/;"	m	struct:__anon2	typeref:struct:__anon2::list_entry_s
+spareelsnum	simclist.h	/^    unsigned int spareelsnum;$/;"	m	struct:__anon2
+tail_sentinel	simclist.h	/^    struct list_entry_s *tail_sentinel;$/;"	m	struct:__anon2	typeref:struct:__anon2::list_entry_s
+threadcount	simclist.h	/^    unsigned int threadcount;$/;"	m	struct:__anon2
+timestamp	simclist.c	/^    int64_t timestamp;          \/* dump timestamp *\/$/;"	m	struct:list_dump_header_s	file:
+timestamp	simclist.h	/^    int64_t timestamp;      \/* when the list has been dumped, microseconds from UNIX epoch *\/$/;"	m	struct:__anon1
+totlistlen	simclist.c	/^    uint32_t totlistlen;        \/* sum of every element' size, bytes *\/$/;"	m	struct:list_dump_header_s	file:
+uint16_t	simclist.c	/^typedef UINT16  uint16_t;$/;"	t	file:
+uint32_t	simclist.c	/^typedef ULONG32 uint32_t;$/;"	t	file:
+uint64_t	simclist.c	/^typedef UINT64  uint64_t;$/;"	t	file:
+uint8_t	simclist.c	/^typedef UINT8   uint8_t;$/;"	t	file:
+unserializer	simclist.h	/^    element_unserializer unserializer;$/;"	m	struct:list_attributes_s
+ver	simclist.c	/^    uint16_t ver;               \/* version *\/$/;"	m	struct:list_dump_header_s	file:
+version	simclist.h	/^    uint16_t version;       \/* dump version *\/$/;"	m	struct:__anon1
+versus	simclist.c	/^    int versus;$/;"	m	struct:list_sort_wrappedparams	file:
+xDeviceInfo	ftnm_server_main.c	/^FTDM_DEVICE_INFO	xDeviceInfo[] = $/;"	v
+xEPList	ftnm_object.h	/^	list_t				xEPList;$/;"	m	struct:_FTNM_NODE
+xInfo	ftnm_object.h	/^	FTDM_DEVICE_INFO	xInfo;$/;"	m	struct:_FTNM_NODE
+xNodeList	ftnm_object.c	/^list_t	xNodeList;$/;"	v
+xPThread	ftnm_object.h	/^	pthread_t			xPThread;$/;"	m	struct:_FTNM_NODE

@@ -1,0 +1,48 @@
+#ifndef	__FTM_TYPES_H__
+#define	__FTM_TYPES_H__
+
+#define	_PTR_	*
+
+typedef	void			FTM_VOID, _PTR_ FTM_VOID_PTR;
+typedef	char			FTM_CHAR, _PTR_ FTM_CHAR_PTR;
+typedef	unsigned char	FTM_BYTE, _PTR_ FTM_BYTE_PTR;
+typedef	int				FTM_INT, _PTR_ FTM_INT_PTR;
+typedef	unsigned int	FTM_UINT, _PTR_ FTM_UINT_PTR;
+typedef	unsigned short 	FTM_USHORT, _PTR_ FTM_USHORT_PTR;
+typedef	unsigned long	FTM_ULONG, _PTR_ FTM_ULONG_PTR;
+typedef	int				FTM_BOOL, _PTR_ FTM_BOOL_PTR;
+
+#define	FTM_BOOL_FALSE	0
+#define	FTM_BOOL_TRUE	(!FTM_BOOL_FALSE)
+
+typedef	unsigned long	FTM_IP_ADDR, _PTR_ FTM_IP_ADDR_PTR;
+
+typedef	unsigned long	FTM_DEVICE_TYPE, _PTR_ FTM_DEVICE_TYPE_PTR;
+typedef	unsigned long	FTM_RET, _PTR_ FTM_RET_PTR;
+typedef	unsigned long	FTM_CMD, _PTR_ FTM_CMD_PTR;
+
+typedef	unsigned long	FTM_EP_ID, _PTR_ FTM_EP_ID_PTR;
+
+#define	FTM_RET_OK							0x00000000
+#define	FTM_RET_ERROR						0x00000001
+#define	FTM_RET_INVALID_ARGUMENTS			0x00000002
+#define	FTM_RET_DATA_LEN_RANGE				0x00000003	
+#define	FTM_RET_OBJECT_NOT_FOUND			0x00000004
+#define	FTM_RET_ALREADY_EXIST_OBJECT		0x00000005
+#define	FTM_RET_FUNCTION_NOT_SUPPORTED		0x00000006
+#define	FTM_RET_NOT_ENOUGH_MEMORY			0x00000007
+#define	FTM_RET_ALREADY_INITIALIZED			0x00000008
+#define	FTM_RET_CLIENT_HANDLE_INVALID		0x00000009
+
+#define	FTM_RET_DBIF_ERROR					0x00010000
+#define	FTM_RET_DBIF_ALREADY_INITIALIZED	0x00010001
+
+#define	FTM_RET_DBIF_DB_ERROR				0x00020000
+
+#define	FTM_RET_COMM_ERROR					0x00030000
+#define	FTM_RET_COMM_TIMEOUT				0x00030001
+
+#define	FTM_RET_INTERNAL_ERROR				0x000F0000
+
+
+#endif
