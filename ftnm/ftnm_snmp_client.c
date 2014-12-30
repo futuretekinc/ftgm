@@ -12,8 +12,16 @@ static FTM_INT	FTNM_snmpClientAsyncResponse
 
 FTM_RET	FTNM_snmpClientInit(void)
 {
+	struct mib_tree *pMIBTree;
 
 	init_snmp("FTNM");
+	pMIBTree = read_mib("FTE-E.txt");
+	if (pMIBTree == NULL)
+	{
+		printf("MIB loading failed\n");
+		return	FTM_RET_SNMP_INIT_FAILED;
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -105,20 +113,21 @@ FTM_INT	FTNM_snmpClientAsyncResponse
 						pVariableList = pVariableList->next_variable;
 					}
 
-				if (pOID->pValue != NULL)
-				{
-					free(pOID->pValue);	
-					pOID->pValue = NULL;
-				}
+					if (pOID->pValue != NULL)
+					{
+						free(pOID->pValue);	
+						pOID->pValue = NULL;
+					}
 
-				pOID->pValue = (FTM_BYTE_PTR)calloc(nLen, 1);
-						
-				pVariableList = pRespPDU->variables;
-				while (pVariableList) 
-				{
-					snprint_variable(&pOID->pValue[pOID->nValueLen], nLen - pOID->nValueLen, 
-						pVariableList->name, pVariableList->name_length, pVariableList);
-					pVariableList = pVariableList->next_variable;
+					pOID->pValue = (FTM_BYTE_PTR)calloc(nLen, 1);
+
+					pVariableList = pRespPDU->variables;
+					while (pVariableList) 
+					{
+						snprint_variable((FTM_CHAR_PTR)&pOID->pValue[pOID->nValueLen], nLen - pOID->nValueLen, 
+								pVariableList->name, pVariableList->name_length, pVariableList);
+						pVariableList = pVariableList->next_variable;
+					}
 				}
 			}								    
 

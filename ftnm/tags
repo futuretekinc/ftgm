@@ -4,51 +4,53 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-ASSERT	ftnm_debug.h	16;"	d
 CC	Makefile	/^CC=gcc$/;"	m
 CFLAGS	Makefile	/^CFLAGS=-c -Wall -DDEBUG -I\/usr\/local\/include -I..\/include -I..\/ftdm$/;"	m
 EPROTO	simclist.c	78;"	d	file:
-ERROR	ftnm_debug.h	28;"	d
-FTNM_BYTE	ftnm_type.h	/^typedef	unsigned char	FTNM_BYTE, 	_PTR_ FTNM_BYTE_PTR;$/;"	t
-FTNM_BYTE_PTR	ftnm_type.h	/^typedef	unsigned char	FTNM_BYTE, 	_PTR_ FTNM_BYTE_PTR;$/;"	t
-FTNM_CHAR	ftnm_type.h	/^typedef	char			FTNM_CHAR, 	_PTR_ FTNM_CHAR_PTR;$/;"	t
-FTNM_CHAR_PTR	ftnm_type.h	/^typedef	char			FTNM_CHAR, 	_PTR_ FTNM_CHAR_PTR;$/;"	t
-FTNM_INT	ftnm_type.h	/^typedef	int				FTNM_INT,	_PTR_ FTNM_INT_PTR;$/;"	t
-FTNM_INT_PTR	ftnm_type.h	/^typedef	int				FTNM_INT,	_PTR_ FTNM_INT_PTR;$/;"	t
+FTM_dumpPacket	ftnm_debug.c	/^FTM_VOID	FTM_dumpPacket$/;"	f
+FTNM_BYTE	ftnm_types.h	/^typedef	unsigned char	FTNM_BYTE, 	_PTR_ FTNM_BYTE_PTR;$/;"	t
+FTNM_BYTE_PTR	ftnm_types.h	/^typedef	unsigned char	FTNM_BYTE, 	_PTR_ FTNM_BYTE_PTR;$/;"	t
+FTNM_CHAR	ftnm_types.h	/^typedef	char			FTNM_CHAR, 	_PTR_ FTNM_CHAR_PTR;$/;"	t
+FTNM_CHAR_PTR	ftnm_types.h	/^typedef	char			FTNM_CHAR, 	_PTR_ FTNM_CHAR_PTR;$/;"	t
+FTNM_INT	ftnm_types.h	/^typedef	int				FTNM_INT,	_PTR_ FTNM_INT_PTR;$/;"	t
+FTNM_INT_PTR	ftnm_types.h	/^typedef	int				FTNM_INT,	_PTR_ FTNM_INT_PTR;$/;"	t
 FTNM_NODE	ftnm_object.h	/^}	FTNM_NODE, _PTR_ FTNM_NODE_PTR;$/;"	t	typeref:struct:_FTNM_NODE
 FTNM_NODE_PTR	ftnm_object.h	/^}	FTNM_NODE, _PTR_ FTNM_NODE_PTR;$/;"	t	typeref:struct:_FTNM_NODE
-FTNM_UINT	ftnm_type.h	/^typedef	unsigned int	FTNM_UINT, 	_PTR_ FTNM_UINT_PTR;$/;"	t
-FTNM_UINT_PTR	ftnm_type.h	/^typedef	unsigned int	FTNM_UINT, 	_PTR_ FTNM_UINT_PTR;$/;"	t
-FTNM_ULONG	ftnm_type.h	/^typedef	unsigned long	FTNM_ULONG,	_PTR_ FTNM_ULONG_PTR;$/;"	t
-FTNM_ULONG_PTR	ftnm_type.h	/^typedef	unsigned long	FTNM_ULONG,	_PTR_ FTNM_ULONG_PTR;$/;"	t
-FTNM_VOID	ftnm_type.h	/^typedef	void			FTNM_VOID, 	_PTR_ FTNM_VOID_PTR;$/;"	t
-FTNM_VOID_PTR	ftnm_type.h	/^typedef	void			FTNM_VOID, 	_PTR_ FTNM_VOID_PTR;$/;"	t
+FTNM_SNMP_INFO	ftnm_snmp_client.h	/^} FTNM_SNMP_INFO, _PTR_ FTNM_SNMP_INFO_PTR;$/;"	t	typeref:struct:__anon4
+FTNM_SNMP_INFO_PTR	ftnm_snmp_client.h	/^} FTNM_SNMP_INFO, _PTR_ FTNM_SNMP_INFO_PTR;$/;"	t	typeref:struct:__anon4
+FTNM_SNMP_OID	ftnm_snmp_client.h	/^}	FTNM_SNMP_OID, _PTR_ FTNM_SNMP_OID_PTR;$/;"	t	typeref:struct:__anon3
+FTNM_SNMP_OID_PTR	ftnm_snmp_client.h	/^}	FTNM_SNMP_OID, _PTR_ FTNM_SNMP_OID_PTR;$/;"	t	typeref:struct:__anon3
+FTNM_UINT	ftnm_types.h	/^typedef	unsigned int	FTNM_UINT, 	_PTR_ FTNM_UINT_PTR;$/;"	t
+FTNM_UINT_PTR	ftnm_types.h	/^typedef	unsigned int	FTNM_UINT, 	_PTR_ FTNM_UINT_PTR;$/;"	t
+FTNM_ULONG	ftnm_types.h	/^typedef	unsigned long	FTNM_ULONG,	_PTR_ FTNM_ULONG_PTR;$/;"	t
+FTNM_ULONG_PTR	ftnm_types.h	/^typedef	unsigned long	FTNM_ULONG,	_PTR_ FTNM_ULONG_PTR;$/;"	t
+FTNM_VOID	ftnm_types.h	/^typedef	void			FTNM_VOID, 	_PTR_ FTNM_VOID_PTR;$/;"	t
+FTNM_VOID_PTR	ftnm_types.h	/^typedef	void			FTNM_VOID, 	_PTR_ FTNM_VOID_PTR;$/;"	t
 FTNM_createNode	ftnm_object.c	/^FTM_RET	FTNM_createNode(FTDM_DEVICE_INFO_PTR pInfo)$/;"	f
 FTNM_destroyNode	ftnm_object.c	/^FTM_RET	FTNM_destroyNode(FTM_CHAR_PTR	pDID)$/;"	f
-FTNM_dumpPacket	ftnm_debug.c	/^FTNM_VOID	FTNM_dumpPacket$/;"	f
 FTNM_finalNodeManager	ftnm_object.c	/^FTM_RET FTNM_finalNodeManager(void)$/;"	f
 FTNM_getNode	ftnm_object.c	/^FTM_RET FTNM_getNode(FTDM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode)$/;"	f
 FTNM_initNodeManager	ftnm_object.c	/^FTM_RET FTNM_initNodeManager(void)$/;"	f
-FTNM_restartProcess	ftnm_process.c	/^FTM_RET	FTNM_restartProcess(FTNM_NODE_PTR pNode)$/;"	f
-FTNM_startProcess	ftnm_process.c	/^FTM_RET	FTNM_startProcess(FTNM_NODE_PTR pNode)$/;"	f
-FTNM_stopProcess	ftnm_process.c	/^FTM_RET	FTNM_stopProcess(FTNM_NODE_PTR pNode)$/;"	f
-FTNM_threadMain	ftnm_process.c	/^static FTM_VOID_PTR	FTNM_threadMain(FTM_VOID_PTR pParams)$/;"	f	file:
+FTNM_nodeSeeker	ftnm_object.c	/^static FTM_INT	FTNM_nodeSeeker(const void *pElement, const void *pKey) $/;"	f	file:
+FTNM_restartNode	ftnm_object.c	/^FTM_RET	FTNM_restartNode(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_snmpClientAsyncCall	ftnm_snmp_client.c	/^FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_INFO_PTR pInfo)$/;"	f
+FTNM_snmpClientAsyncResponse	ftnm_snmp_client.c	/^FTM_INT	FTNM_snmpClientAsyncResponse$/;"	f
+FTNM_snmpClientFinal	ftnm_snmp_client.c	/^FTM_RET	FTNM_snmpClientFinal(void)$/;"	f
+FTNM_snmpClientInit	ftnm_snmp_client.c	/^FTM_RET	FTNM_snmpClientInit(void)$/;"	f
+FTNM_startNode	ftnm_object.c	/^FTM_RET	FTNM_startNode(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_stopNode	ftnm_object.c	/^FTM_RET	FTNM_stopNode(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_threadMain	ftnm_object.c	/^static FTM_VOID_PTR	FTNM_threadMain(FTM_VOID_PTR pParams)$/;"	f	file:
 LDFLAGS	Makefile	/^LDFLAGS= -L\/usr\/local\/lib -L. -lconfig  -lftnm -lpthread $/;"	m
 LIB_FTNM	Makefile	/^LIB_FTNM=libftnm$/;"	m
 LIB_FTNM_INCS	Makefile	/^LIB_FTNM_INCS= ftnm.h $/;"	m
 LIB_FTNM_OBJS	Makefile	/^LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)$/;"	m
-LIB_FTNM_SRCS	Makefile	/^LIB_FTNM_SRCS= ftnm.c ftnm_server.c ftnm_object.c ftnm_process.c simclist.c$/;"	m
-MESSAGE	ftnm_debug.h	25;"	d
-MSG_ALL	ftnm_debug.h	11;"	d
-MSG_ERROR	ftnm_debug.h	9;"	d
-MSG_NORMAL	ftnm_debug.h	7;"	d
-MSG_TRACE	ftnm_debug.h	8;"	d
+LIB_FTNM_SRCS	Makefile	/^LIB_FTNM_SRCS= ftnm.c ftnm_server.c ftnm_object.c simclist.c ftnm_snmp_client.c$/;"	m
 NDEBUG	simclist.c	83;"	d	file:
 READ_ERRCHECK	simclist.c	186;"	d	file:
 SERVER	Makefile	/^SERVER=ftnm_server$/;"	m
-SERVER_LDFLAGS	Makefile	/^SERVER_LDFLAGS=-L\/usr\/local\/lib -L. -lconfig  -lftnm -lsqlite3 -lpthread $/;"	m
+SERVER_LDFLAGS	Makefile	/^SERVER_LDFLAGS=-L\/usr\/local\/lib -L. -lconfig  -lftnm -lsqlite3 -lpthread  -lnetsnmp$/;"	m
 SERVER_OBJS	Makefile	/^SERVER_OBJS=$(SERVER_SRCS:.c=.o)$/;"	m
-SERVER_SRCS	Makefile	/^SERVER_SRCS=ftnm_server_main.c ftnm_server.c ftnm_debug.c$/;"	m
+SERVER_SRCS	Makefile	/^SERVER_SRCS=ftnm_server_main.c ftnm_debug.c$/;"	m
 SIMCLIST_DUMPFORMAT_HEADERLEN	simclist.c	138;"	d	file:
 SIMCLIST_DUMPFORMAT_VERSION	simclist.c	136;"	d	file:
 SIMCLIST_H	simclist.h	24;"	d
@@ -61,20 +63,16 @@ SIMCLIST_METER	simclist.c	1392;"	d	file:
 SIMCLIST_MINQUICKSORTELS	simclist.c	132;"	d	file:
 SIMCLIST_NUMBER_COMPARATOR	simclist.c	/^SIMCLIST_NUMBER_COMPARATOR(int8_t)$/;"	f
 SIMCLIST_NUMBER_COMPARATOR	simclist.c	1374;"	d	file:
-TRACE	ftnm_debug.h	27;"	d
 WRITE_ERRCHECK	simclist.c	182;"	d	file:
 _FTNM_NODE	ftnm_object.h	/^typedef	struct _FTNM_NODE$/;"	s
-_PTR_	ftnm_type.h	4;"	d
-__FTNM_DEBUG_H__	ftnm_debug.h	2;"	d
+_PTR_	ftnm_types.h	4;"	d
 __FTNM_OBJECT_H__	ftnm_object.h	2;"	d
-__FTNM_PROCESS_H__	ftnm_process.h	2;"	d
-__FTNM_TYPE_H__	ftnm_type.h	2;"	d
+__FTNM_SNMP_CLIENT_H__	ftnm_snmp_client.h	2;"	d
+__FTNM_TYPE_H__	ftnm_types.h	2;"	d
 __FTSM_CLIENT_H__	ftnm_client.h	2;"	d
 __FTSM_H__	ftnm.h	2;"	d
 __FTSM_SERVER_H__	ftnm_server.h	2;"	d
-__FTSM_SNMP_CLIENT_H__	ftnm_snmp_client.h	2;"	d
 _nPrintLevel	ftnm_debug.c	/^static unsigned long	_nPrintLevel = MSG_NORMAL;$/;"	v	file:
-_seeker	ftnm_object.c	/^static int _seeker(const void *el, const void *key) $/;"	f	file:
 attrs	simclist.h	/^    struct list_attributes_s attrs;$/;"	m	struct:__anon2	typeref:struct:__anon2::list_attributes_s
 comparator	simclist.h	/^    element_comparator comparator;$/;"	m	struct:list_attributes_s
 consistent	simclist.h	/^    int consistent;         \/* 1 if the dump is verified complete\/consistent; 0 otherwise *\/$/;"	m	struct:__anon1
@@ -168,10 +166,19 @@ main	ftnm_server_main.c	/^int main(int argc, char *argv[])$/;"	f
 main	main.c	/^int	main(int nArgc, char *szArgv[])$/;"	f
 meter	simclist.h	/^    element_meter meter;$/;"	m	struct:list_attributes_s
 mid	simclist.h	/^    struct list_entry_s *mid;$/;"	m	struct:__anon2	typeref:struct:__anon2::list_entry_s
+nCurrentOID	ftnm_snmp_client.h	/^	FTM_INT					nCurrentOID;$/;"	m	struct:__anon4
+nOIDLen	ftnm_snmp_client.h	/^	FTM_INT					nOIDLen;$/;"	m	struct:__anon3
+nValueLen	ftnm_snmp_client.h	/^	FTM_INT					nValueLen;$/;"	m	struct:__anon3
+nVersion	ftnm_snmp_client.h	/^	FTM_ULONG				nVersion;$/;"	m	struct:__anon4
 next	simclist.h	/^    struct list_entry_s *next;$/;"	m	struct:list_entry_s	typeref:struct:list_entry_s::list_entry_s
 ntoh64	simclist.c	73;"	d	file:
 numels	simclist.c	/^    uint32_t numels;            \/* number of elements *\/$/;"	m	struct:list_dump_header_s	file:
 numels	simclist.h	/^    unsigned int numels;$/;"	m	struct:__anon2
+pCommunity	ftnm_snmp_client.h	/^	FTM_CHAR_PTR			pCommunity;	$/;"	m	struct:__anon4
+pOID	ftnm_snmp_client.h	/^	oid						pOID[MAX_OID_LEN];$/;"	m	struct:__anon3
+pPeerName	ftnm_snmp_client.h	/^	FTM_CHAR_PTR			pPeerName;$/;"	m	struct:__anon4
+pSession	ftnm_snmp_client.h	/^	struct snmp_session 	*pSession;		\/* SNMP session data *\/$/;"	m	struct:__anon4	typeref:struct:__anon4::snmp_session
+pValue	ftnm_snmp_client.h	/^	FTM_BYTE				pValue;$/;"	m	struct:__anon3
 prev	simclist.h	/^    struct list_entry_s *prev;$/;"	m	struct:list_entry_s	typeref:struct:list_entry_s::list_entry_s
 printOut	ftnm_debug.c	/^void printOut$/;"	f
 printToError	ftnm_debug.c	/^void (*printToError)(char *szMsg) = printToFile;$/;"	v
@@ -206,4 +213,6 @@ xDeviceInfo	ftnm_server_main.c	/^FTDM_DEVICE_INFO	xDeviceInfo[] = $/;"	v
 xEPList	ftnm_object.h	/^	list_t				xEPList;$/;"	m	struct:_FTNM_NODE
 xInfo	ftnm_object.h	/^	FTDM_DEVICE_INFO	xInfo;$/;"	m	struct:_FTNM_NODE
 xNodeList	ftnm_object.c	/^list_t	xNodeList;$/;"	v
+xOIDList	ftnm_snmp_client.h	/^	list_t					xOIDList;	$/;"	m	struct:__anon4
 xPThread	ftnm_object.h	/^	pthread_t			xPThread;$/;"	m	struct:_FTNM_NODE
+xTime	ftnm_snmp_client.h	/^	time_t					xTime;$/;"	m	struct:__anon3

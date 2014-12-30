@@ -11,7 +11,7 @@ typedef struct
 	oid						pOID[MAX_OID_LEN];
 	FTM_INT					nOIDLen;
 	time_t					xTime;
-	FTM_BYTE				pValue;
+	FTM_BYTE_PTR			pValue;
 	FTM_INT					nValueLen;
 }	FTNM_SNMP_OID, _PTR_ FTNM_SNMP_OID_PTR;
 

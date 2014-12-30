@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
 
 	for(i = 0 ; i < 4 ; i++)
 	{
-		nRet = FTNM_createNode(&xDeviceInfo[i]); if (nRet != FTM_RET_OK) {
+		nRet = FTNM_createNode(&xDeviceInfo[i]); if (nRet != FTM_RET_OK) 
+		{
 			MESSAGE("FTNM_createNode(%d) failed[nRet = %08lx]\n", i, nRet);
 		}
 		else
