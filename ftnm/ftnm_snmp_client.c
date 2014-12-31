@@ -12,7 +12,7 @@ static FTM_INT	FTNM_snmpClientAsyncResponse
 
 FTM_RET	FTNM_snmpClientInit(void)
 {
-	struct mib_tree *pMIBTree;
+	struct tree *pMIBTree;
 
 	init_snmp("FTNM");
 	pMIBTree = read_mib("FTE-E.txt");

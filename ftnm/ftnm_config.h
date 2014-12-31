@@ -7,19 +7,7 @@
 typedef	struct
 {
 	FTM_CHAR_PTR	pType;
-
-	struct
-	{
-		FTM_CHAR_PTR	pID;
-		FTM_CHAR_PTR	pType;
-		FTM_CHAR_PTR	pName;
-		FTM_CHAR_PTR	pSN;
-		FTM_CHAR_PTR	pState;
-		FTM_CHAR_PTR	pValue;
-		FTM_CHAR_PTR	pLastValue;
-		FTM_CHAR_PTR	pLastTime;
-		FTM_CHAR_PTR	pUpdateInterval;
-	}	xOIDNames;	
+	FTM_CHAR_PTR	pOIDPrefix;
 
 }	FTNM_EP_INFO, _PTR_ FTNM_EP_INFO_PTR;
 
