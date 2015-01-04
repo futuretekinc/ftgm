@@ -5,7 +5,7 @@
 #include "ftnm_config.h"
 #include "ftnm_snmp_client.h"
 
-FTDM_DEVICE_INFO	xDeviceInfo[] = 
+FTDM_DEVICE_INFO	xDeviceInfo[100] = 
 {
 	{"0001", 1, "www.0001.com", "0.0.0.1"},
 	{"0002", 2, "www.0002.com", "0.0.0.2"},
@@ -62,9 +62,11 @@ int main(int argc, char *argv[])
 	}
 	MESSAGE("FTNM_initNodeManager initialized\n");
 
-	for(i = 0 ; i < 4 ; i++)
+	for(i = 0 ; i < 100 ; i++)
 	{
-		nRet = FTNM_createNode(&xDeviceInfo[i]); if (nRet != FTM_RET_OK) 
+		snprintf(xDeviceInfo[i].pDID, FTDM_DEVICE_ID_LEN, "%04x", i+1);
+		xDeviceInfo[i].xType = 0;
+		nRet = FTNM_createNodeSNMP(&xDeviceInfo[i]); if (nRet != FTM_RET_OK) 
 		{
 			MESSAGE("FTNM_createNode(%d) failed[nRet = %08lx]\n", i, nRet);
 		}
@@ -75,7 +77,7 @@ int main(int argc, char *argv[])
 	}
 
 	
-	for(i = 0 ; i < 4 ; i++)
+	for(i = 0 ; i < 100 ; i++)
 	{
 		FTNM_NODE_PTR	pNode;
 		FTM_CHAR	pDID[FTDM_DEVICE_ID_LEN+1];
@@ -90,6 +92,19 @@ int main(int argc, char *argv[])
 	list_init(&xSNMPInfo.xOIDList);
 	list_append(&xSNMPInfo.xOIDList, &xOIDsysDescr);
 	FTNM_snmpClientAsyncCall(&xSNMPInfo);
+
+
+	for(i = 0 ; i < 4 ; i++)
+	{
+		FTNM_NODE_PTR	pNode;
+		FTM_CHAR	pDID[FTDM_DEVICE_ID_LEN+1];
+
+		sprintf(pDID, "%04x", i+1);
+		if (FTNM_getNode(pDID, &pNode) == FTM_RET_OK)
+		{
+			pthread_join(pNode->xPThread, NULL);	
+		}
+	}
 
 	MESSAGE("Call FTNM_finalNodeManager\n");
 	nRet = FTNM_finalNodeManager();

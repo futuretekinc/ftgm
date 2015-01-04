@@ -6,6 +6,8 @@
 #include "ftm_types.h"
 #include "simclist.h"
 
+#define	FTNM_SNMP_STATUS_RUNNING	0x00000001
+#define	FTNM_SNMP_STATUS_COMPLETED	0x00000010
 typedef struct
 {
 	oid						pOID[MAX_OID_LEN];
@@ -23,6 +25,8 @@ typedef	struct
 
 	list_t					xOIDList;	
 	FTM_INT					nCurrentOID;
+	FTM_ULONG				nStatus;
+	FTM_BOOL				bCompleted;
 	struct snmp_session 	*pSession;		/* SNMP session data */
 } FTNM_SNMP_INFO, _PTR_ FTNM_SNMP_INFO_PTR;
 
@@ -30,5 +34,7 @@ FTM_RET	FTNM_snmpClientInit(void);
 FTM_RET FTNM_snmpClientFinal(void);
 
 FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_INFO_PTR pInfo);
+FTM_BOOL	FTNM_snmpIsRunning(FTNM_SNMP_INFO_PTR pInfo);
+FTM_BOOL	FTNM_snmpIsCompleted(FTNM_SNMP_INFO_PTR pInfo);
 #endif
 

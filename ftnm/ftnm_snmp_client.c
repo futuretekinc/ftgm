@@ -30,6 +30,26 @@ FTM_RET	FTNM_snmpClientFinal(void)
 	return	FTM_RET_OK;
 }
 
+FTM_BOOL	FTNM_snmpIsRunning(FTNM_SNMP_INFO_PTR pInfo)
+{
+	if (pInfo->nStatus & FTNM_SNMP_STATUS_RUNNING)
+	{
+		return	FTM_BOOL_TRUE;	
+	}
+
+	return	FTM_BOOL_FALSE;
+}
+
+FTM_BOOL	FTNM_snmpIsCompleted(FTNM_SNMP_INFO_PTR pInfo)
+{
+	if (pInfo->nStatus & FTNM_SNMP_STATUS_COMPLETED)
+	{
+		return	FTM_BOOL_TRUE;	
+	}
+
+	return	FTM_BOOL_FALSE;
+}
+
 FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_INFO_PTR pInfo)
 {
 	/* startup all hosts */
@@ -70,6 +90,8 @@ FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_INFO_PTR pInfo)
 		return	FTM_RET_COMM_ERROR;
 	}
 
+	pInfo->nStatus = 0;
+
 	snmp_add_null_var(pPDU, pOID->pOID, pOID->nOIDLen);
 	if (snmp_send(pInfo->pSession, pPDU) == 0)
 	{
@@ -77,6 +99,8 @@ FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_INFO_PTR pInfo)
 		snmp_free_pdu(pPDU);
 		return	FTM_RET_COMM_ERROR;
 	}
+
+	pInfo->nStatus = FTNM_SNMP_STATUS_RUNNING;
 
 	return	FTM_RET_OK;
 }
@@ -151,6 +175,14 @@ FTM_INT	FTNM_snmpClientAsyncResponse
 						snmp_free_pdu(pReqPDU);
 					}
 				}
+				else
+				{
+					pInfo->nStatus = FTNM_SNMP_STATUS_COMPLETED;
+				}
+			}
+			else
+			{
+				pInfo->nStatus = FTNM_SNMP_STATUS_COMPLETED;
 			}
 		}
 		break;

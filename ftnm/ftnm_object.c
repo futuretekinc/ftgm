@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <time.h>
 #include "ftnm.h"
 #include "ftnm_object.h"
 #include "simclist.h"
@@ -42,19 +44,27 @@ FTM_RET FTNM_finalNodeManager(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_createNode(FTDM_DEVICE_INFO_PTR pInfo)
+FTM_RET	FTNM_createNodeSNMP(FTDM_DEVICE_INFO_PTR pInfo)
 {
-	FTNM_NODE_PTR	pNode;
+	FTNM_NODE_SNMP_PTR	pNode;
 
-	pNode = (FTNM_NODE_PTR)calloc(1, sizeof(FTNM_NODE));
+	pNode = (FTNM_NODE_SNMP_PTR)calloc(1, sizeof(FTNM_NODE_SNMP));
 	if (pNode == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
+	pNode->xType = FTNM_NODE_TYPE_SNMP;
+
 	memcpy(&pNode->xInfo, pInfo, sizeof(FTDM_DEVICE_INFO));
 	list_init(&pNode->xEPList);
 
+	pNode->xSNMP.nVersion = SNMP_VERSION_2c;
+	pNode->xSNMP.pPeerName= "10.0.1.35";
+	pNode->xSNMP.pCommunity= "public";
+	list_init(&pNode->xSNMP.xOIDList);
+
+	pNode->nUpdateInterval = 10;
 	list_append(&xNodeList, pNode);
 
 	return	FTM_RET_OK;
@@ -150,12 +160,60 @@ FTM_RET	FTNM_restartNode(FTNM_NODE_PTR pNode)
 	return	FTM_RET_OK;
 }
 
+FTM_RET FTNM_addEP(FTDM_EP_INFO_PTR pInfo)
+{
+	FTM_RET				nRet;
+	FTNM_NODE_PTR		pNode;
+	FTDM_EP_INFO_PTR	pEPInfo;
+
+	if (pInfo == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	nRet = FTNM_getNode(pInfo->pDID, &pNode);
+	if (nRet != FTM_RET_OK)
+	{
+		return	nRet;
+	}
+
+	pEPInfo = (FTDM_EP_INFO_PTR)calloc(1, sizeof(FTDM_EP_INFO));
+	if (pEPInfo == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+	memcpy(pEPInfo, pInfo, sizeof(FTDM_EP_INFO));
+
+	list_append(&pNode->xEPList, pEPInfo);
+	
+	return	FTM_RET_OK;
+}
+static FTM_INT nTemp = 0;
+
 static FTM_VOID_PTR	FTNM_threadMain(FTM_VOID_PTR pParams)
 {
 	FTNM_NODE_PTR	pNode = (FTNM_NODE_PTR)pParams;
+	time_t			xBaseTime, xCurrentTime;
 
-	printf("Start thread [pDID = %s]\n", pNode->xInfo.pDID);
-
+	xBaseTime = time(NULL);
+	while(1)
+	{
+		switch(pNode->xType)
+		{
+		case	FTNM_NODE_TYPE_SNMP:
+			{
+				if (FTNM_snmpIsRunning(&((FTNM_NODE_SNMP_PTR)pNode)->xSNMP) != FTM_BOOL_TRUE)
+				{
+						FTNM_snmpClientAsyncCall(&((FTNM_NODE_SNMP_PTR)pNode)->xSNMP);
+				}
+			}
+			break;
+		}
+		xCurrentTime = time(NULL);
+		xBaseTime += pNode->nUpdateInterval;
+		sleep(xBaseTime - xCurrentTime);
+	}
+	
 	pthread_exit((FTM_VOID_PTR)0);
 }
 
