@@ -153,21 +153,51 @@ static int _FTDM_DBIF_CB_getNodeList(void *pData, int nArgc, char **pArgv, char 
 	if (nArgc != 0)
 	{
 		FTM_INT	i;
-
+		FTM_NODE_INFO_PTR	pNodeInfo = &pParams->pInfos[(*pParams->pCount)++];
+	
 		for(i = 0 ; i < nArgc ; i++)
 		{
-			if (strcmp(pColName[i], "DID") == 0)
+			if (strcasecmp(pColName[i], "DID") == 0)
 			{
-				(*pParams->pCount)++;
-				strncpy(pParams->pInfos[(*pParams->pCount)-1].pDID, pArgv[i], 32);
+				strncpy(pNodeInfo->pDID, pArgv[i], 32);
 			}
-			else if (strcmp(pColName[i], "TYPE") == 0)
+			else if (strcasecmp(pColName[i], "TYPE") == 0)
 			{
-				pParams->pInfos[(*pParams->pCount)-1].xType = atoi(pArgv[i]);
+				pNodeInfo->xType = atoi(pArgv[i]);
 			}
-			else if (strcmp(pColName[i], "LOC") == 0)
+			else if (strcasecmp(pColName[i], "LOC") == 0)
 			{
-				strncpy(pParams->pInfos[(*pParams->pCount)-1].pLocation, pArgv[i], FTM_LOCATION_LEN);
+				strncpy(pNodeInfo->pLocation, pArgv[i], FTM_LOCATION_LEN);
+			}
+			else if (strcasecmp(pColName[i], "OPT0") == 0)
+			{
+				switch (pNodeInfo->xType)
+				{
+				case	FTM_NODE_TYPE_SNMP:
+					pNodeInfo->xOption.xSNMP.nVersion = atoi(pArgv[i]);
+					break;
+				}
+			}
+			else if (strcasecmp(pColName[i], "OPT1") == 0)
+			{
+				switch (pNodeInfo->xType)
+				{
+				case	FTM_NODE_TYPE_SNMP:
+					strncpy(pNodeInfo->xOption.xSNMP.pURL, pArgv[i], FTM_URL_LEN);
+					break;
+				}
+			}
+			else if (strcasecmp(pColName[i], "OPT2") == 0)
+			{
+				switch (pNodeInfo->xType)
+				{
+				case	FTM_NODE_TYPE_SNMP:
+					strncpy(pNodeInfo->xOption.xSNMP.pCommunity, pArgv[i], FTM_SNMP_COMMUNITY_LEN);
+					break;
+				}
+			}
+			else if (strcasecmp(pColName[i], "OPT3") == 0)
+			{
 			}
 		}
 	}
@@ -215,7 +245,10 @@ FTM_RET	FTDM_DBIF_insertNodeInfo
 	FTM_RET			nRet;
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
-	FTM_CHAR		pOption[1024];
+	FTM_CHAR		pOpt0[256] = {0,};
+	FTM_CHAR		pOpt1[256] = {0,};
+	FTM_CHAR		pOpt2[256] = {0,};
+	FTM_CHAR		pOpt3[256] = {0,};
 
 	if (pNodeInfo == NULL)
 	{
@@ -224,33 +257,25 @@ FTM_RET	FTDM_DBIF_insertNodeInfo
 
 	switch(pNodeInfo->xType)
 	{
-	case	FTM_NODE_TYPE_ETH_SNMP:	
+	case	FTM_NODE_TYPE_SNMP:	
 		{	
-			sprintf(pOption, "{ "\
-					"\'version\' : \'%d\',"\
-					"\'URL\' : \'%s\',"\
-					"\'Community\' : \'%s\'"\
-					"}",
-					pNodeInfo->xOption.xSNMP.nVersion,
-					pNodeInfo->xOption.xSNMP.pURL,
-					pNodeInfo->xOption.xSNMP.pCommunity);
+			sprintf(pOpt0, "%d", pNodeInfo->xOption.xSNMP.nVersion);
+			sprintf(pOpt1, "%s", pNodeInfo->xOption.xSNMP.pURL);
+			sprintf(pOpt2, "%s", pNodeInfo->xOption.xSNMP.pCommunity);
 		}
 		break;
-
-	default:
-		{
-			sprintf(pOption, "{}");
-		}
 	}
 
 	sprintf(pSQL, 
-			"INSERT INTO node_info (DID,TYPE,LOC, OPT) "\
-			"VALUES (\"%s\", %lu, \"%s\", \"%s\")",
+			"INSERT INTO node_info (DID,TYPE,LOC,OPT0,OPT1,OPT2,OPT3) "\
+			"VALUES (\'%s\',%d,\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')",
 			pNodeInfo->pDID, 
 			pNodeInfo->xType, 
 			pNodeInfo->pLocation,
-			pOption);
-	TRACE("%s", pSQL);
+			pOpt0,
+			pOpt1,
+			pOpt2,
+			pOpt3);
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
@@ -300,6 +325,8 @@ static int _FTDM_DBIF_CB_getNodeInfo(void *pData, int nArgc, char **pArgv, char 
 {
 	FTM_NODE_INFO_PTR pInfo = (FTM_NODE_INFO_PTR)pData;
 
+	TRACE("%s : %s\n", pColName, pArgv[0]);
+	
 	if (nArgc != 0)
 	{
 		if (strcmp(pColName[0], "DID") == 0)
@@ -314,15 +341,8 @@ static int _FTDM_DBIF_CB_getNodeInfo(void *pData, int nArgc, char **pArgv, char 
 		{
 			strncpy(pInfo->pLocation, pArgv[0], FTM_LOCATION_LEN);
 		}
-		else if (strcmp(pColName[0], "OPT") == 0)
+		else if (strcmp(pColName[0], "OPT0") == 0)
 		{
-			json_t	*root;
-			json_error_t	error;
-			root = json_loads(pArgv[0], 0, &error);
-			if (root != NULL)
-			{
-				TRACE("JSON Parsing success!\n");
-			}
 		}
 	}
 	return	FTM_RET_OK;
@@ -1147,7 +1167,10 @@ FTM_RET	_FTDM_BDIF_createNodeInfoTable
 						"DID	TEXT PRIMARY KEY,"\
 						"TYPE	INT,"\
 						"LOC	TEXT,"\
-						"OPT	TEXT)", pTableName);
+						"OPT0	TEXT,"\
+						"OPT1	TEXT,"\
+						"OPT2	TEXT,"\
+						"OPT3	TEXT)", pTableName);
 
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)

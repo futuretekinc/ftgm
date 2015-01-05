@@ -8,7 +8,7 @@ LDFLAGS= -L/usr/local/lib -L.
 
 LIB_FTM=libftm
 LIB_FTM_INCS= ftm_types.h ftm_object.h simclist.h ftm_debug.h
-LIB_FTM_SRCS= simclist.c  ftm_debug.c
+LIB_FTM_SRCS= simclist.c  ftm_debug.c convert.c ftm_object.c
 LIB_FTM_OBJS=$(LIB_FTM_SRCS:.c=.o)
 
 all: $(LIB_FTM) $(SERVER)

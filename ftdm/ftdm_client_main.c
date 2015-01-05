@@ -243,7 +243,6 @@ FTM_RET	_node(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	FTM_CHAR	pDID[FTM_DID_LEN + 1];
 	FTM_CHAR	pURL[FTM_URL_LEN + 1];
 	FTM_CHAR	pLocation[FTM_LOCATION_LEN + 1];
-	FTM_ULONG	xType;
 	FTDMC_SUB_CMD	nSubCommand = FTDMC_SUB_CMD_HELP;
 	
 	memset(pDID, 0, sizeof(pDID));
@@ -279,7 +278,6 @@ FTM_RET	_node(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	
 	}
 
-	MESSAGE("SubCmd : %d\n", nSubCommand);
 	switch(nSubCommand)
 	{
 	case		FTDMC_SUB_CMD_ADD:
@@ -294,9 +292,9 @@ FTM_RET	_node(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 
 			memset(&xNodeInfo, 0, sizeof(FTM_NODE_INFO));
-			xNodeInfo.xType = atoi(pArgv[3]);
+			xNodeInfo.xType = strtol(pArgv[3], 0, 16);
 
-			if (xNodeInfo.xType == FTM_NODE_TYPE_ETH_SNMP)
+			if (xNodeInfo.xType == FTM_NODE_TYPE_SNMP)
 			{
 				if (nArgc != 6)
 				{
@@ -331,7 +329,7 @@ FTM_RET	_node(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 			else
 			{
-				ERROR("Invalid Node Type [ Type = %08lx ]\n", xType);
+				ERROR("Invalid Node Type [ Type = %08lx ]\n", xNodeInfo.xType);
 
 				bShowUsage = FTM_BOOL_TRUE;	
 				break;	
@@ -416,7 +414,8 @@ FTM_RET	_node(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 				}
 
-				MESSAGE("%32s %8s %16s %16s\n", "DID", "TYPE", "LOCATION", "OPTION");
+				MESSAGE("%16s %16s %16s %16s %16s %16s %16s\n", 
+					"DID", "TYPE", "LOCATION", "OPT0", "OPT1", "OPT2", "OPT3");
 
 				for(i = 0 ; i < nNodeCount; i++)
 				{
@@ -425,10 +424,25 @@ FTM_RET	_node(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					nRet = FTDMC_getNodeInfoByIndex(_hClient, i, &xInfo);
 					if (nRet == FTM_RET_OK)
 					{
-						MESSAGE("%32s %8lu %16s\n", 
+						MESSAGE("%16s %16s %16s ", 
 							xInfo.pDID, 
-							xInfo.xType, 
+							FTM_nodeTypeString(xInfo.xType), 
 							xInfo.pLocation);
+
+						switch(xInfo.xType)
+						{
+						case	FTM_NODE_TYPE_SNMP:
+							{
+								MESSAGE("%16d %16s %16s", 
+									xInfo.xOption.xSNMP.nVersion,
+									xInfo.xOption.xSNMP.pURL,
+									xInfo.xOption.xSNMP.pCommunity);
+								
+							}
+							break;
+						}
+
+						MESSAGE("\n");
 					}
 				
 				}
@@ -499,76 +513,70 @@ FTM_RET	_ep(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			nSubCommand = FTDMC_SUB_CMD_DATA;			
 		}
 
-		switch(nArgc)
+		switch(nSubCommand)
 		{
-		case	9:
-			if (strlen(pArgv[8]) > FTM_DID_LEN)
+		case	FTDMC_SUB_CMD_ADD:
 			{
-				bShowUsage = FTM_BOOL_TRUE;
-				break;
-			}
-
-			for(i = 0 ; i < strlen(pArgv[8]) ; i++)
-			{
-				pPID[i] = toupper(pArgv[8][i]);	
-			}
-
-		case	8:
-			if (strlen(pArgv[7]) > FTM_DID_LEN)
-			{
-				bShowUsage = FTM_BOOL_TRUE;
-				break;
-			}
-
-			for(i = 0 ; i < strlen(pArgv[7]) ; i++)
-			{
-				pDID[i] = toupper(pArgv[7][i]);	
-			}
-
-		case	7:
-			nInterval = atoi(pArgv[6]);
-
-		case	6:
-			if (strlen(pArgv[5]) > FTM_UNIT_LEN)
-			{
-				bShowUsage = FTM_BOOL_TRUE;
-				break;
-			}
-
-			for(i = 0 ; i < strlen(pArgv[5]) ; i++)
-			{
-				pUnit[i] = toupper(pArgv[5][i]);	
-			}
-
-		case	5:
-			if (strlen(pArgv[4]) > FTM_NAME_LEN)
-			{
-				bShowUsage = FTM_BOOL_TRUE;
-				break;
-			}
-
-			for(i = 0 ; i < strlen(pArgv[4]) ; i++)
-			{
-				pName[i] = toupper(pArgv[4][i]);	
-			}
-
-		case	4:
-			nType = atoi(pArgv[3]);
-
-		case	3:
-			xEPID = atoi(pArgv[2]);
-
-		case	2:
-			{
-				switch(nSubCommand)
+				switch(nArgc)
 				{
-				case	FTDMC_SUB_CMD_HELP:
+				case	9:
+					if (strlen(pArgv[8]) > FTM_DID_LEN)
 					{
 						bShowUsage = FTM_BOOL_TRUE;
+						break;
 					}
-					break;
 
-				case	FTDMC_SUB_CMD_ADD:
+					for(i = 0 ; i < strlen(pArgv[8]) ; i++)
+					{
+						pPID[i] = toupper(pArgv[8][i]);	
+					}
+
+				case	8:
+					if (strlen(pArgv[7]) > FTM_DID_LEN)
+					{
+						bShowUsage = FTM_BOOL_TRUE;
+						break;
+					}
+
+					for(i = 0 ; i < strlen(pArgv[7]) ; i++)
+					{
+						pDID[i] = toupper(pArgv[7][i]);	
+					}
+
+				case	7:
+					nInterval = atoi(pArgv[6]);
+
+				case	6:
+					if (strlen(pArgv[5]) > FTM_UNIT_LEN)
+					{
+						bShowUsage = FTM_BOOL_TRUE;
+						break;
+					}
+
+					for(i = 0 ; i < strlen(pArgv[5]) ; i++)
+					{
+						pUnit[i] = toupper(pArgv[5][i]);	
+					}
+
+				case	5:
+					if (strlen(pArgv[4]) > FTM_NAME_LEN)
+					{
+						bShowUsage = FTM_BOOL_TRUE;
+						break;
+					}
+
+					for(i = 0 ; i < strlen(pArgv[4]) ; i++)
+					{
+						pName[i] = toupper(pArgv[4][i]);	
+					}
+
+				case	4:
+					nType = atoi(pArgv[3]);
+
+				case	3:
+					xEPID = atoi(pArgv[2]);
+
+				case	2:
 					{
 						FTM_EP_INFO	xInfo;
 
@@ -588,49 +596,66 @@ FTM_RET	_ep(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					}
 					break;
 
-				case	FTDMC_SUB_CMD_DEL:
-					{
-						nRet = FTDMC_destroyEP(_hClient, xEPID);	
-						if (nRet != FTM_RET_OK)
-						{
-							ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
-						}
-					}
-					break;
-
-				case	FTDMC_SUB_CMD_LIST:
-					{
-						FTM_ULONG	nCount;
-
-						nRet = FTDMC_getEPCount(_hClient, &nCount);
-						if (nRet != FTM_RET_OK)
-						{
-							ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
-							break;
-						}
-
-						for(i = 0 ; i< nCount ; i++)
-						{
-							FTM_EP_INFO	xInfo;
-
-							nRet = FTDMC_getEPInfoByIndex(_hClient, i, &xInfo);
-							if (nRet == FTM_RET_OK)
-							{
-								MESSAGE("%08lx %08lx %16s %16s %4lu %16s %16s\n",
-										xInfo.xEPID,
-										xInfo.xType,
-										xInfo.pName,
-										xInfo.pUnit,
-										xInfo.nInterval,
-										xInfo.pDID,
-										xInfo.pPID);
-							}
-						}
-					}
+				default:
+					bShowUsage = FTM_BOOL_TRUE;
 					break;
 				}
+				break;
+
+			case	FTDMC_SUB_CMD_DEL:
+				{
+					if (nArgc != 3)
+					{
+						bShowUsage = FTM_BOOL_TRUE;
+						break;
+					}
+
+					xEPID = atoi(pArgv[2]);
+					nRet = FTDMC_destroyEP(_hClient, xEPID);	
+					if (nRet != FTM_RET_OK)
+					{
+						ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+					}
+				}
+				break;
+
+			case	FTDMC_SUB_CMD_LIST:
+				{
+					FTM_ULONG	nCount;
+
+					nRet = FTDMC_getEPCount(_hClient, &nCount);
+					if (nRet != FTM_RET_OK)
+					{
+						ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+						break;
+					}
+
+					MESSAGE("%8s %8s %16s %16s %8s %16s %16s\n",
+						"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
+
+					for(i = 0 ; i< nCount ; i++)
+					{
+						FTM_EP_INFO	xInfo;
+
+						nRet = FTDMC_getEPInfoByIndex(_hClient, i, &xInfo);
+						if (nRet == FTM_RET_OK)
+						{
+							MESSAGE("%08lx %08lx %16s %16s %8lu %16s %16s\n",
+									xInfo.xEPID,
+									xInfo.xType,
+									xInfo.pName,
+									xInfo.pUnit,
+									xInfo.nInterval,
+									xInfo.pDID,
+									xInfo.pPID);
+						}
+					}
+				}
+				break;
+
+			default:
+				bShowUsage = FTM_BOOL_TRUE;
 			}
-			break;
 		}
 
 	}
