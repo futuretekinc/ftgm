@@ -1,41 +1,43 @@
 #include "ftdm.h"
-#include "ftdm_debug.h"
+#include "ftm_debug.h"
+#include "ftdm_device.h"
+#include "ftdm_ep.h"
 #include "sqlite_if.h"
 
-FTDM_RET 	FTDM_init(void)
+FTM_RET 	FTDM_init(void)
 {
-	if ((FTDM_DBIF_init() != FTDM_RET_OK) ||
-		(FTDM_DBIF_initDeviceInfoTable() != FTDM_RET_OK) ||
-		(FTDM_DBIF_initEPInfoTable() != FTDM_RET_OK) ||
-		(FTDM_DBIF_initEPDataTable() != FTDM_RET_OK))
+	if ((FTDM_DBIF_init() != FTM_RET_OK) ||
+		(FTDM_DBIF_initNodeInfoTable() != FTM_RET_OK) ||
+		(FTDM_DBIF_initEPInfoTable() != FTM_RET_OK) ||
+		(FTDM_DBIF_initEPDataTable() != FTM_RET_OK))
 	{
 		TRACE("FTDM initialization failed.\n");
 
-		return	FTDM_RET_ERROR;
+		return	FTM_RET_ERROR;
 	
 	}
 
-	FTDM_initDevice();
+	FTDM_initNode();
 	FTDM_initEP();
 
 	TRACE("FTDM initialization completed successfully.\n");
 
-	return	FTDM_RET_OK;
+	return	FTM_RET_OK;
 }
 
-FTDM_RET	FTDM_final(void)
+FTM_RET	FTDM_final(void)
 {
-	FTDM_finalDevice();
+	FTDM_finalNode();
 
-	if (FTDM_DBIF_final() != FTDM_RET_OK)
+	if (FTDM_DBIF_final() != FTM_RET_OK)
 	{
 		TRACE("FTDM finalization failed.\n");
 
-		return	FTDM_RET_OK;
+		return	FTM_RET_OK;
 	}
 
 	TRACE("FTDM finalization completed successfully.\n");
 
-	return	FTDM_RET_OK;
+	return	FTM_RET_OK;
 }
 

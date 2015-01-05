@@ -1,188 +1,188 @@
 #ifndef	__SQLITE_IF_H__
 #define	__SQLITE_IF_H__
 
-FTDM_RET	FTDM_DBIF_init
+FTM_RET	FTDM_DBIF_init
 (
 	void
 );
 
-FTDM_RET	FTDM_DBIF_final
+FTM_RET	FTDM_DBIF_final
 (
 	void
 );
 
-FTDM_RET	FTDM_DBIF_initDeviceInfoTable
+FTM_RET	FTDM_DBIF_initNodeInfoTable
 (
 	void
 );
 
-FTDM_RET	FTDM_DBIF_getDeviceCount
+FTM_RET	FTDM_DBIF_getNodeCount
 (
-	FTDM_ULONG_PTR		pCount
+	FTM_ULONG_PTR		pCount
 );
 
-FTDM_RET	FTDM_DBIF_getDeviceList
+FTM_RET	FTDM_DBIF_getNodeList
 (
-	FTDM_DEVICE_INFO_PTR	pInfos,
-	FTDM_ULONG				nMaxCount,
-	FTDM_ULONG_PTR			pCount
+	FTM_NODE_INFO_PTR	pInfos,
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pCount
 );
 
-FTDM_RET	FTDM_DBIF_insertDeviceInfo
+FTM_RET	FTDM_DBIF_insertNodeInfo
 (
- 	FTDM_DEVICE_INFO_PTR	pInfo
+ 	FTM_NODE_INFO_PTR	pInfo
 );
 
-FTDM_RET	FTDM_DBIF_removeDeviceInfo
+FTM_RET	FTDM_DBIF_removeNodeInfo
 (
-	FTDM_CHAR_PTR			pDID
+	FTM_CHAR_PTR		pDID
 );
 
-FTDM_RET	FTDM_DBIF_getDeviceInfo
+FTM_RET	FTDM_DBIF_getNodeInfo
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_DEVICE_INFO_PTR	pInfo
+	FTM_CHAR_PTR		pDID,
+	FTM_NODE_INFO_PTR	pInfo
 );
 
-FTDM_RET	FTDM_DBIF_setDeviceURL
+FTM_RET	FTDM_DBIF_setNodeURL
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_CHAR_PTR			pURL
+	FTM_CHAR_PTR			pDID,
+	FTM_CHAR_PTR			pURL
 );
 
-FTDM_RET	FTDM_DBIF_getDeviceURL
+FTM_RET	FTDM_DBIF_getNodeURL
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_CHAR_PTR			pBuff,
-	FTDM_ULONG				nBuffLen
+	FTM_CHAR_PTR			pDID,
+	FTM_CHAR_PTR			pBuff,
+	FTM_ULONG				nBuffLen
 );
 
-FTDM_RET	FTDM_DBIF_setDeviceLocation
+FTM_RET	FTDM_DBIF_setNodeLocation
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_CHAR_PTR			pLocation
+	FTM_CHAR_PTR			pDID,
+	FTM_CHAR_PTR			pLocation
 );
 
-FTDM_RET	FTDM_DBIF_getDeviceLocation
+FTM_RET	FTDM_DBIF_getNodeLocation
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_CHAR_PTR			pBuff,
-	FTDM_ULONG				nBuffLen
+	FTM_CHAR_PTR			pDID,
+	FTM_CHAR_PTR			pBuff,
+	FTM_ULONG				nBuffLen
 );
 
-FTDM_RET	FTDM_DBIF_initEPInfoTable
+FTM_RET	FTDM_DBIF_initEPInfoTable
 (
 	void
 );
 
-FTDM_RET	FTDM_DBIF_insertEPInfo
+FTM_RET	FTDM_DBIF_insertEPInfo
 (
- 	FTDM_EP_INFO_PTR		pInfo
+ 	FTM_EP_INFO_PTR		pInfo
 );
 
-FTDM_RET	FTDM_DBIF_removeEPInfo
+FTM_RET	FTDM_DBIF_removeEPInfo
 (
-	FTDM_EP_ID				xEPID
+	FTM_EPID			xEPID
 );
 
-FTDM_RET	FTDM_DBIF_getEPCount
+FTM_RET	FTDM_DBIF_getEPCount
 (
-	FTDM_ULONG_PTR			pCount
+	FTM_ULONG_PTR			pCount
 );
 
-FTDM_RET	FTDM_DBIF_getEPList
+FTM_RET	FTDM_DBIF_getEPList
 (
-	FTDM_EP_INFO_PTR		pInfos,
-	FTDM_ULONG				nMaxCount,
-	FTDM_ULONG_PTR			pCount
+	FTM_EP_INFO_PTR		pInfos,
+	FTM_ULONG				nMaxCount,
+	FTM_ULONG_PTR			pCount
 );
 
-FTDM_RET	FTDM_DBIF_getEPInfo
+FTM_RET	FTDM_DBIF_getEPInfo
 (
-	FTDM_EP_ID 				xEPID, 
-	FTDM_EP_INFO_PTR		pInfo
+	FTM_EPID 				xEPID, 
+	FTM_EP_INFO_PTR		pInfo
 );
 
-FTDM_RET	FTDM_DBIF_setEPName
+FTM_RET	FTDM_DBIF_setEPName
 (
-	FTDM_EP_ID				xEPID,
-	FTDM_CHAR_PTR			pName,
-	FTDM_INT				nNameLen
+	FTM_EPID				xEPID,
+	FTM_CHAR_PTR			pName,
+	FTM_INT				nNameLen
 );
 
-FTDM_RET	FTDM_DBIF_getEPName
+FTM_RET	FTDM_DBIF_getEPName
 (
-	FTDM_EP_ID				xEPID,
-	FTDM_CHAR_PTR			pName,
-	FTDM_INT_PTR			pNameLen
+	FTM_EPID				xEPID,
+	FTM_CHAR_PTR			pName,
+	FTM_INT_PTR			pNameLen
 );
 
-FTDM_RET	FTDM_DBIF_setEPInterval
+FTM_RET	FTDM_DBIF_setEPInterval
 (
-	FTDM_EP_ID				xEPID,
-	FTDM_ULONG				nInterval
+	FTM_EPID				xEPID,
+	FTM_ULONG				nInterval
 );
 
-FTDM_RET	FTDM_DBIF_getEPInterval
+FTM_RET	FTDM_DBIF_getEPInterval
 (
-	FTDM_EP_ID				xEPID,
-	FTDM_ULONG_PTR			pInterval
+	FTM_EPID				xEPID,
+	FTM_ULONG_PTR			pInterval
 );
 
-FTDM_RET	FTDM_DBIF_setEPUnit
+FTM_RET	FTDM_DBIF_setEPUnit
 (
-	FTDM_EP_ID				xEPID,
-	FTDM_CHAR_PTR			pUnit,
-	FTDM_INT				nUnitLen
+	FTM_EPID				xEPID,
+	FTM_CHAR_PTR			pUnit,
+	FTM_INT				nUnitLen
 );
 
-FTDM_RET	FTDM_DBIF_getEPUnit
+FTM_RET	FTDM_DBIF_getEPUnit
 (
-	FTDM_EP_ID				xEPID,
-	FTDM_CHAR_PTR			pUnit,
-	FTDM_INT_PTR			pUnitLen
+	FTM_EPID				xEPID,
+	FTM_CHAR_PTR			pUnit,
+	FTM_INT_PTR			pUnitLen
 );
 
 
-FTDM_RET	FTDM_DBIF_initEPDataTable
+FTM_RET	FTDM_DBIF_initEPDataTable
 (
-	FTDM_VOID
+	FTM_VOID
 );
 
-FTDM_RET	FTDM_DBIF_appendEPData
+FTM_RET	FTDM_DBIF_appendEPData
 (
-	FTDM_EP_ID				xEPID,
-	FTDM_ULONG				xTime,
-	FTDM_ULONG				nValue
+	FTM_EPID				xEPID,
+	FTM_ULONG				xTime,
+	FTM_ULONG				nValue
 );
 
-FTDM_RET	FTDM_DBIF_EPDataCount
+FTM_RET	FTDM_DBIF_EPDataCount
 (
-	FTDM_EP_ID_PTR			pEPID,
-	FTDM_ULONG				nEPID,
-	FTDM_ULONG				xBeginTime,
-	FTDM_ULONG				xEndTime,
-	FTDM_ULONG_PTR			pCount
+	FTM_EPID_PTR			pEPID,
+	FTM_ULONG				nEPID,
+	FTM_ULONG				xBeginTime,
+	FTM_ULONG				xEndTime,
+	FTM_ULONG_PTR			pCount
 );
 
-FTDM_RET	FTDM_DBIF_getEPData
+FTM_RET	FTDM_DBIF_getEPData
 (
-	FTDM_EP_ID_PTR			pEPID,
-	FTDM_ULONG				nEPIDCount,
-	FTDM_ULONG				xBeginTime,
-	FTDM_ULONG				xEndTime,
-	FTDM_EP_DATA_PTR		pEPData,
-	FTDM_ULONG				nMaxCount,
-	FTDM_ULONG_PTR			pCount
+	FTM_EPID_PTR			pEPID,
+	FTM_ULONG				nEPIDCount,
+	FTM_ULONG				xBeginTime,
+	FTM_ULONG				xEndTime,
+	FTM_EP_DATA_PTR		pEPData,
+	FTM_ULONG				nMaxCount,
+	FTM_ULONG_PTR			pCount
 );
 
-FTDM_RET	FTDM_DBIF_removeEPData
+FTM_RET	FTDM_DBIF_removeEPData
 (
-	FTDM_EP_ID_PTR			pEPID,
-	FTDM_ULONG				nEPIDCount,
-	FTDM_ULONG				xBeginTime,
-	FTDM_ULONG				xEndTime,
-	FTDM_ULONG				nCount
+	FTM_EPID_PTR			pEPID,
+	FTM_ULONG				nEPIDCount,
+	FTM_ULONG				xBeginTime,
+	FTM_ULONG				xEndTime,
+	FTM_ULONG				nCount
 );
 
 #endif

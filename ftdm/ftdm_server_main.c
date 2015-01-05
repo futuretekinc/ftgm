@@ -16,19 +16,19 @@
 
 typedef	struct
 {
-	FTDM_INT			hSocket;
+	FTM_INT			hSocket;
 	struct sockaddr_in	xPeer;
-	FTDM_BYTE			pReqBuff[FTDM_PACKET_LEN];
-	FTDM_BYTE			pRespBuff[FTDM_PACKET_LEN];
+	FTM_BYTE			pReqBuff[FTDM_PACKET_LEN];
+	FTM_BYTE			pRespBuff[FTDM_PACKET_LEN];
 }	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
 
-static FTDM_VOID_PTR 	FTDMS_serviceHandler(FTDM_VOID_PTR pData);
-static FTDM_RET 		FTDMS_startDaemon(FTDM_USHORT nPort);
+static FTM_VOID_PTR 	FTDMS_serviceHandler(FTM_VOID_PTR pData);
+static FTM_RET 		FTDMS_startDaemon(FTM_USHORT nPort);
 
 int main(int argc, char *argv[])
 {
-	FTDM_INT	nOpt;
-	FTDM_USHORT	nPort = FTDM_SERVICE_PORT;
+	FTM_INT	nOpt;
+	FTM_USHORT	nPort = FTDM_SERVICE_PORT;
 
 	while((nOpt = getopt(argc, argv, "P:SV")) != -1)
 	{
@@ -51,12 +51,13 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	setPrintMode(2);
 	FTDMS_startDaemon(nPort);
 
 	return	0;
 }
 
-FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
+FTM_RET FTDMS_startDaemon(FTM_USHORT nPort)
 {
 	int					nRet;
 	int					hSocket;
@@ -68,7 +69,7 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 	if (hSocket == -1)
 	{
 		ERROR("Could not create socket\n");
-		return	FTDM_RET_ERROR;
+		return	FTM_RET_ERROR;
 	}
 
 	xServer.sin_family 		= AF_INET;
@@ -79,7 +80,7 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 	if (nRet < 0)
 	{
 		ERROR("bind failed.\n");
-		return	FTDM_RET_ERROR;
+		return	FTM_RET_ERROR;
 	}
 
 	listen(hSocket, 3);
@@ -118,10 +119,10 @@ FTDM_RET FTDMS_startDaemon(FTDM_USHORT nPort)
 		}
 	}
 
-	return	FTDM_RET_OK;
+	return	FTM_RET_OK;
 }
 
-FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
+FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData)
 {
 	FTDM_SESSION_PTR		pSession= (FTDM_SESSION_PTR)pData;
 	FTDM_REQ_PARAMS_PTR		pReq 	= (FTDM_REQ_PARAMS_PTR)pSession->pReqBuff;
@@ -144,10 +145,10 @@ FTDM_VOID_PTR FTDMS_serviceHandler(FTDM_VOID_PTR pData)
 			break;	
 		}
 
-		if (FTDM_RET_OK != FTDMS_service(pReq, pResp))
+		if (FTM_RET_OK != FTDMS_service(pReq, pResp))
 		{
 			pResp->xCmd = pReq->xCmd;
-			pResp->nRet = FTDM_RET_INTERNAL_ERROR;
+			pResp->nRet = FTM_RET_INTERNAL_ERROR;
 			pResp->nLen = sizeof(FTDM_RESP_PARAMS);
 		}
 

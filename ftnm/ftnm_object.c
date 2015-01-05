@@ -4,6 +4,7 @@
 #include <time.h>
 #include "ftnm.h"
 #include "ftnm_object.h"
+#include "ftnm_snmp_client.h"
 #include "simclist.h"
 
 
@@ -44,13 +45,21 @@ FTM_RET FTNM_finalNodeManager(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_createNodeSNMP(FTDM_DEVICE_INFO_PTR pInfo)
+FTM_RET	FTNM_createNodeSNMP(FTDM_DEVICE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 {
-	FTNM_NODE_SNMP_PTR	pNode;
+	FTNM_NODE_PTR			pNode;
+	FTNM_SNMP_CONTEXT_PTR	pSNMP;
 
-	pNode = (FTNM_NODE_SNMP_PTR)calloc(1, sizeof(FTNM_NODE_SNMP));
+	pNode = (FTNM_NODE_PTR)calloc(1, sizeof(FTNM_NODE));
 	if (pNode == NULL)
 	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pSNMP = (FTNM_SNMP_CONTEXT_PTR)calloc(1, sizeof(FTNM_SNMP_CONTEXT));
+	if (pSNMP == NULL)
+	{
+		free(pNode);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -59,13 +68,19 @@ FTM_RET	FTNM_createNodeSNMP(FTDM_DEVICE_INFO_PTR pInfo)
 	memcpy(&pNode->xInfo, pInfo, sizeof(FTDM_DEVICE_INFO));
 	list_init(&pNode->xEPList);
 
-	pNode->xSNMP.nVersion = SNMP_VERSION_2c;
-	pNode->xSNMP.pPeerName= "10.0.1.35";
-	pNode->xSNMP.pCommunity= "public";
-	list_init(&pNode->xSNMP.xOIDList);
+	pSNMP->xInfo.nVersion = SNMP_VERSION_2c;
+	strcpy(pSNMP->xInfo.pPeerName, pInfo->pURL);
+	strcpy(pSNMP->xInfo.pCommunity, "public");
+	list_init(&pSNMP->xOIDList);
 
+	pNode->pData = pSNMP;
 	pNode->nUpdateInterval = 10;
 	list_append(&xNodeList, pNode);
+
+	if (ppNode != NULL)
+	{
+		*ppNode = pNode;	
+	}
 
 	return	FTM_RET_OK;
 }
@@ -96,6 +111,12 @@ FTM_RET	FTNM_destroyNode(FTM_CHAR_PTR	pDID)
 		}
 	}
 
+	if (pNode->pData != NULL)
+	{
+		free(pNode->pData);
+		pNode->pData = NULL;
+	}
+
 	list_destroy(&pNode->xEPList);
 	free(pNode);
 
@@ -119,12 +140,22 @@ FTM_RET FTNM_getNode(FTDM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode)
 
 FTM_RET	FTNM_startNode(FTNM_NODE_PTR pNode)
 {
+	FTM_INT	nRet;
+
 	if (pNode == NULL) 
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	pthread_create(&pNode->xPThread, NULL, &FTNM_threadMain, (FTM_VOID_PTR)pNode);
+	nRet =  pthread_create(&pNode->xPThread, NULL, &FTNM_threadMain, (FTM_VOID_PTR)pNode);
+	if (nRet != 0)
+	{
+		TRACE("pthread_create failed [nRet = %d]\n", nRet);
+		pNode->xPThread = 0;
+		return	FTM_RET_CANT_CREATE_THREAD;
+	}
+
+	TRACE("pthread_create success [xPThread = %08lx]\n", pNode->xPThread);
 
 	return	FTM_RET_OK;
 }
@@ -188,23 +219,27 @@ FTM_RET FTNM_addEP(FTDM_EP_INFO_PTR pInfo)
 	
 	return	FTM_RET_OK;
 }
-static FTM_INT nTemp = 0;
 
 static FTM_VOID_PTR	FTNM_threadMain(FTM_VOID_PTR pParams)
 {
 	FTNM_NODE_PTR	pNode = (FTNM_NODE_PTR)pParams;
 	time_t			xBaseTime, xCurrentTime;
 
+	MESSAGE("%s[%d] : pNode = %08lx, pDID = %s\n", __func__, __LINE__, pNode, pNode->xInfo.pDID);
 	xBaseTime = time(NULL);
 	while(1)
 	{
+		MESSAGE("%s[%d] : pDID = %s,  xType = %d\n", __func__, __LINE__, pNode->xInfo.pDID, pNode->xType);
 		switch(pNode->xType)
 		{
 		case	FTNM_NODE_TYPE_SNMP:
 			{
-				if (FTNM_snmpIsRunning(&((FTNM_NODE_SNMP_PTR)pNode)->xSNMP) != FTM_BOOL_TRUE)
+					MESSAGE("%s[%d] : pDID = %s\n", __func__, __LINE__, pNode->xInfo.pDID);
+				if (FTNM_snmpIsRunning(pNode) != FTM_BOOL_TRUE)
 				{
-						FTNM_snmpClientAsyncCall(&((FTNM_NODE_SNMP_PTR)pNode)->xSNMP);
+					MESSAGE("%s[%d] : pDID = %s\n", __func__, __LINE__, pNode->xInfo.pDID);
+
+					FTNM_snmpClientAsyncCall(pNode);
 				}
 			}
 			break;

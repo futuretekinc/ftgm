@@ -1,35 +1,29 @@
-#ifndef	__FTDM_DEVICE_H__
-#define	__FTDM_DEVICE_H__
+#ifndef	__FTM_DEVICE_H__
+#define	__FTM_DEVICE_H__
 
-#include "ftdm_type.h"
+#include "ftm_types.h"
+#include "ftm_object.h"
 
 #define	FTDM_DT_ROOT	0x00000001
 
-typedef	struct _FTDM_DEVICE
-{
-	struct _FTDM_DEVICE	* pPrev;
-	struct _FTDM_DEVICE	* pNext;
-	FTDM_DEVICE_INFO	xInfo;
-}	FTDM_DEVICE, _PTR_ FTDM_DEVICE_PTR;
-
-FTDM_RET	FTDM_initDevice
+FTM_RET	FTDM_initNode
 (
- 	FTDM_VOID
+ 	FTM_VOID
 );
 
-FTDM_RET	FTDM_finalDevice
+FTM_RET	FTDM_finalNode
 (
- 	FTDM_VOID
+ 	FTM_VOID
 );
 
-FTDM_RET	FTDM_insertDevice
+FTM_RET	FTDM_insertNode
 (
- 	FTDM_DEVICE_PTR pDevice
+ 	FTM_NODE_INFO_PTR pNode
 );
 
-FTDM_RET	FTDM_removeDevice
+FTM_RET	FTDM_removeNode
 (
- 	FTDM_DEVICE_PTR pDevice
+ 	FTM_NODE_INFO_PTR pNode
 );
 
 #endif

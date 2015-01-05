@@ -17,11 +17,8 @@ typedef	int				FTM_BOOL, _PTR_ FTM_BOOL_PTR;
 
 typedef	unsigned long	FTM_IP_ADDR, _PTR_ FTM_IP_ADDR_PTR;
 
-typedef	unsigned long	FTM_DEVICE_TYPE, _PTR_ FTM_DEVICE_TYPE_PTR;
 typedef	unsigned long	FTM_RET, _PTR_ FTM_RET_PTR;
 typedef	unsigned long	FTM_CMD, _PTR_ FTM_CMD_PTR;
-
-typedef	unsigned long	FTM_EP_ID, _PTR_ FTM_EP_ID_PTR;
 
 #define	FTM_RET_OK							0x00000000
 #define	FTM_RET_ERROR						0x00000001
@@ -50,6 +47,6 @@ typedef	unsigned long	FTM_EP_ID, _PTR_ FTM_EP_ID_PTR;
 #define	FTM_RET_SNMP_INIT_FAILED			(FTM_RET_SNMP_ERROR | 1)
 
 #define	FTM_RET_INTERNAL_ERROR				0x000F0000
-
+#define	FTM_RET_CANT_CREATE_THREAD			(FTM_RET_INTERNAL_ERROR | 1)
 
 #endif

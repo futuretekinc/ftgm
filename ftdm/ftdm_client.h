@@ -7,125 +7,122 @@
 
 typedef struct 
 {
-	FTDM_INT	hSock;
-	FTDM_INT	nTimeout;
+	FTM_INT	hSock;
+	FTM_INT	nTimeout;
 }	FTDM_CLIENT, * FTDM_CLIENT_PTR;
 
 typedef	FTDM_CLIENT_PTR	FTDM_CLIENT_HANDLE, _PTR_ FTDM_CLIENT_HANDLE_PTR;
 
-FTDM_RET FTDMC_connect
+FTM_RET FTDMC_connect
 (
-	FTDM_IP_ADDR			xIP,
-	FTDM_USHORT 			nPort, 
+	FTM_IP_ADDR			xIP,
+	FTM_USHORT 			nPort, 
 	FTDM_CLIENT_HANDLE_PTR	phClient
 );
 
-FTDM_RET FTDMC_disconnect
+FTM_RET FTDMC_disconnect
 (
 	FTDM_CLIENT_HANDLE		hClient
 );
 
-FTDM_RET FTDMC_isConnected
+FTM_RET FTDMC_isConnected
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_BOOL_PTR			pbConnected
+	FTM_BOOL_PTR			pbConnected
 );
 
-FTDM_RET FTDMC_createDevice
+FTM_RET FTDMC_createNode
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_CHAR_PTR			pDID,
-	FTDM_DEVICE_TYPE		xType,
-	FTDM_CHAR_PTR			pURL,
-	FTDM_CHAR_PTR			pLocation
+	FTM_NODE_INFO_PTR		pInfo
 );
 
-FTDM_RET FTDMC_destroyDevice
+FTM_RET FTDMC_destroyNode
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_CHAR_PTR			pDID
+	FTM_CHAR_PTR			pDID
 );
 
-FTDM_RET FTDMC_getDeviceCount
+FTM_RET FTDMC_getNodeCount
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_ULONG_PTR			pnCount
+	FTM_ULONG_PTR			pnCount
 );
 
-FTDM_RET FTDMC_getDeviceInfoByIndex
+FTM_RET FTDMC_getNodeInfoByIndex
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_ULONG				nIndex,
-	FTDM_DEVICE_INFO_PTR	pInfo
+	FTM_ULONG				nIndex,
+	FTM_NODE_INFO_PTR		pInfo
 );
 
-FTDM_RET FTDMC_getDeviceInfo
+FTM_RET FTDMC_getNodeInfo
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_CHAR_PTR			pDID,
-	FTDM_DEVICE_INFO_PTR	pInfo
+	FTM_CHAR_PTR			pDID,
+	FTM_NODE_INFO_PTR		pInfo
 );
 
-FTDM_RET FTDMC_createEP
+FTM_RET FTDMC_createEP
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_EP_INFO_PTR		pInfo
+	FTM_EP_INFO_PTR			pInfo
 );
 
-FTDM_RET FTDMC_destroyEP
+FTM_RET FTDMC_destroyEP
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_EP_ID				xEPID
+	FTM_EPID				xEPID
 );
 
-FTDM_RET FTDMC_getEPCount
+FTM_RET FTDMC_getEPCount
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_ULONG_PTR			pnCount
+	FTM_ULONG_PTR			pnCount
 );
 
-FTDM_RET FTDMC_getEPInfo
+FTM_RET FTDMC_getEPInfo
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_EP_ID				xEPID,
-	FTDM_EP_INFO_PTR		pInfo
+	FTM_EPID				xEPID,
+	FTM_EP_INFO_PTR		pInfo
 );
 
-FTDM_RET FTDMC_getEPInfoByIndex
+FTM_RET FTDMC_getEPInfoByIndex
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_ULONG				nIndex,
-	FTDM_EP_INFO_PTR		pInfo
+	FTM_ULONG				nIndex,
+	FTM_EP_INFO_PTR		pInfo
 );
 
-FTDM_RET FTDMC_appendEPData
+FTM_RET FTDMC_appendEPData
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_EP_ID				xEPID,
-	FTDM_ULONG				nTime,
-	FTDM_ULONG				nValue
+	FTM_EPID				xEPID,
+	FTM_ULONG				nTime,
+	FTM_ULONG				nValue
 );
 
-FTDM_RET FTDMC_getEPData
+FTM_RET FTDMC_getEPData
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_EP_ID_PTR			pEPID,
-	FTDM_ULONG				nEPIDCount,
-	FTDM_ULONG				nBeginTime,
-	FTDM_ULONG				nEndTime,
-	FTDM_EP_DATA_PTR		pData,
-	FTDM_ULONG				nMaxCount,
-	FTDM_ULONG_PTR			pnCount
+	FTM_EPID_PTR			pEPID,
+	FTM_ULONG				nEPIDCount,
+	FTM_ULONG				nBeginTime,
+	FTM_ULONG				nEndTime,
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG				nMaxCount,
+	FTM_ULONG_PTR			pnCount
 );
 
-FTDM_RET FTDMC_removeEPData
+FTM_RET FTDMC_removeEPData
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTDM_EP_ID_PTR			pEPID,
-	FTDM_ULONG				nEPIDCount,
-	FTDM_ULONG				nBeginTime,
-	FTDM_ULONG				nEndTime,
-	FTDM_ULONG				nCount
+	FTM_EPID_PTR			pEPID,
+	FTM_ULONG				nEPIDCount,
+	FTM_ULONG				nBeginTime,
+	FTM_ULONG				nEndTime,
+	FTM_ULONG				nCount
 );
 
 #endif

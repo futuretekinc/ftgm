@@ -11,7 +11,14 @@
 #define	MSG_ALL			(MSG_NORMAL | MSG_TRACE | MSG_ERROR)
 
 void setPrintMode(unsigned long	nMode);
-void printOut(unsigned long nLevel, char *format, ...);
+void printOut
+(
+	unsigned long 	nLevel, 
+	const char		*pFunction,
+	int				nLine,
+	char 			*pFormat, 
+	...
+);
 
 #define	ASSERT(...)
 
@@ -22,8 +29,8 @@ FTM_VOID	FTM_dumpPacket
 	FTM_INT		nLen
 );
 
-#define MESSAGE(format, ...) printOut(MSG_NORMAL, format, ## __VA_ARGS__)
+#define MESSAGE(format, ...) printOut(MSG_NORMAL, NULL, 0, format, ## __VA_ARGS__)
 
-#define	TRACE(format, ...) printOut(MSG_TRACE, format, ## __VA_ARGS__)
-#define	ERROR(format, ...) printOut(MSG_ERROR, format, ## __VA_ARGS__)
+#define	TRACE(format, ...) printOut(MSG_TRACE, __func__, __LINE__, format, ## __VA_ARGS__)
+#define	ERROR(format, ...) printOut(MSG_ERROR, __func__, __LINE__, format, ## __VA_ARGS__)
 #endif

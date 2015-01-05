@@ -1,4 +1,5 @@
 #include <string.h>
+#include "ftm_debug.h"
 #include "ftnm_snmp_client.h"
 
 static FTM_INT	FTNM_snmpClientAsyncResponse
@@ -30,9 +31,11 @@ FTM_RET	FTNM_snmpClientFinal(void)
 	return	FTM_RET_OK;
 }
 
-FTM_BOOL	FTNM_snmpIsRunning(FTNM_SNMP_INFO_PTR pInfo)
+FTM_BOOL	FTNM_snmpIsRunning(FTNM_NODE_PTR pNode)
 {
-	if (pInfo->nStatus & FTNM_SNMP_STATUS_RUNNING)
+	FTNM_SNMP_CONTEXT_PTR	pSNMP = (FTNM_SNMP_CONTEXT_PTR)pNode->pData;
+
+	if (pSNMP->nStatus & FTNM_SNMP_STATUS_RUNNING)
 	{
 		return	FTM_BOOL_TRUE;	
 	}
@@ -40,9 +43,11 @@ FTM_BOOL	FTNM_snmpIsRunning(FTNM_SNMP_INFO_PTR pInfo)
 	return	FTM_BOOL_FALSE;
 }
 
-FTM_BOOL	FTNM_snmpIsCompleted(FTNM_SNMP_INFO_PTR pInfo)
+FTM_BOOL	FTNM_snmpIsCompleted(FTNM_NODE_PTR pNode)
 {
-	if (pInfo->nStatus & FTNM_SNMP_STATUS_COMPLETED)
+	FTNM_SNMP_CONTEXT_PTR	pSNMP = (FTNM_SNMP_CONTEXT_PTR)pNode->pData;
+
+	if (pSNMP->nStatus & FTNM_SNMP_STATUS_COMPLETED)
 	{
 		return	FTM_BOOL_TRUE;	
 	}
@@ -50,30 +55,31 @@ FTM_BOOL	FTNM_snmpIsCompleted(FTNM_SNMP_INFO_PTR pInfo)
 	return	FTM_BOOL_FALSE;
 }
 
-FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_INFO_PTR pInfo)
+FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_CONTEXT_PTR pSNMP)
 {
 	/* startup all hosts */
 	FTNM_SNMP_OID_PTR	pOID;
 	struct snmp_pdu 	*pPDU;
 	struct snmp_session xSession;
 
-	pInfo->nCurrentOID = 0;
-	pOID = (FTNM_SNMP_OID_PTR)list_get_at(&pInfo->xOIDList, pInfo->nCurrentOID);
+	TRACE("pContext = %08lx\n", pSNMP);
+	pSNMP->nCurrentOID = 0;
+	pOID = (FTNM_SNMP_OID_PTR)list_get_at(&pSNMP->xOIDList, pSNMP->nCurrentOID);
 	if (pOID == NULL)
 	{
 		return	FTM_RET_OK;	
 	}
 
 	snmp_sess_init(&xSession);			/* initialize session */
-	xSession.version 		= pInfo->nVersion;
-	xSession.peername 		= strdup(pInfo->pPeerName);
-	xSession.community 		= (FTM_BYTE_PTR)strdup(pInfo->pCommunity);
-	xSession.community_len 	= strlen(pInfo->pCommunity);
+	xSession.version 		= pSNMP->xInfo.nVersion;
+	xSession.peername 		= strdup(pSNMP->xInfo.pPeerName);
+	xSession.community 		= (FTM_BYTE_PTR)strdup(pSNMP->xInfo.pCommunity);
+	xSession.community_len 	= strlen(pSNMP->xInfo.pCommunity);
 	xSession.callback 		= FTNM_snmpClientAsyncResponse;
-	xSession.callback_magic = pInfo;
+	xSession.callback_magic = pSNMP;
 
-	pInfo->pSession = snmp_open(&xSession);
-	if (pInfo->pSession == 0)
+	pSNMP->pSession = snmp_open(&xSession);
+	if (pSNMP->pSession == 0)
 	{
 		snmp_perror("snmp_open");
 		return	FTM_RET_COMM_ERROR;
@@ -83,24 +89,24 @@ FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_INFO_PTR pInfo)
 	pPDU = snmp_pdu_create(SNMP_MSG_GET);	/* send the first GET */
 	if (pPDU == NULL)
 	{
-		snmp_close(pInfo->pSession);
-		pInfo->pSession = NULL;
+		snmp_close(pSNMP->pSession);
+		pSNMP->pSession = NULL;
 
 		snmp_perror("snmp_pdu_create");
 		return	FTM_RET_COMM_ERROR;
 	}
 
-	pInfo->nStatus = 0;
+	pSNMP->nStatus = 0;
 
 	snmp_add_null_var(pPDU, pOID->pOID, pOID->nOIDLen);
-	if (snmp_send(pInfo->pSession, pPDU) == 0)
+	if (snmp_send(pSNMP->pSession, pPDU) == 0)
 	{
 		snmp_perror("snmp_send");
 		snmp_free_pdu(pPDU);
 		return	FTM_RET_COMM_ERROR;
 	}
 
-	pInfo->nStatus = FTNM_SNMP_STATUS_RUNNING;
+	pSNMP->nStatus = FTNM_SNMP_STATUS_RUNNING;
 
 	return	FTM_RET_OK;
 }
@@ -114,16 +120,17 @@ FTM_INT	FTNM_snmpClientAsyncResponse
 	FTM_VOID_PTR		pParams
 )
 {
-	FTNM_SNMP_INFO_PTR	pInfo = (FTNM_SNMP_INFO_PTR)pParams;
+	FTNM_SNMP_CONTEXT_PTR	pSNMP = (FTNM_SNMP_CONTEXT_PTR)pParams;
 	struct snmp_pdu 	*pReqPDU;
 
+	MESSAGE("pSNMP = %08lx\n", pSNMP);
 	switch(nOperation)
 	{
 	case	NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE: 
 		{
 			if (pRespPDU->errstat == SNMP_ERR_NOERROR) 
 			{
-				FTNM_SNMP_OID_PTR	pOID = list_get_at(&pInfo->xOIDList, pInfo->nCurrentOID);
+				FTNM_SNMP_OID_PTR	pOID = list_get_at(&pSNMP->xOIDList, pSNMP->nCurrentOID);
 
 				if (pOID != NULL)
 				{
@@ -155,17 +162,17 @@ FTM_INT	FTNM_snmpClientAsyncResponse
 				}
 			}								    
 
-			pInfo->nCurrentOID++;
-			if (pInfo->nCurrentOID < list_size(&pInfo->xOIDList))
+			pSNMP->nCurrentOID++;
+			if (pSNMP->nCurrentOID < list_size(&pSNMP->xOIDList))
 			{
-				FTNM_SNMP_OID_PTR	pOID = list_get_at(&pInfo->xOIDList, pInfo->nCurrentOID);
+				FTNM_SNMP_OID_PTR	pOID = list_get_at(&pSNMP->xOIDList, pSNMP->nCurrentOID);
 
 				if (pOID != NULL)
 				{
 					pReqPDU = snmp_pdu_create(SNMP_MSG_GET);
 
 					snmp_add_null_var(pReqPDU, pOID->pOID, pOID->nOIDLen);
-					if (snmp_send(pInfo->pSession, pReqPDU))
+					if (snmp_send(pSNMP->pSession, pReqPDU))
 					{
 						return 1;
 					}
@@ -177,12 +184,12 @@ FTM_INT	FTNM_snmpClientAsyncResponse
 				}
 				else
 				{
-					pInfo->nStatus = FTNM_SNMP_STATUS_COMPLETED;
+					pSNMP->nStatus = FTNM_SNMP_STATUS_COMPLETED;
 				}
 			}
 			else
 			{
-				pInfo->nStatus = FTNM_SNMP_STATUS_COMPLETED;
+				pSNMP->nStatus = FTNM_SNMP_STATUS_COMPLETED;
 			}
 		}
 		break;

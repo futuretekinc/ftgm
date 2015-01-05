@@ -9,8 +9,8 @@ typedef enum
 	FTDM_SHELL_CMD_VERSION 
 }	FTDM_SHELL_CMD;
 
-FTDM_RET FTDM_shellCmdVersion(FTDM_CHAR_PTR pProgramName);
-FTDM_RET FTDM_shellCmdUsage(FTDM_CHAR_PTR pProgramName);
-FTDM_RET FTDM_shellCmdStartDaemon(void);
+FTM_RET FTDM_shellCmdVersion(FTM_CHAR_PTR pProgramName);
+FTM_RET FTDM_shellCmdUsage(FTM_CHAR_PTR pProgramName);
+FTM_RET FTDM_shellCmdStartDaemon(void);
 
 #endif

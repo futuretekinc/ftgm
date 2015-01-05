@@ -4,7 +4,11 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include "ftm_types.h"
+#include "ftnm_object.h"
 #include "simclist.h"
+
+#define	FTNM_SNMP_PEER_NAME_LEN		256
+#define	FTNM_SNMP_COMMUNITY_LEN		256
 
 #define	FTNM_SNMP_STATUS_RUNNING	0x00000001
 #define	FTNM_SNMP_STATUS_COMPLETED	0x00000010
@@ -20,21 +24,25 @@ typedef struct
 typedef	struct
 {
 	FTM_ULONG				nVersion;
-	FTM_CHAR_PTR			pPeerName;
-	FTM_CHAR_PTR			pCommunity;	
+	FTM_CHAR				pPeerName[FTNM_SNMP_PEER_NAME_LEN+1];
+	FTM_CHAR				pCommunity[FTNM_SNMP_COMMUNITY_LEN+1];	
+} FTNM_SNMP_INFO, _PTR_ FTNM_SNMP_INFO_PTR;
 
+typedef	struct
+{
+	FTNM_SNMP_INFO			xInfo;
 	list_t					xOIDList;	
 	FTM_INT					nCurrentOID;
 	FTM_ULONG				nStatus;
-	FTM_BOOL				bCompleted;
+
 	struct snmp_session 	*pSession;		/* SNMP session data */
-} FTNM_SNMP_INFO, _PTR_ FTNM_SNMP_INFO_PTR;
+}	FTNM_SNMP_CONTEXT, _PTR_ FTNM_SNMP_CONTEXT_PTR;
 
-FTM_RET	FTNM_snmpClientInit(void);
-FTM_RET FTNM_snmpClientFinal(void);
+FTM_RET		FTNM_snmpClientInit(void);
+FTM_RET 	FTNM_snmpClientFinal(void);
 
-FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_INFO_PTR pInfo);
-FTM_BOOL	FTNM_snmpIsRunning(FTNM_SNMP_INFO_PTR pInfo);
-FTM_BOOL	FTNM_snmpIsCompleted(FTNM_SNMP_INFO_PTR pInfo);
+FTM_RET 	FTNM_snmpClientAsyncCall(FTNM_SNMP_CONTEXT_PTR pNode);
+FTM_BOOL	FTNM_snmpIsRunning(FTNM_NODE_PTR pNode);
+FTM_BOOL	FTNM_snmpIsCompleted(FTNM_NODE_PTR pNode);
 #endif
 

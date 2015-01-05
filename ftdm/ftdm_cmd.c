@@ -10,20 +10,20 @@
 
 void *FTDM_serviceHandler(void *pData);
 
-FTDM_RET FTDM_shellCmdVersion(FTDM_CHAR_PTR pProgramName)
+FTM_RET FTDM_shellCmdVersion(FTM_CHAR_PTR pProgramName)
 {
 	printf("%s v1.0.0.0\n", pProgramName);
 
-	return	FTDM_RET_OK;
+	return	FTM_RET_OK;
 }
 
-FTDM_RET FTDM_shellCmdUsage(FTDM_CHAR_PTR pProgramName)
+FTM_RET FTDM_shellCmdUsage(FTM_CHAR_PTR pProgramName)
 {
 	printf("Usage : %s [OPTIONS]\n", pProgramName);
 	printf("OPTIONS include:\n");
 	printf("    -v           Show version\n");
 
-	return	FTDM_RET_OK;
+	return	FTM_RET_OK;
 }
 
 

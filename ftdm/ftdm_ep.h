@@ -1,12 +1,14 @@
-#ifndef	__FTDM_EP_H__
-#define	__FTDM_EP_H__
+#ifndef	__FTM_EP_H__
+#define	__FTM_EP_H__
 
-typedef	struct _FTDM_EP
-{
-	struct _FTDM_EP *pPrev;
-	struct _FTDM_EP *pNext;
+FTM_RET	FTDM_initEP
+(
+	FTM_VOID
+);
 
-	FTDM_EP_INFO	xInfo;
-}	FTDM_EP, _PTR_ FTDM_EP_PTR;
+FTM_RET	FTDM_insertEP
+(
+	FTM_EP_INFO_PTR	pEPInfo
+);
 
 #endif

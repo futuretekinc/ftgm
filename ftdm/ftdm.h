@@ -1,128 +1,100 @@
 #ifndef	__FTDM_H__
 #define	__FTDM_H__
 
+#include "ftm_types.h"
+#include "ftm_debug.h"
+#include "ftm_object.h"
 #include "ftdm_type.h"
 #include "ftdm_cmd.h"
-#include "ftdm_debug.h"
 
-FTDM_RET 	FTDM_init(void);
-FTDM_RET	FTDM_final(void);
+FTM_RET	FTDM_init(void);
+FTM_RET	FTDM_final(void);
 
-FTDM_RET	FTDM_createDevice
+FTM_RET	FTDM_createNode
 (
-	FTDM_CHAR_PTR		pDID,
-	FTDM_DEVICE_TYPE 	xType, 
-	FTDM_CHAR_PTR		pURL,
-	FTDM_CHAR_PTR		pLocation
+	FTM_NODE_INFO_PTR	pInfo
 );
 
-FTDM_RET 	FTDM_destroyDevice
+FTM_RET 	FTDM_destroyNode
 (
-	FTDM_CHAR_PTR			pDID
+	FTM_CHAR_PTR		pDID
 );
 
-FTDM_RET	FTDM_getDeviceCount
+FTM_RET	FTDM_getNodeCount
 (
-	FTDM_ULONG_PTR			pnCount
+	FTM_ULONG_PTR		pnCount
 );
 
-FTDM_RET	FTDM_getDeviceInfo
+FTM_RET	FTDM_getNodeInfo
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_DEVICE_INFO_PTR 	pInfo
+	FTM_CHAR_PTR		pDID,
+	FTM_NODE_INFO_PTR _PTR_	ppNodeInfo
 );
 
-FTDM_RET	FTDM_getDeviceInfoByIndex
+FTM_RET	FTDM_getNodeInfoByIndex
 (
-	FTDM_ULONG				nIndex,
-	FTDM_DEVICE_INFO_PTR 	pInfo
+	FTM_ULONG			nIndex,
+	FTM_NODE_INFO_PTR _PTR_	ppNodeInfo
 );
 
-FTDM_RET	FTDM_getDeviceType
+FTM_RET	FTDM_getNodeType
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_DEVICE_TYPE_PTR 	pType
+	FTM_CHAR_PTR		pDID,
+	FTM_NODE_TYPE_PTR 	pType
 );
 
-FTDM_RET 	FTDM_getDeviceURL
+FTM_RET	FTDM_createEP
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_CHAR_PTR			pBuff,
-	FTDM_ULONG				nBuffLen
+	FTM_EP_INFO_PTR 	pInfo
 );
 
-FTDM_RET 	FTDM_setDeviceURL
+FTM_RET	FTDM_destroyEP
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_CHAR_PTR			pURL
+	FTM_EPID 			xEPID
 );
 
-FTDM_RET 	FTDM_getDeviceLocation
+FTM_RET	FTDM_getEPCount
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_CHAR_PTR			pBuff, 
-	FTDM_ULONG				nBuffLen
+	FTM_ULONG_PTR		pnCount
 );
 
-FTDM_RET 	FTDM_setDeviceLocation
+FTM_RET	FTDM_getEPInfo
 (
-	FTDM_CHAR_PTR			pDID,
-	FTDM_CHAR_PTR			pLocation 
+	FTM_EPID				xEPID,
+	FTM_EP_INFO_PTR	_PTR_ 	ppEPInfo
 );
 
-FTDM_RET	FTDM_createEP
+FTM_RET	FTDM_getEPInfoByIndex
 (
-	FTDM_EP_ID 			xEPID, 
-	FTDM_EP_INFO_PTR 	pInfo
+	FTM_ULONG				nIndex,
+	FTM_EP_INFO_PTR	_PTR_ 	ppEPInfo
 );
 
-FTDM_RET	FTDM_destroyEP
+FTM_RET	FTDM_appendEPData
 (
-	FTDM_EP_ID 			xEPID
+	FTM_EPID 			xEPID, 
+	FTM_ULONG			nTime, 
+	FTM_ULONG 			nValue
 );
 
-FTDM_RET	FTDM_getEPCount
+FTM_RET	FTDM_getEPData
 (
-	FTDM_ULONG_PTR		pnCount
+	FTM_EPID_PTR		pEPID, 
+	FTM_ULONG 			nEPID, 
+	FTM_ULONG 			nBeginTime, 
+	FTM_ULONG 			nEndTime, 
+	FTM_EP_DATA_PTR 	pData,
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pnCount 
 );
 
-FTDM_RET	FTDM_getEPInfo
+FTM_RET	FTDM_removeEPData
 (
-	FTDM_EP_ID			xEPID,
-	FTDM_EP_INFO_PTR	pInfo
-);
-
-FTDM_RET	FTDM_getEPInfoByIndex
-(
-	FTDM_ULONG			nIndex,
-	FTDM_EP_INFO_PTR	pInfo
-);
-
-FTDM_RET	FTDM_appendEPData
-(
-	FTDM_EP_ID 			xEPID, 
-	FTDM_ULONG			nTime, 
-	FTDM_ULONG 			nValue
-);
-
-FTDM_RET	FTDM_getEPData
-(
-	FTDM_EP_ID_PTR		pEPID, 
-	FTDM_ULONG 			nEPID, 
-	FTDM_ULONG 			nBeginTime, 
-	FTDM_ULONG 			nEndTime, 
-	FTDM_EP_DATA_PTR 	pData,
-	FTDM_ULONG			nMaxCount,
-	FTDM_ULONG_PTR		pnCount 
-);
-
-FTDM_RET	FTDM_removeEPData
-(
-	FTDM_EP_ID_PTR		pEPID, 
-	FTDM_ULONG 			nEPID, 
-	FTDM_ULONG 			nBeginTime, 
-	FTDM_ULONG 			nEndTime, 
-	FTDM_ULONG			nCount
+	FTM_EPID_PTR		pEPID, 
+	FTM_ULONG 			nEPID, 
+	FTM_ULONG 			nBeginTime, 
+	FTM_ULONG 			nEndTime, 
+	FTM_ULONG			nCount
 ); 
 
 #endif

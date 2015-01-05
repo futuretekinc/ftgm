@@ -7,8 +7,8 @@ void printToTerm(char *szmsg);
 void printToFile(char *szMsg);
 
 void (*printToMessage)(char *szMsg) = printToTerm;
-void (*printToError)(char *szMsg) = printToFile;
-void (*printToTrace)(char *szMsg) = printToFile;
+void (*printToError)(char *szMsg) = printToTerm;
+void (*printToTrace)(char *szMsg) = printToTerm;
 
 static unsigned long	_nPrintLevel = MSG_NORMAL;
 
@@ -53,6 +53,8 @@ void setPrintMode
 void printOut
 (
 	unsigned long	nLevel,
+	const char		*pFunction,
+	int				nLine,
 	char 			*format, 
 	...
 )
@@ -64,7 +66,8 @@ void printOut
 	if (nLevel & _nPrintLevel)
 	{
 		va_start ( argptr, format );           
-		nLen = vsnprintf( szBuff, sizeof(szBuff) - 1, format, argptr);
+		nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%s[%3d] : ", pFunction, nLine);
+		nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, format, argptr);
 		va_end(argptr);
 
 		szBuff[nLen] = '\0';
