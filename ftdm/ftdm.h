@@ -72,9 +72,7 @@ FTM_RET	FTDM_getEPInfoByIndex
 
 FTM_RET	FTDM_appendEPData
 (
-	FTM_EPID 			xEPID, 
-	FTM_ULONG			nTime, 
-	FTM_ULONG 			nValue
+	FTM_EP_DATA_PTR		pData
 );
 
 FTM_RET	FTDM_getEPData
@@ -84,6 +82,7 @@ FTM_RET	FTDM_getEPData
 	FTM_ULONG 			nBeginTime, 
 	FTM_ULONG 			nEndTime, 
 	FTM_EP_DATA_PTR 	pData,
+	FTM_ULONG			nStartIndex,
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pnCount 
 );

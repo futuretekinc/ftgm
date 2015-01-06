@@ -241,9 +241,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EPID 			xEPID; 
-	FTM_ULONG			nTime;
-	FTM_ULONG 			nValue;
+	FTM_EP_DATA			xData;
 }	FTDM_REQ_APPEND_EP_DATA_PARAMS, _PTR_ FTDM_REQ_APPEND_EP_DATA_PARAMS_PTR;
 
 typedef	struct
@@ -259,6 +257,7 @@ typedef	struct
 	FTM_ULONG			nLen;
 	FTM_ULONG 			nBeginTime; 
 	FTM_ULONG 			nEndTime; 
+	FTM_ULONG			nStartIndex;
 	FTM_ULONG			nCount; 
 	FTM_ULONG			nEPIDCount;
 	FTM_EPID 			pEPID[]; 

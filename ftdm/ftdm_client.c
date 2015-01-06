@@ -555,9 +555,7 @@ FTM_RET	FTDMC_getEPInfoByIndex
 FTM_RET	FTDMC_appendEPData
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTM_EPID				xEPID,
-	FTM_ULONG				nTime,
-	FTM_ULONG				nValue
+	FTM_EP_DATA_PTR			pEPData
 )
 {
 	FTM_RET						nRet;
@@ -571,9 +569,7 @@ FTM_RET	FTDMC_appendEPData
 
 	xReq.xCmd	=	FTDM_CMD_APPEND_EP_DATA;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xEPID	=	xEPID;
-	xReq.nTime	=	nTime;
-	xReq.nValue	=	nValue;
+	memcpy(&xReq.xData, pEPData, sizeof(FTM_EP_DATA));
 
 	nRet = FTDMC_request(
 				hClient, 
@@ -594,14 +590,15 @@ FTM_RET	FTDMC_appendEPData
  *****************************************************************/
 FTM_RET	FTDMC_getEPData
 (
-	FTDM_CLIENT_HANDLE		hClient,
-	FTM_EPID_PTR			pEPID,
-	FTM_ULONG				nEPIDCount,
-	FTM_ULONG				nBeginTime,
-	FTM_ULONG				nEndTime,
+	FTDM_CLIENT_HANDLE	hClient,
+	FTM_EPID_PTR		pEPID,
+	FTM_ULONG			nEPIDCount,
+	FTM_ULONG			nBeginTime,
+	FTM_ULONG			nEndTime,
 	FTM_EP_DATA_PTR		pData,
-	FTM_ULONG				nMaxCount,
-	FTM_ULONG_PTR			pnCount
+	FTM_ULONG			nStartIndex,
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pnCount
 )
 {
 	FTM_RET							nRet;
@@ -635,6 +632,7 @@ FTM_RET	FTDMC_getEPData
 	pReq->nLen		=	nReqSize;
 	pReq->nBeginTime=	nBeginTime;
 	pReq->nEndTime	=	nEndTime;
+	pReq->nStartIndex=	nStartIndex;
 	pReq->nCount	=	nMaxCount;
 	pReq->nEPIDCount=	nEPIDCount;
 
@@ -659,7 +657,8 @@ FTM_RET	FTDMC_getEPData
 	{
 		FTM_INT	i;
 
-		for( i = 0 ; i < pResp->nCount ; i++)
+		TRACE("pResp->nCount = %d\n", pResp->nCount);
+		for( i = 0 ; i < pResp->nCount && i < nMaxCount ; i++)
 		{
 			memcpy(&pData[i], &pResp->pData[i], sizeof(FTM_EP_DATA));
 		}
@@ -737,6 +736,9 @@ FTM_RET FTDMC_request
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
+	TRACE("send(%08lx, pReq, %d, 0)\n", hClient->hSock, nReqLen);
+
+
 	if( send(hClient->hSock, pReq, nReqLen, 0) < 0)
 	{
 		return	FTM_RET_ERROR;	
@@ -748,6 +750,7 @@ FTM_RET FTDMC_request
 		int	nLen = recv(hClient->hSock, pResp, nRespLen, MSG_DONTWAIT);
 		if (nLen > 0)
 		{
+			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", hClient->hSock, nLen);
 			return	FTM_RET_OK;	
 		}
 

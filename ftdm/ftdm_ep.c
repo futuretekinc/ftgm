@@ -246,15 +246,15 @@ FTM_RET	FTDM_getEPInfoByIndex
 
 FTM_RET	FTDM_appendEPData
 (
-	FTM_EPID 			xEPID, 
-	FTM_ULONG			nTime, 
-	FTM_ULONG 			nValue
+	FTM_EP_DATA_PTR	pData
 )
 {
-	return	FTDM_DBIF_appendEPData(
-				nTime, 
-				xEPID, 
-				nValue);
+	if (pData == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	return	FTDM_DBIF_appendEPData(pData);
 }
 
 FTM_RET	FTDM_getEPData
@@ -264,6 +264,7 @@ FTM_RET	FTDM_getEPData
 	FTM_ULONG 			nBeginTime, 
 	FTM_ULONG 			nEndTime, 
 	FTM_EP_DATA_PTR 	pEPData,
+	FTM_ULONG			nStartIndex,
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pCount 
 )
@@ -274,6 +275,7 @@ FTM_RET	FTDM_getEPData
 				nBeginTime, 
 				nEndTime, 
 				pEPData, 
+				nStartIndex,
 				nMaxCount, 
 				pCount);
 }

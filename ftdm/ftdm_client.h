@@ -85,22 +85,20 @@ FTM_RET FTDMC_getEPInfo
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTM_EPID				xEPID,
-	FTM_EP_INFO_PTR		pInfo
+	FTM_EP_INFO_PTR			pEPInfo
 );
 
 FTM_RET FTDMC_getEPInfoByIndex
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTM_ULONG				nIndex,
-	FTM_EP_INFO_PTR		pInfo
+	FTM_EP_INFO_PTR			pEPInfo
 );
 
 FTM_RET FTDMC_appendEPData
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTM_EPID				xEPID,
-	FTM_ULONG				nTime,
-	FTM_ULONG				nValue
+	FTM_EP_DATA_PTR			pEPData
 );
 
 FTM_RET FTDMC_getEPData
@@ -110,7 +108,8 @@ FTM_RET FTDMC_getEPData
 	FTM_ULONG				nEPIDCount,
 	FTM_ULONG				nBeginTime,
 	FTM_ULONG				nEndTime,
-	FTM_EP_DATA_PTR		pData,
+	FTM_EP_DATA_PTR			pData,
+	FTM_ULONG				nStartIndex,
 	FTM_ULONG				nMaxCount,
 	FTM_ULONG_PTR			pnCount
 );

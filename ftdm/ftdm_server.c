@@ -305,10 +305,7 @@ FTM_RET	FTDMS_appendEPData
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_appendEPData(
-					pReq->xEPID, 
-					pReq->nTime, 
-					pReq->nValue);
+	pResp->nRet = FTDM_appendEPData(&pReq->xData);
 
 	return	pResp->nRet;
 }
@@ -324,7 +321,7 @@ FTM_RET	FTDMS_getEPData
 	TRACE("%16s : %08lx\n", "Length", pReq->nLen);
 	TRACE("%16s : %08lx\n", "Begin Time", pReq->nBeginTime);
 	TRACE("%16s : %08lx\n", "End Time", pReq->nEndTime);
-	TRACE("%16s : %08lx\n", "Count", pReq->nEndTime);
+	TRACE("%16s : %08lx\n", "Count", pReq->nCount);
 	TRACE("%16s : %08lx\n", "EPID Count", pReq->nEPIDCount);
 	if (pReq->nEPIDCount != 0)
 	{
@@ -344,6 +341,7 @@ FTM_RET	FTDMS_getEPData
 					pReq->nBeginTime, 
 					pReq->nEndTime, 
 					pResp->pData, 
+					pReq->nStartIndex,
 					pReq->nCount, 
 					&pResp->nCount);
 

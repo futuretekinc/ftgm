@@ -112,34 +112,34 @@ FTM_RET	FTDM_DBIF_setEPName
 
 FTM_RET	FTDM_DBIF_getEPName
 (
-	FTM_EPID				xEPID,
-	FTM_CHAR_PTR			pName,
+	FTM_EPID			xEPID,
+	FTM_CHAR_PTR		pName,
 	FTM_INT_PTR			pNameLen
 );
 
 FTM_RET	FTDM_DBIF_setEPInterval
 (
-	FTM_EPID				xEPID,
-	FTM_ULONG				nInterval
+	FTM_EPID			xEPID,
+	FTM_ULONG			nInterval
 );
 
 FTM_RET	FTDM_DBIF_getEPInterval
 (
-	FTM_EPID				xEPID,
-	FTM_ULONG_PTR			pInterval
+	FTM_EPID			xEPID,
+	FTM_ULONG_PTR		pInterval
 );
 
 FTM_RET	FTDM_DBIF_setEPUnit
 (
-	FTM_EPID				xEPID,
-	FTM_CHAR_PTR			pUnit,
+	FTM_EPID			xEPID,
+	FTM_CHAR_PTR		pUnit,
 	FTM_INT				nUnitLen
 );
 
 FTM_RET	FTDM_DBIF_getEPUnit
 (
-	FTM_EPID				xEPID,
-	FTM_CHAR_PTR			pUnit,
+	FTM_EPID			xEPID,
+	FTM_CHAR_PTR		pUnit,
 	FTM_INT_PTR			pUnitLen
 );
 
@@ -151,38 +151,37 @@ FTM_RET	FTDM_DBIF_initEPDataTable
 
 FTM_RET	FTDM_DBIF_appendEPData
 (
-	FTM_EPID				xEPID,
-	FTM_ULONG				xTime,
-	FTM_ULONG				nValue
+	FTM_EP_DATA_PTR		pData
 );
 
 FTM_RET	FTDM_DBIF_EPDataCount
 (
-	FTM_EPID_PTR			pEPID,
-	FTM_ULONG				nEPID,
-	FTM_ULONG				xBeginTime,
-	FTM_ULONG				xEndTime,
-	FTM_ULONG_PTR			pCount
+	FTM_EPID_PTR		pEPID,
+	FTM_ULONG			nEPID,
+	FTM_ULONG			xBeginTime,
+	FTM_ULONG			xEndTime,
+	FTM_ULONG_PTR		pCount
 );
 
 FTM_RET	FTDM_DBIF_getEPData
 (
-	FTM_EPID_PTR			pEPID,
-	FTM_ULONG				nEPIDCount,
-	FTM_ULONG				xBeginTime,
-	FTM_ULONG				xEndTime,
+	FTM_EPID_PTR		pEPID,
+	FTM_ULONG			nEPIDCount,
+	FTM_ULONG			xBeginTime,
+	FTM_ULONG			xEndTime,
 	FTM_EP_DATA_PTR		pEPData,
-	FTM_ULONG				nMaxCount,
-	FTM_ULONG_PTR			pCount
+	FTM_ULONG			nStartIndex,
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pCount
 );
 
 FTM_RET	FTDM_DBIF_removeEPData
 (
-	FTM_EPID_PTR			pEPID,
-	FTM_ULONG				nEPIDCount,
-	FTM_ULONG				xBeginTime,
-	FTM_ULONG				xEndTime,
-	FTM_ULONG				nCount
+	FTM_EPID_PTR		pEPID,
+	FTM_ULONG			nEPIDCount,
+	FTM_ULONG			xBeginTime,
+	FTM_ULONG			xEndTime,
+	FTM_ULONG			nCount
 );
 
 #endif

@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ftm_types.h"
-#include "ftm_object.h"
+#include "ftdm.h"
 #include "ftdm_device.h"
 #include "sqlite_if.h"
 #include "simclist.h"
