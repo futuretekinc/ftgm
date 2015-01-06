@@ -8,8 +8,7 @@ FTM_RET 	FTDM_init(void)
 {
 	if ((FTDM_DBIF_init() != FTM_RET_OK) ||
 		(FTDM_DBIF_initNodeInfoTable() != FTM_RET_OK) ||
-		(FTDM_DBIF_initEPInfoTable() != FTM_RET_OK) ||
-		(FTDM_DBIF_initEPDataTable() != FTM_RET_OK))
+		(FTDM_DBIF_initEPInfoTable() != FTM_RET_OK))
 	{
 		TRACE("FTDM initialization failed.\n");
 

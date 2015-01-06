@@ -25,6 +25,7 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	{	FTDM_CMD_APPEND_EP_DATA,			(FTDM_SERVICE_CALLBACK)FTDMS_appendEPData },
 	{	FTDM_CMD_GET_EP_DATA,				(FTDM_SERVICE_CALLBACK)FTDMS_getEPData},
 	{	FTDM_CMD_REMOVE_EP_DATA,			(FTDM_SERVICE_CALLBACK)FTDMS_removeEPData},
+	{	FTDM_CMD_REMOVE_EP_DATA_WITH_TIME,	(FTDM_SERVICE_CALLBACK)FTDMS_removeEPDataWithTime},
 	{	
 		.xCmd	=	FTDM_CMD_UNKNOWN, 
 		.fService = 0
@@ -305,7 +306,7 @@ FTM_RET	FTDMS_appendEPData
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_appendEPData(&pReq->xData);
+	pResp->nRet = FTDM_appendEPData(pReq->xEPID, &pReq->xData);
 
 	return	pResp->nRet;
 }
@@ -319,29 +320,15 @@ FTM_RET	FTDMS_getEPData
 	TRACE("Request Frame\n");
 	TRACE("%16s : %08lx\n", "Command", pReq->xCmd);
 	TRACE("%16s : %08lx\n", "Length", pReq->nLen);
-	TRACE("%16s : %08lx\n", "Begin Time", pReq->nBeginTime);
-	TRACE("%16s : %08lx\n", "End Time", pReq->nEndTime);
-	TRACE("%16s : %08lx\n", "Count", pReq->nCount);
-	TRACE("%16s : %08lx\n", "EPID Count", pReq->nEPIDCount);
-	if (pReq->nEPIDCount != 0)
-	{
-		FTM_INT	i;
-		
-		for(i = 0 ; i < pReq->nEPIDCount ; i++)
-		{
-			TRACE("%12s[%02d] : %08lx\n", "EPID", pReq->pEPID[i]);	
-		}
-	}
+	TRACE("%16s : %08lx\n", "EPID", pReq->xEPID);
+	TRACE("%16s : %08lx\n", "Start Index", pReq->nStartIndex);
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->nCount = pReq->nCount;
 	pResp->nRet = FTDM_getEPData(
-					pReq->pEPID, 
-					pReq->nEPIDCount, 
-					pReq->nBeginTime, 
-					pReq->nEndTime, 
-					pResp->pData, 
+					pReq->xEPID, 
 					pReq->nStartIndex,
+					pResp->pData, 
 					pReq->nCount, 
 					&pResp->nCount);
 
@@ -356,6 +343,40 @@ FTM_RET	FTDMS_getEPData
 	return	pResp->nRet;
 }
 
+FTM_RET	FTDMS_getEPDataWithTime
+(
+ 	FTDM_REQ_GET_EP_DATA_WITH_TIME_PARAMS_PTR		pReq,
+	FTDM_RESP_GET_EP_DATA_WITH_TIME_PARAMS_PTR	pResp
+)
+{
+	TRACE("Request Frame\n");
+	TRACE("%16s : %08lx\n", "Command", pReq->xCmd);
+	TRACE("%16s : %08lx\n", "Length", pReq->nLen);
+	TRACE("%16s : %08lx\n", "EPID", pReq->xEPID);
+	TRACE("%16s : %08lx\n", "Begin Time", pReq->nBeginTime);
+	TRACE("%16s : %08lx\n", "End Time", pReq->nEndTime);
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->nCount = pReq->nCount;
+	pResp->nRet = FTDM_getEPDataWithTime(
+					pReq->xEPID, 
+					pReq->nBeginTime, 
+					pReq->nEndTime, 
+					pResp->pData, 
+					pReq->nCount, 
+					&pResp->nCount);
+
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		pResp->nLen = sizeof(FTDM_RESP_GET_EP_DATA_WITH_TIME_PARAMS) + pResp->nCount * sizeof(FTM_EP_DATA);
+	}
+	else
+	{
+		pResp->nLen = sizeof(FTDM_RESP_GET_EP_DATA_WITH_TIME_PARAMS);
+	}
+	return	pResp->nRet;
+}
+
 FTM_RET 	FTDMS_removeEPData
 (
  	FTDM_REQ_REMOVE_EP_DATA_PARAMS_PTR	pReq,
@@ -365,11 +386,25 @@ FTM_RET 	FTDMS_removeEPData
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nRet = FTDM_removeEPData(
-					pReq->pEPID, 
-					pReq->nEPIDCount, 
+					pReq->xEPID, 
+					pReq->nIndex, 
+					pReq->nCount);
+
+	return	pResp->nRet;
+}
+
+FTM_RET 	FTDMS_removeEPDataWithTime
+(
+ 	FTDM_REQ_REMOVE_EP_DATA_WITH_TIME_PARAMS_PTR	pReq,
+	FTDM_RESP_REMOVE_EP_DATA_WITH_TIME_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_removeEPDataWithTime(
+					pReq->xEPID, 
 					pReq->nBeginTime, 
-					pReq->nEndTime, 
-					0);
+					pReq->nEndTime);
 
 	return	pResp->nRet;
 }

@@ -146,18 +146,18 @@ FTM_RET	FTDM_DBIF_getEPUnit
 
 FTM_RET	FTDM_DBIF_initEPDataTable
 (
-	FTM_VOID
+	FTM_EPID			xEPID
 );
 
 FTM_RET	FTDM_DBIF_appendEPData
 (
+	FTM_EPID			xEPID,
 	FTM_EP_DATA_PTR		pData
 );
 
 FTM_RET	FTDM_DBIF_EPDataCount
 (
-	FTM_EPID_PTR		pEPID,
-	FTM_ULONG			nEPID,
+	FTM_EPID			xEPID,
 	FTM_ULONG			xBeginTime,
 	FTM_ULONG			xEndTime,
 	FTM_ULONG_PTR		pCount
@@ -165,23 +165,35 @@ FTM_RET	FTDM_DBIF_EPDataCount
 
 FTM_RET	FTDM_DBIF_getEPData
 (
-	FTM_EPID_PTR		pEPID,
-	FTM_ULONG			nEPIDCount,
+	FTM_EPID			xEPID,
+	FTM_ULONG			nStartIndex,
+	FTM_EP_DATA_PTR		pEPData,
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pCount
+);
+
+FTM_RET	FTDM_DBIF_getEPDataWithTime
+(
+	FTM_EPID			xEPID,
 	FTM_ULONG			xBeginTime,
 	FTM_ULONG			xEndTime,
 	FTM_EP_DATA_PTR		pEPData,
-	FTM_ULONG			nStartIndex,
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pCount
 );
 
 FTM_RET	FTDM_DBIF_removeEPData
 (
-	FTM_EPID_PTR		pEPID,
-	FTM_ULONG			nEPIDCount,
-	FTM_ULONG			xBeginTime,
-	FTM_ULONG			xEndTime,
+	FTM_EPID			xEPID,
+	FTM_ULONG			nIndex,
 	FTM_ULONG			nCount
+);
+
+FTM_RET	FTDM_DBIF_removeEPDataWithTime
+(
+	FTM_EPID			xEPID,
+	FTM_ULONG			xBeginTime,
+	FTM_ULONG			xEndTime
 );
 
 #endif

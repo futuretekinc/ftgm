@@ -733,16 +733,20 @@ FTM_RET	FTDM_DBIF_getEPUnit
 
 FTM_RET	FTDM_DBIF_initEPDataTable
 (
-	void
+	FTM_EPID	xEPID
 )
 {
-	FTM_CHAR_PTR	pTableName = "ep_data";
+	FTM_RET			nRet;
 	FTM_BOOL		bExist = FTM_BOOL_FALSE;
+	FTM_CHAR		pTableName[16];
 
-	if (_FTDM_BDIF_isExistTable(pTableName, &bExist) != FTM_RET_OK)
+	sprintf(pTableName, "ep_%08lx", xEPID);
+
+	nRet = _FTDM_BDIF_isExistTable(pTableName, &bExist);
+	if (nRet != FTM_RET_OK)
 	{
 		ERROR("_FTDM_BDIF_isExistTable(%s,bExist)\n", pTableName);  
-		return	FTM_RET_DBIF_ERROR;	
+		return	nRet;	
 	}
 
 	if (bExist == FTM_BOOL_FALSE)
@@ -751,7 +755,7 @@ FTM_RET	FTDM_DBIF_initEPDataTable
 		FTM_CHAR_PTR	pErrMsg = NULL;
 		FTM_CHAR		pSQL[1024];
 
-		sprintf(pSQL, "CREATE TABLE ep_data (ID INT64,TIME INT,EPID INT,VALUE TEXT)");
+		sprintf(pSQL, "CREATE TABLE ep_%08lx (ID INT64,TIME INT,VALUE TEXT)", xEPID);
 
 		nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 		if (nRet != SQLITE_OK)
@@ -761,6 +765,8 @@ FTM_RET	FTDM_DBIF_initEPDataTable
 
 			return	FTM_RET_ERROR;
 		}
+
+		TRACE("Table ep_%08lx creating has done.\n", xEPID);
 	}
 
 	return	FTM_RET_OK;
@@ -768,13 +774,13 @@ FTM_RET	FTDM_DBIF_initEPDataTable
 
 FTM_RET	FTDM_DBIF_appendEPData
 (
+	FTM_EPID				xEPID,
 	FTM_EP_DATA_PTR			pData
 )
 {
 	int				nRet;
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	char			pSQL[1024];
-	time_t			nTime;
 	struct timeval	tv;
 
 	gettimeofday(&tv, NULL);
@@ -783,30 +789,42 @@ FTM_RET	FTDM_DBIF_appendEPData
 	{
 	case	FTM_EP_DATA_TYPE_INT:
 		{
-			sprintf(pSQL, "INSERT INTO ep_data VALUES (%llu, %lu, %lu, 'i%d')", 
+			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'i%ld')", 
+					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
-					pData->nTime, pData->xEPID, pData->xValue.nValue);
+					pData->nTime, 
+					pData->xValue.nValue);
 		}
 		break;
 
 	case	FTM_EP_DATA_TYPE_ULONG:
 		{
-			sprintf(pSQL, "INSERT INTO ep_data VALUES (%llu, %lu, %lu, 'u%lu')", 
+			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'u%lu')", 
+					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
-					pData->nTime, pData->xEPID, pData->xValue.ulValue);
+					pData->nTime, 
+					pData->xValue.ulValue);
 		}
 		break;
 
 	case	FTM_EP_DATA_TYPE_FLOAT:
 		{
-			sprintf(pSQL, "INSERT INTO ep_data VALUES (%llu, %lu, %lu, 'f%8.3lf')", 
+			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'f%8.3lf')", 
+					xEPID, 
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
-					pData->nTime, pData->xEPID, pData->xValue.fValue);
+					pData->nTime, 
+					pData->xValue.fValue);
 		}
 		break;
 
 	default:
 		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	nRet = FTDM_DBIF_initEPDataTable(xEPID);
+	if (nRet != FTM_RET_OK)
+	{
+		return	nRet;	
 	}
 
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
@@ -843,8 +861,7 @@ static int _FTDM_DBIF_CB_EPDataCount(void *pData, int nArgc, char **pArgv, char 
 
 FTM_RET	FTDM_DBIF_EPDataCount
 (
-	FTM_EPID_PTR			pEPID,
-	FTM_ULONG				nEPID,
+	FTM_EPID				xEPID,
 	FTM_ULONG				xBeginTime,
 	FTM_ULONG				xEndTime,
 	FTM_ULONG_PTR			pCount
@@ -857,28 +874,7 @@ FTM_RET	FTDM_DBIF_EPDataCount
 	FTM_BOOL		bConditionOn = FTM_BOOL_FALSE;
 	_FTDM_DBIF_CB_EP_DATA_COUNT_PARAMS	xParams;
 
-	nSQLLen = sprintf(pSQL, "SELECT COUNT(*) from ep_data ");
-	if (nEPID != 0)
-	{
-		FTM_INT	i;
-
-		bConditionOn = FTM_BOOL_TRUE;
-
-		nSQLLen += sprintf(&pSQL[nSQLLen], "WHERE (");
-		for( i = 0 ; i < nEPID ; i++)
-		{
-			if (i == 0)
-			{
-				nSQLLen += sprintf(&pSQL[nSQLLen], "EPID == %lu ", pEPID[i]);
-			}
-			else
-			{
-				nSQLLen += sprintf(&pSQL[nSQLLen], "OR EPID == %lu ", pEPID[i]);
-			}
-		}
-		nSQLLen += sprintf(&pSQL[nSQLLen], ") ");
-	}
-
+	nSQLLen = sprintf(pSQL, "SELECT COUNT(*) from ep_%08lx ", xEPID);
 	if (xBeginTime != 0)
 	{
 		if (bConditionOn == FTM_BOOL_FALSE)
@@ -952,13 +948,6 @@ static int _FTDM_DBIF_CB_getEPData(void *pData, int nArgc, char **pArgv, char **
 					pParams->pEPData[pParams->nCount-1].nTime = atoi(pArgv[i]);
 				}
 			}
-			else if (strcmp(pColName[i], "EPID") == 0)
-			{
-				if (pParams->nCount <= pParams->nMaxCount)
-				{
-					pParams->pEPData[pParams->nCount-1].xEPID = atoi(pArgv[i]);
-				}
-			}
 			else if (strcmp(pColName[i], "VALUE") == 0)
 			{
 				if (pParams->nCount <= pParams->nMaxCount)
@@ -988,12 +977,52 @@ static int _FTDM_DBIF_CB_getEPData(void *pData, int nArgc, char **pArgv, char **
 
 FTM_RET	FTDM_DBIF_getEPData
 (
-	FTM_EPID_PTR		pEPID,
-	FTM_ULONG			nEPIDCount,
+	FTM_EPID			xEPID,
+	FTM_ULONG			nStartIndex,
+	FTM_EP_DATA_PTR		pEPData,
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pCount
+)
+{
+	FTM_RET			nRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+	FTM_INT			nSQLLen = 0;
+
+	_FTDM_DBIF_CB_GET_EP_DATA_PARAMS	xParams;
+
+	if (nMaxCount == 0)
+	{
+		nMaxCount = 100;	
+	}
+	
+	nSQLLen =  sprintf(pSQL,"SELECT * FROM ep_%08lx ", xEPID);
+	nSQLLen += sprintf(&pSQL[nSQLLen], " ORDER BY TIME DESC LIMIT %lu OFFSET %lu", nMaxCount, nStartIndex);
+
+	xParams.pEPData = pEPData;
+	xParams.nMaxCount = nMaxCount;
+	xParams.nCount = 0;
+	TRACE("SQL : %s\n", pSQL);
+	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_getEPData, &xParams, &pErrMsg);
+	if (nRet != SQLITE_OK)
+	{
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
+
+	*pCount = xParams.nCount;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_getEPDataWithTime
+(
+	FTM_EPID			xEPID,
 	FTM_ULONG			xBeginTime,
 	FTM_ULONG			xEndTime,
 	FTM_EP_DATA_PTR		pEPData,
-	FTM_ULONG			nStartIndex,
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pCount
 )
@@ -1012,26 +1041,6 @@ FTM_RET	FTDM_DBIF_getEPData
 		nMaxCount = 100;	
 	}
 	
-	if (nEPIDCount != 0)
-	{
-		FTM_INT	i;
-
-		nLimitLen = sprintf(&pLimit[nLimitLen], "(");
-		for( i = 0 ; i < nEPIDCount ; i++)
-		{
-			if (i == 0)
-			{
-				nLimitLen += sprintf(&pLimit[nLimitLen], "EPID == %lu", pEPID[i]);
-			}
-			else
-			{
-				nLimitLen += sprintf(&pLimit[nLimitLen], " OR EPID == %lu", pEPID[i]);
-			}
-		}
-
-		nLimitLen += sprintf(&pLimit[nLimitLen], ")");
-	}
-
 	if (xBeginTime != 0)
 	{
 		if (nLimitLen != 0)
@@ -1054,36 +1063,18 @@ FTM_RET	FTDM_DBIF_getEPData
 
 	if (nLimitLen != 0)
 	{
-		nSQLLen =  sprintf(pSQL,"SELECT (SELECT ID "\
-								"        FROM ep_data "\
-								"        AS t2 "\
-								"        WHERE ((t2.TIME > t1.TIME) OR "\
-								"              ((t2.TIME == t1.TIME) AND (t2.ID > t1.ID))) AND "\
-								"              %s ) AS nRow,"\
-								"        * "\
-								"FROM ep_data AS t1 WHERE %s AND ((%lu <= nRow))", 
-								pLimit, 
-								pLimit, 
-								nStartIndex,
-								nMaxCount);
+		nSQLLen =  sprintf(pSQL,"SELECT * FROM ep_%08lx WHERE %s", xEPID, pLimit);
 	}
 	else
 	{
-		nSQLLen =  sprintf(pSQL,"SELECT (SELECT COUNT(*) "\
-								"        FROM ep_data "\
-								"        AS t2 "\
-								"        WHERE (t2.TIME > t1.TIME) OR "\
-								"              ((t2.TIME == t1.TIME) AND (t2.ID > t1.ID))) AS nRow,"\
-								"        * "\
-								"FROM ep_data AS t1 WHERE ((%lu <= nRow))", 
-								nStartIndex );
+		nSQLLen =  sprintf(pSQL,"SELECT * FROM ep_%08lx", xEPID);
 	}
 
 	nSQLLen += sprintf(&pSQL[nSQLLen], " ORDER BY TIME DESC LIMIT %lu", nMaxCount);
 	xParams.pEPData = pEPData;
 	xParams.nMaxCount = nMaxCount;
 	xParams.nCount = 0;
-	TRACE("SQL : %s", pSQL);
+	TRACE("SQL : %s\n", pSQL);
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_getEPData, &xParams, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
@@ -1100,41 +1091,45 @@ FTM_RET	FTDM_DBIF_getEPData
 
 FTM_RET	FTDM_DBIF_removeEPData
 (
-	FTM_EPID_PTR			pEPID,
-	FTM_ULONG				nEPIDCount,
-	FTM_ULONG				xBeginTime,
-	FTM_ULONG				xEndTime,
+	FTM_EPID				xEPID,
+	FTM_ULONG				nIndex,
 	FTM_ULONG				nCount
 )
 {
-	FTM_RET		nRet;
+	FTM_RET			nRet;
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
-	FTM_INT		nSQLLen = 0;
-	FTM_BOOL		bConditionOn = FTM_BOOL_FALSE;
+	FTM_INT			nSQLLen = 0;
 
-	nSQLLen += sprintf(pSQL, "DELETE FROM ep_data ");
-	if (nEPIDCount != 0)
+	nSQLLen += sprintf(pSQL, "DELETE FROM ep_%08lx 	WHERE ROWID >= nIndex ", xEPID);
+
+	MESSAGE("SQL : %s\n", pSQL);
+	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+	if (nRet != SQLITE_OK)
 	{
-		FTM_INT	i;
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
 
-		bConditionOn = FTM_BOOL_TRUE;
-
-		nSQLLen += sprintf(&pSQL[nSQLLen], "WHERE (");
-		for( i = 0 ; i < nEPIDCount ; i++)
-		{
-			if (i == 0)
-			{
-				nSQLLen += sprintf(&pSQL[nSQLLen], "EPID == %lu ", pEPID[i]);
-			}
-			else
-			{
-				nSQLLen += sprintf(&pSQL[nSQLLen], "OR EPID == %lu ", pEPID[i]);
-			}
-		}
-		nSQLLen += sprintf(&pSQL[nSQLLen], ") ");
+		return	FTM_RET_ERROR;
 	}
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_removeEPDataWithTime
+(
+	FTM_EPID				xEPID,
+	FTM_ULONG				xBeginTime,
+	FTM_ULONG				xEndTime
+)
+{
+	FTM_RET			nRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+	FTM_INT			nSQLLen = 0;
+	FTM_BOOL		bConditionOn = FTM_BOOL_FALSE;
+
+	nSQLLen += sprintf(pSQL, "DELETE FROM ep_%08lx ", xEPID);
 	if (xBeginTime != 0)
 	{
 		if (bConditionOn == FTM_BOOL_FALSE)

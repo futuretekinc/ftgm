@@ -7,7 +7,22 @@
 #include "ftm_debug.h"
 #include "simclist.h"
 
-static FTM_INT	FTDM_EPSeeker(const void *pElement, const void *pKey);
+static FTM_RET	FTDM_insertEP
+(
+	FTM_EP_INFO_PTR	pEPInfo
+);
+
+static FTM_RET	FTDM_removeEP
+(
+ 	FTM_EP_INFO_PTR	pEPInfo
+);
+
+static FTM_INT	FTDM_EPSeeker
+(
+	const void *pElement, 
+	const void *pKey)
+;
+
 static list_t	xEPList;
 
 FTM_RET	FTDM_initEP
@@ -246,6 +261,7 @@ FTM_RET	FTDM_getEPInfoByIndex
 
 FTM_RET	FTDM_appendEPData
 (
+	FTM_EPID		xEPID,
 	FTM_EP_DATA_PTR	pData
 )
 {
@@ -254,47 +270,69 @@ FTM_RET	FTDM_appendEPData
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	return	FTDM_DBIF_appendEPData(pData);
+	return	FTDM_DBIF_appendEPData(xEPID, pData);
 }
 
 FTM_RET	FTDM_getEPData
 (
-	FTM_EPID_PTR		pEPID, 
-	FTM_ULONG			nEPIDCount,
-	FTM_ULONG 			nBeginTime, 
-	FTM_ULONG 			nEndTime, 
-	FTM_EP_DATA_PTR 	pEPData,
+	FTM_EPID			xEPID, 
 	FTM_ULONG			nStartIndex,
+	FTM_EP_DATA_PTR 	pEPData,
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pCount 
 )
 {
 	return	FTDM_DBIF_getEPData(
-				pEPID, 
-				nEPIDCount, 
+				xEPID, 
+				nStartIndex,
+				pEPData, 
+				nMaxCount, 
+				pCount);
+}
+
+FTM_RET	FTDM_getEPDataWithTime
+(
+	FTM_EPID			xEPID, 
+	FTM_ULONG 			nBeginTime, 
+	FTM_ULONG 			nEndTime, 
+	FTM_EP_DATA_PTR 	pEPData,
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pCount 
+)
+{
+	return	FTDM_DBIF_getEPDataWithTime(
+				xEPID, 
 				nBeginTime, 
 				nEndTime, 
 				pEPData, 
-				nStartIndex,
 				nMaxCount, 
 				pCount);
 }
 
 FTM_RET	FTDM_removeEPData
 (
-	FTM_EPID_PTR		pEPID, 
-	FTM_ULONG			nEPIDCount,
-	FTM_ULONG 			nBeginTime, 
-	FTM_ULONG 			nEndTime,
+	FTM_EPID			xEPID, 
+	FTM_ULONG 			nIndex, 
 	FTM_ULONG			nCount
 ) 
 {
 	return	FTDM_DBIF_removeEPData(
-				pEPID, 
-				nEPIDCount, 
-				nBeginTime, 
-				nEndTime, 
+				xEPID, 
+				nIndex, 
 				nCount);
+}
+
+FTM_RET	FTDM_removeEPDataWithTime
+(
+	FTM_EPID			xEPID, 
+	FTM_ULONG 			nBeginTime, 
+	FTM_ULONG 			nEndTime
+) 
+{
+	return	FTDM_DBIF_removeEPDataWithTime(
+				xEPID, 
+				nBeginTime, 
+				nEndTime);
 }
 
 FTM_INT	FTDM_EPSeeker(const void *pElement, const void *pKey)

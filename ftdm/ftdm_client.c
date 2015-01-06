@@ -555,6 +555,7 @@ FTM_RET	FTDMC_getEPInfoByIndex
 FTM_RET	FTDMC_appendEPData
 (
 	FTDM_CLIENT_HANDLE		hClient,
+	FTM_EPID				xEPID,
 	FTM_EP_DATA_PTR			pEPData
 )
 {
@@ -569,6 +570,7 @@ FTM_RET	FTDMC_appendEPData
 
 	xReq.xCmd	=	FTDM_CMD_APPEND_EP_DATA;
 	xReq.nLen	=	sizeof(xReq);
+	xReq.xEPID	=	xEPID;
 	memcpy(&xReq.xData, pEPData, sizeof(FTM_EP_DATA));
 
 	nRet = FTDMC_request(
@@ -591,19 +593,15 @@ FTM_RET	FTDMC_appendEPData
 FTM_RET	FTDMC_getEPData
 (
 	FTDM_CLIENT_HANDLE	hClient,
-	FTM_EPID_PTR		pEPID,
-	FTM_ULONG			nEPIDCount,
-	FTM_ULONG			nBeginTime,
-	FTM_ULONG			nEndTime,
-	FTM_EP_DATA_PTR		pData,
+	FTM_EPID			xEPID,
 	FTM_ULONG			nStartIndex,
+	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pnCount
 )
 {
-	FTM_RET							nRet;
-	FTM_ULONG							nReqSize = 0;
-	FTDM_REQ_GET_EP_DATA_PARAMS_PTR		pReq = NULL;
+	FTM_RET								nRet;
+	FTDM_REQ_GET_EP_DATA_PARAMS			xReq;
 	FTM_ULONG							nRespSize = 0;
 	FTDM_RESP_GET_EP_DATA_PARAMS_PTR	pResp = NULL;
 
@@ -612,41 +610,27 @@ FTM_RET	FTDMC_getEPData
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-	nReqSize = sizeof(FTDM_REQ_GET_EP_DATA_PARAMS) + sizeof(FTM_EPID) * nEPIDCount;
-
-	pReq = (FTDM_REQ_GET_EP_DATA_PARAMS_PTR)malloc(nReqSize);
-	if (pReq == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
-
 	nRespSize = sizeof(FTDM_RESP_GET_EP_DATA_PARAMS) + sizeof(FTM_EP_DATA) * nMaxCount;
 	pResp = (FTDM_RESP_GET_EP_DATA_PARAMS_PTR)malloc(nRespSize);
 	if (pResp == NULL)
 	{
-		free(pReq);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	pReq->xCmd		=	FTDM_CMD_GET_EP_DATA;
-	pReq->nLen		=	nReqSize;
-	pReq->nBeginTime=	nBeginTime;
-	pReq->nEndTime	=	nEndTime;
-	pReq->nStartIndex=	nStartIndex;
-	pReq->nCount	=	nMaxCount;
-	pReq->nEPIDCount=	nEPIDCount;
-
-	memcpy(pReq->pEPID,	pEPID, sizeof(FTM_EPID) * nEPIDCount) ;
+	xReq.xCmd		=	FTDM_CMD_GET_EP_DATA;
+	xReq.nLen		=	sizeof(xReq);
+	xReq.xEPID		=	xEPID;
+	xReq.nStartIndex=	nStartIndex;
+	xReq.nCount		=	nMaxCount;
 
 	nRet = FTDMC_request(
 				hClient, 
-				(FTM_VOID_PTR)pReq, 
-				nReqSize, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				nRespSize);
 	if (nRet != FTM_RET_OK)
 	{
-		free(pReq);
 		free(pResp);
 		return	FTM_RET_ERROR;	
 	}
@@ -666,7 +650,76 @@ FTM_RET	FTDMC_getEPData
 		*pnCount = pResp->nCount;
 	}
 
-	free(pReq);
+	free(pResp);
+
+	return	nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET	FTDMC_getEPDataWithTime
+(
+	FTDM_CLIENT_HANDLE	hClient,
+	FTM_EPID			xEPID,
+	FTM_ULONG			nBeginTime,
+	FTM_ULONG			nEndTime,
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pnCount
+)
+{
+	FTM_RET										nRet;
+	FTDM_REQ_GET_EP_DATA_WITH_TIME_PARAMS		xReq;
+	FTM_ULONG									nRespSize = 0;
+	FTDM_RESP_GET_EP_DATA_WITH_TIME_PARAMS_PTR	pResp = NULL;
+
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	nRespSize = sizeof(FTDM_RESP_GET_EP_DATA_WITH_TIME_PARAMS) + sizeof(FTM_EP_DATA) * nMaxCount;
+	pResp = (FTDM_RESP_GET_EP_DATA_WITH_TIME_PARAMS_PTR)malloc(nRespSize);
+	if (pResp == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	xReq.xCmd		=	FTDM_CMD_GET_EP_DATA_WITH_TIME;
+	xReq.nLen		=	sizeof(xReq);
+	xReq.xEPID		=	xEPID;
+	xReq.nBeginTime=	nBeginTime;
+	xReq.nEndTime	=	nEndTime;
+	xReq.nCount		=	nMaxCount;
+
+	nRet = FTDMC_request(
+				hClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)pResp, 
+				nRespSize);
+	if (nRet != FTM_RET_OK)
+	{
+		free(pResp);
+		return	FTM_RET_ERROR;	
+	}
+
+	nRet = pResp->nRet;
+
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		FTM_INT	i;
+
+		TRACE("pResp->nCount = %d\n", pResp->nCount);
+		for( i = 0 ; i < pResp->nCount && i < nMaxCount ; i++)
+		{
+			memcpy(&pData[i], &pResp->pData[i], sizeof(FTM_EP_DATA));
+		}
+
+		*pnCount = pResp->nCount;
+	}
+
 	free(pResp);
 
 	return	nRet;
@@ -678,10 +731,8 @@ FTM_RET	FTDMC_getEPData
 FTM_RET	FTDMC_removeEPData
 (
 	FTDM_CLIENT_HANDLE		hClient,
-	FTM_EPID_PTR			pEPID,
-	FTM_ULONG				nEPIDCount,
-	FTM_ULONG				nBeginTime,
-	FTM_ULONG				nEndTime,
+	FTM_EPID				xEPID,
+	FTM_ULONG				nIndex,
 	FTM_ULONG				nCount
 )
 {
@@ -695,12 +746,50 @@ FTM_RET	FTDMC_removeEPData
 	}
 
 	xReq.xCmd		=	FTDM_CMD_REMOVE_EP_DATA;
-	xReq.nLen		=	sizeof(xReq) + sizeof(FTM_EPID) * nEPIDCount;
+	xReq.nLen		=	sizeof(xReq);
+	xReq.xEPID		=	xEPID;
+	xReq.nIndex		=	nIndex;
+	xReq.nCount		=	nCount;
+
+	nRet = FTDMC_request(
+				hClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET	FTDMC_removeEPDataWithTime
+(
+	FTDM_CLIENT_HANDLE		hClient,
+	FTM_EPID				xEPID,
+	FTM_ULONG				nBeginTime,
+	FTM_ULONG				nEndTime
+)
+{
+	FTM_RET						nRet;
+	FTDM_REQ_REMOVE_EP_DATA_WITH_TIME_PARAMS	xReq;
+	FTDM_RESP_REMOVE_EP_DATA_WITH_TIME_PARAMS	xResp;
+
+	if ((hClient == NULL) || (hClient->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	xReq.xCmd		=	FTDM_CMD_REMOVE_EP_DATA_WITH_TIME;
+	xReq.nLen		=	sizeof(xReq);
+	xReq.xEPID		=	xEPID;
 	xReq.nBeginTime	=	nBeginTime;
 	xReq.nEndTime	=	nEndTime;
-	xReq.nCount		=	nCount;
-	xReq.nEPIDCount	=	nEPIDCount;
-	memcpy(xReq.pEPID, pEPID, sizeof(FTM_EPID) * nEPIDCount);
 
 	nRet = FTDMC_request(
 				hClient, 

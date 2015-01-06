@@ -29,6 +29,8 @@ typedef	enum	_FTDMC_SUB_CMD
 	FTDMC_SUB_CMD_CONNECT,
 	FTDMC_SUB_CMD_DISCONNECT,
 	FTDMC_SUB_CMD_TEST_GEN,
+	FTDMC_SUB_CMD_DEBUG_GET_MODE,
+	FTDMC_SUB_CMD_DEBUG_SET_MODE,
 	FTDMC_SUB_CMD_RUN
 
 }	FTDMC_SUB_CMD, _PTR_ FTDMC_SUB_CMD_PTR;
@@ -60,6 +62,7 @@ static FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTDMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 
@@ -74,6 +77,7 @@ FTDMC_CMD			_cmds[] =
 	{	"ep",			FTDMC_cmdEP},
 	{	"data",			FTDMC_cmdEPData},
 	{	"help",			FTDMC_cmdHelp},
+	{	"debug",		FTDMC_cmdDebug},
 	{	"?",			FTDMC_cmdHelp},
 	{	"quit",			FTDMC_cmdQuit},
 	{	NULL,}
@@ -716,109 +720,108 @@ FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		{
 			nSubCommand = FTDMC_SUB_CMD_HELP;			
 		}
-
-		switch(nSubCommand)
+	}
+	switch(nSubCommand)
+	{
+	case	FTDMC_SUB_CMD_ADD:
 		{
-		case	FTDMC_SUB_CMD_ADD:
+			FTM_EP_INFO	xInfo;
+
+			xInfo.xEPID 	= xEPID;
+			xInfo.xType 	= xType;
+			xInfo.nInterval = nInterval;
+			strcpy(xInfo.pName, pName);
+			strcpy(xInfo.pUnit, pUnit);
+			strcpy(xInfo.pPID, pPID);
+			strcpy(xInfo.pDID, pDID);
+
+			nRet = FTDMC_createEP(_hClient, &xInfo);
+			if (nRet != FTM_RET_OK)
+			{
+				ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+			}
+		}
+		break;
+
+	case	FTDMC_SUB_CMD_DEL:
+		{
+			nRet = FTDMC_destroyEP(_hClient, xEPID);	
+			if (nRet != FTM_RET_OK)
+			{
+				ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+			}
+		}
+		break;
+
+	case	FTDMC_SUB_CMD_LIST:
+		{
+			FTM_ULONG	nCount;
+
+			nRet = FTDMC_getEPCount(_hClient, &nCount);
+			if (nRet != FTM_RET_OK)
+			{
+				ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+				break;
+			}
+
+			MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
+				"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
+
+			for(i = 0 ; i< nCount ; i++)
 			{
 				FTM_EP_INFO	xInfo;
 
-				xInfo.xEPID 	= xEPID;
-				xInfo.xType 	= xType;
-				xInfo.nInterval = nInterval;
-				strcpy(xInfo.pName, pName);
-				strcpy(xInfo.pUnit, pUnit);
-				strcpy(xInfo.pPID, pPID);
-				strcpy(xInfo.pDID, pDID);
-
-				nRet = FTDMC_createEP(_hClient, &xInfo);
-				if (nRet != FTM_RET_OK)
+				nRet = FTDMC_getEPInfoByIndex(_hClient, i, &xInfo);
+				if (nRet == FTM_RET_OK)
 				{
-					ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+					MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
+							xInfo.xEPID,
+							FTM_getEPTypeString(xInfo.xType),
+							xInfo.pName,
+							xInfo.pUnit,
+							xInfo.nInterval,
+							xInfo.pDID,
+							xInfo.pPID);
 				}
 			}
-			break;
+		}
+		break;
 
-		case	FTDMC_SUB_CMD_DEL:
+	case	FTDMC_SUB_CMD_TEST_GEN:
+		{
+			FTM_EP_INFO	xInfo;
+
+			xInfo.xEPID 	= xEPID;
+			xInfo.xType 	= xType;
+			xInfo.nInterval = nInterval;
+			strcpy(xInfo.pName, pName);
+			strcpy(xInfo.pUnit, pUnit);
+			strcpy(xInfo.pPID, pPID);
+			strcpy(xInfo.pDID, pDID);
+
+			nRet = FTDMC_createEP(_hClient, &xInfo);
+			if (nRet != FTM_RET_OK)
 			{
-				nRet = FTDMC_destroyEP(_hClient, xEPID);	
-				if (nRet != FTM_RET_OK)
-				{
-					ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
-				}
+				ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 			}
-			break;
+		}
+		break;
 
-		case	FTDMC_SUB_CMD_LIST:
-			{
-				FTM_ULONG	nCount;
+	case	FTDMC_SUB_CMD_SHORT_HELP:
+		{
+			MESSAGE("%-16s <add|del|list> [EPID] [TYPE] ...\n", pArgv[0]);
+		}
+		break;
 
-				nRet = FTDMC_getEPCount(_hClient, &nCount);
-				if (nRet != FTM_RET_OK)
-				{
-					ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
-					break;
-				}
-
-				MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
-					"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
-
-				for(i = 0 ; i< nCount ; i++)
-				{
-					FTM_EP_INFO	xInfo;
-
-					nRet = FTDMC_getEPInfoByIndex(_hClient, i, &xInfo);
-					if (nRet == FTM_RET_OK)
-					{
-						MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
-								xInfo.xEPID,
-								FTM_getEPTypeString(xInfo.xType),
-								xInfo.pName,
-								xInfo.pUnit,
-								xInfo.nInterval,
-								xInfo.pDID,
-								xInfo.pPID);
-					}
-				}
-			}
-			break;
-
-		case	FTDMC_SUB_CMD_TEST_GEN:
-			{
-				FTM_EP_INFO	xInfo;
-
-				xInfo.xEPID 	= xEPID;
-				xInfo.xType 	= xType;
-				xInfo.nInterval = nInterval;
-				strcpy(xInfo.pName, pName);
-				strcpy(xInfo.pUnit, pUnit);
-				strcpy(xInfo.pPID, pPID);
-				strcpy(xInfo.pDID, pDID);
-
-				nRet = FTDMC_createEP(_hClient, &xInfo);
-				if (nRet != FTM_RET_OK)
-				{
-					ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
-				}
-			}
-			break;
-
-		case	FTDMC_SUB_CMD_SHORT_HELP:
-			{
-				MESSAGE("%-16s <add|del|list> [EPID] [TYPE] ...\n", pArgv[0]);
-			}
-			break;
-
-		case	FTDMC_SUB_CMD_HELP:
-		default:
-			{
-				MESSAGE("Usage : %s <COMMAND> ...\n"\
-						"\tEndPoint management.\n"\
-						"COMMANDS:\n"\
-						"\tadd <EPID> <Type> [Name] [Unit] [Interval] [DID] [PID]\n"\
-						"\tdel <EPID>\n"\
-						"\tlist\n", pArgv[0]);
-			}
+	case	FTDMC_SUB_CMD_HELP:
+	default:
+		{
+			MESSAGE("Usage : %s <COMMAND> ...\n"\
+					"\tEndPoint management.\n"\
+					"COMMANDS:\n"\
+					"\tadd <EPID> <Type> [Name] [Unit] [Interval] [DID] [PID]\n"\
+					"\tdel <EPID>\n"\
+					"\tlist\n", pArgv[0]);
 		}
 	}
 
@@ -872,9 +875,10 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	{
 	case	FTDMC_SUB_CMD_ADD:
 		{
+			FTM_EPID	xEPID;
 			FTM_EP_DATA	xData;
 
-			xData.xEPID = strtoul(pArgv[2], NULL, 16);
+			xEPID = strtoul(pArgv[2], NULL, 16);
 			xData.nTime	= strtoul(pArgv[3], NULL, 10);
 			switch(toupper(pArgv[4][0]))
 			{
@@ -913,7 +917,7 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				MESSAGE("Invalid arguments!\n");	
 			}
 
-			nRet = FTDMC_appendEPData(_hClient, &xData);
+			nRet = FTDMC_appendEPData(_hClient, xEPID, &xData);
 
 			if (nRet == FTM_RET_OK)
 			{
@@ -932,9 +936,8 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			FTM_ULONG		nMaxCount=0;
 			FTM_ULONG		nBeginTime = 0;
 			FTM_ULONG		nEndTime = 0;
-			FTM_ULONG		nStartIndex=0;
-			FTM_EPID		pEPIDs[32];
-			FTM_ULONG		nEPIDCount=0;
+			FTM_EPID		xEPID;
+			FTM_ULONG		nStartIndex = 0;
 
 			optind = 2;
 			while((opt = getopt(nArgc, pArgv, "s: c: b: e:")) != -1)
@@ -959,12 +962,17 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				}
 			}
 
-			while((nEPIDCount < 32) && (optind < nArgc))
+			if (optind < nArgc)
 			{
-				pEPIDs[nEPIDCount++] = atoi(pArgv[optind++]);	
+				xEPID = strtoul(pArgv[optind],0, 16);
+			}
+			else
+			{
+				MESSAGE("EndPoint not defined!\n");	
+				break;
 			}
 
-			nRet = FTDMC_removeEPData(_hClient, pEPIDs, nEPIDCount, nBeginTime, nEndTime, nMaxCount);
+			nRet = FTDMC_removeEPDataWithTime(_hClient, xEPID, nBeginTime, nEndTime);
 			if (nRet == FTM_RET_OK)
 			{
 				MESSAGE("EndPoint data deleted successfully!\n");	
@@ -981,8 +989,7 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			FTM_INT		opt = 0;
 			FTM_ULONG		nBeginTime = 0;
 			FTM_ULONG		nEndTime = 0;
-			static FTM_EPID		pEPIDs[32];
-			FTM_ULONG		nEPIDCount=0;
+			FTM_EPID		xEPID;
 			FTM_EP_DATA_PTR	pEPData;	
 			FTM_ULONG		nStartIndex=0;
 			FTM_ULONG		nMaxCount=50;
@@ -1013,14 +1020,19 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 						break;
 
 					case	'S':
-						nStartIndex = strtoul(optarg, 0, NULL);
+						nStartIndex = strtoul(optarg, 0, 10);
 				}
 			}
 
 
-			while((nEPIDCount < 32) && (optind < nArgc))
+			if (optind < nArgc)
 			{
-				pEPIDs[nEPIDCount++] = strtol(pArgv[optind++], NULL, 16);
+				xEPID = strtol(pArgv[optind++], NULL, 16);
+			}
+			else
+			{
+				MESSAGE("EPID not defined!\n");
+				break;
 			}
 
 			pEPData = (FTM_EP_DATA_PTR)malloc(sizeof(FTM_EP_DATA) * nMaxCount);
@@ -1031,21 +1043,18 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 
 			nRet = FTDMC_getEPData(_hClient, 
-									pEPIDs, 
-									nEPIDCount, 
-									nBeginTime, 
-									nEndTime, 
-									pEPData, 
+									xEPID, 
 									nStartIndex,
+									pEPData, 
 									nMaxCount, 
 									&nCount);
-			TRACE("FTDMC_getEPData(hClient, pEPIDs, %d, %d, %d, pEPData, %d, %d) = %08lx\n",
-				nEPIDCount, nBeginTime, nEndTime, nMaxCount, nCount, nRet);
+			TRACE("FTDMC_getEPData(hClient, %08lx, %d, %d, pEPData, %d, %d) = %08lx\n",
+				xEPID, nBeginTime, nEndTime, nMaxCount, nCount, nRet);
 			if (nRet == FTM_RET_OK)
 			{
 				FTM_INT	i;
 
-				MESSAGE("%8s %8s %32s %8s\n", "INDEX", "EPID", "DATE", "VALUE");	
+				MESSAGE("%8s %32s %8s\n", "INDEX", "DATE", "VALUE");	
 				for(i = 0 ; i < nCount ; i++)
 				{
 					FTM_CHAR	pTime[64];
@@ -1056,22 +1065,22 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					{
 					case	FTM_EP_DATA_TYPE_ULONG:
 						{
-							MESSAGE("%8d %08lx %32s %8lu\n", 
-									nStartIndex + i, pEPData[i].xEPID, pTime, pEPData[i].xValue.ulValue);	
+							MESSAGE("%8d %32s %8lu\n", 
+									nStartIndex + i, pTime, pEPData[i].xValue.ulValue);	
 						}
 						break;
 
 					case	FTM_EP_DATA_TYPE_FLOAT:
 						{
-							MESSAGE("%8d %08lx %32s %8.3lf\n", 
-									nStartIndex + i, pEPData[i].xEPID, pTime, pEPData[i].xValue.fValue);	
+							MESSAGE("%8d %32s %8.3lf\n", 
+									nStartIndex + i, pTime, pEPData[i].xValue.fValue);	
 						}
 						break;
 					case	FTM_EP_DATA_TYPE_INT:
 					default:
 						{
-							MESSAGE("%8d %08lx %32s %8d\n", 
-									nStartIndex + i, pEPData[i].xEPID, pTime, pEPData[i].xValue.nValue);	
+							MESSAGE("%8d %32s %8d\n", 
+									nStartIndex + i, pTime, pEPData[i].xValue.nValue);	
 						}
 						break;
 
@@ -1090,6 +1099,7 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 	case	FTDMC_SUB_CMD_TEST_GEN:
 		{
+			FTM_EPID	xEPID;
 			FTM_EP_DATA	xData;
 			FTM_INT		i, nDataGenCount;
 			time_t		_startTime;
@@ -1106,12 +1116,12 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 				nIndex = rand() % list_size(&_testEPList);
 
-				xData.xEPID = (FTM_EPID)list_get_at(&_testEPList, nIndex);
+				xEPID = (FTM_EPID)list_get_at(&_testEPList, nIndex);
 				xData.xType = FTM_EP_DATA_TYPE_INT;
 				xData.nTime = _startTime + rand() % (_endTime - _startTime);
 				xData.xValue.nValue = rand();
 
-				FTDMC_appendEPData(_hClient, &xData);
+				FTDMC_appendEPData(_hClient, xEPID, &xData);
 		}
 			}
 		break;
@@ -1132,6 +1142,89 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					"\tdel [-c MaxCount] [-b BeginTime] [-e EndTime] [EPID ...]\n"\
 					"\tcount [-b BeginTime] [-e EndTime] [EPID ...]\n"\
 					"\tget [-b BeginTime] [-e EndTime] [EPID ...]\n", pArgv[0]);
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+{
+	FTM_ULONG	nSubCmd = FTDMC_SUB_CMD_HELP;
+
+	if (nArgc >= 2)
+	{
+		if (strcasecmp(pArgv[1], "mode") == 0)
+		{
+			if (nArgc == 2)
+			{
+				nSubCmd = FTDMC_SUB_CMD_DEBUG_GET_MODE;	
+			}
+			else if (nArgc == 3)
+			{
+				nSubCmd = FTDMC_SUB_CMD_DEBUG_SET_MODE;	
+			}
+		}
+		else if (strcasecmp(pArgv[1], "short_help") == 0)
+		{
+			nSubCmd = FTDMC_SUB_CMD_SHORT_HELP;	
+		}
+	}
+
+	switch(nSubCmd)
+	{
+	case	FTDMC_SUB_CMD_DEBUG_GET_MODE:
+		{
+			FTM_ULONG	nMode;
+			getPrintMode(&nMode);
+			switch(nMode)
+			{
+			case	0: MESSAGE("DEBUG OUT MODE : NONE\n"); break;
+			case	1: MESSAGE("DEBUG OUT MODE : NORMAL\n"); break;
+			case	2: MESSAGE("DEBUG OUT MODE : ALL\n"); break;
+			}
+		}
+		break;
+
+	case	FTDMC_SUB_CMD_DEBUG_SET_MODE:
+		{
+			FTM_ULONG	nMode, nNewMode;
+
+			nMode = strtoul(pArgv[2], NULL, 10);
+		
+			getPrintMode(&nMode);
+			switch(nMode)
+			{
+			case	0: MESSAGE("DEBUG OUT MODE : NONE"); break;
+			case	1: MESSAGE("DEBUG OUT MODE : NORMAL"); break;
+			case	2: MESSAGE("DEBUG OUT MODE : ALL"); break;
+			}
+
+			setPrintMode(nNewMode);
+			switch(nMode)
+			{
+			case	0: MESSAGE(" to NONE\n"); break;
+			case	1: MESSAGE(" to NORMAL\n"); break;
+			case	2: MESSAGE(" to ALL\n"); break;
+			}
+		}
+		break;
+
+	case	FTDMC_SUB_CMD_SHORT_HELP:
+		{
+			MESSAGE("%-16s Debug mode configuration.\n", pArgv[0]);
+		}
+		break;
+
+	case	FTDMC_SUB_CMD_HELP:
+	default:
+		{
+			MESSAGE("Usage : %s <COMMAND> ....\n"\
+					"\tDebug Control.\n"\
+					"COMMANDS:\n"\
+					"\tmode <MODE>\n",
+					pArgv[0]);
+
 		}
 	}
 

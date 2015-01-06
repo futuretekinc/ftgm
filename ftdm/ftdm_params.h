@@ -241,6 +241,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
+	FTM_EPID			xEPID;
 	FTM_EP_DATA			xData;
 }	FTDM_REQ_APPEND_EP_DATA_PARAMS, _PTR_ FTDM_REQ_APPEND_EP_DATA_PARAMS_PTR;
 
@@ -255,19 +256,16 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_ULONG 			nBeginTime; 
-	FTM_ULONG 			nEndTime; 
+	FTM_EPID			xEPID;
 	FTM_ULONG			nStartIndex;
 	FTM_ULONG			nCount; 
-	FTM_ULONG			nEPIDCount;
-	FTM_EPID 			pEPID[]; 
 }	FTDM_REQ_GET_EP_DATA_PARAMS, _PTR_	FTDM_REQ_GET_EP_DATA_PARAMS_PTR;
 
 typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_RET			nRet;
+	FTM_RET				nRet;
 	FTM_ULONG			nCount; 
 	FTM_EP_DATA 		pData[];
 }	FTDM_RESP_GET_EP_DATA_PARAMS, _PTR_ FTDM_RESP_GET_EP_DATA_PARAMS_PTR;
@@ -276,18 +274,51 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_ULONG 			nBeginTime;
+	FTM_EPID			xEPID;
+	FTM_ULONG 			nBeginTime; 
 	FTM_ULONG 			nEndTime; 
+	FTM_ULONG			nCount; 
+}	FTDM_REQ_GET_EP_DATA_WITH_TIME_PARAMS, _PTR_	FTDM_REQ_GET_EP_DATA_WITH_TIME_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			nCount; 
+	FTM_EP_DATA 		pData[];
+}	FTDM_RESP_GET_EP_DATA_WITH_TIME_PARAMS, _PTR_ FTDM_RESP_GET_EP_DATA_WITH_TIME_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_EPID			xEPID;
+	FTM_ULONG 			nIndex; 
 	FTM_ULONG			nCount;
-	FTM_ULONG			nEPIDCount;
-	FTM_EPID 			pEPID[]; 
 }	FTDM_REQ_REMOVE_EP_DATA_PARAMS, _PTR_ FTDM_REQ_REMOVE_EP_DATA_PARAMS_PTR; 
 
 typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_RET			nRet;
+	FTM_RET				nRet;
 }	FTDM_RESP_REMOVE_EP_DATA_PARAMS, _PTR_ 	FTDM_RESP_REMOVE_EP_DATA_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_EPID			xEPID;
+	FTM_ULONG 			nBeginTime;
+	FTM_ULONG 			nEndTime; 
+}	FTDM_REQ_REMOVE_EP_DATA_WITH_TIME_PARAMS, _PTR_ FTDM_REQ_REMOVE_EP_DATA_WITH_TIME_PARAMS_PTR; 
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTDM_RESP_REMOVE_EP_DATA_WITH_TIME_PARAMS, _PTR_ 	FTDM_RESP_REMOVE_EP_DATA_WITH_TIME_PARAMS_PTR;
 
 #endif
