@@ -7,20 +7,27 @@
 #include "ftdm_type.h"
 #include "ftdm_cmd.h"
 
-FTM_RET	FTDM_init(void);
-FTM_RET	FTDM_final(void);
+FTM_RET	FTDM_init
+(
+	FTM_CHAR_PTR pDBFieName
+);
 
-FTM_RET	FTDM_createNode
+FTM_RET	FTDM_final
+(
+	void
+);
+
+FTM_RET	FTDM_appendNodeInfo
 (
 	FTM_NODE_INFO_PTR	pInfo
 );
 
-FTM_RET 	FTDM_destroyNode
+FTM_RET 	FTDM_removeNodeInfo
 (
 	FTM_CHAR_PTR		pDID
 );
 
-FTM_RET	FTDM_getNodeCount
+FTM_RET	FTDM_getNodeInfoCount
 (
 	FTM_ULONG_PTR		pnCount
 );
@@ -43,17 +50,17 @@ FTM_RET	FTDM_getNodeType
 	FTM_NODE_TYPE_PTR 	pType
 );
 
-FTM_RET	FTDM_createEP
+FTM_RET	FTDM_appendEPInfo
 (
 	FTM_EP_INFO_PTR 	pInfo
 );
 
-FTM_RET	FTDM_destroyEP
+FTM_RET	FTDM_removeEPInfo
 (
 	FTM_EPID 			xEPID
 );
 
-FTM_RET	FTDM_getEPCount
+FTM_RET	FTDM_getEPInfoCount
 (
 	FTM_ULONG_PTR		pnCount
 );
@@ -108,6 +115,20 @@ FTM_RET	FTDM_removeEPDataWithTime
 	FTM_ULONG 			nBeginTime, 
 	FTM_ULONG 			nEndTime 
 ); 
+
+FTM_RET	FTDM_getEPDataCount
+(
+	FTM_EPID			xEPID, 
+	FTM_ULONG_PTR		pCount
+); 
+
+FTM_RET	FTDM_getEPDataCountWithTime
+(
+	FTM_EPID			xEPID, 
+	FTM_ULONG 			nBeginTime, 
+	FTM_ULONG 			nEndTime,
+	FTM_ULONG_PTR		pCount
+);
 
 #endif
 

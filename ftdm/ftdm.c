@@ -1,23 +1,20 @@
 #include "ftdm.h"
 #include "ftm_debug.h"
-#include "ftdm_device.h"
-#include "ftdm_ep.h"
-#include "sqlite_if.h"
+#include "ftdm_node_info.h"
+#include "ftdm_ep_info.h"
+#include "ftdm_sqlite.h"
 
-FTM_RET 	FTDM_init(void)
+FTM_RET 	FTDM_init(FTM_CHAR_PTR pDBFileName)
 {
-	if ((FTDM_DBIF_init() != FTM_RET_OK) ||
-		(FTDM_DBIF_initNodeInfoTable() != FTM_RET_OK) ||
-		(FTDM_DBIF_initEPInfoTable() != FTM_RET_OK))
+	if (FTDM_DBIF_init(pDBFileName) != FTM_RET_OK)
 	{
 		TRACE("FTDM initialization failed.\n");
 
 		return	FTM_RET_ERROR;
-	
 	}
 
-	FTDM_initNode();
-	FTDM_initEP();
+	FTDM_initNodeInfo();
+	FTDM_initEPInfo();
 
 	TRACE("FTDM initialization completed successfully.\n");
 
@@ -26,7 +23,8 @@ FTM_RET 	FTDM_init(void)
 
 FTM_RET	FTDM_final(void)
 {
-	FTDM_finalNode();
+	FTDM_finalEPInfo();
+	FTDM_finalNodeInfo();
 
 	if (FTDM_DBIF_final() != FTM_RET_OK)
 	{

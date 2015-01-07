@@ -31,19 +31,19 @@ FTM_RET FTDMC_isConnected
 	FTM_BOOL_PTR			pbConnected
 );
 
-FTM_RET FTDMC_createNode
+FTM_RET FTDMC_appendNodeInfo
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTM_NODE_INFO_PTR		pInfo
 );
 
-FTM_RET FTDMC_destroyNode
+FTM_RET FTDMC_removeNodeInfo
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTM_CHAR_PTR			pDID
 );
 
-FTM_RET FTDMC_getNodeCount
+FTM_RET FTDMC_getNodeInfoCount
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTM_ULONG_PTR			pnCount
@@ -63,19 +63,19 @@ FTM_RET FTDMC_getNodeInfo
 	FTM_NODE_INFO_PTR		pInfo
 );
 
-FTM_RET FTDMC_createEP
+FTM_RET FTDMC_appendEPInfo
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTM_EP_INFO_PTR			pInfo
 );
 
-FTM_RET FTDMC_destroyEP
+FTM_RET FTDMC_removeEPInfo
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTM_EPID				xEPID
 );
 
-FTM_RET FTDMC_getEPCount
+FTM_RET FTDMC_getEPInfoCount
 (
 	FTDM_CLIENT_HANDLE		hClient,
 	FTM_ULONG_PTR			pnCount
@@ -137,6 +137,22 @@ FTM_RET FTDMC_removeEPDataWithTime
 	FTM_EPID				xEPID,
 	FTM_ULONG				nBeginTime,
 	FTM_ULONG				nEndTime
+);
+
+FTM_RET	FTDMC_getEPDataCount
+(
+	FTDM_CLIENT_HANDLE		hClient,
+	FTM_EPID				xEPID,
+	FTM_ULONG_PTR			pCount
+);
+
+FTM_RET	FTDMC_getEPDataCountWithTime
+(
+	FTDM_CLIENT_HANDLE		hClient,
+	FTM_EPID				xEPID,
+	FTM_ULONG				nBeginTime,
+	FTM_ULONG				nEndTime,
+	FTM_ULONG_PTR			pCount
 );
 
 #endif

@@ -3,6 +3,5 @@
 
 #include "ftm.h"
 
-typedef	unsigned long	FTDM_CMD, _PTR_ FTDM_CMD_PTR;
 
 #endif
