@@ -10,7 +10,8 @@
 
 #define	MSG_ALL			(MSG_NORMAL | MSG_TRACE | MSG_ERROR)
 
-void setPrintMode(unsigned long	nMode);
+void setPrintMode(FTM_ULONG		nMode);
+void getPrintMode(FTM_ULONG_PTR	pMode);
 void printOut
 (
 	unsigned long 	nLevel, 

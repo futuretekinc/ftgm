@@ -39,7 +39,7 @@ FTM_VOID	FTM_dumpPacket
 
 void setPrintMode
 (
-	unsigned long	nMode
+	FTM_ULONG nMode
 )
 {
 	switch(nMode)
@@ -49,6 +49,14 @@ void setPrintMode
 	case	2:	_nPrintLevel = MSG_ALL; break;
 	}
 }
+void getPrintMode
+(
+	FTM_ULONG_PTR pMode
+)
+{
+	*pMode = _nPrintLevel;
+}
+
 
 void printOut
 (
