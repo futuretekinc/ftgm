@@ -11,9 +11,46 @@
 #include "ftdm_server.h"
 #include "debug.h"
 
-
+#define	FTDM_FILE_PATH_LEN				256
+#define	FTDM_FILE_NAME_LEN				256
 #define	FTDM_DEFAULT_SERVICE_PORT		8888
 #define	FTDM_PACKET_LEN					2048
+
+typedef	struct
+{
+	struct 
+	{
+		FTM_CHAR	pFileName[FTDM_FILE_NAME_LEN];
+	}	xApp;
+
+	struct
+	{
+		FTM_CHAR	pFileName[FTDM_FILE_NAME_LEN];
+	}	xDatabase;
+
+	struct
+	{
+		FTM_USHORT	usPort;
+	}	xNetwork;
+
+	struct
+	{	
+		FTM_ULONG	ulPrintOutMode;
+		struct 
+		{
+			FTM_CHAR	pPath[FTDM_FILE_PATH_LEN];
+			FTM_CHAR	pPrefix[FTDM_FILE_NAME_LEN];
+		} xTrace;
+
+		struct 
+		{
+			FTM_CHAR	pPath[FTDM_FILE_PATH_LEN];
+			FTM_CHAR	pPrefix[FTDM_FILE_NAME_LEN];
+		} xError;
+
+	}	xDebug;
+		
+}	FTDM_SERVER_CONFIG, _PTR_ FTDM_SERVER_CONFIG_PTR;
 
 typedef	struct
 {
@@ -23,139 +60,196 @@ typedef	struct
 	FTM_BYTE			pRespBuff[FTDM_PACKET_LEN];
 }	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
 
-static FTM_RET			FTDMS_init(FTM_CHAR_PTR pConfigFile);
+static FTM_RET			FTDMS_init(FTDM_SERVER_CONFIG_PTR pServerConfig);
 static FTM_VOID_PTR 	FTDMS_serviceHandler(FTM_VOID_PTR pData);
-static FTM_RET 			FTDMS_startDaemon(void);
+static FTM_RET 			FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pServerConfig);
+static FTM_VOID			FTDMS_showUsage(FTM_CHAR_PTR pAppName);
 
-static	FTM_USHORT		usServicePort = FTDM_DEFAULT_SERVICE_PORT;
-static	FTM_CHAR		pConfigFileName[1024];
-static	FTM_CHAR		pDBFileName[1024];
+static FTDM_SERVER_CONFIG	xServerConfig =
+{
+	.xApp =
+	{
+		.pFileName = "",
+	},
+	.xDatabase = 
+	{
+		.pFileName = "",
+	},
+	.xNetwork = 
+	{
+		.usPort = FTDM_DEFAULT_SERVICE_PORT
+	},
+	.xDebug =
+	{
+		.ulPrintOutMode = 1,
+		.xTrace = 
+		{
+			.pPath = "/var/log/",
+			.pPrefix="ftdm_server"
+		},
+		.xError =
+		{
+			.pPath = "/var/log/",
+			.pPrefix="ftdm_server"
+		}
+	}
+};
 
 int main(int nArgc, char *pArgv[])
 {
-	FTM_INT	nOpt;
-	pid_t	pid;
+	FTM_INT		nOpt;
+	FTM_BOOL	bDaemon = FTM_BOOL_FALSE;
+	extern char *program_invocation_short_name;
 
-	sprintf(pConfigFileName, "%s.conf", pArgv[0]);
+	/* set default configuration */
+	sprintf(xServerConfig.xApp.pFileName, "%s.conf", program_invocation_short_name);
+	sprintf(xServerConfig.xDatabase.pFileName, "%s.db", program_invocation_short_name);
 
-	while((nOpt = getopt(nArgc, pArgv, "P:SV")) != -1)
+	/* set command line options */
+	while((nOpt = getopt(nArgc, pArgv, "c:dm:?")) != -1)
 	{
 		switch(nOpt)
 		{
-		case	'P':
-			usServicePort = strtoul(optarg, NULL, 10);
+		case	'c':
+			{
+				strncpy(xServerConfig.xApp.pFileName, optarg, FTDM_FILE_NAME_LEN);
+			}
 			break;
 
-		case	'S':
-			setPrintMode(0);
+		case	'd':
+			{
+				bDaemon = FTM_BOOL_TRUE;
+			}
 			break;
 
-		case	'V':
-			setPrintMode(2);
+		case	'm':
+			{
+				FTM_ULONG	ulPrintOutMode;
+
+				ulPrintOutMode = strtoul(optarg, NULL, 10);
+				if (ulPrintOutMode < 3)
+				{
+					xServerConfig.xDebug.ulPrintOutMode = ulPrintOutMode;	
+				}
+			}
 			break;
 
+		case	'?':
 		default:
-			break;
+			FTDMS_showUsage(pArgv[0]);
+			return	0;
 		}
 	}
 
-	FTDMS_init(pConfigFileName);
+	/* apply configuration */
+	FTDMS_init(&xServerConfig);
 
-	pid = fork();
-	if (pid == 0)
+	if (bDaemon)
 	{
-		FTDMS_startDaemon();
+		if (fork() == 0)
+		{
+			FTDMS_startDaemon(&xServerConfig);
+		}
 	}
+	else
+	{
+		FTDMS_startDaemon(&xServerConfig);
+	}
+
 
 
 	return	0;
 }
 
-FTM_RET	FTDMS_init(FTM_CHAR_PTR pConfigFile)
+FTM_RET	FTDMS_init(FTDM_SERVER_CONFIG_PTR pConfig)
 {
+	config_t			xConfig;
+	config_setting_t	*pSection;
+
+	if (pConfig == NULL)
+	{
+		ERROR("Server configuration is NULL!\n");
+		return	FTM_RET_INTERNAL_ERROR;	
+	}
+
+	setPrintMode(pConfig->xDebug.ulPrintOutMode);
 	FTM_initEPTypeString();
 
-	if (pConfigFile != NULL)
+	config_init(&xConfig);
+
+	if (CONFIG_TRUE != config_read_file(&xConfig, pConfig->xApp.pFileName))
 	{
-		config_t			xConfig;
-		config_setting_t	*pSection;
+		ERROR("Configuration loading failed.[FILE = %s]\n", pConfig->xApp.pFileName);
+		return	FTM_RET_CONFIG_LOAD_FAILED;
+	}
 
-		config_init(&xConfig);
+	pSection = config_lookup(&xConfig, "application");
+	if (pSection)
+	{
+		config_setting_t *pDBSetting;
+		config_setting_t *pNetworkSetting;
 
-		if (CONFIG_TRUE != config_read_file(&xConfig, pConfigFile))
+		pDBSetting = config_setting_get_member(pSection, "database");
+		if (pDBSetting)
 		{
-			ERROR("Configuration loading failed.[FILE = %s]\n", pConfigFile);
-			return	FTM_RET_CONFIG_LOAD_FAILED;
-		}
+			config_setting_t *pDBFileSetting;
 
-		pSection = config_lookup(&xConfig, "type_string");
-		if (pSection)
-		{
-			FTM_INT	i;
-
-			for( i = 0 ; i < config_setting_length(pSection) ; i++)
+			pDBFileSetting = config_setting_get_member(pDBSetting, "file");
+			if (pDBFileSetting)
 			{
-				config_setting_t	*pElement;
-
-				pElement = config_setting_get_elem(pSection, i);
-				if (pElement != NULL)
-				{
-					FTM_INT		 nType = config_setting_get_int_elem(pElement, 0);	
-					FTM_CHAR_PTR pTypeString = (FTM_CHAR_PTR)config_setting_get_string_elem(pElement, 1);	
-
-					if (pTypeString != NULL)
-					{
-						FTM_appendEPTypeString(nType, pTypeString);	
-					}
-				}
+				strcpy(pConfig->xDatabase.pFileName, 
+					config_setting_get_string(pDBFileSetting));	
 			}
 		}
 
-		pSection = config_lookup(&xConfig, "default");
-		if (pSection)
+		pNetworkSetting = config_setting_get_member(pSection, "network");
+		if (pNetworkSetting)
 		{
-			config_setting_t *pServerSetting;
-			config_setting_t *pDBSetting;
+			config_setting_t *pPortSetting;
 
-			pServerSetting = config_setting_get_member(pSection, "server");
-			if (pServerSetting)
+			pPortSetting = config_setting_get_member(pNetworkSetting, "port");
+			if (pPortSetting)
 			{
-				config_setting_t *pPortSetting;
-
-				pPortSetting = config_setting_get_member(pServerSetting, "port");
-				if (pPortSetting)
-				{
-					usServicePort = config_setting_get_int(pPortSetting);
-				}
+				pConfig->xNetwork.usPort = config_setting_get_int(pPortSetting);
 			}
+		}
+	}
 
+	pSection = config_lookup(&xConfig, "endpoint");
+	if (pSection)
+	{
+		FTM_INT	i;
+		config_setting_t	*pTypeStringSetting;
 
-			pDBSetting = config_setting_get_member(pSection, "database");
-			if (pDBSetting)
+		pTypeStringSetting = config_setting_get_member(pSection, "type_string");
+		for( i = 0 ; i < config_setting_length(pTypeStringSetting) ; i++)
+		{
+			config_setting_t	*pElement;
+
+			pElement = config_setting_get_elem(pTypeStringSetting, i);
+			if (pElement != NULL)
 			{
-				config_setting_t *pDBFileSetting;
+				FTM_INT		 nType = config_setting_get_int_elem(pElement, 0);	
+				FTM_CHAR_PTR pTypeString = (FTM_CHAR_PTR)config_setting_get_string_elem(pElement, 1);	
 
-				pDBFileSetting = config_setting_get_member(pDBSetting, "file");
-				if (pDBFileSetting)
+				if (pTypeString != NULL)
 				{
-					strcpy(pDBFileName, config_setting_get_string(pDBFileSetting));	
+					FTM_appendEPTypeString(nType, pTypeString);	
 				}
 			}
 		}
 	}
 
-	TRACE("CONFIGURATOIN\n");
-	TRACE("%16s %lu\n","Port", usServicePort);
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDMS_startDaemon(void)
+FTM_RET FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig)
 {
 	int					nRet;
 	int					hSocket;
 	struct sockaddr_in	xServer, xClient;
 
-	FTDM_init(pDBFileName);
+	FTDM_init(pConfig->xDatabase.pFileName);
 
 	hSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (hSocket == -1)
@@ -166,7 +260,7 @@ FTM_RET FTDMS_startDaemon(void)
 
 	xServer.sin_family 		= AF_INET;
 	xServer.sin_addr.s_addr = INADDR_ANY;
-	xServer.sin_port 		= htons( usServicePort );
+	xServer.sin_port 		= htons( pConfig->xNetwork.usPort );
 
 	nRet = bind( hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
 	if (nRet < 0)
@@ -259,3 +353,14 @@ FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData)
 	return	0;
 }
 
+FTM_VOID	FTDMS_showUsage(FTM_CHAR_PTR pAppName)
+{
+	MESSAGE("Usage : %s [-d] [-m 0|1|2]\n", pAppName);
+	MESSAGE("\tFutureTek Data Manger for M2M gateway.\n");
+	MESSAGE("OPTIONS:\n");
+	MESSAGE("    -d      Run as a daemon\n");
+	MESSAGE("    -m <n>  Set message output mode.\n");
+	MESSAGE("            0 - Don't output any messages.\n");
+	MESSAGE("            1 - Only general message\n");
+	MESSAGE("            2 - All message(include debugging message).\n");
+}
