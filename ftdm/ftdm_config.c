@@ -8,55 +8,36 @@
 
 extern char *program_invocation_short_name;
 
-FTM_RET	FTDM_initServerConfig(FTDM_SERVER_CONFIG_PTR pConfig)
+FTM_RET	FTDM_initServerConfig(FTDM_SERVER_CONFIG_PTR pServerConfig)
 {
 	FTM_CHAR	pBuff[1024];
 
-	if (pConfig == NULL)
+	if (pServerConfig == NULL)
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
-	memset(pConfig, 0, sizeof(FTDM_CONFIG));
+	memset(pServerConfig, 0, sizeof(FTDM_CONFIG));
 
-	list_init(&pConfig->xConfig.xEP.xInfoList);
-	list_init(&pConfig->xConfig.xEP.xClassInfoList);
+	FTDM_initEPInfoConfig(&pServerConfig->xConfig.xEPInfo);
+	FTDM_initEPClassInfoConfig(&pServerConfig->xConfig.xEPClassInfo);
 
-	/* set default configuration */
-	sprintf(pBuff, "%s.db", program_invocation_short_name);
-	pConfig->xConfig.xDatabase.pFileName = strdup(pBuff);
 
-	pConfig->xNetwork.usPort 		= FTDM_SERVER_DEFAULT_PORT;
-	pConfig->xNetwork.ulMaxSession	= FTDM_SERVER_DEFAULT_MAX_SESSION;
+	pServerConfig->xNetwork.usPort 		= FTDM_SERVER_DEFAULT_PORT;
+	pServerConfig->xNetwork.ulMaxSession	= FTDM_SERVER_DEFAULT_MAX_SESSION;
 
-	pConfig->xDebug.ulPrintOutMode = 2;
+	pServerConfig->xDebug.ulPrintOutMode = 2;
 	sprintf(pBuff, "/var/log/%s", program_invocation_short_name);
-	pConfig->xDebug.xTrace.pFileName = strdup(pBuff);
-	pConfig->xDebug.xError.pFileName = strdup(pBuff);
+	pServerConfig->xDebug.xTrace.pFileName = strdup(pBuff);
+	pServerConfig->xDebug.xError.pFileName = strdup(pBuff);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDM_destroyServerConfig(FTDM_SERVER_CONFIG_PTR pConfig)
 {
-	FTDM_EP_TYPE_INFO_PTR	pTypeInfo;
-	FTM_EP_CLASS_INFO_PTR		pOIDInfo;
-
-	list_iterator_start(&pConfig->xConfig.xEP.xInfoList);
-	while((pTypeInfo = list_iterator_next(&pConfig->xConfig.xEP.xInfoList)) != 0)
-	{
-		free(pTypeInfo);	
-	}
-	
-	list_destroy(&pConfig->xConfig.xEP.xInfoList);
-
-	list_iterator_start(&pConfig->xConfig.xEP.xClassInfoList);
-	while((pOIDInfo = list_iterator_next(&pConfig->xConfig.xEP.xClassInfoList)) != 0)
-	{
-		free(pOIDInfo);	
-	}
-	
-	list_destroy(&pConfig->xConfig.xEP.xClassInfoList);
+	FTDM_destroyEPInfoConfig(&pConfig->xConfig.xEPInfo);
+	FTDM_destroyEPClassInfoConfig(&pConfig->xConfig.xEPClassInfo);
 
 	if (pConfig->xConfig.xDatabase.pFileName != NULL)
 	{
@@ -159,29 +140,7 @@ FTM_RET FTDM_loadServerConfig(FTDM_SERVER_CONFIG_PTR pConfig, FTM_CHAR_PTR pFile
 	if (pSection)
 	{
 		FTM_INT	i;
-		config_setting_t	*pTypeStringSetting;
 		config_setting_t	*pClassInfoSetting;
-
-		pTypeStringSetting = config_setting_get_member(pSection, "type_name");
-		for( i = 0 ; i < config_setting_length(pTypeStringSetting) ; i++)
-		{
-			config_setting_t	*pElement;
-
-			pElement = config_setting_get_elem(pTypeStringSetting, i);
-			if (pElement != NULL)
-			{
-				FTDM_EP_TYPE_INFO_PTR	pTypeInfo;
-
-				pTypeInfo = (FTDM_EP_TYPE_INFO_PTR)calloc(1, sizeof(FTDM_EP_TYPE_INFO));
-				if (pTypeInfo != 0)
-				{
-					pTypeInfo->ulType = (FTM_ULONG)config_setting_get_int_elem(pElement, 0);	
-					strncpy(pTypeInfo->pName, config_setting_get_string_elem(pElement, 1), FTDM_TYPE_NAME_LEN);	
-
-					list_append(&pConfig->xConfig.xEP.xInfoList, pTypeInfo);
-				}
-			}
-		}
 
 		pClassInfoSetting = config_setting_get_member(pSection, "class_info");
 		for( i = 0 ; i < config_setting_length(pClassInfoSetting) ; i++)
@@ -248,10 +207,6 @@ FTM_RET FTDM_loadServerConfig(FTDM_SERVER_CONFIG_PTR pConfig, FTM_CHAR_PTR pFile
 				{
 					strncpy(pEPClassInfo->xOIDs.pTime, config_setting_get_string(pItem), sizeof(pEPClassInfo->xOIDs.pTime) - 1);
 				}
-
-
-				list_append(&pConfig->xConfig.xEP.xClassInfoList, pEPClassInfo);
-
 			}
 
 		}
@@ -264,8 +219,6 @@ FTM_RET FTDM_loadServerConfig(FTDM_SERVER_CONFIG_PTR pConfig, FTM_CHAR_PTR pFile
 FTM_RET	FTDM_showServerConfig(FTDM_SERVER_CONFIG_PTR pConfig)
 {
 	//FTDM_EP_TYPE_INFO_PTR	pTypeInfo;
-	FTM_EP_CLASS_INFO_PTR		pEPClassInfo;
-
 	TRACE("############ CONFIGURATION #############\n");
 	TRACE("[ APPLICATION ]\n");
 	TRACE("[ NETWORK ]\n");
@@ -280,24 +233,131 @@ FTM_RET	FTDM_showServerConfig(FTDM_SERVER_CONFIG_PTR pConfig)
 	
 	list_destroy(&pConfig->xConfig.xEP.xInfoList);
 */
-	TRACE("\n[ END POINT CLASS INFORMATION ]\n");
-	list_iterator_start(&pConfig->xConfig.xEP.xClassInfoList);
-		TRACE("\t %08s %-16s %-16s %-16s %-16s %-16s %-16s %-16s\n", 
-			"CLASS", "ID", "TYPE", "NAME", "SN", "STATE", "VALUE", "TIME");
-	while((pEPClassInfo = list_iterator_next(&pConfig->xConfig.xEP.xClassInfoList)) != 0)
-	{
-		TRACE("\t %08lx %-16s %-16s %-16s %-16s %-16s %-16s %-16s\n", 
-			pEPClassInfo->xClass, 
-			pEPClassInfo->xOIDs.pID,
-			pEPClassInfo->xOIDs.pType,
-			pEPClassInfo->xOIDs.pName,
-			pEPClassInfo->xOIDs.pSN,
-			pEPClassInfo->xOIDs.pState,
-			pEPClassInfo->xOIDs.pValue,
-			pEPClassInfo->xOIDs.pTime);
-	}
-
-	
+	FTDM_showEPClassInfoConfig(&pConfig->xConfig.xEPClassInfo);	
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_initDBConfig(FTDM_DB_CONFIG_PTR pConfig)
+{
+	FTM_CHAR	pBuff[1024];
+
+	if (pConfig == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	/* set default configuration */
+	sprintf(pBuff, "%s.db", program_invocation_short_name);
+	pConfig->pFileName = strdup(pBuff);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTDM_destroyDBConfig(FTDM_DB_CONFIG_PTR pConfig)
+{
+	if (pConfig == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	if (pConfig->pFileName != NULL)
+	{
+		free(pConfig->pFileName);
+		pConfig->pFileName = NULL;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_initEPInfoConfig(FTDM_EP_INFO_CONFIG_PTR pConfig)
+{
+	if (pConfig == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	list_init(&pConfig->xInfos);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTDM_destroyEPInfoConfig(FTDM_EP_INFO_CONFIG_PTR pConfig)
+{
+	FTM_EP_INFO_PTR	pInfo;
+
+	if (pConfig == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	list_iterator_start(&pConfig->xInfos);
+	while((pInfo = list_iterator_next(&pConfig->xInfos)) != 0)
+	{
+		free(pInfo);	
+	}
+	
+	list_destroy(&pConfig->xInfos);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTDM_initEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pConfig)
+{
+	if (pConfig == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+	
+	list_init(&pConfig->xInfos);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTDM_destroyEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pConfig)
+{
+	FTM_EP_CLASS_INFO_PTR	pInfo;
+
+	if (pConfig == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	list_iterator_start(&pConfig->xInfos);
+	while((pInfo = list_iterator_next(&pConfig->xInfos)) != 0)
+	{
+		free(pInfo);	
+	}
+	
+	list_destroy(&pConfig->xInfos);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTDM_showEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pConfig)
+{
+	FTM_EP_CLASS_INFO_PTR pInfo;
+	
+	if (pConfig == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	TRACE("\n[ END POINT CLASS INFORMATION ]\n");
+		TRACE("\t %08s %-16s %-16s %-16s %-16s %-16s %-16s %-16s\n", 
+			"CLASS", "ID", "TYPE", "NAME", "SN", "STATE", "VALUE", "TIME");
+	list_iterator_start(&pConfig->xInfos);
+	while((pInfo = list_iterator_next(&pConfig->xInfos)) != 0)
+	{
+		TRACE("\t %08lx %-16s %-16s %-16s %-16s %-16s %-16s %-16s\n", 
+			pInfo->xClass, 
+			pInfo->xOIDs.pID,
+			pInfo->xOIDs.pType,
+			pInfo->xOIDs.pName,
+			pInfo->xOIDs.pSN,
+			pInfo->xOIDs.pState,
+			pInfo->xOIDs.pValue,
+			pInfo->xOIDs.pTime);
+	}
+
+	return	FTM_RET_OK;
+}

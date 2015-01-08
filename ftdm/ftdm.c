@@ -2,19 +2,23 @@
 #include "ftm_debug.h"
 #include "ftdm_node_info.h"
 #include "ftdm_ep_info.h"
+#include "ftdm_ep_class_info.h"
 #include "ftdm_sqlite.h"
 
 FTM_RET 	FTDM_init(FTDM_CONFIG_PTR pConfig)
 {
-	if (FTDM_DBIF_init(pConfig->xDatabase.pFileName) != FTM_RET_OK)
-	{
-		TRACE("FTDM initialization failed.\n");
+	FTM_RET	nRet;
 
-		return	FTM_RET_ERROR;
+	nRet = FTDM_DBIF_init(&pConfig->xDatabase);
+	if (nRet != FTM_RET_OK)
+	{
+		ERROR("FTDM initialization failed. [ %08lx ]\n", nRet);
+		return	nRet;
 	}
 
 	FTDM_initNodeInfo();
 	FTDM_initEPInfo();
+	FTDM_initEPClassInfo();
 
 	TRACE("FTDM initialization completed successfully.\n");
 
@@ -23,12 +27,16 @@ FTM_RET 	FTDM_init(FTDM_CONFIG_PTR pConfig)
 
 FTM_RET	FTDM_final(void)
 {
+	FTM_RET	nRet;
+
+	FTDM_finalEPClassInfo();
 	FTDM_finalEPInfo();
 	FTDM_finalNodeInfo();
 
-	if (FTDM_DBIF_final() != FTM_RET_OK)
+	nRet = FTDM_DBIF_final();
+	if (nRet != FTM_RET_OK)
 	{
-		TRACE("FTDM finalization failed.\n");
+		ERROR("FTDM finalization failed. [ %08lx ]\n", nRet);
 
 		return	FTM_RET_OK;
 	}

@@ -3,7 +3,7 @@
 
 FTM_RET	FTDM_DBIF_init
 (
-	FTM_CHAR_PTR	pDBFileName
+	FTDM_DB_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTDM_DBIF_final

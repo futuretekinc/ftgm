@@ -37,7 +37,7 @@ static sqlite3		*_pSQLiteDB= 0;
 
 FTM_RET	FTDM_DBIF_init
 (
-	FTM_CHAR_PTR	pDBFileName
+	FTDM_DB_CONFIG_PTR	pConfig
 )
 {
 	int	nRet;
@@ -47,9 +47,9 @@ FTM_RET	FTDM_DBIF_init
 		return	FTM_RET_DBIF_ALREADY_INITIALIZED;
 	}
 
-	if (pDBFileName != NULL)
+	if ((pConfig != NULL) && (pConfig->pFileName != NULL))
 	{
-		_strDefaultDBName = pDBFileName;
+		_strDefaultDBName = pConfig->pFileName;
 	}
 
 	nRet = sqlite3_open(_strDefaultDBName, &_pSQLiteDB);

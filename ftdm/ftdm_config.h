@@ -19,16 +19,23 @@ typedef	struct
 
 typedef	struct
 {
-	struct
-	{
-		FTM_CHAR_PTR	pFileName;
-	}	xDatabase;
+	FTM_CHAR_PTR	pFileName;
+}	FTDM_DB_CONFIG, _PTR_ FTDM_DB_CONFIG_PTR;
 
-	struct
-	{
-		list_t			xInfoList;				
-		list_t			xClassInfoList;
-	}	xEP;
+typedef	struct
+{
+	list_t				xInfos;
+}	FTDM_EP_INFO_CONFIG, _PTR_ FTDM_EP_INFO_CONFIG_PTR;
+typedef	struct
+{
+	list_t				xInfos;
+}	FTDM_EP_CLASS_INFO_CONFIG, _PTR_ FTDM_EP_CLASS_INFO_CONFIG_PTR;
+
+typedef	struct
+{
+	FTDM_DB_CONFIG				xDatabase;
+	FTDM_EP_INFO_CONFIG			xEPInfo;
+	FTDM_EP_CLASS_INFO_CONFIG	xEPClassInfo;
 }	FTDM_CONFIG, _PTR_ FTDM_CONFIG_PTR;
 
 typedef	struct
@@ -66,4 +73,16 @@ FTM_RET FTDM_loadServerConfig(FTDM_SERVER_CONFIG_PTR pConfig, FTM_CHAR_PTR pFile
 FTM_RET	FTDM_destroyServerConfig(FTDM_SERVER_CONFIG_PTR pConfig);
 FTM_RET	FTDM_showServerConfig(FTDM_SERVER_CONFIG_PTR pConfig);
 
+FTM_RET FTDM_initDBConfig(FTDM_DB_CONFIG_PTR pConfig);
+FTM_RET FTDM_loadDBConfig(FTDM_DB_CONFIG_PTR pDBConfig, config_t pConfig);
+FTM_RET FTDM_destroyDBConfig(FTDM_DB_CONFIG_PTR pConfig);
+
+FTM_RET	FTDM_initEPInfoConfig(FTDM_EP_INFO_CONFIG_PTR pConfig);
+FTM_RET FTDM_loadEPInfoConfig(FTDM_EP_INFO_CONFIG_PTR pEPInfoConfig, config_t pConfig);
+FTM_RET FTDM_destroyEPInfoConfig(FTDM_EP_INFO_CONFIG_PTR pConfig);
+
+FTM_RET FTDM_initEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pConfig);
+FTM_RET FTDM_loadEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pEPClassInfoConfig, config_t pConfig);
+FTM_RET FTDM_destroyEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pConfig);
+FTM_RET FTDM_showEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pConfig);
 #endif
