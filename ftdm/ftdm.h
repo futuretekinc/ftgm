@@ -6,10 +6,11 @@
 #include "ftm_object.h"
 #include "ftdm_type.h"
 #include "ftdm_cmd.h"
+#include "ftdm_config.h"
 
 FTM_RET	FTDM_init
 (
-	FTM_CHAR_PTR pDBFieName
+	FTDM_CONFIG_PTR pConfig
 );
 
 FTM_RET	FTDM_final
@@ -75,6 +76,22 @@ FTM_RET	FTDM_getEPInfoByIndex
 (
 	FTM_ULONG				nIndex,
 	FTM_EP_INFO_PTR	_PTR_ 	ppEPInfo
+);
+
+FTM_RET	FTDM_addEPClassInfo
+(
+	FTM_EP_CLASS_INFO_PTR	pInfo
+);
+
+FTM_RET	FTDM_delEPClassInfo
+(
+	FTM_EP_CLASS			xClass
+);
+
+FTM_RET	FTDM_getEPClassInfo
+(
+	FTM_EP_CLASS			xClass,
+	FTM_EP_CLASS_INFO_PTR	pInfo
 );
 
 FTM_RET	FTDM_addEPData

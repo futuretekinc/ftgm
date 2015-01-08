@@ -4,9 +4,9 @@
 #include "ftdm_ep_info.h"
 #include "ftdm_sqlite.h"
 
-FTM_RET 	FTDM_init(FTM_CHAR_PTR pDBFileName)
+FTM_RET 	FTDM_init(FTDM_CONFIG_PTR pConfig)
 {
-	if (FTDM_DBIF_init(pDBFileName) != FTM_RET_OK)
+	if (FTDM_DBIF_init(pConfig->xDatabase.pFileName) != FTM_RET_OK)
 	{
 		TRACE("FTDM initialization failed.\n");
 

@@ -22,6 +22,9 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	{	FTDM_CMD_GET_EP_INFO_COUNT,			(FTDM_SERVICE_CALLBACK)FTDMS_getEPInfoCount },
 	{	FTDM_CMD_GET_EP_INFO,				(FTDM_SERVICE_CALLBACK)FTDMS_getEPInfo },
 	{	FTDM_CMD_GET_EP_INFO_BY_INDEX,		(FTDM_SERVICE_CALLBACK)FTDMS_getEPInfoByIndex },
+	{	FTDM_CMD_ADD_EP_CLASS_INFO,			(FTDM_SERVICE_CALLBACK)FTDMS_addEPClassInfo },
+	{	FTDM_CMD_DEL_EP_CLASS_INFO,			(FTDM_SERVICE_CALLBACK)FTDMS_delEPClassInfo },
+	{	FTDM_CMD_GET_EP_CLASS_INFO,			(FTDM_SERVICE_CALLBACK)FTDMS_getEPClassInfo },
 	{	FTDM_CMD_ADD_EP_DATA,				(FTDM_SERVICE_CALLBACK)FTDMS_addEPData },
 	{	FTDM_CMD_DEL_EP_DATA,				(FTDM_SERVICE_CALLBACK)FTDMS_delEPData},
 	{	FTDM_CMD_DEL_EP_DATA_WITH_TIME,		(FTDM_SERVICE_CALLBACK)FTDMS_delEPDataWithTime},
@@ -297,6 +300,45 @@ FTM_RET	FTDMS_getEPInfoByIndex
 	{
 		memcpy(&pResp->xInfo, pEPInfo, sizeof(FTM_EP_INFO));
 	}
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_addEPClassInfo
+(
+ 	FTDM_REQ_ADD_EP_CLASS_INFO_PARAMS_PTR	pReq,
+	FTDM_RESP_ADD_EP_CLASS_INFO_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_addEPClassInfo(pReq->xClass, &pReq->xInfo);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_delEPClassInfo
+(
+ 	FTDM_REQ_DEL_EP_CLASS_INFO_PARAMS_PTR	pReq,
+	FTDM_RESP_DEL_EP_CLASS_INFO_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_delEPClassInfo(pReq->xClass);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_getEPClassInfo
+(
+ 	FTDM_REQ_GET_EP_CLASS_INFO_PARAMS_PTR	pReq,
+	FTDM_RESP_GET_EP_CLASS_INFO_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_addEPClassInfo(pReq->xClass, &pResp->xInfo);
+
 	return	pResp->nRet;
 }
 

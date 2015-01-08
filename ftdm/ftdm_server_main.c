@@ -11,7 +11,7 @@
 #include "simclist.h"
 #include "ftdm_params.h"
 #include "ftdm_server.h"
-#include "ftdm_server_config.h"
+#include "ftdm_config.h"
 #include "debug.h"
 
 #define	FTDM_PACKET_LEN					2048
@@ -24,10 +24,9 @@ typedef	struct
 	FTM_BYTE			pRespBuff[FTDM_PACKET_LEN];
 }	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
 
-static FTM_RET			FTDMS_init(FTDM_SERVER_CONFIG_PTR pConfig);
-static FTM_VOID_PTR 	FTDMS_serviceHandler(FTM_VOID_PTR pData);
-static FTM_RET 			FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig);
-static FTM_VOID			FTDMS_showUsage(FTM_CHAR_PTR pAppName);
+static FTM_VOID_PTR 	_serviceHandler(FTM_VOID_PTR pData);
+static FTM_RET 			_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig);
+static FTM_VOID			_showUsage(FTM_CHAR_PTR pAppName);
 
 extern char *program_invocation_short_name;
 
@@ -62,7 +61,7 @@ int main(int nArgc, char *pArgv[])
 
 		case	'?':
 		default:
-			FTDMS_showUsage(pArgv[0]);
+			_showUsage(pArgv[0]);
 			return	0;
 		}
 	}
@@ -71,50 +70,36 @@ int main(int nArgc, char *pArgv[])
 	setPrintMode(2);
 
 	/* load configuration  */
-	FTDMS_initConfig(&xServerConfig);
-	FTDMS_loadConfig(&xServerConfig, pConfigFileName);
-	FTDMS_showConfig(&xServerConfig);
+	FTDM_initServerConfig(&xServerConfig);
+	FTDM_loadServerConfig(&xServerConfig, pConfigFileName);
+	FTDM_showServerConfig(&xServerConfig);
 
 	/* apply configuration */
-	FTDMS_init(&xServerConfig);
+	setPrintMode(xServerConfig.xDebug.ulPrintOutMode);
+
+	if (sem_init(&xSemaphore, 0,xServerConfig.xNetwork.ulMaxSession) < 0)
+	{
+		ERROR("Can't alloc semaphore!\n");
+		return	0;	
+	}
 
 	if (!bDaemon || (fork() == 0))
 	{
-		FTDMS_startDaemon(&xServerConfig);
+		_startDaemon(&xServerConfig);
 	}
 
-	FTDMS_destroyConfig(&xServerConfig);
+	FTDM_destroyServerConfig(&xServerConfig);
 
 	return	0;
 }
 
-FTM_RET	FTDMS_init(FTDM_SERVER_CONFIG_PTR pConfig)
-{
-	if (pConfig == NULL)
-	{
-		ERROR("Server configuration is NULL!\n");
-		return	FTM_RET_INTERNAL_ERROR;	
-	}
-
-	setPrintMode(pConfig->xDebug.ulPrintOutMode);
-
-
-	if (sem_init(&xSemaphore, 0, pConfig->xNetwork.ulMaxSession) < 0)
-	{
-		ERROR("Can't alloc semaphore!\n");
-		return	FTM_RET_INTERNAL_ERROR;	
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig)
+FTM_RET _startDaemon(FTDM_SERVER_CONFIG_PTR pConfig)
 {
 	FTM_INT				nRet;
 	FTM_INT				hSocket;
 	struct sockaddr_in	xServer, xClient;
 
-	FTDM_init(pConfig->xDatabase.pFileName);
+	FTDM_init(&pConfig->xConfig);
 
 	hSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (hSocket == -1)
@@ -165,7 +150,7 @@ FTM_RET FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig)
 
 				pSession->hSocket = hClient;
 				memcpy(&pSession->xPeer, &xClient, sizeof(xClient));
-				pthread_create(&xPthread, NULL, FTDMS_serviceHandler, pSession);
+				pthread_create(&xPthread, NULL, _serviceHandler, pSession);
 			}
 		}
 	}
@@ -173,7 +158,7 @@ FTM_RET FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig)
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData)
+FTM_VOID_PTR _serviceHandler(FTM_VOID_PTR pData)
 {
 	FTDM_SESSION_PTR		pSession= (FTDM_SESSION_PTR)pData;
 	FTDM_REQ_PARAMS_PTR		pReq 	= (FTDM_REQ_PARAMS_PTR)pSession->pReqBuff;
@@ -228,7 +213,7 @@ FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_VOID	FTDMS_showUsage(FTM_CHAR_PTR pAppName)
+FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName)
 {
 	MESSAGE("Usage : %s [-d] [-m 0|1|2]\n", pAppName);
 	MESSAGE("\tFutureTek Data Manger for M2M gateway.\n");
