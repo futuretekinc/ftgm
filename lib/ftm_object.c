@@ -10,9 +10,10 @@ typedef struct
 	FTM_CHAR_PTR	pTypeString;
 } FTM_EP_TYPE_STRING, _PTR_ FTM_EP_TYPE_STRING_PTR;
 
-int	_FTM_EPTypeSeeker(const void *pElement, const void *pKey);
+static int	_FTM_EPTypeSeeker(const void *pElement, const void *pKey);
+static int	_FTM_EPOIDInfoSeeker(const void *pElement, const void *pKey);
 
-FTM_EP_TYPE_STRING	_pEPTypeString[] =
+static FTM_EP_TYPE_STRING	_pEPTypeString[] =
 {
 	{	FTM_EP_CLASS_TEMPERATURE,	"TEMPERATURE" 	},
 	{	FTM_EP_CLASS_HUMIDITY,		"HUMIDITY"		},
@@ -28,7 +29,7 @@ FTM_EP_TYPE_STRING	_pEPTypeString[] =
 	{	0,							NULL}
 };
 
-list_t	_xEPTypeList;
+static list_t	_xEPTypeList;
 
 FTM_RET	FTM_initEPTypeString(void)
 {
@@ -127,6 +128,87 @@ int	_FTM_EPTypeSeeker(const void *pElement, const void *pKey)
 	FTM_EP_TYPE_PTR			pType = (FTM_EP_TYPE_PTR)pKey;
 
 	if (pTypeString->xType == *pType)	
+	{
+		return	1;	
+	}
+
+	return	0;
+}
+
+
+static list_t	xEPOIDInfoList;
+
+FTM_RET	FTM_initEPOIDInfo(void)
+{
+	list_init(&xEPOIDInfoList);
+	list_attributes_seeker(&xEPOIDInfoList, _FTM_EPOIDInfoSeeker);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_finalEPOIDInfo(void)
+{
+	FTM_EP_OID_INFO_PTR	pItem;
+
+	list_iterator_start(&xEPOIDInfoList);
+	while((pItem = list_iterator_next(&xEPOIDInfoList)) != NULL)
+	{
+		free(pItem);	
+	}
+
+	list_destroy(&xEPOIDInfoList);
+
+	return	FTM_RET_OK;
+}
+
+
+FTM_RET	FTM_addEPOIDInfo
+(
+	FTM_EP_OID_INFO_PTR	pOIDInfo		
+)
+{
+	FTM_EP_OID_INFO_PTR	pNewOIDInfo;
+
+	if (list_seek(&xEPOIDInfoList, (FTM_VOID_PTR)&pOIDInfo->ulClass) != NULL)
+	{
+		return	FTM_RET_ALREADY_EXISTS;	
+	}
+	
+	pNewOIDInfo = (FTM_EP_OID_INFO_PTR)calloc(1, sizeof(FTM_EP_OID_INFO));
+	if (pNewOIDInfo == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	memcpy(pNewOIDInfo, pOIDInfo, sizeof(FTM_EP_OID_INFO));
+
+	list_append(&xEPOIDInfoList, pNewOIDInfo);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_getEPOIDInfo(FTM_EPID xEPID, FTM_EP_OID_INFO_PTR _PTR_ ppOIDInfo)
+{
+	FTM_EP_OID_INFO_PTR	pOIDInfo;
+
+	pOIDInfo = (FTM_EP_OID_INFO_PTR)list_seek(&xEPOIDInfoList, (FTM_VOID_PTR)&xEPID);
+
+	if (pOIDInfo == NULL)
+	{
+		return	FTM_RET_NOT_EXISTS;	
+	}
+
+	*ppOIDInfo = pOIDInfo;
+
+	return	FTM_RET_OK;
+}
+
+int	_FTM_EPOIDInfoSeeker(const void *pElement, const void *pKey)
+{
+	FTM_EP_OID_INFO_PTR 	pOIDInfo = (FTM_EP_OID_INFO_PTR)pElement;
+	FTM_EPID_PTR			pEPID = (FTM_EPID_PTR)pKey;
+
+	if (pOIDInfo->ulClass == (FTM_EP_CLASS_MASK & (*pEPID)))
 	{
 		return	1;	
 	}

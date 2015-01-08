@@ -311,7 +311,7 @@ FTM_RET	FTDM_DBIF_insertNodeInfo
 /***************************************************************
  *
  ***************************************************************/
-FTM_RET	FTDM_DBIF_removeNodeInfo
+FTM_RET	FTDM_DBIF_delNodeInfo
 (
 	FTM_CHAR_PTR		pDID
 )
@@ -485,7 +485,7 @@ FTM_RET	FTDM_DBIF_insertEPInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_removeEPInfo
+FTM_RET	FTDM_DBIF_delEPInfo
 (
 	FTM_EPID				xEPID
 )
@@ -791,7 +791,7 @@ FTM_RET	FTDM_DBIF_initEPDataTable
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_appendEPData
+FTM_RET	FTDM_DBIF_addEPData
 (
 	FTM_EPID				xEPID,
 	FTM_EP_DATA_PTR			pData
@@ -1108,7 +1108,7 @@ FTM_RET	FTDM_DBIF_getEPDataWithTime
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_removeEPData
+FTM_RET	FTDM_DBIF_delEPData
 (
 	FTM_EPID				xEPID,
 	FTM_ULONG				nIndex,
@@ -1135,7 +1135,7 @@ FTM_RET	FTDM_DBIF_removeEPData
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_removeEPDataWithTime
+FTM_RET	FTDM_DBIF_delEPDataWithTime
 (
 	FTM_EPID				xEPID,
 	FTM_ULONG				xBeginTime,

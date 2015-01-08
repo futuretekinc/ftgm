@@ -17,12 +17,12 @@ FTM_RET	FTDM_final
 	void
 );
 
-FTM_RET	FTDM_appendNodeInfo
+FTM_RET	FTDM_addNodeInfo
 (
 	FTM_NODE_INFO_PTR	pInfo
 );
 
-FTM_RET 	FTDM_removeNodeInfo
+FTM_RET 	FTDM_delNodeInfo
 (
 	FTM_CHAR_PTR		pDID
 );
@@ -50,12 +50,12 @@ FTM_RET	FTDM_getNodeType
 	FTM_NODE_TYPE_PTR 	pType
 );
 
-FTM_RET	FTDM_appendEPInfo
+FTM_RET	FTDM_addEPInfo
 (
 	FTM_EP_INFO_PTR 	pInfo
 );
 
-FTM_RET	FTDM_removeEPInfo
+FTM_RET	FTDM_delEPInfo
 (
 	FTM_EPID 			xEPID
 );
@@ -77,7 +77,7 @@ FTM_RET	FTDM_getEPInfoByIndex
 	FTM_EP_INFO_PTR	_PTR_ 	ppEPInfo
 );
 
-FTM_RET	FTDM_appendEPData
+FTM_RET	FTDM_addEPData
 (
 	FTM_EPID			xEPID,
 	FTM_EP_DATA_PTR		pData
@@ -102,14 +102,14 @@ FTM_RET	FTDM_getEPDataWithTime
 	FTM_ULONG_PTR		pnCount 
 );
 
-FTM_RET	FTDM_removeEPData
+FTM_RET	FTDM_delEPData
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG 			nIndex, 
 	FTM_ULONG			nCount
 ); 
 
-FTM_RET	FTDM_removeEPDataWithTime
+FTM_RET	FTDM_delEPDataWithTime
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG 			nBeginTime, 

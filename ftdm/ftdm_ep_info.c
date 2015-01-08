@@ -11,7 +11,7 @@ static FTM_RET	FTDM_LIST_insertEPInfo
 	FTM_EP_INFO_PTR	pEPInfo
 );
 
-static FTM_RET	FTDM_LIST_removeEPInfo
+static FTM_RET	FTDM_LIST_delEPInfo
 (
  	FTM_EP_INFO_PTR	pEPInfo
 );
@@ -99,7 +99,7 @@ FTM_RET FTDM_finalEPInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_appendEPInfo
+FTM_RET	FTDM_addEPInfo
 (
 	FTM_EP_INFO_PTR 	pEPInfo
 )
@@ -140,7 +140,7 @@ FTM_RET	FTDM_appendEPInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_removeEPInfo
+FTM_RET	FTDM_delEPInfo
 (
 	FTM_EPID 			xEPID
 )
@@ -154,13 +154,13 @@ FTM_RET	FTDM_removeEPInfo
 		return	FTM_RET_OBJECT_NOT_FOUND;	
 	}
 
-	nRet = FTDM_DBIF_removeEPInfo(xEPID);
+	nRet = FTDM_DBIF_delEPInfo(xEPID);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
 	}
 
-	FTDM_LIST_removeEPInfo(pEPInfo);
+	FTDM_LIST_delEPInfo(pEPInfo);
 	free(pEPInfo);
 
 	return	FTM_RET_OK;
@@ -223,7 +223,7 @@ FTM_RET	FTDM_getEPInfoByIndex
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
-FTM_RET	FTDM_appendEPData
+FTM_RET	FTDM_addEPData
 (
 	FTM_EPID		xEPID,
 	FTM_EP_DATA_PTR	pData
@@ -234,7 +234,7 @@ FTM_RET	FTDM_appendEPData
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	return	FTDM_DBIF_appendEPData(xEPID, pData);
+	return	FTDM_DBIF_addEPData(xEPID, pData);
 }
 
 FTM_RET	FTDM_getEPData
@@ -273,24 +273,24 @@ FTM_RET	FTDM_getEPDataWithTime
 				pCount);
 }
 
-FTM_RET	FTDM_removeEPData
+FTM_RET	FTDM_delEPData
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG 			nIndex, 
 	FTM_ULONG			nCount
 ) 
 {
-	return	FTDM_DBIF_removeEPData( xEPID, nIndex, nCount);
+	return	FTDM_DBIF_delEPData( xEPID, nIndex, nCount);
 }
 
-FTM_RET	FTDM_removeEPDataWithTime
+FTM_RET	FTDM_delEPDataWithTime
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG 			nBeginTime, 
 	FTM_ULONG 			nEndTime
 ) 
 {
-	return	FTDM_DBIF_removeEPDataWithTime( xEPID, nBeginTime, nEndTime);
+	return	FTDM_DBIF_delEPDataWithTime( xEPID, nBeginTime, nEndTime);
 }
 
 FTM_RET	FTDM_getEPDataCount
@@ -341,7 +341,7 @@ FTM_RET	FTDM_LIST_insertEPInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_LIST_removeEPInfo
+FTM_RET	FTDM_LIST_delEPInfo
 (
  	FTM_EP_INFO_PTR	pEPInfo
 )

@@ -24,4 +24,5 @@ typedef	unsigned long	FTM_RET, _PTR_ FTM_RET_PTR;
 typedef	unsigned long	FTM_CMD, _PTR_ FTM_CMD_PTR;
 
 
+#define	FTM_FILE_NAME_LEN	256
 #endif

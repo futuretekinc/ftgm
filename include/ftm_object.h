@@ -37,6 +37,7 @@ typedef	struct
 	}					xOption;
 }	FTM_NODE_INFO, _PTR_ FTM_NODE_INFO_PTR;
 
+typedef	unsigned long	FTM_EP_CLASS, _PTR_ FTM_EP_CLASS_PTR;
 typedef	unsigned long	FTM_EPID, _PTR_ FTM_EPID_PTR;
 typedef	unsigned long	FTM_EP_TYPE, _PTR_ FTM_EP_TYPE_PTR;
 
@@ -52,6 +53,21 @@ typedef	unsigned long	FTM_EP_TYPE, _PTR_ FTM_EP_TYPE_PTR;
 #define	FTM_EP_CLASS_SRF			0x09000000
 #define	FTM_EP_CLASS_AI				0x0A000000
 #define	FTM_EP_CLASS_MULTI			0x7F000000
+
+typedef	struct
+{
+	FTM_EP_CLASS	xClass;	
+	struct
+	{
+		FTM_CHAR		pID[32];
+		FTM_CHAR		pType[32];
+		FTM_CHAR		pName[32];
+		FTM_CHAR		pSN[32];
+		FTM_CHAR		pState[32];
+		FTM_CHAR		pValue[32];
+		FTM_CHAR		pTime[32];
+	}	xOIDs;
+}	FTM_EP_CLASS_INFO, _PTR_ FTM_EP_CLASS_INFO_PTR;
 
 #define	FTM_EP_TYPE_MASK			0x7FFF0000
 
@@ -70,6 +86,23 @@ FTM_RET			FTM_initEPTypeString(void);
 FTM_RET			FTM_finalEPTypeString(void);
 FTM_RET			FTM_appendEPTypeString(FTM_EP_TYPE xType, FTM_CHAR_PTR pTypeString);
 FTM_CHAR_PTR	FTM_getEPTypeString(FTM_EP_TYPE xType);
+
+typedef	struct
+{
+	FTM_ULONG		ulClass;
+	FTM_CHAR		pID[32];
+	FTM_CHAR		pType[32];
+	FTM_CHAR		pName[32];
+	FTM_CHAR		pSN[32];
+	FTM_CHAR		pState[32];
+	FTM_CHAR		pValue[32];
+	FTM_CHAR		pTime[32];
+}	FTM_EP_OID_INFO, _PTR_ FTM_EP_OID_INFO_PTR;
+
+FTM_RET	FTM_initEPOIDInfo(void);
+FTM_RET	FTM_finalEPOIDInfo(void);
+FTM_RET	FTM_addEPOIDInfo(FTM_EP_OID_INFO_PTR pOIDInfo);
+FTM_RET	FTM_getEPOIDInfo(FTM_EPID xEPID, FTM_EP_OID_INFO_PTR _PTR_ ppOIDInfo);
 
 typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
 

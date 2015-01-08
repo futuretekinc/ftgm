@@ -2,55 +2,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <semaphore.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
 #include "ftdm.h"
 #include "libconfig.h"
+#include "simclist.h"
 #include "ftdm_params.h"
 #include "ftdm_server.h"
+#include "ftdm_server_config.h"
 #include "debug.h"
 
-#define	FTDM_FILE_PATH_LEN				256
-#define	FTDM_FILE_NAME_LEN				256
-#define	FTDM_DEFAULT_SERVICE_PORT		8888
 #define	FTDM_PACKET_LEN					2048
-
-typedef	struct
-{
-	struct 
-	{
-		FTM_CHAR	pFileName[FTDM_FILE_NAME_LEN];
-	}	xApp;
-
-	struct
-	{
-		FTM_CHAR	pFileName[FTDM_FILE_NAME_LEN];
-	}	xDatabase;
-
-	struct
-	{
-		FTM_USHORT	usPort;
-	}	xNetwork;
-
-	struct
-	{	
-		FTM_ULONG	ulPrintOutMode;
-		struct 
-		{
-			FTM_CHAR	pPath[FTDM_FILE_PATH_LEN];
-			FTM_CHAR	pPrefix[FTDM_FILE_NAME_LEN];
-		} xTrace;
-
-		struct 
-		{
-			FTM_CHAR	pPath[FTDM_FILE_PATH_LEN];
-			FTM_CHAR	pPrefix[FTDM_FILE_NAME_LEN];
-		} xError;
-
-	}	xDebug;
-		
-}	FTDM_SERVER_CONFIG, _PTR_ FTDM_SERVER_CONFIG_PTR;
 
 typedef	struct
 {
@@ -60,77 +24,39 @@ typedef	struct
 	FTM_BYTE			pRespBuff[FTDM_PACKET_LEN];
 }	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
 
-static FTM_RET			FTDMS_init(FTDM_SERVER_CONFIG_PTR pServerConfig);
+static FTM_RET			FTDMS_init(FTDM_SERVER_CONFIG_PTR pConfig);
 static FTM_VOID_PTR 	FTDMS_serviceHandler(FTM_VOID_PTR pData);
-static FTM_RET 			FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pServerConfig);
+static FTM_RET 			FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig);
 static FTM_VOID			FTDMS_showUsage(FTM_CHAR_PTR pAppName);
 
-static FTDM_SERVER_CONFIG	xServerConfig =
-{
-	.xApp =
-	{
-		.pFileName = "",
-	},
-	.xDatabase = 
-	{
-		.pFileName = "",
-	},
-	.xNetwork = 
-	{
-		.usPort = FTDM_DEFAULT_SERVICE_PORT
-	},
-	.xDebug =
-	{
-		.ulPrintOutMode = 1,
-		.xTrace = 
-		{
-			.pPath = "/var/log/",
-			.pPrefix="ftdm_server"
-		},
-		.xError =
-		{
-			.pPath = "/var/log/",
-			.pPrefix="ftdm_server"
-		}
-	}
-};
+extern char *program_invocation_short_name;
+
+static FTDM_SERVER_CONFIG	xServerConfig;
+static sem_t				xSemaphore;
 
 int main(int nArgc, char *pArgv[])
 {
 	FTM_INT		nOpt;
 	FTM_BOOL	bDaemon = FTM_BOOL_FALSE;
-	extern char *program_invocation_short_name;
+	FTM_CHAR	pConfigFileName[FTDM_FILE_NAME_LEN];
 
-	/* set default configuration */
-	sprintf(xServerConfig.xApp.pFileName, "%s.conf", program_invocation_short_name);
-	sprintf(xServerConfig.xDatabase.pFileName, "%s.db", program_invocation_short_name);
+	
+	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
 	/* set command line options */
-	while((nOpt = getopt(nArgc, pArgv, "c:dm:?")) != -1)
+	while((nOpt = getopt(nArgc, pArgv, "c:d?")) != -1)
 	{
 		switch(nOpt)
 		{
 		case	'c':
 			{
-				strncpy(xServerConfig.xApp.pFileName, optarg, FTDM_FILE_NAME_LEN);
+				strncpy(pConfigFileName, optarg, FTDM_FILE_NAME_LEN);
 			}
 			break;
 
 		case	'd':
 			{
 				bDaemon = FTM_BOOL_TRUE;
-			}
-			break;
-
-		case	'm':
-			{
-				FTM_ULONG	ulPrintOutMode;
-
-				ulPrintOutMode = strtoul(optarg, NULL, 10);
-				if (ulPrintOutMode < 3)
-				{
-					xServerConfig.xDebug.ulPrintOutMode = ulPrintOutMode;	
-				}
 			}
 			break;
 
@@ -141,31 +67,29 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
+
+	setPrintMode(2);
+
+	/* load configuration  */
+	FTDMS_initConfig(&xServerConfig);
+	FTDMS_loadConfig(&xServerConfig, pConfigFileName);
+	FTDMS_showConfig(&xServerConfig);
+
 	/* apply configuration */
 	FTDMS_init(&xServerConfig);
 
-	if (bDaemon)
-	{
-		if (fork() == 0)
-		{
-			FTDMS_startDaemon(&xServerConfig);
-		}
-	}
-	else
+	if (!bDaemon || (fork() == 0))
 	{
 		FTDMS_startDaemon(&xServerConfig);
 	}
 
-
+	FTDMS_destroyConfig(&xServerConfig);
 
 	return	0;
 }
 
 FTM_RET	FTDMS_init(FTDM_SERVER_CONFIG_PTR pConfig)
 {
-	config_t			xConfig;
-	config_setting_t	*pSection;
-
 	if (pConfig == NULL)
 	{
 		ERROR("Server configuration is NULL!\n");
@@ -173,71 +97,12 @@ FTM_RET	FTDMS_init(FTDM_SERVER_CONFIG_PTR pConfig)
 	}
 
 	setPrintMode(pConfig->xDebug.ulPrintOutMode);
-	FTM_initEPTypeString();
 
-	config_init(&xConfig);
 
-	if (CONFIG_TRUE != config_read_file(&xConfig, pConfig->xApp.pFileName))
+	if (sem_init(&xSemaphore, 0, pConfig->xNetwork.ulMaxSession) < 0)
 	{
-		ERROR("Configuration loading failed.[FILE = %s]\n", pConfig->xApp.pFileName);
-		return	FTM_RET_CONFIG_LOAD_FAILED;
-	}
-
-	pSection = config_lookup(&xConfig, "application");
-	if (pSection)
-	{
-		config_setting_t *pDBSetting;
-		config_setting_t *pNetworkSetting;
-
-		pDBSetting = config_setting_get_member(pSection, "database");
-		if (pDBSetting)
-		{
-			config_setting_t *pDBFileSetting;
-
-			pDBFileSetting = config_setting_get_member(pDBSetting, "file");
-			if (pDBFileSetting)
-			{
-				strcpy(pConfig->xDatabase.pFileName, 
-					config_setting_get_string(pDBFileSetting));	
-			}
-		}
-
-		pNetworkSetting = config_setting_get_member(pSection, "network");
-		if (pNetworkSetting)
-		{
-			config_setting_t *pPortSetting;
-
-			pPortSetting = config_setting_get_member(pNetworkSetting, "port");
-			if (pPortSetting)
-			{
-				pConfig->xNetwork.usPort = config_setting_get_int(pPortSetting);
-			}
-		}
-	}
-
-	pSection = config_lookup(&xConfig, "endpoint");
-	if (pSection)
-	{
-		FTM_INT	i;
-		config_setting_t	*pTypeStringSetting;
-
-		pTypeStringSetting = config_setting_get_member(pSection, "type_string");
-		for( i = 0 ; i < config_setting_length(pTypeStringSetting) ; i++)
-		{
-			config_setting_t	*pElement;
-
-			pElement = config_setting_get_elem(pTypeStringSetting, i);
-			if (pElement != NULL)
-			{
-				FTM_INT		 nType = config_setting_get_int_elem(pElement, 0);	
-				FTM_CHAR_PTR pTypeString = (FTM_CHAR_PTR)config_setting_get_string_elem(pElement, 1);	
-
-				if (pTypeString != NULL)
-				{
-					FTM_appendEPTypeString(nType, pTypeString);	
-				}
-			}
-		}
+		ERROR("Can't alloc semaphore!\n");
+		return	FTM_RET_INTERNAL_ERROR;	
 	}
 
 	return	FTM_RET_OK;
@@ -245,8 +110,8 @@ FTM_RET	FTDMS_init(FTDM_SERVER_CONFIG_PTR pConfig)
 
 FTM_RET FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig)
 {
-	int					nRet;
-	int					hSocket;
+	FTM_INT				nRet;
+	FTM_INT				hSocket;
 	struct sockaddr_in	xServer, xClient;
 
 	FTDM_init(pConfig->xDatabase.pFileName);
@@ -265,7 +130,7 @@ FTM_RET FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig)
 	nRet = bind( hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
 	if (nRet < 0)
 	{
-		ERROR("bind failed.\n");
+		ERROR("bind failed.[nRet = %d]\n", nRet);
 		return	FTM_RET_ERROR;
 	}
 
@@ -274,14 +139,19 @@ FTM_RET FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig)
 
 	while(1)
 	{
-		int hClient;
-		int	nSockAddrInLen = sizeof(struct sockaddr_in);	
+		FTM_INT	hClient;
+		FTM_INT	nValue;
+		FTM_INT	nSockAddrInLen = sizeof(struct sockaddr_in);	
 
-		MESSAGE("Waiting for incoming connections ...\n");
+		sem_getvalue(&xSemaphore, &nValue);
+		MESSAGE("Waiting for connections ...[%d]\n", nValue);
 		hClient = accept(hSocket, (struct sockaddr *)&xClient, (socklen_t *)&nSockAddrInLen);
 		if (hClient != 0)
 		{
 			pthread_t xPthread;	
+
+			TRACE("Accept new connection.[ %s:%d ]\n", inet_ntoa(xClient.sin_addr), ntohs(xClient.sin_port));
+
 			FTDM_SESSION_PTR pSession = (FTDM_SESSION_PTR)malloc(sizeof(FTDM_SESSION));
 			if (pSession == NULL)
 			{
@@ -291,12 +161,7 @@ FTM_RET FTDMS_startDaemon(FTDM_SERVER_CONFIG_PTR pConfig)
 			}
 			else
 			{
-				TRACE("The new session has beed connected\n"\
-					  "HANDLE : %08lx\n"\
-					  "  PEER : %s:%d\n", 
-					  hClient, 
-					  inet_ntoa(xClient.sin_addr), 
-					  ntohs(xClient.sin_port));
+				TRACE("The new session(%08x) has beed connected\n", hClient);
 
 				pSession->hSocket = hClient;
 				memcpy(&pSession->xPeer, &xClient, sizeof(xClient));
@@ -313,6 +178,14 @@ FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData)
 	FTDM_SESSION_PTR		pSession= (FTDM_SESSION_PTR)pData;
 	FTDM_REQ_PARAMS_PTR		pReq 	= (FTDM_REQ_PARAMS_PTR)pSession->pReqBuff;
 	FTDM_RESP_PARAMS_PTR	pResp 	= (FTDM_RESP_PARAMS_PTR)pSession->pRespBuff;
+	struct timespec			xTimeout = { .tv_sec = 2, .tv_nsec = 0};
+
+	if (sem_timedwait(&xSemaphore, &xTimeout) < 0)
+	{
+		TRACE("The session(%08x) was closed\n", pSession->hSocket);
+		shutdown(pSession->hSocket, SHUT_RD);
+		return	0;	
+	}
 
 	while(1)
 	{
@@ -349,6 +222,8 @@ FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData)
 
 	close(pSession->hSocket);
 	TRACE("The session(%08x) was closed\n", pSession->hSocket);
+
+	sem_post(&xSemaphore);
 
 	return	0;
 }

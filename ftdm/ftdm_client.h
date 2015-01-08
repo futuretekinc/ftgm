@@ -4,107 +4,115 @@
 #include "ftdm_type.h"
 #include "ftdm_cmd.h"
 #include "ftdm_params.h"
+#include "ftdm_client_config.h"
 
 typedef struct 
 {
 	FTM_INT	hSock;
 	FTM_INT	nTimeout;
-}	FTDM_CLIENT, * FTDM_CLIENT_PTR;
+}	FTDMC_SESSION, _PTR_ FTDMC_SESSION_PTR;
 
-typedef	FTDM_CLIENT_PTR	FTDM_CLIENT_HANDLE, _PTR_ FTDM_CLIENT_HANDLE_PTR;
+FTM_RET	FTDMC_init
+(
+	FTDM_CLIENT_CONFIG_PTR pConfig
+);
+
+FTM_RET FTDMC_final
+(
+);
 
 FTM_RET FTDMC_connect
 (
-	FTM_IP_ADDR			xIP,
-	FTM_USHORT 			nPort, 
-	FTDM_CLIENT_HANDLE_PTR	phClient
+	FTDMC_SESSION_PTR 		pSession,
+	FTM_IP_ADDR				xIP,
+	FTM_USHORT 				usPort 
 );
 
 FTM_RET FTDMC_disconnect
 (
-	FTDM_CLIENT_HANDLE		hClient
+	FTDMC_SESSION_PTR		pSession
 );
 
 FTM_RET FTDMC_isConnected
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_BOOL_PTR			pbConnected
 );
 
 FTM_RET FTDMC_appendNodeInfo
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_NODE_INFO_PTR		pInfo
 );
 
 FTM_RET FTDMC_removeNodeInfo
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_CHAR_PTR			pDID
 );
 
 FTM_RET FTDMC_getNodeInfoCount
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pnCount
 );
 
 FTM_RET FTDMC_getNodeInfoByIndex
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				nIndex,
 	FTM_NODE_INFO_PTR		pInfo
 );
 
 FTM_RET FTDMC_getNodeInfo
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_CHAR_PTR			pDID,
 	FTM_NODE_INFO_PTR		pInfo
 );
 
 FTM_RET FTDMC_appendEPInfo
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EP_INFO_PTR			pInfo
 );
 
 FTM_RET FTDMC_removeEPInfo
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID
 );
 
 FTM_RET FTDMC_getEPInfoCount
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pnCount
 );
 
 FTM_RET FTDMC_getEPInfo
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
 	FTM_EP_INFO_PTR			pEPInfo
 );
 
 FTM_RET FTDMC_getEPInfoByIndex
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				nIndex,
 	FTM_EP_INFO_PTR			pEPInfo
 );
 
 FTM_RET FTDMC_appendEPData
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
 	FTM_EP_DATA_PTR			pEPData
 );
 
 FTM_RET FTDMC_getEPData
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
 	FTM_ULONG				nStartIndex,
 	FTM_EP_DATA_PTR			pData,
@@ -114,7 +122,7 @@ FTM_RET FTDMC_getEPData
 
 FTM_RET FTDMC_getEPDataWithTime
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
 	FTM_ULONG				nBeginTime,
 	FTM_ULONG				nEndTime,
@@ -125,7 +133,7 @@ FTM_RET FTDMC_getEPDataWithTime
 
 FTM_RET FTDMC_removeEPData
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
 	FTM_ULONG				nIndex,
 	FTM_ULONG				nCount
@@ -133,7 +141,7 @@ FTM_RET FTDMC_removeEPData
 
 FTM_RET FTDMC_removeEPDataWithTime
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
 	FTM_ULONG				nBeginTime,
 	FTM_ULONG				nEndTime
@@ -141,14 +149,14 @@ FTM_RET FTDMC_removeEPDataWithTime
 
 FTM_RET	FTDMC_getEPDataCount
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
 	FTM_ULONG_PTR			pCount
 );
 
 FTM_RET	FTDMC_getEPDataCountWithTime
 (
-	FTDM_CLIENT_HANDLE		hClient,
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
 	FTM_ULONG				nBeginTime,
 	FTM_ULONG				nEndTime,

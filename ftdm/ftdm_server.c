@@ -12,19 +12,19 @@ typedef struct
 
 static FTDMS_CMD_SET	pCmdSet[] =
 {
-	{	FTDM_CMD_APPEND_NODE_INFO,			(FTDM_SERVICE_CALLBACK)FTDMS_appendNodeInfo },
-	{	FTDM_CMD_REMOVE_NODE_INFO,			(FTDM_SERVICE_CALLBACK)FTDMS_removeNodeInfo },
+	{	FTDM_CMD_ADD_NODE_INFO,				(FTDM_SERVICE_CALLBACK)FTDMS_addNodeInfo },
+	{	FTDM_CMD_DEL_NODE_INFO,				(FTDM_SERVICE_CALLBACK)FTDMS_delNodeInfo },
 	{	FTDM_CMD_GET_NODE_INFO_COUNT,		(FTDM_SERVICE_CALLBACK)FTDMS_getNodeInfoCount },
 	{	FTDM_CMD_GET_NODE_INFO,				(FTDM_SERVICE_CALLBACK)FTDMS_getNodeInfo },
 	{	FTDM_CMD_GET_NODE_INFO_BY_INDEX,	(FTDM_SERVICE_CALLBACK)FTDMS_getNodeInfoByIndex },
-	{	FTDM_CMD_APPEND_EP_INFO,			(FTDM_SERVICE_CALLBACK)FTDMS_appendEPInfo },
-	{	FTDM_CMD_REMOVE_EP_INFO,			(FTDM_SERVICE_CALLBACK)FTDMS_removeEPInfo },
+	{	FTDM_CMD_ADD_EP_INFO,				(FTDM_SERVICE_CALLBACK)FTDMS_addEPInfo },
+	{	FTDM_CMD_DEL_EP_INFO,				(FTDM_SERVICE_CALLBACK)FTDMS_delEPInfo },
 	{	FTDM_CMD_GET_EP_INFO_COUNT,			(FTDM_SERVICE_CALLBACK)FTDMS_getEPInfoCount },
 	{	FTDM_CMD_GET_EP_INFO,				(FTDM_SERVICE_CALLBACK)FTDMS_getEPInfo },
 	{	FTDM_CMD_GET_EP_INFO_BY_INDEX,		(FTDM_SERVICE_CALLBACK)FTDMS_getEPInfoByIndex },
-	{	FTDM_CMD_APPEND_EP_DATA,			(FTDM_SERVICE_CALLBACK)FTDMS_appendEPData },
-	{	FTDM_CMD_REMOVE_EP_DATA,			(FTDM_SERVICE_CALLBACK)FTDMS_removeEPData},
-	{	FTDM_CMD_REMOVE_EP_DATA_WITH_TIME,	(FTDM_SERVICE_CALLBACK)FTDMS_removeEPDataWithTime},
+	{	FTDM_CMD_ADD_EP_DATA,				(FTDM_SERVICE_CALLBACK)FTDMS_addEPData },
+	{	FTDM_CMD_DEL_EP_DATA,				(FTDM_SERVICE_CALLBACK)FTDMS_delEPData},
+	{	FTDM_CMD_DEL_EP_DATA_WITH_TIME,		(FTDM_SERVICE_CALLBACK)FTDMS_delEPDataWithTime},
 	{	FTDM_CMD_GET_EP_DATA,				(FTDM_SERVICE_CALLBACK)FTDMS_getEPData},
 	{	FTDM_CMD_GET_EP_DATA_COUNT,			(FTDM_SERVICE_CALLBACK)FTDMS_getEPDataCount},
 	{	FTDM_CMD_GET_EP_DATA_COUNT_WITH_TIME,(FTDM_SERVICE_CALLBACK)FTDMS_getEPDataCountWithTime},
@@ -57,29 +57,29 @@ FTM_RET	FTDMS_service
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 
-FTM_RET	FTDMS_appendNodeInfo
+FTM_RET	FTDMS_addNodeInfo
 (
-	FTDM_REQ_APPEND_NODE_INFO_PARAMS_PTR	pReq,
-	FTDM_RESP_APPEND_NODE_INFO_PARAMS_PTR	pResp
+	FTDM_REQ_ADD_NODE_INFO_PARAMS_PTR	pReq,
+	FTDM_RESP_ADD_NODE_INFO_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_appendNodeInfo(&pReq->xNodeInfo);
+	pResp->nRet = FTDM_addNodeInfo(&pReq->xNodeInfo);
 
 	return	pResp->nRet;
 }
 
 
-FTM_RET	FTDMS_removeNodeInfo
+FTM_RET	FTDMS_delNodeInfo
 (
- 	FTDM_REQ_REMOVE_NODE_INFO_PARAMS_PTR	pReq,
-	FTDM_RESP_REMOVE_NODE_INFO_PARAMS_PTR	pResp
+ 	FTDM_REQ_DEL_NODE_INFO_PARAMS_PTR	pReq,
+	FTDM_RESP_DEL_NODE_INFO_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_removeNodeInfo(pReq->pDID);
+	pResp->nRet = FTDM_delNodeInfo(pReq->pDID);
 
 	return	pResp->nRet;
 }
@@ -220,28 +220,28 @@ FTM_RET	FTDMS_setNodeLocation
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_appendEPInfo
+FTM_RET	FTDMS_addEPInfo
 (
- 	FTDM_REQ_APPEND_EP_INFO_PARAMS_PTR	pReq,
-	FTDM_RESP_APPEND_EP_INFO_PARAMS_PTR	pResp
+ 	FTDM_REQ_ADD_EP_INFO_PARAMS_PTR	pReq,
+	FTDM_RESP_ADD_EP_INFO_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_appendEPInfo(&pReq->xInfo);
+	pResp->nRet = FTDM_addEPInfo(&pReq->xInfo);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_removeEPInfo
+FTM_RET	FTDMS_delEPInfo
 (
- 	FTDM_REQ_REMOVE_EP_INFO_PARAMS_PTR	pReq,
-	FTDM_RESP_REMOVE_EP_INFO_PARAMS_PTR	pResp
+ 	FTDM_REQ_DEL_EP_INFO_PARAMS_PTR	pReq,
+	FTDM_RESP_DEL_EP_INFO_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_removeEPInfo(pReq->xEPID);
+	pResp->nRet = FTDM_delEPInfo(pReq->xEPID);
 
 	return	pResp->nRet;
 }
@@ -300,15 +300,15 @@ FTM_RET	FTDMS_getEPInfoByIndex
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_appendEPData
+FTM_RET	FTDMS_addEPData
 (
- 	FTDM_REQ_APPEND_EP_DATA_PARAMS_PTR	pReq,
-	FTDM_RESP_APPEND_EP_DATA_PARAMS_PTR	pResp
+ 	FTDM_REQ_ADD_EP_DATA_PARAMS_PTR	pReq,
+	FTDM_RESP_ADD_EP_DATA_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_appendEPData(pReq->xEPID, &pReq->xData);
+	pResp->nRet = FTDM_addEPData(pReq->xEPID, &pReq->xData);
 
 	return	pResp->nRet;
 }
@@ -379,15 +379,15 @@ FTM_RET	FTDMS_getEPDataWithTime
 	return	pResp->nRet;
 }
 
-FTM_RET 	FTDMS_removeEPData
+FTM_RET 	FTDMS_delEPData
 (
- 	FTDM_REQ_REMOVE_EP_DATA_PARAMS_PTR	pReq,
-	FTDM_RESP_REMOVE_EP_DATA_PARAMS_PTR	pResp
+ 	FTDM_REQ_DEL_EP_DATA_PARAMS_PTR	pReq,
+	FTDM_RESP_DEL_EP_DATA_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_removeEPData(
+	pResp->nRet = FTDM_delEPData(
 					pReq->xEPID, 
 					pReq->nIndex, 
 					pReq->nCount);
@@ -395,15 +395,15 @@ FTM_RET 	FTDMS_removeEPData
 	return	pResp->nRet;
 }
 
-FTM_RET 	FTDMS_removeEPDataWithTime
+FTM_RET 	FTDMS_delEPDataWithTime
 (
- 	FTDM_REQ_REMOVE_EP_DATA_WITH_TIME_PARAMS_PTR	pReq,
-	FTDM_RESP_REMOVE_EP_DATA_WITH_TIME_PARAMS_PTR	pResp
+ 	FTDM_REQ_DEL_EP_DATA_WITH_TIME_PARAMS_PTR	pReq,
+	FTDM_RESP_DEL_EP_DATA_WITH_TIME_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_removeEPDataWithTime(
+	pResp->nRet = FTDM_delEPDataWithTime(
 					pReq->xEPID, 
 					pReq->nBeginTime, 
 					pReq->nEndTime);

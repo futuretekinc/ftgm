@@ -7,12 +7,12 @@ CFLAGS=-c -Wall -DDEBUG -I/usr/local/include -I../include
 LDFLAGS=-L/usr/local/lib -L. -L../lib
 
 SERVER=ftdm_server
-SERVER_SRCS=ftdm_server_main.c ftdm_server.c 
+SERVER_SRCS=ftdm_server_main.c ftdm_server.c ftdm_server_config.c
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
 SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3
 
 CLIENT=ftdm_client
-CLIENT_SRCS=ftdm_client_main.c  ftdm_client.c
+CLIENT_SRCS=ftdm_client_main.c  ftdm_client.c ftdm_client_config.c
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftdmc -lftm -lconfig 
 
