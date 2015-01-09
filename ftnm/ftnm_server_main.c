@@ -9,7 +9,7 @@
 
 void 	FTNM_TEST_nodeInit(void);
 
-FTDM_DEVICE_INFO	xDeviceInfo[FTNM_TEST_NODE_COUNT]; 
+FTM_NODE_INFO	xNodeInfo[FTNM_TEST_NODE_COUNT]; 
 
 FTNM_SNMP_OID	xOIDsysDescr =
 {
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	for(i = 0 ; i < FTNM_TEST_NODE_COUNT ; i++)
 	{
 		FTNM_NODE_PTR	pNode;
-		FTM_CHAR	pDID[FTDM_DEVICE_ID_LEN+1];
+		FTM_CHAR	pDID[FTM_DID_LEN+1];
 
 		sprintf(pDID, "%04x", i+1);
 		if (FTNM_getNode(pDID, &pNode) == FTM_RET_OK)
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 	for(i = 0 ; i < 4 ; i++)
 	{
 		FTNM_NODE_PTR	pNode;
-		FTM_CHAR	pDID[FTDM_DEVICE_ID_LEN+1];
+		FTM_CHAR	pDID[FTM_DID_LEN+1];
 
 		sprintf(pDID, "%04x", i+1);
 		if (FTNM_getNode(pDID, &pNode) == FTM_RET_OK)
@@ -118,10 +118,10 @@ void 	FTNM_TEST_nodeInit(void)
 	{
 		FTNM_NODE_PTR pNode = NULL;
 
-		snprintf(xDeviceInfo[i].pDID, FTDM_DEVICE_ID_LEN, "%04x", i+1);
-		xDeviceInfo[i].xType = 0;
-		snprintf(xDeviceInfo[i].pURL, FTDM_DEVICE_URL_LEN, "10.0.1.100");
-		nRet = FTNM_createNodeSNMP(&xDeviceInfo[i], &pNode); 
+		snprintf(xNodeInfo[i].pDID, FTM_DID_LEN, "%04x", i+1);
+		xNodeInfo[i].xType = 0;
+		snprintf(xNodeInfo[i].xOption.xSNMP.pURL, FTM_URL_LEN, "10.0.1.100");
+		nRet = FTNM_createNodeSNMP(&xNodeInfo[i], &pNode); 
 		if (nRet != FTM_RET_OK) 
 		{
 			TRACE("FTNM_createNodeSNMP failed[nRet = %08lx]\n", nRet);

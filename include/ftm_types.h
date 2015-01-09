@@ -3,7 +3,8 @@
 
 #define	_PTR_	*
 
-typedef	void			FTM_VOID, _PTR_ FTM_VOID_PTR;
+#define	FTM_VOID		void
+#define	FTM_VOID_PTR	void *
 typedef	char			FTM_CHAR, _PTR_ FTM_CHAR_PTR;
 typedef	unsigned char	FTM_BYTE, _PTR_ FTM_BYTE_PTR;
 typedef	int				FTM_INT, _PTR_ FTM_INT_PTR;

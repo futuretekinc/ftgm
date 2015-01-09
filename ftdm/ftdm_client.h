@@ -14,7 +14,7 @@ typedef struct
 
 FTM_RET	FTDMC_init
 (
-	FTDM_CLIENT_CONFIG_PTR pConfig
+	FTDM_CFG_CLIENT_PTR pConfig
 );
 
 FTM_RET FTDMC_final

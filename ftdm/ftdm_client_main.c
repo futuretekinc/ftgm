@@ -191,7 +191,7 @@ FTDMC_CMD			_cmds[] =
 };
 
 
-static	FTDM_CLIENT_CONFIG	xClientConfig;
+static	FTDM_CFG_CLIENT	xClientConfig;
 static	FTM_BOOL	_bQuit = FTM_BOOL_FALSE;
 extern	char *		program_invocation_short_name;
 	FTM_CHAR		pCmdLine[FTDMC_MAX_LINE];

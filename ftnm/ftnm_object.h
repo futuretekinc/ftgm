@@ -1,38 +1,36 @@
 #ifndef	__FTNM_OBJECT_H__
 #define	__FTNM_OBJECT_H__
 
-#include "ftm_types.h"
-#include "ftdm_type.h"
-#include "simclist.h"
-#include <pthread.h>
-
-typedef	enum
+typedef	struct _FTNM_NODE _PTR_ FTNM_NODE_PTR;
+typedef	struct 
 {
-	FTNM_NODE_TYPE_SNMP = 0
-}	FTNM_NODE_TYPE, _PTR_ FTNM_NODE_TYPE_PTR;
-	
+	FTM_EP_TYPE		xType;
+	FTM_EP_INFO		xInfo;
+
+	FTNM_NODE_PTR 	pNode;
+}	FTNM_EP, _PTR_ FTNM_EP_PTR;
+
+typedef	struct
+{
+	FTNM_EP			xCommon;	
+}	FTNM_EP_SNMP, _PTR_ FTNMP_EP_SNMP_PTR;
+
+#define	FTNM_NODE_STATE_STOP	0
+#define	FTNM_NODE_STATE_RUN		1
+
 typedef	struct _FTNM_NODE
 {
-	FTDM_DEVICE_INFO	xInfo;
-	FTNM_NODE_TYPE		xType;
-	list_t				xEPList;
+	FTM_NODE_TYPE		xType;
+	FTM_NODE_INFO		xInfo;
+	FTM_LIST			xEPList;
+
 	pthread_t			xPThread;
-	FTM_INT				nUpdateInterval;
-	FTM_VOID_PTR		pData;
+	pthread_mutex_t		xMutexLock;
+	FTM_ULONG			xState;
 }	FTNM_NODE, _PTR_ FTNM_NODE_PTR;
 
-FTM_RET FTNM_initNodeManager(void);
-FTM_RET FTNM_finalNodeManager(void);
-
-FTM_RET	FTNM_createNodeSNMP(FTDM_DEVICE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode);
-
-FTM_RET	FTNM_destroyNode(FTM_CHAR_PTR	pDID);
-FTM_RET FTNM_getNode(FTDM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode);
-
-FTM_RET FTNM_addEP(FTDM_EP_INFO_PTR pInfo);
-
-FTM_RET	FTNM_startNode(FTNM_NODE_PTR pNode);
-FTM_RET	FTNM_stopNode(FTNM_NODE_PTR pNode);
-FTM_RET	FTNM_restartNode(FTNM_NODE_PTR pNode);
+typedef	struct
+{
+	FTNM_NODE			xCommon;	
+}	FTNM_NODE_SNMP, _PTR_ FTNMP_NODE_SNMP_PTR;
 #endif
-

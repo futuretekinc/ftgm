@@ -1,5 +1,5 @@
-#ifndef	__FTDM_CLIENT_CONFIG_H__
-#define	__FTDM_CLIENT_CONFIG_H__
+#ifndef	__FTDM_CFG_CLIENT_H__
+#define	__FTDM_CFG_CLIENT_H__
 
 #include "ftm_types.h"
 #include "simclist.h"
@@ -22,11 +22,11 @@ typedef	struct
 		struct tm	xEndTM;
 	}	xDiagnostic;
 
-}	FTDM_CLIENT_CONFIG, _PTR_ FTDM_CLIENT_CONFIG_PTR;
+}	FTDM_CFG_CLIENT, _PTR_ FTDM_CFG_CLIENT_PTR;
 
-FTM_RET	FTDMC_initConfig(FTDM_CLIENT_CONFIG_PTR pConfig);
-FTM_RET	FTDMC_loadConfig(FTDM_CLIENT_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileName);
-FTM_RET	FTDMC_finalConfig(FTDM_CLIENT_CONFIG_PTR pConfig);
+FTM_RET	FTDMC_initConfig(FTDM_CFG_CLIENT_PTR pConfig);
+FTM_RET	FTDMC_loadConfig(FTDM_CFG_CLIENT_PTR pConfig, FTM_CHAR_PTR pFileName);
+FTM_RET	FTDMC_finalConfig(FTDM_CFG_CLIENT_PTR pConfig);
 
 #endif
 

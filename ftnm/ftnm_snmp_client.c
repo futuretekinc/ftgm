@@ -1,5 +1,5 @@
 #include <string.h>
-#include "ftm_debug.h"
+#include "ftnm.h"
 #include "ftnm_snmp_client.h"
 
 static FTM_INT	FTNM_snmpClientAsyncResponse
@@ -55,28 +55,29 @@ FTM_BOOL	FTNM_snmpIsCompleted(FTNM_NODE_PTR pNode)
 	return	FTM_BOOL_FALSE;
 }
 
-FTM_RET FTNM_snmpClientAsyncCall(FTNM_SNMP_CONTEXT_PTR pSNMP)
+FTM_RET FTNM_snmpClientAsyncCall(FTNM_NODE_PTR pNode)
 {
 	/* startup all hosts */
-	FTNM_SNMP_OID_PTR	pOID;
-	struct snmp_pdu 	*pPDU;
-	struct snmp_session xSession;
+	struct snmp_pdu 		*pPDU;
+	struct snmp_session 	xSession;
+	FTNM_SNMP_OID_PTR		pOID;
+	FTNM_SNMP_CONTEXT_PTR	pSNMP = (FTNM_SNMP_CONTEXT_PTR)pNode->pData;
 
-	TRACE("pContext = %08lx\n", pSNMP);
-	pSNMP->nCurrentOID = 0;
-	pOID = (FTNM_SNMP_OID_PTR)list_get_at(&pSNMP->xOIDList, pSNMP->nCurrentOID);
+
+	list_iterator_start(&pSNMP->xOIDList);
+	pOID = (FTNM_SNMP_OID_PTR)list_iterator_next(&pSNMP->xOIDList);
 	if (pOID == NULL)
 	{
 		return	FTM_RET_OK;	
 	}
 
 	snmp_sess_init(&xSession);			/* initialize session */
-	xSession.version 		= pSNMP->xInfo.nVersion;
-	xSession.peername 		= strdup(pSNMP->xInfo.pPeerName);
-	xSession.community 		= (FTM_BYTE_PTR)strdup(pSNMP->xInfo.pCommunity);
-	xSession.community_len 	= strlen(pSNMP->xInfo.pCommunity);
+	xSession.version 		= pNode->xInfo.xOption.xSNMP.nVersion;
+	xSession.peername 		= strdup(pNode->xInfo.xOption.xSNMP.pURL);
+	xSession.community 		= (FTM_BYTE_PTR)strdup(pNode->xInfo.xOption.xSNMP.pCommunity);
+	xSession.community_len 	= strlen(pNode->xInfo.xOption.xSNMP.pCommunity);
 	xSession.callback 		= FTNM_snmpClientAsyncResponse;
-	xSession.callback_magic = pSNMP;
+	xSession.callback_magic = pNode;
 
 	pSNMP->pSession = snmp_open(&xSession);
 	if (pSNMP->pSession == 0)
@@ -120,8 +121,9 @@ FTM_INT	FTNM_snmpClientAsyncResponse
 	FTM_VOID_PTR		pParams
 )
 {
-	FTNM_SNMP_CONTEXT_PTR	pSNMP = (FTNM_SNMP_CONTEXT_PTR)pParams;
-	struct snmp_pdu 	*pReqPDU;
+	FTNM_NODE_PTR			pNode = (FTNM_NODE_PTR)pParams;
+	FTNM_SNMP_CONTEXT_PTR	pSNMP = (FTNM_SNMP_CONTEXT_PTR)pNode->pData;
+	struct snmp_pdu 		*pReqPDU;
 
 	MESSAGE("pSNMP = %08lx\n", pSNMP);
 	switch(nOperation)
@@ -130,8 +132,7 @@ FTM_INT	FTNM_snmpClientAsyncResponse
 		{
 			if (pRespPDU->errstat == SNMP_ERR_NOERROR) 
 			{
-				FTNM_SNMP_OID_PTR	pOID = list_get_at(&pSNMP->xOIDList, pSNMP->nCurrentOID);
-
+				FTNM_SNMP_OID_PTR	pOID = (FTNM_SNMP_OID_PTR)list_iterator_next(&pSNMP->xOIDList);
 				if (pOID != NULL)
 				{
 					struct variable_list *pVariableList;
@@ -162,10 +163,9 @@ FTM_INT	FTNM_snmpClientAsyncResponse
 				}
 			}								    
 
-			pSNMP->nCurrentOID++;
-			if (pSNMP->nCurrentOID < list_size(&pSNMP->xOIDList))
+			if (pSNMP->nCurrentOID < list_size(&pSNMP->xEPList))
 			{
-				FTNM_SNMP_OID_PTR	pOID = list_get_at(&pSNMP->xOIDList, pSNMP->nCurrentOID);
+				FTNM_SNMP_OID_PTR	pOID = list_get_at(&pSNMP->xEPList, pSNMP->nCurrentOID);
 
 				if (pOID != NULL)
 				{

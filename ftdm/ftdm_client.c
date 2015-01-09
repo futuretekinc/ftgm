@@ -19,7 +19,7 @@ static FTM_RET FTDMC_request
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_init(FTDM_CLIENT_CONFIG_PTR pConfig)
+FTM_RET	FTDMC_init(FTDM_CFG_CLIENT_PTR pConfig)
 {
 	FTM_initEPTypeString();
 

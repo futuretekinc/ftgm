@@ -4,22 +4,30 @@
 #LDFLAGS=-L../devtools/lib -lconfig -lftsom
 CC=gcc
 CFLAGS=-c -Wall -DDEBUG -I/usr/local/include -I../include -I../ftdm
-LDFLAGS= -L/usr/local/lib -L. 
+LDFLAGS= -L/usr/local/lib -L. -L../lib -L../ftdm
 
 SERVER=ftnm_server
 SERVER_SRCS=ftnm_server_main.c ftnm_debug.c
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
 SERVER_LDFLAGS=-L/usr/local/lib -L. -lftnm -lconfig -lsqlite3 -lpthread  -lnetsnmp
 
+FTNM=ftnm
+FTNM_SRCS=ftnm_main.c ftnm.c
+FTNM_OBJS=$(FTNM_SRCS:.c=.o)
+FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmp
+
 LIB_FTNM=libftnm
 LIB_FTNM_INCS= ftnm.h 
-LIB_FTNM_SRCS= ftnm.c ftnm_server.c ftnm_object.c simclist.c ftnm_snmp_client.c ftnm_config.c
+LIB_FTNM_SRCS= ftnm.c ftnm_server.c ftnm_node.c ftnm_ep.c ftnm_config.c
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)
 
-all: $(LIB_FTNM) $(SERVER)
+all: $(LIB_FTNM) $(FTNM)
 
 $(CONSOLE): $(CONSOLE_OBJS)
 	$(CC) -o $@ $(CONSOLE_OBJS) $(CONSOLE_LDFLAGS)
+
+$(FTNM): $(FTNM_OBJS) $(LIB_FTNM)
+	$(CC) -o $@ $(FTNM_OBJS) $(FTNM_LDFLAGS)
 
 $(SERVER): $(SERVER_OBJS) $(LIB_FTNM)
 	$(CC) -o $@ $(SERVER_OBJS) $(SERVER_LDFLAGS)
