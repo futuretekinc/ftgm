@@ -10,7 +10,7 @@
 
 FTM_RET	FTDM_init
 (
-	FTDM_CONFIG_PTR pConfig
+	FTDM_CFG_PTR pConfig
 );
 
 FTM_RET	FTDM_final

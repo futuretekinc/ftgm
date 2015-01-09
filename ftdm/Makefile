@@ -6,8 +6,8 @@ CC=gcc
 CFLAGS=-c -Wall -DDEBUG -I/usr/local/include -I../include
 LDFLAGS=-L/usr/local/lib -L. -L../lib
 
-SERVER=ftdm_server
-SERVER_SRCS=ftdm_server_main.c ftdm_server.c 
+SERVER=ftdm
+SERVER_SRCS=ftdm_main.c ftdm_server.c 
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
 SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3
 
@@ -28,10 +28,10 @@ LIB_FTDMC_OBJS=$(LIB_FTDMC_SRCS:.c=.o)
 
 all: $(LIB_FTDM) $(LIB_FTDMC) $(SERVER) $(CLIENT)
 
-$(SERVER): $(SERVER_OBJS)
+$(SERVER): $(SERVER_OBJS) $(LIBFTDM)
 	$(CC) -o $@ $(SERVER_OBJS) $(SERVER_LDFLAGS)
 
-$(CLIENT): $(CLIENT_OBJS)
+$(CLIENT): $(CLIENT_OBJS) $(LIBFTDMC)
 	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)
 
 $(LIB_FTDM): $(LIB_FTDM_OBJS)

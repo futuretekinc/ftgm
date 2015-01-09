@@ -28,11 +28,17 @@ static FTM_RET	FTDM_CACHE_getNodeInfo
 	FTM_NODE_INFO_PTR _PTR_ 	ppNodeInfo
 );
 
+static FTM_RET	FTDM_CACHE_isExistNodeInfo
+(
+ 	FTM_CHAR_PTR				pDID,
+	FTM_BOOL_PTR				pExist
+);
+
 static list_t	xNodeList;
 
 FTM_RET	FTDM_initNodeInfo
 (
- 	FTM_VOID
+	FTDM_CFG_NODE_PTR	pConfig
 )
 {
 	FTM_ULONG	nMaxNodeCount = 0;
@@ -45,7 +51,7 @@ FTM_RET	FTDM_initNodeInfo
 	{
 
 		FTM_NODE_INFO_PTR	pNodeInfos;
-		FTM_ULONG				nNodeCount = 0;
+		FTM_ULONG			nNodeCount = 0;
 		
 		pNodeInfos = (FTM_NODE_INFO_PTR)calloc(nMaxNodeCount, sizeof(FTM_NODE_INFO));
 		if (pNodeInfos == NULL)
@@ -75,6 +81,28 @@ FTM_RET	FTDM_initNodeInfo
 
 		free(pNodeInfos);
 	}
+
+	if (FTDM_CFG_getNodeInfoCount(pConfig, &nMaxNodeCount) == FTM_RET_OK)
+	{
+		FTM_ULONG	i;
+
+		for(i = 0 ; i < nMaxNodeCount ; i++)
+		{
+			FTM_NODE_INFO	xNodeInfo;
+
+			if (FTDM_CFG_getNodeInfoByIndex(pConfig, i, &xNodeInfo) == FTM_RET_OK)
+			{
+				FTM_BOOL	bExist;
+
+				FTDM_CACHE_isExistNodeInfo(xNodeInfo.pDID, &bExist);
+				if (!bExist)
+				{
+					FTDM_addNodeInfo(&xNodeInfo);	
+				}
+			}
+		}
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -185,6 +213,7 @@ FTM_RET	FTDM_getNodeInfo
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
+	TRACE("pDID = %s\n", pDID);
 	nRet = FTDM_CACHE_getNodeInfo(pDID, ppNodeInfo);
 	if (nRet != FTM_RET_OK)
 	{
@@ -208,6 +237,15 @@ FTM_RET	FTDM_getNodeInfoByIndex
 	}
 
 	return	FTM_RET_OBJECT_NOT_FOUND;
+}
+
+FTM_RET FTDM_isExistNodeInfo
+(
+ 	FTM_CHAR_PTR				pDID,
+	FTM_BOOL_PTR				pExist
+)
+{
+	return	FTDM_CACHE_isExistNodeInfo(pDID, pExist);
 }
 
 int FTDM_nodeSeeker(const void *pElement, const void *pKey)
@@ -258,5 +296,23 @@ FTM_RET	FTDM_CACHE_getNodeInfo
 	}
 
 	return	FTM_RET_OBJECT_NOT_FOUND;
+}
+
+FTM_RET	FTDM_CACHE_isExistNodeInfo
+(
+ 	FTM_CHAR_PTR				pDID,
+	FTM_BOOL_PTR				pExist
+)
+{
+	if (list_seek(&xNodeList, pDID) != NULL)
+	{
+		*pExist = FTM_BOOL_TRUE;
+	}
+	else
+	{
+		*pExist = FTM_BOOL_FALSE;
+	}
+	
+	return	FTM_RET_OK;
 }
 

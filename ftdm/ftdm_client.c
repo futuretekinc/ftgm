@@ -91,8 +91,6 @@ FTM_RET FTDMC_disconnect
 	close(pSession->hSock);
 	pSession->hSock = 0;
 	
-	free(pSession);
-
 	return	FTM_RET_OK;
 }
 

@@ -3,12 +3,13 @@
 
 #include "ftm_types.h"
 #include "ftm_object.h"
+#include "ftdm_config.h"
 
 #define	FTDM_DT_ROOT	0x00000001
 
 FTM_RET	FTDM_initNodeInfo
 (
- 	FTM_VOID
+	FTDM_CFG_NODE_PTR	pConfig
 );
 
 FTM_RET	FTDM_finalNodeInfo

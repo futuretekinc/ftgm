@@ -194,22 +194,21 @@ FTDMC_CMD			_cmds[] =
 static	FTDM_CLIENT_CONFIG	xClientConfig;
 static	FTM_BOOL	_bQuit = FTM_BOOL_FALSE;
 extern	char *		program_invocation_short_name;
+	FTM_CHAR		pCmdLine[FTDMC_MAX_LINE];
 
 int main(int argc , char *argv[])
 {
 	FTM_INT			nArgc;
 	FTM_CHAR_PTR	pArgv[FTDMC_MAX_ARGS];
-	FTM_CHAR		pCmdLine[FTDMC_MAX_LINE];
 	FTM_CHAR		pConfigFileName[FTM_FILE_NAME_LEN];
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
-	setPrintMode(2);
+	setPrintMode(1);
 
 	/* load configuraton */
 	FTDMC_initConfig(&xClientConfig);
 	FTDMC_loadConfig(&xClientConfig, pConfigFileName);
-	TRACE("CHECK\n");
 
 	/* apply configuraton */
 	FTDMC_init(&xClientConfig);
@@ -499,6 +498,8 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 		}
+
+		MESSAGE("NODE COUNT : %d\n", nNodeCount);
 
 		MESSAGE("%16s %16s %16s %16s %16s %16s %16s\n", 
 			"DID", "TYPE", "LOCATION", "OPT0", "OPT1", "OPT2", "OPT3");

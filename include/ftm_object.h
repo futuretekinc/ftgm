@@ -59,13 +59,13 @@ typedef	struct
 	FTM_EP_CLASS	xClass;	
 	struct
 	{
-		FTM_CHAR		pID[32];
-		FTM_CHAR		pType[32];
-		FTM_CHAR		pName[32];
-		FTM_CHAR		pSN[32];
-		FTM_CHAR		pState[32];
-		FTM_CHAR		pValue[32];
-		FTM_CHAR		pTime[32];
+		FTM_CHAR	pID[32];
+		FTM_CHAR	pType[32];
+		FTM_CHAR	pName[32];
+		FTM_CHAR	pSN[32];
+		FTM_CHAR	pState[32];
+		FTM_CHAR	pValue[32];
+		FTM_CHAR	pTime[32];
 	}	xOIDs;
 }	FTM_EP_CLASS_INFO, _PTR_ FTM_EP_CLASS_INFO_PTR;
 
@@ -123,6 +123,18 @@ typedef	struct
 }	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
 
 FTM_CHAR_PTR FTM_nodeTypeString(FTM_NODE_TYPE nType);
+
+
+typedef	struct
+{
+	FTM_USHORT			usPort;
+	FTM_ULONG			ulSessionCount;
+}	FTM_SERVER_INFO, _PTR_ FTM_SERVER_INFO_PTR;
+
+typedef	struct
+{
+	FTM_CHAR_PTR		pFileName;
+}	FTM_DB_INFO, _PTR_ FTM_DB_INFO_PTR;
 
 #endif
 

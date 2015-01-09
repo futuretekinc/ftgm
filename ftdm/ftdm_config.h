@@ -1,88 +1,63 @@
-#ifndef	__FTDM_SERVER_CONFIG_H__
-#define	__FTDM_SERVER_CONFIG_H__
+#ifndef	__FTDM_CONFIG_H__
+#define	__FTDM_CONFIG_H__
 
 #include "ftm_types.h"
 #include "libconfig.h"
 #include "simclist.h"
 
-#define	FTDM_TYPE_NAME_LEN				64
-#define	FTDM_FILE_PATH_LEN				256
-#define	FTDM_FILE_NAME_LEN				256
 #define	FTDM_SERVER_DEFAULT_PORT		8888
 #define	FTDM_SERVER_DEFAULT_MAX_SESSION	10
 
 typedef	struct
 {
-	FTM_ULONG	ulType;
-	FTM_CHAR	pName[FTDM_TYPE_NAME_LEN];
-}	FTDM_EP_TYPE_INFO, _PTR_ FTDM_EP_TYPE_INFO_PTR;
+	FTM_USHORT				usPort;
+	FTM_ULONG				ulMaxSession;
+}	FTDM_CFG_SERVER, _PTR_ FTDM_CFG_SERVER_PTR;
 
 typedef	struct
 {
-	FTM_CHAR_PTR	pFileName;
-}	FTDM_DB_CONFIG, _PTR_ FTDM_DB_CONFIG_PTR;
+	FTM_CHAR_PTR			pFileName;
+}	FTDM_CFG_DB, _PTR_ FTDM_CFG_DB_PTR;
 
 typedef	struct
 {
-	list_t				xInfos;
-}	FTDM_EP_INFO_CONFIG, _PTR_ FTDM_EP_INFO_CONFIG_PTR;
-typedef	struct
-{
-	list_t				xInfos;
-}	FTDM_EP_CLASS_INFO_CONFIG, _PTR_ FTDM_EP_CLASS_INFO_CONFIG_PTR;
+	list_t					xList;
+}	FTDM_CFG_NODE, _PTR_ FTDM_CFG_NODE_PTR;
 
 typedef	struct
 {
-	FTDM_DB_CONFIG				xDatabase;
-	FTDM_EP_INFO_CONFIG			xEPInfo;
-	FTDM_EP_CLASS_INFO_CONFIG	xEPClassInfo;
-}	FTDM_CONFIG, _PTR_ FTDM_CONFIG_PTR;
+	list_t					xList;
+	list_t					xClassList;
+}	FTDM_CFG_EP, _PTR_ FTDM_CFG_EP_PTR;
 
 typedef	struct
 {
-	struct 
-	{
-		FTM_CHAR_PTR	pFileName;
-	}	xApp;
+	FTDM_CFG_SERVER			xServer;
+	FTDM_CFG_DB				xDB;
+	FTDM_CFG_NODE			xNode;
+	FTDM_CFG_EP				xEP;
+}	FTDM_CFG, _PTR_ FTDM_CFG_PTR;
 
-	struct
-	{
-		FTM_USHORT		usPort;
-		FTM_ULONG		ulMaxSession;
-	}	xNetwork;
+FTM_RET	FTDM_CFG_init(FTDM_CFG_PTR pConfig);
+FTM_RET	FTDM_CFG_load(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName);
+FTM_RET	FTDM_CFG_final(FTDM_CFG_PTR pConfig);
 
-	struct
-	{	
-		FTM_ULONG		ulPrintOutMode;
-		struct 
-		{
-			FTM_CHAR_PTR	pFileName;
-		} xTrace;
+FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig);
 
-		struct 
-		{
-			FTM_CHAR_PTR	pFileName;
-		} xError;
-	}	xDebug;
-	
-	FTDM_CONFIG			xConfig;
-}	FTDM_SERVER_CONFIG, _PTR_ FTDM_SERVER_CONFIG_PTR;
+FTM_RET FTDM_CFG_setDBFileName(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName);
 
-FTM_RET	FTDM_initServerConfig(FTDM_SERVER_CONFIG_PTR pConfig);
-FTM_RET FTDM_loadServerConfig(FTDM_SERVER_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileName);
-FTM_RET	FTDM_destroyServerConfig(FTDM_SERVER_CONFIG_PTR pConfig);
-FTM_RET	FTDM_showServerConfig(FTDM_SERVER_CONFIG_PTR pConfig);
+FTM_RET	FTDM_CFG_setServer(FTDM_CFG_PTR pConfig, FTM_SERVER_INFO_PTR pInfo);
 
-FTM_RET FTDM_initDBConfig(FTDM_DB_CONFIG_PTR pConfig);
-FTM_RET FTDM_loadDBConfig(FTDM_DB_CONFIG_PTR pDBConfig, config_t pConfig);
-FTM_RET FTDM_destroyDBConfig(FTDM_DB_CONFIG_PTR pConfig);
+FTM_RET	FTDM_CFG_addNodeInfo(FTDM_CFG_NODE_PTR pConfig, FTM_NODE_INFO_PTR pInfo);
+FTM_RET FTDM_CFG_getNodeInfoCount(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG_PTR pCount);
+FTM_RET	FTDM_CFG_getNodeInfoByIndex(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG ulIndex, FTM_NODE_INFO_PTR pInfo);
 
-FTM_RET	FTDM_initEPInfoConfig(FTDM_EP_INFO_CONFIG_PTR pConfig);
-FTM_RET FTDM_loadEPInfoConfig(FTDM_EP_INFO_CONFIG_PTR pEPInfoConfig, config_t pConfig);
-FTM_RET FTDM_destroyEPInfoConfig(FTDM_EP_INFO_CONFIG_PTR pConfig);
+FTM_RET	FTDM_CFG_addEPInfo(FTDM_CFG_EP_PTR pConfig, FTM_EP_INFO_PTR pInfo);
+FTM_RET FTDM_CFG_getEPInfoCount(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCount);
+FTM_RET	FTDM_CFG_getEPInfoByIndex(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR pInfo);
 
-FTM_RET FTDM_initEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pConfig);
-FTM_RET FTDM_loadEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pEPClassInfoConfig, config_t pConfig);
-FTM_RET FTDM_destroyEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pConfig);
-FTM_RET FTDM_showEPClassInfoConfig(FTDM_EP_CLASS_INFO_CONFIG_PTR pConfig);
+FTM_RET FTDM_CFG_addEPClassInfo(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS_INFO_PTR pInfo);
+FTM_RET FTDM_CFG_getEPClassInfoCount(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCount);
+FTM_RET FTDM_CFG_getEPClassInfo(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS xClass, FTM_EP_CLASS_INFO_PTR pInfo);
+FTM_RET FTDM_CFG_getEPClassInfoByIndex(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS_INFO_PTR pInfo);
 #endif

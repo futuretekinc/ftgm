@@ -5,19 +5,19 @@
 #include "ftdm_ep_class_info.h"
 #include "ftdm_sqlite.h"
 
-FTM_RET 	FTDM_init(FTDM_CONFIG_PTR pConfig)
+FTM_RET 	FTDM_init(FTDM_CFG_PTR pConfig)
 {
 	FTM_RET	nRet;
 
-	nRet = FTDM_DBIF_init(&pConfig->xDatabase);
+	nRet = FTDM_DBIF_init(&pConfig->xDB);
 	if (nRet != FTM_RET_OK)
 	{
 		ERROR("FTDM initialization failed. [ %08lx ]\n", nRet);
 		return	nRet;
 	}
 
-	FTDM_initNodeInfo();
-	FTDM_initEPInfo();
+	FTDM_initNodeInfo(&pConfig->xNode);
+	FTDM_initEPInfo(&pConfig->xEP);
 	FTDM_initEPClassInfo();
 
 	TRACE("FTDM initialization completed successfully.\n");

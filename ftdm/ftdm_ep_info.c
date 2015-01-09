@@ -16,10 +16,16 @@ static FTM_RET	FTDM_LIST_delEPInfo
  	FTM_EP_INFO_PTR	pEPInfo
 );
 
-FTM_RET	FTDM_LIST_getEPInfo
+static FTM_RET	FTDM_LIST_getEPInfo
 (
  	FTM_EPID				xEPID,
 	FTM_EP_INFO_PTR _PTR_	ppEPInfo
+);
+
+static FTM_RET	FTDM_LIST_isExistEPInfo
+(
+ 	FTM_EPID				xEPID,
+	FTM_BOOL_PTR			pExist
 );
 
 static FTM_INT	FTDM_EPSeeker
@@ -32,7 +38,7 @@ static list_t	xEPList;
 
 FTM_RET	FTDM_initEPInfo
 (
-	FTM_VOID
+	FTDM_CFG_EP_PTR	pConfig
 )
 {
 	FTM_ULONG	nMaxEPCount = 0;
@@ -78,6 +84,28 @@ FTM_RET	FTDM_initEPInfo
 
 		free(pEPInfos);
 	}
+
+	if (FTDM_CFG_getEPInfoCount(pConfig, &nMaxEPCount) == FTM_RET_OK)
+	{
+		FTM_ULONG	i;
+
+		for(i = 0 ; i < nMaxEPCount ; i++)
+		{
+			FTM_EP_INFO	xEPInfo;
+
+			if (FTDM_CFG_getEPInfoByIndex(pConfig, i, &xEPInfo) == FTM_RET_OK)
+			{
+				FTM_BOOL	bExist;
+
+				FTDM_LIST_isExistEPInfo(xEPInfo.xEPID, &bExist);
+				if (!bExist)
+				{
+					FTDM_addEPInfo(&xEPInfo);	
+				}
+			}
+		}
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -381,6 +409,27 @@ FTM_RET	FTDM_LIST_getEPInfo
 
 		return	FTM_RET_OK;
 	}
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
+}
+
+FTM_RET	FTDM_LIST_isExistEPInfo
+(
+ 	FTM_EPID				xEPID,
+	FTM_BOOL_PTR			pExist
+)
+{
+	FTM_EP_INFO_PTR	pEPInfo = NULL;
+
+	pEPInfo = (FTM_EP_INFO_PTR)list_seek(&xEPList, &xEPID);
+	if (pEPInfo != NULL)
+	{
+		*pExist = FTM_BOOL_TRUE;
+
+		return	FTM_RET_OK;
+	}
+
+	*pExist = FTM_BOOL_FALSE;
 
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }
