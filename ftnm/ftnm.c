@@ -48,7 +48,7 @@ FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pContext, FTNM_CFG_PTR pConfig)
 
 	FTNM_CFG_copyCreate(&pContext->pConfig, pConfig);
 
-	FTNM_SNMPC_init();
+	FTNM_SNMPC_init("ftnm", &pConfig->xSNMPC);
 
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
@@ -73,7 +73,7 @@ FTM_RET FTNM_DMC_run(FTNM_CONTEXT_PTR pContext)
 		return	FTM_RET_ERROR;	
 	}
 
-	pthread_join(pContext->xDMC.xThread, NULL);
+//	pthread_join(pContext->xDMC.xThread, NULL);
 	return	FTM_RET_OK;
 }
 
@@ -102,18 +102,23 @@ FTM_VOID_PTR	FTNM_DMC_task(FTM_VOID_PTR pData)
 		case	FTNM_DMC_STATE_CONNECTED:
 			{
 				FTNM_DMC_taskSync(pContext);
+				MESSAGE("---------------\n");
 			}
 			break;
 
 		case	FTNM_DMC_STATE_SYNCHRONIZED:
 			{
+				MESSAGE("-------2-------\n");
 				FTNM_DMC_taskRunChild(pContext);	
+				MESSAGE("-------3-------\n");
 			}
 			break;
 
 		case	FTNM_DMC_STATE_PROCESS_FINISHED:
 			{
+				MESSAGE("------4--------\n");
 				FTNM_DMC_taskWait(pContext);	
+				MESSAGE("------5--------\n");
 			}
 			break;
 		}
@@ -237,9 +242,7 @@ FTM_RET	FTNM_DMC_taskSync(FTNM_CONTEXT_PTR pContext)
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTNM_NODE_PTR		pNode;
 		FTM_EP_CLASS_INFO	xEPClassInfo;
-		FTNM_EP_PTR			pEP;
 
 		nRet = FTDMC_getEPClassInfoByIndex(&pContext->xDMC.xSession, i, &xEPClassInfo);
 		if (nRet != FTM_RET_OK)
@@ -264,7 +267,6 @@ FTM_RET	FTNM_DMC_taskSync(FTNM_CONTEXT_PTR pContext)
 
 FTM_RET	FTNM_DMC_taskRunChild(FTNM_CONTEXT_PTR pContext)
 {
-	FTM_RET			nRet;
 	FTNM_NODE_PTR	pNode;
 	FTM_ULONG		i, ulCount;
 

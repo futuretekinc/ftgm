@@ -10,11 +10,27 @@ static FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 	FTM_VOID_PTR		magic
 );
 
-FTM_RET	FTNM_SNMPC_init(FTM_VOID)
+FTM_RET	FTNM_SNMPC_init(FTM_CHAR_PTR pAppName, FTNM_CFG_SNMPC_PTR pConfig)
 {
+	FTM_ULONG	i, ulCount;
+
 	init_snmp("ftnm");
-	read_mib("FTM50S-MIB.txt");
-	read_mib("FTE-E.txt");
+
+	if (FTM_LIST_count(&pConfig->xMIBList, &ulCount) == FTM_RET_OK)
+	{
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			FTM_VOID_PTR	pValue;
+
+			if (FTM_LIST_getAt(&pConfig->xMIBList, i, &pValue) == FTM_RET_OK)
+			{
+				TRACE("Load MIB : %s\n", (FTM_CHAR_PTR)pValue);
+
+				read_mib((FTM_CHAR_PTR)pValue);
+			}
+		}
+	}
+
 	FTM_initEPOIDInfo();
 
 	return	FTM_RET_OK;
@@ -60,16 +76,15 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 			if (FTNM_EP_CLASS_INFO_get((pEP->xCommon.xInfo.xEPID & FTM_EP_CLASS_MASK), &pEPClassInfo) != FTM_RET_OK)
 			{
 				TRACE("EP CLASS[%08lx] information not found\n", pEP->xCommon.xInfo.xEPID);
-				continue;	
+				continue;
 			}
 
 			snprintf(pOIDName, sizeof(pOIDName) - 1, "%s::%s", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pEPClassInfo->xOIDs.pValue);
-			TRACE("OBJID : %s\n", pOIDName);
 			pEP->nOIDLen = MAX_OID_LEN;
-			if (read_objid(pOIDName, pEP->pOID, &pEP->nOIDLen) != 0)
+			if (read_objid(pOIDName, pEP->pOID, &pEP->nOIDLen) == 0)
 			{
-				TRACE("~~~~~~~~~~~~~~~~~~~~~\n");
-				continue;			
+				TRACE("Can't find MIB\n");
+				continue;
 			}
 
 			FTM_LIST_append(&pNode->xSNMPC.xEPList, pEP);

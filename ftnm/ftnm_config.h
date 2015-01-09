@@ -3,6 +3,7 @@
 
 #include "ftm_types.h"
 #include "ftm_object.h"
+#include "ftm_list.h"
 #include "ftdm_client.h"
 typedef	struct
 {
@@ -12,8 +13,14 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_LIST		xMIBList;
+}	FTNM_CFG_SNMPC, _PTR_ FTNM_CFG_SNMPC_PTR;
+	
+typedef	struct
+{
 	FTNM_CFG_SERVER	xServer;	
 	FTDM_CFG_CLIENT	xClient;
+	FTNM_CFG_SNMPC	xSNMPC;	
 }	FTNM_CFG, _PTR_ FTNM_CFG_PTR;
 
 FTM_RET	FTNM_CFG_create(FTNM_CFG_PTR _PTR_ ppConfig);

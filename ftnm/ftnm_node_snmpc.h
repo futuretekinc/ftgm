@@ -2,8 +2,9 @@
 #define	__FTNM_SNMP_CLIENT_H__
 
 #include "ftnm.h"
+#include "ftnm_config.h"
 
-FTM_RET		FTNM_SNMPC_init(FTM_VOID);
+FTM_RET		FTNM_SNMPC_init(FTM_CHAR_PTR pAppName, FTNM_CFG_SNMPC_PTR pConfig);
 
 FTM_RET		FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode);
 FTM_RET		FTNM_NODE_SNMPC_final(FTNM_NODE_SNMPC_PTR pNode);

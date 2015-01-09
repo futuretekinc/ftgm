@@ -117,6 +117,13 @@ FTM_RET	FTDMC_getEPClassInfo
 	FTM_EP_CLASS_INFO_PTR	pEPClassInfo
 );
 
+FTM_RET	FTDMC_getEPClassInfoByIndex
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				nIndex,
+	FTM_EP_CLASS_INFO_PTR	pInfo
+);
+
 FTM_RET FTDMC_appendEPData
 (
 	FTDMC_SESSION_PTR		pSession,

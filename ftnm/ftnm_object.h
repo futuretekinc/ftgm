@@ -20,7 +20,7 @@ typedef	struct
 	FTNM_EP			xCommon;
 
 	oid				pOID[MAX_OID_LEN];
-	FTM_INT			nOIDLen;
+	size_t			nOIDLen;
 }	FTNM_EP_SNMP, _PTR_ FTNM_EP_SNMP_PTR;
 
 #define	FTNM_SNMPC_STATE_UNKNOWN		0x00000000
