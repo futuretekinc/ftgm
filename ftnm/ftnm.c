@@ -190,6 +190,7 @@ FTM_RET	FTNM_DMC_taskSync(FTNM_CONTEXT_PTR pContext)
 		return	nRet;	
 	}
 
+	TRACE("EP Info count : %d\n", ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTNM_NODE_PTR	pNode;

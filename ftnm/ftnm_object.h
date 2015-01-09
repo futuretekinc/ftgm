@@ -60,6 +60,7 @@ typedef	struct _FTNM_NODE
 	pthread_t			xPThread;
 	pthread_mutex_t		xMutexLock;
 	FTNM_NODE_STATE		xState;
+	FTM_ULONG			ulRetry;
 	time_t				xTimeout;
 	FTM_LIST			xTaskList;
 }	FTNM_NODE, _PTR_ FTNM_NODE_PTR;

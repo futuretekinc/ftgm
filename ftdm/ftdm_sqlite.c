@@ -174,7 +174,7 @@ static int _FTDM_DBIF_CB_getNodeList(void *pData, int nArgc, char **pArgv, char 
 	{
 		FTM_INT	i;
 		FTM_NODE_INFO_PTR	pNodeInfo = &pParams->pInfos[(*pParams->pCount)++];
-	
+
 		for(i = 0 ; i < nArgc ; i++)
 		{
 			if (strcasecmp(pColName[i], "DID") == 0)
@@ -183,18 +183,22 @@ static int _FTDM_DBIF_CB_getNodeList(void *pData, int nArgc, char **pArgv, char 
 			}
 			else if (strcasecmp(pColName[i], "TYPE") == 0)
 			{
-				pNodeInfo->xType = atoi(pArgv[i]);
+				pNodeInfo->xType = strtoul(pArgv[i], 0, 10);
 			}
 			else if (strcasecmp(pColName[i], "LOC") == 0)
 			{
 				strncpy(pNodeInfo->pLocation, pArgv[i], FTM_LOCATION_LEN);
+			}
+			else if (strcasecmp(pColName[i], "INTERVAL") == 0)
+			{
+				pNodeInfo->ulInterval = strtoul(pArgv[i], NULL, 10);
 			}
 			else if (strcasecmp(pColName[i], "OPT0") == 0)
 			{
 				switch (pNodeInfo->xType)
 				{
 				case	FTM_NODE_TYPE_SNMP:
-					pNodeInfo->xOption.xSNMP.nVersion = atoi(pArgv[i]);
+					pNodeInfo->xOption.xSNMP.nVersion = strtoul(pArgv[i], 0, 10);
 					break;
 				}
 			}

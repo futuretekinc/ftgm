@@ -67,7 +67,7 @@ FTM_RET	FTDM_initNodeInfo
 			{
 				FTM_NODE_INFO_PTR pNodeInfo;
 				
-				pNodeInfo = (FTM_NODE_INFO_PTR)malloc(sizeof(FTM_NODE_INFO));
+				pNodeInfo = (FTM_NODE_INFO_PTR)calloc(1, sizeof(FTM_NODE_INFO));
 				if (pNodeInfo == NULL)
 				{
 					return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -213,7 +213,6 @@ FTM_RET	FTDM_getNodeInfo
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	TRACE("pDID = %s\n", pDID);
 	nRet = FTDM_CACHE_getNodeInfo(pDID, ppNodeInfo);
 	if (nRet != FTM_RET_OK)
 	{

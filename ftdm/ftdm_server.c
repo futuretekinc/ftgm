@@ -263,7 +263,7 @@ FTM_RET	FTDMS_getNodeInfo
 )
 {
 	FTM_NODE_INFO_PTR	pNodeInfo;
-
+ 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nRet = FTDM_getNodeInfo(pReq->pDID, &pNodeInfo);
@@ -414,7 +414,6 @@ FTM_RET	FTDMS_getEPInfoCount
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nRet = FTDM_getEPInfoCount(pReq->xClass, &pResp->nCount);
-
 	return	pResp->nRet;
 }
 

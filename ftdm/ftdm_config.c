@@ -202,8 +202,8 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 	MESSAGE("\t %-8s : %s\n", "DB FILE", pConfig->xDB.pFileName);
 
 	MESSAGE("\n[ NODE ]\n");
-	MESSAGE("\t%-16s %-16s %-16s %-16s %-16s %-16s\n",
-			"DID", "TYPE", "LOCATION", "OPT0", "OPT1", "OPT2");
+	MESSAGE("\t%-16s %-16s %-16s %-16s %-16s %-16s %-16s\n",
+			"DID", "TYPE", "LOCATION", "INTERVAL" "OPT0", "OPT1", "OPT2");
 	if (FTDM_CFG_getNodeInfoCount(&pConfig->xNode, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -211,10 +211,11 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 			FTM_NODE_INFO	xNodeInfo;
 
 			FTDM_CFG_getNodeInfoByIndex(&pConfig->xNode, i, &xNodeInfo);
-			MESSAGE("\t%-16s %-16s %-16s %-16s %-16s %-16s\n",
+			MESSAGE("\t%-16s %-16s %-16s %8d %-16s %-16s %-16s\n",
 				xNodeInfo.pDID,
 				getNodeTypeString(xNodeInfo.xType),
 				xNodeInfo.pLocation,
+				xNodeInfo.ulInterval,
 				getSNMPVersionString(xNodeInfo.xOption.xSNMP.nVersion),
 				xNodeInfo.xOption.xSNMP.pURL,
 				xNodeInfo.xOption.xSNMP.pCommunity);
@@ -1037,9 +1038,9 @@ FTM_CHAR_PTR	getSNMPVersionString(FTM_ULONG ulVersion)
 {
 	switch(ulVersion)
 	{
-	case	1:	return	"SNMPv1";
-	case	2: return	"sNMPv2c";
-	case	3: return	"SNMPv3";
+	case	0:	return	"SNMPv1";
+	case	1: return	"SNMPv2c";
+	case	2: return	"SNMPv3";
 	}
 
 	return	"SNMP";
