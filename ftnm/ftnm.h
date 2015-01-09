@@ -4,6 +4,7 @@
 #include "ftm_types.h"
 #include "ftm_debug.h"
 #include "ftm_error.h"
+#include "ftm_mem.h"
 #include "ftnm_types.h"
 #include "ftnm_config.h"
 #include "ftnm_node.h"

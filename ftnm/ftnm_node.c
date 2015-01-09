@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
-#include "ftnm_node.h"
-#include "ftm_error.h"
-#include "ftm_debug.h"
+#include "ftnm.h"
 #include "ftm_list.h"
+#include "ftnm_node.h"
+#include "ftnm_ep.h"
 
 static FTM_LIST	xNodeList;
 
@@ -57,7 +57,7 @@ FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 	{
 	case	FTM_NODE_TYPE_SNMP:
 		{
-			pNewNode = (FTNM_NODE_PTR)calloc(1, sizeof(FTNM_NODE_SNMP));
+			pNewNode = (FTNM_NODE_PTR)FTM_MEM_calloc(1, sizeof(FTNM_NODE_SNMP));
 			if (pNewNode == NULL)
 			{
 				ERROR("Not enough memory!\n");
@@ -74,14 +74,14 @@ FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 	}
 
 	pNewNode->xState = FTNM_NODE_STATE_CREATING;
-
 	memcpy(&pNewNode->xInfo, pInfo, sizeof(FTM_NODE_INFO));
+	FTM_LIST_init(&pNewNode->xEPList);
 	pthread_mutex_init(&pNewNode->xMutexLock, NULL);
 
 	nRet = FTM_LIST_append(&xNodeList, pNewNode);
 	if (nRet != FTM_RET_OK)
 	{
-		free(pNewNode);	
+		FTM_MEM_free(pNewNode);	
 	}
 
 	pNewNode->xState = FTNM_NODE_STATE_CREATED;
@@ -99,7 +99,7 @@ FTM_RET	FTNM_NODE_destroy(FTNM_NODE_PTR	pNode)
 	if (nRet == FTM_RET_OK)
 	{
 		TRACE("FTNM_NODE_destroy Success\n");
-		free(pNode);
+		FTM_MEM_free(pNode);
 	}
 
 	return	nRet;
@@ -141,22 +141,11 @@ FTM_RET	FTNM_NODE_count(FTM_ULONG_PTR pulCount)
 
 FTM_RET	FTNM_NODE_linkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 {
-	FTNM_EP_PTR	pTempEP;
-
 	ASSERT((pNOde != NULL) && (pEP != NULL));
 
 	pthread_mutex_lock(&pNode->xMutexLock);
-
-	if (FTM_LIST_get(&pNode->xEPList, &pEP->xInfo.xEPID, (FTM_VOID_PTR _PTR_)&pTempEP) == FTM_RET_OK)
-	{
-		pthread_mutex_unlock(&pNode->xMutexLock);
-		
-		return	FTM_RET_ALREADY_EXISTS;
-	}
-
 	FTM_LIST_append(&pNode->xEPList, pEP);
-	//FTNM_EP_setNode(pEP, pNode);
-
+	FTNM_EP_setNode(pEP, pNode);
 	pthread_mutex_unlock(&pNode->xMutexLock);
 
 	return	FTM_RET_OK;
@@ -168,12 +157,33 @@ FTM_RET	FTNM_NODE_unlinkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 
 	pthread_mutex_lock(&pNode->xMutexLock);
 
-	//FTNM_EP_setNode(pEP, NULL);
+	FTNM_EP_setNode(pEP, NULL);
 	FTM_LIST_remove(&pNode->xEPList, pEP);
 	
 	pthread_mutex_unlock(&pNode->xMutexLock);
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_NODE_EP_count(FTNM_NODE_PTR pNode, FTM_ULONG_PTR pulCount)
+{
+	ASSERT((pNode != NULL) && (pulCount != NULL));
+
+	return FTM_LIST_count(&pNode->xEPList, pulCount);
+}
+
+FTM_RET	FTNM_NODE_EP_get(FTNM_NODE_PTR pNode, FTM_EPID xEPID, FTNM_EP_PTR _PTR_ ppEP)
+{
+	ASSERT((pNode != NULL) && (ppEP != NULL));
+
+	return	FTM_LIST_get(&pNode->xEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEP);
+}
+
+FTM_RET	FTNM_NODE_EP_getAt(FTNM_NODE_PTR pNode, FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP)
+{
+	ASSERT((pNode != NULL) && (ppEP != NULL));
+
+	return	FTM_LIST_getAt(&pNode->xEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
 FTM_RET	FTNM_NODE_run(FTNM_NODE_PTR pNode)

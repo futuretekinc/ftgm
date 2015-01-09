@@ -1,13 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
-#include "ftm_error.h"
-#include "ftm_debug.h"
+#include "ftnm.h"
 #include "ftm_list.h"
 #include "ftnm_ep.h"
 
 static FTM_LIST	xEPList;
 
-FTM_INT	FTNM_EP_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+FTM_INT	FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+FTM_INT	FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2);
 
 FTM_RET	FTNM_EP_init(FTM_VOID)
 {
@@ -19,7 +19,8 @@ FTM_RET	FTNM_EP_init(FTM_VOID)
 		return	nRet;	
 	}
 
-	FTM_LIST_setSeeker(&xEPList, FTNM_EP_seek);
+	FTM_LIST_setSeeker(&xEPList, FTNM_EP_seeker);
+	FTM_LIST_setComparator(&xEPList, FTNM_EP_comparator);
 
 	return	nRet;
 }
@@ -44,8 +45,10 @@ FTM_RET	FTNM_EP_create(FTM_EP_INFO_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
 
 	ASSERT((pInfo != NULL) && (ppEP != NULL));
 
-	pNewEP = (FTNM_EP_PTR)calloc(1, sizeof(FTNM_EP));
+	pNewEP = (FTNM_EP_PTR)FTM_MEM_calloc(1, sizeof(FTNM_EP));
 	memcpy(&pNewEP->xInfo, pInfo, sizeof(FTM_EP_INFO));
+
+	FTM_LIST_append(&xEPList, pNewEP);
 
 	*ppEP = pNewEP;
 
@@ -57,10 +60,10 @@ FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)
 	FTM_RET	nRet;
 	
 	ASSERT(pEP != NULL);
-	nRet = FTM_LIST_remove(&xEPList, (FTM_VOID_PTR)&pEP->xInfo.xEPID);
+	nRet = FTM_LIST_remove(&xEPList, pEP);
 	if (nRet == FTM_RET_OK)
 	{
-		free(pEP);	
+		FTM_MEM_free(pEP);	
 	}
 
 	return	nRet;
@@ -75,7 +78,7 @@ FTM_RET	FTNM_EP_setNode(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode)
 	return	FTM_RET_OK;
 }
 
-FTM_INT	FTNM_EP_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+FTM_INT	FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
 {
 	FTNM_EP_PTR		pEP = (FTNM_EP_PTR)pElement;
 	FTM_EPID_PTR	pEPID=(FTM_EPID_PTR)pIndicator;
@@ -86,4 +89,13 @@ FTM_INT	FTNM_EP_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
 	}
 
 	return	(pEP->xInfo.xEPID == *pEPID);
+}
+
+FTM_INT	FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2)
+{
+	FTNM_EP_PTR		pEP1 = (FTNM_EP_PTR)pElement1;
+	FTNM_EP_PTR		pEP2 = (FTNM_EP_PTR)pElement2;
+	
+	TRACE("pEP1 = %08lx, pEP2 = %08lx\n", pEP1->xInfo.xEPID, pEP2->xInfo.xEPID);
+	return	(pEP1->xInfo.xEPID - pEP2->xInfo.xEPID);
 }

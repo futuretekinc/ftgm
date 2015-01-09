@@ -151,7 +151,7 @@ FTM_INT	FTNM_snmpClientAsyncResponse
 						pOID->pValue = NULL;
 					}
 
-					pOID->pValue = (FTM_BYTE_PTR)calloc(nLen, 1);
+					pOID->pValue = (FTM_BYTE_PTR)FTM_MEM_calloc(nLen, 1);
 
 					pVariableList = pRespPDU->variables;
 					while (pVariableList) 

@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include "ftnm.h"
+#include "ftm_mem.h"
 #include "ftm_debug.h"
 #include "ftm_console.h"
 #include "ftnm_config.h"
@@ -39,6 +40,8 @@ int main(int nArgc, char *pArgv[])
 	FTM_CHAR			pConfigFileName[1024];
 	FTM_BOOL			bDaemon = FTM_BOOL_FALSE;
 	FTM_CONSOLE_CMD_PTR	pConsoleCmd;
+
+	FTM_MEM_init();
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
@@ -82,6 +85,8 @@ int main(int nArgc, char *pArgv[])
 	FTNM_final(&xContext);
 	FTNM_CFG_final(&xConfig);
 
+	FTM_MEM_final();
+
 	return	0;
 }
 
@@ -92,14 +97,27 @@ FTM_RET	FTM_CONSOLE_cmdList
 )
 {
 	FTNM_NODE_PTR	pNode;
-	FTM_ULONG		i, ulCount;
+	FTM_ULONG		i, ulNodeCount;
 
-	FTNM_NODE_count(&ulCount);
-	for(i = 0 ; i < ulCount ; i++)
+	FTNM_NODE_count(&ulNodeCount);
+	for(i = 0 ; i < ulNodeCount ; i++)
 	{
+		FTM_ULONG	j, ulEPCount;
+
 		FTNM_NODE_getAt(i, &pNode);
 		TRACE("DID = %s\n", pNode->xInfo.pDID);
 		TRACE("STATE = %08lx\n", pNode->xState);
+
+		FTNM_NODE_EP_count(pNode, &ulEPCount);
+		for(j = 0; j < ulEPCount ; j++)
+		{
+			FTNM_EP_PTR	pEP;
+
+			if (FTNM_NODE_EP_getAt(pNode, j, &pEP) == FTM_RET_OK)
+			{
+				TRACE("EPID = %08lx\n", pEP->xInfo.xEPID);
+			}
+		}
 	}
 	
 	return	FTM_RET_OK;

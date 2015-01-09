@@ -178,6 +178,7 @@ FTM_RET	FTNM_DMC_taskSync(FTNM_CONTEXT_PTR pContext)
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
+		FTNM_NODE_PTR	pNode;
 		FTM_EP_INFO	xEPInfo;
 		FTNM_EP_PTR	pEP;
 
@@ -196,8 +197,12 @@ FTM_RET	FTNM_DMC_taskSync(FTNM_CONTEXT_PTR pContext)
 			continue;	
 		}
 
+		if (FTNM_NODE_get(xEPInfo.pDID, &pNode) == FTM_RET_OK)
+		{
+			FTNM_NODE_linkEP(pNode, pEP);
+		}
+		
 		TRACE("EP[%08lx] creating success.\n", pEP->xInfo.xEPID);
-			
 	}
 
 
