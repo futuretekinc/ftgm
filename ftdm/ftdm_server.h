@@ -1,7 +1,22 @@
 #ifndef	__FTDM_SERVER_H__
 #define	__FTDM_SERVER_H__
 
-FTM_RET	FTDMS_service
+typedef	FTM_RET	(*FTDM_SERVICE_CALLBACK)(FTDM_REQ_PARAMS_PTR, FTDM_RESP_PARAMS_PTR);
+
+typedef struct
+{
+	FTDM_CMD				xCmd;
+	FTM_CHAR_PTR			pCmdString;
+	FTDM_SERVICE_CALLBACK	fService;
+}	FTDMS_CMD_SET, _PTR_ FTDMS_CMD_SET_PTR;
+
+FTM_RET	FTDMS_run
+(
+	FTDM_CFG_SERVER_PTR 	pConfig,
+	pthread_t 				*pPThread 
+);
+
+FTM_RET	FTDMS_serviceCall
 (
 	FTDM_REQ_PARAMS_PTR		pReq,
 	FTDM_RESP_PARAMS_PTR	pResp
