@@ -176,7 +176,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pContext)
 
 	ASSERT(pContext != NULL);
 
-	nRet = FTDMC_getNodeInfoCount(&pContext->xDMC.xSession, &ulCount);
+	nRet = FTDMC_NODE_INFO_count(&pContext->xDMC.xSession, &ulCount);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -187,10 +187,10 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pContext)
 		FTM_NODE_INFO	xNodeInfo;
 		FTNM_NODE_PTR	pNode;
 
-		nRet = FTDMC_getNodeInfoByIndex(&pContext->xDMC.xSession, i, &xNodeInfo);	
+		nRet = FTDMC_NODE_INFO_getAt(&pContext->xDMC.xSession, i, &xNodeInfo);	
 		if (nRet != FTM_RET_OK)
 		{
-			ERROR("FTDMC_getNodeInfoByIndex(%08lx, %d, &xNodeInfo) = %08lx\n",
+			ERROR("FTDMC_NODE_INFO_getAt(%08lx, %d, &xNodeInfo) = %08lx\n",
 					pContext->xDMC.xSession.hSock, i, nRet);
 			continue;	
 		}
@@ -205,7 +205,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pContext)
 		TRACE("Node[%s] creating success.\n", pNode->xInfo.pDID);
 	}
 
-	nRet = FTDMC_getEPClassInfoCount(&pContext->xDMC.xSession, &ulCount);
+	nRet = FTDMC_EP_CLASS_INFO_count(&pContext->xDMC.xSession, &ulCount);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -215,10 +215,10 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pContext)
 	{
 		FTM_EP_CLASS_INFO	xEPClassInfo;
 
-		nRet = FTDMC_getEPClassInfoByIndex(&pContext->xDMC.xSession, i, &xEPClassInfo);
+		nRet = FTDMC_EP_CLASS_INFO_getAt(&pContext->xDMC.xSession, i, &xEPClassInfo);
 		if (nRet != FTM_RET_OK)
 		{
-			ERROR("FTDMC_getEPInfoByIndex(%08lx, %d, &xEPInfo) = %08lx\n",
+			ERROR("FTDMC_EP_CLASS_INFO_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
 					pContext->xDMC.xSession.hSock, i, nRet);
 			continue;
 		}
@@ -231,7 +231,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pContext)
 		}
 	}
 
-	nRet = FTDMC_getEPInfoCount(&pContext->xDMC.xSession, 0, &ulCount);
+	nRet = FTDMC_EP_INFO_count(&pContext->xDMC.xSession, 0, &ulCount);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -243,10 +243,10 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pContext)
 		FTM_EP_INFO	xEPInfo;
 		FTNM_EP_PTR	pEP;
 
-		nRet = FTDMC_getEPInfoByIndex(&pContext->xDMC.xSession, i, &xEPInfo);
+		nRet = FTDMC_EP_INFO_getAt(&pContext->xDMC.xSession, i, &xEPInfo);
 		if (nRet != FTM_RET_OK)
 		{
-			ERROR("FTDMC_getEPInfoByIndex(%08lx, %d, &xEPInfo) = %08lx\n",
+			ERROR("FTDMC_EP_INFO_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
 					pContext->xDMC.xSession.hSock, i, nRet);
 			continue;
 		}
@@ -298,7 +298,7 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pContext)
 
 FTM_RET	FTNM_DMC_setEPData(FTNM_EP_PTR pEP)
 {
-	return	FTDMC_appendEPData(&xContext.xDMC.xSession, pEP->xInfo.xEPID, &pEP->xData);
+	return	FTDMC_EP_DATA_append(&xContext.xDMC.xSession, pEP->xInfo.xEPID, &pEP->xData);
 }
 
 FTM_RET FTNM_DMC_setEPDataINT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
@@ -309,7 +309,7 @@ FTM_RET FTNM_DMC_setEPDataINT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
 	xEPData.xType = FTM_EP_DATA_TYPE_INT;
 	xEPData.xValue.nValue = nValue;
 
-	return FTDMC_appendEPData(&xContext.xDMC.xSession, xEPID, &xEPData);
+	return FTDMC_EP_DATA_append(&xContext.xDMC.xSession, xEPID, &xEPData);
 }
 
 FTM_RET FTNM_DMC_setEPDataULONG(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue)
@@ -320,7 +320,7 @@ FTM_RET FTNM_DMC_setEPDataULONG(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_ULONG ulVa
 	xEPData.xType = FTM_EP_DATA_TYPE_ULONG;
 	xEPData.xValue.ulValue = ulValue;
 
-	return FTDMC_appendEPData(&xContext.xDMC.xSession, xEPID, &xEPData);
+	return FTDMC_EP_DATA_append(&xContext.xDMC.xSession, xEPID, &xEPData);
 }
 
 FTM_RET FTNM_DMC_setEPDataFLOAT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue)
@@ -331,5 +331,5 @@ FTM_RET FTNM_DMC_setEPDataFLOAT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fVa
 	xEPData.xType = FTM_EP_DATA_TYPE_FLOAT;
 	xEPData.xValue.fValue = fValue;
 
-	return FTDMC_appendEPData(&xContext.xDMC.xSession, xEPID, &xEPData);
+	return FTDMC_EP_DATA_append(&xContext.xDMC.xSession, xEPID, &xEPData);
 }

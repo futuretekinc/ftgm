@@ -19,7 +19,7 @@ static FTM_RET FTDMC_request
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_init(FTDM_CFG_CLIENT_PTR pConfig)
+FTM_RET	FTDMC_init(FTDMC_CFG_PTR pConfig)
 {
 	FTM_initEPTypeString();
 
@@ -118,7 +118,7 @@ FTM_RET FTDMC_isConnected
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET FTDMC_appendNodeInfo
+FTM_RET FTDMC_NODE_INFO_append
 (
  	FTDMC_SESSION_PTR		pSession,
 	FTM_NODE_INFO_PTR		pInfo
@@ -161,7 +161,7 @@ FTM_RET FTDMC_appendNodeInfo
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET FTDMC_removeNodeInfo
+FTM_RET FTDMC_NODE_INFO_remove
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_CHAR_PTR			pDID
@@ -204,7 +204,7 @@ FTM_RET FTDMC_removeNodeInfo
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET FTDMC_getNodeInfoCount
+FTM_RET FTDMC_NODE_INFO_count
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pnCount
@@ -250,7 +250,7 @@ FTM_RET FTDMC_getNodeInfoCount
 
 
 
-FTM_RET FTDMC_getNodeInfoByIndex
+FTM_RET FTDMC_NODE_INFO_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				nIndex,
@@ -294,7 +294,7 @@ FTM_RET FTDMC_getNodeInfoByIndex
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET FTDMC_getNodeInfo
+FTM_RET FTDMC_NODE_INFO_get
 (
  	FTDMC_SESSION_PTR		pSession,
 	FTM_CHAR_PTR			pDID,
@@ -343,7 +343,7 @@ FTM_RET FTDMC_getNodeInfo
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_appendEPInfo
+FTM_RET	FTDMC_EP_INFO_append
 (
 	FTDMC_SESSION_PTR	pSession,
 	FTM_EP_INFO_PTR		pInfo
@@ -384,7 +384,7 @@ FTM_RET	FTDMC_appendEPInfo
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_removeEPInfo
+FTM_RET	FTDMC_EP_INFO_remove
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID
@@ -420,7 +420,7 @@ FTM_RET	FTDMC_removeEPInfo
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_getEPInfoCount
+FTM_RET	FTDMC_EP_INFO_count
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EP_CLASS			xClass,
@@ -467,7 +467,7 @@ FTM_RET	FTDMC_getEPInfoCount
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_getEPInfo
+FTM_RET	FTDMC_EP_INFO_get
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
@@ -513,7 +513,7 @@ FTM_RET	FTDMC_getEPInfo
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_getEPInfoByIndex
+FTM_RET	FTDMC_EP_INFO_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				nIndex,
@@ -560,7 +560,7 @@ FTM_RET	FTDMC_getEPInfoByIndex
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_getEPClassInfoCount
+FTM_RET	FTDMC_EP_CLASS_INFO_count
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pnCount
@@ -605,7 +605,7 @@ FTM_RET	FTDMC_getEPClassInfoCount
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_getEPClassInfo
+FTM_RET	FTDMC_EP_CLASS_INFO_get
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EP_CLASS			xEPClass,
@@ -651,7 +651,7 @@ FTM_RET	FTDMC_getEPClassInfo
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_getEPClassInfoByIndex
+FTM_RET	FTDMC_EP_CLASS_INFO_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				nIndex,
@@ -698,7 +698,7 @@ FTM_RET	FTDMC_getEPClassInfoByIndex
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_appendEPData
+FTM_RET	FTDMC_EP_DATA_append
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
@@ -736,7 +736,7 @@ FTM_RET	FTDMC_appendEPData
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_getEPData
+FTM_RET	FTDMC_EP_DATA_get
 (
 	FTDMC_SESSION_PTR	pSession,
 	FTM_EPID			xEPID,
@@ -804,7 +804,7 @@ FTM_RET	FTDMC_getEPData
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_getEPDataWithTime
+FTM_RET	FTDMC_EP_DATA_getWithTime
 (
 	FTDMC_SESSION_PTR	pSession,
 	FTM_EPID			xEPID,
@@ -874,7 +874,7 @@ FTM_RET	FTDMC_getEPDataWithTime
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_removeEPData
+FTM_RET	FTDMC_EP_DATA_remove
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
@@ -914,7 +914,7 @@ FTM_RET	FTDMC_removeEPData
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_removeEPDataWithTime
+FTM_RET	FTDMC_EP_DATA_removeWithTime
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
@@ -951,7 +951,7 @@ FTM_RET	FTDMC_removeEPDataWithTime
 	return	xResp.nRet;
 }
 
-FTM_RET	FTDMC_getEPDataCount
+FTM_RET	FTDMC_EP_DATA_count
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,
@@ -990,7 +990,7 @@ FTM_RET	FTDMC_getEPDataCount
 	return	xResp.nRet;
 }
 
-FTM_RET	FTDMC_getEPDataCountWithTime
+FTM_RET	FTDMC_EP_DATA_countWithTime
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,

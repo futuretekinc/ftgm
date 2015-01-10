@@ -66,19 +66,19 @@ static FTM_RET	CFG_DBFileNameGet(config_t *pConfig, FTM_CHAR_PTR pBuff, FTM_ULON
 
 static FTM_RET	CFG_serverInfoGet(config_t *pConfig, FTM_SERVER_INFO_PTR pInfo);
 
-static FTM_RET	CFG_nodeInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount);
-static FTM_RET	CFG_nodeInfoGetAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_NODE_INFO_PTR pInfo);
-static int		CFG_nodeInfoSeeker(const void *pItem, const void *pKey);
+static FTM_RET	CFG_NODE_INFO_count(config_t *pConfig, FTM_ULONG_PTR pCount);
+static FTM_RET	CFG_NODE_INFO_getAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_NODE_INFO_PTR pInfo);
+static int		CFG_NODE_INFO_seeker(const void *pItem, const void *pKey);
 
 //static FTM_RET	getEPInfo(config_t *pConfig, FTM_EP_INFO_PTR pInfo);
-static FTM_RET	CFG_EPInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount);
-static FTM_RET	CFG_EPInfoGetAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR pInfo);
-static int		CFG_EPInfoSeeker(const void *pItem, const void *pKey);
+static FTM_RET	CFG_EP_INFO_count(config_t *pConfig, FTM_ULONG_PTR pCount);
+static FTM_RET	CFG_EP_INFO_getAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR pInfo);
+static int		CFG_EP_INFO_seeker(const void *pItem, const void *pKey);
 
-static FTM_RET	CFG_EPClassInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount);
-static FTM_RET	CFG_EPClassInfoGet(config_t *pConfig, FTM_EP_CLASS xClass, FTM_EP_CLASS_INFO_PTR pInfo);
-static FTM_RET	CFG_EPClassInfoGetAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS_INFO_PTR pInfo);
-static int		CFG_EPClassInfoSeeker(const void *pItem, const void *pKey);
+static FTM_RET	CFG_EP_CLASS_INFO_count(config_t *pConfig, FTM_ULONG_PTR pCount);
+static FTM_RET	CFG_EP_CLASS_INFO_get(config_t *pConfig, FTM_EP_CLASS xClass, FTM_EP_CLASS_INFO_PTR pInfo);
+static FTM_RET	CFG_EP_CLASS_INFO_getAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS_INFO_PTR pInfo);
+static int		CFG_EP_CLASS_INFO_seeker(const void *pItem, const void *pKey);
 
 static FTM_CHAR_PTR	CFG_nodeTypeString(FTM_ULONG ulType);
 static FTM_CHAR_PTR	CFG_EPTypeString(FTM_ULONG ulType);
@@ -94,13 +94,13 @@ FTM_RET FTDM_CFG_init(FTDM_CFG_PTR pConfig)
 	memset(pConfig, 0, sizeof(FTDM_CFG));
 
 	list_init(&pConfig->xNode.xList);
-	list_attributes_seeker(&pConfig->xNode.xList, CFG_nodeInfoSeeker);
+	list_attributes_seeker(&pConfig->xNode.xList, CFG_NODE_INFO_seeker);
 
 	list_init(&pConfig->xEP.xList);
-	list_attributes_seeker(&pConfig->xEP.xList, CFG_EPInfoSeeker);
+	list_attributes_seeker(&pConfig->xEP.xList, CFG_EP_INFO_seeker);
 
 	list_init(&pConfig->xEP.xClassList);
-	list_attributes_seeker(&pConfig->xEP.xClassList, CFG_EPClassInfoSeeker);
+	list_attributes_seeker(&pConfig->xEP.xClassList, CFG_EP_CLASS_INFO_seeker);
 	return	FTM_RET_OK;
 }
 
@@ -167,7 +167,7 @@ FTM_RET	FTDM_CFG_load(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 	}
 
 
-	if (CFG_nodeInfoCount(&xConfig, &ulCount) == FTM_RET_OK)
+	if (CFG_NODE_INFO_count(&xConfig, &ulCount) == FTM_RET_OK)
 	{
 		FTM_ULONG		i;
 		FTM_NODE_INFO	xInfo;
@@ -175,12 +175,12 @@ FTM_RET	FTDM_CFG_load(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		for( i = 0 ; i < ulCount ; i++)
 		{
 			memset(&xInfo, 0, sizeof(xInfo));
-			CFG_nodeInfoGetAt(&xConfig, i, &xInfo);
-			FTDM_CFG_nodeInfoAppend(&pConfig->xNode, &xInfo);
+			CFG_NODE_INFO_getAt(&xConfig, i, &xInfo);
+			FTDM_CFG_NODE_INFO_append(&pConfig->xNode, &xInfo);
 		}
 	}
 
-	if (CFG_EPInfoCount(&xConfig, &ulCount) == FTM_RET_OK)
+	if (CFG_EP_INFO_count(&xConfig, &ulCount) == FTM_RET_OK)
 	{
 		FTM_ULONG		i;
 		FTM_EP_INFO	xInfo;
@@ -188,12 +188,12 @@ FTM_RET	FTDM_CFG_load(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		for( i = 0 ; i < ulCount ; i++)
 		{
 			memset(&xInfo, 0, sizeof(xInfo));
-			CFG_EPInfoGetAt(&xConfig, i, &xInfo);
-			FTDM_CFG_EPInfoAppend(&pConfig->xEP, &xInfo);
+			CFG_EP_INFO_getAt(&xConfig, i, &xInfo);
+			FTDM_CFG_EP_INFO_append(&pConfig->xEP, &xInfo);
 		}
 	}
 
-	if (CFG_EPClassInfoCount(&xConfig, &ulCount) == FTM_RET_OK)
+	if (CFG_EP_CLASS_INFO_count(&xConfig, &ulCount) == FTM_RET_OK)
 	{
 		FTM_ULONG			i;
 		FTM_EP_CLASS_INFO	xInfo;
@@ -201,8 +201,8 @@ FTM_RET	FTDM_CFG_load(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		TRACE("EP Class : %d\n", ulCount);
 		for( i = 0 ; i < ulCount ; i++)
 		{
-			CFG_EPClassInfoGetAt(&xConfig, i, &xInfo);
-			FTDM_CFG_EPClassInfoAppend(&pConfig->xEP, &xInfo);
+			CFG_EP_CLASS_INFO_getAt(&xConfig, i, &xInfo);
+			FTDM_CFG_EP_CLASS_INFO_append(&pConfig->xEP, &xInfo);
 		}
 
 	}
@@ -225,13 +225,13 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 	MESSAGE("\n[ NODE ]\n");
 	MESSAGE("\t%-16s %-16s %-16s %-8s %-8s %-16s %-16s %-16s %-16s\n",
 			"DID", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT", "OPT0", "OPT1", "OPT2", "OPT3");
-	if (FTDM_CFG_nodeInfoCount(&pConfig->xNode, &ulCount) == FTM_RET_OK)
+	if (FTDM_CFG_NODE_INFO_count(&pConfig->xNode, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
 		{
 			FTM_NODE_INFO	xNodeInfo;
 
-			FTDM_CFG_nodeInfoGetAt(&pConfig->xNode, i, &xNodeInfo);
+			FTDM_CFG_NODE_INFO_getAt(&pConfig->xNode, i, &xNodeInfo);
 			MESSAGE("\t%-16s %-16s %-16s %-8d %-8d %-16s %-16s %-16s %-16s\n",
 				xNodeInfo.pDID,
 				CFG_nodeTypeString(xNodeInfo.xType),
@@ -249,13 +249,13 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 	MESSAGE("# PRE-REGISTERED ENDPOINT\n");
 	MESSAGE("\t%-08s %-16s %-16s %-8s %-8s %-16s %-08s %-16s %-08s\n",
 			"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID");
-	if (FTDM_CFG_EPInfoCount(&pConfig->xEP, &ulCount) == FTM_RET_OK)
+	if (FTDM_CFG_EP_INFO_count(&pConfig->xEP, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
 		{
 			FTM_EP_INFO	xEPInfo;
 
-			FTDM_CFG_EPInfoGetAt(&pConfig->xEP, i, &xEPInfo);
+			FTDM_CFG_EP_INFO_getAt(&pConfig->xEP, i, &xEPInfo);
 			MESSAGE("\t%08lx %-16s %-16s %-8s %-8lu %-8lu %-16s %08lx %-16s %08lx\n",
 				xEPInfo.xEPID,
 				CFG_EPTypeString(xEPInfo.xType),
@@ -274,13 +274,13 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 	MESSAGE("\n#CLASS INFORMATION\n");
 	MESSAGE("\t%-08s %-16s %-16s %-16s %-16s %-16s %-16s %-16s\n",
 			"CLASS", "ID", "TYPE", "NAME", "S/N", "STATE", "VALUE", "TIME");
-	if (FTDM_CFG_EPClassInfoCount(&pConfig->xEP, &ulCount) == FTM_RET_OK)
+	if (FTDM_CFG_EP_CLASS_INFO_count(&pConfig->xEP, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
 		{
 			FTM_EP_CLASS_INFO	xEPClassInfo;
 
-			FTDM_CFG_EPClassInfoGetAt(&pConfig->xEP, i, &xEPClassInfo);
+			FTDM_CFG_EP_CLASS_INFO_getAt(&pConfig->xEP, i, &xEPClassInfo);
 			MESSAGE("\t%08lx %-16s %-16s %-16s %-16s %-16s %-16s %-16s\n",
 				xEPClassInfo.xClass, 
 				xEPClassInfo.xOIDs.pID,
@@ -328,7 +328,7 @@ FTM_RET	FTDM_CFG_setServer(FTDM_CFG_PTR pConfig, FTM_SERVER_INFO_PTR pInfo)
 /************************************************************************
  * Node Configuraton
  ************************************************************************/
-FTM_RET	FTDM_CFG_nodeInfoAppend(FTDM_CFG_NODE_PTR pConfig, FTM_NODE_INFO_PTR pInfo)
+FTM_RET	FTDM_CFG_NODE_INFO_append(FTDM_CFG_NODE_PTR pConfig, FTM_NODE_INFO_PTR pInfo)
 {
 	FTM_NODE_INFO_PTR	pNewInfo;
 
@@ -347,7 +347,7 @@ FTM_RET	FTDM_CFG_nodeInfoAppend(FTDM_CFG_NODE_PTR pConfig, FTM_NODE_INFO_PTR pIn
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDM_CFG_nodeInfoCount(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG_PTR pCount)
+FTM_RET FTDM_CFG_NODE_INFO_count(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG_PTR pCount)
 {
 	ASSERT((pConfig != NULL) && (pCount != NULL));
 
@@ -356,7 +356,7 @@ FTM_RET FTDM_CFG_nodeInfoCount(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG_PTR pCount)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_CFG_nodeInfoGetAt(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG ulIndex, FTM_NODE_INFO_PTR pInfo)
+FTM_RET	FTDM_CFG_NODE_INFO_getAt(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG ulIndex, FTM_NODE_INFO_PTR pInfo)
 {
 	FTM_NODE_INFO_PTR	pNodeInfo;
 
@@ -376,7 +376,7 @@ FTM_RET	FTDM_CFG_nodeInfoGetAt(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG ulIndex, FTM
 /************************************************************************
  * EndPoint Configuraton
  ************************************************************************/
-FTM_RET	FTDM_CFG_EPInfoAppend(FTDM_CFG_EP_PTR pConfig, FTM_EP_INFO_PTR pInfo)
+FTM_RET	FTDM_CFG_EP_INFO_append(FTDM_CFG_EP_PTR pConfig, FTM_EP_INFO_PTR pInfo)
 {
 	FTM_EP_INFO_PTR	pNewInfo;
 
@@ -395,7 +395,7 @@ FTM_RET	FTDM_CFG_EPInfoAppend(FTDM_CFG_EP_PTR pConfig, FTM_EP_INFO_PTR pInfo)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDM_CFG_EPInfoCount(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCount)
+FTM_RET FTDM_CFG_EP_INFO_count(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCount)
 {
 	ASSERT((pConfig != NULL) && (pCount != NULL));
 
@@ -404,7 +404,7 @@ FTM_RET FTDM_CFG_EPInfoCount(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCount)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_CFG_EPInfoGetAt(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR pInfo)
+FTM_RET	FTDM_CFG_EP_INFO_getAt(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR pInfo)
 {
 	FTM_EP_INFO_PTR	pEPInfo;
 
@@ -424,7 +424,7 @@ FTM_RET	FTDM_CFG_EPInfoGetAt(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_EP_
 /************************************************************************
  * EndPoint Class Configuraton
  ************************************************************************/
-FTM_RET FTDM_CFG_EPClassInfoAppend(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS_INFO_PTR pInfo)
+FTM_RET FTDM_CFG_EP_CLASS_INFO_append(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS_INFO_PTR pInfo)
 {
 	FTM_EP_CLASS_INFO_PTR	pNewInfo;	
 	
@@ -443,7 +443,7 @@ FTM_RET FTDM_CFG_EPClassInfoAppend(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS_INFO_PT
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDM_CFG_EPClassInfoCount(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCount)
+FTM_RET FTDM_CFG_EP_CLASS_INFO_count(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCount)
 {
 	ASSERT((pConfig != NULL) && (pCount != NULL));
 
@@ -452,14 +452,14 @@ FTM_RET FTDM_CFG_EPClassInfoCount(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCount)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDM_CFG_EPClassInfoGet(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS xClass, FTM_EP_CLASS_INFO_PTR pInfo)
+FTM_RET FTDM_CFG_EP_CLASS_INFO_get(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS xClass, FTM_EP_CLASS_INFO_PTR pInfo)
 {
 	ASSERT((pConfig != NULL) && (pInfo != NULL));
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDM_CFG_EPClassInfoGetAt(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS_INFO_PTR pInfo)
+FTM_RET FTDM_CFG_EP_CLASS_INFO_getAt(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS_INFO_PTR pInfo)
 {
 	FTM_EP_CLASS_INFO_PTR	pEPClassInfo;
 
@@ -548,7 +548,7 @@ FTM_RET	CFG_serverInfoGet(config_t *pConfig, FTM_SERVER_INFO_PTR pInfo)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	CFG_nodeInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount)
+FTM_RET	CFG_NODE_INFO_count(config_t *pConfig, FTM_ULONG_PTR pCount)
 {
 	config_setting_t *pSection;
 	config_setting_t *pField;
@@ -582,7 +582,7 @@ FTM_RET	CFG_nodeInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	CFG_nodeInfoGetAt(config_t *pConfig, FTM_ULONG ulIndex,  FTM_NODE_INFO_PTR pInfo)
+FTM_RET	CFG_NODE_INFO_getAt(config_t *pConfig, FTM_ULONG ulIndex,  FTM_NODE_INFO_PTR pInfo)
 {
 	config_setting_t *pSection;
 	config_setting_t *pDefault;
@@ -692,7 +692,7 @@ FTM_RET	CFG_nodeInfoGetAt(config_t *pConfig, FTM_ULONG ulIndex,  FTM_NODE_INFO_P
 	return	FTM_RET_OK;
 }
 
-int	CFG_nodeInfoSeeker(const void *pItem, const void *pKey)
+int	CFG_NODE_INFO_seeker(const void *pItem, const void *pKey)
 {
 	FTM_NODE_INFO_PTR	pInfo = (FTM_NODE_INFO_PTR)pItem;
 	FTM_CHAR_PTR		pDID = (FTM_CHAR_PTR)pKey;
@@ -704,7 +704,7 @@ int	CFG_nodeInfoSeeker(const void *pItem, const void *pKey)
  *
  ****************************************************************************/
 
-FTM_RET	CFG_EPInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount)
+FTM_RET	CFG_EP_INFO_count(config_t *pConfig, FTM_ULONG_PTR pCount)
 {
 	config_setting_t *pSection;
 	config_setting_t *pField;
@@ -738,7 +738,7 @@ FTM_RET	CFG_EPInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	CFG_EPInfoGetAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR pInfo)
+FTM_RET	CFG_EP_INFO_getAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR pInfo)
 {
 	config_setting_t *pSection;
 	config_setting_t *pDefault;
@@ -838,7 +838,7 @@ FTM_RET	CFG_EPInfoGetAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR pI
 	return	FTM_RET_OK;
 }
 
-FTM_RET	CFG_EPClassInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount)
+FTM_RET	CFG_EP_CLASS_INFO_count(config_t *pConfig, FTM_ULONG_PTR pCount)
 {
 	config_setting_t *pSection;
 	config_setting_t *pField;
@@ -873,7 +873,7 @@ FTM_RET	CFG_EPClassInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	CFG_EPClassInfoGet(config_t *pConfig, FTM_EP_CLASS xClass, FTM_EP_CLASS_INFO_PTR pInfo)
+FTM_RET	CFG_EP_CLASS_INFO_get(config_t *pConfig, FTM_EP_CLASS xClass, FTM_EP_CLASS_INFO_PTR pInfo)
 {
 	config_setting_t *pSection;
 	config_setting_t *pItemArray;
@@ -956,7 +956,7 @@ FTM_RET	CFG_EPClassInfoGet(config_t *pConfig, FTM_EP_CLASS xClass, FTM_EP_CLASS_
 	return	FTM_RET_OK;
 }
 
-FTM_RET	CFG_EPClassInfoGetAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS_INFO_PTR pInfo)
+FTM_RET	CFG_EP_CLASS_INFO_getAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS_INFO_PTR pInfo)
 {
 	config_setting_t *pSection;
 	config_setting_t *pItemArray;
@@ -1031,7 +1031,7 @@ FTM_RET	CFG_EPClassInfoGetAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS_
 	return	FTM_RET_OK;
 }
 
-int	CFG_EPInfoSeeker(const void *pItem, const void *pKey)
+int	CFG_EP_INFO_seeker(const void *pItem, const void *pKey)
 {
 	FTM_EP_INFO_PTR	pInfo = (FTM_EP_INFO_PTR)pItem;
 	FTM_EPID_PTR	pEPID = (FTM_EPID_PTR)pKey;
@@ -1039,7 +1039,7 @@ int	CFG_EPInfoSeeker(const void *pItem, const void *pKey)
 	return	(pInfo->xEPID == *pEPID);
 }
 
-int	CFG_EPClassInfoSeeker(const void *pItem, const void *pKey)
+int	CFG_EP_CLASS_INFO_seeker(const void *pItem, const void *pKey)
 {
 	FTM_EP_CLASS_INFO_PTR	pInfo = (FTM_EP_CLASS_INFO_PTR)pItem;
 	FTM_EP_CLASS_PTR		pClass= (FTM_EP_CLASS_PTR)pKey;

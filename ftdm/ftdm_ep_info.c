@@ -85,7 +85,7 @@ FTM_RET	FTDM_EP_INFO_init
 		free(pEPInfos);
 	}
 
-	if (FTDM_CFG_EPInfoCount(pConfig, &nMaxEPCount) == FTM_RET_OK)
+	if (FTDM_CFG_EP_INFO_count(pConfig, &nMaxEPCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
 
@@ -93,7 +93,7 @@ FTM_RET	FTDM_EP_INFO_init
 		{
 			FTM_EP_INFO	xEPInfo;
 
-			if (FTDM_CFG_EPInfoGetAt(pConfig, i, &xEPInfo) == FTM_RET_OK)
+			if (FTDM_CFG_EP_INFO_getAt(pConfig, i, &xEPInfo) == FTM_RET_OK)
 			{
 				FTM_BOOL	bExist;
 

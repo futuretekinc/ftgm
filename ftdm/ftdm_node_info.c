@@ -6,7 +6,7 @@
 #include "ftdm_sqlite.h"
 #include "simclist.h"
 
-static int FTDM_nodeSeeker
+static int FTDM_NODE_INFO_seeker
 (
 	const void *pElement, 
 	const void *pKey
@@ -44,7 +44,7 @@ FTM_RET	FTDM_NODE_INFO_init
 	FTM_ULONG	nMaxNodeCount = 0;
 
 	list_init(&xNodeList);
-	list_attributes_seeker(&xNodeList, FTDM_nodeSeeker);
+	list_attributes_seeker(&xNodeList, FTDM_NODE_INFO_seeker);
 
 	if ((FTDM_DBIF_NODE_INFO_count(&nMaxNodeCount) == FTM_RET_OK) &&
 		(nMaxNodeCount > 0))
@@ -82,7 +82,7 @@ FTM_RET	FTDM_NODE_INFO_init
 		free(pNodeInfos);
 	}
 
-	if (FTDM_CFG_nodeInfoCount(pConfig, &nMaxNodeCount) == FTM_RET_OK)
+	if (FTDM_CFG_NODE_INFO_count(pConfig, &nMaxNodeCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
 
@@ -90,7 +90,7 @@ FTM_RET	FTDM_NODE_INFO_init
 		{
 			FTM_NODE_INFO	xNodeInfo;
 
-			if (FTDM_CFG_nodeInfoGetAt(pConfig, i, &xNodeInfo) == FTM_RET_OK)
+			if (FTDM_CFG_NODE_INFO_getAt(pConfig, i, &xNodeInfo) == FTM_RET_OK)
 			{
 				FTM_BOOL	bExist;
 
@@ -247,7 +247,7 @@ FTM_RET FTDM_NODE_INFO_isExist
 	return	FTDM_NODE_INFO_CACHE_isExist(pDID, pExist);
 }
 
-int FTDM_nodeSeeker(const void *pElement, const void *pKey)
+int FTDM_NODE_INFO_seeker(const void *pElement, const void *pKey)
 {
 	FTM_NODE_INFO_PTR	pNodeInfo = (FTM_NODE_INFO_PTR)pElement;
 	FTM_CHAR_PTR		pDID = (FTM_CHAR_PTR)pKey;

@@ -6,29 +6,29 @@
 #include "ftdm_sqlite.h"
 #include "simclist.h"
 
-static FTM_RET	FTDM_LIST_insertEPClassInfo
+static FTM_RET	FTDM_EP_CLASS_INFO_LIST_append
 (
 	FTM_EP_CLASS_INFO_PTR	pEPClassInfo
 );
 
-static FTM_RET	FTDM_LIST_delEPClassInfo
+static FTM_RET	FTDM_EP_CLASS_INFO_LIST_del
 (
  	FTM_EP_CLASS_INFO_PTR	pEPClassInfo
 );
 
-static FTM_RET	FTDM_LIST_isExistEPClassInfo
+static FTM_RET	FTDM_EP_CLASS_INFO_LIST_isExist
 (
  	FTM_EP_CLASS			xClass,
 	FTM_BOOL_PTR			pExist
 );
 
-FTM_RET	FTDM_LIST_getEPClassInfo
+static FTM_RET	FTDM_EP_CLASS_INFO_LIST_get
 (
  	FTM_EP_CLASS				xClass,
 	FTM_EP_CLASS_INFO_PTR _PTR_	ppEPClassInfo
 );
 
-static FTM_INT	FTDM_EPSeeker
+static FTM_INT	FTDM_EP_CLASS_INFO_seeker
 (
 	const void *pElement, 
 	const void *pKey)
@@ -48,9 +48,9 @@ FTM_RET	FTDM_EP_CLASS_INFO_init
 		return	FTM_RET_INTERNAL_ERROR;	
 	}
 
-	list_attributes_seeker(&xEPClassInfoList, FTDM_EPSeeker);
+	list_attributes_seeker(&xEPClassInfoList, FTDM_EP_CLASS_INFO_seeker);
 
-	if (FTDM_CFG_EPClassInfoCount(pConfig, &nMaxEPCount) == FTM_RET_OK)
+	if (FTDM_CFG_EP_CLASS_INFO_count(pConfig, &nMaxEPCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
 
@@ -58,11 +58,11 @@ FTM_RET	FTDM_EP_CLASS_INFO_init
 		{
 			FTM_EP_CLASS_INFO	xEPClassInfo;
 
-			if (FTDM_CFG_EPClassInfoGetAt(pConfig, i, &xEPClassInfo) == FTM_RET_OK)
+			if (FTDM_CFG_EP_CLASS_INFO_getAt(pConfig, i, &xEPClassInfo) == FTM_RET_OK)
 			{
 				FTM_BOOL	bExist;
 
-				FTDM_LIST_isExistEPClassInfo(xEPClassInfo.xClass, &bExist);
+				FTDM_EP_CLASS_INFO_LIST_isExist(xEPClassInfo.xClass, &bExist);
 				if (!bExist)
 				{
 					FTDM_EP_CLASS_INFO_add(&xEPClassInfo);	
@@ -105,7 +105,7 @@ FTM_RET	FTDM_EP_CLASS_INFO_add
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	nRet = FTDM_LIST_getEPClassInfo(pEPClassInfo->xClass, &pTempInfo);
+	nRet = FTDM_EP_CLASS_INFO_LIST_get(pEPClassInfo->xClass, &pTempInfo);
 	if ((nRet == FTM_RET_OK) && (pTempInfo != NULL))
 	{
 		return	FTM_RET_ALREADY_EXIST_OBJECT;	
@@ -119,7 +119,7 @@ FTM_RET	FTDM_EP_CLASS_INFO_add
 
 	memcpy(pNewInfo, pEPClassInfo, sizeof(FTM_EP_CLASS_INFO));
 
-	nRet = FTDM_LIST_insertEPClassInfo(pNewInfo);
+	nRet = FTDM_EP_CLASS_INFO_LIST_append(pNewInfo);
 	
 	if (nRet != FTM_RET_OK)
 	{
@@ -138,13 +138,13 @@ FTM_RET	FTDM_EP_CLASS_INFO_del
 	FTM_RET	nRet;
 	FTM_EP_CLASS_INFO_PTR	pEPClassInfo = NULL;
 
-	nRet = FTDM_LIST_getEPClassInfo(xClass, &pEPClassInfo);
+	nRet = FTDM_EP_CLASS_INFO_LIST_get(xClass, &pEPClassInfo);
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_OBJECT_NOT_FOUND;	
 	}
 
-	FTDM_LIST_delEPClassInfo(pEPClassInfo);
+	FTDM_EP_CLASS_INFO_LIST_del(pEPClassInfo);
 	free(pEPClassInfo);
 
 	return	FTM_RET_OK;
@@ -174,7 +174,7 @@ FTM_RET	FTDM_EP_CLASS_INFO_get
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	nRet = FTDM_LIST_getEPClassInfo(xClass, &pItem);
+	nRet = FTDM_EP_CLASS_INFO_LIST_get(xClass, &pItem);
 	if (nRet == FTM_RET_OK)
 	{
 		memcpy(pEPClassInfo, pItem, sizeof(FTM_EP_CLASS_INFO));	
@@ -208,7 +208,7 @@ FTM_RET	FTDM_EP_CLASS_INFO_getAt
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
-FTM_INT	FTDM_EPSeeker(const void *pElement, const void *pKey)
+FTM_INT	FTDM_EP_CLASS_INFO_seeker(const void *pElement, const void *pKey)
 {
 	FTM_EP_CLASS_INFO_PTR	pEPClassInfo = (FTM_EP_CLASS_INFO_PTR)pElement;
 	FTM_EP_CLASS_PTR	pClass = (FTM_EP_CLASS_PTR)pKey;
@@ -221,7 +221,7 @@ FTM_INT	FTDM_EPSeeker(const void *pElement, const void *pKey)
 	return	0;
 }
 
-FTM_RET	FTDM_LIST_insertEPClassInfo
+FTM_RET	FTDM_EP_CLASS_INFO_LIST_append
 (
 	FTM_EP_CLASS_INFO_PTR	pEPClassInfo
 )
@@ -236,7 +236,7 @@ FTM_RET	FTDM_LIST_insertEPClassInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_LIST_delEPClassInfo
+FTM_RET	FTDM_EP_CLASS_INFO_LIST_del
 (
  	FTM_EP_CLASS_INFO_PTR	pEPClassInfo
 )
@@ -256,7 +256,7 @@ FTM_RET	FTDM_LIST_delEPClassInfo
 	}
 }
 
-FTM_RET	FTDM_LIST_getEPClassInfo
+FTM_RET	FTDM_EP_CLASS_INFO_LIST_get
 (
  	FTM_EP_CLASS				xClass,
 	FTM_EP_CLASS_INFO_PTR _PTR_	ppEPClassInfo
@@ -280,7 +280,7 @@ FTM_RET	FTDM_LIST_getEPClassInfo
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
-FTM_RET	FTDM_LIST_isExistEPClassInfo
+FTM_RET	FTDM_EP_CLASS_INFO_LIST_isExist
 (
  	FTM_EP_CLASS			xClass,
 	FTM_BOOL_PTR			pExist

@@ -19,7 +19,7 @@ typedef	struct
 typedef	struct
 {
 	FTNM_CFG_SERVER	xServer;	
-	FTDM_CFG_CLIENT	xClient;
+	FTDMC_CFG		xClient;
 	FTNM_CFG_SNMPC	xSNMPC;	
 }	FTNM_CFG, _PTR_ FTNM_CFG_PTR;
 

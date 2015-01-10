@@ -236,9 +236,9 @@ FTM_VOID_PTR FTNM_NODE_task(FTM_VOID_PTR pData)
 
 		case	FTNM_NODE_STATE_PROCESS_FINISHED:
 			{
-				struct	timespec	xTime;
 				int64_t				xCurrentTime;
 #if 0
+				struct	timespec	xTime;
 				if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
 				{
 					xCurrentTime = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
@@ -284,11 +284,11 @@ FTM_RET	FTNM_NODE_taskInit(FTNM_NODE_PTR pNode)
 
 FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode)
 {
-	struct timespec	xTime;
 
 	ASSERT(pNode != NULL);
 
 #if 0
+	struct timespec	xTime;
 	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
 	{
 		pNode->xTimeout = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
@@ -349,17 +349,11 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 	ASSERT(pNode != NULL);
 
 	//TRACE("Node[%s:%08lx] waiting for complete\n", pNode->xInfo.pDID, pNode->xState);
-	while(1)
+	while(FTNM_NODE_SNMPC_isRunning((FTNM_NODE_SNMPC_PTR)pNode) == FTM_BOOL_TRUE)
 	{
 		int64_t			xCurrentTime;
-		struct timespec	xTime;
-
-		if (FTNM_NODE_SNMPC_isRunning((FTNM_NODE_SNMPC_PTR)pNode) == FTM_BOOL_FALSE)
-		{
-			break;		
-		}
-
 #if 0
+		struct timespec	xTime;
 		if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
 		{
 			xCurrentTime = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	

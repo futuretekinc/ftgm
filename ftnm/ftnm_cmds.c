@@ -1,18 +1,30 @@
 #include "ftnm_cmds.h"
 #include "ftnm.h"
 
+FTM_RET	FTNM_CONSOLE_CMD_config
+(
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[]
+);
+
+FTM_RET	FTNM_CONSOLE_CMD_list
+(
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[]
+);
+
 FTM_CONSOLE_CMD	FTNM_xCmds[] = 
 {
 	{
 		.pString	= "config",
-		.function	= FTNM_CONSOLE_cmdConfig,
+		.function	= FTNM_CONSOLE_CMD_config,
 		.pShortHelp	= "Configuration Management",
 		.pHelp		= "\n"\
 					  "\tConfiguration Management.\n"
 	},
 	{
 		.pString	= "list",
-		.function	= FTNM_CONSOLE_cmdList,
+		.function	= FTNM_CONSOLE_CMD_list,
 		.pShortHelp	= "show object list.",
 		.pHelp		= "\n"\
 					  "\tShow object list.\n"
@@ -20,7 +32,8 @@ FTM_CONSOLE_CMD	FTNM_xCmds[] =
 };
 
 FTM_ULONG		FTNM_ulCmds = sizeof(FTNM_xCmds) / sizeof(FTM_CONSOLE_CMD);
-FTM_RET	FTNM_CONSOLE_cmdConfig
+
+FTM_RET	FTNM_CONSOLE_CMD_config
 (
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[]
@@ -36,7 +49,7 @@ FTM_RET	FTNM_CONSOLE_cmdConfig
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_CONSOLE_cmdList
+FTM_RET	FTNM_CONSOLE_CMD_list
 (
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[]
@@ -48,7 +61,7 @@ FTM_RET	FTNM_CONSOLE_cmdList
 	FTM_ULONG		j, ulEPCount;
 
 	MESSAGE("\n< NODE LIST >\n");
-	MESSAGE("%-16s %-8s %-16s\n", "DID", "STATE", "EPs");
+	MESSAGE("%-16s %-16s %-16s\n", "DID", "STATE", "EPs");
 	FTNM_NODE_count(&ulNodeCount);
 	for(i = 0 ; i < ulNodeCount ; i++)
 	{

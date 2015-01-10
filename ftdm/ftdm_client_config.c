@@ -6,7 +6,7 @@
 #include "ftm_debug.h"
 #include "ftm_error.h"
 
-FTM_RET	FTDMC_initConfig(FTDM_CFG_CLIENT_PTR pConfig)
+FTM_RET	FTDMC_CFG_init(FTDMC_CFG_PTR pConfig)
 {
 	if (pConfig == NULL)
 	{
@@ -19,7 +19,7 @@ FTM_RET	FTDMC_initConfig(FTDM_CFG_CLIENT_PTR pConfig)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_loadConfig(FTDM_CFG_CLIENT_PTR pConfig, FTM_CHAR_PTR pFileName)
+FTM_RET	FTDMC_CFG_load(FTDMC_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 {
 	config_t			xConfig;
 	config_setting_t	*pSection;
@@ -136,7 +136,7 @@ FTM_RET	FTDMC_loadConfig(FTDM_CFG_CLIENT_PTR pConfig, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDMC_finalConfig(FTDM_CFG_CLIENT_PTR pConfig)
+FTM_RET FTDMC_CFG_final(FTDMC_CFG_PTR pConfig)
 {
 	if (pConfig == NULL)
 	{
