@@ -196,10 +196,30 @@ FTM_RET	FTDM_delEPInfo
 
 FTM_RET	FTDM_getEPInfoCount
 (
-	FTM_ULONG_PTR	pnCount
+	FTM_EP_CLASS	xClass,
+	FTM_ULONG_PTR	pulCount
 )
 {
-	*pnCount = list_size(&xEPList);
+	if (xClass == 0)
+	{
+		*pulCount = list_size(&xEPList);
+	}
+	else
+	{
+		FTM_EP_INFO_PTR	pEPInfo;
+		FTM_ULONG		ulCount = 0;
+
+		list_iterator_start(&xEPList);
+		while((pEPInfo = (FTM_EP_INFO_PTR)list_iterator_next(&xEPList)) != NULL)
+		{
+			if (xClass == (pEPInfo->xEPID & FTM_EP_CLASS_MASK))
+			{
+				ulCount++;			
+			}
+		}
+
+		*pulCount = ulCount;
+	}
 
 	return	FTM_RET_OK;
 }

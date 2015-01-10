@@ -197,6 +197,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
+	FTM_EP_CLASS		xClass;
 }	FTDM_REQ_GET_EP_INFO_COUNT_PARAMS, _PTR_ 	FTDM_REQ_GET_EP_INFO_COUNT_PARAMS_PTR;
 
 typedef	struct

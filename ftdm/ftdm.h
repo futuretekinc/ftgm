@@ -63,6 +63,7 @@ FTM_RET	FTDM_delEPInfo
 
 FTM_RET	FTDM_getEPInfoCount
 (
+	FTM_EP_CLASS		xClass,
 	FTM_ULONG_PTR		pnCount
 );
 

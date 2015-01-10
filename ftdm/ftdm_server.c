@@ -413,7 +413,7 @@ FTM_RET	FTDMS_getEPInfoCount
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_getEPInfoCount(&pResp->nCount);
+	pResp->nRet = FTDM_getEPInfoCount(pReq->xClass, &pResp->nCount);
 
 	return	pResp->nRet;
 }

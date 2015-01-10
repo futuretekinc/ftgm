@@ -86,6 +86,7 @@ FTM_RET FTDMC_removeEPInfo
 FTM_RET FTDMC_getEPInfoCount
 (
 	FTDMC_SESSION_PTR		pSession,
+	FTM_EP_CLASS			xClass,
 	FTM_ULONG_PTR			pnCount
 );
 

@@ -423,6 +423,7 @@ FTM_RET	FTDMC_removeEPInfo
 FTM_RET	FTDMC_getEPInfoCount
 (
 	FTDMC_SESSION_PTR		pSession,
+	FTM_EP_CLASS			xClass,
 	FTM_ULONG_PTR			pnCount
 )
 {
@@ -441,6 +442,7 @@ FTM_RET	FTDMC_getEPInfoCount
 	}
 
 	xReq.xCmd	=	FTDM_CMD_GET_EP_INFO_COUNT;
+	xReq.xClass	=	xClass;
 	xReq.nLen	=	sizeof(xReq);
 
 	nRet = FTDMC_request(

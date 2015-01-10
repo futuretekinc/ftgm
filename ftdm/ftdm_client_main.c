@@ -655,7 +655,7 @@ FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	{
 		FTM_ULONG	nCount;
 
-		nRet = FTDMC_getEPInfoCount(&_xSession, &nCount);
+		nRet = FTDMC_getEPInfoCount(&_xSession, 0, &nCount);
 		if (nRet == FTM_RET_OK)
 		{
 			MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
