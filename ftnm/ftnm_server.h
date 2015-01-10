@@ -1,6 +1,8 @@
 #ifndef	__FTNM_SERVER_H__
 #define	__FTNM_SERVER_H__
 
+#include "ftnm_params.h"
+
 typedef	FTM_RET	(*FTNM_SERVICE_CALLBACK)(FTNM_REQ_PARAMS_PTR, FTNM_RESP_PARAMS_PTR);
 
 typedef struct

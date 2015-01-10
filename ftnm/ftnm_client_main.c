@@ -1,8 +1,9 @@
+#include <ctype.h>
+#define	__USE_XOPEN
 #include <stdio.h>
-#include <stdlib.h>    
 #include <string.h>    
 #include <unistd.h>    
-#define	__USE_XOPEN
+#define _XOPEN_SOURCE       /* See feature_test_macros(7) */
 #include <time.h>    
 #include <sys/socket.h> 
 #include <arpa/inet.h>
@@ -14,6 +15,7 @@
 #include "ftnm_client_config.h"
 #include "ftm_debug.h"
 #include "simclist.h"
+#include <stdlib.h>    
 
 #define		FTNMC_MAX_LINE	2048
 #define		FTNMC_MAX_ARGS	16
@@ -687,6 +689,10 @@ FTM_RET	FTNMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 								xInfo.pDID,
 								xInfo.pPID);
 					}
+					else
+					{
+							ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+					}
 				}
 			}
 		}
@@ -718,12 +724,12 @@ FTM_RET	FTNMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 								xInfo.pDID,
 								xInfo.pPID);
 					}
+					else
+					{
+							ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+					}
 				}
 			}
-		}
-		else
-		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 		}
 	}
 	else
@@ -809,7 +815,7 @@ FTM_RET	FTNMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 		}
 
-		nRet = FTNMC_EP_DATA_get(&_xSession, xEPID, &xData);
+		nRet = FTNMC_EP_DATA_add(&_xSession, xEPID, &xData);
 		if (nRet == FTM_RET_OK)
 		{
 			MESSAGE("EndPoint data appending done successfully!\n");	

@@ -6,6 +6,7 @@
 #include "ftnm.h"
 #include "ftdm_client.h"
 #include "ftnm_node_snmpc.h"
+#include "ftnm_server.h"
 
 FTM_VOID_PTR	FTNM_task(FTM_VOID_PTR pData);
 FTM_RET			FTNM_taskInit(FTNM_CONTEXT_PTR pContext);
