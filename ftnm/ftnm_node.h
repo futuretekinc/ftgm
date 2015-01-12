@@ -6,7 +6,8 @@
 #include "ftm_list.h"
 #include "ftnm_object.h"
 #include <pthread.h>
-	
+
+
 FTM_RET FTNM_NODE_MNGR_init(FTM_VOID);
 FTM_RET FTNM_NODE_MNGR_final(FTM_VOID);
 
@@ -14,10 +15,13 @@ FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode);
 FTM_RET	FTNM_NODE_destroy(FTNM_NODE_PTR	pNode);
 
 FTM_RET FTNM_NODE_get(FTM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode);
+FTM_RET FTNM_NODE_getAt(FTM_ULONG ulIndex, FTNM_NODE_PTR _PTR_ ppNode);
+FTM_RET	FTNM_NODE_count(FTM_ULONG_PTR pulCount);
 
 FTM_RET	FTNM_NODE_linkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP);
 FTM_RET	FTNM_NODE_unlinkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP);
 
+FTM_RET	FTNM_NODE_run(FTNM_NODE_PTR pNode);
 FTM_RET	FTNM_NODE_start(FTNM_NODE_PTR pNode);
 FTM_RET	FTNM_NODE_stop(FTNM_NODE_PTR pNode);
 FTM_RET	FTNM_NODE_restart(FTNM_NODE_PTR pNode);

@@ -7,8 +7,8 @@ CFLAGS=-c -Wall -DDEBUG -I/usr/local/include -I../include
 LDFLAGS= -L/usr/local/lib -L. 
 
 LIB_FTM=libftm
-LIB_FTM_INCS= ftm_types.h ftm_object.h simclist.h ftm_debug.h ftm_list.h
-LIB_FTM_SRCS= simclist.c  ftm_debug.c convert.c ftm_object.c ftm_list.c
+LIB_FTM_INCS= ftm_types.h ftm_object.h simclist.h ftm_debug.h ftm_list.h ftm_console.h
+LIB_FTM_SRCS= simclist.c  ftm_debug.c convert.c ftm_object.c ftm_list.c ftm_console.c
 LIB_FTM_OBJS=$(LIB_FTM_SRCS:.c=.o)
 
 all: $(LIB_FTM) $(SERVER)

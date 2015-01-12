@@ -7,7 +7,7 @@ CFLAGS=-c -Wall -DDEBUG -I/usr/local/include -I../include
 LDFLAGS=-L/usr/local/lib -L. -L../lib
 
 SERVER=ftdm
-SERVER_SRCS=ftdm_main.c ftdm_server.c ftdm_console.c
+SERVER_SRCS=ftdm_main.c ftdm_server.c 
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
 SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3
 

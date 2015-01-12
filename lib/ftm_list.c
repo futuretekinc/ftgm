@@ -23,21 +23,25 @@ FTM_RET	FTM_LIST_destroy(FTM_LIST_PTR pList)
 
 FTM_RET	FTM_LIST_append(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 {
+	FTM_INT	nRet;
+
 	ASSERT((pList != NULL) && (pItem != NULL));
 
-	if (list_append(&pList->xList, pItem) != 0)
+	nRet = list_append(&pList->xList, pItem);
+	if (nRet < 0)
 	{
+		ERROR("list_append error[%d]\n", nRet);
 		return	FTM_RET_ERROR;	
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_LIST_remove(FTM_LIST_PTR pList, FTM_VOID_PTR pKey)
+FTM_RET	FTM_LIST_remove(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 {
-	ASSERT((pList != NULL) && (pKey != NULL));
+	ASSERT((pList != NULL) && (pItem != NULL));
 
-	if (list_delete(&pList->xList, pKey) != 0)
+	if (list_delete(&pList->xList, pItem) < 0)
 	{
 		return	FTM_RET_ERROR;
 	}
@@ -49,7 +53,7 @@ FTM_RET	FTM_LIST_removeAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition)
 {
 	ASSERT(pList != NULL);
 
-	if (list_delete_at(&pList->xList, ulPosition) != 0)
+	if (list_delete_at(&pList->xList, ulPosition) < 0)
 	{
 		return	FTM_RET_ERROR;	
 	}
@@ -105,6 +109,16 @@ FTM_RET FTM_LIST_setSeeker(FTM_LIST_PTR pList, FTM_LIST_ELEM_seeker fSeeker)
 	ASSERT((pList != NULL) && (fSeeker != NULL));
 
 	list_attributes_seeker(&pList->xList, fSeeker);
+
+	return	FTM_RET_OK;
+}
+
+
+FTM_RET FTM_LIST_setComparator(FTM_LIST_PTR pList, FTM_LIST_ELEM_comparator fComparator)
+{
+	ASSERT((pList != NULL) && (fSeeker != NULL));
+
+	list_attributes_comparator(&pList->xList, fComparator);
 
 	return	FTM_RET_OK;
 }

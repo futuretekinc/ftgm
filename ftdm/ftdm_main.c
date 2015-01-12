@@ -6,10 +6,10 @@
 #include "ftdm.h"
 #include "libconfig.h"
 #include "simclist.h"
+#include "ftm_console.h"
 #include "ftdm_params.h"
 #include "ftdm_server.h"
 #include "ftdm_config.h"
-#include "ftdm_console.h"
 #include "debug.h"
 
 static FTM_VOID			_showUsage(FTM_CHAR_PTR pAppName);
@@ -77,9 +77,9 @@ int main(int nArgc, char *pArgv[])
 	{
 		FTDMS_run(&xConfig.xServer, &xPThread);
 
-		FTDM_CONSOLE_init();
-		FTDM_CONSOLE_run();
-		FTDM_CONSOLE_final();
+		FTM_CONSOLE_init();
+		FTM_CONSOLE_run();
+		FTM_CONSOLE_final();
 	}
 
 

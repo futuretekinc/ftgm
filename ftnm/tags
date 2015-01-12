@@ -8,77 +8,129 @@ CC	Makefile	/^CC=gcc$/;"	m
 CFLAGS	Makefile	/^CFLAGS=-c -Wall -DDEBUG -I\/usr\/local\/include -I..\/include -I..\/ftdm$/;"	m
 FTM_dumpPacket	ftnm_debug.c	/^FTM_VOID	FTM_dumpPacket$/;"	f
 FTNM	Makefile	/^FTNM=ftnm$/;"	m
-FTNMP_EP_SNMP_PTR	ftnm_ep.h	/^}	FTNM_EP_SNMP, _PTR_ FTNMP_EP_SNMP_PTR;$/;"	t	typeref:struct:__anon11
-FTNMP_NODE_SNMP_PTR	ftnm_node.h	/^}	FTNM_NODE_SNMP, _PTR_ FTNMP_NODE_SNMP_PTR;$/;"	t	typeref:struct:__anon9
+FTNMP_EP_SNMP_PTR	ftnm_object.h	/^}	FTNM_EP_SNMP, _PTR_ FTNMP_EP_SNMP_PTR;$/;"	t	typeref:struct:__anon6
+FTNMP_NODE_SNMP_PTR	ftnm_object.h	/^}	FTNM_NODE_SNMP, _PTR_ FTNMP_NODE_SNMP_PTR;$/;"	t	typeref:struct:__anon9
 FTNM_BYTE	ftnm_types.h	/^typedef	unsigned char	FTNM_BYTE, 	_PTR_ FTNM_BYTE_PTR;$/;"	t
 FTNM_BYTE_PTR	ftnm_types.h	/^typedef	unsigned char	FTNM_BYTE, 	_PTR_ FTNM_BYTE_PTR;$/;"	t
-FTNM_CFG	ftnm_config.h	/^}	FTNM_CFG, _PTR_ FTNM_CFG_PTR;$/;"	t	typeref:struct:__anon7
-FTNM_CFG_CLIENT	ftnm_config.h	/^}	FTNM_CFG_CLIENT, _PTR_ FTNM_CFG_CONFIG_PTR;$/;"	t	typeref:struct:__anon6
-FTNM_CFG_CONFIG_PTR	ftnm_config.h	/^}	FTNM_CFG_CLIENT, _PTR_ FTNM_CFG_CONFIG_PTR;$/;"	t	typeref:struct:__anon6
-FTNM_CFG_PTR	ftnm_config.h	/^}	FTNM_CFG, _PTR_ FTNM_CFG_PTR;$/;"	t	typeref:struct:__anon7
-FTNM_CFG_SERVER	ftnm_config.h	/^}	FTNM_CFG_SERVER, _PTR_ FTNM_CFG_SERVER_PTR;$/;"	t	typeref:struct:__anon5
-FTNM_CFG_SERVER_PTR	ftnm_config.h	/^}	FTNM_CFG_SERVER, _PTR_ FTNM_CFG_SERVER_PTR;$/;"	t	typeref:struct:__anon5
+FTNM_CFG	ftnm_config.h	/^}	FTNM_CFG, _PTR_ FTNM_CFG_PTR;$/;"	t	typeref:struct:__anon4
+FTNM_CFG_PTR	ftnm_config.h	/^}	FTNM_CFG, _PTR_ FTNM_CFG_PTR;$/;"	t	typeref:struct:__anon4
+FTNM_CFG_SERVER	ftnm_config.h	/^}	FTNM_CFG_SERVER, _PTR_ FTNM_CFG_SERVER_PTR;$/;"	t	typeref:struct:__anon3
+FTNM_CFG_SERVER_PTR	ftnm_config.h	/^}	FTNM_CFG_SERVER, _PTR_ FTNM_CFG_SERVER_PTR;$/;"	t	typeref:struct:__anon3
+FTNM_CFG_copy	ftnm_config.c	/^FTM_RET FTNM_CFG_copy(FTNM_CFG_PTR pDestCfg, FTNM_CFG_PTR pSrcCfg)$/;"	f
 FTNM_CFG_final	ftnm_config.c	/^FTM_RET	FTNM_CFG_final(FTNM_CFG_PTR pConfig)$/;"	f
 FTNM_CFG_init	ftnm_config.c	/^FTM_RET	FTNM_CFG_init(FTNM_CFG_PTR pConfig)$/;"	f
 FTNM_CFG_load	ftnm_config.c	/^FTM_RET FTNM_CFG_load(FTNM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)$/;"	f
 FTNM_CFG_show	ftnm_config.c	/^FTM_RET FTNM_CFG_show(FTNM_CFG_PTR pConfig)$/;"	f
 FTNM_CHAR	ftnm_types.h	/^typedef	char			FTNM_CHAR, 	_PTR_ FTNM_CHAR_PTR;$/;"	t
 FTNM_CHAR_PTR	ftnm_types.h	/^typedef	char			FTNM_CHAR, 	_PTR_ FTNM_CHAR_PTR;$/;"	t
-FTNM_EP	ftnm_ep.h	/^}	FTNM_EP, _PTR_ FTNM_EP_PTR;$/;"	t	typeref:struct:__anon10
-FTNM_EP_PTR	ftnm_ep.h	/^}	FTNM_EP, _PTR_ FTNM_EP_PTR;$/;"	t	typeref:struct:__anon10
-FTNM_EP_SNMP	ftnm_ep.h	/^}	FTNM_EP_SNMP, _PTR_ FTNMP_EP_SNMP_PTR;$/;"	t	typeref:struct:__anon11
+FTNM_CONTEXT	ftnm.h	/^}	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;$/;"	t	typeref:struct:__anon13
+FTNM_CONTEXT_PTR	ftnm.h	/^}	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;$/;"	t	typeref:struct:__anon13
+FTNM_DMC	ftnm.h	/^}	FTNM_DMC, _PTR_	FTNM_DMC_PTR;$/;"	t	typeref:struct:__anon12
+FTNM_DMC_PTR	ftnm.h	/^}	FTNM_DMC, _PTR_	FTNM_DMC_PTR;$/;"	t	typeref:struct:__anon12
+FTNM_DMC_STATE	ftnm.h	/^typedef	FTM_ULONG	FTNM_DMC_STATE;$/;"	t
+FTNM_DMC_STATE_CALLED	ftnm.h	20;"	d
+FTNM_DMC_STATE_CALL_FOR_PROCESSING	ftnm.h	22;"	d
+FTNM_DMC_STATE_CONNECTED	ftnm.h	29;"	d
+FTNM_DMC_STATE_CREATED	ftnm.h	15;"	d
+FTNM_DMC_STATE_CREATING	ftnm.h	14;"	d
+FTNM_DMC_STATE_FINISHED	ftnm.h	28;"	d
+FTNM_DMC_STATE_FINISHING	ftnm.h	27;"	d
+FTNM_DMC_STATE_INACTIVATED	ftnm.h	26;"	d
+FTNM_DMC_STATE_INITIALIZED	ftnm.h	17;"	d
+FTNM_DMC_STATE_INITIALIZING	ftnm.h	16;"	d
+FTNM_DMC_STATE_PAUSED	ftnm.h	25;"	d
+FTNM_DMC_STATE_PROCESSING	ftnm.h	23;"	d
+FTNM_DMC_STATE_PROCESS_FINISHED	ftnm.h	24;"	d
+FTNM_DMC_STATE_SYNCHRONIZED	ftnm.h	19;"	d
+FTNM_DMC_STATE_SYNCING	ftnm.h	18;"	d
+FTNM_DMC_STATE_WAITING	ftnm.h	21;"	d
+FTNM_DMC_run	ftnm.c	/^FTM_RET FTNM_DMC_run(FTNM_CONTEXT_PTR pContext)$/;"	f
+FTNM_DMC_task	ftnm.c	/^FTM_VOID_PTR	FTNM_DMC_task(FTM_VOID_PTR pData)$/;"	f
+FTNM_DMC_taskConnect	ftnm.c	/^FTM_RET	FTNM_DMC_taskConnect(FTNM_CONTEXT_PTR pContext)$/;"	f
+FTNM_DMC_taskInit	ftnm.c	/^FTM_RET	FTNM_DMC_taskInit(FTNM_CONTEXT_PTR pContext)$/;"	f
+FTNM_DMC_taskSync	ftnm.c	/^FTM_RET	FTNM_DMC_taskSync(FTNM_CONTEXT_PTR pContext)$/;"	f
+FTNM_EP	ftnm_object.h	/^}	FTNM_EP, _PTR_ FTNM_EP_PTR;$/;"	t	typeref:struct:__anon5
+FTNM_EP_PTR	ftnm_object.h	/^}	FTNM_EP, _PTR_ FTNM_EP_PTR;$/;"	t	typeref:struct:__anon5
+FTNM_EP_SNMP	ftnm_object.h	/^}	FTNM_EP_SNMP, _PTR_ FTNMP_EP_SNMP_PTR;$/;"	t	typeref:struct:__anon6
 FTNM_EP_create	ftnm_ep.c	/^FTM_RET	FTNM_EP_create(FTM_EP_INFO_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)$/;"	f
 FTNM_EP_destroy	ftnm_ep.c	/^FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)$/;"	f
 FTNM_EP_final	ftnm_ep.c	/^FTM_RET FTNM_EP_final(FTM_VOID)$/;"	f
 FTNM_EP_init	ftnm_ep.c	/^FTM_RET	FTNM_EP_init(FTM_VOID)$/;"	f
 FTNM_EP_seek	ftnm_ep.c	/^FTM_INT	FTNM_EP_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)$/;"	f
+FTNM_EP_setNode	ftnm_ep.c	/^FTM_RET	FTNM_EP_setNode(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode)$/;"	f
 FTNM_INT	ftnm_types.h	/^typedef	int				FTNM_INT,	_PTR_ FTNM_INT_PTR;$/;"	t
 FTNM_INT_PTR	ftnm_types.h	/^typedef	int				FTNM_INT,	_PTR_ FTNM_INT_PTR;$/;"	t
-FTNM_LDFLAGS	Makefile	/^FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftm -lconfig -lpthread  -lnetsnmp$/;"	m
-FTNM_NODE	ftnm_node.h	/^}	FTNM_NODE, _PTR_ FTNM_NODE_PTR;$/;"	t	typeref:struct:__anon8
-FTNM_NODE_PTR	ftnm_node.h	/^}	FTNM_NODE, _PTR_ FTNM_NODE_PTR;$/;"	t	typeref:struct:__anon8
-FTNM_NODE_SNMP	ftnm_node.h	/^}	FTNM_NODE_SNMP, _PTR_ FTNMP_NODE_SNMP_PTR;$/;"	t	typeref:struct:__anon9
+FTNM_LDFLAGS	Makefile	/^FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmp$/;"	m
+FTNM_NODE	ftnm_object.h	/^}	FTNM_NODE, _PTR_ FTNM_NODE_PTR;$/;"	t	typeref:struct:_FTNM_NODE
+FTNM_NODE_MNGR_final	ftnm_node.c	/^FTM_RET FTNM_NODE_MNGR_final(FTM_VOID)$/;"	f
+FTNM_NODE_MNGR_init	ftnm_node.c	/^FTM_RET FTNM_NODE_MNGR_init(FTM_VOID)$/;"	f
+FTNM_NODE_PTR	ftnm_object.h	/^typedef	struct _FTNM_NODE _PTR_ FTNM_NODE_PTR;$/;"	t	typeref:struct:_PTR_
+FTNM_NODE_PTR	ftnm_object.h	/^}	FTNM_NODE, _PTR_ FTNM_NODE_PTR;$/;"	t	typeref:struct:_FTNM_NODE
+FTNM_NODE_SNMP	ftnm_object.h	/^}	FTNM_NODE_SNMP, _PTR_ FTNMP_NODE_SNMP_PTR;$/;"	t	typeref:struct:__anon9
+FTNM_NODE_STATE	ftnm_object.h	/^typedef	FTM_ULONG		FTNM_NODE_STATE;$/;"	t
+FTNM_NODE_STATE_CALLED	ftnm_object.h	26;"	d
+FTNM_NODE_STATE_CALL_FOR_PROCESSING	ftnm_object.h	28;"	d
+FTNM_NODE_STATE_CREATED	ftnm_object.h	21;"	d
+FTNM_NODE_STATE_CREATING	ftnm_object.h	20;"	d
+FTNM_NODE_STATE_FINISHED	ftnm_object.h	34;"	d
+FTNM_NODE_STATE_FINISHING	ftnm_object.h	33;"	d
+FTNM_NODE_STATE_INACTIVATED	ftnm_object.h	32;"	d
+FTNM_NODE_STATE_INITIALIZED	ftnm_object.h	23;"	d
+FTNM_NODE_STATE_INITIALIZING	ftnm_object.h	22;"	d
+FTNM_NODE_STATE_PAUSED	ftnm_object.h	31;"	d
+FTNM_NODE_STATE_PROCESSING	ftnm_object.h	29;"	d
+FTNM_NODE_STATE_PROCESS_FINISHED	ftnm_object.h	30;"	d
+FTNM_NODE_STATE_SYNCHRONIZED	ftnm_object.h	25;"	d
+FTNM_NODE_STATE_SYNCING	ftnm_object.h	24;"	d
+FTNM_NODE_STATE_WAITING	ftnm_object.h	27;"	d
+FTNM_NODE_TASK	ftnm_object.h	/^}	FTNM_NODE_TASK, _PTR_ FTNM_NODE_TASK_PTR;$/;"	t	typeref:struct:__anon8
+FTNM_NODE_TASK_CMD	ftnm_object.h	/^} FTNM_NODE_TASK_CMD, _PTR_ FTNM_NODE_TASK_CMD_PTR;$/;"	t	typeref:enum:__anon7
+FTNM_NODE_TASK_CMD_PROCESS_EP	ftnm_object.h	/^	FTNM_NODE_TASK_CMD_PROCESS_EP = 1	$/;"	e	enum:__anon7
+FTNM_NODE_TASK_CMD_PTR	ftnm_object.h	/^} FTNM_NODE_TASK_CMD, _PTR_ FTNM_NODE_TASK_CMD_PTR;$/;"	t	typeref:enum:__anon7
+FTNM_NODE_TASK_PTR	ftnm_object.h	/^}	FTNM_NODE_TASK, _PTR_ FTNM_NODE_TASK_PTR;$/;"	t	typeref:struct:__anon8
 FTNM_NODE_create	ftnm_node.c	/^FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)$/;"	f
 FTNM_NODE_destroy	ftnm_node.c	/^FTM_RET	FTNM_NODE_destroy(FTNM_NODE_PTR	pNode)$/;"	f
-FTNM_NODE_final	ftnm_node.c	/^FTM_RET FTNM_NODE_final(FTM_VOID)$/;"	f
 FTNM_NODE_get	ftnm_node.c	/^FTM_RET FTNM_NODE_get(FTM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode)$/;"	f
-FTNM_NODE_init	ftnm_node.c	/^FTM_RET FTNM_NODE_init(FTM_VOID)$/;"	f
-FTNM_NODE_restart	ftnm_node.c	/^FTM_RET	FTNM_NODE_restart(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_NODE_linkEP	ftnm_node.c	/^FTM_RET	FTNM_NODE_linkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)$/;"	f
+FTNM_NODE_run	ftnm_node.c	/^FTM_RET	FTNM_NODE_run(FTNM_NODE_PTR pNode)$/;"	f
 FTNM_NODE_seek	ftnm_node.c	/^FTM_INT	FTNM_NODE_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)$/;"	f
-FTNM_NODE_start	ftnm_node.c	/^FTM_RET	FTNM_NODE_start(FTNM_NODE_PTR pNode)$/;"	f
-FTNM_NODE_stop	ftnm_node.c	/^FTM_RET	FTNM_NODE_stop(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_NODE_task	ftnm_node.c	/^FTM_VOID_PTR FTNM_NODE_task(FTM_VOID_PTR pData)$/;"	f
+FTNM_NODE_taskInit	ftnm_node.c	/^FTM_RET	FTNM_NODE_taskInit(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_NODE_taskProcessing	ftnm_node.c	/^FTM_RET	FTNM_NODE_taskProcessing(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_NODE_taskSync	ftnm_node.c	/^FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_NODE_taskWait	ftnm_node.c	/^FTM_RET	FTNM_NODE_taskWait(FTNM_NODE_PTR pNode)$/;"	f
+FTNM_NODE_unlinkEP	ftnm_node.c	/^FTM_RET	FTNM_NODE_unlinkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)$/;"	f
 FTNM_OBJS	Makefile	/^FTNM_OBJS=$(FTNM_SRCS:.c=.o)$/;"	m
-FTNM_SNMP_CONTEXT	ftnm_snmp_client.h	/^}	FTNM_SNMP_CONTEXT, _PTR_ FTNM_SNMP_CONTEXT_PTR;$/;"	t	typeref:struct:__anon2
-FTNM_SNMP_CONTEXT_PTR	ftnm_snmp_client.h	/^}	FTNM_SNMP_CONTEXT, _PTR_ FTNM_SNMP_CONTEXT_PTR;$/;"	t	typeref:struct:__anon2
-FTNM_SNMP_OID	ftnm_snmp_client.h	/^}	FTNM_SNMP_OID, _PTR_ FTNM_SNMP_OID_PTR;$/;"	t	typeref:struct:__anon1
-FTNM_SNMP_OID_PTR	ftnm_snmp_client.h	/^}	FTNM_SNMP_OID, _PTR_ FTNM_SNMP_OID_PTR;$/;"	t	typeref:struct:__anon1
+FTNM_SNMP_CONTEXT	ftnm_snmp_client.h	/^}	FTNM_SNMP_CONTEXT, _PTR_ FTNM_SNMP_CONTEXT_PTR;$/;"	t	typeref:struct:__anon11
+FTNM_SNMP_CONTEXT_PTR	ftnm_snmp_client.h	/^}	FTNM_SNMP_CONTEXT, _PTR_ FTNM_SNMP_CONTEXT_PTR;$/;"	t	typeref:struct:__anon11
+FTNM_SNMP_OID	ftnm_snmp_client.h	/^}	FTNM_SNMP_OID, _PTR_ FTNM_SNMP_OID_PTR;$/;"	t	typeref:struct:__anon10
+FTNM_SNMP_OID_PTR	ftnm_snmp_client.h	/^}	FTNM_SNMP_OID, _PTR_ FTNM_SNMP_OID_PTR;$/;"	t	typeref:struct:__anon10
 FTNM_SNMP_STATUS_COMPLETED	ftnm_snmp_client.h	11;"	d
 FTNM_SNMP_STATUS_RUNNING	ftnm_snmp_client.h	10;"	d
 FTNM_SRCS	Makefile	/^FTNM_SRCS=ftnm_main.c ftnm.c$/;"	m
 FTNM_TEST_NODE_COUNT	ftnm_server_main.c	8;"	d	file:
 FTNM_TEST_nodeInit	ftnm_server_main.c	/^void 	FTNM_TEST_nodeInit(void)$/;"	f
-FTNM_TIMER	ftnm_timer.h	/^}	FTNM_TIMER, _PTR_ FTNM_TIMER_PTR;$/;"	t	typeref:struct:__anon4
-FTNM_TIMER_PTR	ftnm_timer.h	/^}	FTNM_TIMER, _PTR_ FTNM_TIMER_PTR;$/;"	t	typeref:struct:__anon4
-FTNM_TIMER_TYPE	ftnm_timer.h	/^}	FTNM_TIMER_TYPE, _PTR_ FTNM_TIMER_TYPE_PTR;$/;"	t	typeref:enum:__anon3
-FTNM_TIMER_TYPE_ABSOLUTE	ftnm_timer.h	/^	FTNM_TIMER_TYPE_ABSOLUTE=1$/;"	e	enum:__anon3
-FTNM_TIMER_TYPE_PTR	ftnm_timer.h	/^}	FTNM_TIMER_TYPE, _PTR_ FTNM_TIMER_TYPE_PTR;$/;"	t	typeref:enum:__anon3
-FTNM_TIMER_TYPE_RELATIVE	ftnm_timer.h	/^	FTNM_TIMER_TYPE_RELATIVE=0,$/;"	e	enum:__anon3
+FTNM_TIMER	ftnm_timer.h	/^}	FTNM_TIMER, _PTR_ FTNM_TIMER_PTR;$/;"	t	typeref:struct:__anon2
+FTNM_TIMER_PTR	ftnm_timer.h	/^}	FTNM_TIMER, _PTR_ FTNM_TIMER_PTR;$/;"	t	typeref:struct:__anon2
+FTNM_TIMER_TYPE	ftnm_timer.h	/^}	FTNM_TIMER_TYPE, _PTR_ FTNM_TIMER_TYPE_PTR;$/;"	t	typeref:enum:__anon1
+FTNM_TIMER_TYPE_ABSOLUTE	ftnm_timer.h	/^	FTNM_TIMER_TYPE_ABSOLUTE=1$/;"	e	enum:__anon1
+FTNM_TIMER_TYPE_PTR	ftnm_timer.h	/^}	FTNM_TIMER_TYPE, _PTR_ FTNM_TIMER_TYPE_PTR;$/;"	t	typeref:enum:__anon1
+FTNM_TIMER_TYPE_RELATIVE	ftnm_timer.h	/^	FTNM_TIMER_TYPE_RELATIVE=0,$/;"	e	enum:__anon1
 FTNM_UINT	ftnm_types.h	/^typedef	unsigned int	FTNM_UINT, 	_PTR_ FTNM_UINT_PTR;$/;"	t
 FTNM_UINT_PTR	ftnm_types.h	/^typedef	unsigned int	FTNM_UINT, 	_PTR_ FTNM_UINT_PTR;$/;"	t
 FTNM_ULONG	ftnm_types.h	/^typedef	unsigned long	FTNM_ULONG,	_PTR_ FTNM_ULONG_PTR;$/;"	t
 FTNM_ULONG_PTR	ftnm_types.h	/^typedef	unsigned long	FTNM_ULONG,	_PTR_ FTNM_ULONG_PTR;$/;"	t
 FTNM_VOID	ftnm_types.h	/^typedef	void			FTNM_VOID, 	_PTR_ FTNM_VOID_PTR;$/;"	t
 FTNM_VOID_PTR	ftnm_types.h	/^typedef	void			FTNM_VOID, 	_PTR_ FTNM_VOID_PTR;$/;"	t
-FTNM_final	ftnm.c	/^FTM_RET	FTNM_final(void)$/;"	f
-FTNM_init	ftnm.c	/^FTM_RET	FTNM_init(FTNM_CFG_PTR pConfig)$/;"	f
-FTNM_run	ftnm.c	/^FTM_RET	FTNM_run(FTNM_CFG_PTR pConfig)$/;"	f
+FTNM_final	ftnm.c	/^FTM_RET	FTNM_final(FTNM_CONTEXT_PTR pContext)$/;"	f
+FTNM_init	ftnm.c	/^FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pContext, FTNM_CFG_PTR pConfig)$/;"	f
 FTNM_snmpClientAsyncCall	ftnm_snmp_client.c	/^FTM_RET FTNM_snmpClientAsyncCall(FTNM_NODE_PTR pNode)$/;"	f
 FTNM_snmpClientAsyncResponse	ftnm_snmp_client.c	/^FTM_INT	FTNM_snmpClientAsyncResponse$/;"	f
 FTNM_snmpClientFinal	ftnm_snmp_client.c	/^FTM_RET	FTNM_snmpClientFinal(void)$/;"	f
 FTNM_snmpClientInit	ftnm_snmp_client.c	/^FTM_RET	FTNM_snmpClientInit(void)$/;"	f
 FTNM_snmpIsCompleted	ftnm_snmp_client.c	/^FTM_BOOL	FTNM_snmpIsCompleted(FTNM_NODE_PTR pNode)$/;"	f
 FTNM_snmpIsRunning	ftnm_snmp_client.c	/^FTM_BOOL	FTNM_snmpIsRunning(FTNM_NODE_PTR pNode)$/;"	f
-LDFLAGS	Makefile	/^LDFLAGS= -L\/usr\/local\/lib -L. -L..\/lib$/;"	m
+LDFLAGS	Makefile	/^LDFLAGS= -L\/usr\/local\/lib -L. -L..\/lib -L..\/ftdm$/;"	m
 LIB_FTNM	Makefile	/^LIB_FTNM=libftnm$/;"	m
 LIB_FTNM_INCS	Makefile	/^LIB_FTNM_INCS= ftnm.h $/;"	m
 LIB_FTNM_OBJS	Makefile	/^LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)$/;"	m
@@ -87,11 +139,13 @@ SERVER	Makefile	/^SERVER=ftnm_server$/;"	m
 SERVER_LDFLAGS	Makefile	/^SERVER_LDFLAGS=-L\/usr\/local\/lib -L. -lftnm -lconfig -lsqlite3 -lpthread  -lnetsnmp$/;"	m
 SERVER_OBJS	Makefile	/^SERVER_OBJS=$(SERVER_SRCS:.c=.o)$/;"	m
 SERVER_SRCS	Makefile	/^SERVER_SRCS=ftnm_server_main.c ftnm_debug.c$/;"	m
+_FTNM_NODE	ftnm_object.h	/^typedef	struct _FTNM_NODE$/;"	s
 _PTR_	ftnm_types.h	4;"	d
 __FTNM_CONFIG_H__	ftnm_config.h	2;"	d
 __FTNM_EP_H__	ftnm_ep.h	2;"	d
 __FTNM_H__	ftnm.h	2;"	d
 __FTNM_NODE_H__	ftnm_node.h	2;"	d
+__FTNM_OBJECT_H__	ftnm_object.h	2;"	d
 __FTNM_SNMP_CLIENT_H__	ftnm_snmp_client.h	2;"	d
 __FTNM_TIMER_H__	ftnm_timer.h	2;"	d
 __FTNM_TYPE_H__	ftnm_types.h	2;"	d
@@ -101,13 +155,14 @@ _nPrintLevel	ftnm_debug.c	/^static unsigned long	_nPrintLevel = MSG_NORMAL;$/;"	
 main	ftnm_main.c	/^int main(int nArgc, char *pArgv[])$/;"	f
 main	ftnm_server_main.c	/^int main(int argc, char *argv[])$/;"	f
 main	main.c	/^int	main(int nArgc, char *szArgv[])$/;"	f
-nOIDLen	ftnm_snmp_client.h	/^	FTM_INT					nOIDLen;$/;"	m	struct:__anon1
-nStatus	ftnm_snmp_client.h	/^	FTM_ULONG				nStatus;$/;"	m	struct:__anon2
-nValueLen	ftnm_snmp_client.h	/^	FTM_INT					nValueLen;$/;"	m	struct:__anon1
-pOID	ftnm_snmp_client.h	/^	oid						pOID[MAX_OID_LEN];$/;"	m	struct:__anon1
-pSession	ftnm_snmp_client.h	/^	struct snmp_session 	*pSession;		\/* SNMP session data *\/$/;"	m	struct:__anon2	typeref:struct:__anon2::snmp_session
-pURL	ftnm_config.h	/^	FTM_CHAR		pURL[FTM_URL_LEN+1];$/;"	m	struct:__anon6
-pValue	ftnm_snmp_client.h	/^	FTM_BYTE_PTR			pValue;$/;"	m	struct:__anon1
+nOIDLen	ftnm_snmp_client.h	/^	FTM_INT					nOIDLen;$/;"	m	struct:__anon10
+nStatus	ftnm_snmp_client.h	/^	FTM_ULONG				nStatus;$/;"	m	struct:__anon11
+nValueLen	ftnm_snmp_client.h	/^	FTM_INT					nValueLen;$/;"	m	struct:__anon10
+pConfig	ftnm.h	/^	FTNM_CFG_PTR	pConfig;$/;"	m	struct:__anon13
+pNode	ftnm_object.h	/^	FTNM_NODE_PTR 	pNode;$/;"	m	struct:__anon5
+pOID	ftnm_snmp_client.h	/^	oid						pOID[MAX_OID_LEN];$/;"	m	struct:__anon10
+pSession	ftnm_snmp_client.h	/^	struct snmp_session 	*pSession;		\/* SNMP session data *\/$/;"	m	struct:__anon11	typeref:struct:__anon11::snmp_session
+pValue	ftnm_snmp_client.h	/^	FTM_BYTE_PTR			pValue;$/;"	m	struct:__anon10
 printOut	ftnm_debug.c	/^void printOut$/;"	f
 printToError	ftnm_debug.c	/^void (*printToError)(char *szMsg) = printToTerm;$/;"	v
 printToFile	ftnm_debug.c	/^void printToFile(char *szMsg)$/;"	f
@@ -115,25 +170,33 @@ printToMessage	ftnm_debug.c	/^void (*printToMessage)(char *szMsg) = printToTerm;
 printToTerm	ftnm_debug.c	/^void printToTerm(char *szMsg)$/;"	f
 printToTrace	ftnm_debug.c	/^void (*printToTrace)(char *szMsg) = printToTerm;$/;"	v
 setPrintMode	ftnm_debug.c	/^void setPrintMode$/;"	f
-ulMaxSession	ftnm_config.h	/^	FTM_ULONG		ulMaxSession;$/;"	m	struct:__anon5
-usPort	ftnm_config.h	/^	FTM_USHORT		usPort;$/;"	m	struct:__anon5
-usPort	ftnm_config.h	/^	FTM_USHORT		usPort;$/;"	m	struct:__anon6
-xCallList	ftnm_snmp_client.h	/^	list_t					xCallList;	$/;"	m	struct:__anon2
-xClient	ftnm_config.h	/^	FTNM_CFG_CLIENT	xClient;$/;"	m	struct:__anon7
+ulMaxSession	ftnm_config.h	/^	FTM_ULONG		ulMaxSession;$/;"	m	struct:__anon3
+usPort	ftnm_config.h	/^	FTM_USHORT		usPort;$/;"	m	struct:__anon3
+xCallList	ftnm_snmp_client.h	/^	list_t					xCallList;	$/;"	m	struct:__anon11
+xClient	ftnm_config.h	/^	FTDM_CFG_CLIENT	xClient;$/;"	m	struct:__anon4
 xClientSession	ftnm.c	/^FTDMC_SESSION	xClientSession;$/;"	v
-xCommon	ftnm_ep.h	/^	FTNM_EP			xCommon;	$/;"	m	struct:__anon11
-xCommon	ftnm_node.h	/^	FTNM_NODE			xCommon;	$/;"	m	struct:__anon9
+xCmd	ftnm_object.h	/^	FTNM_NODE_TASK_CMD	xCmd;$/;"	m	struct:__anon8
+xCommon	ftnm_object.h	/^	FTNM_EP			xCommon;	$/;"	m	struct:__anon6
+xCommon	ftnm_object.h	/^	FTNM_NODE			xCommon;	$/;"	m	struct:__anon9
 xConfig	ftnm_main.c	/^static FTNM_CFG	xConfig;$/;"	v	file:
+xContext	ftnm_main.c	/^static FTNM_CONTEXT	xContext;$/;"	v	file:
+xDMC	ftnm.h	/^	FTNM_DMC		xDMC;	$/;"	m	struct:__anon13
 xEPList	ftnm_ep.c	/^static FTM_LIST	xEPList;$/;"	v	file:
-xEPList	ftnm_node.h	/^	FTM_LIST			xEPList;$/;"	m	struct:__anon8
-xInfo	ftnm_ep.h	/^	FTM_EP_INFO		xInfo;$/;"	m	struct:__anon10
-xInfo	ftnm_node.h	/^	FTM_NODE_INFO		xInfo;$/;"	m	struct:__anon8
+xEPList	ftnm_object.h	/^	FTM_LIST			xEPList;$/;"	m	struct:_FTNM_NODE
+xInfo	ftnm_object.h	/^	FTM_EP_INFO		xInfo;$/;"	m	struct:__anon5
+xInfo	ftnm_object.h	/^	FTM_NODE_INFO		xInfo;$/;"	m	struct:_FTNM_NODE
+xMutexLock	ftnm_object.h	/^	pthread_mutex_t		xMutexLock;$/;"	m	struct:_FTNM_NODE
 xNodeInfo	ftnm_server_main.c	/^FTM_NODE_INFO	xNodeInfo[FTNM_TEST_NODE_COUNT]; $/;"	v
 xNodeList	ftnm_node.c	/^static FTM_LIST	xNodeList;$/;"	v	file:
 xOIDsysDescr	ftnm_server_main.c	/^FTNM_SNMP_OID	xOIDsysDescr =$/;"	v
-xPThread	ftnm_node.h	/^	pthread_t			xPThread;$/;"	m	struct:__anon8
-xServer	ftnm_config.h	/^	FTNM_CFG_SERVER	xServer;	$/;"	m	struct:__anon7
-xTime	ftnm_snmp_client.h	/^	time_t					xTime;$/;"	m	struct:__anon1
-xType	ftnm_ep.h	/^	FTM_EP_TYPE		xType;$/;"	m	struct:__anon10
-xType	ftnm_node.h	/^	FTM_NODE_TYPE		xType;$/;"	m	struct:__anon8
-xType	ftnm_timer.h	/^	FTNM_TIMER_TYPE		xType;$/;"	m	struct:__anon4
+xPThread	ftnm_object.h	/^	pthread_t			xPThread;$/;"	m	struct:_FTNM_NODE
+xServer	ftnm_config.h	/^	FTNM_CFG_SERVER	xServer;	$/;"	m	struct:__anon4
+xSession	ftnm.h	/^	FTDMC_SESSION	xSession;$/;"	m	struct:__anon12
+xState	ftnm.h	/^	FTNM_DMC_STATE	xState;$/;"	m	struct:__anon12
+xState	ftnm_object.h	/^	FTNM_NODE_STATE		xState;$/;"	m	struct:_FTNM_NODE
+xTaskList	ftnm_object.h	/^	FTM_LIST			xTaskList;$/;"	m	struct:_FTNM_NODE
+xThread	ftnm.h	/^	pthread_t		xThread;$/;"	m	struct:__anon12
+xTime	ftnm_snmp_client.h	/^	time_t					xTime;$/;"	m	struct:__anon10
+xType	ftnm_object.h	/^	FTM_EP_TYPE		xType;$/;"	m	struct:__anon5
+xType	ftnm_object.h	/^	FTM_NODE_TYPE		xType;$/;"	m	struct:_FTNM_NODE
+xType	ftnm_timer.h	/^	FTNM_TIMER_TYPE		xType;$/;"	m	struct:__anon2
