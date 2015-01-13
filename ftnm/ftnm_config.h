@@ -16,6 +16,10 @@ typedef	struct
 	FTDM_CFG_CLIENT	xClient;
 }	FTNM_CFG, _PTR_ FTNM_CFG_PTR;
 
+FTM_RET	FTNM_CFG_create(FTNM_CFG_PTR _PTR_ ppConfig);
+FTM_RET	FTNM_CFG_copyCreate(FTNM_CFG_PTR _PTR_ ppConfig, FTNM_CFG_PTR pOldConfig);
+FTM_RET	FTNM_CFG_destroy(FTNM_CFG_PTR pConfig);
+
 FTM_RET	FTNM_CFG_init(FTNM_CFG_PTR pConfig);
 FTM_RET FTNM_CFG_load(FTNM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName);
 FTM_RET	FTNM_CFG_final(FTNM_CFG_PTR pConfig);

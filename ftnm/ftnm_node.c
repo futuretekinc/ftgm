@@ -1,17 +1,20 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "ftnm.h"
 #include "ftm_list.h"
 #include "ftnm_node.h"
 #include "ftnm_ep.h"
+#include "ftnm_node_snmpc.h"
 
 static FTM_LIST	xNodeList;
 
 FTM_VOID_PTR 	FTNM_NODE_task(FTM_VOID_PTR pData);
-static FTM_RET			FTNM_NODE_taskInit(FTNM_NODE_PTR pNode);
-static FTM_RET			FTNM_NODE_taskSync(FTNM_NODE_PTR pNode);
-static FTM_RET			FTNM_NODE_taskWait(FTNM_NODE_PTR pNode);
-static FTM_RET			FTNM_NODE_taskProcessing(FTNM_NODE_PTR pNode);
+static FTM_RET	FTNM_NODE_taskInit(FTNM_NODE_PTR pNode);
+static FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode);
+static FTM_RET	FTNM_NODE_taskInitEPScheduler(FTNM_NODE_PTR pNode);
+static FTM_RET	FTNM_NODE_taskWait(FTNM_NODE_PTR pNode);
+static FTM_RET	FTNM_NODE_taskProcessing(FTNM_NODE_PTR pNode);
 FTM_INT			FTNM_NODE_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 FTM_INT			FTNM_NODE_comparator(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
@@ -57,7 +60,7 @@ FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 	{
 	case	FTM_NODE_TYPE_SNMP:
 		{
-			pNewNode = (FTNM_NODE_PTR)FTM_MEM_calloc(1, sizeof(FTNM_NODE_SNMP));
+			pNewNode = (FTNM_NODE_PTR)FTM_MEM_calloc(1, sizeof(FTNM_NODE_SNMPC));
 			if (pNewNode == NULL)
 			{
 				ERROR("Not enough memory!\n");
@@ -222,16 +225,27 @@ FTM_VOID_PTR FTNM_NODE_task(FTM_VOID_PTR pData)
 
 		case	FTNM_NODE_STATE_SYNCHRONIZED:
 			{
-				FTNM_NODE_taskWait(pNode);
+				FTNM_NODE_taskInitEPScheduler(pNode);
 			}
 			break;
 
-		case	FTNM_NODE_STATE_CALL_FOR_PROCESSING:
+		case	FTNM_NODE_STATE_EP_SCHEDULED:
+		case	FTNM_NODE_STATE_PROCESSING:
+		case	FTNM_NODE_STATE_PROCESS_FINISHED:
+		case	FTNM_NODE_STATE_WAITING:
+			{
+				FTNM_NODE_taskWait(pNode);
+			}
+			break;
+	
+		case	FTNM_NODE_STATE_PROCESS_INIT:
 			{
 				FTNM_NODE_taskProcessing(pNode);	
 			}
 			break;
 		}
+
+		usleep(100000);
 	}
 
 	return	FTM_RET_OK;
@@ -258,29 +272,66 @@ FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_NODE_taskInitEPScheduler(FTNM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	if (FTNM_NODE_SNMPC_init((FTNM_NODE_SNMPC_PTR)pNode) != FTM_RET_OK)
+	{
+		ERROR("SNMP Client initialization failed.\n");	
+	}
+
+	pNode->xTimeout = time(0) + pNode->xInfo.ulInterval;
+	pNode->xState = FTNM_NODE_STATE_EP_SCHEDULED;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTNM_NODE_taskWait(FTNM_NODE_PTR pNode)
 {
+	if (time(NULL) >= pNode->xTimeout)
+	{
+		pNode->xTimeout = (FTM_ULONG)time(NULL) + pNode->xInfo.ulInterval;
+		pNode->xState = FTNM_NODE_STATE_PROCESS_INIT;
+	}
+	else
+	{
+		pNode->xState = FTNM_NODE_STATE_WAITING;
+		usleep(100000);
+	}
+
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_NODE_taskProcessing(FTNM_NODE_PTR pNode)
 {
 	FTM_RET				nRet;
-	FTNM_NODE_TASK_PTR	pTask;
+	time_t				xTime;
 
 	ASSERT(pNode != NULL);
+	
+	xTime = time(NULL);
+	TRACE("PThread = %08lx pDID = %s TIME : %s\n", pthread_self(), pNode->xInfo.pDID, ctime(&xTime));
 
-	pNode->xState = FTNM_NODE_STATE_PROCESSING;
-	while(pNode->xState == FTNM_NODE_STATE_PROCESSING)
+	switch(pNode->xInfo.xType)
 	{
-		nRet = 	FTM_LIST_getAt(&pNode->xTaskList, 0, (FTM_VOID_PTR _PTR_)&pTask);
-		if (nRet != FTM_RET_OK)
+	case	FTM_NODE_TYPE_SNMP:
 		{
-			pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;
-			break;	
+			nRet = FTNM_NODE_SNMPC_async((FTNM_NODE_SNMPC_PTR)pNode);
+			if (nRet != FTM_RET_OK)
+			{
+				pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;
+				return	nRet;
+			}
+			
+			pNode->xState = FTNM_NODE_STATE_PROCESSING;
 		}
-		
+		break;
+
+	default:
+		pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;
 	}
+
 
 	return	FTM_RET_OK;
 }

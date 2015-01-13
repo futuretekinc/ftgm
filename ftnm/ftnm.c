@@ -11,6 +11,7 @@ FTM_RET			FTNM_DMC_taskInit(FTNM_CONTEXT_PTR pContext);
 FTM_RET			FTNM_DMC_taskConnect(FTNM_CONTEXT_PTR pContext);
 FTM_RET			FTNM_DMC_taskSync(FTNM_CONTEXT_PTR pContext);
 FTM_RET			FTNM_DMC_taskRunChild(FTNM_CONTEXT_PTR pContext);
+FTM_RET			FTNM_DMC_taskWait(FTNM_CONTEXT_PTR pContext);
 
 FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pContext, FTNM_CFG_PTR pConfig)
 {
@@ -35,7 +36,9 @@ FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pContext, FTNM_CFG_PTR pConfig)
 		return	nRet;
 	}
 
-	pContext->pConfig = pConfig;
+	FTNM_CFG_copyCreate(&pContext->pConfig, pConfig);
+
+	FTNM_SNMPC_init();
 
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
@@ -43,6 +46,8 @@ FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pContext, FTNM_CFG_PTR pConfig)
 
 FTM_RET	FTNM_final(FTNM_CONTEXT_PTR pContext)
 {
+	FTNM_CFG_destroy(pContext->pConfig);
+
 	FTNM_EP_final();
 	FTNM_NODE_MNGR_final();
 
@@ -58,6 +63,7 @@ FTM_RET FTNM_DMC_run(FTNM_CONTEXT_PTR pContext)
 		return	FTM_RET_ERROR;	
 	}
 
+	pthread_join(pContext->xDMC.xThread, NULL);
 	return	FTM_RET_OK;
 }
 
@@ -94,7 +100,15 @@ FTM_VOID_PTR	FTNM_DMC_task(FTM_VOID_PTR pData)
 				FTNM_DMC_taskRunChild(pContext);	
 			}
 			break;
+
+		case	FTNM_DMC_STATE_PROCESS_FINISHED:
+			{
+				FTNM_DMC_taskWait(pContext);	
+			}
+			break;
 		}
+		
+		usleep(1000);
 	}
 
 	return	0;
@@ -226,5 +240,12 @@ FTM_RET	FTNM_DMC_taskRunChild(FTNM_CONTEXT_PTR pContext)
 		}
 	}
 	
+	pContext->xDMC.xState = FTNM_DMC_STATE_PROCESS_FINISHED;
+	return	FTM_RET_OK;
+}
+
+FTM_RET			FTNM_DMC_taskWait(FTNM_CONTEXT_PTR pContext)
+{
+	usleep(1000000);
 	return	FTM_RET_OK;
 }

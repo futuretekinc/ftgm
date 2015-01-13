@@ -69,6 +69,16 @@ FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)
 	return	nRet;
 }
 
+FTM_RET	FTNM_EP_count(FTM_ULONG_PTR pulCount)
+{
+	return	FTM_LIST_count(&xEPList, pulCount);
+}
+
+FTM_RET FTNM_EP_getAt(FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP)
+{
+	return	FTM_LIST_getAt(&xEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
+}
+
 FTM_RET	FTNM_EP_setNode(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode)
 {
 	ASSERT(pEP != NULL);
@@ -96,6 +106,5 @@ FTM_INT	FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pEle
 	FTNM_EP_PTR		pEP1 = (FTNM_EP_PTR)pElement1;
 	FTNM_EP_PTR		pEP2 = (FTNM_EP_PTR)pElement2;
 	
-	TRACE("pEP1 = %08lx, pEP2 = %08lx\n", pEP1->xInfo.xEPID, pEP2->xInfo.xEPID);
 	return	(pEP1->xInfo.xEPID - pEP2->xInfo.xEPID);
 }

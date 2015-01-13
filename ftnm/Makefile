@@ -3,13 +3,12 @@
 #CFLAGS=-c -fPIC -Wall -DDEBUG -I../devtools/include
 #LDFLAGS=-L../devtools/lib -lconfig -lftsom
 CC=gcc
-CFLAGS=-c -Wall -DDEBUG -I/usr/local/include -I../include -I../ftdm
+CFLAGS=-c -Wall -DDEBUG \
+		-I/usr/local/include \
+		-I../include -I../ftdm \
+		-D__malloc_and_calloc_defined=1 \
+		-D__need_malloc_and_calloc=1
 LDFLAGS= -L/usr/local/lib -L. -L../lib -L../ftdm
-
-SERVER=ftnm_server
-SERVER_SRCS=ftnm_server_main.c ftnm_debug.c
-SERVER_OBJS=$(SERVER_SRCS:.c=.o)
-SERVER_LDFLAGS=-L/usr/local/lib -L. -lftnm -lconfig -lsqlite3 -lpthread  -lnetsnmp
 
 FTNM=ftnm
 FTNM_SRCS=ftnm_main.c ftnm.c
@@ -18,7 +17,7 @@ FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmp
 
 LIB_FTNM=libftnm
 LIB_FTNM_INCS= ftnm.h 
-LIB_FTNM_SRCS= ftnm.c ftnm_server.c ftnm_node.c ftnm_ep.c ftnm_config.c
+LIB_FTNM_SRCS= ftnm.c ftnm_server.c ftnm_node.c ftnm_ep.c ftnm_config.c ftnm_node_snmpc.c
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)
 
 all: $(LIB_FTNM) $(FTNM)
@@ -28,9 +27,6 @@ $(CONSOLE): $(CONSOLE_OBJS)
 
 $(FTNM): $(FTNM_OBJS) $(LIB_FTNM)
 	$(CC) -o $@ $(FTNM_OBJS) $(FTNM_LDFLAGS)
-
-$(SERVER): $(SERVER_OBJS) $(LIB_FTNM)
-	$(CC) -o $@ $(SERVER_OBJS) $(SERVER_LDFLAGS)
 
 $(CLIENT): $(CLIENT_OBJS)
 	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)

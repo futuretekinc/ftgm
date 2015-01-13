@@ -501,8 +501,8 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 		MESSAGE("NODE COUNT : %d\n", nNodeCount);
 
-		MESSAGE("%16s %16s %16s %16s %16s %16s %16s\n", 
-			"DID", "TYPE", "LOCATION", "OPT0", "OPT1", "OPT2", "OPT3");
+		MESSAGE("%-16s %-16s %-16s %-8s %-16s %-16s %-16s\n", 
+			"DID", "TYPE", "LOCATION", "INTERVAL", "OPT0", "OPT1", "OPT2", "OPT3");
 
 		for(i = 0 ; i < nNodeCount; i++)
 		{
@@ -511,16 +511,17 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			nRet = FTDMC_getNodeInfoByIndex(&_xSession, i, &xInfo);
 			if (nRet == FTM_RET_OK)
 			{
-				MESSAGE("%16s %16s %16s ", 
+				MESSAGE("%-16s %-16s %-16s %8d ", 
 					xInfo.pDID, 
 					FTM_nodeTypeString(xInfo.xType), 
-					xInfo.pLocation);
+					xInfo.pLocation,
+					xInfo.ulInterval);
 
 				switch(xInfo.xType)
 				{
 				case	FTM_NODE_TYPE_SNMP:
 					{
-						MESSAGE("%16d %16s %16s", 
+						MESSAGE("%-16d %-16s %-16s", 
 							xInfo.xOption.xSNMP.nVersion,
 							xInfo.xOption.xSNMP.pURL,
 							xInfo.xOption.xSNMP.pCommunity);

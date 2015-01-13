@@ -32,13 +32,13 @@ FTM_CONSOLE_CMD	xConsoleCmds[] =
 };
 
 static FTNM_CONTEXT	xContext;
-static FTNM_CFG	xConfig;
 
 int main(int nArgc, char *pArgv[])
 {
 	FTM_INT				nOpt;
 	FTM_CHAR			pConfigFileName[1024];
 	FTM_BOOL			bDaemon = FTM_BOOL_FALSE;
+	FTNM_CFG_PTR		pConfig;
 	FTM_CONSOLE_CMD_PTR	pConsoleCmd;
 
 	FTM_MEM_init();
@@ -71,11 +71,12 @@ int main(int nArgc, char *pArgv[])
 		pConsoleCmd++;	
 	}
 
-	FTNM_CFG_init(&xConfig);
-	FTNM_CFG_load(&xConfig, pConfigFileName);
-	FTNM_CFG_show(&xConfig);
+	FTNM_CFG_create(&pConfig);
+	FTNM_CFG_load(pConfig, pConfigFileName);
+	FTNM_CFG_show(pConfig);
 
-	FTNM_init(&xContext, &xConfig);
+	FTNM_init(&xContext, pConfig);
+	FTNM_CFG_destroy(pConfig);
 
 	FTNM_DMC_run(&xContext);
 	
@@ -83,7 +84,6 @@ int main(int nArgc, char *pArgv[])
 
 	FTM_CONSOLE_final();
 	FTNM_final(&xContext);
-	FTNM_CFG_final(&xConfig);
 
 	FTM_MEM_final();
 
@@ -97,28 +97,48 @@ FTM_RET	FTM_CONSOLE_cmdList
 )
 {
 	FTNM_NODE_PTR	pNode;
+	FTNM_EP_PTR		pEP;
 	FTM_ULONG		i, ulNodeCount;
+	FTM_ULONG		j, ulEPCount;
 
+	MESSAGE("\n< NODE LIST >\n");
+	MESSAGE("%-16s %-8s %-16s\n", "DID", "STATE", "EPs");
 	FTNM_NODE_count(&ulNodeCount);
 	for(i = 0 ; i < ulNodeCount ; i++)
 	{
-		FTM_ULONG	j, ulEPCount;
-
 		FTNM_NODE_getAt(i, &pNode);
-		TRACE("DID = %s\n", pNode->xInfo.pDID);
-		TRACE("STATE = %08lx\n", pNode->xState);
+		MESSAGE("%-16s %08lx ", pNode->xInfo.pDID, pNode->xState);
 
 		FTNM_NODE_EP_count(pNode, &ulEPCount);
+		MESSAGE("%3d [ ", ulEPCount);
 		for(j = 0; j < ulEPCount ; j++)
 		{
-			FTNM_EP_PTR	pEP;
-
 			if (FTNM_NODE_EP_getAt(pNode, j, &pEP) == FTM_RET_OK)
 			{
-				TRACE("EPID = %08lx\n", pEP->xInfo.xEPID);
+				MESSAGE("%08lx ", pEP->xInfo.xEPID);
+			}
+		}
+		MESSAGE("]\n");
+	}
+	
+	MESSAGE("\n< EP LIST >\n");
+	MESSAGE("%-16s %-16s %-16s\n", "EPID", "TYPE", "DID");
+	FTNM_EP_count(&ulEPCount);
+	for(i = 0; i < ulEPCount ; i++)
+	{
+		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
+		{
+			MESSAGE("%08lx         ", pEP->xInfo.xEPID);
+			MESSAGE("%-16s ", FTM_getEPTypeString(pEP->xInfo.xType));
+			if (pEP->pNode != NULL)
+			{
+				MESSAGE("%-16s\n", pEP->pNode->xInfo.pDID);
+			}
+			else
+			{
+				MESSAGE("\n");
 			}
 		}
 	}
-	
 	return	FTM_RET_OK;
 }

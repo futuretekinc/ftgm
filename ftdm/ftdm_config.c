@@ -22,6 +22,7 @@
 #define	FTDM_FIELD_NODE_DID_STRING			"did"
 #define	FTDM_FIELD_NODE_TYPE_STRING			"type"
 #define	FTDM_FIELD_NODE_LOCATION_STRING		"location"
+#define	FTDM_FIELD_NODE_INTERVAL_STRING		"interval"
 #define	FTDM_FIELD_NODE_SNMP_STRING			"snmp"
 
 #define	FTDM_FIELD_SNMP_VERSION_STRING		"version"
@@ -581,6 +582,8 @@ FTM_RET	getNodeInfoByIndex(config_t *pConfig, FTM_ULONG ulIndex,  FTM_NODE_INFO_
 		config_setting_t	*pNode;
 		config_setting_t	*pField;
 
+		memset(&xNodeInfo, 0, sizeof(xNodeInfo));
+
 		pNode = config_setting_get_elem(pDefault, ulIndex);
 		if (pNode == NULL)
 		{
@@ -604,6 +607,12 @@ FTM_RET	getNodeInfoByIndex(config_t *pConfig, FTM_ULONG ulIndex,  FTM_NODE_INFO_
 		if(pField != NULL)
 		{
 			strncpy(xNodeInfo.pLocation, config_setting_get_string(pField), FTM_LOCATION_LEN);
+		}
+
+		pField = config_setting_get_member(pNode, FTDM_FIELD_NODE_INTERVAL_STRING);	
+		if(pField != NULL)
+		{
+			xNodeInfo.ulInterval = (FTM_ULONG)config_setting_get_int(pField);
 		}
 
 		switch(xNodeInfo.xType)

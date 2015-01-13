@@ -287,11 +287,12 @@ FTM_RET	FTDM_DBIF_insertNodeInfo
 	}
 
 	sprintf(pSQL, 
-			"INSERT INTO node_info (DID,TYPE,LOC,OPT0,OPT1,OPT2,OPT3) "\
-			"VALUES (\'%s\',%lu,\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')",
+			"INSERT INTO node_info (DID,TYPE,LOC,INTERVAL,OPT0,OPT1,OPT2,OPT3) "\
+			"VALUES (\'%s\',%lu,\'%s\',%lu,\'%s\',\'%s\',\'%s\',\'%s\')",
 			pNodeInfo->pDID, 
 			pNodeInfo->xType, 
 			pNodeInfo->pLocation,
+			pNodeInfo->ulInterval,
 			pOpt0,
 			pOpt1,
 			pOpt2,
@@ -360,6 +361,10 @@ static int _FTDM_DBIF_CB_getNodeInfo(void *pData, int nArgc, char **pArgv, char 
 		else if (strcmp(pColName[0], "LOC") == 0)
 		{
 			strncpy(pInfo->pLocation, pArgv[0], FTM_LOCATION_LEN);
+		}
+		else if (strcmp(pColName[0], "INTERVAL") == 0)
+		{
+			pInfo->ulInterval = strtoul(pArgv[0], NULL, 10);
 		}
 		else if (strcmp(pColName[0], "OPT0") == 0)
 		{
@@ -1347,13 +1352,14 @@ FTM_RET	_FTDM_BDIF_createNodeInfoTable
 	char			pSQL[1024];
 
 	sprintf(pSQL, "CREATE TABLE %s ("\
-						"DID	TEXT PRIMARY KEY,"\
-						"TYPE	INT,"\
-						"LOC	TEXT,"\
-						"OPT0	TEXT,"\
-						"OPT1	TEXT,"\
-						"OPT2	TEXT,"\
-						"OPT3	TEXT)", pTableName);
+						"DID		TEXT PRIMARY KEY,"\
+						"TYPE		INT,"\
+						"LOC		TEXT,"\
+						"INTERVAL	INT,"\
+						"OPT0		TEXT,"\
+						"OPT1		TEXT,"\
+						"OPT2		TEXT,"\
+						"OPT3		TEXT)", pTableName);
 
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)

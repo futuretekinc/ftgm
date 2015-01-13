@@ -1,0 +1,44 @@
+#ifndef	__FTM_VALUE_H__
+#define	__FTM_VALUE_H__
+
+#include "ftm_types.h"
+
+typedef	FTM_ULONG	FTM_VALUE_TYPE;
+
+#define	FTM_VALUE_DYNAMIC_MAGIC	0xA55AC33C
+
+#define	FTM_VALUE_TYPE_BYTE		1
+#define	FTM_VALUE_TYPE_USHORT	2
+#define	FTM_VALUE_TYPE_ULONG	3
+#define	FTM_VALUE_TYPE_STRING	4
+
+typedef	struct
+{
+	FTM_ULONG		xMagic;	
+	FTM_VALUE_TYPE	xType;
+	union
+	{
+		FTM_BYTE		bValue;
+		FTM_USHORT		usValue;
+		FTM_ULONG		ulValue;	
+		FTM_CHAR_PTR	pValue;	
+	}	xValue;
+	FTM_ULONG		ulLen;
+}	FTM_VALUE, _PTR_ FTM_VALUE_PTR;
+
+FTM_RET	FTM_VALUE_create(FTM_VALUE_PTR _PTR_ ppValue, FTM_VALUE_TYPE xType);
+FTM_RET	FTM_VALUE_destroy(FTM_VALUE_PTR pValue);
+
+FTM_RET	FTM_VALUE_init(FTM_VALUE_PTR pValue, FTM_VALUE_TYPE xType);
+FTM_RET	FTM_VALUE_final(FTM_VALUE_PTR pValue);
+
+FTM_BOOL	FTM_VALUE_isBYTE(FTM_VALUE_PTR pValue);
+FTM_BOOL	FTM_VALUE_isUsHORT(FTM_VALUE_PTR pValue);
+FTM_BOOL	FTM_VALUE_isULONG(FTM_VALUE_PTR pValue);
+FTM_BOOL	FTM_VALUE_isSTRING(FTM_VALUE_PTR pValue);
+
+FTM_RET	FTM_VALUE_setULONG(FTM_VALUE_PTR pValue, FTM_ULONG ulValue);
+FTM_RET	FTM_VALUE_getULONG(FTM_VALUE_PTR pValue, FTM_ULONG_PTR pulValue);
+
+#endif
+

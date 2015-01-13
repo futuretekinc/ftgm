@@ -95,6 +95,31 @@ FTM_RET	FTM_LIST_getAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition, FTM_VOID_PTR _P
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_LIST_iteratorStart(FTM_LIST_PTR pList)
+{
+	ASSERT(pList != NULL);
+	
+	if (list_iterator_start(&pList->xList) < 0)
+	{
+		return	FTM_RET_OBJECT_NOT_FOUND;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_LIST_iteratorNext(FTM_LIST_PTR pList, FTM_VOID_PTR _PTR_ ppElement)
+{
+	ASSERT(pList != NULL);
+	
+	*ppElement = list_iterator_next(&pList->xList);
+	if (*ppElement == NULL)
+	{
+		return	FTM_RET_OBJECT_NOT_FOUND;	
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_LIST_count(FTM_LIST_PTR pList, FTM_ULONG_PTR pulCount)
 {
 	ASSERT((pList != NULL) && (pulCount != NULL));

@@ -31,6 +31,7 @@ typedef	struct
 	FTM_CHAR			pDID[FTM_DID_LEN + 1];
 	FTM_NODE_TYPE		xType;
 	FTM_CHAR			pLocation[FTM_LOCATION_LEN + 1];
+	FTM_ULONG			ulInterval;
 	union 
 	{
 		FTM_SNMP_NODE_INFO	xSNMP;

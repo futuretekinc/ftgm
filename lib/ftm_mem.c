@@ -1,13 +1,16 @@
+#define	__FTM_MEM_H__
+
 #include <stdlib.h>
 #include <string.h>
 #include "ftm_types.h"
 #include "ftm_error.h"
 #include "ftm_debug.h"
-#include "ftm_mem.h"
 #include "simclist.h"
 
 typedef struct
 {
+	FTM_CHAR_PTR	pFile;
+	FTM_ULONG		ulLine;
 	size_t			xSize;
 	FTM_BYTE		pMem[];
 }	FTM_MEM_BLOCK, _PTR_ FTM_MEM_BLOCK_PTR;
@@ -36,11 +39,15 @@ FTM_RET			FTM_MEM_final(void)
 	{
 		FTM_MEM_BLOCK_PTR	pMB;
 
-		ERROR("Memory leak detected\n");	
+		MESSAGE("Memory leak detected\n");	
 		for(i = 0 ; i < ulLeakedBlockCount ; i++)
 		{
 			pMB = list_get_at(&xMemList, i);
-			ERROR("%3d : %08lx(%d)\n", i, pMB->pMem, pMB->xSize);
+			MESSAGE("%3d : %s[%3d] - %08lx(%d)\n", i, pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
+			if (pMB->pFile != NULL)
+			{
+				free(pMB->pFile);	
+			}
 			free(pMB);
 		}
 	}
@@ -50,7 +57,7 @@ FTM_RET			FTM_MEM_final(void)
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR	FTM_MEM_malloc(size_t xSize)
+FTM_VOID_PTR	FTM_MEM_TRACE_malloc(size_t xSize, const char *pFile, unsigned long ulLine)
 {
 	FTM_MEM_BLOCK_PTR	pMB;
 
@@ -60,13 +67,16 @@ FTM_VOID_PTR	FTM_MEM_malloc(size_t xSize)
 		return	NULL;
 	}
 
+	pMB->pFile = strdup(pFile);
+	pMB->ulLine= ulLine;
 	pMB->xSize = xSize;
 	list_append(&xMemList, pMB);
 
+	TRACE("Memory allocated.- %08lx(%3d) \n", pMB->pMem, xSize);
 	return	pMB->pMem;
 }
 
-FTM_VOID_PTR	FTM_MEM_calloc(size_t xNumber, size_t xSize)
+FTM_VOID_PTR	FTM_MEM_TRACE_calloc(size_t xNumber, size_t xSize, const char *pFile, unsigned long ulLine)
 {
 	FTM_MEM_BLOCK_PTR	pMB;
 
@@ -76,22 +86,32 @@ FTM_VOID_PTR	FTM_MEM_calloc(size_t xNumber, size_t xSize)
 		return	NULL;
 	}
 
+	memset(pMB, 0, sizeof(FTM_MEM_BLOCK) + xNumber * xSize);
+	pMB->pFile = strdup(pFile);
+	pMB->ulLine= ulLine;
 	pMB->xSize = xNumber * xSize;
-	memset(pMB->pMem, 0, xNumber * xSize);
 	list_append(&xMemList, pMB);
 
+	TRACE("Memory allocated.- %08lx(%3d) \n", pMB->pMem, xSize);
 	return	pMB->pMem;
 }
 
-FTM_VOID	FTM_MEM_free(FTM_VOID_PTR pMem)
+FTM_VOID	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long ulLine)
 {
 	FTM_MEM_BLOCK_PTR	pMB;
 
+	MESSAGE("Free(%08lx)\n", pMem);
 	pMB = list_seek(&xMemList, pMem);
 	if (pMB != NULL)
 	{
+		MESSAGE("%s[%3d] - %08lx(%d)\n", pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
 		list_delete(&xMemList, pMB);
+		free(pMB->pFile);
 		free(pMB);
+	}
+	else
+	{
+		ERROR("The memory block(%08lx) not found. - %s[%3d]\n", pMem, pFile, ulLine);
 	}
 }
 
