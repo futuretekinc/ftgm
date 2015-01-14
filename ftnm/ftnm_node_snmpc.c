@@ -29,25 +29,12 @@ FTM_RET	FTNM_SNMPC_final(FTM_VOID)
 
 FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 {
-	FTM_RET		nRet;
-	FTM_ULONG	ulEPCount;
+	FTM_RET				nRet;
+	FTM_ULONG			ulEPCount;
 
-	ASSERT((pClient != NULL) && (pNode != NULL));
+	ASSERT(pNode != NULL);
 
-	pNode->xSNMPC.nStatus = FTNM_SNMP_STATUS_COMPLETED;
 	FTM_LIST_init(&pNode->xSNMPC.xEPList);
-
-	snmp_sess_init(&pNode->xSNMPC.xSession);			/* initialize session */
-	pNode->xSNMPC.xSession.version 		= SNMP_VERSION_2c;// pNode->xCommon.xInfo.xOption.xSNMP.nVersion;
-	pNode->xSNMPC.xSession.peername 	= FTM_MEM_calloc(1, strlen(pNode->xCommon.xInfo.xOption.xSNMP.pURL) + 1);
-	strcpy(pNode->xSNMPC.xSession.peername, pNode->xCommon.xInfo.xOption.xSNMP.pURL);
-	pNode->xSNMPC.xSession.community_len= strlen(pNode->xCommon.xInfo.xOption.xSNMP.pCommunity);
-	pNode->xSNMPC.xSession.community 	= FTM_MEM_calloc(1, pNode->xSNMPC.xSession.community_len + 1);
-	memcpy(	pNode->xSNMPC.xSession.community, 
-			pNode->xCommon.xInfo.xOption.xSNMP.pCommunity, 
-			pNode->xSNMPC.xSession.community_len);
-	pNode->xSNMPC.xSession.callback 		= FTNM_NODE_SNMPC_asyncResponse;
-	pNode->xSNMPC.xSession.callback_magic= pNode;
 
 	nRet = FTNM_NODE_EP_count((FTNM_NODE_PTR)pNode, &ulEPCount);
 	if (nRet != FTM_RET_OK)
@@ -61,22 +48,42 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 
 		for(i = 0 ; i < ulEPCount ; i++)
 		{
-			FTNM_EP_PTR				pEP;
+			FTNM_EP_SNMP_PTR		pEP;
+			FTM_EP_CLASS_INFO_PTR	pEPClassInfo;
+			FTM_CHAR				pOIDName[1024];
 
-			FTNM_NODE_EP_getAt((FTNM_NODE_PTR)pNode, i, &pEP);
-			FTM_LIST_append(&pNode->xSNMPC.xEPList, pNode);
+			if (FTNM_NODE_EP_getAt((FTNM_NODE_PTR)pNode, i, (FTNM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
+			{
+				continue;
+			}
+
+			if (FTNM_EP_CLASS_INFO_get((pEP->xCommon.xInfo.xEPID & FTM_EP_CLASS_MASK), &pEPClassInfo) != FTM_RET_OK)
+			{
+				TRACE("EP CLASS[%08lx] information not found\n", pEP->xCommon.xInfo.xEPID);
+				continue;	
+			}
+
+			snprintf(pOIDName, sizeof(pOIDName) - 1, "%s::%s", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pEPClassInfo->xOIDs.pValue);
+			TRACE("OBJID : %s\n", pOIDName);
+			pEP->nOIDLen = MAX_OID_LEN;
+			if (read_objid(pOIDName, pEP->pOID, &pEP->nOIDLen) != 0)
+			{
+				TRACE("~~~~~~~~~~~~~~~~~~~~~\n");
+				continue;			
+			}
+
+			FTM_LIST_append(&pNode->xSNMPC.xEPList, pEP);
 		}
 	}
+	pNode->xSNMPC.nState = FTNM_SNMPC_STATE_INITIALIZED;
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_NODE_SNMPC_final(FTNM_NODE_SNMPC_PTR pNode)
 {
-	ASSERT(pClient != NULL);
+	ASSERT(pNode != NULL);
 
-	FTM_MEM_free(pNode->xSNMPC.xSession.peername);
-	FTM_MEM_free(pNode->xSNMPC.xSession.community);
 	FTM_LIST_destroy(&pNode->xSNMPC.xEPList);
 
 	return	FTM_RET_OK;
@@ -84,9 +91,9 @@ FTM_RET	FTNM_NODE_SNMPC_final(FTNM_NODE_SNMPC_PTR pNode)
 
 FTM_BOOL	FTNM_NODE_SNMPC_isRunning(FTNM_NODE_SNMPC_PTR pNode)
 {
-	ASSERT(pClient != NULL);
+	ASSERT(pNode != NULL);
 
-	if (pNode->xSNMPC.nStatus & FTNM_SNMP_STATUS_RUNNING)
+	if (pNode->xSNMPC.nState == FTNM_SNMPC_STATE_RUNNING)
 	{
 		return	FTM_BOOL_TRUE;	
 	}
@@ -96,9 +103,9 @@ FTM_BOOL	FTNM_NODE_SNMPC_isRunning(FTNM_NODE_SNMPC_PTR pNode)
 
 FTM_BOOL	FTNM_NODE_SNMPC_isCompleted(FTNM_NODE_SNMPC_PTR pNode)
 {
-	ASSERT(pClient != NULL);
+	ASSERT(pNode != NULL);
 
-	if (pNode->xSNMPC.nStatus & FTNM_SNMP_STATUS_COMPLETED)
+	if (pNode->xSNMPC.nState != FTNM_SNMPC_STATE_RUNNING)
 	{
 		return	FTM_BOOL_TRUE;	
 	}
@@ -106,55 +113,69 @@ FTM_BOOL	FTNM_NODE_SNMPC_isCompleted(FTNM_NODE_SNMPC_PTR pNode)
 	return	FTM_BOOL_FALSE;
 }
 
-FTM_RET FTNM_NODE_SNMPC_async(FTNM_NODE_SNMPC_PTR pNode)
+FTM_RET FTNM_NODE_SNMPC_startAsync(FTNM_NODE_SNMPC_PTR pNode)
 {
 	/* startup all hosts */
-	struct snmp_pdu *pPDU;
-	oid				pOID[MAX_OID_LEN];
-	size_t			nOIDLen = MAX_OID_LEN;
+	struct snmp_pdu 	*pPDU;
+	struct snmp_session	xSession;
+	oid					pOID[MAX_OID_LEN];
+	size_t				nOIDLen = MAX_OID_LEN;
 
-	ASSERT(pClient != NULL);
+	ASSERT(pNode != NULL);
+
+	snmp_sess_init(&xSession);			/* initialize session */
+
+	xSession.version 		= pNode->xCommon.xInfo.xOption.xSNMP.nVersion;
+	xSession.peername 		= pNode->xCommon.xInfo.xOption.xSNMP.pURL;
+	xSession.community 		= pNode->xCommon.xInfo.xOption.xSNMP.pCommunity;
+	xSession.community_len	= strlen(pNode->xCommon.xInfo.xOption.xSNMP.pCommunity);
+	xSession.callback 		= FTNM_NODE_SNMPC_asyncResponse;
+	xSession.callback_magic	= pNode;
 
 	FTM_LIST_iteratorStart(&pNode->xSNMPC.xEPList);
-	FTM_LIST_iteratorNext(&pNode->xSNMPC.xEPList, (FTM_VOID_PTR _PTR_)&pNode->xSNMPC.pCurrentEP);
-
-	pNode->xSNMPC.pSession = snmp_open(&pNode->xSNMPC.xSession);
-	if (pNode->xSNMPC.pSession == 0)
+	if (FTM_LIST_iteratorNext(&pNode->xSNMPC.xEPList, (FTM_VOID_PTR _PTR_)&pNode->xSNMPC.pCurrentEP) != FTM_RET_OK)
 	{
-		snmp_perror("snmp_open");
+		pNode->xSNMPC.nState = FTNM_SNMPC_STATE_COMPLETED;
+		return	FTM_RET_OK;
+	}
+
+	pNode->xSNMPC.pSession = snmp_open(&xSession);
+	if (pNode->xSNMPC.pSession == NULL)
+	{
+		ERROR("snmp_open: %s\n", snmp_errstring(snmp_errno));
+		pNode->xSNMPC.nState = FTNM_SNMPC_STATE_ERROR;
 		return	FTM_RET_COMM_ERROR;
 	}
 
 	if (read_objid("FTM50S-MIB::tempValue", pOID, &nOIDLen) == 0)
 	{
-		snmp_perror("read_objid");	
-		pNode->xSNMPC.nStatus = FTNM_SNMP_STATUS_COMPLETED;
+		ERROR("read_objid: %s\n", snmp_errstring(snmp_errno));
 		return	FTM_RET_ERROR;
 	} 
 
 	pPDU = snmp_pdu_create(SNMP_MSG_GET);	/* send the first GET */
 	if (pPDU == NULL)
 	{
+		ERROR("snmp_pdu_create: %s\n", snmp_errstring(snmp_errno));
 		snmp_close(pNode->xSNMPC.pSession);
 		pNode->xSNMPC.pSession = NULL;
 
-		snmp_perror("snmp_pdu_create");
 		return	FTM_RET_COMM_ERROR;
 	}
-
-	pNode->xSNMPC.nStatus = 0;
 
 	snmp_add_null_var(pPDU, pOID, nOIDLen);
 	if (snmp_send(pNode->xSNMPC.pSession, pPDU) == 0)
 	{
-		snmp_perror("snmp_send");
+		ERROR("snmp_send: %s\n", snmp_errstring(snmp_errno));
+		pNode->xSNMPC.nState = FTNM_SNMPC_STATE_ERROR;
 		snmp_free_pdu(pPDU);
 		return	FTM_RET_COMM_ERROR;
 	}
 
-	pNode->xSNMPC.nStatus = FTNM_SNMP_STATUS_RUNNING;
-
-
+	pNode->xSNMPC.xStatistics.ulRequest++;
+	pNode->xSNMPC.nState = FTNM_SNMPC_STATE_RUNNING;
+	pNode->xSNMPC.xTimeout = time(NULL) + 5;
+	
 	return	FTM_RET_OK;
 }
 
@@ -170,8 +191,18 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 	FTM_RET					nRet;
 	FTNM_NODE_SNMPC_PTR		pNode = (FTNM_NODE_SNMPC_PTR)pParams;
 
+	TRACE("Accept SNMP Response[nOperation = %d]\n", nOperation);
 	switch(nOperation)
 	{
+	case	NETSNMP_CALLBACK_OP_TIMED_OUT:
+		{
+			if (pNode->xSNMPC.pSession != NULL)
+			{
+				pNode->xSNMPC.nState = FTNM_SNMPC_STATE_TIMEOUT;
+			}
+		}
+		break;
+
 	case	NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE: 
 		{
 			if (pRespPDU->errstat == SNMP_ERR_NOERROR) 
@@ -184,6 +215,8 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 					print_variable(pVariable->name, pVariable->name_length, pVariable);
 					pVariable= pVariable->next_variable;
 				}
+
+				pNode->xSNMPC.xStatistics.ulResponse++;
 			}
 			else
 			{
@@ -193,13 +226,13 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 			nRet = FTM_LIST_iteratorNext(&pNode->xSNMPC.xEPList,(FTM_VOID_PTR _PTR_)&pNode->xSNMPC.pCurrentEP);
 			if (nRet == FTM_RET_OK)
 			{
-				oid					pOID[MAX_OID_LEN];
-				size_t				nOIDLen = MAX_OID_LEN;
+				oid		pOID[MAX_OID_LEN];
+				size_t	nOIDLen = MAX_OID_LEN;
 
 				if (read_objid("FTM50S-MIB::tempValue", pOID, &nOIDLen) == 0)
 				{
 					snmp_perror("read_objid");	
-					pNode->xSNMPC.nStatus = FTNM_SNMP_STATUS_COMPLETED;
+					pNode->xSNMPC.nState = FTNM_SNMPC_STATE_ERROR;
 				} 
 				else
 				{
@@ -212,15 +245,14 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 					{
 						snmp_perror("snmp_send");
 						snmp_free_pdu(pPDU);
-						pNode->xSNMPC.nStatus = FTNM_SNMP_STATUS_COMPLETED;
+						pNode->xSNMPC.nState = FTNM_SNMPC_STATE_ERROR;
 					}
+					pNode->xSNMPC.xStatistics.ulRequest++;
 				}
-				
-				return 1;
 			}
 			else
 			{
-				pNode->xSNMPC.nStatus = FTNM_SNMP_STATUS_COMPLETED;
+				pNode->xSNMPC.nState = FTNM_SNMPC_STATE_COMPLETED;
 			}
 		}
 		break;
@@ -234,3 +266,13 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 
 }
 
+FTM_RET	FTNM_NODE_SNMPC_stop(FTNM_NODE_SNMPC_PTR pNode)
+{
+	if (pNode->xSNMPC.pSession != NULL)
+	{
+		snmp_close(pNode->xSNMPC.pSession);
+		pNode->xSNMPC.pSession = NULL;
+	}
+
+	return	FTM_RET_OK;
+}

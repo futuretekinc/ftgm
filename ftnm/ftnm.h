@@ -10,6 +10,7 @@
 #include "ftnm_config.h"
 #include "ftnm_node.h"
 #include "ftnm_ep.h"
+#include "ftnm_ep_class.h"
 
 typedef	FTM_ULONG	FTNM_DMC_STATE;
 

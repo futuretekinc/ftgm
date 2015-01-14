@@ -18,18 +18,31 @@ typedef	struct
 typedef	struct
 {
 	FTNM_EP			xCommon;
-}	FTNM_EP_SNMP, _PTR_ FTNMP_EP_SNMP_PTR;
 
-#define	FTNM_SNMP_STATUS_RUNNING		0x00000001
-#define	FTNM_SNMP_STATUS_COMPLETED		0x00000010
+	oid				pOID[MAX_OID_LEN];
+	FTM_INT			nOIDLen;
+}	FTNM_EP_SNMP, _PTR_ FTNM_EP_SNMP_PTR;
+
+#define	FTNM_SNMPC_STATE_UNKNOWN		0x00000000
+#define	FTNM_SNMPC_STATE_INITIALIZED	0x00000001
+#define	FTNM_SNMPC_STATE_COMPLETED		0x00000002
+#define	FTNM_SNMPC_STATE_RUNNING		0x00000003
+#define	FTNM_SNMPC_STATE_TIMEOUT		0x00000004
+#define	FTNM_SNMPC_STATE_ERROR			0x00000005
 
 typedef	struct
 {
-	FTM_ULONG				nStatus;
+	FTM_ULONG				nState;
 	FTM_LIST				xEPList;
 	FTNM_EP_PTR				pCurrentEP;
-	struct snmp_session 	xSession;		/* SNMP session data */
 	struct snmp_session 	*pSession;		/* SNMP session data */
+	time_t					xTimeout;
+	struct 
+	{
+		
+		FTM_ULONG				ulRequest;
+		FTM_ULONG				ulResponse;
+	}	xStatistics;	
 }	FTNM_SNMPC, _PTR_ FTNM_SNMPC_PTR;
 
 typedef	FTM_ULONG		FTNM_NODE_STATE;
@@ -40,16 +53,12 @@ typedef	FTM_ULONG		FTNM_NODE_STATE;
 #define	FTNM_NODE_STATE_INITIALIZED				0x00000004
 #define	FTNM_NODE_STATE_SYNCING					0x00000005
 #define	FTNM_NODE_STATE_SYNCHRONIZED			0x00000006
-#define	FTNM_NODE_STATE_EP_SCHEDULED			0x00000007
-#define	FTNM_NODE_STATE_CALLED					0x00000008
-#define	FTNM_NODE_STATE_WAITING					0x00000009
 #define	FTNM_NODE_STATE_PROCESS_INIT			0x0000001B
-#define	FTNM_NODE_STATE_PROCESSING				0x0000000B
+#define	FTNM_NODE_STATE_RUN						0x0000001C
+#define	FTNM_NODE_STATE_RUNNING					0x0000000B
 #define	FTNM_NODE_STATE_PROCESS_FINISHED		0x0000000C
-#define	FTNM_NODE_STATE_PAUSED					0x0000000D
-#define	FTNM_NODE_STATE_INACTIVATED				0x0000000E
-#define	FTNM_NODE_STATE_FINISHING				0x0000000F
 #define	FTNM_NODE_STATE_FINISHED				0x00000010
+#define	FTNM_NODE_STATE_ABORT					0x00000001
 
 typedef	struct _FTNM_NODE
 {
@@ -61,7 +70,7 @@ typedef	struct _FTNM_NODE
 	pthread_mutex_t		xMutexLock;
 	FTNM_NODE_STATE		xState;
 	FTM_ULONG			ulRetry;
-	time_t				xTimeout;
+	int64_t				xTimeout;
 	FTM_LIST			xTaskList;
 }	FTNM_NODE, _PTR_ FTNM_NODE_PTR;
 

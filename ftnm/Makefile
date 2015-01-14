@@ -17,7 +17,7 @@ FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmp
 
 LIB_FTNM=libftnm
 LIB_FTNM_INCS= ftnm.h 
-LIB_FTNM_SRCS= ftnm.c ftnm_server.c ftnm_node.c ftnm_ep.c ftnm_config.c ftnm_node_snmpc.c
+LIB_FTNM_SRCS= ftnm.c ftnm_server.c ftnm_node.c ftnm_ep.c ftnm_ep_class.c ftnm_config.c ftnm_node_snmpc.c
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)
 
 all: $(LIB_FTNM) $(FTNM)

@@ -16,5 +16,6 @@ FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR pEP);
 FTM_RET	FTNM_EP_count(FTM_ULONG_PTR pulCount);
 FTM_RET	FTNM_EP_setNode(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode);
 
+FTM_RET FTNM_EP_getAt(FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP);
 #endif
 

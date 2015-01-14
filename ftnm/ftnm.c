@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include "ftnm.h"
 #include "ftdm_client.h"
+#include "ftnm_node_snmpc.h"
 
 FTM_VOID_PTR	FTNM_DMC_task(FTM_VOID_PTR pData);
 FTM_RET			FTNM_DMC_taskInit(FTNM_CONTEXT_PTR pContext);
@@ -32,6 +33,15 @@ FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pContext, FTNM_CFG_PTR pConfig)
 	if (nRet != FTM_RET_OK)
 	{
 		ERROR("EP manager initialization failed.\n");
+		FTNM_NODE_MNGR_final();
+		return	nRet;
+	}
+
+	nRet = FTNM_EP_CLASS_INFO_init();
+	if (nRet != FTM_RET_OK)
+	{
+		ERROR("EP manager initialization failed.\n");
+		FTNM_EP_final();
 		FTNM_NODE_MNGR_final();
 		return	nRet;
 	}
@@ -190,7 +200,6 @@ FTM_RET	FTNM_DMC_taskSync(FTNM_CONTEXT_PTR pContext)
 		return	nRet;	
 	}
 
-	TRACE("EP Info count : %d\n", ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTNM_NODE_PTR	pNode;
@@ -220,6 +229,33 @@ FTM_RET	FTNM_DMC_taskSync(FTNM_CONTEXT_PTR pContext)
 		TRACE("EP[%08lx] creating success.\n", pEP->xInfo.xEPID);
 	}
 
+	nRet = FTDMC_getEPClassInfoCount(&pContext->xDMC.xSession, &ulCount);
+	if (nRet != FTM_RET_OK)
+	{
+		return	nRet;	
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTNM_NODE_PTR		pNode;
+		FTM_EP_CLASS_INFO	xEPClassInfo;
+		FTNM_EP_PTR			pEP;
+
+		nRet = FTDMC_getEPClassInfoByIndex(&pContext->xDMC.xSession, i, &xEPClassInfo);
+		if (nRet != FTM_RET_OK)
+		{
+			ERROR("FTDMC_getEPInfoByIndex(%08lx, %d, &xEPInfo) = %08lx\n",
+					pContext->xDMC.xSession.hSock, i, nRet);
+			continue;
+		}
+
+		nRet = FTNM_EP_CLASS_INFO_create(&xEPClassInfo);
+		if (nRet != FTM_RET_OK)
+		{
+			ERROR("FTNM_EP_CLASS_append(&xEPClassInfo) = %08lx\n", nRet);
+			continue;	
+		}
+	}
 
 
 	pContext->xDMC.xState = FTNM_DMC_STATE_SYNCHRONIZED;
