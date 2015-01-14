@@ -18,7 +18,7 @@ FTM_RET 	FTDM_init(FTDM_CFG_PTR pConfig)
 
 	FTDM_initNodeInfo(&pConfig->xNode);
 	FTDM_initEPInfo(&pConfig->xEP);
-	FTDM_initEPClassInfo();
+	FTDM_initEPClassInfo(&pConfig->xEP);
 
 	TRACE("FTDM initialization completed successfully.\n");
 

@@ -560,6 +560,144 @@ FTM_RET	FTDMC_getEPInfoByIndex
 /*****************************************************************
  *
  *****************************************************************/
+FTM_RET	FTDMC_getEPClassInfoCount
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG_PTR			pnCount
+)
+{
+	FTM_RET						nRet;
+	FTDM_REQ_GET_EP_CLASS_INFO_COUNT_PARAMS	xReq;
+	FTDM_RESP_GET_EP_CLASS_INFO_COUNT_PARAMS	xResp;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	if (pnCount == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	xReq.xCmd	=	FTDM_CMD_GET_EP_CLASS_INFO_COUNT;
+	xReq.nLen	=	sizeof(xReq);
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	nRet;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		*pnCount = xResp.nCount;
+	}
+
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET	FTDMC_getEPClassInfo
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_EP_CLASS			xEPClass,
+	FTM_EP_CLASS_INFO_PTR	pInfo
+)
+{
+	FTM_RET						nRet;
+	FTDM_REQ_GET_EP_CLASS_INFO_PARAMS		xReq;
+	FTDM_RESP_GET_EP_CLASS_INFO_PARAMS	xResp;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	if (pInfo == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	xReq.xCmd		=	FTDM_CMD_GET_EP_CLASS_INFO;
+	xReq.nLen		=	sizeof(xReq);
+	xReq.xEPClass	=	xEPClass;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_CLASS_INFO));
+	}
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET	FTDMC_getEPClassInfoByIndex
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				nIndex,
+	FTM_EP_CLASS_INFO_PTR		pInfo
+)
+{
+	FTM_RET								nRet;
+	FTDM_REQ_GET_EP_CLASS_INFO_BY_INDEX_PARAMS	xReq;
+	FTDM_RESP_GET_EP_CLASS_INFO_BY_INDEX_PARAMS	xResp;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	if (pInfo == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	xReq.xCmd	=	FTDM_CMD_GET_EP_CLASS_INFO_BY_INDEX;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.nIndex	=	nIndex;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_CLASS_INFO));
+	}
+	
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
 FTM_RET	FTDMC_appendEPData
 (
 	FTDMC_SESSION_PTR		pSession,
@@ -915,7 +1053,7 @@ FTM_RET FTDMC_request
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-	TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, nReqLen);
+//	TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, nReqLen);
 
 
 	if( send(pSession->hSock, pReq, nReqLen, 0) < 0)
@@ -929,7 +1067,7 @@ FTM_RET FTDMC_request
 		int	nLen = recv(pSession->hSock, pResp, nRespLen, MSG_DONTWAIT);
 		if (nLen > 0)
 		{
-			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
+//			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
 			return	FTM_RET_OK;	
 		}
 

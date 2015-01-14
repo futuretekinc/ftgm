@@ -16,6 +16,12 @@ static FTM_RET	FTDM_LIST_delEPClassInfo
  	FTM_EP_CLASS_INFO_PTR	pEPClassInfo
 );
 
+static FTM_RET	FTDM_LIST_isExistEPClassInfo
+(
+ 	FTM_EP_CLASS			xClass,
+	FTM_BOOL_PTR			pExist
+);
+
 FTM_RET	FTDM_LIST_getEPClassInfo
 (
  	FTM_EP_CLASS				xClass,
@@ -32,9 +38,11 @@ static list_t	xEPClassInfoList;
 
 FTM_RET	FTDM_initEPClassInfo
 (
-	FTM_VOID
+	FTDM_CFG_EP_PTR	pConfig
 )
 {
+	FTM_ULONG	nMaxEPCount = 0;
+
 	if (list_init(&xEPClassInfoList) < 0)
 	{
 		return	FTM_RET_INTERNAL_ERROR;	
@@ -42,6 +50,26 @@ FTM_RET	FTDM_initEPClassInfo
 
 	list_attributes_seeker(&xEPClassInfoList, FTDM_EPSeeker);
 
+	if (FTDM_CFG_getEPClassInfoCount(pConfig, &nMaxEPCount) == FTM_RET_OK)
+	{
+		FTM_ULONG	i;
+
+		for(i = 0 ; i < nMaxEPCount ; i++)
+		{
+			FTM_EP_CLASS_INFO	xEPClassInfo;
+
+			if (FTDM_CFG_getEPClassInfoByIndex(pConfig, i, &xEPClassInfo) == FTM_RET_OK)
+			{
+				FTM_BOOL	bExist;
+
+				FTDM_LIST_isExistEPClassInfo(xEPClassInfo.xClass, &bExist);
+				if (!bExist)
+				{
+					FTDM_addEPClassInfo(&xEPClassInfo);	
+				}
+			}
+		}
+	}
 	return	FTM_RET_OK;
 }
 
@@ -252,3 +280,23 @@ FTM_RET	FTDM_LIST_getEPClassInfo
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
+FTM_RET	FTDM_LIST_isExistEPClassInfo
+(
+ 	FTM_EP_CLASS			xClass,
+	FTM_BOOL_PTR			pExist
+)
+{
+	FTM_EP_CLASS_INFO_PTR	pEPClassInfo = NULL;
+
+	pEPClassInfo = (FTM_EP_CLASS_INFO_PTR)list_seek(&xEPClassInfoList, &xClass);
+	if (pEPClassInfo != NULL)
+	{
+		*pExist = FTM_BOOL_TRUE;
+
+		return	FTM_RET_OK;
+	}
+
+	*pExist = FTM_BOOL_FALSE;
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
+}

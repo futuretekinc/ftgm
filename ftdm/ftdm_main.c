@@ -10,7 +10,7 @@
 #include "ftdm_params.h"
 #include "ftdm_server.h"
 #include "ftdm_config.h"
-#include "debug.h"
+#include "ftm_debug.h"
 
 static FTM_VOID			_showUsage(FTM_CHAR_PTR pAppName);
 

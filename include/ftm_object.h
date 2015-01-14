@@ -5,6 +5,7 @@
 #define	FTM_URL_LEN							256
 #define	FTM_LOCATION_LEN					256
 #define	FTM_SNMP_COMMUNITY_LEN				128
+#define	FTM_SNMP_MIB_LEN					128
 
 #define	FTM_NAME_LEN						256
 #define	FTM_UNIT_LEN						32
@@ -24,6 +25,7 @@ typedef	struct
 	FTM_ULONG			nVersion;
 	FTM_CHAR			pURL[FTM_URL_LEN + 1];
 	FTM_CHAR			pCommunity[FTM_SNMP_COMMUNITY_LEN + 1];
+	FTM_CHAR			pMIB[FTM_SNMP_MIB_LEN + 1];
 }	FTM_SNMP_NODE_INFO, _PTR_ FTM_SNMP_NODE_INFO_PTR;
 
 typedef	struct 

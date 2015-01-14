@@ -3,7 +3,7 @@
 
 FTM_RET	FTDM_initEPClassInfo
 (
- 	FTM_VOID
+	FTDM_CFG_EP_PTR	pConfig
 );
 
 FTM_RET FTDM_finalEPClassInfo

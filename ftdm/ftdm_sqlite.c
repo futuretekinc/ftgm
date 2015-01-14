@@ -222,6 +222,12 @@ static int _FTDM_DBIF_CB_getNodeList(void *pData, int nArgc, char **pArgv, char 
 			}
 			else if (strcasecmp(pColName[i], "OPT3") == 0)
 			{
+				switch (pNodeInfo->xType)
+				{
+				case	FTM_NODE_TYPE_SNMP:
+					strncpy(pNodeInfo->xOption.xSNMP.pMIB, pArgv[i], FTM_SNMP_MIB_LEN);
+					break;
+				}
 			}
 		}
 	}
@@ -286,6 +292,7 @@ FTM_RET	FTDM_DBIF_insertNodeInfo
 			sprintf(pOpt0, "%lu", pNodeInfo->xOption.xSNMP.nVersion);
 			sprintf(pOpt1, "%s", pNodeInfo->xOption.xSNMP.pURL);
 			sprintf(pOpt2, "%s", pNodeInfo->xOption.xSNMP.pCommunity);
+			sprintf(pOpt3, "%s", pNodeInfo->xOption.xSNMP.pMIB);
 		}
 		break;
 	}

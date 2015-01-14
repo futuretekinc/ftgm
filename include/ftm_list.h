@@ -6,6 +6,7 @@
 typedef	struct
 {
 	list_t		xList;	
+	FTM_BOOL	bIterator;
 }	FTM_LIST, _PTR_ FTM_LIST_PTR;
 
 typedef	FTM_INT	(*FTM_LIST_ELEM_seeker)(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);

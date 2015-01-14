@@ -21,7 +21,7 @@ void printOut
 	...
 );
 
-#define	ASSERT(...)
+#define	ASSERT(x)	{ if (!(x)) printOut(MSG_ERROR, __func__, __LINE__, "%s", #x); }
 
 FTM_VOID	FTM_dumpPacket
 (

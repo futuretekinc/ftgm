@@ -89,9 +89,20 @@ FTM_RET	FTDM_delEPClassInfo
 	FTM_EP_CLASS			xClass
 );
 
+FTM_RET	FTDM_getEPClassInfoCount
+(
+	FTM_ULONG_PTR			pulCount
+);
+
 FTM_RET	FTDM_getEPClassInfo
 (
 	FTM_EP_CLASS			xClass,
+	FTM_EP_CLASS_INFO_PTR	pInfo
+);
+
+FTM_RET	FTDM_getEPClassInfoByIndex
+(
+	FTM_ULONG				nIndex,
 	FTM_EP_CLASS_INFO_PTR	pInfo
 );
 

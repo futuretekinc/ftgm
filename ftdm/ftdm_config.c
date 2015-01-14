@@ -28,6 +28,7 @@
 #define	FTDM_FIELD_SNMP_VERSION_STRING		"version"
 #define	FTDM_FIELD_SNMP_URL_STRING			"url"
 #define	FTDM_FIELD_SNMP_COMMUNITY_STRING	"community"
+#define	FTDM_FIELD_SNMP_MIB_STRING			"mib"
 
 #define	FTDM_FIELD_EP_ID_STRING				"epid"
 #define	FTDM_FIELD_EP_TYPE_STRING			"type"
@@ -178,6 +179,7 @@ FTM_RET	FTDM_CFG_load(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		FTM_ULONG			i;
 		FTM_EP_CLASS_INFO	xInfo;
 
+		TRACE("EP Class : %d\n", ulCount);
 		for( i = 0 ; i < ulCount ; i++)
 		{
 			getEPClassInfoByIndex(&xConfig, i, &xInfo);
@@ -202,8 +204,8 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 	MESSAGE("\t %-8s : %s\n", "DB FILE", pConfig->xDB.pFileName);
 
 	MESSAGE("\n[ NODE ]\n");
-	MESSAGE("\t%-16s %-16s %-16s %-16s %-16s %-16s %-16s\n",
-			"DID", "TYPE", "LOCATION", "INTERVAL" "OPT0", "OPT1", "OPT2");
+	MESSAGE("\t%-16s %-16s %-16s %-16s %-16s %-16s %-16s %-16s\n",
+			"DID", "TYPE", "LOCATION", "INTERVAL","OPT0", "OPT1", "OPT2", "OPT3");
 	if (FTDM_CFG_getNodeInfoCount(&pConfig->xNode, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -211,14 +213,15 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 			FTM_NODE_INFO	xNodeInfo;
 
 			FTDM_CFG_getNodeInfoByIndex(&pConfig->xNode, i, &xNodeInfo);
-			MESSAGE("\t%-16s %-16s %-16s %8d %-16s %-16s %-16s\n",
+			MESSAGE("\t%-16s %-16s %-16s %-16d %-16s %-16s %-16s %-16s\n",
 				xNodeInfo.pDID,
 				getNodeTypeString(xNodeInfo.xType),
 				xNodeInfo.pLocation,
 				xNodeInfo.ulInterval,
 				getSNMPVersionString(xNodeInfo.xOption.xSNMP.nVersion),
 				xNodeInfo.xOption.xSNMP.pURL,
-				xNodeInfo.xOption.xSNMP.pCommunity);
+				xNodeInfo.xOption.xSNMP.pCommunity,
+				xNodeInfo.xOption.xSNMP.pMIB);
 		}
 	}
 
@@ -233,7 +236,7 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 			FTM_EP_INFO	xEPInfo;
 
 			FTDM_CFG_getEPInfoByIndex(&pConfig->xEP, i, &xEPInfo);
-			MESSAGE("\t%08lx %-16s %-16s %-8s %8lu %-16s %-16s\n",
+			MESSAGE("\t%08lx %-16s %-16s %-8s %-8lu %-16s %-16s\n",
 				xEPInfo.xEPID,
 				getEPTypeString(xEPInfo.xType),
 				xEPInfo.pName,
@@ -643,6 +646,12 @@ FTM_RET	getNodeInfoByIndex(config_t *pConfig, FTM_ULONG ulIndex,  FTM_NODE_INFO_
 						strncpy(xNodeInfo.xOption.xSNMP.pCommunity, config_setting_get_string(pField), FTM_SNMP_COMMUNITY_LEN);
 					}
 
+					pField = config_setting_get_member(pSNMP, FTDM_FIELD_SNMP_MIB_STRING);
+					if (pField != NULL)
+					{
+						strncpy(xNodeInfo.xOption.xSNMP.pMIB, config_setting_get_string(pField), FTM_SNMP_MIB_LEN);
+					}
+
 				}
 			}
 			break;
@@ -787,7 +796,7 @@ FTM_RET	getEPClassInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount)
 	config_setting_t *pSection;
 	config_setting_t *pField;
 	
-	ASSERT(pCount != NULL);
+	ASSERT(pConfig != NULL);
 
 	if (pConfig == NULL)
 	{
@@ -803,7 +812,8 @@ FTM_RET	getEPClassInfoCount(config_t *pConfig, FTM_ULONG_PTR pCount)
 	}
 
 	pField = config_setting_get_member(pSection, FTDM_FIELD_EP_CLASSES_STRING);
-
+	
+	TRACE("pField = %08lx\n", pField);
 	if ((pField != NULL) && (config_setting_is_list(pField) == CONFIG_TRUE))
 	{
 		*pCount	= config_setting_length(pField);
@@ -823,12 +833,7 @@ FTM_RET	getEPClassInfo(config_t *pConfig, FTM_EP_CLASS xClass, FTM_EP_CLASS_INFO
 	config_setting_t *pItem;
 	config_setting_t *pField;
 	
-	ASSERT(pCount != NULL);
-
-	if (pConfig == NULL)
-	{
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
+	ASSERT((pConfig != NULL) && (pInfo != NULL));
 
 	pSection = config_lookup(pConfig, FTDM_SECTION_EP_STRING);
 	if (pSection == NULL)
@@ -911,12 +916,7 @@ FTM_RET	getEPClassInfoByIndex(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS
 	config_setting_t *pItem;
 	config_setting_t *pField;
 	
-	ASSERT(pCount != NULL);
-
-	if (pConfig == NULL)
-	{
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
+	ASSERT((pConfig != NULL) && (pInfo!= NULL));
 
 	pSection = config_lookup(pConfig, FTDM_SECTION_EP_STRING);
 	if (pSection == NULL)
