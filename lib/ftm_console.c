@@ -72,7 +72,7 @@ FTM_CONSOLE_CMD	xDefaultCmds[] =
 FTM_CHAR		pConsolePrompt[128] = "FTM > ";
 list_t			xCmdList;
 
-FTM_RET	FTM_CONSOLE_run(void)
+FTM_RET FTM_CONSOLE_run(FTM_CONSOLE_CMD_PTR pExtCmds, FTM_ULONG ulExtCmds)
 {
 	FTM_RET			nRet;
 	FTM_BOOL		bQuit = FTM_BOOL_FALSE;
@@ -80,6 +80,7 @@ FTM_RET	FTM_CONSOLE_run(void)
 	FTM_INT			nArgc;
 	FTM_CHAR_PTR	pArgv[FTM_CONSOLE_MAX_ARGS];
 
+	FTM_CONSOLE_init(pExtCmds, ulExtCmds);
 	
 	while(!bQuit)
 	{
@@ -125,9 +126,10 @@ FTM_RET	FTM_CONSOLE_run(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_CONSOLE_init(FTM_VOID)
+FTM_RET FTM_CONSOLE_init(FTM_CONSOLE_CMD_PTR pExtCmds, FTM_ULONG ulExtCmds)
 {
 	FTM_CONSOLE_CMD_PTR	pCmd;
+	FTM_ULONG			i;
 
 	list_init(&xCmdList);
 	list_attributes_seeker(&xCmdList, FTM_CONSOLE_compCmd);
@@ -137,6 +139,11 @@ FTM_RET FTM_CONSOLE_init(FTM_VOID)
 	{
 		list_append(&xCmdList, pCmd);
 		pCmd++;	
+	}
+
+	for(i = 0 ; i < ulExtCmds ; i++)
+	{
+		list_append(&xCmdList, &pExtCmds[i]);
 	}
 
 	return	FTM_RET_OK;

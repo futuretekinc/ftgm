@@ -1,5 +1,7 @@
 #define	__FTM_MEM_H__
 
+#define	TRACE_OFF
+
 #include <stdlib.h>
 #include <string.h>
 #include "ftm_types.h"
@@ -100,7 +102,6 @@ FTM_VOID	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long 
 {
 	FTM_MEM_BLOCK_PTR	pMB;
 
-	MESSAGE("Free(%08lx)\n", pMem);
 	pMB = list_seek(&xMemList, pMem);
 	if (pMB != NULL)
 	{

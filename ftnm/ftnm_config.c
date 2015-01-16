@@ -60,11 +60,13 @@ FTM_RET	FTNM_CFG_init(FTNM_CFG_PTR pConfig)
 {
 	ASSERT(pConfig != NULL);
 
-	strcpy(pConfig->xClient.xNetwork.pServerIP, "127.0.0.1");
-	pConfig->xClient.xNetwork.usPort = 8888;
+	memset(pConfig, 0, sizeof(FTNM_CFG));
 
-	pConfig->xServer.usPort			= 8889;
-	pConfig->xServer.ulMaxSession	= 10;
+	strcpy(pConfig->xClient.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
+	pConfig->xClient.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
+
+	pConfig->xServer.usPort			= FTNM_DEFAULT_SERVER_PORT;
+	pConfig->xServer.ulMaxSession	= FTNM_DEFAULT_SERVER_SESSION_COUNT	;
 
 	FTM_LIST_init(&pConfig->xSNMPC.xMIBList);
 
@@ -102,6 +104,42 @@ FTM_RET FTNM_CFG_load(FTNM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
 	{
 		return	FTM_RET_CONFIG_LOAD_FAILED;
+	}
+
+	pSection = config_lookup(&xConfig, "server");
+	if (pSection != NULL)
+	{
+		config_setting_t	*pField;
+
+		pField = config_setting_get_member(pSection, "max_session");
+		if (pField != NULL)
+		{
+			pConfig->xServer.ulMaxSession = (FTM_ULONG)config_setting_get_int(pField);
+		}
+	
+		pField = config_setting_get_member(pSection, "port");
+		if (pField != NULL)
+		{
+			pConfig->xServer.usPort = (FTM_ULONG)config_setting_get_int(pField);
+		}
+	}
+
+	pSection = config_lookup(&xConfig, "client");
+	if (pSection != NULL)
+	{
+		config_setting_t	*pField;
+
+		pField = config_setting_get_member(pSection, "server_ip");
+		if (pField != NULL)
+		{
+			strncpy(pConfig->xClient.xNetwork.pServerIP, config_setting_get_string(pField), FTDMC_SERVER_IP_LEN);
+		}
+	
+		pField = config_setting_get_member(pSection, "port");
+		if (pField != NULL)
+		{
+			pConfig->xClient.xNetwork.usPort = (FTM_ULONG)config_setting_get_int(pField);
+		}
 	}
 
 	pSection = config_lookup(&xConfig, "snmpc");
@@ -147,11 +185,33 @@ FTM_RET FTNM_CFG_copy(FTNM_CFG_PTR pDestCfg, FTNM_CFG_PTR pSrcCfg)
 
 FTM_RET FTNM_CFG_show(FTNM_CFG_PTR pConfig)
 {
+	FTM_ULONG	ulCount;
+
 	ASSERT(pConfig != NULL);
 
-	MESSAGE("Server Configuration\n");
+	MESSAGE("\n[ SERVER CONFIGURATION ]\n");
 	MESSAGE("%16s : %d\n", "PORT", pConfig->xServer.usPort);
 	MESSAGE("%16s : %lu\n", "MAX SESSION", pConfig->xServer.ulMaxSession);
+
+	MESSAGE("\n[ DATA MANAGER CONNECTION CONFIGURATION ]\n");
+	MESSAGE("%16s : %s\n", "SERVER", pConfig->xClient.xNetwork.pServerIP);
+	MESSAGE("%16s : %d\n", "PORT", pConfig->xClient.xNetwork.usPort);
+
+	if (FTM_LIST_count(&pConfig->xSNMPC.xMIBList, &ulCount) == FTM_RET_OK)
+	{
+		FTM_ULONG i;
+
+		MESSAGE("\n[ MIBs ]\n");
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			FTM_VOID_PTR	pValue;
+
+			if (FTM_LIST_getAt(&pConfig->xSNMPC.xMIBList, i, &pValue) == FTM_RET_OK)
+			{
+				MESSAGE("%16d : %s\n", i+1, (FTM_CHAR_PTR)pValue);
+			}
+		}
+	}
 
 	return	FTM_RET_OK;
 }

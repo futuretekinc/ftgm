@@ -15,7 +15,8 @@ typedef struct	_FTMC_CMD
 
 FTM_RET	FTM_CONSOLE_init
 (
-	FTM_VOID
+	FTM_CONSOLE_CMD_PTR pExtCmds, 
+	FTM_ULONG 			ulExtCmds
 );
 
 FTM_RET	FTM_CONSOLE_final
@@ -23,9 +24,10 @@ FTM_RET	FTM_CONSOLE_final
 	FTM_VOID
 );
 
-FTM_RET	FTM_CONSOLE_run
+FTM_RET FTM_CONSOLE_run
 (
-	FTM_VOID
+	FTM_CONSOLE_CMD_PTR pExtCmds, 
+	FTM_ULONG 			ulExtCmds
 );
 
 FTM_RET	FTM_CONSOLE_setPrompt

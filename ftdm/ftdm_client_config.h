@@ -7,6 +7,9 @@
 
 #define	FTDMC_SERVER_IP_LEN	32
 
+#define	FTDM_DEFAULT_SERVER_IP		"127.0.0.1"
+#define	FTDM_DEFAULT_SERVER_PORT	8888
+
 typedef	struct
 {
 	struct

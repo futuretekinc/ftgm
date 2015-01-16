@@ -74,6 +74,42 @@ FTM_RET	FTNM_EP_count(FTM_ULONG_PTR pulCount)
 	return	FTM_LIST_count(&xEPList, pulCount);
 }
 
+FTM_RET FTNM_EP_getList
+(
+	FTM_EP_CLASS 	xClass, 
+	FTM_EPID_PTR 	pEPIDList, 
+	FTM_ULONG 		ulMaxCount, 
+	FTM_ULONG_PTR 	pulCount
+)
+{
+	FTM_ULONG	i, ulTotalCount, ulCount = 0;
+	
+	ASSERT((pEPIDList != NULL) && (pulCount != NULL));
+
+	FTM_LIST_count(&xEPList, &ulTotalCount);
+	for(i = 0 ; i < ulTotalCount && ulCount < ulMaxCount; i++)
+	{
+		FTNM_EP_PTR	pEP;
+
+		FTM_LIST_getAt(&xEPList, i,	(FTM_VOID_PTR _PTR_)&pEP);
+		if (xClass == (pEP->xInfo.xEPID & FTM_EP_CLASS_MASK))
+		{
+			pEPIDList[ulCount++] = pEP->xInfo.xEPID;
+		}
+	}
+
+	
+	*pulCount = ulCount;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_EP_get(FTM_EPID xEPID, FTNM_EP_PTR _PTR_ ppEP)
+{
+
+	return	FTM_LIST_get(&xEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEP);
+}
+
 FTM_RET FTNM_EP_getAt(FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP)
 {
 	return	FTM_LIST_getAt(&xEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);

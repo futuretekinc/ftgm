@@ -827,7 +827,7 @@ FTM_RET	FTDM_DBIF_addEPData
 			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'i%ld')", 
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
-					pData->nTime, 
+					pData->ulTime, 
 					pData->xValue.nValue);
 		}
 		break;
@@ -837,7 +837,7 @@ FTM_RET	FTDM_DBIF_addEPData
 			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'u%lu')", 
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
-					pData->nTime, 
+					pData->ulTime, 
 					pData->xValue.ulValue);
 		}
 		break;
@@ -847,7 +847,7 @@ FTM_RET	FTDM_DBIF_addEPData
 			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'f%8.3lf')", 
 					xEPID, 
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
-					pData->nTime, 
+					pData->ulTime, 
 					pData->xValue.fValue);
 		}
 		break;
@@ -980,7 +980,7 @@ static int _FTDM_DBIF_CB_getEPData(void *pData, int nArgc, char **pArgv, char **
 			{
 				if (pParams->nCount <= pParams->nMaxCount)
 				{
-					pParams->pEPData[pParams->nCount-1].nTime = atoi(pArgv[i]);
+					pParams->pEPData[pParams->nCount-1].ulTime = strtoul(pArgv[i], 0, 10);
 				}
 			}
 			else if (strcmp(pColName[i], "VALUE") == 0)

@@ -32,6 +32,11 @@ FTM_VOID	FTM_dumpPacket
 
 #define MESSAGE(format, ...) printOut(MSG_NORMAL, NULL, 0, format, ## __VA_ARGS__)
 
+#ifdef	TRACE_OFF
+#define	TRACE(format, ...) 
+#else
 #define	TRACE(format, ...) printOut(MSG_TRACE, __func__, __LINE__, format, ## __VA_ARGS__)
+#endif
 #define	ERROR(format, ...) printOut(MSG_ERROR, __func__, __LINE__, format, ## __VA_ARGS__)
+
 #endif

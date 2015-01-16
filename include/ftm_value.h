@@ -8,9 +8,11 @@ typedef	FTM_ULONG	FTM_VALUE_TYPE;
 #define	FTM_VALUE_DYNAMIC_MAGIC	0xA55AC33C
 
 #define	FTM_VALUE_TYPE_BYTE		1
-#define	FTM_VALUE_TYPE_USHORT	2
-#define	FTM_VALUE_TYPE_ULONG	3
-#define	FTM_VALUE_TYPE_STRING	4
+#define	FTM_VALUE_TYPE_INT		2
+#define	FTM_VALUE_TYPE_USHORT	3
+#define	FTM_VALUE_TYPE_ULONG	4
+#define	FTM_VALUE_TYPE_FLOAT	5
+#define	FTM_VALUE_TYPE_STRING	6
 
 typedef	struct
 {
@@ -19,8 +21,10 @@ typedef	struct
 	union
 	{
 		FTM_BYTE		bValue;
+		FTM_INT			nValue;
 		FTM_USHORT		usValue;
 		FTM_ULONG		ulValue;	
+		FTM_FLOAT		fValue;	
 		FTM_CHAR_PTR	pValue;	
 	}	xValue;
 	FTM_ULONG		ulLen;

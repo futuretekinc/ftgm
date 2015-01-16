@@ -77,9 +77,7 @@ int main(int nArgc, char *pArgv[])
 	{
 		FTDMS_run(&xConfig.xServer, &xPThread);
 
-		FTM_CONSOLE_init();
-		FTM_CONSOLE_run();
-		FTM_CONSOLE_final();
+		FTM_CONSOLE_run(NULL, 0);
 	}
 
 

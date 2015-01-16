@@ -115,7 +115,7 @@ typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
 
 typedef	struct
 {
-	FTM_ULONG			nTime;
+	FTM_ULONG			ulTime;
 	FTM_EP_DATA_TYPE	xType;
 	union 
 	{

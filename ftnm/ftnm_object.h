@@ -8,20 +8,17 @@ typedef	struct _FTNM_NODE _PTR_ FTNM_NODE_PTR;
 typedef	struct 
 {
 	FTM_EP_INFO		xInfo;
-		
 	FTNM_NODE_PTR 	pNode;
-	
-	time_t			xTime;
-	FTM_VALUE		xValue;
+	FTM_EP_DATA		xData;
+	union
+	{
+		struct	
+		{
+			oid		pOID[MAX_OID_LEN];
+			size_t	nOIDLen;
+		}	xSNMP;
+	}	xOption;
 }	FTNM_EP, _PTR_ FTNM_EP_PTR;
-
-typedef	struct
-{
-	FTNM_EP			xCommon;
-
-	oid				pOID[MAX_OID_LEN];
-	size_t			nOIDLen;
-}	FTNM_EP_SNMP, _PTR_ FTNM_EP_SNMP_PTR;
 
 #define	FTNM_SNMPC_STATE_UNKNOWN		0x00000000
 #define	FTNM_SNMPC_STATE_INITIALIZED	0x00000001

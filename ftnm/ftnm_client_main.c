@@ -1,4 +1,3 @@
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>    
 #include <string.h>    
@@ -8,42 +7,45 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h>
 #include "libconfig.h"
-#include "ftdm_client.h"
-#include "ftdm_client_config.h"
+#include "ftm_types.h"
+#include "ftm_error.h"
+#include "ftm_mem.h"
+#include "ftnm_client.h"
+#include "ftnm_client_config.h"
 #include "ftm_debug.h"
 #include "simclist.h"
 
-#define		FTDMC_MAX_LINE	2048
-#define		FTDMC_MAX_ARGS	16
+#define		FTNMC_MAX_LINE	2048
+#define		FTNMC_MAX_ARGS	16
 
-typedef	enum	_FTDMC_SUB_CMD
+typedef	enum	_FTNMC_SUB_CMD
 { 
-	FTDMC_SUB_CMD_UNKNOWN = 0,
-	FTDMC_SUB_CMD_HELP,
-	FTDMC_SUB_CMD_SHORT_HELP,
-	FTDMC_SUB_CMD_ADD,
-	FTDMC_SUB_CMD_DEL,
-	FTDMC_SUB_CMD_COUNT,
-	FTDMC_SUB_CMD_LIST,
-	FTDMC_SUB_CMD_GET,
-	FTDMC_SUB_CMD_INFO,
-	FTDMC_SUB_CMD_DATA,
-	FTDMC_SUB_CMD_CONNECT,
-	FTDMC_SUB_CMD_DISCONNECT,
-	FTDMC_SUB_CMD_TEST_GEN,
-	FTDMC_SUB_CMD_DEBUG_GET_MODE,
-	FTDMC_SUB_CMD_DEBUG_SET_MODE,
-	FTDMC_SUB_CMD_RUN
+	FTNMC_SUB_CMD_UNKNOWN = 0,
+	FTNMC_SUB_CMD_HELP,
+	FTNMC_SUB_CMD_SHORT_HELP,
+	FTNMC_SUB_CMD_CREATE,
+	FTNMC_SUB_CMD_DESTROY,
+	FTNMC_SUB_CMD_COUNT,
+	FTNMC_SUB_CMD_LIST,
+	FTNMC_SUB_CMD_GET,
+	FTNMC_SUB_CMD_INFO,
+	FTNMC_SUB_CMD_DATA,
+	FTNMC_SUB_CMD_CONNECT,
+	FTNMC_SUB_CMD_DISCONNECT,
+	FTNMC_SUB_CMD_TEST_GEN,
+	FTNMC_SUB_CMD_DEBUG_GET_MODE,
+	FTNMC_SUB_CMD_DEBUG_SET_MODE,
+	FTNMC_SUB_CMD_RUN
 
-}	FTDMC_SUB_CMD, _PTR_ FTDMC_SUB_CMD_PTR;
+}	FTNMC_SUB_CMD, _PTR_ FTNMC_SUB_CMD_PTR;
 
-typedef struct	_FTDMC_CMD
+typedef struct	_FTNMC_CMD
 {
 	FTM_CHAR_PTR	pString;
 	FTM_RET			(*function)(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 	FTM_CHAR_PTR	pShortHelp;
 	FTM_CHAR_PTR	pHelp;
-}	FTDMC_CMD, _PTR_ FTDMC_CMD_PTR;
+}	FTNMC_CMD, _PTR_ FTNMC_CMD_PTR;
 
 static FTM_RET	_parseLine
 (
@@ -53,47 +55,47 @@ static FTM_RET	_parseLine
 	FTM_INT_PTR 	pArgc
 );
 
-static FTM_RET FTDMC_getCmd
+static FTM_RET FTNMC_getCmd
 (
 	FTM_CHAR_PTR 		pCmdString, 
-	FTDMC_CMD_PTR _PTR_ ppCmd
+	FTNMC_CMD_PTR _PTR_ ppCmd
 );
 
-static FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTNMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTNMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTNMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTNMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTNMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTNMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTNMC_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTNMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 
 
-FTDMC_SESSION		_xSession;
-FTM_CHAR_PTR 		_strPrompt = "FTDMC > ";
-FTDMC_CMD			_cmds[] = 
+FTNMC_SESSION		_xSession;
+FTM_CHAR_PTR 		_strPrompt = "FTNMC > ";
+FTNMC_CMD			_cmds[] = 
 {
 	{	
 		.pString	= "connect",
-		.function	= FTDMC_cmdConnect,
-		.pShortHelp = "Connnect to FTDM server.",
+		.function	= FTNMC_cmdConnect,
+		.pShortHelp = "Connnect to FTNM server.",
 		.pHelp		= "<Server IP> <Service Port>\n"\
-					  "\tConnect to FTDM server.\n"\
+					  "\tConnect to FTNM server.\n"\
 					  "PARAMETERS:\n"\
 					  "\tServer IP    Target server IP address\n"\
 					  "\t             (Default : 127.0.0.1)\n"\
-					  "\tServer Port  FTDM Port"
+					  "\tServer Port  FTNM Port"
 	},
 	{	
 		.pString	= "disconnect",	
-		.function	= FTDMC_cmdDisconnect,
-		.pShortHelp = "Disconnect from FTDM server.",
+		.function	= FTNMC_cmdDisconnect,
+		.pShortHelp = "Disconnect from FTNM server.",
 		.pHelp		= "\n"\
-					  "\tDisconnect to FTDM server.\n"
+					  "\tDisconnect to FTNM server.\n"
 	},
 	{	
 		.pString	= "node",
-		.function	= FTDMC_cmdNode,
+		.function	= FTNMC_cmdNode,
 		.pShortHelp = "Node management command set.",
 		.pHelp		= "<COMMAND>\n"\
 					  "\tNode management command set.\n"\
@@ -116,7 +118,7 @@ FTDMC_CMD			_cmds[] =
 	},
 	{	
 		.pString	= "ep",
-		.function   = FTDMC_cmdEP,
+		.function   = FTNMC_cmdEP,
 		.pShortHelp = "EndPoint management command set.",
 		.pHelp      = "<COMMAND> ...\n"\
 					  "\tEndPoint management.\n"\
@@ -131,7 +133,7 @@ FTDMC_CMD			_cmds[] =
 	},
 	{	
 		.pString	= "data",
-		.function	= FTDMC_cmdEPData,
+		.function	= FTNMC_cmdEPData,
 		.pShortHelp	= "EndPoint management command set.",
 		.pHelp		= "<COMMAND> ...\n"\
 					  "\tEndPoint data management.\n"\
@@ -157,7 +159,7 @@ FTDMC_CMD			_cmds[] =
 	},
 	{	
 		.pString	= "help",
-		.function	= FTDMC_cmdHelp,
+		.function	= FTNMC_cmdHelp,
 		.pShortHelp = "Help command.",
 		.pHelp	    = "<COMMAND>\n"\
 					  "\tHelp command.\n"\
@@ -166,7 +168,7 @@ FTDMC_CMD			_cmds[] =
 	},
 	{	
 		.pString	= "?",
-		.function	= FTDMC_cmdHelp,
+		.function	= FTNMC_cmdHelp,
 		.pShortHelp = "Help command.",
 		.pHelp	    = "<COMMAND>\n"\
 					  "\tHelp command.\n"\
@@ -174,13 +176,13 @@ FTDMC_CMD			_cmds[] =
 					  "\tCOMMAND    Target command for help."
 	},
 	{	.pString	= "debug",
-		.function	= FTDMC_cmdDebug,
+		.function	= FTNMC_cmdDebug,
 		.pShortHelp = "",
 		.pHelp		= ""
 	},
 	{	
 		.pString	= "quit",
-		.function	= FTDMC_cmdQuit,
+		.function	= FTNMC_cmdQuit,
 		.pShortHelp = "Quit program.",
 		.pHelp 		= "\n"\
 					  "\tQuit program."
@@ -191,27 +193,28 @@ FTDMC_CMD			_cmds[] =
 };
 
 
-static	FTDM_CFG_CLIENT	xClientConfig;
+static	FTNM_CFG_CLIENT	xClientConfig;
 static	FTM_BOOL	_bQuit = FTM_BOOL_FALSE;
 extern	char *		program_invocation_short_name;
-	FTM_CHAR		pCmdLine[FTDMC_MAX_LINE];
+	FTM_CHAR		pCmdLine[FTNMC_MAX_LINE];
 
 int main(int argc , char *argv[])
 {
 	FTM_INT			nArgc;
-	FTM_CHAR_PTR	pArgv[FTDMC_MAX_ARGS];
+	FTM_CHAR_PTR	pArgv[FTNMC_MAX_ARGS];
 	FTM_CHAR		pConfigFileName[FTM_FILE_NAME_LEN];
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
 	setPrintMode(1);
 
+	FTM_MEM_init();
 	/* load configuraton */
-	FTDMC_initConfig(&xClientConfig);
-	FTDMC_loadConfig(&xClientConfig, pConfigFileName);
+	FTNMC_initConfig(&xClientConfig);
+	FTNMC_loadConfig(&xClientConfig, pConfigFileName);
 
 	/* apply configuraton */
-	FTDMC_init(&xClientConfig);
+	FTNMC_init(&xClientConfig);
 
 	while(!_bQuit)
 	{
@@ -219,13 +222,13 @@ int main(int argc , char *argv[])
 		memset(pCmdLine, 0, sizeof(pCmdLine));
 		fgets(pCmdLine, sizeof(pCmdLine), stdin);
 
-		_parseLine(pCmdLine, pArgv, FTDMC_MAX_ARGS, &nArgc);
+		_parseLine(pCmdLine, pArgv, FTNMC_MAX_ARGS, &nArgc);
 
 		if (nArgc != 0)
 		{
-			FTDMC_CMD_PTR 	pCmd;
+			FTNMC_CMD_PTR 	pCmd;
 
-			if (FTDMC_getCmd(pArgv[0], &pCmd) == FTM_RET_OK)
+			if (FTNMC_getCmd(pArgv[0], &pCmd) == FTM_RET_OK)
 			{
 				if (pCmd->function(nArgc, pArgv) == FTM_RET_INVALID_ARGUMENTS)
 				{
@@ -236,21 +239,22 @@ int main(int argc , char *argv[])
 			{
 				FTM_CHAR_PTR pArgv[] = {"help"};
 				MESSAGE("%s is invalid command.\n", pArgv[0]);
-				FTDMC_cmdHelp(1, pArgv);
+				FTNMC_cmdHelp(1, pArgv);
 			}
 		}
 	}
 
-	FTDMC_final();
+	FTNMC_final();
 
-	FTDMC_finalConfig(&xClientConfig);
+	FTNMC_finalConfig(&xClientConfig);
+	FTM_MEM_final();
 
 	return	0;
 }
 
-FTM_RET FTDMC_getCmd(FTM_CHAR_PTR pCmdString, FTDMC_CMD_PTR _PTR_ ppCmd)
+FTM_RET FTNMC_getCmd(FTM_CHAR_PTR pCmdString, FTNMC_CMD_PTR _PTR_ ppCmd)
 {
-	FTDMC_CMD_PTR pCmd = _cmds;
+	FTNMC_CMD_PTR pCmd = _cmds;
 	while(pCmd->pString != NULL)
 	{
 		if (strcmp(pCmd->pString, pCmdString) == 0)
@@ -283,11 +287,13 @@ FTM_RET	_parseLine(FTM_CHAR_PTR pLine, FTM_CHAR_PTR pArgv[], FTM_INT nMaxArgs, F
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTNMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	in_addr_t		xAddr	= inet_addr(xClientConfig.xNetwork.pServerIP);
+	struct	in_addr	xAddr2;
 	FTM_USHORT		nPort 	= xClientConfig.xNetwork.usPort;
 
+	inet_aton(xClientConfig.xNetwork.pServerIP, &xAddr2);
 	switch(nArgc)
 	{
 	case	3:
@@ -316,9 +322,10 @@ FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		}
 	}
 
-	if (FTDMC_connect(&_xSession, xAddr, nPort) != FTM_RET_OK)
+	TRACE("Try connection to %s:%d\n", inet_ntoa(xAddr2), nPort);
+	if (FTNMC_connect(&_xSession, xAddr, nPort) != FTM_RET_OK)
 	{
-		perror("connect failed. Error");
+		TRACE("connect failed. Error");
 		return	FTM_RET_ERROR;	
 	}
 
@@ -327,14 +334,14 @@ FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTNMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 
 	switch(nArgc)
 	{
 	case	1: 
 		{
-			FTDMC_disconnect(&_xSession);
+			FTNMC_disconnect(&_xSession);
 		}
 		break;
 
@@ -347,7 +354,7 @@ FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTNMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	FTM_RET	nRet;
 	FTM_INT	i;
@@ -416,7 +423,7 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				xNodeInfo.pDID[i] = toupper(pArgv[2][i]);	
 			}
 
-			nRet = FTDMC_appendNodeInfo(&_xSession, &xNodeInfo);
+			nRet = FTNMC_NODE_create(&_xSession, &xNodeInfo);
 			if (nRet != FTM_RET_OK)
 			{
 				ERROR("%s : ERROR - %lx\n", pArgv[0], nRet);
@@ -447,7 +454,7 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			pDID[i] = toupper(pArgv[2][i]);	
 		}
 
-		nRet = FTDMC_removeNodeInfo(&_xSession, pDID);
+		nRet = FTNMC_NODE_destroy(&_xSession, pDID);
 		if (nRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -473,7 +480,7 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			pDID[i] = toupper(pArgv[2][i]);	
 		}
 
-		nRet = FTDMC_getNodeInfo(&_xSession, pDID, &xInfo);
+		nRet = FTNMC_NODE_get(&_xSession, pDID, &xInfo);
 		if (nRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -493,7 +500,7 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	{
 		FTM_ULONG	i, nNodeCount = 0;
 
-		nRet = FTDMC_getNodeInfoCount(&_xSession, &nNodeCount);
+		nRet = FTNMC_NODE_count(&_xSession, &nNodeCount);
 		if (nRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -508,7 +515,7 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		{
 			FTM_NODE_INFO	xInfo;
 
-			nRet = FTDMC_getNodeInfoByIndex(&_xSession, i, &xInfo);
+			nRet = FTNMC_NODE_getAt(&_xSession, i, &xInfo);
 			if (nRet == FTM_RET_OK)
 			{
 				MESSAGE("%-16s %-16s %-16s %8d ", 
@@ -543,7 +550,7 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTNMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	FTM_RET		nRet;
 	FTM_INT		i;
@@ -592,7 +599,7 @@ FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 
 		case	6:
-			xInfo.nInterval = atoi(pArgv[5]);
+			xInfo.nInterval = (FTM_ULONG)strtoul(pArgv[5]);
 			if (xInfo.nInterval < 0)
 			{
 				return	FTM_RET_INVALID_ARGUMENTS;
@@ -629,7 +636,7 @@ FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 			xInfo.xType = (xEPID & FTM_EP_TYPE_MASK);
 
-			nRet = FTDMC_appendEPInfo(&_xSession, &xInfo);
+			nRet = FTNMC_EP_create(&_xSession, &xInfo);
 			if (nRet != FTM_RET_OK)
 			{
 				ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -646,7 +653,7 @@ FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		}
 
 		xEPID = strtoul(pArgv[2], 0, 16);
-		nRet = FTDMC_removeEPInfo(&_xSession, xEPID);	
+		nRet = FTNMC_EP_destroy(&_xSession, xEPID);	
 		if (nRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -656,27 +663,61 @@ FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	{
 		FTM_ULONG	nCount;
 
-		nRet = FTDMC_getEPInfoCount(&_xSession, 0, &nCount);
-		if (nRet == FTM_RET_OK)
+		if (nArgc == 2)
 		{
-			MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
-					"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
-
-			for(i = 0 ; i< nCount ; i++)
+			nRet = FTNMC_EP_count(&_xSession, 0, &nCount);
+			if (nRet == FTM_RET_OK)
 			{
-				FTM_EP_INFO	xInfo;
+				MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
+						"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
 
-				nRet = FTDMC_getEPInfoByIndex(&_xSession, i, &xInfo);
-				if (nRet == FTM_RET_OK)
+				for(i = 0 ; i< nCount ; i++)
 				{
-					MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
-							xInfo.xEPID,
-							FTM_getEPTypeString(xInfo.xType),
-							xInfo.pName,
-							xInfo.pUnit,
-							xInfo.nInterval,
-							xInfo.pDID,
-							xInfo.pPID);
+					FTM_EP_INFO	xInfo;
+
+					nRet = FTNMC_EP_getAt(&_xSession, i, &xInfo);
+					if (nRet == FTM_RET_OK)
+					{
+						MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
+								xInfo.xEPID,
+								FTM_getEPTypeString(xInfo.xType),
+								xInfo.pName,
+								xInfo.pUnit,
+								xInfo.nInterval,
+								xInfo.pDID,
+								xInfo.pPID);
+					}
+				}
+			}
+		}
+		else if (nArgc == 3)
+		{
+			FTM_EP_CLASS	xEPClass;
+			FTM_EPID		pEPID[100];
+
+			xEPClass = strtoul(pArgv[2], 0, 16);
+			nRet = FTNMC_EP_getList(&_xSession, xEPClass, pEPID, 100, &nCount);
+			if (nRet == FTM_RET_OK)
+			{
+				MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
+						"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
+
+				for(i = 0 ; i< nCount ; i++)
+				{
+					FTM_EP_INFO	xInfo;
+
+					nRet = FTNMC_EP_get(&_xSession, pEPID[i], &xInfo);
+					if (nRet == FTM_RET_OK)
+					{
+						MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
+								xInfo.xEPID,
+								FTM_getEPTypeString(xInfo.xType),
+								xInfo.pName,
+								xInfo.pUnit,
+								xInfo.nInterval,
+								xInfo.pDID,
+								xInfo.pPID);
+					}
 				}
 			}
 		}
@@ -693,7 +734,7 @@ FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTNMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	FTM_RET			nRet;
 	FTM_INT			nOpt = 0;
@@ -768,7 +809,7 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 		}
 
-		nRet = FTDMC_appendEPData(&_xSession, xEPID, &xData);
+		nRet = FTNMC_EP_DATA_get(&_xSession, xEPID, &xData);
 		if (nRet == FTM_RET_OK)
 		{
 			MESSAGE("EndPoint data appending done successfully!\n");	
@@ -864,8 +905,8 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					MESSAGE("Invalid parameters\n");
 					return	FTM_RET_INVALID_ARGUMENTS;
 				}
-
-				nRet = FTDMC_removeEPDataWithTime(&_xSession, xEPID, nBeginTime, nEndTime);
+/*
+				nRet = FTNMC_EP_DATA_delWithTime(&_xSession, xEPID, nBeginTime, nEndTime);
 				if (nRet == FTM_RET_OK)
 				{
 					MESSAGE("EndPoint data deleted successfully!\n");	
@@ -874,6 +915,7 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				{
 					ERROR("EndPoint data deleting failed [ ERROR = %08lx ]\n", nRet);	
 				}
+*/
 			}
 			break;
 
@@ -906,7 +948,7 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 				xEPID	= strtoul(pArgv[3], NULL, 16);
 
-				nRet = FTDMC_getEPDataCount(&_xSession, xEPID, &ulCount);
+				nRet = FTNMC_EP_DATA_count(&_xSession, xEPID, &ulCount);
 				if (nRet == FTM_RET_OK)
 				{
 					MESSAGE("      EPID : %08lx\n", xEPID);
@@ -963,20 +1005,20 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 				xEPID 		= strtol(pArgv[3], NULL, 16);
 
-				pEPData = (FTM_EP_DATA_PTR)malloc(sizeof(FTM_EP_DATA) * nMaxCount);
+				pEPData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * nMaxCount);
 				if (pEPData == NULL)
 				{
 					MESSAGE("System not enough memory!\n");
 					return	FTM_RET_NOT_ENOUGH_MEMORY;		
 				}
 
-				nRet = FTDMC_getEPData(&_xSession, 
+				nRet = FTNMC_EP_DATA_get(&_xSession, 
 						xEPID, 
 						nStartIndex,
 						pEPData, 
 						nMaxCount, 
 						&nCount);
-				TRACE("FTDMC_getEPData(hClient, %08lx, %d, %d, pEPData, %d, %d) = %08lx\n",
+				TRACE("FTNMC_getEPData(hClient, %08lx, %d, %d, pEPData, %d, %d) = %08lx\n",
 						xEPID, nBeginTime, nEndTime, nMaxCount, nCount, nRet);
 				if (nRet == FTM_RET_OK)
 				{
@@ -1019,7 +1061,7 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					MESSAGE("EndPoint data loading failed [ ERROR = %08lx ]\n", nRet);	
 				}
 
-				free(pEPData);
+				FTM_MEM_free(pEPData);
 			}
 			break;
 
@@ -1062,39 +1104,6 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			break;
 		}
 	}
-	else if (strcmp(pArgv[1], "test_gen") == 0)
-	{
-		FTM_EPID	xEPID;
-		FTM_EP_DATA	xData;
-		FTM_INT		i, nDataGenCount;
-		time_t		_startTime;
-		time_t		_endTime;
-
-		if (nArgc != 3)
-		{
-			MESSAGE("Invalid parameters\n");
-			return	FTM_RET_INVALID_ARGUMENTS;
-		}
-
-		_startTime = mktime(&xClientConfig.xDiagnostic.xStartTM);
-		_endTime = mktime(&xClientConfig.xDiagnostic.xEndTM);
-
-		nDataGenCount = strtol(pArgv[2], NULL, 10);
-
-		for(i = 0 ; i < nDataGenCount ; i++)
-		{
-			FTM_INT	nIndex = 0;
-
-			nIndex = rand() % list_size(&xClientConfig.xDiagnostic.xEPList);
-
-			xEPID = (FTM_EPID)list_get_at(&xClientConfig.xDiagnostic.xEPList, nIndex);
-			xData.xType = FTM_EP_DATA_TYPE_INT;
-			xData.ulTime = _startTime + rand() % (_endTime - _startTime);
-			xData.xValue.nValue = rand();
-
-			FTDMC_appendEPData(&_xSession, xEPID, &xData);
-		}
-	}
 	else
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;
@@ -1103,7 +1112,7 @@ FTM_RET	FTDMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTNMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	if (nArgc < 2)
 	{
@@ -1159,14 +1168,14 @@ FTM_RET	FTDMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTNMC_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 
 	switch(nArgc)
 	{
 	case	1:
 		{
-			FTDMC_CMD_PTR	pCmd = _cmds; 
+			FTNMC_CMD_PTR	pCmd = _cmds; 
 			while(pCmd->pString != NULL)
 			{
 				MESSAGE("%-16s    %s\n", pCmd->pString, pCmd->pShortHelp);
@@ -1177,9 +1186,9 @@ FTM_RET	FTDMC_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 	case	2:
 		{
-			FTDMC_CMD_PTR pCmd;
+			FTNMC_CMD_PTR pCmd;
 
-			if (FTDMC_getCmd(pArgv[1], &pCmd) == FTM_RET_OK)
+			if (FTNMC_getCmd(pArgv[1], &pCmd) == FTM_RET_OK)
 			{
 				MESSAGE("Usage : %s %s\n", pArgv[1], pCmd->pHelp);
 			}
@@ -1193,14 +1202,14 @@ FTM_RET	FTDMC_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTNMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	if (nArgc != 1)
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 	
-	FTDMC_disconnect(&_xSession);
+	FTNMC_disconnect(&_xSession);
 	_bQuit = FTM_BOOL_TRUE;
 
 
