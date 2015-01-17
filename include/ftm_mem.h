@@ -12,5 +12,6 @@ FTM_VOID		FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long
 #define	FTM_MEM_malloc(xSize)	FTM_MEM_TRACE_malloc(xSize, __func__, __LINE__)
 #define	FTM_MEM_calloc(xNumber, xSize)	FTM_MEM_TRACE_calloc(xNumber, xSize, __func__, __LINE__)
 #define	FTM_MEM_free(pMem)		FTM_MEM_TRACE_free(pMem, __func__, __LINE__)
+
 #endif
 

@@ -30,17 +30,18 @@ static FTM_VOID_PTR FTNMS_serviceHandler(FTM_VOID_PTR pData);
 
 static FTNMS_CMD_SET	pCmdSet[] =
 {
-	MK_CMD_SET(FTNM_CMD_NODE_CREATE,	FTNMS_NODE_create),
-	MK_CMD_SET(FTNM_CMD_NODE_DESTROY,	FTNMS_NODE_destroy),
-	MK_CMD_SET(FTNM_CMD_NODE_COUNT,		FTNMS_NODE_count),
-	MK_CMD_SET(FTNM_CMD_NODE_GET,		FTNMS_NODE_get),
-	MK_CMD_SET(FTNM_CMD_NODE_GET_AT,	FTNMS_NODE_getAt),
-	MK_CMD_SET(FTNM_CMD_EP_CREATE,		FTNMS_EP_create),
-	MK_CMD_SET(FTNM_CMD_EP_DESTROY,		FTNMS_EP_destroy),
-	MK_CMD_SET(FTNM_CMD_EP_COUNT,		FTNMS_EP_count),
-	MK_CMD_SET(FTNM_CMD_EP_GET_LIST,	FTNMS_EP_getList),
-	MK_CMD_SET(FTNM_CMD_EP_GET,			FTNMS_EP_get),
-	MK_CMD_SET(FTNM_CMD_EP_GET_AT,		FTNMS_EP_getAt),
+	MK_CMD_SET(FTNM_CMD_NODE_CREATE,		FTNMS_NODE_create),
+	MK_CMD_SET(FTNM_CMD_NODE_DESTROY,		FTNMS_NODE_destroy),
+	MK_CMD_SET(FTNM_CMD_NODE_COUNT,			FTNMS_NODE_count),
+	MK_CMD_SET(FTNM_CMD_NODE_GET,			FTNMS_NODE_get),
+	MK_CMD_SET(FTNM_CMD_NODE_GET_AT,		FTNMS_NODE_getAt),
+	MK_CMD_SET(FTNM_CMD_EP_CREATE,			FTNMS_EP_create),
+	MK_CMD_SET(FTNM_CMD_EP_DESTROY,			FTNMS_EP_destroy),
+	MK_CMD_SET(FTNM_CMD_EP_COUNT,			FTNMS_EP_count),
+	MK_CMD_SET(FTNM_CMD_EP_GET_LIST,		FTNMS_EP_getList),
+	MK_CMD_SET(FTNM_CMD_EP_GET,				FTNMS_EP_get),
+	MK_CMD_SET(FTNM_CMD_EP_GET_AT,			FTNMS_EP_getAt),
+	MK_CMD_SET(FTNM_CMD_EP_DATA_GET_LAST,	FTNMS_EP_DATA_getLast),
 	MK_CMD_SET(FTNM_CMD_UNKNOWN, 		NULL)
 };
 
@@ -349,7 +350,7 @@ FTM_RET	FTNMS_EP_count
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_count(&pResp->nCount);
+	pResp->nRet = FTNM_EP_count(pReq->xClass, &pResp->nCount);
 	TRACE("EP COUNT : %d\n", pResp->nCount);
 	return	pResp->nRet;
 }
@@ -405,3 +406,21 @@ FTM_RET	FTNMS_EP_getAt
 	return	pResp->nRet;
 }
 
+FTM_RET	FTNMS_EP_DATA_getLast
+(
+	FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR pReq,
+	FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR pResp
+)
+{
+	FTNM_EP_PTR	pEP;
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		memcpy(&pResp->xData, &pEP->xData, sizeof(FTM_EP_DATA));
+	}
+
+	return	pResp->nRet;
+}

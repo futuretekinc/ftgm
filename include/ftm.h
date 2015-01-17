@@ -4,6 +4,7 @@
 #include "ftm_types.h"
 #include "ftm_error.h"
 #include "ftm_object.h"
+#include "ftm_debug.h"
 
 #endif
 

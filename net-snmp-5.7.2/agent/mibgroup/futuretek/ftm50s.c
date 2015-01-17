@@ -8,10 +8,9 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "ftm50s.h"
 #include "libconfig.h"
-#include "ftdm_client.h"
+#include "ftnm_client.h"
 #define	TABLE_SIZE	10
 
-#define	DEBUGMSGTL(x)	printf x
 /* 
  * ftm50s_variables_oid:
  *   this is the top level oid that we want to register under.  This
@@ -53,8 +52,8 @@ struct variable5 ftm50s_variables[] = {
 #define NETGATEWAYIP		8
 {NETGATEWAYIP,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
  var_ftm50s, 2,  { 2,3 }},
-#define POINTCOUNT		9
-{POINTCOUNT,  ASN_INTEGER,  NETSNMP_OLDAPI_RONLY,
+#define OBJECTCOUNT		9
+{OBJECTCOUNT,  ASN_INTEGER,  NETSNMP_OLDAPI_RONLY,
  var_ftm50s, 3,  { 3,1,1 }},
 #define TEMPCOUNT		10
 {TEMPCOUNT,  ASN_INTEGER,  NETSNMP_OLDAPI_RONLY,
@@ -68,9 +67,19 @@ struct variable5 ftm50s_variables[] = {
 #define DOCOUNT		13
 {DOCOUNT,  ASN_INTEGER,  NETSNMP_OLDAPI_RONLY,
  var_ftm50s, 3,  { 3,1537,1 }},
-#define RLCOUNT		14
-{RLCOUNT,  ASN_INTEGER,  NETSNMP_OLDAPI_RONLY,
- var_ftm50s, 3,  { 3,1538,1 }},
+#define GASCOUNT		14
+{GASCOUNT,  ASN_INTEGER,  NETSNMP_OLDAPI_RONLY,
+ var_ftm50s, 3,  { 3,1792,1 }},
+#define POWERCOUNT		15
+{POWERCOUNT,  ASN_INTEGER,  NETSNMP_OLDAPI_RONLY,
+ var_ftm50s, 3,  { 3,2048,1 }},
+#define AICOUNT		16
+{AICOUNT,  ASN_INTEGER,  NETSNMP_OLDAPI_RONLY,
+ var_ftm50s, 3,  { 3,2560,1 }},
+#define COUNTCOUNT		17
+{COUNTCOUNT,  ASN_INTEGER,  NETSNMP_OLDAPI_RONLY,
+ var_ftm50s, 3,  { 3,2816,1 }},
+
 
 #define NETID		1
 {NETID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
@@ -87,18 +96,20 @@ struct variable5 ftm50s_variables[] = {
 #define NETMASK		5
 {NETMASK,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
  var_netTable, 4,  { 2,2 , 1, 5 }},
-#define POINTGROUPID		1
-{POINTGROUPID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
- var_pointTable, 5,  { 3,1,2 , 1, 1 }},
-#define POINTGROUPTYPE		2
-{POINTGROUPTYPE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
- var_pointTable, 5,  { 3,1,2 , 1, 2 }},
-#define POINTGROUPCOUNT		3
-{POINTGROUPCOUNT,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
- var_pointTable, 5,  { 3,1,2 , 1, 3 }},
-#define POINTTGROUPOID		4
-{POINTTGROUPOID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+
+#define OBJECTGROUPID		1
+{OBJECTGROUPID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,1,2 , 1, 1 }},
+#define OBJECTGROUPTYPE		2
+{OBJECTGROUPTYPE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,1,2 , 1, 2 }},
+#define OBJECTGROUPCOUNT		3
+{OBJECTGROUPCOUNT,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,1,2 , 1, 3 }},
+#define OBJECTGROUPOID		4
+{OBJECTGROUPOID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
  var_pointTable, 5,  { 3,1,2 , 1, 4 }},
+
 #define TEMPID		1
 {TEMPID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
  var_sensorTable, 5,  { 3,256,2 , 1, 1 }},
@@ -126,6 +137,7 @@ struct variable5 ftm50s_variables[] = {
 #define TEMPUPDATEINTERVAL		9
 {TEMPUPDATEINTERVAL,  ASN_INTEGER,  NETSNMP_OLDAPI_RWRITE,
  var_sensorTable, 5,  { 3,256,2 , 1, 9 }},
+
 #define HUMIID		1
 {HUMIID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
  var_sensorTable, 5,  { 3,512,2 , 1, 1 }},
@@ -153,6 +165,7 @@ struct variable5 ftm50s_variables[] = {
 #define HUMIUPDATEINTERVAL		9
 {HUMIUPDATEINTERVAL,  ASN_INTEGER,  NETSNMP_OLDAPI_RWRITE,
  var_sensorTable, 5,  { 3,512,2 , 1, 9 }},
+
 #define DIID		1
 {DIID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
  var_sensorTable, 5,  { 3,1281,2 , 1, 1 }},
@@ -180,6 +193,7 @@ struct variable5 ftm50s_variables[] = {
 #define DIUPDATEINTERVAL		9
 {DIUPDATEINTERVAL,  ASN_INTEGER,  NETSNMP_OLDAPI_RWRITE,
  var_sensorTable, 5,  { 3,1281,2 , 1, 9 }},
+
 #define DOID		1
 {DOID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
  var_sensorTable, 5,  { 3,1537,2 , 1, 1 }},
@@ -207,6 +221,7 @@ struct variable5 ftm50s_variables[] = {
 #define DOUPDATEINTERVAL		9
 {DOUPDATEINTERVAL,  ASN_INTEGER,  NETSNMP_OLDAPI_RWRITE,
  var_sensorTable, 5,  { 3,1537,2 , 1, 9 }},
+
 #define RLID		1
 {RLID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
  var_sensorTable, 5,  { 3,1538,2 , 1, 1 }},
@@ -234,10 +249,96 @@ struct variable5 ftm50s_variables[] = {
 #define RLUPDATEINTERVAL		9
 {RLUPDATEINTERVAL,  ASN_INTEGER,  NETSNMP_OLDAPI_RWRITE,
  var_sensorTable, 5,  { 3,1538,2 , 1, 9 }},
+
+#define GASID		1
+{GASID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,1792,2 , 1, 1 }},
+#define GASTYPE		2
+{GASTYPE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,1792,2 , 1, 2 }},
+#define GASNAME		3
+{GASNAME,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RWRITE,
+ var_sensorTable, 5,  { 3,1792,2 , 1, 3 }},
+#define GASSN		4
+{GASSN,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,1792,2 , 1, 4 }},
+#define GASSTATE		5
+{GASSTATE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RWRITE,
+ var_sensorTable, 5,  { 3,1792,2 , 1, 5 }},
+#define GASVALUE		6
+{GASVALUE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,1792,2 , 1, 6 }},
+#define GASLASTVALUE		7
+{GASLASTVALUE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,1792,2 , 1, 7 }},
+#define GASLASTTIME		8
+{GASLASTTIME,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,1792,2 , 1, 8 }},
+#define GASUPDATEINTERVAL		9
+{GASUPDATEINTERVAL,  ASN_INTEGER,  NETSNMP_OLDAPI_RWRITE,
+ var_sensorTable, 5,  { 3,1792,2 , 1, 9 }},
+
+#define POWERID		1
+{POWERID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2048,2 , 1, 1 }},
+#define POWERTYPE		2
+{POWERTYPE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2048,2 , 1, 2 }},
+#define POWERNAME		3
+{POWERNAME,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RWRITE,
+ var_sensorTable, 5,  { 3,2048,2 , 1, 3 }},
+#define POWERSN		4
+{POWERSN,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2048,2 , 1, 4 }},
+#define POWERSTATE		5
+{POWERSTATE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RWRITE,
+ var_sensorTable, 5,  { 3,2048,2 , 1, 5 }},
+#define POWERVALUE		6
+{POWERVALUE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2048,2 , 1, 6 }},
+#define POWERLASTVALUE		7
+{POWERLASTVALUE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2048,2 , 1, 7 }},
+#define POWERLASTTIME		8
+{POWERLASTTIME,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2048,2 , 1, 8 }},
+#define POWERUPDATEINTERVAL		9
+{POWERUPDATEINTERVAL,  ASN_INTEGER,  NETSNMP_OLDAPI_RWRITE,
+ var_sensorTable, 5,  { 3,2048,2 , 1, 9 }},
+
+#define COUNTID		1
+{COUNTID,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2816,2 , 1, 1 }},
+#define COUNTTYPE		2
+{COUNTTYPE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2816,2 , 1, 2 }},
+#define COUNTNAME		3
+{COUNTNAME,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RWRITE,
+ var_sensorTable, 5,  { 3,2816,2 , 1, 3 }},
+#define COUNTSN		4
+{COUNTSN,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2816,2 , 1, 4 }},
+#define COUNTSTATE		5
+{COUNTSTATE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RWRITE,
+ var_sensorTable, 5,  { 3,2816,2 , 1, 5 }},
+#define COUNTVALUE		6
+{COUNTVALUE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2816,2 , 1, 6 }},
+#define COUNTLASTVALUE		7
+{COUNTLASTVALUE,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2816,2 , 1, 7 }},
+#define COUNTLASTTIME		8
+{COUNTLASTTIME,  ASN_OCTET_STR,  NETSNMP_OLDAPI_RONLY,
+ var_sensorTable, 5,  { 3,2816,2 , 1, 8 }},
+#define COUNTUPDATEINTERVAL		9
+{COUNTUPDATEINTERVAL,  ASN_INTEGER,  NETSNMP_OLDAPI_RWRITE,
+ var_sensorTable, 5,  { 3,2816,2 , 1, 9 }},
+
+
 };
 /*    (L = length of the oidsuffix) */
 
-FTDMC_SESSION	xSession;
+FTNMC_SESSION	xSession;
 
 /** Initializes the ftm50s module */
 void
@@ -256,8 +357,12 @@ init_ftm50s(void)
                ftm50s_variables_oid);
 
     /* place any other initialization junk you need here */
-	FTDMC_init(NULL);
-	FTDMC_connect(&xSession, xServerIP, 8888);
+	FTNMC_init(NULL);
+	if (FTNMC_connect(&xSession, xServerIP, 8889) == FTM_RET_OK)
+	{
+		DEBUGMSGTL(("ftm50s", "Client Connected\n"));
+	
+	}
 }
 
 /*
@@ -353,47 +458,77 @@ var_ftm50s(struct variable *vp,
     case NETGATEWAYIP:
         VAR = VALUE;	/* XXX */
         return (u_char*) &VAR;
-    case POINTCOUNT:
-        VAR = VALUE;	/* XXX */
+    case OBJECTCOUNT:
         return (u_char*) &VAR;
+		{
+			FTM_ULONG_PTR	pValue = (FTM_ULONG_PTR)string;
+
+			FTNMC_EP_count(&xSession, 0, pValue);
+        	return (u_char*) pValue;
+		}
+
     case TEMPCOUNT:
 		{
-			unsigned int *value = (unsigned int *)string;
+			FTM_ULONG_PTR	pValue = (FTM_ULONG_PTR)string;
 
-			*value = 0;//ft_som_obj_count(0x01000000);
-        	return (u_char*) value;
+			FTNMC_EP_count(&xSession, FTM_EP_CLASS_TEMPERATURE, pValue);
+        	return (u_char*) pValue;
 		}
 
     case HUMICOUNT:
 		{
-			unsigned int *value = (unsigned int *)string;
+			FTM_ULONG_PTR	pValue = (FTM_ULONG_PTR)string;
 
-			*value = 0;//ft_som_obj_count(0x02000000);
-        	return (u_char*) value;
+			FTNMC_EP_count(&xSession, FTM_EP_CLASS_HUMIDITY, pValue);
+        	return (u_char*) pValue;
 		}
 
     case DICOUNT:
 		{
-			unsigned int *value = (unsigned int *)string;
+			FTM_ULONG_PTR	pValue = (FTM_ULONG_PTR)string;
 
-			*value = 0;//ft_som_obj_count(0x05000000);
-        	return (u_char*) value;
+			FTNMC_EP_count(&xSession, FTM_EP_CLASS_DI, pValue);
+        	return (u_char*) pValue;
 		}
 
     case DOCOUNT:
 		{
-			unsigned int *value = (unsigned int *)string;
+			FTM_ULONG_PTR	pValue = (FTM_ULONG_PTR)string;
 
-			*value = 0;//ft_som_obj_count(0x06000000);
-        	return (u_char*) value;
+			FTNMC_EP_count(&xSession, FTM_EP_CLASS_DO, pValue);
+        	return (u_char*) pValue;
 		}
 
-    case RLCOUNT:
+    case GASCOUNT:
 		{
-			unsigned int *value = (unsigned int *)string;
+			FTM_ULONG_PTR	pValue = (FTM_ULONG_PTR)string;
 
-			*value = 0;//ft_som_obj_count(0x06000000);
-        	return (u_char*) value;
+			FTNMC_EP_count(&xSession, FTM_EP_CLASS_GAS, pValue);
+        	return (u_char*) pValue;
+		}
+
+    case POWERCOUNT:
+		{
+			FTM_ULONG_PTR	pValue = (FTM_ULONG_PTR)string;
+
+			FTNMC_EP_count(&xSession, FTM_EP_CLASS_POWER, pValue);
+        	return (u_char*) pValue;
+		}
+
+    case COUNTCOUNT:
+		{
+			FTM_ULONG_PTR	pValue = (FTM_ULONG_PTR)string;
+
+			FTNMC_EP_count(&xSession, FTM_EP_CLASS_COUNT, pValue);
+        	return (u_char*) pValue;
+		}
+
+    case AICOUNT:
+		{
+			FTM_ULONG_PTR	pValue = (FTM_ULONG_PTR)string;
+
+			FTNMC_EP_count(&xSession, FTM_EP_CLASS_AI, pValue);
+        	return (u_char*) pValue;
 		}
 
     default:
@@ -500,16 +635,16 @@ var_pointTable(struct variable *vp,
    * this is where we do the value assignments for the mib results.
    */
     switch(vp->magic) {
-    case POINTGROUPID:
+    case OBJECTGROUPID:
         VAR = VALUE;	/* XXX */
         return (u_char*) &VAR;
-    case POINTGROUPTYPE:
+    case OBJECTGROUPTYPE:
         VAR = VALUE;	/* XXX */
         return (u_char*) &VAR;
-    case POINTGROUPCOUNT:
+    case OBJECTGROUPCOUNT:
         VAR = VALUE;	/* XXX */
         return (u_char*) &VAR;
-    case POINTTGROUPOID:
+    case OBJECTGROUPOID:
         VAR = VALUE;	/* XXX */
         return (u_char*) &VAR;
     default:
@@ -538,14 +673,58 @@ var_sensorTable(struct variable *vp,
     static unsigned char string[SPRINT_MAX_LEN];
     static oid objid[MAX_OID_LEN];
     static struct counter64 c64;
-	
+	FTM_EPID		xEPID = 0;
+	FTM_EP_INFO		xEPInfo;
+	FTM_EP_DATA		xEPData;
+	FTM_EPID_PTR	pEPIDs;
+
 	if (index < 12)
 	{
 		return	NULL;	
 	}
 
 	type = (unsigned long)name[9] << 16;
-	table_size = 0;//ft_som_obj_count(type);
+	FTNMC_EP_count(&xSession, type, &table_size);
+	printf("table_size = %d\n", table_size);
+	if (table_size != 0)
+	{
+		pEPIDs = (FTM_EPID_PTR)calloc(table_size, sizeof(FTM_EPID));
+		if (pEPIDs == NULL)
+		{
+			return	NULL;	
+		}
+
+		if (FTNMC_EP_getList(&xSession, type, pEPIDs, table_size, &table_size) != FTM_RET_OK)
+		{
+			free(pEPIDs);	
+			return	NULL;
+		}
+
+		for(i = 0 ; i < table_size ; i++)
+		{
+			if ((pEPIDs[i] & 0xFF)  == name[13])
+			{
+				xEPID = pEPIDs[i];
+				if (FTNMC_EP_get(&xSession, pEPIDs[i], &xEPInfo) != FTM_RET_OK)
+				{
+					free(pEPIDs);	
+					return	NULL;	
+				}
+				
+				break;
+			}
+		}
+
+		if (!xEPID)
+		{
+			free(pEPIDs);
+			return	NULL;
+		}
+	}
+	else
+	{
+		return	NULL;	
+	}
     /* 
    	* This assumes that the table is a 'simple' table.
    	*	See the implementation documentation for the meaning of this.
@@ -562,18 +741,12 @@ var_sensorTable(struct variable *vp,
 		return NULL;
 	}
 
-	id = ((unsigned long)name[9] << 16) | name[13];
-	//if (ft_som_obj_is_exist(id) == 0)
-	{
-		printf("obj(%08x) not found\n", __func__, id);
-		return	NULL;	
-	}
-
+	
 	printf("vp->magic %08x\n",vp->magic);
     switch(vp->magic) {
     case TEMPID:
 		vp->type = ASN_OCTET_STR;
-		sprintf(string, "%08x", id);
+		sprintf(string, "%08x", xEPID);
     	*var_len = strlen(string);
         return string;
 
@@ -588,18 +761,13 @@ var_sensorTable(struct variable *vp,
 
     case TEMPNAME:
         *write_method = NULL;//write_tempName;
-		//if (ft_som_obj_name_get(id, string, sizeof(string)) < 0)
-		{
-			return	NULL;	
-		}
+
+		strcpy(string, xEPInfo.pName);
     	*var_len = strlen(string);
         return string;
 
     case TEMPSN:
-		//if (ft_som_obj_sn_get(id, string, sizeof(string)) < 0)
-		{
-			return	NULL;	
-		}
+		strcpy(string, xEPInfo.pName);
     	*var_len = strlen(string);
         return string;
 
@@ -609,36 +777,52 @@ var_sensorTable(struct variable *vp,
         return string;
 
     case TEMPVALUE:
-		//if (ft_som_obj_value_get(id, string, sizeof(string)) != 0)
+		if (FTNMC_EP_DATA_getLast(&xSession, xEPID, &xEPData) != FTM_RET_OK)
 		{
 			return	NULL;	
 		}
+
+		FTM_EP_DATA_snprint(string, sizeof(string), &xEPData);
     	*var_len = strlen(string);
         return string;
 
     case TEMPLASTVALUE:
-		//if (ft_som_obj_last_value_get(id, string, sizeof(string)) != 0)
+		if (FTNMC_EP_DATA_getLast(&xSession, xEPID, &xEPData) != FTM_RET_OK)
 		{
 			return	NULL;	
 		}
+
+		FTM_EP_DATA_snprint(string, sizeof(string), &xEPData);
     	*var_len = strlen(string);
         return string;
 
     case TEMPLASTTIME:
-		//if (ft_som_obj_last_time_get(id, string, sizeof(string)) != 0)
 		{
-			return	NULL;	
+			int	nLen;
+
+			if (FTNMC_EP_DATA_getLast(&xSession, xEPID, &xEPData) != FTM_RET_OK)
+			{
+				return	NULL;	
+			}
+
+			ctime_r((time_t *)&xEPData.ulTime, string);	
+			nLen = strlen(string);
+			if (nLen != 0)
+			{
+				string[nLen-1] = '\0';
+				nLen--;
+			}
+
+			*var_len = nLen;
+			return string;
 		}
-    	*var_len = strlen(string);
-        return string;
 
+	case TEMPUPDATEINTERVAL:
+	*write_method = NULL;//write_tempUpdateInterval;
+		*((FTM_ULONG_PTR)string) = xEPInfo.nInterval;
+		return (u_char*) string;
 
-    case TEMPUPDATEINTERVAL:
-        *write_method = NULL;//write_tempUpdateInterval;
-        VAR = VALUE;	/* XXX */
-        return (u_char*) &VAR;
-
-    default:
+	default:
       ERROR_MSG("");
     }
     return NULL;

@@ -17,15 +17,16 @@ FTNMC_CMD	ftnm_client_main.c	/^}	FTNMC_CMD, _PTR_ FTNMC_CMD_PTR;$/;"	t	typeref:s
 FTNMC_CMD_PTR	ftnm_client_main.c	/^}	FTNMC_CMD, _PTR_ FTNMC_CMD_PTR;$/;"	t	typeref:struct:_FTNMC_CMD	file:
 FTNMC_EP_DATA_add	ftnm_client.c	/^FTM_RET	FTNMC_EP_DATA_add$/;"	f
 FTNMC_EP_DATA_count	ftnm_client.c	/^FTM_RET	FTNMC_EP_DATA_count$/;"	f
-FTNMC_EP_DATA_get	ftnm_client.c	/^FTM_RET	FTNMC_EP_DATA_get$/;"	f
+FTNMC_EP_DATA_getLast	ftnm_client.c	/^FTM_RET FTNMC_EP_DATA_getLast$/;"	f
+FTNMC_EP_DATA_getList	ftnm_client.c	/^FTM_RET	FTNMC_EP_DATA_getList$/;"	f
 FTNMC_EP_count	ftnm_client.c	/^FTM_RET FTNMC_EP_count$/;"	f
 FTNMC_EP_create	ftnm_client.c	/^FTM_RET FTNMC_EP_create$/;"	f
 FTNMC_EP_destroy	ftnm_client.c	/^FTM_RET FTNMC_EP_destroy$/;"	f
 FTNMC_EP_get	ftnm_client.c	/^FTM_RET FTNMC_EP_get$/;"	f
 FTNMC_EP_getAt	ftnm_client.c	/^FTM_RET FTNMC_EP_getAt$/;"	f
 FTNMC_EP_getList	ftnm_client.c	/^FTM_RET	FTNMC_EP_getList$/;"	f
-FTNMC_MAX_ARGS	ftnm_client_main.c	19;"	d	file:
-FTNMC_MAX_LINE	ftnm_client_main.c	18;"	d	file:
+FTNMC_MAX_ARGS	ftnm_client_main.c	21;"	d	file:
+FTNMC_MAX_LINE	ftnm_client_main.c	20;"	d	file:
 FTNMC_NODE_count	ftnm_client.c	/^FTM_RET FTNMC_NODE_count$/;"	f
 FTNMC_NODE_create	ftnm_client.c	/^FTM_RET FTNMC_NODE_create$/;"	f
 FTNMC_NODE_destroy	ftnm_client.c	/^FTM_RET FTNMC_NODE_destroy$/;"	f
@@ -72,6 +73,7 @@ FTNMC_loadConfig	ftnm_client_config.c	/^FTM_RET	FTNMC_loadConfig(FTNM_CFG_CLIENT
 FTNMC_request	ftnm_client.c	/^FTM_RET FTNMC_request$/;"	f
 FTNMS_CMD_SET	ftnm_server.h	/^}	FTNMS_CMD_SET, _PTR_ FTNMS_CMD_SET_PTR;$/;"	t	typeref:struct:__anon7
 FTNMS_CMD_SET_PTR	ftnm_server.h	/^}	FTNMS_CMD_SET, _PTR_ FTNMS_CMD_SET_PTR;$/;"	t	typeref:struct:__anon7
+FTNMS_EP_DATA_getLast	ftnm_server.c	/^FTM_RET	FTNMS_EP_DATA_getLast$/;"	f
 FTNMS_EP_count	ftnm_server.c	/^FTM_RET	FTNMS_EP_count$/;"	f
 FTNMS_EP_create	ftnm_server.c	/^FTM_RET	FTNMS_EP_create$/;"	f
 FTNMS_EP_destroy	ftnm_server.c	/^FTM_RET	FTNMS_EP_destroy$/;"	f
@@ -107,9 +109,10 @@ FTNM_CMD	ftnm_server_cmd.h	/^typedef	unsigned long	FTNM_CMD, _PTR_ FTNM_CMD_PTR;
 FTNM_CMD_EP_COUNT	ftnm_server_cmd.h	16;"	d
 FTNM_CMD_EP_CREATE	ftnm_server_cmd.h	14;"	d
 FTNM_CMD_EP_DATA_ADD	ftnm_server_cmd.h	21;"	d
-FTNM_CMD_EP_DATA_COUNT	ftnm_server_cmd.h	24;"	d
+FTNM_CMD_EP_DATA_COUNT	ftnm_server_cmd.h	25;"	d
 FTNM_CMD_EP_DATA_DEL	ftnm_server_cmd.h	22;"	d
-FTNM_CMD_EP_DATA_GET	ftnm_server_cmd.h	23;"	d
+FTNM_CMD_EP_DATA_GET_LAST	ftnm_server_cmd.h	23;"	d
+FTNM_CMD_EP_DATA_GET_LIST	ftnm_server_cmd.h	24;"	d
 FTNM_CMD_EP_DESTROY	ftnm_server_cmd.h	15;"	d
 FTNM_CMD_EP_GET	ftnm_server_cmd.h	18;"	d
 FTNM_CMD_EP_GET_AT	ftnm_server_cmd.h	19;"	d
@@ -123,14 +126,14 @@ FTNM_CMD_PTR	ftnm_server_cmd.h	/^typedef	unsigned long	FTNM_CMD, _PTR_ FTNM_CMD_
 FTNM_CMD_UNKNOWN	ftnm_server_cmd.h	6;"	d
 FTNM_CONSOLE_cmdConfig	ftnm_cmds.c	/^FTM_RET	FTNM_CONSOLE_cmdConfig$/;"	f
 FTNM_CONSOLE_cmdList	ftnm_cmds.c	/^FTM_RET	FTNM_CONSOLE_cmdList$/;"	f
-FTNM_CONTEXT	ftnm.h	/^}	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;$/;"	t	typeref:struct:__anon52
-FTNM_CONTEXT_PTR	ftnm.h	/^}	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;$/;"	t	typeref:struct:__anon52
+FTNM_CONTEXT	ftnm.h	/^}	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;$/;"	t	typeref:struct:__anon54
+FTNM_CONTEXT_PTR	ftnm.h	/^}	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;$/;"	t	typeref:struct:__anon54
 FTNM_DEFAULT_SERVER_IP	ftnm_client_config.h	10;"	d
 FTNM_DEFAULT_SERVER_PORT	ftnm.h	15;"	d
 FTNM_DEFAULT_SERVER_PORT	ftnm_client_config.h	11;"	d
 FTNM_DEFAULT_SERVER_SESSION_COUNT	ftnm.h	16;"	d
-FTNM_DMC	ftnm.h	/^}	FTNM_DMC, _PTR_	FTNM_DMC_PTR;$/;"	t	typeref:struct:__anon51
-FTNM_DMC_PTR	ftnm.h	/^}	FTNM_DMC, _PTR_	FTNM_DMC_PTR;$/;"	t	typeref:struct:__anon51
+FTNM_DMC	ftnm.h	/^}	FTNM_DMC, _PTR_	FTNM_DMC_PTR;$/;"	t	typeref:struct:__anon53
+FTNM_DMC_PTR	ftnm.h	/^}	FTNM_DMC, _PTR_	FTNM_DMC_PTR;$/;"	t	typeref:struct:__anon53
 FTNM_DMC_setEPData	ftnm.c	/^FTM_RET	FTNM_DMC_setEPData(FTNM_EP_PTR pEP)$/;"	f
 FTNM_DMC_setEPDataFLOAT	ftnm.c	/^FTM_RET FTNM_DMC_setEPDataFLOAT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue)$/;"	f
 FTNM_DMC_setEPDataINT	ftnm.c	/^FTM_RET FTNM_DMC_setEPDataINT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_INT nValue)$/;"	f
@@ -147,7 +150,7 @@ FTNM_EP_CLASS_INFO_init	ftnm_ep_class.c	/^FTM_RET	FTNM_EP_CLASS_INFO_init(FTM_VO
 FTNM_EP_CLASS_INFO_seeker	ftnm_ep_class.c	/^FTM_INT	FTNM_EP_CLASS_INFO_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)$/;"	f
 FTNM_EP_PTR	ftnm_object.h	/^}	FTNM_EP, _PTR_ FTNM_EP_PTR;$/;"	t	typeref:struct:__anon8
 FTNM_EP_comparator	ftnm_ep.c	/^FTM_INT	FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2)$/;"	f
-FTNM_EP_count	ftnm_ep.c	/^FTM_RET	FTNM_EP_count(FTM_ULONG_PTR pulCount)$/;"	f
+FTNM_EP_count	ftnm_ep.c	/^FTM_RET	FTNM_EP_count$/;"	f
 FTNM_EP_create	ftnm_ep.c	/^FTM_RET	FTNM_EP_create(FTM_EP_INFO_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)$/;"	f
 FTNM_EP_destroy	ftnm_ep.c	/^FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)$/;"	f
 FTNM_EP_final	ftnm_ep.c	/^FTM_RET FTNM_EP_final(FTM_VOID)$/;"	f
@@ -216,12 +219,14 @@ FTNM_REQ_EP_CREATE_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_CREATE_PARAMS, _PTR_ FTN
 FTNM_REQ_EP_CREATE_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_CREATE_PARAMS, _PTR_ FTNM_REQ_EP_CREATE_PARAMS_PTR;$/;"	t	typeref:struct:__anon30
 FTNM_REQ_EP_DATA_ADD_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_ADD_PARAMS, _PTR_ FTNM_REQ_EP_DATA_ADD_PARAMS_PTR;$/;"	t	typeref:struct:__anon42
 FTNM_REQ_EP_DATA_ADD_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_ADD_PARAMS, _PTR_ FTNM_REQ_EP_DATA_ADD_PARAMS_PTR;$/;"	t	typeref:struct:__anon42
-FTNM_REQ_EP_DATA_COUNT_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR;$/;"	t	typeref:struct:__anon48
-FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR;$/;"	t	typeref:struct:__anon48
-FTNM_REQ_EP_DATA_DEL_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTNM_REQ_EP_DATA_DEL_PARAMS_PTR; $/;"	t	typeref:struct:__anon46
-FTNM_REQ_EP_DATA_DEL_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTNM_REQ_EP_DATA_DEL_PARAMS_PTR; $/;"	t	typeref:struct:__anon46
-FTNM_REQ_EP_DATA_GET_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_GET_PARAMS, _PTR_	FTNM_REQ_EP_DATA_GET_PARAMS_PTR;$/;"	t	typeref:struct:__anon44
-FTNM_REQ_EP_DATA_GET_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_GET_PARAMS, _PTR_	FTNM_REQ_EP_DATA_GET_PARAMS_PTR;$/;"	t	typeref:struct:__anon44
+FTNM_REQ_EP_DATA_COUNT_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR;$/;"	t	typeref:struct:__anon50
+FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR;$/;"	t	typeref:struct:__anon50
+FTNM_REQ_EP_DATA_DEL_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTNM_REQ_EP_DATA_DEL_PARAMS_PTR; $/;"	t	typeref:struct:__anon48
+FTNM_REQ_EP_DATA_DEL_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTNM_REQ_EP_DATA_DEL_PARAMS_PTR; $/;"	t	typeref:struct:__anon48
+FTNM_REQ_EP_DATA_GET_LAST_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_GET_LAST_PARAMS, _PTR_	FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR;$/;"	t	typeref:struct:__anon44
+FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_GET_LAST_PARAMS, _PTR_	FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR;$/;"	t	typeref:struct:__anon44
+FTNM_REQ_EP_DATA_GET_LIST_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_GET_LIST_PARAMS, _PTR_	FTNM_REQ_EP_DATA_GET_LIST_PARAMS_PTR;$/;"	t	typeref:struct:__anon46
+FTNM_REQ_EP_DATA_GET_LIST_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_DATA_GET_LIST_PARAMS, _PTR_	FTNM_REQ_EP_DATA_GET_LIST_PARAMS_PTR;$/;"	t	typeref:struct:__anon46
 FTNM_REQ_EP_DESTROY_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_DESTROY_PARAMS, _PTR_	FTNM_REQ_EP_DESTROY_PARAMS_PTR;$/;"	t	typeref:struct:__anon32
 FTNM_REQ_EP_DESTROY_PARAMS_PTR	ftnm_params.h	/^}	FTNM_REQ_EP_DESTROY_PARAMS, _PTR_	FTNM_REQ_EP_DESTROY_PARAMS_PTR;$/;"	t	typeref:struct:__anon32
 FTNM_REQ_EP_GET_AT_PARAMS	ftnm_params.h	/^}	FTNM_REQ_EP_GET_AT_PARAMS, _PTR_	FTNM_REQ_EP_GET_AT_PARAMS_PTR;$/;"	t	typeref:struct:__anon40
@@ -248,12 +253,14 @@ FTNM_RESP_EP_CREATE_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_CREATE_PARAMS, _PTR_	F
 FTNM_RESP_EP_CREATE_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_CREATE_PARAMS, _PTR_	FTNM_RESP_EP_CREATE_PARAMS_PTR;$/;"	t	typeref:struct:__anon31
 FTNM_RESP_EP_DATA_ADD_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_ADD_PARAMS, _PTR_	FTNM_RESP_EP_DATA_ADD_PARAMS_PTR;$/;"	t	typeref:struct:__anon43
 FTNM_RESP_EP_DATA_ADD_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_ADD_PARAMS, _PTR_	FTNM_RESP_EP_DATA_ADD_PARAMS_PTR;$/;"	t	typeref:struct:__anon43
-FTNM_RESP_EP_DATA_COUNT_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR;$/;"	t	typeref:struct:__anon49
-FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR;$/;"	t	typeref:struct:__anon49
-FTNM_RESP_EP_DATA_DEL_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_DEL_PARAMS, _PTR_ 	FTNM_RESP_EP_DATA_DEL_PARAMS_PTR;$/;"	t	typeref:struct:__anon47
-FTNM_RESP_EP_DATA_DEL_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_DEL_PARAMS, _PTR_ 	FTNM_RESP_EP_DATA_DEL_PARAMS_PTR;$/;"	t	typeref:struct:__anon47
-FTNM_RESP_EP_DATA_GET_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_GET_PARAMS, _PTR_ FTNM_RESP_EP_DATA_GET_PARAMS_PTR;$/;"	t	typeref:struct:__anon45
-FTNM_RESP_EP_DATA_GET_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_GET_PARAMS, _PTR_ FTNM_RESP_EP_DATA_GET_PARAMS_PTR;$/;"	t	typeref:struct:__anon45
+FTNM_RESP_EP_DATA_COUNT_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR;$/;"	t	typeref:struct:__anon51
+FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR;$/;"	t	typeref:struct:__anon51
+FTNM_RESP_EP_DATA_DEL_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_DEL_PARAMS, _PTR_ 	FTNM_RESP_EP_DATA_DEL_PARAMS_PTR;$/;"	t	typeref:struct:__anon49
+FTNM_RESP_EP_DATA_DEL_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_DEL_PARAMS, _PTR_ 	FTNM_RESP_EP_DATA_DEL_PARAMS_PTR;$/;"	t	typeref:struct:__anon49
+FTNM_RESP_EP_DATA_GET_LAST_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_GET_LAST_PARAMS, _PTR_ FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR;$/;"	t	typeref:struct:__anon45
+FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_GET_LAST_PARAMS, _PTR_ FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR;$/;"	t	typeref:struct:__anon45
+FTNM_RESP_EP_DATA_GET_LIST_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_GET_LIST_PARAMS, _PTR_ FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR;$/;"	t	typeref:struct:__anon47
+FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_DATA_GET_LIST_PARAMS, _PTR_ FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR;$/;"	t	typeref:struct:__anon47
 FTNM_RESP_EP_DESTROY_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_DESTROY_PARAMS, _PTR_ 	FTNM_RESP_EP_DESTROY_PARAMS_PTR;$/;"	t	typeref:struct:__anon33
 FTNM_RESP_EP_DESTROY_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_EP_DESTROY_PARAMS, _PTR_ 	FTNM_RESP_EP_DESTROY_PARAMS_PTR;$/;"	t	typeref:struct:__anon33
 FTNM_RESP_EP_GET_AT_PARAMS	ftnm_params.h	/^}	FTNM_RESP_EP_GET_AT_PARAMS, _PTR_	FTNM_RESP_EP_GET_AT_PARAMS_PTR;$/;"	t	typeref:struct:__anon41
@@ -275,8 +282,8 @@ FTNM_RESP_NODE_GET_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_NODE_GET_PARAMS, _PTR_
 FTNM_RESP_PARAMS	ftnm_params.h	/^}	FTNM_RESP_PARAMS, _PTR_ FTNM_RESP_PARAMS_PTR;$/;"	t	typeref:struct:__anon19
 FTNM_RESP_PARAMS_PTR	ftnm_params.h	/^}	FTNM_RESP_PARAMS, _PTR_ FTNM_RESP_PARAMS_PTR;$/;"	t	typeref:struct:__anon19
 FTNM_SERVICE_CALLBACK	ftnm_server.h	/^typedef	FTM_RET	(*FTNM_SERVICE_CALLBACK)(FTNM_REQ_PARAMS_PTR, FTNM_RESP_PARAMS_PTR);$/;"	t
-FTNM_SESSION	ftnm_server.c	/^}	FTNM_SESSION, _PTR_ FTNM_SESSION_PTR;$/;"	t	typeref:struct:__anon50	file:
-FTNM_SESSION_PTR	ftnm_server.c	/^}	FTNM_SESSION, _PTR_ FTNM_SESSION_PTR;$/;"	t	typeref:struct:__anon50	file:
+FTNM_SESSION	ftnm_server.c	/^}	FTNM_SESSION, _PTR_ FTNM_SESSION_PTR;$/;"	t	typeref:struct:__anon52	file:
+FTNM_SESSION_PTR	ftnm_server.c	/^}	FTNM_SESSION, _PTR_ FTNM_SESSION_PTR;$/;"	t	typeref:struct:__anon52	file:
 FTNM_SNMPC	ftnm_object.h	/^}	FTNM_SNMPC, _PTR_ FTNM_SNMPC_PTR;$/;"	t	typeref:struct:__anon11
 FTNM_SNMPC_PTR	ftnm_object.h	/^}	FTNM_SNMPC, _PTR_ FTNM_SNMPC_PTR;$/;"	t	typeref:struct:__anon11
 FTNM_SNMPC_STATE_COMPLETED	ftnm_object.h	25;"	d
@@ -326,9 +333,7 @@ FTNM_taskRunChild	ftnm.c	/^FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pContext)$
 FTNM_taskSync	ftnm.c	/^FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pContext)$/;"	f
 FTNM_taskWait	ftnm.c	/^FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pContext)$/;"	f
 FTNM_ulCmds	ftnm_cmds.c	/^FTM_ULONG		FTNM_ulCmds = sizeof(FTNM_xCmds) \/ sizeof(FTM_CONSOLE_CMD);$/;"	v
-FTNM_ulCmds	ftnm_cmds.h	/^FTM_ULONG		FTNM_ulCmds;$/;"	v
 FTNM_xCmds	ftnm_cmds.c	/^FTM_CONSOLE_CMD	FTNM_xCmds[] = $/;"	v
-FTNM_xCmds	ftnm_cmds.h	/^FTM_CONSOLE_CMD	FTNM_xCmds[];$/;"	v
 LDFLAGS	Makefile	/^LDFLAGS= -L\/usr\/local\/lib -L. -L..\/lib -L..\/ftdm$/;"	m
 LIB_FTNM	Makefile	/^LIB_FTNM=libftnm$/;"	m
 LIB_FTNMC	Makefile	/^LIB_FTNMC=libftnmc$/;"	m
@@ -343,6 +348,7 @@ _FTNMC_CMD	ftnm_client_main.c	/^typedef struct	_FTNMC_CMD$/;"	s	file:
 _FTNMC_SUB_CMD	ftnm_client_main.c	/^typedef	enum	_FTNMC_SUB_CMD$/;"	g	file:
 _FTNM_NODE	ftnm_object.h	/^typedef	struct _FTNM_NODE$/;"	s
 _XOPEN_SOURCE	ftnm_client_config.c	1;"	d	file:
+_XOPEN_SOURCE	ftnm_client_main.c	6;"	d	file:
 __FTNM_CFG_CLIENT_H__	ftnm_client_config.h	2;"	d
 __FTNM_CLIENT_H__	ftnm_client.h	2;"	d
 __FTNM_CMD_H__	ftnm_server_cmd.h	2;"	d
@@ -358,7 +364,7 @@ __FTNM_SERVER_H__	ftnm_server.h	2;"	d
 __FTNM_SNMP_CLIENT_H__	ftnm_node_snmpc.h	2;"	d
 __FTNM_TIMER_H__	ftnm_timer.h	2;"	d
 __FTNM_TYPE_H__	ftnm_types.h	2;"	d
-__USE_XOPEN	ftnm_client_main.c	5;"	d	file:
+__USE_XOPEN	ftnm_client_main.c	2;"	d	file:
 _bQuit	ftnm_client_main.c	/^static	FTM_BOOL	_bQuit = FTM_BOOL_FALSE;$/;"	v	file:
 _cmds	ftnm_client_main.c	/^FTNMC_CMD			_cmds[] = $/;"	v
 _nPrintLevel	ftnm_debug.c	/^static unsigned long	_nPrintLevel = MSG_NORMAL;$/;"	v	file:
@@ -369,16 +375,16 @@ active_hosts	ftnm_node_snmpc.c	/^int	active_hosts = 0;$/;"	v
 fService	ftnm_server.h	/^	FTNM_SERVICE_CALLBACK	fService;$/;"	m	struct:__anon7
 function	ftnm_client_main.c	/^	FTM_RET			(*function)(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);$/;"	m	struct:_FTNMC_CMD	file:
 hSock	ftnm_client.h	/^	FTM_INT		hSock;$/;"	m	struct:__anon3
-hSocket	ftnm_server.c	/^	FTM_INT				hSocket;$/;"	m	struct:__anon50	file:
+hSocket	ftnm_server.c	/^	FTM_INT				hSocket;$/;"	m	struct:__anon52	file:
 main	ftnm_client_main.c	/^int main(int argc , char *argv[])$/;"	f
 main	ftnm_main.c	/^int main(int nArgc, char *pArgv[])$/;"	f
 main	ftnm_server_main.c	/^int main(int argc, char *argv[])$/;"	f
-nCount	ftnm_params.h	/^	FTM_ULONG			nCount; $/;"	m	struct:__anon44
-nCount	ftnm_params.h	/^	FTM_ULONG			nCount; $/;"	m	struct:__anon45
+nCount	ftnm_params.h	/^	FTM_ULONG			nCount; $/;"	m	struct:__anon46
+nCount	ftnm_params.h	/^	FTM_ULONG			nCount; $/;"	m	struct:__anon47
 nCount	ftnm_params.h	/^	FTM_ULONG			nCount;$/;"	m	struct:__anon35
-nCount	ftnm_params.h	/^	FTM_ULONG			nCount;$/;"	m	struct:__anon46
-nCount	ftnm_params.h	/^	FTM_ULONG			nCount;$/;"	m	struct:__anon49
-nIndex	ftnm_params.h	/^	FTM_ULONG 			nIndex; $/;"	m	struct:__anon46
+nCount	ftnm_params.h	/^	FTM_ULONG			nCount;$/;"	m	struct:__anon48
+nCount	ftnm_params.h	/^	FTM_ULONG			nCount;$/;"	m	struct:__anon51
+nIndex	ftnm_params.h	/^	FTM_ULONG 			nIndex; $/;"	m	struct:__anon48
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon42
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon43
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon44
@@ -387,6 +393,8 @@ nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon46
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon47
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon48
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon49
+nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon50
+nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon51
 nOIDLen	ftnm_object.h	/^			size_t	nOIDLen;$/;"	m	struct:__anon8::__anon9::__anon10
 nRet	ftnm_params.h	/^	FTM_RET				nRet;$/;"	m	struct:__anon19
 nRet	ftnm_params.h	/^	FTM_RET				nRet;$/;"	m	struct:__anon21
@@ -403,8 +411,9 @@ nRet	ftnm_params.h	/^	FTM_RET				nRet;$/;"	m	struct:__anon41
 nRet	ftnm_params.h	/^	FTM_RET				nRet;$/;"	m	struct:__anon45
 nRet	ftnm_params.h	/^	FTM_RET				nRet;$/;"	m	struct:__anon47
 nRet	ftnm_params.h	/^	FTM_RET				nRet;$/;"	m	struct:__anon49
+nRet	ftnm_params.h	/^	FTM_RET				nRet;$/;"	m	struct:__anon51
 nRet	ftnm_params.h	/^	FTM_RET			nRet;$/;"	m	struct:__anon43
-nStartIndex	ftnm_params.h	/^	FTM_ULONG			nStartIndex;$/;"	m	struct:__anon44
+nStartIndex	ftnm_params.h	/^	FTM_ULONG			nStartIndex;$/;"	m	struct:__anon46
 nState	ftnm_object.h	/^	FTM_ULONG				nState;$/;"	m	struct:__anon11
 pCmdLine	ftnm_client_main.c	/^	FTM_CHAR		pCmdLine[FTNMC_MAX_LINE];$/;"	v
 pCmdSet	ftnm_server.c	/^static FTNMS_CMD_SET	pCmdSet[] =$/;"	v	file:
@@ -413,13 +422,13 @@ pCurrentEP	ftnm_object.h	/^	FTNM_EP_PTR				pCurrentEP;$/;"	m	struct:__anon11
 pDID	ftnm_params.h	/^	FTM_CHAR			pDID[FTM_DID_LEN + 1];$/;"	m	struct:__anon21
 pDID	ftnm_params.h	/^	FTM_CHAR			pDID[FTM_DID_LEN+1];$/;"	m	struct:__anon22
 pDID	ftnm_params.h	/^	FTM_CHAR			pDID[FTM_DID_LEN+1];$/;"	m	struct:__anon26
-pData	ftnm_params.h	/^	FTM_EP_DATA 		pData[];$/;"	m	struct:__anon45
+pData	ftnm_params.h	/^	FTM_EP_DATA 		pData[];$/;"	m	struct:__anon47
 pEPIDList	ftnm_params.h	/^	FTM_EPID			pEPIDList[];$/;"	m	struct:__anon37
 pHelp	ftnm_client_main.c	/^	FTM_CHAR_PTR	pHelp;$/;"	m	struct:_FTNMC_CMD	file:
 pNode	ftnm_object.h	/^	FTNM_NODE_PTR 	pNode;$/;"	m	struct:__anon8
 pOID	ftnm_object.h	/^			oid		pOID[MAX_OID_LEN];$/;"	m	struct:__anon8::__anon9::__anon10
-pReqBuff	ftnm_server.c	/^	FTM_BYTE			pReqBuff[FTNM_PACKET_LEN];$/;"	m	struct:__anon50	file:
-pRespBuff	ftnm_server.c	/^	FTM_BYTE			pRespBuff[FTNM_PACKET_LEN];$/;"	m	struct:__anon50	file:
+pReqBuff	ftnm_server.c	/^	FTM_BYTE			pReqBuff[FTNM_PACKET_LEN];$/;"	m	struct:__anon52	file:
+pRespBuff	ftnm_server.c	/^	FTM_BYTE			pRespBuff[FTNM_PACKET_LEN];$/;"	m	struct:__anon52	file:
 pServerIP	ftnm_client_config.h	/^		FTM_CHAR	pServerIP[FTNMC_SERVER_IP_LEN];$/;"	m	struct:__anon16::__anon17
 pSession	ftnm_object.h	/^	struct snmp_session 	*pSession;		\/* SNMP session data *\/$/;"	m	struct:__anon11	typeref:struct:__anon11::snmp_session
 pShortHelp	ftnm_client_main.c	/^	FTM_CHAR_PTR	pShortHelp;$/;"	m	struct:_FTNMC_CMD	file:
@@ -432,7 +441,6 @@ printToTerm	ftnm_debug.c	/^void printToTerm(char *szMsg)$/;"	f
 printToTrace	ftnm_debug.c	/^void (*printToTrace)(char *szMsg) = printToTerm;$/;"	v
 setPrintMode	ftnm_debug.c	/^void setPrintMode$/;"	f
 ulCount	ftnm_params.h	/^	FTM_ULONG			ulCount;$/;"	m	struct:__anon25
-ulCount	ftnm_params.h	/^	FTM_ULONG			ulCount;$/;"	m	struct:__anon36
 ulCount	ftnm_params.h	/^	FTM_ULONG			ulCount;$/;"	m	struct:__anon37
 ulIndex	ftnm_params.h	/^	FTM_ULONG			ulIndex;$/;"	m	struct:__anon28
 ulIndex	ftnm_params.h	/^	FTM_ULONG			ulIndex;$/;"	m	struct:__anon40
@@ -460,6 +468,7 @@ ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon38
 ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon39
 ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon40
 ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon41
+ulMaxCount	ftnm_params.h	/^	FTM_ULONG			ulMaxCount;$/;"	m	struct:__anon36
 ulMaxSession	ftnm_config.h	/^	FTM_ULONG		ulMaxSession;$/;"	m	struct:__anon4
 ulRequest	ftnm_object.h	/^		FTM_ULONG				ulRequest;$/;"	m	struct:__anon11::__anon12
 ulResponse	ftnm_object.h	/^		FTM_ULONG				ulResponse;$/;"	m	struct:__anon11::__anon12
@@ -467,8 +476,8 @@ ulRetry	ftnm_object.h	/^	FTM_ULONG			ulRetry;$/;"	m	struct:_FTNM_NODE
 ulTimeout	ftnm_client.h	/^	FTM_ULONG	ulTimeout;$/;"	m	struct:__anon3
 usPort	ftnm_client_config.h	/^		FTM_USHORT	usPort;$/;"	m	struct:__anon16::__anon17
 usPort	ftnm_config.h	/^	FTM_USHORT		usPort;$/;"	m	struct:__anon4
-xCalss	ftnm_params.h	/^	FTM_EP_CLASS		xCalss;$/;"	m	struct:__anon36
 xClass	ftnm_params.h	/^	FTM_EP_CLASS		xClass;$/;"	m	struct:__anon34
+xClass	ftnm_params.h	/^	FTM_EP_CLASS		xClass;$/;"	m	struct:__anon36
 xClient	ftnm_config.h	/^	FTDM_CFG_CLIENT	xClient;$/;"	m	struct:__anon6
 xClientConfig	ftnm_client_main.c	/^static	FTNM_CFG_CLIENT	xClientConfig;$/;"	v	file:
 xCmd	ftnm_object.h	/^	FTNM_NODE_TASK_CMD	xCmd;$/;"	m	struct:__anon15
@@ -504,18 +513,22 @@ xCmd	ftnm_params.h	/^	FTNM_CMD			xCmd;$/;"	m	struct:__anon46
 xCmd	ftnm_params.h	/^	FTNM_CMD			xCmd;$/;"	m	struct:__anon47
 xCmd	ftnm_params.h	/^	FTNM_CMD			xCmd;$/;"	m	struct:__anon48
 xCmd	ftnm_params.h	/^	FTNM_CMD			xCmd;$/;"	m	struct:__anon49
+xCmd	ftnm_params.h	/^	FTNM_CMD			xCmd;$/;"	m	struct:__anon50
+xCmd	ftnm_params.h	/^	FTNM_CMD			xCmd;$/;"	m	struct:__anon51
 xCmd	ftnm_server.h	/^	FTNM_CMD				xCmd;$/;"	m	struct:__anon7
 xCommon	ftnm_object.h	/^	FTNM_NODE			xCommon;$/;"	m	struct:__anon13
-xConfig	ftnm.h	/^	FTNM_CFG		xConfig;$/;"	m	struct:__anon52
+xConfig	ftnm.h	/^	FTNM_CFG		xConfig;$/;"	m	struct:__anon54
 xContext	ftnm.c	/^static FTNM_CONTEXT	xContext;$/;"	v	file:
-xDMC	ftnm.h	/^	FTNM_DMC		xDMC;	$/;"	m	struct:__anon52
+xDMC	ftnm.h	/^	FTNM_DMC		xDMC;	$/;"	m	struct:__anon54
 xData	ftnm_object.h	/^	FTM_EP_DATA		xData;$/;"	m	struct:__anon8
 xData	ftnm_params.h	/^	FTM_EP_DATA			xData;$/;"	m	struct:__anon42
+xData	ftnm_params.h	/^	FTM_EP_DATA 		xData;$/;"	m	struct:__anon45
 xEPID	ftnm_params.h	/^	FTM_EPID			xEPID;$/;"	m	struct:__anon38
 xEPID	ftnm_params.h	/^	FTM_EPID			xEPID;$/;"	m	struct:__anon42
 xEPID	ftnm_params.h	/^	FTM_EPID			xEPID;$/;"	m	struct:__anon44
 xEPID	ftnm_params.h	/^	FTM_EPID			xEPID;$/;"	m	struct:__anon46
 xEPID	ftnm_params.h	/^	FTM_EPID			xEPID;$/;"	m	struct:__anon48
+xEPID	ftnm_params.h	/^	FTM_EPID			xEPID;$/;"	m	struct:__anon50
 xEPID	ftnm_params.h	/^	FTM_EPID 			xEPID;$/;"	m	struct:__anon32
 xEPList	ftnm_ep.c	/^static FTM_LIST	xEPList;$/;"	v	file:
 xEPList	ftnm_ep_class.c	/^static FTM_LIST	xEPList;$/;"	v	file:
@@ -538,19 +551,19 @@ xOIDsysDescr	ftnm_server_main.c	/^FTNM_SNMP_OID	xOIDsysDescr =$/;"	v
 xOption	ftnm_object.h	/^	}	xOption;$/;"	m	struct:__anon8	typeref:union:__anon8::__anon9
 xPThread	ftnm_object.h	/^	pthread_t			xPThread;$/;"	m	struct:_FTNM_NODE
 xPThread	ftnm_server.c	/^static pthread_t	xPThread;$/;"	v	file:
-xPeer	ftnm_server.c	/^	struct sockaddr_in	xPeer;$/;"	m	struct:__anon50	typeref:struct:__anon50::sockaddr_in	file:
+xPeer	ftnm_server.c	/^	struct sockaddr_in	xPeer;$/;"	m	struct:__anon52	typeref:struct:__anon52::sockaddr_in	file:
 xSNMP	ftnm_object.h	/^		}	xSNMP;$/;"	m	union:__anon8::__anon9	typeref:struct:__anon8::__anon9::__anon10
 xSNMPC	ftnm_config.h	/^	FTNM_CFG_SNMPC	xSNMPC;	$/;"	m	struct:__anon6
 xSNMPC	ftnm_object.h	/^	FTNM_SNMPC			xSNMPC;$/;"	m	struct:__anon13
 xSNMPManager	ftnm_node_snmpc.c	/^pthread_t	xSNMPManager;$/;"	v
 xSemaphore	ftnm_server.c	/^static sem_t		xSemaphore;$/;"	v	file:
 xServer	ftnm_config.h	/^	FTNM_CFG_SERVER	xServer;	$/;"	m	struct:__anon6
-xSession	ftnm.h	/^	FTDMC_SESSION	xSession;$/;"	m	struct:__anon51
-xState	ftnm.h	/^	FTNM_STATE		xState;$/;"	m	struct:__anon51
+xSession	ftnm.h	/^	FTDMC_SESSION	xSession;$/;"	m	struct:__anon53
+xState	ftnm.h	/^	FTNM_STATE		xState;$/;"	m	struct:__anon53
 xState	ftnm_object.h	/^	FTNM_NODE_STATE		xState;$/;"	m	struct:_FTNM_NODE
 xStatistics	ftnm_object.h	/^	}	xStatistics;	$/;"	m	struct:__anon11	typeref:struct:__anon11::__anon12
 xTaskList	ftnm_object.h	/^	FTM_LIST			xTaskList;$/;"	m	struct:_FTNM_NODE
-xThread	ftnm.h	/^	pthread_t		xThread;$/;"	m	struct:__anon51
+xThread	ftnm.h	/^	pthread_t		xThread;$/;"	m	struct:__anon53
 xTimeout	ftnm_object.h	/^	int64_t				xTimeout;$/;"	m	struct:_FTNM_NODE
 xTimeout	ftnm_object.h	/^	time_t					xTimeout;$/;"	m	struct:__anon11
 xType	ftnm_object.h	/^	FTM_NODE_TYPE		xType;$/;"	m	struct:_FTNM_NODE

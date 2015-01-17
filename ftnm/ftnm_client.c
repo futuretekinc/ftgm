@@ -616,7 +616,53 @@ FTM_RET	FTNMC_EP_DATA_add
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTNMC_EP_DATA_get
+FTM_RET FTNMC_EP_DATA_getLast
+(
+	FTNMC_SESSION_PTR		pSession,
+	FTM_EPID				xEPID,
+	FTM_EP_DATA_PTR			pData
+)
+{
+	FTM_RET								nRet;
+	FTNM_REQ_EP_DATA_GET_LAST_PARAMS	xReq;
+	FTNM_RESP_EP_DATA_GET_LAST_PARAMS	xResp;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	if (pData == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	xReq.xCmd	=	FTNM_CMD_EP_DATA_GET_LAST;
+	xReq.ulLen	=	sizeof(xReq);
+	xReq.xEPID	=	xEPID;
+
+	nRet = FTNMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pData, &xResp.xData, sizeof(FTM_EP_DATA));
+	}
+	
+	return	xResp.nRet;
+}
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET	FTNMC_EP_DATA_getList
 (
 	FTNMC_SESSION_PTR	pSession,
 	FTM_EPID			xEPID,
@@ -627,24 +673,24 @@ FTM_RET	FTNMC_EP_DATA_get
 )
 {
 	FTM_RET								nRet;
-	FTNM_REQ_EP_DATA_GET_PARAMS			xReq;
+	FTNM_REQ_EP_DATA_GET_LIST_PARAMS			xReq;
 	FTM_ULONG							nRespSize = 0;
-	FTNM_RESP_EP_DATA_GET_PARAMS_PTR	pResp = NULL;
+	FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp = NULL;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-	nRespSize = sizeof(FTNM_RESP_EP_DATA_GET_PARAMS) + sizeof(FTM_EP_DATA) * nMaxCount;
-	pResp = (FTNM_RESP_EP_DATA_GET_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
+	nRespSize = sizeof(FTNM_RESP_EP_DATA_GET_LIST_PARAMS) + sizeof(FTM_EP_DATA) * nMaxCount;
+	pResp = (FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
 	if (pResp == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	xReq.xCmd		=	FTNM_CMD_EP_DATA_GET;
-	xReq.nLen		=	sizeof(xReq);
+	xReq.xCmd		=	FTNM_CMD_EP_DATA_GET_LIST;
+	xReq.ulLen		=	sizeof(xReq);
 	xReq.xEPID		=	xEPID;
 	xReq.nStartIndex=	nStartIndex;
 	xReq.nCount		=	nMaxCount;

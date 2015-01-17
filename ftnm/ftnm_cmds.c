@@ -69,7 +69,7 @@ FTM_RET	FTNM_CONSOLE_cmdList
 
 	MESSAGE("\n< EP LIST >\n");
 	MESSAGE("%-16s %-16s %-16s %-8s %-24s\n", "EPID", "TYPE", "DID", "VALUE", "TIME");
-	FTNM_EP_count(&ulEPCount);
+	FTNM_EP_count(0, &ulEPCount);
 	for(i = 0; i < ulEPCount ; i++)
 	{
 		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)

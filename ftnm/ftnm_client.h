@@ -1,8 +1,7 @@
 #ifndef	__FTNM_CLIENT_H__
 #define	__FTNM_CLIENT_H__
 
-#include "ftm_types.h"
-#include "ftm_object.h"
+#include "ftm.h"
 #include "ftnm_client_config.h"
 
 typedef	struct
@@ -120,7 +119,14 @@ FTM_RET FTNMC_EP_DATA_add
 	FTM_EP_DATA_PTR			pEPData
 );
 
-FTM_RET FTNMC_EP_DATA_get
+FTM_RET	FTNMC_EP_DATA_getLast
+(
+	FTNMC_SESSION_PTR		pSession,
+	FTM_EPID				xEPID,
+	FTM_EP_DATA_PTR			pEPData
+);
+
+FTM_RET FTNMC_EP_DATA_getList
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_EPID				xEPID,

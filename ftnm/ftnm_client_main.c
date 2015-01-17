@@ -670,6 +670,37 @@ FTM_RET	FTNMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			nRet = FTNMC_EP_count(&_xSession, 0, &nCount);
 			if (nRet == FTM_RET_OK)
 			{
+				FTM_EPID_PTR	pEPIDs;
+
+				pEPIDs = (FTM_EPID_PTR)FTM_MEM_calloc(nCount, sizeof(FTM_EPID));
+				if (pEPIDs == NULL)
+				{
+					ERROR("Not enough memory.\n");	
+				}
+				else
+				{
+					FTNMC_EP_getList(&_xSession, 0x01000000, pEPIDs, nCount, &nCount);
+					for(i = 0 ; i< nCount ; i++)
+					{
+						FTM_EP_INFO	xInfo;
+
+						nRet = FTNMC_EP_get(&_xSession, pEPIDs[i], &xInfo);
+						if (nRet == FTM_RET_OK)
+						{
+							MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
+									xInfo.xEPID,
+									FTM_getEPTypeString(xInfo.xType),
+									xInfo.pName,
+									xInfo.pUnit,
+									xInfo.nInterval,
+									xInfo.pDID,
+									xInfo.pPID);
+						}
+					}
+
+					FTM_MEM_free(pEPIDs);
+				}
+#if 0
 				MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
 						"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
 
@@ -694,6 +725,7 @@ FTM_RET	FTNMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 							ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
 					}
 				}
+#endif
 			}
 		}
 		else if (nArgc == 3)
@@ -1018,7 +1050,7 @@ FTM_RET	FTNMC_cmdEPData(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					return	FTM_RET_NOT_ENOUGH_MEMORY;		
 				}
 
-				nRet = FTNMC_EP_DATA_get(&_xSession, 
+				nRet = FTNMC_EP_DATA_getList(&_xSession, 
 						xEPID, 
 						nStartIndex,
 						pEPData, 

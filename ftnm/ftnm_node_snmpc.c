@@ -130,7 +130,7 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 				TRACE("Can't find MIB\n");
 				continue;
 			}
-			pEP->xOption.xSNMP.pOID[pEP->xOption.xSNMP.nOIDLen++] = pEP->xInfo.xEPID & 0xFF;
+			pEP->xOption.xSNMP.pOID[pEP->xOption.xSNMP.nOIDLen++] = pEP->xInfo.xDEPID & 0xFF;
 			FTM_LIST_append(&pNode->xSNMPC.xEPList, pEP);
 		}
 	}

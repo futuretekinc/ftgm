@@ -34,7 +34,7 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
-	setPrintMode(1);
+	setPrintMode(2);
 
 	if (bDaemon)
 	{

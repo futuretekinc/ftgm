@@ -15,7 +15,7 @@
 #define	FTDM_FIELD_FILE_STRING				"file"
 #define	FTDM_FIELD_PORT_STRING				"port"
 #define	FTDM_FIELD_SESSION_COUNT_STRING		"session_count"
-#define	FTDM_FIELD_EP_CLASSES_STRING		"classes"
+#define	FTDM_FIELD_EP_CLASSES_STRING		"class_info"
 
 #define	FTDM_FIELD_EPS_STRING				"eps"
 
@@ -36,7 +36,9 @@
 #define	FTDM_FIELD_EP_UNIT_STRING			"unit"
 #define	FTDM_FIELD_EP_INTERVAL_STRING		"interval"
 #define	FTDM_FIELD_EP_DID_STRING			"did"
+#define	FTDM_FIELD_EP_DEPID_STRING			"depid"
 #define	FTDM_FIELD_EP_PID_STRING			"pid"
+#define	FTDM_FIELD_EP_PEPID_STRING			"pepid"
 
 #define	FTDM_FIELD_EP_CLASS_CLASS_STRING	"class"
 #define	FTDM_FIELD_EP_CLASS_ID_STRING		"id"
@@ -227,8 +229,8 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 
 	MESSAGE("\n[ EP ]\n");
 	MESSAGE("# PRE-REGISTERED ENDPOINT\n");
-	MESSAGE("\t%-08s %-16s %-16s %-8s %-8s %-16s %-16s\n",
-			"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
+	MESSAGE("\t%-08s %-16s %-16s %-8s %-8s %-16s %-08s %-16s %-08s\n",
+			"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "DEPID", "PID", "PEPID");
 	if (FTDM_CFG_getEPInfoCount(&pConfig->xEP, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -236,14 +238,16 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 			FTM_EP_INFO	xEPInfo;
 
 			FTDM_CFG_getEPInfoByIndex(&pConfig->xEP, i, &xEPInfo);
-			MESSAGE("\t%08lx %-16s %-16s %-8s %-8lu %-16s %-16s\n",
+			MESSAGE("\t%08lx %-16s %-16s %-8s %-8lu %-16s %08lx %-16s %08lx\n",
 				xEPInfo.xEPID,
 				getEPTypeString(xEPInfo.xType),
 				xEPInfo.pName,
 				xEPInfo.pUnit,
 				xEPInfo.nInterval,
 				xEPInfo.pDID,
-				xEPInfo.pPID);
+				xEPInfo.xDEPID,
+				xEPInfo.pPID,
+				xEPInfo.xPEPID);
 		}
 	}
 
@@ -779,10 +783,22 @@ FTM_RET	getEPInfoByIndex(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR p
 			strncpy(xEPInfo.pDID, config_setting_get_string(pField), FTM_DID_LEN);
 		}
 
+		pField = config_setting_get_member(pEP, FTDM_FIELD_EP_DEPID_STRING);	
+		if(pField != NULL)
+		{
+			xEPInfo.xDEPID = (FTM_ULONG)config_setting_get_int(pField);
+		}
+
 		pField = config_setting_get_member(pEP, FTDM_FIELD_EP_PID_STRING);	
 		if(pField != NULL)
 		{
 			strncpy(xEPInfo.pPID, config_setting_get_string(pField), FTM_DID_LEN);
+		}
+
+		pField = config_setting_get_member(pEP, FTDM_FIELD_EP_PEPID_STRING);	
+		if(pField != NULL)
+		{
+			xEPInfo.xPEPID = (FTM_ULONG)config_setting_get_int(pField);
 		}
 
 		memcpy(pInfo, &xEPInfo, sizeof(xEPInfo));
@@ -1025,7 +1041,6 @@ FTM_CHAR_PTR	getEPTypeString(FTM_ULONG ulType)
 	case	FTM_EP_CLASS_DO:			return	"DIGITAL OUTPUT";
 	case	FTM_EP_CLASS_GAS:			return	"GAS";
 	case	FTM_EP_CLASS_POWER:			return	"POWER";
-	case	FTM_EP_CLASS_SRF:			return	"SRF";
 	case	FTM_EP_CLASS_AI:			return	"ANALOG INPUT";
 	case	FTM_EP_CLASS_MULTI:			return	"MULTI-FUNCTION";
 	}

@@ -53,8 +53,8 @@ typedef	unsigned long	FTM_EP_TYPE, _PTR_ FTM_EP_TYPE_PTR;
 #define	FTM_EP_CLASS_DO				0x06000000
 #define	FTM_EP_CLASS_GAS			0x07000000
 #define	FTM_EP_CLASS_POWER			0x08000000
-#define	FTM_EP_CLASS_SRF			0x09000000
 #define	FTM_EP_CLASS_AI				0x0A000000
+#define	FTM_EP_CLASS_COUNT			0x0B000000
 #define	FTM_EP_CLASS_MULTI			0x7F000000
 
 typedef	struct
@@ -82,7 +82,9 @@ typedef	struct
 	FTM_CHAR		pUnit[FTM_UNIT_LEN+1];
 	FTM_ULONG		nInterval;	
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
+	FTM_EPID		xDEPID;
 	FTM_CHAR		pPID[FTM_DID_LEN+1];
+	FTM_EPID		xPEPID;
 }	FTM_EP_INFO, _PTR_ FTM_EP_INFO_PTR;
 
 FTM_RET			FTM_initEPTypeString(void);
@@ -119,7 +121,7 @@ typedef	struct
 	FTM_EP_DATA_TYPE	xType;
 	union 
 	{
-		FTM_LONG	nValue;
+		FTM_INT		nValue;
 		FTM_ULONG	ulValue;
 		FTM_DOUBLE	fValue;
 	}	xValue;
@@ -138,6 +140,8 @@ typedef	struct
 {
 	FTM_CHAR_PTR		pFileName;
 }	FTM_DB_INFO, _PTR_ FTM_DB_INFO_PTR;
+
+FTM_RET	FTM_EP_DATA_snprint(FTM_CHAR_PTR pBuff, FTM_ULONG ulMaxLen, FTM_EP_DATA_PTR pData);
 
 #endif
 

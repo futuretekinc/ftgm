@@ -69,9 +69,39 @@ FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)
 	return	nRet;
 }
 
-FTM_RET	FTNM_EP_count(FTM_ULONG_PTR pulCount)
+FTM_RET	FTNM_EP_count
+(
+	FTM_EP_CLASS 	xClass, 
+	FTM_ULONG_PTR 	pulCount
+)
 {
-	return	FTM_LIST_count(&xEPList, pulCount);
+	ASSERT(pulCount != NULL);
+
+	if ((xClass == 0XFFFFFFFF) || (xClass == 0))
+	{
+		return	FTM_LIST_count(&xEPList, pulCount);
+	}
+	else
+	{
+		FTM_ULONG	i, ulTotalCount, ulCount = 0;
+
+		FTM_LIST_count(&xEPList, &ulTotalCount);
+		for(i = 0 ; i < ulTotalCount; i++)
+		{
+			FTNM_EP_PTR	pEP;
+
+			FTM_LIST_getAt(&xEPList, i,	(FTM_VOID_PTR _PTR_)&pEP);
+			if (xClass == (pEP->xInfo.xEPID & FTM_EP_CLASS_MASK))
+			{
+				ulCount++;
+			}
+		}
+
+
+		*pulCount = ulCount;
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET FTNM_EP_getList

@@ -480,15 +480,17 @@ FTM_RET	FTDM_DBIF_insertEPInfo
 	FTM_CHAR		pSQL[1024];
 
 	sprintf(pSQL, 
-			"INSERT INTO ep_info (EPID,DID,TYPE,NAME,INTERVAL,UNIT,PID) "\
-			"VALUES (%lu, \"%s\", %lu, \"%s\", %lu, \"%s\", \"%s\")",
+			"INSERT INTO ep_info (EPID,DID,DEPID,TYPE,NAME,INTERVAL,UNIT,PID,PEPID) "\
+			"VALUES (%lu, \"%s\", %lu, %lu, \"%s\", %lu, \"%s\", \"%s\", %lu)",
 			pEPInfo->xEPID, 
 			pEPInfo->pDID, 
+			pEPInfo->xDEPID, 
 			pEPInfo->xType, 
 			pEPInfo->pName, 
 			pEPInfo->nInterval, 
 			pEPInfo->pUnit, 
-			pEPInfo->pPID);
+			pEPInfo->pPID,
+			pEPInfo->xPEPID); 
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
@@ -606,9 +608,17 @@ static int _FTDM_DBIF_CB_getEPList(void *pData, int nArgc, char **pArgv, char **
 			{
 				strncpy(pParams->pInfos[pParams->nCount-1].pDID, pArgv[i], FTM_DID_LEN);
 			}
+			else if (strcmp(pColName[i], "DEPID") == 0)
+			{
+				pParams->pInfos[pParams->nCount-1].xDEPID = atoi(pArgv[i]);
+			}
 			else if (strcmp(pColName[i], "PID") == 0)
 			{
 				strncpy(pParams->pInfos[pParams->nCount-1].pPID, pArgv[i], FTM_DID_LEN);
+			}
+			else if (strcmp(pColName[i], "PEPID") == 0)
+			{
+				pParams->pInfos[pParams->nCount-1].xPEPID = atoi(pArgv[i]);
 			}
 		}
 	}
@@ -664,21 +674,29 @@ static int _FTDM_DBIF_CB_getEPInfo(void *pData, int nArgc, char **pArgv, char **
 		{
 			pInfo->xType = atoi(pArgv[0]);
 		}
-		if (strcmp(pColName[0], "NAME") == 0)
+		else if (strcmp(pColName[0], "NAME") == 0)
 		{
 			strncpy(pInfo->pName, pArgv[0], FTM_NAME_LEN);
 		}
-		if (strcmp(pColName[0], "UNIT") == 0)
+		else if (strcmp(pColName[0], "UNIT") == 0)
 		{
 			strncpy(pInfo->pUnit, pArgv[0], FTM_UNIT_LEN);
 		}
-		if (strcmp(pColName[0], "DID") == 0)
+		else if (strcmp(pColName[0], "DID") == 0)
 		{
 			strncpy(pInfo->pDID, pArgv[0], FTM_DID_LEN);
 		}
-		if (strcmp(pColName[0], "PID") == 0)
+		else if (strcmp(pColName[0], "DEPID") == 0)
+		{
+			pInfo->xDEPID = atoi(pArgv[0]);
+		}
+		else if (strcmp(pColName[0], "PID") == 0)
 		{
 			strncpy(pInfo->pPID, pArgv[0], FTM_DID_LEN);
+		}
+		else if (strcmp(pColName[0], "PEPID") == 0)
+		{
+			pInfo->xPEPID = atoi(pArgv[0]);
 		}
 	}
 	return	FTM_RET_OK;
@@ -1447,12 +1465,14 @@ FTM_RET	_FTDM_BDIF_createEPInfoTable
 	sprintf(pSQL, "CREATE TABLE %s ("\
 						"EPID	INTEGER PRIMARY KEY,"\
 						"DID	TEXT,"\
+						"DEPID	INTEGER,"\
 						"TYPE	INT,"\
 						"NAME	TEXT,"\
 						"STATUS	INT,"\
 						"INTERVAL INT,"\
 						"UNIT	TEXT,"\
-						"PID	TEXT)", pTableName);
+						"PID	TEXT,"\
+						"PEPID	INTEGER)", pTableName);
 
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
