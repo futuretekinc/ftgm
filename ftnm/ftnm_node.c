@@ -75,7 +75,6 @@ FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 		}
 	}
 
-	pNewNode->xState = FTNM_NODE_STATE_CREATING;
 	memcpy(&pNewNode->xInfo, pInfo, sizeof(FTM_NODE_INFO));
 	FTM_LIST_init(&pNewNode->xEPList);
 	pthread_mutex_init(&pNewNode->xMutexLock, NULL);
@@ -309,10 +308,7 @@ FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode)
 
 	ASSERT(pNode != NULL);
 
-	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
-	{
-		TRACE("TIME STAMP : %d.%03d\n", (FTM_INT)xTime.tv_sec, xTime.tv_nsec / 1000000);
-	}
+	clock_gettime(CLOCK_REALTIME, &xTime);
 
 	if (pNode->xInfo.ulInterval != 0 && pNode->xInfo.ulInterval < 3600)
 	{
@@ -351,7 +347,7 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 {
 	ASSERT(pNode != NULL);
 
-	TRACE("Node[%s] waiting for complete\n", pNode->xInfo.pDID);
+	//TRACE("Node[%s:%08lx] waiting for complete\n", pNode->xInfo.pDID, pNode->xState);
 	while(1)
 	{
 		int64_t			xCurrentTime;
@@ -373,7 +369,7 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 
 		if (xCurrentTime >= pNode->xTimeout)
 		{
-			TRACE("Node[%s] timeout %d\n", pNode->xInfo.pDID, pNode->ulRetry);
+			TRACE("Node[%s:%08lx] timeout %d\n", pNode->xInfo.pDID, pNode->xState, pNode->ulRetry);
 			if (++pNode->ulRetry > 3)
 			{
 				break;
@@ -394,7 +390,7 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 
 	FTNM_NODE_SNMPC_stop((FTNM_NODE_SNMPC_PTR)pNode);
 
-	TRACE("Node[%s] completed\n", pNode->xInfo.pDID);
+	//TRACE("Node[%s:%08lx] completed\n", pNode->xInfo.pDID, pNode->xState);
 	pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;	
 
 	return	FTM_RET_OK;
@@ -426,5 +422,24 @@ FTM_INT	FTNM_NODE_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pE
 	}
 
 	return	strcmp(pNode1->xInfo.pDID, pNode2->xInfo.pDID);
+}
+
+
+FTM_CHAR_PTR	FTNM_NODE_stateString(FTNM_NODE_STATE xState)
+{
+	switch(xState)
+	{
+	case	FTNM_NODE_STATE_CREATED:	return	"CREATED";
+	case	FTNM_NODE_STATE_INITIALIZED: return "INITIALIZED";
+	case	FTNM_NODE_STATE_SYNCHRONIZED:	return	"SYNCHRONIZED";
+	case	FTNM_NODE_STATE_PROCESS_INIT:	return	"PROCECSS_INIT";
+	case	FTNM_NODE_STATE_RUN:			return	"RUN";
+	case	FTNM_NODE_STATE_RUNNING:		return	"RUNNING";
+	case	FTNM_NODE_STATE_PROCESS_FINISHED:return	"PROCESS_FINISHED";
+	case	FTNM_NODE_STATE_FINISHED:		return	"FINISHED";
+	case	FTNM_NODE_STATE_ABORT:			return	"ABORT";
+	}
+
+	return	"UNKNOWN";
 }
 

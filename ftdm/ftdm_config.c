@@ -23,6 +23,7 @@
 #define	FTDM_FIELD_NODE_TYPE_STRING			"type"
 #define	FTDM_FIELD_NODE_LOCATION_STRING		"location"
 #define	FTDM_FIELD_NODE_INTERVAL_STRING		"interval"
+#define	FTDM_FIELD_NODE_TIMEOUT_STRING		"timeout"
 #define	FTDM_FIELD_NODE_SNMP_STRING			"snmp"
 
 #define	FTDM_FIELD_SNMP_VERSION_STRING		"version"
@@ -35,6 +36,7 @@
 #define	FTDM_FIELD_EP_NAME_STRING			"name"
 #define	FTDM_FIELD_EP_UNIT_STRING			"unit"
 #define	FTDM_FIELD_EP_INTERVAL_STRING		"interval"
+#define	FTDM_FIELD_EP_TIMEOUT_STRING		"timeout"
 #define	FTDM_FIELD_EP_DID_STRING			"did"
 #define	FTDM_FIELD_EP_DEPID_STRING			"depid"
 #define	FTDM_FIELD_EP_PID_STRING			"pid"
@@ -206,8 +208,8 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 	MESSAGE("\t %-8s : %s\n", "DB FILE", pConfig->xDB.pFileName);
 
 	MESSAGE("\n[ NODE ]\n");
-	MESSAGE("\t%-16s %-16s %-16s %-16s %-16s %-16s %-16s %-16s\n",
-			"DID", "TYPE", "LOCATION", "INTERVAL","OPT0", "OPT1", "OPT2", "OPT3");
+	MESSAGE("\t%-16s %-16s %-16s %-8s %-8s %-16s %-16s %-16s %-16s\n",
+			"DID", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT", "OPT0", "OPT1", "OPT2", "OPT3");
 	if (FTDM_CFG_getNodeInfoCount(&pConfig->xNode, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -215,12 +217,13 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 			FTM_NODE_INFO	xNodeInfo;
 
 			FTDM_CFG_getNodeInfoByIndex(&pConfig->xNode, i, &xNodeInfo);
-			MESSAGE("\t%-16s %-16s %-16s %-16d %-16s %-16s %-16s %-16s\n",
+			MESSAGE("\t%-16s %-16s %-16s %-8d %-8d %-16s %-16s %-16s %-16s\n",
 				xNodeInfo.pDID,
 				getNodeTypeString(xNodeInfo.xType),
 				xNodeInfo.pLocation,
 				xNodeInfo.ulInterval,
-				getSNMPVersionString(xNodeInfo.xOption.xSNMP.nVersion),
+				xNodeInfo.ulTimeout,
+				getSNMPVersionString(xNodeInfo.xOption.xSNMP.ulVersion),
 				xNodeInfo.xOption.xSNMP.pURL,
 				xNodeInfo.xOption.xSNMP.pCommunity,
 				xNodeInfo.xOption.xSNMP.pMIB);
@@ -230,7 +233,7 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 	MESSAGE("\n[ EP ]\n");
 	MESSAGE("# PRE-REGISTERED ENDPOINT\n");
 	MESSAGE("\t%-08s %-16s %-16s %-8s %-8s %-16s %-08s %-16s %-08s\n",
-			"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "DEPID", "PID", "PEPID");
+			"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID");
 	if (FTDM_CFG_getEPInfoCount(&pConfig->xEP, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -238,12 +241,13 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 			FTM_EP_INFO	xEPInfo;
 
 			FTDM_CFG_getEPInfoByIndex(&pConfig->xEP, i, &xEPInfo);
-			MESSAGE("\t%08lx %-16s %-16s %-8s %-8lu %-16s %08lx %-16s %08lx\n",
+			MESSAGE("\t%08lx %-16s %-16s %-8s %-8lu %-8lu %-16s %08lx %-16s %08lx\n",
 				xEPInfo.xEPID,
 				getEPTypeString(xEPInfo.xType),
 				xEPInfo.pName,
 				xEPInfo.pUnit,
-				xEPInfo.nInterval,
+				xEPInfo.ulInterval,
+				xEPInfo.ulTimeout,
 				xEPInfo.pDID,
 				xEPInfo.xDEPID,
 				xEPInfo.pPID,
@@ -623,6 +627,12 @@ FTM_RET	getNodeInfoByIndex(config_t *pConfig, FTM_ULONG ulIndex,  FTM_NODE_INFO_
 			xNodeInfo.ulInterval = (FTM_ULONG)config_setting_get_int(pField);
 		}
 
+		pField = config_setting_get_member(pNode, FTDM_FIELD_NODE_TIMEOUT_STRING);	
+		if(pField != NULL)
+		{
+			xNodeInfo.ulTimeout = (FTM_ULONG)config_setting_get_int(pField);
+		}
+
 		switch(xNodeInfo.xType)
 		{
 		case	FTM_NODE_TYPE_SNMP:
@@ -635,7 +645,7 @@ FTM_RET	getNodeInfoByIndex(config_t *pConfig, FTM_ULONG ulIndex,  FTM_NODE_INFO_
 					pField = config_setting_get_member(pSNMP, FTDM_FIELD_SNMP_VERSION_STRING);
 					if (pField != NULL)
 					{
-						xNodeInfo.xOption.xSNMP.nVersion = (FTM_ULONG)config_setting_get_int(pField);
+						xNodeInfo.xOption.xSNMP.ulVersion = (FTM_ULONG)config_setting_get_int(pField);
 					}
 
 					pField = config_setting_get_member(pSNMP, FTDM_FIELD_SNMP_URL_STRING);
@@ -774,7 +784,13 @@ FTM_RET	getEPInfoByIndex(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR p
 		pField = config_setting_get_member(pEP, FTDM_FIELD_EP_INTERVAL_STRING);	
 		if(pField != NULL)
 		{
-			xEPInfo.nInterval = (FTM_ULONG)config_setting_get_int(pField);
+			xEPInfo.ulInterval = (FTM_ULONG)config_setting_get_int(pField);
+		}
+
+		pField = config_setting_get_member(pEP, FTDM_FIELD_EP_TIMEOUT_STRING);	
+		if(pField != NULL)
+		{
+			xEPInfo.ulTimeout = (FTM_ULONG)config_setting_get_int(pField);
 		}
 
 		pField = config_setting_get_member(pEP, FTDM_FIELD_EP_DID_STRING);	

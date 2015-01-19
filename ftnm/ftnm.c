@@ -282,6 +282,7 @@ FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pContext)
 		if (FTNM_NODE_getAt(i, &pNode) == FTM_RET_OK)
 		{
 			FTNM_NODE_run(pNode);
+			usleep(100000);
 		}
 	}
 	

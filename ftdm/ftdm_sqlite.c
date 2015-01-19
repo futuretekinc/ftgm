@@ -198,7 +198,7 @@ static int _FTDM_DBIF_CB_getNodeList(void *pData, int nArgc, char **pArgv, char 
 				switch (pNodeInfo->xType)
 				{
 				case	FTM_NODE_TYPE_SNMP:
-					pNodeInfo->xOption.xSNMP.nVersion = strtoul(pArgv[i], 0, 10);
+					pNodeInfo->xOption.xSNMP.ulVersion = strtoul(pArgv[i], 0, 10);
 					break;
 				}
 			}
@@ -289,7 +289,7 @@ FTM_RET	FTDM_DBIF_insertNodeInfo
 	{
 	case	FTM_NODE_TYPE_SNMP:	
 		{	
-			sprintf(pOpt0, "%lu", pNodeInfo->xOption.xSNMP.nVersion);
+			sprintf(pOpt0, "%lu", pNodeInfo->xOption.xSNMP.ulVersion);
 			sprintf(pOpt1, "%s", pNodeInfo->xOption.xSNMP.pURL);
 			sprintf(pOpt2, "%s", pNodeInfo->xOption.xSNMP.pCommunity);
 			sprintf(pOpt3, "%s", pNodeInfo->xOption.xSNMP.pMIB);
@@ -298,12 +298,13 @@ FTM_RET	FTDM_DBIF_insertNodeInfo
 	}
 
 	sprintf(pSQL, 
-			"INSERT INTO node_info (DID,TYPE,LOC,INTERVAL,OPT0,OPT1,OPT2,OPT3) "\
-			"VALUES (\'%s\',%lu,\'%s\',%lu,\'%s\',\'%s\',\'%s\',\'%s\')",
+			"INSERT INTO node_info (DID,TYPE,LOC,INTERVAL,TIMEOUT,OPT0,OPT1,OPT2,OPT3) "\
+			"VALUES (\'%s\',%lu,\'%s\',%lu,%lu,\'%s\',\'%s\',\'%s\',\'%s\')",
 			pNodeInfo->pDID, 
 			pNodeInfo->xType, 
 			pNodeInfo->pLocation,
 			pNodeInfo->ulInterval,
+			pNodeInfo->ulTimeout,
 			pOpt0,
 			pOpt1,
 			pOpt2,
@@ -377,8 +378,37 @@ static int _FTDM_DBIF_CB_getNodeInfo(void *pData, int nArgc, char **pArgv, char 
 		{
 			pInfo->ulInterval = strtoul(pArgv[0], NULL, 10);
 		}
+		else if (strcmp(pColName[0], "TIMEOUT") == 0)
+		{
+			pInfo->ulTimeout= strtoul(pArgv[0], NULL, 10);
+		}
 		else if (strcmp(pColName[0], "OPT0") == 0)
 		{
+			if (pInfo->xType == FTM_NODE_TYPE_SNMP)
+			{
+				pInfo->xOption.xSNMP.ulVersion = strtoul(pArgv[0],0, 10);
+			}
+		}
+		else if (strcmp(pColName[0], "OPT1") == 0)
+		{
+			if (pInfo->xType == FTM_NODE_TYPE_SNMP)
+			{
+				strncpy(pInfo->xOption.xSNMP.pURL, pArgv[0], FTM_URL_LEN);
+			}
+		}
+		else if (strcmp(pColName[0], "OPT0") == 0)
+		{
+			if (pInfo->xType == FTM_NODE_TYPE_SNMP)
+			{
+				strncpy(pInfo->xOption.xSNMP.pCommunity, pArgv[0], FTM_SNMP_COMMUNITY_LEN);
+			}
+		}
+		else if (strcmp(pColName[0], "OPT0") == 0)
+		{
+			if (pInfo->xType == FTM_NODE_TYPE_SNMP)
+			{
+				strncpy(pInfo->xOption.xSNMP.pMIB, pArgv[0], FTM_SNMP_MIB_LEN);
+			}
 		}
 	}
 	return	FTM_RET_OK;
@@ -480,14 +510,15 @@ FTM_RET	FTDM_DBIF_insertEPInfo
 	FTM_CHAR		pSQL[1024];
 
 	sprintf(pSQL, 
-			"INSERT INTO ep_info (EPID,DID,DEPID,TYPE,NAME,INTERVAL,UNIT,PID,PEPID) "\
-			"VALUES (%lu, \"%s\", %lu, %lu, \"%s\", %lu, \"%s\", \"%s\", %lu)",
+			"INSERT INTO ep_info (EPID,DID,DEPID,TYPE,NAME,INTERVAL,TIMEOUT,UNIT,PID,PEPID) "\
+			"VALUES (%lu, \"%s\", %lu, %lu, \"%s\", %lu, %lu, \"%s\", \"%s\", %lu)",
 			pEPInfo->xEPID, 
 			pEPInfo->pDID, 
 			pEPInfo->xDEPID, 
 			pEPInfo->xType, 
 			pEPInfo->pName, 
-			pEPInfo->nInterval, 
+			pEPInfo->ulInterval, 
+			pEPInfo->ulTimeout, 
 			pEPInfo->pUnit, 
 			pEPInfo->pPID,
 			pEPInfo->xPEPID); 
@@ -602,7 +633,11 @@ static int _FTDM_DBIF_CB_getEPList(void *pData, int nArgc, char **pArgv, char **
 			}
 			else if (strcmp(pColName[i], "INTERVAL") == 0)
 			{
-				pParams->pInfos[pParams->nCount-1].nInterval = atoi(pArgv[i]);
+				pParams->pInfos[pParams->nCount-1].ulInterval = atoi(pArgv[i]);
+			}
+			else if (strcmp(pColName[i], "TIMEOUT") == 0)
+			{
+				pParams->pInfos[pParams->nCount-1].ulTimeout = atoi(pArgv[i]);
 			}
 			else if (strcmp(pColName[i], "DID") == 0)
 			{
@@ -748,7 +783,7 @@ FTM_RET	FTDM_DBIF_getEPName
 FTM_RET	FTDM_DBIF_setEPInterval
 (
 	FTM_EPID				xEPID,
-	FTM_ULONG				nInterval
+	FTM_ULONG				ulInterval
 )
 {
 	return	FTM_RET_OK;
@@ -842,7 +877,7 @@ FTM_RET	FTDM_DBIF_addEPData
 	{
 	case	FTM_EP_DATA_TYPE_INT:
 		{
-			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'i%ld')", 
+			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'i%d')", 
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
@@ -1385,6 +1420,7 @@ FTM_RET	_FTDM_BDIF_createNodeInfoTable
 						"TYPE		INT,"\
 						"LOC		TEXT,"\
 						"INTERVAL	INT,"\
+						"TIMEOUT	INT,"\
 						"OPT0		TEXT,"\
 						"OPT1		TEXT,"\
 						"OPT2		TEXT,"\
@@ -1470,6 +1506,7 @@ FTM_RET	_FTDM_BDIF_createEPInfoTable
 						"NAME	TEXT,"\
 						"STATUS	INT,"\
 						"INTERVAL INT,"\
+						"TIMEOUT INT,"\
 						"UNIT	TEXT,"\
 						"PID	TEXT,"\
 						"PEPID	INTEGER)", pTableName);

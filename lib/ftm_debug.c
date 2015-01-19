@@ -76,7 +76,7 @@ void printOut
 		va_start ( argptr, format );           
 		if (pFunction != NULL)
 		{
-			nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%s[%3d] : ", pFunction, nLine);
+			nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%32s[%4d] : ", pFunction, nLine);
 		}
 		nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, format, argptr);
 		va_end(argptr);

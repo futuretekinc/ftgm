@@ -501,8 +501,8 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 		MESSAGE("NODE COUNT : %d\n", nNodeCount);
 
-		MESSAGE("%-16s %-16s %-16s %-8s %-16s %-16s %-16s\n", 
-			"DID", "TYPE", "LOCATION", "INTERVAL", "OPT0", "OPT1", "OPT2", "OPT3");
+		MESSAGE("%-16s %-16s %-16s %-8s %-8s %-16s %-16s %-16s %-16s\n", 
+			"DID", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT", "OPT0", "OPT1", "OPT2", "OPT3");
 
 		for(i = 0 ; i < nNodeCount; i++)
 		{
@@ -522,7 +522,7 @@ FTM_RET	FTDMC_cmdNode(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				case	FTM_NODE_TYPE_SNMP:
 					{
 						MESSAGE("%-16d %-16s %-16s", 
-							xInfo.xOption.xSNMP.nVersion,
+							xInfo.xOption.xSNMP.ulVersion,
 							xInfo.xOption.xSNMP.pURL,
 							xInfo.xOption.xSNMP.pCommunity);
 						
@@ -592,8 +592,8 @@ FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 
 		case	6:
-			xInfo.nInterval = atoi(pArgv[5]);
-			if (xInfo.nInterval < 0)
+			xInfo.ulInterval = atoi(pArgv[5]);
+			if (xInfo.ulInterval < 0)
 			{
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
@@ -674,7 +674,7 @@ FTM_RET	FTDMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 							FTM_getEPTypeString(xInfo.xType),
 							xInfo.pName,
 							xInfo.pUnit,
-							xInfo.nInterval,
+							xInfo.ulInterval,
 							xInfo.pDID,
 							xInfo.pPID);
 				}

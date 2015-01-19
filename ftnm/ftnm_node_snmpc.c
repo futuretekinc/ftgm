@@ -3,6 +3,8 @@
 #include "ftnm_node_snmpc.h"
 
 FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData);
+FTM_CHAR_PTR	FTNM_NODE_SNMPC_getStateString(FTNM_SNMPC_STATE xState);
+
 static FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 (
 	FTM_INT				operation, 
@@ -175,7 +177,8 @@ FTM_BOOL	FTNM_NODE_SNMPC_isCompleted(FTNM_NODE_SNMPC_PTR pNode)
 FTM_RET FTNM_NODE_SNMPC_startAsync(FTNM_NODE_SNMPC_PTR pNode)
 {
 	/* startup all hosts */
-	struct snmp_pdu 	*pPDU;
+	//struct snmp_pdu 	*pPDU;
+	netsnmp_pdu 		*pPDU;
 	struct snmp_session	xSession;
 	FTNM_EP_PTR			pEP;
 
@@ -183,7 +186,7 @@ FTM_RET FTNM_NODE_SNMPC_startAsync(FTNM_NODE_SNMPC_PTR pNode)
 
 	snmp_sess_init(&xSession);			/* initialize session */
 
-	xSession.version 		= pNode->xCommon.xInfo.xOption.xSNMP.nVersion;
+	xSession.version 		= pNode->xCommon.xInfo.xOption.xSNMP.ulVersion;
 	xSession.peername 		= pNode->xCommon.xInfo.xOption.xSNMP.pURL;
 	xSession.community 		= (u_char *)pNode->xCommon.xInfo.xOption.xSNMP.pCommunity;
 	xSession.community_len	= strlen(pNode->xCommon.xInfo.xOption.xSNMP.pCommunity);
@@ -215,6 +218,7 @@ FTM_RET FTNM_NODE_SNMPC_startAsync(FTNM_NODE_SNMPC_PTR pNode)
 		return	FTM_RET_COMM_ERROR;
 	}
 
+	pPDU->time = pNode->xCommon.xInfo.ulTimeout;
 	snmp_add_null_var(pPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
 	if (snmp_send(pNode->xSNMPC.pSession, pPDU) == 0)
 	{
@@ -227,9 +231,9 @@ FTM_RET FTNM_NODE_SNMPC_startAsync(FTNM_NODE_SNMPC_PTR pNode)
 	pNode->xSNMPC.pCurrentEP = pEP;
 	pNode->xSNMPC.xStatistics.ulRequest++;
 	pNode->xSNMPC.nState = FTNM_SNMPC_STATE_RUNNING;
-	pNode->xSNMPC.xTimeout = time(NULL) + 5;
-	
+
 	active_hosts++;
+
 	return	FTM_RET_OK;
 }
 
@@ -238,12 +242,14 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 	FTM_INT				nOperation, 
 	struct snmp_session *pSession, 
 	FTM_INT				nReqID,
-	struct snmp_pdu 	*pRespPDU, 
+	netsnmp_pdu			*pRespPDU, 
 	FTM_VOID_PTR		pParams
 )
 {
 	FTM_RET					nRet;
 	FTNM_NODE_SNMPC_PTR		pNode = (FTNM_NODE_SNMPC_PTR)pParams;
+
+	active_hosts--;
 
 	switch(nOperation)
 	{
@@ -252,6 +258,9 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 			if (pNode->xSNMPC.pSession != NULL)
 			{
 				pNode->xSNMPC.nState = FTNM_SNMPC_STATE_TIMEOUT;
+				TRACE("NODE : %s, SNMP STATE : %s\n", 
+					pNode->xCommon.xInfo.pDID, 
+					FTNM_NODE_SNMPC_getStateString(pNode->xSNMPC.nState));
 			}
 		}
 		break;
@@ -306,10 +315,19 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 			nRet = FTM_LIST_iteratorNext(&pNode->xSNMPC.xEPList,(FTM_VOID_PTR _PTR_)&pEP);
 			if (nRet == FTM_RET_OK)
 			{
-				struct snmp_pdu 	*pPDU;
+				netsnmp_pdu	*pPDU;
 
 				pPDU = snmp_pdu_create(SNMP_MSG_GET);
-			
+				if (pPDU == NULL)
+				{
+					ERROR("snmp_pdu_create: %s\n", snmp_errstring(snmp_errno));
+					snmp_close(pNode->xSNMPC.pSession);
+					pNode->xSNMPC.pSession = NULL;
+
+					return	FTM_RET_COMM_ERROR;
+				}
+				pPDU->time = pNode->xCommon.xInfo.ulTimeout;
+		
 				snmp_add_null_var(pPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
 				if (snmp_send(pNode->xSNMPC.pSession, pPDU) == 0)
 				{
@@ -323,13 +341,15 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 					pNode->xSNMPC.pCurrentEP = pEP;
 					pNode->xSNMPC.xStatistics.ulRequest++;
 					pNode->xSNMPC.nState = FTNM_SNMPC_STATE_RUNNING;
-					pNode->xSNMPC.xTimeout = time(NULL) + 5;
 					active_hosts++;
 				}
 			}
 			else
 			{
 				pNode->xSNMPC.nState = FTNM_SNMPC_STATE_COMPLETED;
+				TRACE("NODE : %s, SNMP STATE : %s\n", 
+					pNode->xCommon.xInfo.pDID, 
+					FTNM_NODE_SNMPC_getStateString(pNode->xSNMPC.nState));
 			}
 		}
 		break;
@@ -339,7 +359,6 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 		}
 	}
 
-	active_hosts--;
 	return 1;
 
 }
@@ -355,3 +374,16 @@ FTM_RET	FTNM_NODE_SNMPC_stop(FTNM_NODE_SNMPC_PTR pNode)
 	return	FTM_RET_OK;
 }
 
+FTM_CHAR_PTR	FTNM_NODE_SNMPC_getStateString(FTNM_SNMPC_STATE xState)
+{
+	switch(xState)
+	{
+	case	FTNM_SNMPC_STATE_INITIALIZED:	return	"INITIALIZED";
+	case	FTNM_SNMPC_STATE_RUNNING:		return	"RUNNING";
+	case	FTNM_SNMPC_STATE_TIMEOUT:		return	"TIMEOUT";
+	case	FTNM_SNMPC_STATE_ERROR:			return	"ERROR";
+	case	FTNM_SNMPC_STATE_COMPLETED:		return	"COMPLETED";
+	default:
+		return	"UNKNOWN";
+	}
+}

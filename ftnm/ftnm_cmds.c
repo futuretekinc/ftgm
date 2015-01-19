@@ -53,7 +53,7 @@ FTM_RET	FTNM_CONSOLE_cmdList
 	for(i = 0 ; i < ulNodeCount ; i++)
 	{
 		FTNM_NODE_getAt(i, &pNode);
-		MESSAGE("%-16s %08lx ", pNode->xInfo.pDID, pNode->xState);
+		MESSAGE("%-16s %-16s ", pNode->xInfo.pDID, FTNM_NODE_stateString(pNode->xState));
 
 		FTNM_NODE_EP_count(pNode, &ulEPCount);
 		MESSAGE("%3d [ ", ulEPCount);

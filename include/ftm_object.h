@@ -22,7 +22,7 @@ typedef	unsigned long	FTM_CMD, _PTR_ FTM_CMD_PTR;
 
 typedef	struct
 {
-	FTM_ULONG			nVersion;
+	FTM_ULONG			ulVersion;
 	FTM_CHAR			pURL[FTM_URL_LEN + 1];
 	FTM_CHAR			pCommunity[FTM_SNMP_COMMUNITY_LEN + 1];
 	FTM_CHAR			pMIB[FTM_SNMP_MIB_LEN + 1];
@@ -34,6 +34,7 @@ typedef	struct
 	FTM_NODE_TYPE		xType;
 	FTM_CHAR			pLocation[FTM_LOCATION_LEN + 1];
 	FTM_ULONG			ulInterval;
+	FTM_ULONG			ulTimeout;
 	union 
 	{
 		FTM_SNMP_NODE_INFO	xSNMP;
@@ -80,7 +81,8 @@ typedef	struct
 	FTM_EP_TYPE		xType;
 	FTM_CHAR		pName[FTM_NAME_LEN+1];
 	FTM_CHAR		pUnit[FTM_UNIT_LEN+1];
-	FTM_ULONG		nInterval;	
+	FTM_ULONG		ulTimeout;
+	FTM_ULONG		ulInterval;	
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
 	FTM_EPID		xDEPID;
 	FTM_CHAR		pPID[FTM_DID_LEN+1];
