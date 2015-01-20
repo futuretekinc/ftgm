@@ -36,7 +36,7 @@ static FTM_INT	FTDM_EPSeeker
 
 static list_t	xEPList;
 
-FTM_RET	FTDM_initEPInfo
+FTM_RET	FTDM_EP_INFO_init
 (
 	FTDM_CFG_EP_PTR	pConfig
 )
@@ -50,7 +50,7 @@ FTM_RET	FTDM_initEPInfo
 
 	list_attributes_seeker(&xEPList, FTDM_EPSeeker);
 
-	if ((FTDM_DBIF_getEPCount(&nMaxEPCount) == FTM_RET_OK) &&
+	if ((FTDM_DBIF_EP_INFO_count(&nMaxEPCount) == FTM_RET_OK) &&
 		(nMaxEPCount > 0))
 	{
 
@@ -63,7 +63,7 @@ FTM_RET	FTDM_initEPInfo
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 	
-		if (FTDM_DBIF_getEPList(pEPInfos, nMaxEPCount, &nEPCount) == FTM_RET_OK)
+		if (FTDM_DBIF_EP_INFO_getList(pEPInfos, nMaxEPCount, &nEPCount) == FTM_RET_OK)
 		{
 			FTM_INT	i;
 
@@ -85,7 +85,7 @@ FTM_RET	FTDM_initEPInfo
 		free(pEPInfos);
 	}
 
-	if (FTDM_CFG_getEPInfoCount(pConfig, &nMaxEPCount) == FTM_RET_OK)
+	if (FTDM_CFG_EPInfoCount(pConfig, &nMaxEPCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
 
@@ -93,14 +93,14 @@ FTM_RET	FTDM_initEPInfo
 		{
 			FTM_EP_INFO	xEPInfo;
 
-			if (FTDM_CFG_getEPInfoByIndex(pConfig, i, &xEPInfo) == FTM_RET_OK)
+			if (FTDM_CFG_EPInfoGetAt(pConfig, i, &xEPInfo) == FTM_RET_OK)
 			{
 				FTM_BOOL	bExist;
 
 				FTDM_LIST_isExistEPInfo(xEPInfo.xEPID, &bExist);
 				if (!bExist)
 				{
-					FTDM_addEPInfo(&xEPInfo);	
+					FTDM_EP_INFO_add(&xEPInfo);	
 				}
 			}
 		}
@@ -109,7 +109,7 @@ FTM_RET	FTDM_initEPInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDM_finalEPInfo
+FTM_RET FTDM_EP_INFO_final
 (
 	FTM_VOID
 )
@@ -127,7 +127,7 @@ FTM_RET FTDM_finalEPInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_addEPInfo
+FTM_RET	FTDM_EP_INFO_add
 (
 	FTM_EP_INFO_PTR 	pEPInfo
 )
@@ -163,12 +163,12 @@ FTM_RET	FTDM_addEPInfo
 		return	nRet;
 	}
 
-	FTDM_DBIF_insertEPInfo(pEPInfo);
+	FTDM_DBIF_EP_INFO_append(pEPInfo);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_delEPInfo
+FTM_RET	FTDM_EP_INFO_del
 (
 	FTM_EPID 			xEPID
 )
@@ -182,7 +182,7 @@ FTM_RET	FTDM_delEPInfo
 		return	FTM_RET_OBJECT_NOT_FOUND;	
 	}
 
-	nRet = FTDM_DBIF_delEPInfo(xEPID);
+	nRet = FTDM_EP_INFO_del(xEPID);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -194,7 +194,7 @@ FTM_RET	FTDM_delEPInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_getEPInfoCount
+FTM_RET	FTDM_EP_INFO_count
 (
 	FTM_EP_CLASS	xClass,
 	FTM_ULONG_PTR	pulCount
@@ -224,7 +224,7 @@ FTM_RET	FTDM_getEPInfoCount
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_getEPInfo
+FTM_RET	FTDM_EP_INFO_get
 (
 	FTM_EPID				xEPID,
 	FTM_EP_INFO_PTR	_PTR_ 	ppEPInfo
@@ -246,7 +246,7 @@ FTM_RET	FTDM_getEPInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_getEPInfoByIndex
+FTM_RET	FTDM_EP_INFO_getAt
 (
 	FTM_ULONG				nIndex,
 	FTM_EP_INFO_PTR	_PTR_ 	ppEPInfo
@@ -271,7 +271,7 @@ FTM_RET	FTDM_getEPInfoByIndex
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
-FTM_RET	FTDM_addEPData
+FTM_RET	FTDM_EP_DATA_add
 (
 	FTM_EPID		xEPID,
 	FTM_EP_DATA_PTR	pData
@@ -282,10 +282,10 @@ FTM_RET	FTDM_addEPData
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	return	FTDM_DBIF_addEPData(xEPID, pData);
+	return	FTDM_DBIF_EP_DATA_append(xEPID, pData);
 }
 
-FTM_RET	FTDM_getEPData
+FTM_RET	FTDM_EP_DATA_get
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG			nStartIndex,
@@ -294,7 +294,7 @@ FTM_RET	FTDM_getEPData
 	FTM_ULONG_PTR		pCount 
 )
 {
-	return	FTDM_DBIF_getEPData(
+	return	FTDM_DBIF_EP_DATA_get(
 				xEPID, 
 				nStartIndex,
 				pEPData, 
@@ -302,7 +302,7 @@ FTM_RET	FTDM_getEPData
 				pCount);
 }
 
-FTM_RET	FTDM_getEPDataWithTime
+FTM_RET	FTDM_EP_DATA_getWithTime
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG 			nBeginTime, 
@@ -312,7 +312,7 @@ FTM_RET	FTDM_getEPDataWithTime
 	FTM_ULONG_PTR		pCount 
 )
 {
-	return	FTDM_DBIF_getEPDataWithTime(
+	return	FTDM_DBIF_EP_DATA_getWithTime(
 				xEPID, 
 				nBeginTime, 
 				nEndTime, 
@@ -321,36 +321,36 @@ FTM_RET	FTDM_getEPDataWithTime
 				pCount);
 }
 
-FTM_RET	FTDM_delEPData
+FTM_RET	FTDM_EP_DATA_del
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG 			nIndex, 
 	FTM_ULONG			nCount
 ) 
 {
-	return	FTDM_DBIF_delEPData( xEPID, nIndex, nCount);
+	return	FTDM_DBIF_EP_DATA_del( xEPID, nIndex, nCount);
 }
 
-FTM_RET	FTDM_delEPDataWithTime
+FTM_RET	FTDM_EP_DATA_delWithTime
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG 			nBeginTime, 
 	FTM_ULONG 			nEndTime
 ) 
 {
-	return	FTDM_DBIF_delEPDataWithTime( xEPID, nBeginTime, nEndTime);
+	return	FTDM_DBIF_EP_DATA_delWithTime( xEPID, nBeginTime, nEndTime);
 }
 
-FTM_RET	FTDM_getEPDataCount
+FTM_RET	FTDM_EP_DATA_count
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG_PTR		pCount
 ) 
 {
-	return	FTDM_DBIF_getEPDataCount(xEPID, pCount);
+	return	FTDM_DBIF_EP_DATA_count(xEPID, pCount);
 }
 
-FTM_RET	FTDM_getEPDataCountWithTime
+FTM_RET	FTDM_EP_DATA_countWithTime
 (
 	FTM_EPID			xEPID, 
 	FTM_ULONG 			nBeginTime, 
@@ -358,7 +358,7 @@ FTM_RET	FTDM_getEPDataCountWithTime
 	FTM_ULONG_PTR		pCount
 ) 
 {
-	return	FTDM_DBIF_getEPDataCountWithTime( xEPID, nBeginTime, nEndTime, pCount);
+	return	FTDM_DBIF_EP_DATA_countWithTime( xEPID, nBeginTime, nEndTime, pCount);
 }
 
 FTM_INT	FTDM_EPSeeker(const void *pElement, const void *pKey)

@@ -34,8 +34,7 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
-	setPrintMode(2);
-
+	FTM_DEBUG_printModeSet(2);
 	if (bDaemon)
 	{
 		if (fork() == 0)

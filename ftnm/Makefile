@@ -1,7 +1,7 @@
 #CC=armv5-linux-gcc
 #AR=armv5-linux-ar
-#CFLAGS=-c -fPIC -Wall -DDEBUG -I../devtools/include
-#LDFLAGS=-L../devtools/lib -lconfig -lftsom
+#CFLAGS=-c -fPIC -Wall -DDEBUG -I../include -I../devtools/include -I../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib -I../ftdm
+#LDFLAGS=-L../devtools/lib  -L. -L../lib -L../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib/.libs -L../ftdm
 CC=gcc
 CFLAGS=-c -Wall -DDEBUG \
 		-I/usr/local/include \
@@ -50,11 +50,11 @@ $(CLIENT): $(CLIENT_OBJS)
 
 $(LIB_FTNM): $(LIB_FTNM_OBJS)
 	$(AR) rcs $(LIB_FTNM).a $(LIB_FTNM_OBJS)
-	$(CC) -shared -Wl -o $(LIB_FTNM).so.1.0.1 $(LIB_FTNM_OBJS) $(LDFLAGS)
+	$(CC) -shared -o $(LIB_FTNM).so.1.0.1 $(LIB_FTNM_OBJS) $(LDFLAGS)
 
 $(LIB_FTNMC): $(LIB_FTNMC_OBJS)
 	$(AR) rcs $(LIB_FTNMC).a $(LIB_FTNMC_OBJS)
-	$(CC) -shared -Wl -o $(LIB_FTNMC).so.1.0.1 $(LIB_FTNMC_OBJS) $(LDFLAGS)
+	$(CC) -shared -o $(LIB_FTNMC).so.1.0.1 $(LIB_FTNMC_OBJS) $(LDFLAGS)
 
 .c.o:  $(SERVER_SRC) *.h
 	$(CC) $(CFLAGS) $< -o $@

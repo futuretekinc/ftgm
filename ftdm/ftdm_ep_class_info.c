@@ -36,7 +36,7 @@ static FTM_INT	FTDM_EPSeeker
 
 static list_t	xEPClassInfoList;
 
-FTM_RET	FTDM_initEPClassInfo
+FTM_RET	FTDM_EP_CLASS_INFO_init
 (
 	FTDM_CFG_EP_PTR	pConfig
 )
@@ -50,7 +50,7 @@ FTM_RET	FTDM_initEPClassInfo
 
 	list_attributes_seeker(&xEPClassInfoList, FTDM_EPSeeker);
 
-	if (FTDM_CFG_getEPClassInfoCount(pConfig, &nMaxEPCount) == FTM_RET_OK)
+	if (FTDM_CFG_EPClassInfoCount(pConfig, &nMaxEPCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
 
@@ -58,14 +58,14 @@ FTM_RET	FTDM_initEPClassInfo
 		{
 			FTM_EP_CLASS_INFO	xEPClassInfo;
 
-			if (FTDM_CFG_getEPClassInfoByIndex(pConfig, i, &xEPClassInfo) == FTM_RET_OK)
+			if (FTDM_CFG_EPClassInfoGetAt(pConfig, i, &xEPClassInfo) == FTM_RET_OK)
 			{
 				FTM_BOOL	bExist;
 
 				FTDM_LIST_isExistEPClassInfo(xEPClassInfo.xClass, &bExist);
 				if (!bExist)
 				{
-					FTDM_addEPClassInfo(&xEPClassInfo);	
+					FTDM_EP_CLASS_INFO_add(&xEPClassInfo);	
 				}
 			}
 		}
@@ -73,7 +73,7 @@ FTM_RET	FTDM_initEPClassInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDM_finalEPClassInfo
+FTM_RET FTDM_EP_CLASS_INFO_final
 (
 	FTM_VOID
 )
@@ -91,7 +91,7 @@ FTM_RET FTDM_finalEPClassInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_addEPClassInfo
+FTM_RET	FTDM_EP_CLASS_INFO_add
 (
 	FTM_EP_CLASS_INFO_PTR 	pEPClassInfo
 )
@@ -130,7 +130,7 @@ FTM_RET	FTDM_addEPClassInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_delEPClassInfo
+FTM_RET	FTDM_EP_CLASS_INFO_del
 (
 	FTM_EP_CLASS		xClass
 )
@@ -150,7 +150,7 @@ FTM_RET	FTDM_delEPClassInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_getEPClassInfoCount
+FTM_RET	FTDM_EP_CLASS_INFO_count
 (
 	FTM_ULONG_PTR	pnCount
 )
@@ -160,7 +160,7 @@ FTM_RET	FTDM_getEPClassInfoCount
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_getEPClassInfo
+FTM_RET	FTDM_EP_CLASS_INFO_get
 (
 	FTM_EP_CLASS			xClass,
 	FTM_EP_CLASS_INFO_PTR	pEPClassInfo
@@ -183,7 +183,7 @@ FTM_RET	FTDM_getEPClassInfo
 	return	nRet;
 }
 
-FTM_RET	FTDM_getEPClassInfoByIndex
+FTM_RET	FTDM_EP_CLASS_INFO_getAt
 (
 	FTM_ULONG				nIndex,
 	FTM_EP_CLASS_INFO_PTR	pEPClassInfo

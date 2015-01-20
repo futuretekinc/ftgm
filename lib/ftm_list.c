@@ -103,7 +103,7 @@ FTM_RET	FTM_LIST_iteratorStart(FTM_LIST_PTR pList)
 	if (pList->bIterator == FTM_BOOL_TRUE)
 	{
 		list_iterator_stop(&pList->xList);
-		pList->bIterator == FTM_BOOL_FALSE;
+		pList->bIterator = FTM_BOOL_FALSE;
 	}
 
 	if (list_iterator_start(&pList->xList) < 0)
@@ -123,7 +123,7 @@ FTM_RET	FTM_LIST_iteratorNext(FTM_LIST_PTR pList, FTM_VOID_PTR _PTR_ ppElement)
 	if (*ppElement == NULL)
 	{
 		list_iterator_stop(&pList->xList);
-		pList->bIterator == FTM_BOOL_FALSE;
+		pList->bIterator = FTM_BOOL_FALSE;
 
 		return	FTM_RET_OBJECT_NOT_FOUND;	
 	}

@@ -666,7 +666,8 @@ var_sensorTable(struct variable *vp,
     	    WriteMethod **write_method)
 {
     /* variables we may use later */
-	int		i, table_size = 0;
+	int		i;
+	unsigned long	table_size = 0;
 	unsigned long	type, id;
     static long long_ret;
     static u_long ulong_ret;
@@ -685,46 +686,7 @@ var_sensorTable(struct variable *vp,
 
 	type = (unsigned long)name[9] << 16;
 	FTNMC_EP_count(&xSession, type, &table_size);
-	printf("table_size = %d\n", table_size);
-	if (table_size != 0)
-	{
-		pEPIDs = (FTM_EPID_PTR)calloc(table_size, sizeof(FTM_EPID));
-		if (pEPIDs == NULL)
-		{
-			return	NULL;	
-		}
 
-		if (FTNMC_EP_getList(&xSession, type, pEPIDs, table_size, &table_size) != FTM_RET_OK)
-		{
-			free(pEPIDs);	
-			return	NULL;
-		}
-
-		for(i = 0 ; i < table_size ; i++)
-		{
-			if ((pEPIDs[i] & 0xFF)  == name[13])
-			{
-				xEPID = pEPIDs[i];
-				if (FTNMC_EP_get(&xSession, pEPIDs[i], &xEPInfo) != FTM_RET_OK)
-				{
-					free(pEPIDs);	
-					return	NULL;	
-				}
-				
-				break;
-			}
-		}
-
-		if (!xEPID)
-		{
-			free(pEPIDs);
-			return	NULL;
-		}
-	}
-	else
-	{
-		return	NULL;	
-	}
     /* 
    	* This assumes that the table is a 'simple' table.
    	*	See the implementation documentation for the meaning of this.
@@ -741,6 +703,49 @@ var_sensorTable(struct variable *vp,
 		return NULL;
 	}
 
+	if (table_size != 0)
+	{
+		pEPIDs = (FTM_EPID_PTR)calloc(table_size, sizeof(FTM_EPID));
+		if (pEPIDs == NULL)
+		{
+			return	NULL;	
+		}
+
+		if (FTNMC_EP_getList(&xSession, type, pEPIDs, table_size, &table_size) != FTM_RET_OK)
+		{
+			printf("FTNMC_EP_getList(%08lx) Error\n", type);
+			free(pEPIDs);	
+			return	NULL;
+		}
+
+		for(i = 0 ; i < table_size ; i++)
+		{
+			printf("pEPIDs[i] = %08lx, name[13] = %08lx\n", pEPIDs[i], name[13]);
+			if ((pEPIDs[i] & 0xFF)  == name[13])
+			{
+				xEPID = pEPIDs[i];
+				if (FTNMC_EP_get(&xSession, pEPIDs[i], &xEPInfo) != FTM_RET_OK)
+				{
+					printf("FTNMC_EP_get(%08lx) Error\n", pEPIDs[i]);
+					free(pEPIDs);	
+					return	NULL;	
+				}
+				
+				break;
+			}
+		}
+
+		if (!xEPID)
+		{
+			printf("xEPID is 0 \n");
+			free(pEPIDs);
+			return	NULL;
+		}
+	}
+	else
+	{
+		return	NULL;	
+	}
 	
 	printf("vp->magic %08x\n",vp->magic);
     switch(vp->magic) {
@@ -819,7 +824,7 @@ var_sensorTable(struct variable *vp,
 
 	case TEMPUPDATEINTERVAL:
 	*write_method = NULL;//write_tempUpdateInterval;
-		*((FTM_ULONG_PTR)string) = xEPInfo.nInterval;
+		*((FTM_ULONG_PTR)string) = xEPInfo.ulInterval;
 		return (u_char*) string;
 
 	default:

@@ -12,23 +12,23 @@ static int FTDM_nodeSeeker
 	const void *pKey
 );
 
-static FTM_RET	FTDM_CACHE_addNodeInfo
+static FTM_RET	FTDM_NODE_INFO_CACHE_add
 (
  	FTM_NODE_INFO_PTR pNodeInfo
 );
 
-static FTM_RET	FTDM_CACHE_delNodeInfo
+static FTM_RET	FTDM_NODE_INFO_CACHE_del
 (
  	FTM_NODE_INFO_PTR pNodeInfo
 );
 
-static FTM_RET	FTDM_CACHE_getNodeInfo
+static FTM_RET	FTDM_NODE_INFO_CACHE_get
 (
  	FTM_CHAR_PTR				pDID,
 	FTM_NODE_INFO_PTR _PTR_ 	ppNodeInfo
 );
 
-static FTM_RET	FTDM_CACHE_isExistNodeInfo
+static FTM_RET	FTDM_NODE_INFO_CACHE_isExist
 (
  	FTM_CHAR_PTR				pDID,
 	FTM_BOOL_PTR				pExist
@@ -36,7 +36,7 @@ static FTM_RET	FTDM_CACHE_isExistNodeInfo
 
 static list_t	xNodeList;
 
-FTM_RET	FTDM_initNodeInfo
+FTM_RET	FTDM_NODE_INFO_init
 (
 	FTDM_CFG_NODE_PTR	pConfig
 )
@@ -46,7 +46,7 @@ FTM_RET	FTDM_initNodeInfo
 	list_init(&xNodeList);
 	list_attributes_seeker(&xNodeList, FTDM_nodeSeeker);
 
-	if ((FTDM_DBIF_getNodeCount(&nMaxNodeCount) == FTM_RET_OK) &&
+	if ((FTDM_DBIF_NODE_INFO_count(&nMaxNodeCount) == FTM_RET_OK) &&
 		(nMaxNodeCount > 0))
 	{
 
@@ -59,7 +59,7 @@ FTM_RET	FTDM_initNodeInfo
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 	
-		if (FTDM_DBIF_getNodeList(pNodeInfos, nMaxNodeCount, &nNodeCount) == FTM_RET_OK)
+		if (FTDM_DBIF_NODE_INFO_getList(pNodeInfos, nMaxNodeCount, &nNodeCount) == FTM_RET_OK)
 		{
 			FTM_INT	i;
 
@@ -75,14 +75,14 @@ FTM_RET	FTDM_initNodeInfo
 			
 				memcpy(pNodeInfo, &pNodeInfos[i], sizeof(FTM_NODE_INFO));
 
-				FTDM_CACHE_addNodeInfo(pNodeInfo);
+				FTDM_NODE_INFO_CACHE_add(pNodeInfo);
 			}
 		}
 
 		free(pNodeInfos);
 	}
 
-	if (FTDM_CFG_getNodeInfoCount(pConfig, &nMaxNodeCount) == FTM_RET_OK)
+	if (FTDM_CFG_nodeInfoCount(pConfig, &nMaxNodeCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
 
@@ -90,14 +90,14 @@ FTM_RET	FTDM_initNodeInfo
 		{
 			FTM_NODE_INFO	xNodeInfo;
 
-			if (FTDM_CFG_getNodeInfoByIndex(pConfig, i, &xNodeInfo) == FTM_RET_OK)
+			if (FTDM_CFG_nodeInfoGetAt(pConfig, i, &xNodeInfo) == FTM_RET_OK)
 			{
 				FTM_BOOL	bExist;
 
-				FTDM_CACHE_isExistNodeInfo(xNodeInfo.pDID, &bExist);
+				FTDM_NODE_INFO_CACHE_isExist(xNodeInfo.pDID, &bExist);
 				if (!bExist)
 				{
-					FTDM_addNodeInfo(&xNodeInfo);	
+					FTDM_NODE_INFO_add(&xNodeInfo);	
 				}
 			}
 		}
@@ -106,7 +106,7 @@ FTM_RET	FTDM_initNodeInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_finalNodeInfo
+FTM_RET	FTDM_NODE_INFO_final
 (
 	FTM_VOID
 )
@@ -124,7 +124,7 @@ FTM_RET	FTDM_finalNodeInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET    FTDM_addNodeInfo
+FTM_RET    FTDM_NODE_INFO_add
 (   
 	FTM_NODE_INFO_PTR	pNodeInfo
 )   
@@ -137,7 +137,7 @@ FTM_RET    FTDM_addNodeInfo
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	if (FTDM_CACHE_getNodeInfo(pNodeInfo->pDID, &pNewNodeInfo) == FTM_RET_OK)
+	if (FTDM_NODE_INFO_CACHE_get(pNodeInfo->pDID, &pNewNodeInfo) == FTM_RET_OK)
 	{
 		return	FTM_RET_ALREADY_EXIST_OBJECT;
 	}
@@ -150,10 +150,10 @@ FTM_RET    FTDM_addNodeInfo
 
 	memcpy(pNewNodeInfo, pNodeInfo, sizeof(FTM_NODE_INFO));
 
-	nRet = FTDM_DBIF_insertNodeInfo(pNewNodeInfo);
+	nRet = FTDM_DBIF_NODE_INFO_append(pNewNodeInfo);
 	if (nRet == FTM_RET_OK)
 	{
-		nRet = FTDM_CACHE_addNodeInfo(pNewNodeInfo);
+		nRet = FTDM_NODE_INFO_CACHE_add(pNewNodeInfo);
 	}
 
 	if (nRet != FTM_RET_OK)
@@ -164,7 +164,7 @@ FTM_RET    FTDM_addNodeInfo
 	return  nRet;
 }	  
 
-FTM_RET 	FTDM_delNodeInfo
+FTM_RET 	FTDM_NODE_INFO_del
 (
 	FTM_CHAR_PTR			pDID
 )
@@ -177,20 +177,20 @@ FTM_RET 	FTDM_delNodeInfo
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	nRet = FTDM_CACHE_getNodeInfo(pDID, &pNodeInfo);
+	nRet = FTDM_NODE_INFO_CACHE_get(pDID, &pNodeInfo);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
 	}
 
-	FTDM_DBIF_delNodeInfo(pDID);
-	FTDM_CACHE_delNodeInfo(pNodeInfo);
+	FTDM_DBIF_NODE_INFO_del(pDID);
+	FTDM_NODE_INFO_CACHE_del(pNodeInfo);
 	free(pNodeInfo);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_getNodeInfoCount
+FTM_RET	FTDM_NODE_INFO_count
 (
 	FTM_ULONG_PTR	pnCount
 )
@@ -200,7 +200,7 @@ FTM_RET	FTDM_getNodeInfoCount
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_getNodeInfo
+FTM_RET	FTDM_NODE_INFO_get
 (
 	FTM_CHAR_PTR			pDID,
 	FTM_NODE_INFO_PTR _PTR_	ppNodeInfo
@@ -213,7 +213,7 @@ FTM_RET	FTDM_getNodeInfo
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	nRet = FTDM_CACHE_getNodeInfo(pDID, ppNodeInfo);
+	nRet = FTDM_NODE_INFO_CACHE_get(pDID, ppNodeInfo);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -222,7 +222,7 @@ FTM_RET	FTDM_getNodeInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_getNodeInfoByIndex
+FTM_RET	FTDM_NODE_INFO_getAt
 (
 	FTM_ULONG				nIndex,
 	FTM_NODE_INFO_PTR _PTR_	ppNodeInfo
@@ -238,13 +238,13 @@ FTM_RET	FTDM_getNodeInfoByIndex
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
-FTM_RET FTDM_isExistNodeInfo
+FTM_RET FTDM_NODE_INFO_isExist
 (
  	FTM_CHAR_PTR				pDID,
 	FTM_BOOL_PTR				pExist
 )
 {
-	return	FTDM_CACHE_isExistNodeInfo(pDID, pExist);
+	return	FTDM_NODE_INFO_CACHE_isExist(pDID, pExist);
 }
 
 int FTDM_nodeSeeker(const void *pElement, const void *pKey)
@@ -262,7 +262,7 @@ int FTDM_nodeSeeker(const void *pElement, const void *pKey)
  *
  ****************************************************************/
 
-FTM_RET	FTDM_CACHE_addNodeInfo
+FTM_RET	FTDM_NODE_INFO_CACHE_add
 (
  	FTM_NODE_INFO_PTR pNodeInfo
 )
@@ -272,7 +272,7 @@ FTM_RET	FTDM_CACHE_addNodeInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_CACHE_delNodeInfo
+FTM_RET	FTDM_NODE_INFO_CACHE_del
 (
  	FTM_NODE_INFO_PTR pNodeInfo
 )
@@ -282,7 +282,7 @@ FTM_RET	FTDM_CACHE_delNodeInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_CACHE_getNodeInfo
+FTM_RET	FTDM_NODE_INFO_CACHE_get
 (
  	FTM_CHAR_PTR				pDID,
 	FTM_NODE_INFO_PTR _PTR_ 	ppNodeInfo
@@ -297,7 +297,7 @@ FTM_RET	FTDM_CACHE_getNodeInfo
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
-FTM_RET	FTDM_CACHE_isExistNodeInfo
+FTM_RET	FTDM_NODE_INFO_CACHE_isExist
 (
  	FTM_CHAR_PTR				pDID,
 	FTM_BOOL_PTR				pExist

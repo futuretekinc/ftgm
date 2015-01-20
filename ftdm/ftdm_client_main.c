@@ -204,8 +204,6 @@ int main(int argc , char *argv[])
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
-	setPrintMode(1);
-
 	/* load configuraton */
 	FTDMC_initConfig(&xClientConfig);
 	FTDMC_loadConfig(&xClientConfig, pConfigFileName);
@@ -1115,7 +1113,8 @@ FTM_RET	FTDMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		if (nArgc == 2)
 		{
 			FTM_ULONG	nMode;
-			getPrintMode(&nMode);
+
+			FTM_DEBUG_printModeGet(&nMode);
 			switch(nMode)
 			{
 			case	0: MESSAGE("DEBUG OUT MODE : NONE\n"); break;
@@ -1129,8 +1128,8 @@ FTM_RET	FTDMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 			nNewMode = strtoul(pArgv[2], NULL, 10);
 		
-			getPrintMode(&nMode);
-			setPrintMode(nNewMode);
+			FTM_DEBUG_printModeGet(&nMode);
+			FTM_DEBUG_printModeSet(nNewMode);
 
 			switch(nMode)
 			{

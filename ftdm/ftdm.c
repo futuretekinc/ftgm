@@ -16,9 +16,24 @@ FTM_RET 	FTDM_init(FTDM_CFG_PTR pConfig)
 		return	nRet;
 	}
 
-	FTDM_initNodeInfo(&pConfig->xNode);
-	FTDM_initEPInfo(&pConfig->xEP);
-	FTDM_initEPClassInfo(&pConfig->xEP);
+	nRet = FTDM_NODE_INFO_init(&pConfig->xNode);
+	if (nRet != FTM_RET_OK)
+	{
+		ERROR("FTDM_initNodeInfo failed\n");	
+	}
+
+	nRet = FTDM_EP_INFO_init(&pConfig->xEP);
+	if (nRet != FTM_RET_OK)
+	{
+		ERROR("FTDM_initEPInfo failed\n");	
+	}
+
+	nRet = FTDM_EP_CLASS_INFO_init(&pConfig->xEP);
+	if (nRet != FTM_RET_OK)
+	{
+		ERROR("FTDM_initEPClassInfo failed\n");	
+	}
+
 
 	TRACE("FTDM initialization completed successfully.\n");
 
@@ -29,9 +44,24 @@ FTM_RET	FTDM_final(void)
 {
 	FTM_RET	nRet;
 
-	FTDM_finalEPClassInfo();
-	FTDM_finalEPInfo();
-	FTDM_finalNodeInfo();
+	nRet = FTDM_EP_CLASS_INFO_final();
+	if (nRet != FTM_RET_OK)
+	{
+		ERROR("FTDM_finalNodeInfo failed\n");	
+	}
+
+	nRet = FTDM_EP_INFO_final();
+	if (nRet != FTM_RET_OK)
+	{
+		ERROR("FTDM_finalNodeInfo failed\n");	
+	}
+
+	nRet = FTDM_NODE_INFO_final();
+	if (nRet != FTM_RET_OK)
+	{
+		ERROR("FTDM_finalNodeInfo failed\n");	
+	}
+
 
 	nRet = FTDM_DBIF_final();
 	if (nRet != FTM_RET_OK)

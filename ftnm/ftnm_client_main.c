@@ -208,8 +208,6 @@ int main(int argc , char *argv[])
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
-	setPrintMode(1);
-
 	FTM_MEM_init();
 	/* load configuraton */
 	FTNMC_initConfig(&xClientConfig);
@@ -601,7 +599,7 @@ FTM_RET	FTNMC_cmdEP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 
 		case	6:
-			xInfo.ulInterval = (FTM_ULONG)strtoul(pArgv[5]);
+			xInfo.ulInterval = (FTM_ULONG)strtoul(pArgv[5], 0, 10);
 			if (xInfo.ulInterval < 0)
 			{
 				return	FTM_RET_INVALID_ARGUMENTS;
@@ -1162,7 +1160,7 @@ FTM_RET	FTNMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		if (nArgc == 2)
 		{
 			FTM_ULONG	nMode;
-			getPrintMode(&nMode);
+			FTM_DEBUG_printModeGet(&nMode);
 			switch(nMode)
 			{
 			case	0: MESSAGE("DEBUG OUT MODE : NONE\n"); break;
@@ -1176,8 +1174,8 @@ FTM_RET	FTNMC_cmdDebug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 			nNewMode = strtoul(pArgv[2], NULL, 10);
 		
-			getPrintMode(&nMode);
-			setPrintMode(nNewMode);
+			FTM_DEBUG_printModeGet(&nMode);
+			FTM_DEBUG_printModeSet(nNewMode);
 
 			switch(nMode)
 			{

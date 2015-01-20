@@ -1,7 +1,7 @@
 #CC=armv5-linux-gcc
 #AR=armv5-linux-ar
-#CFLAGS=-c -fPIC -Wall -DDEBUG -I../devtools/include
-#LDFLAGS=-L../devtools/lib -lconfig -lftsom
+#CFLAGS=-c -fPIC -Wall -DDEBUG -I../devtools/include -I../include -I../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib
+#LDFLAGS=-L../devtools/lib -L.
 CC=gcc
 CFLAGS=-c -Wall -DDEBUG -I/usr/local/include -I../include 
 LDFLAGS= -L/usr/local/lib -L. 
@@ -15,7 +15,7 @@ all: $(LIB_FTM) $(SERVER)
 
 $(LIB_FTM): $(LIB_FTM_OBJS)
 	$(AR) rcs $(LIB_FTM).a $(LIB_FTM_OBJS)
-	$(CC) -shared -Wl -o $(LIB_FTM).so.1.0.1 $(LIB_FTM_OBJS) $(LDFLAGS)
+	$(CC) -shared -o $(LIB_FTM).so.1.0.1 $(LIB_FTM_OBJS) $(LDFLAGS)
 
 .c.o:  $(SERVER_SRC) *.h
 	$(CC) $(CFLAGS) $< -o $@

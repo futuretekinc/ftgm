@@ -238,12 +238,13 @@ FTM_VOID_PTR FTNM_NODE_task(FTM_VOID_PTR pData)
 			{
 				struct	timespec	xTime;
 				int64_t				xCurrentTime;
-
+#if 0
 				if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
 				{
 					xCurrentTime = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
 				}
 				else
+#endif
 				{
 					xCurrentTime = time(NULL) * 1000000 ;
 				}
@@ -287,11 +288,13 @@ FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode)
 
 	ASSERT(pNode != NULL);
 
+#if 0
 	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
 	{
 		pNode->xTimeout = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
 	}
 	else
+#endif
 	{
 		pNode->xTimeout = time(NULL) * 1000000 ;
 	}
@@ -304,11 +307,9 @@ FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode)
 FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode)
 {
 	FTM_RET				nRet;
-	struct timespec	xTime;
 
 	ASSERT(pNode != NULL);
 
-	clock_gettime(CLOCK_REALTIME, &xTime);
 
 	if (pNode->xInfo.ulInterval != 0 && pNode->xInfo.ulInterval < 3600)
 	{
@@ -358,11 +359,13 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 			break;		
 		}
 
+#if 0
 		if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
 		{
 			xCurrentTime = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
 		}
 		else
+#endif
 		{
 			xCurrentTime = time(NULL) * 1000000 ;
 		}

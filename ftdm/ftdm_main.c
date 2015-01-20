@@ -53,9 +53,6 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
-
-	setPrintMode(2);
-
 	/* load configuration  */
 	FTDM_CFG_init(&xConfig);
 	FTDM_CFG_load(&xConfig, pConfigFileName);
