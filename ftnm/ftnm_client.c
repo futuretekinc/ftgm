@@ -616,6 +616,52 @@ FTM_RET	FTNMC_EP_DATA_add
 /*****************************************************************
  *
  *****************************************************************/
+FTM_RET	FTNMC_EP_DATA_info
+(
+	FTNMC_SESSION_PTR		pSession,
+	FTM_EPID				xEPID,
+	FTM_ULONG_PTR			pulBeginTime,
+	FTM_ULONG_PTR			pulEndTime,
+	FTM_ULONG_PTR			pCount
+)
+{
+	FTM_RET							nRet;
+	FTNM_REQ_EP_DATA_INFO_PARAMS	xReq;
+	FTNM_RESP_EP_DATA_INFO_PARAMS	xResp;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	xReq.xCmd		=	FTNM_CMD_EP_DATA_INFO;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.xEPID		=	xEPID;
+
+	nRet = FTNMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		*pulBeginTime 	= xResp.ulBeginTime;
+		*pulEndTime 	= xResp.ulEndTime;
+		*pCount 		= xResp.ulCount;
+	}
+
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
 FTM_RET FTNMC_EP_DATA_getLast
 (
 	FTNMC_SESSION_PTR		pSession,

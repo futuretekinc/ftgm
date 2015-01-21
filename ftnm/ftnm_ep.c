@@ -154,6 +154,11 @@ FTM_RET	FTNM_EP_setNode(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_EP_DATA_info(FTM_EPID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount)
+{
+	return	FTNM_DMC_EP_DATA_info(xEPID, pulBeginTime, pulEndTime, pulCount);
+}
+
 FTM_RET	FTNM_EP_DATA_count(FTM_EPID xEPID, FTM_ULONG_PTR pulCount)
 {
 	return	FTNM_DMC_EP_DATA_count(xEPID, pulCount);

@@ -936,6 +936,8 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		case	'A':
 		case	'I':
 			{
+				FTM_ULONG	ulBeginTime;
+				FTM_ULONG	ulEndTime;
 				FTM_ULONG	ulCount;
 
 				if (nArgc != 4) 
@@ -946,7 +948,7 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 				xEPID	= strtoul(pArgv[3], NULL, 16);
 
-				nRet = FTNMC_EP_DATA_count(&_xSession, xEPID, &ulCount);
+				nRet = FTNMC_EP_DATA_info(&_xSession, xEPID, &ulBeginTime, &ulEndTime, &ulCount);
 				if (nRet == FTM_RET_OK)
 				{
 					MESSAGE("      EPID : %08lx\n", xEPID);

@@ -339,4 +339,15 @@ FTM_RET	FTNM_DMC_EP_DATA_count(FTM_EPID xEPID, FTM_ULONG_PTR pulCount)
 	return	FTDMC_EP_DATA_count(&xContext.xDMC.xSession, xEPID, pulCount);
 }
 
+FTM_RET FTNM_DMC_EP_DATA_info
+(
+	FTM_EPID 		xEPID, 
+	FTM_ULONG_PTR 	pulBeginTime, 
+	FTM_ULONG_PTR 	pulEndTime, 
+	FTM_ULONG_PTR 	pulCount
+)
+{
+	return	FTDMC_EP_DATA_info(&xContext.xDMC.xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
+}
+
 

@@ -200,6 +200,23 @@ typedef	struct
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EPID			xEPID;
+}	FTNM_REQ_EP_DATA_INFO_PARAMS, _PTR_ FTNM_REQ_EP_DATA_INFO_PARAMS_PTR;
+
+typedef	struct
+{
+	FTNM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulBeginTime;
+	FTM_ULONG			ulEndTime;
+	FTM_ULONG			ulCount;
+}	FTNM_RESP_EP_DATA_INFO_PARAMS, _PTR_	FTNM_RESP_EP_DATA_INFO_PARAMS_PTR;
+
+typedef	struct
+{
+	FTNM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EPID			xEPID;
 }	FTNM_REQ_EP_DATA_GET_LAST_PARAMS, _PTR_	FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR;
 
 typedef	struct
