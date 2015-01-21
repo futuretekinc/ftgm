@@ -330,6 +330,23 @@ typedef	struct
 typedef	struct
 {
 	FTDM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EPID			xEPID;
+}	FTDM_REQ_EP_DATA_INFO_PARAMS, _PTR_ FTDM_REQ_EP_DATA_INFO_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulBeginTime;
+	FTM_ULONG			ulEndTime;
+	FTM_ULONG			ulCount;
+}	FTDM_RESP_EP_DATA_INFO_PARAMS, _PTR_ FTDM_RESP_EP_DATA_INFO_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_EPID			xEPID;
 	FTM_ULONG			nStartIndex;

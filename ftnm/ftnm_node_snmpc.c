@@ -297,7 +297,7 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 							pEP->xData.xType  = FTM_EP_DATA_TYPE_FLOAT;
 							pEP->xData.xValue.fValue = strtod(pBuff, NULL);
 
-							FTNM_DMC_setEPData(pEP);
+							FTNM_DMC_EP_DATA_set(pEP);
 						}
 						break;
 					};

@@ -736,6 +736,49 @@ FTM_RET	FTDMC_EP_DATA_append
 /*****************************************************************
  *
  *****************************************************************/
+FTM_RET FTDMC_EP_DATA_info
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_EPID				xEPID,
+	FTM_ULONG_PTR			pulBeginTime,
+	FTM_ULONG_PTR			pulEndTime,
+	FTM_ULONG_PTR			pulCount
+)
+{
+	FTM_RET								nRet;
+	FTDM_REQ_EP_DATA_INFO_PARAMS		xReq;
+	FTDM_RESP_EP_DATA_INFO_PARAMS		xResp;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	xReq.xCmd		=	FTDM_CMD_EP_DATA_INFO;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.xEPID		=	xEPID;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	*pulBeginTime 	= xResp.ulBeginTime;
+	*pulEndTime 	= xResp.ulEndTime;
+	*pulCount		= xResp.ulCount;
+
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
 FTM_RET	FTDMC_EP_DATA_get
 (
 	FTDMC_SESSION_PTR	pSession,

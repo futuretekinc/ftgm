@@ -78,7 +78,7 @@ FTM_RET	FTNM_EP_count
 	ASSERT(pulCount != NULL);
 
 	if ((xClass == 0XFFFFFFFF) || (xClass == 0))
-	{
+{
 		return	FTM_LIST_count(&xEPList, pulCount);
 	}
 	else
@@ -122,7 +122,7 @@ FTM_RET FTNM_EP_getList
 		FTNM_EP_PTR	pEP;
 
 		FTM_LIST_getAt(&xEPList, i,	(FTM_VOID_PTR _PTR_)&pEP);
-		if (xClass == (pEP->xInfo.xEPID & FTM_EP_CLASS_MASK))
+		if ((xClass == 0) || (xClass == (pEP->xInfo.xEPID & FTM_EP_CLASS_MASK)))
 		{
 			pEPIDList[ulCount++] = pEP->xInfo.xEPID;
 		}
@@ -152,6 +152,11 @@ FTM_RET	FTNM_EP_setNode(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode)
 	pEP->pNode = pNode;
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_EP_DATA_count(FTM_EPID xEPID, FTM_ULONG_PTR pulCount)
+{
+	return	FTNM_DMC_EP_DATA_count(xEPID, pulCount);
 }
 
 FTM_INT	FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)

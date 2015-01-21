@@ -285,6 +285,30 @@ FTM_RET	FTDM_EP_DATA_add
 	return	FTDM_DBIF_EP_DATA_append(xEPID, pData);
 }
 
+FTM_RET FTDM_EP_DATA_info
+(
+	FTM_EPID		xEPID,
+	FTM_ULONG_PTR	pulBeginTime,
+	FTM_ULONG_PTR	pulEndTime,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	FTM_RET	nRet;
+
+	if ((pulBeginTime == NULL) || (pulEndTime == NULL) || (pulCount == NULL))
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	nRet = FTDM_DBIF_EP_DATA_info(xEPID, pulBeginTime, pulEndTime);
+	if (nRet != FTM_RET_OK)
+	{
+		return	nRet;	
+	}
+
+	return	FTDM_DBIF_EP_DATA_count(xEPID, pulCount);
+}
+
 FTM_RET	FTDM_EP_DATA_get
 (
 	FTM_EPID			xEPID, 

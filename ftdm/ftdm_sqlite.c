@@ -136,7 +136,7 @@ static int _FTDM_DBIF_NODE_INFO_countCB(void *pData, int nArgc, char **pArgv, ch
 
 FTM_RET	FTDM_DBIF_NODE_INFO_count
 (
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR		pulCount
 )
 {
     int     nRet;
@@ -144,7 +144,7 @@ FTM_RET	FTDM_DBIF_NODE_INFO_count
     char    *strErrMsg = NULL;
 
     sprintf(strSQL, "SELECT COUNT(*) FROM node_info");
-    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_NODE_INFO_countCB, pCount, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_NODE_INFO_countCB, pulCount, &strErrMsg);
     if (nRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);
@@ -162,7 +162,7 @@ FTM_RET	FTDM_DBIF_NODE_INFO_count
 typedef struct
 {
 	FTM_ULONG			nMaxCount;
-	FTM_ULONG_PTR		pCount;
+	FTM_ULONG_PTR		pulCount;
 	FTM_NODE_INFO_PTR	pInfos;
 }	FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS_PTR;
 
@@ -173,7 +173,7 @@ static int _FTDM_DBIF_NODE_INFO_getListCB(void *pData, int nArgc, char **pArgv, 
 	if (nArgc != 0)
 	{
 		FTM_INT	i;
-		FTM_NODE_INFO_PTR	pNodeInfo = &pParams->pInfos[(*pParams->pCount)++];
+		FTM_NODE_INFO_PTR	pNodeInfo = &pParams->pInfos[(*pParams->pulCount)++];
 
 		for(i = 0 ; i < nArgc ; i++)
 		{
@@ -238,7 +238,7 @@ FTM_RET	FTDM_DBIF_NODE_INFO_getList
 (
 	FTM_NODE_INFO_PTR	pInfos, 
 	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR		pulCount
 )
 {
 	FTM_RET			nRet;
@@ -247,7 +247,7 @@ FTM_RET	FTDM_DBIF_NODE_INFO_getList
 	FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS	xParams = 
 	{
 		.nMaxCount  = nMaxCount,
-		.pCount 	= pCount,
+		.pulCount 	= pulCount,
 		.pInfos		= pInfos
 	};	
 
@@ -574,7 +574,7 @@ static int _FTDM_DBIF_EP_INFO_countCB(void *pData, int nArgc, char **pArgv, char
 
 FTM_RET	FTDM_DBIF_EP_INFO_count
 (
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR		pulCount
 )
 {
     int     nRet;
@@ -582,7 +582,7 @@ FTM_RET	FTDM_DBIF_EP_INFO_count
     char    *strErrMsg = NULL;
 
     sprintf(strSQL, "SELECT COUNT(*) FROM ep_info");
-    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_EP_INFO_countCB, pCount, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_EP_INFO_countCB, pulCount, &strErrMsg);
     if (nRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);
@@ -664,7 +664,7 @@ FTM_RET	FTDM_DBIF_EP_INFO_getList
 (
 	FTM_EP_INFO_PTR		pInfos, 
 	FTM_ULONG				nMaxCount,
-	FTM_ULONG_PTR			pCount
+	FTM_ULONG_PTR			pulCount
 )
 {
     int     nRet;
@@ -687,7 +687,7 @@ FTM_RET	FTDM_DBIF_EP_INFO_getList
     	return  FTM_RET_ERROR;
     }
 
-	*pCount = xParams.nCount;
+	*pulCount = xParams.nCount;
 
 	return	FTM_RET_OK;
 }
@@ -930,36 +930,33 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 /********************************************************
  *
  ********************************************************/
-typedef struct 
+static int _FTDM_DBIF_EP_DATA_timeCB(void *pData, int nArgc, char **pArgv, char **pColName)
 {
-	FTM_ULONG	nCount;
-}	_FTDM_DBIF_CB_EP_DATA_COUNT_PARAMS, _PTR_ _FTDM_DBIF_CB_EP_DATA_COUNT_PARAMS_PTR;
-
-static int _FTDM_DBIF_EP_DATA_countCB(void *pData, int nArgc, char **pArgv, char **pColName)
-{
-     _FTDM_DBIF_CB_EP_DATA_COUNT_PARAMS_PTR pParams = (_FTDM_DBIF_CB_EP_DATA_COUNT_PARAMS_PTR)pData;
-
 	if (nArgc != 0)
 	{
-		pParams->nCount = atoi(pArgv[0]);
+		if (strcmp(pColName[0], "TIME") == 0)
+		{
+			*((FTM_ULONG_PTR)pData)= strtoul(pArgv[0], 0, 10);
+		}
     }
 
     return  FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_EP_DATA_count
+FTM_RET	FTDM_DBIF_EP_DATA_info
 (
 	FTM_EPID				xEPID,
-	FTM_ULONG_PTR			pCount
+	FTM_ULONG_PTR			pulBeginTime,
+	FTM_ULONG_PTR			pulEndTime
 )
 {
-	FTM_RET		nRet;
+	FTM_RET			nRet;
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
-	_FTDM_DBIF_CB_EP_DATA_COUNT_PARAMS	xParams;
 
-	sprintf(pSQL, "SELECT COUNT(*) from ep_%08lx ", xEPID);
-	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_countCB, &xParams, &pErrMsg);
+	sprintf(pSQL, "SELECT TIME from ep_%08lx "\
+				  " ORDER BY TIME DESC LIMIT 1", xEPID);
+	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulEndTime, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
 		ERROR("SQL error : %s\n", pErrMsg);	
@@ -968,7 +965,49 @@ FTM_RET	FTDM_DBIF_EP_DATA_count
 		return	FTM_RET_ERROR;
 	}
 
-	*pCount = xParams.nCount;
+	sprintf(pSQL, "SELECT TIME from ep_%08lx "\
+				  " ORDER BY TIME ASC LIMIT 1", xEPID);
+	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulBeginTime, &pErrMsg);
+	if (nRet != SQLITE_OK)
+	{
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
+
+/********************************************************
+ *
+ ********************************************************/
+static int _FTDM_DBIF_EP_DATA_countCB(void *pData, int nArgc, char **pArgv, char **pColName)
+{
+	*((FTM_ULONG_PTR)pData) = strtoul(pArgv[0], 0, 10);
+
+    return  FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_EP_DATA_count
+(
+	FTM_EPID				xEPID,
+	FTM_ULONG_PTR			pulCount
+)
+{
+	FTM_RET		nRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+
+	sprintf(pSQL, "SELECT COUNT(*) from ep_%08lx ", xEPID);
+	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_countCB, pulCount, &pErrMsg);
+	if (nRet != SQLITE_OK)
+	{
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
 
 	return	FTM_RET_OK;
 }
@@ -979,7 +1018,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_CountWithTime
 	FTM_EPID				xEPID,
 	FTM_ULONG				xBeginTime,
 	FTM_ULONG				xEndTime,
-	FTM_ULONG_PTR			pCount
+	FTM_ULONG_PTR			pulCount
 )
 {
 	FTM_RET		nRet;
@@ -987,7 +1026,6 @@ FTM_RET	FTDM_DBIF_EP_DATA_CountWithTime
 	FTM_CHAR		pSQL[1024];
 	FTM_INT		nSQLLen = 0;
 	FTM_BOOL		bConditionOn = FTM_BOOL_FALSE;
-	_FTDM_DBIF_CB_EP_DATA_COUNT_PARAMS	xParams;
 
 	nSQLLen = sprintf(pSQL, "SELECT COUNT(*) from ep_%08lx ", xEPID);
 	if (xBeginTime != 0)
@@ -1019,7 +1057,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_CountWithTime
 	}
 
 
-	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_countCB, &xParams, &pErrMsg);
+	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_countCB, pulCount, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
 		ERROR("SQL error : %s\n", pErrMsg);	
@@ -1027,8 +1065,6 @@ FTM_RET	FTDM_DBIF_EP_DATA_CountWithTime
 
 		return	FTM_RET_ERROR;
 	}
-
-	*pCount = xParams.nCount;
 
 	return	FTM_RET_OK;
 }
@@ -1096,7 +1132,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_get
 	FTM_ULONG			nStartIndex,
 	FTM_EP_DATA_PTR		pEPData,
 	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR		pulCount
 )
 {
 	FTM_RET			nRet;
@@ -1127,7 +1163,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_get
 		return	FTM_RET_ERROR;
 	}
 
-	*pCount = xParams.nCount;
+	*pulCount = xParams.nCount;
 
 	return	FTM_RET_OK;
 }
@@ -1139,7 +1175,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 	FTM_ULONG			xEndTime,
 	FTM_EP_DATA_PTR		pEPData,
 	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR		pulCount
 )
 {
 	FTM_RET			nRet;
@@ -1199,7 +1235,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 		return	FTM_RET_ERROR;
 	}
 
-	*pCount = xParams.nCount;
+	*pulCount = xParams.nCount;
 
 	return	FTM_RET_OK;
 }
@@ -1296,7 +1332,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_countWithTime
 	FTM_EPID			xEPID,
 	FTM_ULONG			xBeginTime,
 	FTM_ULONG			xEndTime,
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR		pulCount
 )
 {
     int     nRet;
@@ -1332,7 +1368,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_countWithTime
 		}
 	
 	}
-    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_NODE_INFO_countCB, pCount, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_NODE_INFO_countCB, pulCount, &strErrMsg);
     if (nRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);

@@ -45,6 +45,7 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_INFO_GET,			FTDMS_EP_CLASS_INFO_get),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_INFO_GET_AT,		FTDMS_EP_CLASS_INFO_getAt ),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_ADD,				FTDMS_EP_DATA_add ),
+	MK_CMD_SET(FTDM_CMD_EP_DATA_INFO,				FTDMS_EP_DATA_info),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_DEL,				FTDMS_EP_DATA_del),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_DEL_WITH_TIME,		FTDMS_EP_DATA_delWithTime),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_GET,				FTDMS_EP_DATA_get),
@@ -534,6 +535,19 @@ FTM_RET	FTDMS_EP_DATA_add
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nRet = FTDM_EP_DATA_add(pReq->xEPID, &pReq->xData);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_EP_DATA_info
+(
+ 	FTDM_REQ_EP_DATA_INFO_PARAMS_PTR	pReq,
+	FTDM_RESP_EP_DATA_INFO_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->nRet = FTDM_EP_DATA_info(pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
 
 	return	pResp->nRet;
 }

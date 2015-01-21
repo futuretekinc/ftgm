@@ -784,7 +784,7 @@ FTM_RET	FTNMC_EP_DATA_count
 	}
 
 	xReq.xCmd		=	FTNM_CMD_EP_DATA_COUNT;
-	xReq.nLen		=	sizeof(xReq);
+	xReq.ulLen		=	sizeof(xReq);
 	xReq.xEPID		=	xEPID;
 
 	nRet = FTNMC_request(
@@ -800,7 +800,7 @@ FTM_RET	FTNMC_EP_DATA_count
 
 	if (xResp.nRet == FTM_RET_OK)
 	{
-		*pCount = xResp.nCount;
+		*pCount = xResp.ulCount;
 	}
 
 	return	xResp.nRet;

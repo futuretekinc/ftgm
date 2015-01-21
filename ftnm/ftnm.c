@@ -296,12 +296,12 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pContext)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_DMC_setEPData(FTNM_EP_PTR pEP)
+FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_EP_PTR pEP)
 {
 	return	FTDMC_EP_DATA_append(&xContext.xDMC.xSession, pEP->xInfo.xEPID, &pEP->xData);
 }
 
-FTM_RET FTNM_DMC_setEPDataINT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
+FTM_RET FTNM_DMC_EP_DATA_setINT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
 {
 	FTM_EP_DATA	xEPData;
 
@@ -312,7 +312,7 @@ FTM_RET FTNM_DMC_setEPDataINT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
 	return FTDMC_EP_DATA_append(&xContext.xDMC.xSession, xEPID, &xEPData);
 }
 
-FTM_RET FTNM_DMC_setEPDataULONG(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue)
+FTM_RET FTNM_DMC_EP_DATA_setULONG(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue)
 {
 	FTM_EP_DATA	xEPData;
 
@@ -323,7 +323,7 @@ FTM_RET FTNM_DMC_setEPDataULONG(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_ULONG ulVa
 	return FTDMC_EP_DATA_append(&xContext.xDMC.xSession, xEPID, &xEPData);
 }
 
-FTM_RET FTNM_DMC_setEPDataFLOAT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue)
+FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue)
 {
 	FTM_EP_DATA	xEPData;
 
@@ -333,3 +333,10 @@ FTM_RET FTNM_DMC_setEPDataFLOAT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fVa
 
 	return FTDMC_EP_DATA_append(&xContext.xDMC.xSession, xEPID, &xEPData);
 }
+
+FTM_RET	FTNM_DMC_EP_DATA_count(FTM_EPID xEPID, FTM_ULONG_PTR pulCount)
+{
+	return	FTDMC_EP_DATA_count(&xContext.xDMC.xSession, xEPID, pulCount);
+}
+
+

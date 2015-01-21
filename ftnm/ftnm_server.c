@@ -42,6 +42,7 @@ static FTNMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTNM_CMD_EP_GET,				FTNMS_EP_get),
 	MK_CMD_SET(FTNM_CMD_EP_GET_AT,			FTNMS_EP_getAt),
 	MK_CMD_SET(FTNM_CMD_EP_DATA_GET_LAST,	FTNMS_EP_DATA_getLast),
+	MK_CMD_SET(FTNM_CMD_EP_DATA_COUNT,		FTNMS_EP_DATA_count),
 	MK_CMD_SET(FTNM_CMD_UNKNOWN, 		NULL)
 };
 
@@ -420,6 +421,26 @@ FTM_RET	FTNMS_EP_DATA_getLast
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xData, &pEP->xData, sizeof(FTM_EP_DATA));
+	}
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTNMS_EP_DATA_count
+(
+	FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR pReq,
+	FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR pResp
+)
+{
+	FTNM_EP_PTR	pEP;
+	FTM_ULONG	ulCount = 0;
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->nRet = FTNM_EP_DATA_count(pReq->xEPID, &ulCount);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		pResp->ulCount = ulCount;
 	}
 
 	return	pResp->nRet;

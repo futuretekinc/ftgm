@@ -247,16 +247,16 @@ typedef	struct
 typedef	struct
 {
 	FTNM_CMD			xCmd;
-	FTM_ULONG			nLen;
+	FTM_ULONG			ulLen;
 	FTM_EPID			xEPID;
 }	FTNM_REQ_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR;
 
 typedef	struct
 {
 	FTNM_CMD			xCmd;
-	FTM_ULONG			nLen;
+	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
-	FTM_ULONG			nCount;
+	FTM_ULONG			ulCount;
 }	FTNM_RESP_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR;
 
 #endif
