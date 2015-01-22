@@ -1,10 +1,4 @@
-#CC=armv5-linux-gcc
-#AR=armv5-linux-ar
-#CFLAGS=-c -fPIC -Wall -DDEBUG -I../include -I../devtools/include -I../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib
-#LDFLAGS=-L../devtools/lib  -L. -L../lib -L../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib/.libs
-CC=gcc
-CFLAGS=-c -Wall -DDEBUG -I/usr/local/include -I../include
-LDFLAGS=-L/usr/local/lib -L. -L../lib
+include ../Makefile.in
 
 SERVER=ftdm
 SERVER_SRCS=ftdm_main.c ftdm_server.c 
@@ -17,8 +11,8 @@ CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftdmc -lftm -lconfig 
 
 LIB_FTDM=libftdm
-LIB_FTDM_INCS= ftdm.h ftdm_config.h ftdm_server.h ftdm_sqlite.h ftdm_node_info.h ftdm_ep_info.h ftdm_ep_class_info.h
-LIB_FTDM_SRCS= ftdm.c ftdm_config.c ftdm_server.c ftdm_sqlite.c ftdm_node_info.c ftdm_ep_info.c ftdm_ep_class_info.c
+LIB_FTDM_INCS= ftdm.h ftdm_config.h ftdm_server.h ftdm_sqlite.h ftdm_node_info.h ftdm_ep_info.h ftdm_ep_class_info.h ftdm_console_cmds.h
+LIB_FTDM_SRCS= ftdm.c ftdm_config.c ftdm_server.c ftdm_sqlite.c ftdm_node_info.c ftdm_ep_info.c ftdm_ep_class_info.c ftdm_console_cmds.c
 LIB_FTDM_OBJS=$(LIB_FTDM_SRCS:.c=.o)
 
 LIB_FTDMC=libftdmc
@@ -46,4 +40,4 @@ $(LIB_FTDMC): $(LIB_FTDMC_OBJS)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f $(SERVER) $(CLIENT) *.a *.o
+	rm -f $(SERVER) $(CLIENT) *.a *.o $(LIB_FTDM) $(LIB_FTDMC)

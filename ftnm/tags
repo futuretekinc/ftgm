@@ -138,6 +138,7 @@ FTNM_EP_CLASS_INFO_getAt	ftnm_ep_class.c	/^FTM_RET FTNM_EP_CLASS_INFO_getAt(FTM_
 FTNM_EP_CLASS_INFO_init	ftnm_ep_class.c	/^FTM_RET	FTNM_EP_CLASS_INFO_init(FTM_VOID)$/;"	f
 FTNM_EP_CLASS_INFO_seeker	ftnm_ep_class.c	/^FTM_INT	FTNM_EP_CLASS_INFO_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)$/;"	f
 FTNM_EP_DATA_count	ftnm_ep.c	/^FTM_RET	FTNM_EP_DATA_count(FTM_EPID xEPID, FTM_ULONG_PTR pulCount)$/;"	f
+FTNM_EP_DATA_info	ftnm_ep.c	/^FTM_RET	FTNM_EP_DATA_info(FTM_EPID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount)$/;"	f
 FTNM_EP_PTR	ftnm_object.h	/^}	FTNM_EP, _PTR_ FTNM_EP_PTR;$/;"	t	typeref:struct:__anon8
 FTNM_EP_comparator	ftnm_ep.c	/^FTM_INT	FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2)$/;"	f
 FTNM_EP_count	ftnm_ep.c	/^FTM_RET	FTNM_EP_count$/;"	f
@@ -379,8 +380,6 @@ nCount	ftnm_params.h	/^	FTM_ULONG			nCount;$/;"	m	struct:__anon50
 nIndex	ftnm_params.h	/^	FTM_ULONG 			nIndex; $/;"	m	struct:__anon50
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon42
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon43
-nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon44
-nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon45
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon49
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon50
 nLen	ftnm_params.h	/^	FTM_ULONG			nLen;$/;"	m	struct:__anon51
@@ -462,6 +461,8 @@ ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon38
 ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon39
 ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon40
 ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon41
+ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon44
+ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon45
 ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon46
 ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon47
 ulLen	ftnm_params.h	/^	FTM_ULONG			ulLen;$/;"	m	struct:__anon48

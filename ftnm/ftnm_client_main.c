@@ -953,6 +953,8 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				{
 					MESSAGE("      EPID : %08lx\n", xEPID);
 					MESSAGE("DATA COUNT : %lu\n", ulCount);
+					MESSAGE("BEGIN TIME : %s\n", ctime(&ulBeginTime));
+					MESSAGE("  END TIME : %s\n", ctime(&ulEndTime));
 				}
 				else
 				{

@@ -10,13 +10,14 @@
 #include "ftdm_params.h"
 #include "ftdm_server.h"
 #include "ftdm_config.h"
+#include "ftdm_console_cmds.h"
 #include "ftm_debug.h"
 
 static FTM_VOID			_showUsage(FTM_CHAR_PTR pAppName);
 
 extern char *program_invocation_short_name;
 
-static FTDM_CFG	xConfig;
+FTDM_CFG	xConfig;
 
 int main(int nArgc, char *pArgv[])
 {
@@ -56,7 +57,6 @@ int main(int nArgc, char *pArgv[])
 	/* load configuration  */
 	FTDM_CFG_init(&xConfig);
 	FTDM_CFG_load(&xConfig, pConfigFileName);
-	FTDM_CFG_show(&xConfig);
 
 	/* apply configuration */
 
@@ -74,7 +74,7 @@ int main(int nArgc, char *pArgv[])
 	{
 		FTDMS_run(&xConfig.xServer, &xPThread);
 
-		FTM_CONSOLE_run(NULL, 0);
+		FTM_CONSOLE_run(FTDM_xCmds, FTDM_ulCmds);
 	}
 
 

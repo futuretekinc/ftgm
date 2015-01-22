@@ -1,15 +1,8 @@
-#CC=armv5-linux-gcc
-#AR=armv5-linux-ar
-#CFLAGS=-c -fPIC -Wall -DDEBUG -I../include -I../devtools/include -I../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib -I../ftdm
-#LDFLAGS=-L../devtools/lib  -L. -L../lib -L../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib/.libs -L../ftdm
-CC=gcc
-CFLAGS=-c -Wall -DDEBUG \
-		-I/usr/local/include \
-		-I../include -I../ftdm \
+include ../Makefile.in
+
+#CFLAGS=$(CFLAGS)\
 		-D__malloc_and_calloc_defined=1 \
 		-D__need_malloc_and_calloc=1
-LDFLAGS= -L/usr/local/lib -L. -L../lib -L../ftdm
-
 CLIENT=ftnm_client
 CLIENT_SRCS=ftnm_client_main.c ftnm_client_config.c
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)

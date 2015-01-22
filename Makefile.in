@@ -1,0 +1,11 @@
+CC=armv5-linux-gcc
+AR=armv5-linux-ar
+CFLAGS=-c -fPIC -Wall -DDEBUG -I. -I../include -I../ftdm -I../ftnm  -I../devtools/include -I../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib
+LDFLAGS=-L../devtools/lib -L. -L../lib -L../ftdm -L../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib/.libs/
+
+#CC=gcc
+#CFLAGS=-c -Wall -DDEBUG \
+		-I/usr/local/include \
+		-I../include \
+		-I../ftdm 
+#LDFLAGS= -L/usr/local/lib -L. -L../lib -L../ftdm 
