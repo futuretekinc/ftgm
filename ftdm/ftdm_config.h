@@ -17,6 +17,7 @@ typedef	struct
 typedef	struct
 {
 	FTM_CHAR_PTR			pFileName;
+	FTM_ULONG				ulLiftTime;
 }	FTDM_CFG_DB, _PTR_ FTDM_CFG_DB_PTR;
 
 typedef	struct
