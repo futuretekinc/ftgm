@@ -3,7 +3,7 @@ include ../Makefile.in
 SERVER=ftdm
 SERVER_SRCS=ftdm_main.c ftdm_server.c 
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
-SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3
+SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3 -ldl
 
 CLIENT=ftdm_client
 CLIENT_SRCS=ftdm_client_main.c  ftdm_client.c ftdm_client_config.c

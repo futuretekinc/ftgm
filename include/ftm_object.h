@@ -16,9 +16,9 @@ typedef	unsigned long	FTM_NODE_TYPE, _PTR_ FTM_NODE_TYPE_PTR;
 #define	FTM_NODE_TYPE_MODBUS_OVER_TCP		0x00000102
 #define	FTM_NODE_TYPE_MODBUS_OVER_SERIAL	0x00000202
 
-typedef	unsigned long	FTM_IP_ADDR, _PTR_ FTM_IP_ADDR_PTR;
+//typedef	unsigned long	FTM_IP_ADDR, _PTR_ FTM_IP_ADDR_PTR;
 
-typedef	unsigned long	FTM_CMD, _PTR_ FTM_CMD_PTR;
+//typedef	unsigned long	FTM_CMD, _PTR_ FTM_CMD_PTR;
 
 typedef	struct
 {
