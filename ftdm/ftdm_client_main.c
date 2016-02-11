@@ -11,8 +11,6 @@
 #include "ftdm_client.h"
 #include "ftdm_client_config.h"
 #include "ftm_debug.h"
-#include "simclist.h"
-
 #define		FTDMC_MAX_LINE	2048
 #define		FTDMC_MAX_ARGS	16
 
@@ -192,7 +190,7 @@ FTDMC_CMD			_cmds[] =
 
 
 static	FTDMC_CFG	xClientConfig;
-static	FTM_BOOL	_bQuit = FTM_BOOL_FALSE;
+static	FTM_BOOL	_bQuit = FTM_FALSE;
 extern	char *		program_invocation_short_name;
 	FTM_CHAR		pCmdLine[FTDMC_MAX_LINE];
 
@@ -1078,15 +1076,19 @@ FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		for(i = 0 ; i < nDataGenCount ; i++)
 		{
 			FTM_INT	nIndex = 0;
+			FTM_ULONG	ulSize;
 
-			nIndex = rand() % list_size(&xClientConfig.xDiagnostic.xEPList);
+			FTM_LIST_count(&xClientConfig.xDiagnostic.xEPList, &ulSize);
+			nIndex = rand() % ulSize;
 
-			xEPID = (FTM_EPID)list_get_at(&xClientConfig.xDiagnostic.xEPList, nIndex);
-			xData.xType = FTM_EP_DATA_TYPE_INT;
-			xData.ulTime = _startTime + rand() % (_endTime - _startTime);
-			xData.xValue.nValue = rand();
+			if (FTM_LIST_getAt(&xClientConfig.xDiagnostic.xEPList, nIndex, (FTM_VOID_PTR _PTR_)&xEPID) == FTM_RET_OK)
+			{
+				xData.xType = FTM_EP_DATA_TYPE_INT;
+				xData.ulTime = _startTime + rand() % (_endTime - _startTime);
+				xData.xValue.nValue = rand();
 
-			FTDMC_EP_DATA_append(&_xSession, xEPID, &xData);
+				FTDMC_EP_DATA_append(&_xSession, xEPID, &xData);
+			}
 		}
 	}
 	else
@@ -1196,7 +1198,7 @@ FTM_RET	FTDMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	}
 	
 	FTDMC_disconnect(&_xSession);
-	_bQuit = FTM_BOOL_TRUE;
+	_bQuit = FTM_TRUE;
 
 
 	return	FTM_RET_OK;

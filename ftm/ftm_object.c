@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ftm.h"
-#include "simclist.h"
+#include "ftm_list.h"
+#include "ftm_mem.h"
 
 typedef struct 
 {
@@ -10,8 +11,8 @@ typedef struct
 	FTM_CHAR_PTR	pTypeString;
 } FTM_EP_TYPE_STRING, _PTR_ FTM_EP_TYPE_STRING_PTR;
 
-static int	_FTM_EPTypeSeeker(const void *pElement, const void *pKey);
-static int	_FTM_EPOIDInfoSeeker(const void *pElement, const void *pKey);
+FTM_BOOL	_FTM_EPTypeSeeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+FTM_BOOL	_FTM_EPOIDInfoSeeker(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2);
 
 static FTM_EP_TYPE_STRING	_pEPTypeString[] =
 {
@@ -28,12 +29,19 @@ static FTM_EP_TYPE_STRING	_pEPTypeString[] =
 	{	0,							NULL}
 };
 
-static list_t	_xEPTypeList;
+static FTM_LIST_PTR _pEPTypeList = NULL;
 
 FTM_RET	FTM_initEPTypeString(void)
 {
-	list_init(&_xEPTypeList);
-	list_attributes_seeker(&_xEPTypeList, _FTM_EPTypeSeeker);
+	FTM_RET	xRet;
+	
+	xRet = FTM_LIST_create(&_pEPTypeList);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	FTM_LIST_setSeeker(_pEPTypeList, _FTM_EPTypeSeeker);
 
 	return	FTM_RET_OK;
 }
@@ -42,29 +50,32 @@ FTM_RET	FTM_finalEPTypeString(void)
 {
 	FTM_EP_TYPE_STRING_PTR	pItem;
 
-	list_iterator_start(&_xEPTypeList);
-	while((pItem = list_iterator_next(&_xEPTypeList)) != NULL)
+	FTM_LIST_iteratorStart(_pEPTypeList);
+	while(FTM_LIST_iteratorNext(_pEPTypeList, (FTM_VOID_PTR _PTR_)&pItem) == FTM_RET_OK)
 	{
-		free(pItem->pTypeString);	
-		free(pItem);	
+		FTM_MEM_free(pItem->pTypeString);	
+		FTM_MEM_free(pItem);	
 	}
 
-	list_destroy(&_xEPTypeList);
+	FTM_LIST_destroy(_pEPTypeList);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_appendEPTypeString(FTM_EP_TYPE xType, FTM_CHAR_PTR pTypeString)
 {
-	FTM_EP_TYPE_STRING_PTR	pItem;
+	ASSERT(pTypeString != NULL);
 
-	pItem = list_seek(&_xEPTypeList, &xType);
-	if (pItem != NULL)
+	FTM_RET					xRet;
+	FTM_EP_TYPE_STRING_PTR	pItem;
+	
+	xRet = FTM_LIST_get(_pEPTypeList, &xType, (FTM_VOID_PTR _PTR_)&pItem);
+	if (xRet == FTM_RET_OK)
 	{
-		return	FTM_RET_ALREADY_EXISTS;	
+		return	FTM_RET_ALREADY_EXIST_OBJECT;
 	}
 
-	pItem = (FTM_EP_TYPE_STRING_PTR)calloc(1, sizeof(FTM_EP_TYPE_STRING));
+	pItem = (FTM_EP_TYPE_STRING_PTR)FTM_MEM_calloc(1, sizeof(FTM_EP_TYPE_STRING));
 	if (pItem == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -73,10 +84,10 @@ FTM_RET	FTM_appendEPTypeString(FTM_EP_TYPE xType, FTM_CHAR_PTR pTypeString)
 	pItem->xType = xType;
 	pItem->pTypeString = strdup(pTypeString);
 
-	if (list_append(&_xEPTypeList, pItem) < 0)
+	if (FTM_LIST_append(_pEPTypeList, pItem) < 0)
 	{
-		free(pItem->pTypeString);
-		free(pItem);
+		FTM_MEM_free(pItem->pTypeString);
+		FTM_MEM_free(pItem);
 
 		return	FTM_RET_INTERNAL_ERROR;
 	}
@@ -86,25 +97,16 @@ FTM_RET	FTM_appendEPTypeString(FTM_EP_TYPE xType, FTM_CHAR_PTR pTypeString)
 
 FTM_CHAR_PTR FTM_getEPTypeString(FTM_EP_TYPE xType)
 {
+	FTM_RET	xRet;
 	FTM_EP_TYPE_STRING_PTR pItem;
 
-	pItem = list_seek(&_xEPTypeList, &xType);
-	if (pItem != NULL)
+	xRet = FTM_LIST_get(_pEPTypeList, &xType, (FTM_VOID_PTR _PTR_)&pItem);
+	if (xRet != FTM_RET_OK)
 	{
-		return	pItem->pTypeString;
+		return	"UNKNOWN";
 	}
 
-	pItem = _pEPTypeString;
-	while(pItem->xType != 0)
-	{
-		if ((xType & FTM_EP_CLASS_MASK) == pItem->xType)
-		{
-			return	pItem->pTypeString;	
-		}
-		pItem ++;	
-	}
-
-	return	"UNKNOWN";
+	return	pItem->pTypeString;	
 }
 
 FTM_CHAR_PTR FTM_nodeTypeString(FTM_NODE_TYPE nType)
@@ -134,13 +136,12 @@ int	_FTM_EPTypeSeeker(const void *pElement, const void *pKey)
 	return	0;
 }
 
-
-static list_t	xEPOIDInfoList;
+static FTM_LIST_PTR	_pEPOIDInfoList = NULL;
 
 FTM_RET	FTM_initEPOIDInfo(void)
 {
-	list_init(&xEPOIDInfoList);
-	list_attributes_seeker(&xEPOIDInfoList, _FTM_EPOIDInfoSeeker);
+	FTM_LIST_create(&_pEPOIDInfoList);
+	FTM_LIST_setSeeker(_pEPOIDInfoList, _FTM_EPOIDInfoSeeker);
 
 	return	FTM_RET_OK;
 }
@@ -149,13 +150,13 @@ FTM_RET	FTM_finalEPOIDInfo(void)
 {
 	FTM_EP_OID_INFO_PTR	pItem;
 
-	list_iterator_start(&xEPOIDInfoList);
-	while((pItem = list_iterator_next(&xEPOIDInfoList)) != NULL)
+	FTM_LIST_iteratorStart(_pEPOIDInfoList);
+	while(FTM_LIST_iteratorNext(_pEPOIDInfoList, (FTM_VOID_PTR _PTR_)&pItem) == FTM_RET_OK)
 	{
-		free(pItem);	
+		FTM_MEM_free(pItem);	
 	}
 
-	list_destroy(&xEPOIDInfoList);
+	FTM_LIST_destroy(_pEPOIDInfoList);
 
 	return	FTM_RET_OK;
 }
@@ -166,14 +167,16 @@ FTM_RET	FTM_addEPOIDInfo
 	FTM_EP_OID_INFO_PTR	pOIDInfo		
 )
 {
+	ASSERT(pOIDInfo != NULL);
+
 	FTM_EP_OID_INFO_PTR	pNewOIDInfo;
 
-	if (list_seek(&xEPOIDInfoList, (FTM_VOID_PTR)&pOIDInfo->ulClass) != NULL)
+	if (FTM_LIST_get(_pEPOIDInfoList, (FTM_VOID_PTR)&pOIDInfo->ulClass, (FTM_VOID_PTR _PTR_)&pNewOIDInfo) == FTM_RET_OK)
 	{
 		return	FTM_RET_ALREADY_EXISTS;	
 	}
 	
-	pNewOIDInfo = (FTM_EP_OID_INFO_PTR)calloc(1, sizeof(FTM_EP_OID_INFO));
+	pNewOIDInfo = (FTM_EP_OID_INFO_PTR)FTM_MEM_calloc(1, sizeof(FTM_EP_OID_INFO));
 	if (pNewOIDInfo == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -181,38 +184,34 @@ FTM_RET	FTM_addEPOIDInfo
 
 	memcpy(pNewOIDInfo, pOIDInfo, sizeof(FTM_EP_OID_INFO));
 
-	list_append(&xEPOIDInfoList, pNewOIDInfo);
-
-	return	FTM_RET_OK;
+	return FTM_LIST_append(_pEPOIDInfoList, pNewOIDInfo);
 }
 
 FTM_RET	FTM_getEPOIDInfo(FTM_EPID xEPID, FTM_EP_OID_INFO_PTR _PTR_ ppOIDInfo)
 {
+	ASSERT(ppOIDInfo != NULL);
+
 	FTM_EP_OID_INFO_PTR	pOIDInfo;
 
-	pOIDInfo = (FTM_EP_OID_INFO_PTR)list_seek(&xEPOIDInfoList, (FTM_VOID_PTR)&xEPID);
-
-	if (pOIDInfo == NULL)
+	if (FTM_LIST_get(_pEPOIDInfoList, (FTM_VOID_PTR)&pOIDInfo->ulClass, (FTM_VOID_PTR _PTR_)&pOIDInfo) == FTM_RET_OK)
 	{
-		return	FTM_RET_NOT_EXISTS;	
+		*ppOIDInfo = pOIDInfo;
+
+		return	FTM_RET_OK;
 	}
 
-	*ppOIDInfo = pOIDInfo;
-
-	return	FTM_RET_OK;
+	return	FTM_RET_NOT_EXISTS;	
 }
 
-int	_FTM_EPOIDInfoSeeker(const void *pElement, const void *pKey)
+FTM_BOOL _FTM_EPOIDInfoSeeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pKey)
 {
+	ASSERT(pElement != NULL);
+	ASSERT(pKey != NULL);
+
 	FTM_EP_OID_INFO_PTR 	pOIDInfo = (FTM_EP_OID_INFO_PTR)pElement;
 	FTM_EPID_PTR			pEPID = (FTM_EPID_PTR)pKey;
 
-	if (pOIDInfo->ulClass == (FTM_EP_CLASS_MASK & (*pEPID)))
-	{
-		return	1;	
-	}
-
-	return	0;
+	return (pOIDInfo->ulClass == (FTM_EP_CLASS_MASK & (*pEPID)));
 }
 
 FTM_RET	FTM_EP_DATA_snprint(FTM_CHAR_PTR pBuff, FTM_ULONG ulMaxLen, FTM_EP_DATA_PTR pData)

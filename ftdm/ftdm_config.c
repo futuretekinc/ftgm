@@ -4,6 +4,7 @@
 #include "ftm_error.h"
 #include "ftm_debug.h"
 #include "ftm_object.h"
+#include "ftm_mem.h"
 #include "ftdm_config.h"
 
 #define	FTDM_SECTION_DB_STRING				"DATABASE"
@@ -93,14 +94,14 @@ FTM_RET FTDM_CFG_init(FTDM_CFG_PTR pConfig)
 
 	memset(pConfig, 0, sizeof(FTDM_CFG));
 
-	list_init(&pConfig->xNode.xList);
-	list_attributes_seeker(&pConfig->xNode.xList, CFG_NODE_INFO_seeker);
+	FTM_LIST_init(&pConfig->xNode.xList);
+	FTM_LIST_setSeeker(&pConfig->xNode.xList, CFG_NODE_INFO_seeker);
 
-	list_init(&pConfig->xEP.xList);
-	list_attributes_seeker(&pConfig->xEP.xList, CFG_EP_INFO_seeker);
+	FTM_LIST_init(&pConfig->xEP.xList);
+	FTM_LIST_setSeeker(&pConfig->xEP.xList, CFG_EP_INFO_seeker);
 
-	list_init(&pConfig->xEP.xClassList);
-	list_attributes_seeker(&pConfig->xEP.xClassList, CFG_EP_CLASS_INFO_seeker);
+	FTM_LIST_init(&pConfig->xEP.xClassList);
+	FTM_LIST_setSeeker(&pConfig->xEP.xClassList, CFG_EP_CLASS_INFO_seeker);
 	return	FTM_RET_OK;
 }
 
@@ -112,30 +113,30 @@ FTM_RET FTDM_CFG_final(FTDM_CFG_PTR pConfig)
 
 	ASSERT(pConfig != NULL);
 	
-	list_iterator_start(&pConfig->xNode.xList);
-	while( (pNodeInfo = list_iterator_next(&pConfig->xNode.xList)) != NULL)
+	FTM_LIST_iteratorStart(&pConfig->xNode.xList);
+	while(FTM_LIST_iteratorNext(&pConfig->xNode.xList, (FTM_VOID_PTR _PTR_)&pNodeInfo) == FTM_RET_OK)
 	{
-		free(pNodeInfo);	
+		FTM_MEM_free(pNodeInfo);	
 	}
-	list_destroy(&pConfig->xNode.xList);
+	FTM_LIST_final(&pConfig->xNode.xList);
 
-	list_iterator_start(&pConfig->xEP.xList);
-	while( (pEPInfo = list_iterator_next(&pConfig->xEP.xList)) != NULL)
+	FTM_LIST_iteratorStart(&pConfig->xEP.xList);
+	while( FTM_LIST_iteratorNext(&pConfig->xEP.xList, (FTM_VOID_PTR _PTR_)&pEPInfo) == FTM_RET_OK)
 	{
-		free(pEPInfo);	
+		FTM_MEM_free(pEPInfo);	
 	}
-	list_destroy(&pConfig->xEP.xList);
+	FTM_LIST_final(&pConfig->xEP.xList);
 
-	list_iterator_start(&pConfig->xEP.xClassList);
-	while( (pEPClassInfo = list_iterator_next(&pConfig->xEP.xClassList)) != NULL)
+	FTM_LIST_iteratorStart(&pConfig->xEP.xClassList);
+	while( FTM_LIST_iteratorNext(&pConfig->xEP.xClassList, (FTM_VOID_PTR _PTR_)&pEPClassInfo) == FTM_RET_OK)
 	{
-		free(pEPClassInfo);	
+		FTM_MEM_free(pEPClassInfo);	
 	}
-	list_destroy(&pConfig->xEP.xClassList);
+	FTM_LIST_final(&pConfig->xEP.xClassList);
 
 	if (pConfig->xDB.pFileName != NULL)
 	{
-		free(pConfig->xDB.pFileName);	
+		FTM_MEM_free(pConfig->xDB.pFileName);	
 	}
 
 	return	FTM_RET_OK;
@@ -332,7 +333,8 @@ FTM_RET	FTDM_CFG_NODE_INFO_append(FTDM_CFG_NODE_PTR pConfig, FTM_NODE_INFO_PTR p
 {
 	FTM_NODE_INFO_PTR	pNewInfo;
 
-	ASSERT((pConfig != NULL) && (pInfo != NULL));
+	ASSERT(pConfig != NULL);
+	ASSERT(pInfo != NULL);
 
 	pNewInfo = (FTM_NODE_INFO_PTR)calloc(1, sizeof(FTM_NODE_INFO));
 	if (pNewInfo == NULL)
@@ -342,30 +344,30 @@ FTM_RET	FTDM_CFG_NODE_INFO_append(FTDM_CFG_NODE_PTR pConfig, FTM_NODE_INFO_PTR p
 
 	memcpy(pNewInfo, pInfo, sizeof(FTM_NODE_INFO));
 
-	list_append(&pConfig->xList, pNewInfo);
+	FTM_LIST_append(&pConfig->xList, pNewInfo);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET FTDM_CFG_NODE_INFO_count(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG_PTR pCount)
 {
-	ASSERT((pConfig != NULL) && (pCount != NULL));
+	ASSERT(pConfig != NULL);
+	ASSERT(pCount != NULL);
 
-	*pCount = list_size(&pConfig->xList);
-
-	return	FTM_RET_OK;
+	return	FTM_LIST_count(&pConfig->xList, pCount);
 }
 
 FTM_RET	FTDM_CFG_NODE_INFO_getAt(FTDM_CFG_NODE_PTR pConfig, FTM_ULONG ulIndex, FTM_NODE_INFO_PTR pInfo)
 {
+	FTM_RET				xRet;
 	FTM_NODE_INFO_PTR	pNodeInfo;
 
 	ASSERT((pConfig != NULL) && (pInfo != NULL));
 
-	pNodeInfo = list_get_at(&pConfig->xList, ulIndex);
-	if (pNodeInfo == NULL)
+	xRet = FTM_LIST_getAt(&pConfig->xList, ulIndex, (FTM_VOID_PTR _PTR_)&pNodeInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_OBJECT_NOT_FOUND;	
+		return	xRet;
 	}
 
 	memcpy(pInfo, pNodeInfo, sizeof(FTM_NODE_INFO));
@@ -390,7 +392,7 @@ FTM_RET	FTDM_CFG_EP_INFO_append(FTDM_CFG_EP_PTR pConfig, FTM_EP_INFO_PTR pInfo)
 
 	memcpy(pNewInfo, pInfo, sizeof(FTM_EP_INFO));
 
-	list_append(&pConfig->xList, pNewInfo);
+	FTM_LIST_append(&pConfig->xList, pNewInfo);
 
 	return	FTM_RET_OK;
 }
@@ -399,19 +401,18 @@ FTM_RET FTDM_CFG_EP_INFO_count(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCount)
 {
 	ASSERT((pConfig != NULL) && (pCount != NULL));
 
-	*pCount = list_size(&pConfig->xList);
-
-	return	FTM_RET_OK;
+	return	FTM_LIST_count(&pConfig->xList, pCount);
 }
 
 FTM_RET	FTDM_CFG_EP_INFO_getAt(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR pInfo)
 {
+	ASSERT(pConfig != NULL);
+	ASSERT(pInfo != NULL);
+
 	FTM_EP_INFO_PTR	pEPInfo;
 
-	ASSERT((pConfig != NULL) && (pInfo != NULL));
 
-	pEPInfo = list_get_at(&pConfig->xList, ulIndex);
-	if (pEPInfo == NULL)
+	if (FTM_LIST_getAt(&pConfig->xList, ulIndex, (FTM_VOID_PTR _PTR_)&pEPInfo) != FTM_RET_OK)
 	{
 		return	FTM_RET_OBJECT_NOT_FOUND;	
 	}
@@ -438,7 +439,7 @@ FTM_RET FTDM_CFG_EP_CLASS_INFO_append(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS_INFO
 
 	memcpy(pNewInfo, pInfo, sizeof(FTM_EP_CLASS_INFO));
 
-	list_append(&pConfig->xClassList, pNewInfo);
+	FTM_LIST_append(&pConfig->xClassList, pNewInfo);
 
 	return	FTM_RET_OK;
 }
@@ -447,7 +448,7 @@ FTM_RET FTDM_CFG_EP_CLASS_INFO_count(FTDM_CFG_EP_PTR pConfig, FTM_ULONG_PTR pCou
 {
 	ASSERT((pConfig != NULL) && (pCount != NULL));
 
-	*pCount = list_size(&pConfig->xClassList);
+	FTM_LIST_count(&pConfig->xClassList, pCount);
 
 	return	FTM_RET_OK;
 }
@@ -461,14 +462,15 @@ FTM_RET FTDM_CFG_EP_CLASS_INFO_get(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS xClass,
 
 FTM_RET FTDM_CFG_EP_CLASS_INFO_getAt(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_EP_CLASS_INFO_PTR pInfo)
 {
+	FTM_RET					xRet;
 	FTM_EP_CLASS_INFO_PTR	pEPClassInfo;
 
 	ASSERT((pConfig != NULL) && (pInfo != NULL));
 
-	pEPClassInfo = list_get_at(&pConfig->xClassList, ulIndex);
-	if (pEPClassInfo == NULL)
+	xRet = FTM_LIST_getAt(&pConfig->xClassList, ulIndex, (FTM_VOID_PTR _PTR_)&pEPClassInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_OBJECT_NOT_FOUND;	
+		return	xRet;	
 	}
 
 	memcpy(pInfo, pEPClassInfo, sizeof(FTM_EP_CLASS_INFO));

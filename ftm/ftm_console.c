@@ -4,7 +4,7 @@
 #include "ftm_console.h"
 #include "ftm_error.h"
 #include "ftm_debug.h"
-#include "simclist.h"
+#include "ftm_list.h"
 
 static FTM_RET	FTM_CONSOLE_parseLine
 (
@@ -70,12 +70,12 @@ FTM_CONSOLE_CMD	xDefaultCmds[] =
 };
 
 FTM_CHAR		pConsolePrompt[128] = "FTM > ";
-list_t			xCmdList;
+FTM_LIST_PTR	pCmdList = NULL;
 
 FTM_RET FTM_CONSOLE_run(FTM_CONSOLE_CMD_PTR pExtCmds, FTM_ULONG ulExtCmds)
 {
 	FTM_RET			nRet;
-	FTM_BOOL		bQuit = FTM_BOOL_FALSE;
+	FTM_BOOL		bQuit = FTM_FALSE;
 	FTM_CHAR		pCmdLine[2048];
 	FTM_INT			nArgc;
 	FTM_CHAR_PTR	pArgv[FTM_CONSOLE_MAX_ARGS];
@@ -109,7 +109,7 @@ FTM_RET FTM_CONSOLE_run(FTM_CONSOLE_CMD_PTR pExtCmds, FTM_ULONG ulExtCmds)
 
 				case	FTM_RET_CONSOLE_QUIT:
 					{
-						bQuit = FTM_BOOL_TRUE;
+						bQuit = FTM_TRUE;
 					}
 				}
 			}
@@ -131,19 +131,19 @@ FTM_RET FTM_CONSOLE_init(FTM_CONSOLE_CMD_PTR pExtCmds, FTM_ULONG ulExtCmds)
 	FTM_CONSOLE_CMD_PTR	pCmd;
 	FTM_ULONG			i;
 
-	list_init(&xCmdList);
-	list_attributes_seeker(&xCmdList, FTM_CONSOLE_compCmd);
+	FTM_LIST_create(&pCmdList);
+	FTM_LIST_setSeeker(pCmdList, FTM_CONSOLE_compCmd);
 
 	pCmd = xDefaultCmds;
 	while(pCmd->pString != NULL)
 	{
-		list_append(&xCmdList, pCmd);
+		FTM_LIST_append(pCmdList, pCmd);
 		pCmd++;	
 	}
 
 	for(i = 0 ; i < ulExtCmds ; i++)
 	{
-		list_append(&xCmdList, &pExtCmds[i]);
+		FTM_LIST_append(pCmdList, &pExtCmds[i]);
 	}
 
 	return	FTM_RET_OK;
@@ -151,7 +151,7 @@ FTM_RET FTM_CONSOLE_init(FTM_CONSOLE_CMD_PTR pExtCmds, FTM_ULONG ulExtCmds)
 
 FTM_RET	FTM_CONSOLE_final(FTM_VOID)
 {
-	list_destroy(&xCmdList);
+	FTM_LIST_destroy(pCmdList);
 
 	return	FTM_RET_OK;
 }
@@ -168,12 +168,12 @@ FTM_RET	FTM_CONSOLE_setPrompt
 
 FTM_RET	FTM_CONSOLE_appendCmd(FTM_CONSOLE_CMD_PTR pCmd)
 {
-	if (list_seek(&xCmdList, pCmd->pString) != NULL)
+	if (FTM_LIST_seek(pCmdList, pCmd->pString) == FTM_RET_OK)
 	{
 		return	FTM_RET_ALREADY_EXISTS;	
 	}
 
-	list_append(&xCmdList, pCmd);
+	FTM_LIST_append(pCmdList, pCmd);
 
 	return	FTM_RET_OK;
 }
@@ -181,9 +181,8 @@ FTM_RET	FTM_CONSOLE_appendCmd(FTM_CONSOLE_CMD_PTR pCmd)
 FTM_RET FTM_CONSOLE_getCmd(FTM_CHAR_PTR pCmdString, FTM_CONSOLE_CMD_PTR _PTR_ ppCmd)
 {
 	FTM_CONSOLE_CMD_PTR pCmd;
-	
-	pCmd = (FTM_CONSOLE_CMD_PTR)list_seek(&xCmdList, pCmdString);
-	if (pCmd != NULL)
+
+	if (FTM_LIST_get(pCmdList, pCmdString, (FTM_VOID_PTR _PTR_)&pCmd) == FTM_RET_OK)
 	{
 		*ppCmd = pCmd;
 		return	FTM_RET_OK;
@@ -218,13 +217,12 @@ FTM_RET	FTM_CONSOLE_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	case	1:
 		{
 			FTM_CONSOLE_CMD_PTR	pCmd; 
-			
-			list_iterator_start(&xCmdList);
-			while((pCmd = (FTM_CONSOLE_CMD_PTR)list_iterator_next(&xCmdList)) != NULL)
+		
+			FTM_LIST_iteratorStart(pCmdList);
+			while(FTM_LIST_iteratorNext(pCmdList, (FTM_VOID_PTR _PTR_)&pCmd) == FTM_RET_OK)
 			{
-				MESSAGE("%-16s    %s\n", pCmd->pString, pCmd->pShortHelp);
+				MESSAGE("%-16s    %s\n", pCmd->pString, pCmd->pShortHelp); 
 			}
-			list_iterator_stop(&xCmdList);
 		}
 		break;
 

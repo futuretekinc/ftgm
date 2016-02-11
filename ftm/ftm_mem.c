@@ -1,13 +1,10 @@
-#define	__FTM_MEM_H__
-
-#define	TRACE_OFF
-
 #include <stdlib.h>
 #include <string.h>
 #include "ftm_types.h"
 #include "ftm_error.h"
 #include "ftm_debug.h"
-#include "simclist.h"
+#include "ftm_list.h"
+#include "ftm_mem.h"
 
 typedef struct
 {
@@ -20,24 +17,29 @@ typedef struct
 static FTM_INT	FTM_MEM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 static FTM_INT	FTM_MEM_comparator(const FTM_VOID_PTR pA, const FTM_VOID_PTR pB);
 
-static FTM_BOOL	bInitialized = FTM_BOOL_FALSE;
-static list_t	xMemList;
+static FTM_BOOL	bInitialized = FTM_FALSE;
+static FTM_LIST_PTR	pMemList = NULL;
 
 FTM_RET			FTM_MEM_init(void)
 {
-	list_init(&xMemList);
-	list_attributes_seeker(&xMemList, FTM_MEM_seeker);
-	list_attributes_comparator(&xMemList, FTM_MEM_comparator);
-	bInitialized = FTM_BOOL_TRUE;
+	FTM_LIST_create(&pMemList);
+	FTM_LIST_setSeeker(pMemList, FTM_MEM_seeker);
+	FTM_LIST_setComparator(pMemList, FTM_MEM_comparator);
+	bInitialized = FTM_TRUE;
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET			FTM_MEM_final(void)
 {
+	FTM_RET		xRet;
 	FTM_ULONG	i, ulLeakedBlockCount;
 
-	ulLeakedBlockCount = list_size(&xMemList);
+	xRet = FTM_LIST_count(pMemList, &ulLeakedBlockCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
 	if (ulLeakedBlockCount != 0)
 	{
@@ -46,17 +48,17 @@ FTM_RET			FTM_MEM_final(void)
 		MESSAGE("Memory leak detected\n");	
 		for(i = 0 ; i < ulLeakedBlockCount ; i++)
 		{
-			pMB = list_get_at(&xMemList, i);
+			FTM_LIST_getAt(pMemList, i, (FTM_VOID_PTR _PTR_)&pMB);
 			MESSAGE("%3d : %s[%3d] - %08lx(%d)\n", i, pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
 			if (pMB->pFile != NULL)
 			{
-				free(pMB->pFile);	
+				FTM_MEM_free(pMB->pFile);	
 			}
-			free(pMB);
+			FTM_MEM_free(pMB);
 		}
 	}
 
-	list_destroy(&xMemList);
+	FTM_LIST_final(pMemList);
 
 	return	FTM_RET_OK;
 }
@@ -65,7 +67,7 @@ FTM_VOID_PTR	FTM_MEM_TRACE_malloc(size_t xSize, const char *pFile, unsigned long
 {
 	FTM_MEM_BLOCK_PTR	pMB;
 
-	if (bInitialized == FTM_BOOL_FALSE)
+	if (bInitialized == FTM_FALSE)
 	{
 		return	malloc(xSize);	
 	}
@@ -79,7 +81,7 @@ FTM_VOID_PTR	FTM_MEM_TRACE_malloc(size_t xSize, const char *pFile, unsigned long
 	pMB->pFile = strdup(pFile);
 	pMB->ulLine= ulLine;
 	pMB->xSize = xSize;
-	list_append(&xMemList, pMB);
+	FTM_LIST_append(pMemList, pMB);
 
 	TRACE("Memory allocated.- %08lx(%3d) \n", pMB->pMem, xSize);
 	return	pMB->pMem;
@@ -89,7 +91,7 @@ FTM_VOID_PTR	FTM_MEM_TRACE_calloc(size_t xNumber, size_t xSize, const char *pFil
 {
 	FTM_MEM_BLOCK_PTR	pMB;
 
-	if (bInitialized == FTM_BOOL_FALSE)
+	if (bInitialized == FTM_FALSE)
 	{
 		return	calloc(xNumber, xSize);	
 	}
@@ -104,7 +106,7 @@ FTM_VOID_PTR	FTM_MEM_TRACE_calloc(size_t xNumber, size_t xSize, const char *pFil
 	pMB->pFile = strdup(pFile);
 	pMB->ulLine= ulLine;
 	pMB->xSize = xNumber * xSize;
-	list_append(&xMemList, pMB);
+	FTM_LIST_append(pMemList, pMB);
 
 	TRACE("Memory allocated.- %08lx(%3d) \n", pMB->pMem, xSize);
 	return	pMB->pMem;
@@ -114,18 +116,17 @@ FTM_VOID	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long 
 {
 	FTM_MEM_BLOCK_PTR	pMB;
 
-	if (bInitialized == FTM_BOOL_FALSE)
+	if (bInitialized == FTM_FALSE)
 	{
 		return	free(pMem);	
 	}
 
-	pMB = list_seek(&xMemList, pMem);
-	if (pMB != NULL)
+	if (FTM_LIST_get(pMemList, pMem, (FTM_VOID_PTR _PTR_)&pMB) == FTM_RET_OK)
 	{
 		MESSAGE("%s[%3d] - %08lx(%d)\n", pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
-		list_delete(&xMemList, pMB);
-		free(pMB->pFile);
-		free(pMB);
+		FTM_LIST_remove(pMemList, pMB);
+		FTM_MEM_free(pMB->pFile);
+		FTM_MEM_free(pMB);
 	}
 	else
 	{

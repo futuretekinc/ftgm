@@ -2,7 +2,7 @@
 #define	__FTDMC_CFG_H__
 
 #include "ftm_types.h"
-#include "simclist.h"
+#include "ftm_list.h"
 #include <time.h>
 
 #define	FTDMC_SERVER_IP_LEN	32
@@ -20,7 +20,7 @@ typedef	struct
 
 	struct
 	{
-		list_t		xEPList;
+		FTM_LIST	xEPList;
 		struct tm	xStartTM;
 		struct tm	xEndTM;
 	}	xDiagnostic;

@@ -5,7 +5,6 @@
 #include <pthread.h>
 #include "ftdm.h"
 #include "libconfig.h"
-#include "simclist.h"
 #include "ftm_console.h"
 #include "ftdm_params.h"
 #include "ftdm_server.h"
@@ -22,7 +21,7 @@ FTDM_CFG	xConfig;
 int main(int nArgc, char *pArgv[])
 {
 	FTM_INT		nOpt;
-	FTM_BOOL	bDaemon = FTM_BOOL_FALSE;
+	FTM_BOOL	bDaemon = FTM_FALSE;
 	FTM_CHAR	pConfigFileName[1024];
 	pthread_t 	xPThread;	
 		
@@ -43,7 +42,7 @@ int main(int nArgc, char *pArgv[])
 
 		case	'd':
 			{
-				bDaemon = FTM_BOOL_TRUE;
+				bDaemon = FTM_TRUE;
 			}
 			break;
 

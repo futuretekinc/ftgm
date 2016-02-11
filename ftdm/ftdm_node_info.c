@@ -4,7 +4,6 @@
 #include "ftdm.h"
 #include "ftdm_node_info.h"
 #include "ftdm_sqlite.h"
-#include "simclist.h"
 
 static int FTDM_NODE_INFO_seeker
 (
@@ -34,7 +33,7 @@ static FTM_RET	FTDM_NODE_INFO_CACHE_isExist
 	FTM_BOOL_PTR				pExist
 );
 
-static list_t	xNodeList;
+static FTM_LIST	xNodeList;
 
 FTM_RET	FTDM_NODE_INFO_init
 (
@@ -43,8 +42,8 @@ FTM_RET	FTDM_NODE_INFO_init
 {
 	FTM_ULONG	nMaxNodeCount = 0;
 
-	list_init(&xNodeList);
-	list_attributes_seeker(&xNodeList, FTDM_NODE_INFO_seeker);
+	FTM_LIST_init(&xNodeList);
+	FTM_LIST_setSeeker(&xNodeList, FTDM_NODE_INFO_seeker);
 
 	if ((FTDM_DBIF_NODE_INFO_count(&nMaxNodeCount) == FTM_RET_OK) &&
 		(nMaxNodeCount > 0))
@@ -111,15 +110,20 @@ FTM_RET	FTDM_NODE_INFO_final
 	FTM_VOID
 )
 {
-	while(list_size(&xNodeList))
+	FTM_ULONG	i, nCount;
+
+	FTM_LIST_count(&xNodeList, &nCount);
+	for(i = 0 ; i < nCount ; i++)
 	{
-		FTM_NODE_INFO_PTR pNodeInfo = (FTM_NODE_INFO_PTR)list_get_at(&xNodeList, 0);
-		if (pNodeInfo != NULL)
+		FTM_NODE_INFO_PTR	pNodeInfo;
+
+		if (FTM_LIST_getAt(&xNodeList, i, (FTM_VOID_PTR _PTR_)&pNodeInfo) == FTM_RET_OK)
 		{
-			list_delete_at(&xNodeList, 0);
 			free(pNodeInfo);
 		}
 	}
+
+	FTM_LIST_final(&xNodeList);
 
 	return	FTM_RET_OK;
 }
@@ -195,9 +199,7 @@ FTM_RET	FTDM_NODE_INFO_count
 	FTM_ULONG_PTR	pnCount
 )
 {
-	*pnCount = list_size(&xNodeList);
-
-	return	FTM_RET_OK;
+	return	FTM_LIST_count(&xNodeList, pnCount);
 }
 
 FTM_RET	FTDM_NODE_INFO_get
@@ -228,14 +230,7 @@ FTM_RET	FTDM_NODE_INFO_getAt
 	FTM_NODE_INFO_PTR _PTR_	ppNodeInfo
 )
 {
-	*ppNodeInfo = list_get_at(&xNodeList, nIndex);
-
-	if (*ppNodeInfo != NULL)
-	{
-		return	FTM_RET_OK;
-	}
-
-	return	FTM_RET_OBJECT_NOT_FOUND;
+	return	FTM_LIST_getAt(&xNodeList, nIndex, (FTM_VOID_PTR _PTR_)ppNodeInfo);
 }
 
 FTM_RET FTDM_NODE_INFO_isExist
@@ -267,7 +262,7 @@ FTM_RET	FTDM_NODE_INFO_CACHE_add
  	FTM_NODE_INFO_PTR pNodeInfo
 )
 {
-	list_append(&xNodeList, pNodeInfo);
+	FTM_LIST_append(&xNodeList, pNodeInfo);
 
 	return	FTM_RET_OK;
 }
@@ -277,7 +272,7 @@ FTM_RET	FTDM_NODE_INFO_CACHE_del
  	FTM_NODE_INFO_PTR pNodeInfo
 )
 {
-	list_delete(&xNodeList, pNodeInfo->pDID);
+	FTM_LIST_remove(&xNodeList, pNodeInfo->pDID);
 
 	return	FTM_RET_OK;
 }
@@ -288,13 +283,7 @@ FTM_RET	FTDM_NODE_INFO_CACHE_get
 	FTM_NODE_INFO_PTR _PTR_ 	ppNodeInfo
 )
 {
-	*ppNodeInfo = list_seek(&xNodeList, pDID);
-	if (*ppNodeInfo != NULL)
-	{
-		return	FTM_RET_OK;	
-	}
-
-	return	FTM_RET_OBJECT_NOT_FOUND;
+	return	FTM_LIST_get(&xNodeList, pDID, (FTM_VOID_PTR _PTR_)ppNodeInfo);
 }
 
 FTM_RET	FTDM_NODE_INFO_CACHE_isExist
@@ -303,13 +292,13 @@ FTM_RET	FTDM_NODE_INFO_CACHE_isExist
 	FTM_BOOL_PTR				pExist
 )
 {
-	if (list_seek(&xNodeList, pDID) != NULL)
+	if (FTM_LIST_seek(&xNodeList, pDID) == FTM_RET_OK)
 	{
-		*pExist = FTM_BOOL_TRUE;
+		*pExist = FTM_TRUE;
 	}
 	else
 	{
-		*pExist = FTM_BOOL_FALSE;
+		*pExist = FTM_FALSE;
 	}
 	
 	return	FTM_RET_OK;

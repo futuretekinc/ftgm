@@ -4,7 +4,8 @@
 #include "ftdm.h"
 #include "ftdm_ep_info.h"
 #include "ftdm_sqlite.h"
-#include "simclist.h"
+#include "ftm_list.h"
+#include "ftm_mem.h"
 
 static FTM_RET	FTDM_LIST_insertEPInfo
 (
@@ -34,7 +35,7 @@ static FTM_INT	FTDM_EPSeeker
 	const void *pKey)
 ;
 
-static list_t	xEPList;
+static FTM_LIST	xEPList;
 
 FTM_RET	FTDM_EP_INFO_init
 (
@@ -43,12 +44,12 @@ FTM_RET	FTDM_EP_INFO_init
 {
 	FTM_ULONG	nMaxEPCount = 0;
 
-	if (list_init(&xEPList) < 0)
+	if (FTM_LIST_init(&xEPList) < 0)
 	{
 		return	FTM_RET_INTERNAL_ERROR;	
 	}
 
-	list_attributes_seeker(&xEPList, FTDM_EPSeeker);
+	FTM_LIST_setSeeker(&xEPList, FTDM_EPSeeker);
 
 	if ((FTDM_DBIF_EP_INFO_count(&nMaxEPCount) == FTM_RET_OK) &&
 		(nMaxEPCount > 0))
@@ -116,13 +117,13 @@ FTM_RET FTDM_EP_INFO_final
 {
 	FTM_EP_INFO_PTR pEPInfo;
 
-	list_iterator_start(&xEPList);
-	while((pEPInfo = (FTM_EP_INFO_PTR)list_iterator_next(&xEPList)) != NULL)
+	FTM_LIST_iteratorStart(&xEPList);
+	while(FTM_LIST_iteratorNext(&xEPList, (FTM_VOID_PTR _PTR_)&pEPInfo) == FTM_RET_OK)
 	{
-		free(pEPInfo);	
+		FTM_MEM_free(pEPInfo);	
 	}	
 
-	list_destroy(&xEPList);
+	FTM_LIST_final(&xEPList);
 
 	return	FTM_RET_OK;
 }
@@ -202,15 +203,15 @@ FTM_RET	FTDM_EP_INFO_count
 {
 	if (xClass == 0)
 	{
-		*pulCount = list_size(&xEPList);
+		FTM_LIST_count(&xEPList, pulCount);
 	}
 	else
 	{
 		FTM_EP_INFO_PTR	pEPInfo;
 		FTM_ULONG		ulCount = 0;
 
-		list_iterator_start(&xEPList);
-		while((pEPInfo = (FTM_EP_INFO_PTR)list_iterator_next(&xEPList)) != NULL)
+		FTM_LIST_iteratorStart(&xEPList);
+		while(FTM_LIST_iteratorNext(&xEPList, (FTM_VOID_PTR _PTR_)&pEPInfo) == FTM_RET_OK)
 		{
 			if (xClass == (pEPInfo->xEPID & FTM_EP_CLASS_MASK))
 			{
@@ -260,8 +261,7 @@ FTM_RET	FTDM_EP_INFO_getAt
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	pEPInfo = (FTM_EP_INFO_PTR)list_get_at(&xEPList, nIndex);
-	if (pEPInfo != NULL)
+	if (FTM_LIST_getAt(&xEPList, nIndex, (FTM_VOID_PTR _PTR_)&pEPInfo) == FTM_RET_OK)
 	{
 		*ppEPInfo = pEPInfo;
 
@@ -403,12 +403,9 @@ FTM_RET	FTDM_LIST_insertEPInfo
 	FTM_EP_INFO_PTR	pEPInfo
 )
 {
-	if (pEPInfo == NULL)
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
-	}
+	ASSERT(pEPInfo == NULL);
 
-	list_append(&xEPList, pEPInfo);
+	FTM_LIST_append(&xEPList, pEPInfo);
 
 	return	FTM_RET_OK;
 }
@@ -418,19 +415,9 @@ FTM_RET	FTDM_LIST_delEPInfo
  	FTM_EP_INFO_PTR	pEPInfo
 )
 {
-	if (pEPInfo == NULL)
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
-	}
+	ASSERT(pEPInfo == NULL);
 
-	if (list_delete(&xEPList, pEPInfo) == 0)
-	{
-		return	FTM_RET_OK;
-	}
-	else
-	{
-		return	FTM_RET_INTERNAL_ERROR;		
-	}
+	return	FTM_LIST_remove(&xEPList, pEPInfo);
 }
 
 FTM_RET	FTDM_LIST_getEPInfo
@@ -439,22 +426,9 @@ FTM_RET	FTDM_LIST_getEPInfo
 	FTM_EP_INFO_PTR _PTR_	ppEPInfo
 )
 {
-	FTM_EP_INFO_PTR	pEPInfo = NULL;
+	ASSERT(ppEPInfo == NULL);
 
-	if (ppEPInfo == NULL)
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
-	}
-	
-	pEPInfo = (FTM_EP_INFO_PTR)list_seek(&xEPList, &xEPID);
-	if (pEPInfo != NULL)
-	{
-		*ppEPInfo = pEPInfo;	
-
-		return	FTM_RET_OK;
-	}
-
-	return	FTM_RET_OBJECT_NOT_FOUND;
+	return	FTM_LIST_get(&xEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEPInfo);
 }
 
 FTM_RET	FTDM_LIST_isExistEPInfo
@@ -463,17 +437,16 @@ FTM_RET	FTDM_LIST_isExistEPInfo
 	FTM_BOOL_PTR			pExist
 )
 {
-	FTM_EP_INFO_PTR	pEPInfo = NULL;
+	ASSERT(pExist != NULL);
 
-	pEPInfo = (FTM_EP_INFO_PTR)list_seek(&xEPList, &xEPID);
-	if (pEPInfo != NULL)
+	if (FTM_LIST_seek(&xEPList, &xEPID) == FTM_RET_OK)
 	{
-		*pExist = FTM_BOOL_TRUE;
+		*pExist = FTM_TRUE;
 
 		return	FTM_RET_OK;
 	}
 
-	*pExist = FTM_BOOL_FALSE;
+	*pExist = FTM_FALSE;
 
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }

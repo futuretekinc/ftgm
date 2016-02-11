@@ -14,18 +14,18 @@ static FTM_DEBUG_CFG	_xConfig =
 	.ulMode =MSG_NORMAL,
 	.xTrace = 
 	{
-		.bToFile = FTM_BOOL_FALSE,
+		.bToFile = FTM_FALSE,
 		.pPath = "./",
 		.pPrefix = "ftm_trace",
-		.bLine	= FTM_BOOL_FALSE
+		.bLine	= FTM_FALSE
 	},
 
 	.xError = 
 	{
-		.bToFile = FTM_BOOL_FALSE,
+		.bToFile = FTM_FALSE,
 		.pPath = "./",
 		.pPrefix = "ftm_error",
-		.bLine	= FTM_BOOL_FALSE
+		.bLine	= FTM_FALSE
 	},
 };
 
@@ -198,8 +198,8 @@ FTM_RET	FTM_DEBUG_printOut
 )
 {
     va_list 		argptr;
-	FTM_BOOL		bFile = FTM_BOOL_FALSE;
-	FTM_BOOL		bLine = FTM_BOOL_FALSE;
+	FTM_BOOL		bFile = FTM_FALSE;
+	FTM_BOOL		bLine = FTM_FALSE;
 	FTM_CHAR_PTR	pPath;
 	FTM_CHAR_PTR	pPrefix;
 	FTM_INT			nLen = 0;
@@ -215,7 +215,7 @@ FTM_RET	FTM_DEBUG_printOut
 	case	MSG_TRACE:
 		if (_xConfig.xTrace.bToFile)
 		{
-			bFile 	= FTM_BOOL_TRUE;
+			bFile 	= FTM_TRUE;
 			pPath	= _xConfig.xTrace.pPath;
 			pPrefix = _xConfig.xTrace.pPrefix;
 		}
@@ -225,7 +225,7 @@ FTM_RET	FTM_DEBUG_printOut
 	case	MSG_ERROR:
 		if (_xConfig.xError.bToFile)
 		{
-			bFile = FTM_BOOL_TRUE;
+			bFile = FTM_TRUE;
 			pPath	= _xConfig.xTrace.pPath;
 			pPrefix = _xConfig.xTrace.pPrefix;
 		}

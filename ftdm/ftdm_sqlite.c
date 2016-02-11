@@ -100,7 +100,7 @@ FTM_RET	FTDM_DBIF_NODE_INFO_initTable
 )
 {
 	FTM_CHAR_PTR	pTableName = "node_info";
-	FTM_BOOL		bExist = FTM_BOOL_FALSE;
+	FTM_BOOL		bExist = FTM_FALSE;
 
 	if (_FTDM_BDIF_isExistTable(pTableName, &bExist) != FTM_RET_OK)
 	{
@@ -108,7 +108,7 @@ FTM_RET	FTDM_DBIF_NODE_INFO_initTable
 		return	FTM_RET_DBIF_ERROR;	
 	}
 
-	if (bExist != FTM_BOOL_TRUE)
+	if (bExist != FTM_TRUE)
 	{
 		ERROR("%s is not exist\n", pTableName);
 		if (_FTDM_BDIF_NODE_INFO_createTable(pTableName) != FTM_RET_OK)
@@ -481,7 +481,7 @@ FTM_RET	FTDM_DBIF_EP_INFO_initTable
 )
 {
 	FTM_CHAR_PTR	pTableName = "ep_info";
-	FTM_BOOL		bExist = FTM_BOOL_FALSE;
+	FTM_BOOL		bExist = FTM_FALSE;
 
 	if (_FTDM_BDIF_isExistTable(pTableName, &bExist) != FTM_RET_OK)
 	{
@@ -489,7 +489,7 @@ FTM_RET	FTDM_DBIF_EP_INFO_initTable
 		return	FTM_RET_DBIF_ERROR;	
 	}
 
-	if (bExist != FTM_BOOL_TRUE)
+	if (bExist != FTM_TRUE)
 	{
 		if (_FTDM_BDIF_EP_INFO_createTable(pTableName) != FTM_RET_OK)
 		{
@@ -825,7 +825,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_initTable
 )
 {
 	FTM_RET			nRet;
-	FTM_BOOL		bExist = FTM_BOOL_FALSE;
+	FTM_BOOL		bExist = FTM_FALSE;
 	FTM_CHAR		pTableName[16];
 
 	sprintf(pTableName, "ep_%08lx", xEPID);
@@ -837,7 +837,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_initTable
 		return	nRet;	
 	}
 
-	if (bExist == FTM_BOOL_FALSE)
+	if (bExist == FTM_FALSE)
 	{ 
 		FTM_RET		nRet;
 		FTM_CHAR_PTR	pErrMsg = NULL;
@@ -1025,14 +1025,14 @@ FTM_RET	FTDM_DBIF_EP_DATA_CountWithTime
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
 	FTM_INT		nSQLLen = 0;
-	FTM_BOOL		bConditionOn = FTM_BOOL_FALSE;
+	FTM_BOOL		bConditionOn = FTM_FALSE;
 
 	nSQLLen = sprintf(pSQL, "SELECT COUNT(*) from ep_%08lx ", xEPID);
 	if (xBeginTime != 0)
 	{
-		if (bConditionOn == FTM_BOOL_FALSE)
+		if (bConditionOn == FTM_FALSE)
 		{
-			bConditionOn = FTM_BOOL_TRUE;
+			bConditionOn = FTM_TRUE;
 			nSQLLen += sprintf(&pSQL[nSQLLen], "WHERE ");
 		}
 		else
@@ -1044,9 +1044,9 @@ FTM_RET	FTDM_DBIF_EP_DATA_CountWithTime
 
 	if (xEndTime != 0)
 	{
-		if (bConditionOn == FTM_BOOL_FALSE)
+		if (bConditionOn == FTM_FALSE)
 		{
-			bConditionOn = FTM_BOOL_TRUE;
+			bConditionOn = FTM_TRUE;
 			nSQLLen += sprintf(&pSQL[nSQLLen], "WHERE ");
 		}
 		else
@@ -1278,14 +1278,14 @@ FTM_RET	FTDM_DBIF_EP_DATA_delWithTime
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
 	FTM_INT			nSQLLen = 0;
-	FTM_BOOL		bConditionOn = FTM_BOOL_FALSE;
+	FTM_BOOL		bConditionOn = FTM_FALSE;
 
 	nSQLLen += sprintf(pSQL, "DELETE FROM ep_%08lx ", xEPID);
 	if (xBeginTime != 0)
 	{
-		if (bConditionOn == FTM_BOOL_FALSE)
+		if (bConditionOn == FTM_FALSE)
 		{
-			bConditionOn = FTM_BOOL_TRUE;
+			bConditionOn = FTM_TRUE;
 			nSQLLen += sprintf(&pSQL[nSQLLen], "WHERE ");
 		}
 		else
@@ -1297,9 +1297,9 @@ FTM_RET	FTDM_DBIF_EP_DATA_delWithTime
 
 	if (xEndTime != 0)
 	{
-		if (bConditionOn == FTM_BOOL_FALSE)
+		if (bConditionOn == FTM_FALSE)
 		{
-			bConditionOn = FTM_BOOL_TRUE;
+			bConditionOn = FTM_TRUE;
 			nSQLLen += sprintf(&pSQL[nSQLLen], "WHERE ");
 		}
 		else
@@ -1398,7 +1398,7 @@ static int _FTDM_DBIF_CB_isExistTable(void *pData, int nArgc, char **pArgv, char
         {
             if (strcmp(pParams->pName, pArgv[i]) == 0)
             {
-                pParams->bExist = FTM_BOOL_TRUE;
+                pParams->bExist = FTM_TRUE;
                 break;
             }
         }
@@ -1415,7 +1415,7 @@ FTM_RET _FTDM_BDIF_isExistTable
 )
 {
     int     nRet;
-    _FTDM_DBIF_CB_EXIST_TABLE_PARAMS xParams = { .bExist = FTM_BOOL_FALSE, .pName = pTableName};
+    _FTDM_DBIF_CB_EXIST_TABLE_PARAMS xParams = { .bExist = FTM_FALSE, .pName = pTableName};
     FTM_CHAR_PTR	pSQL = "select name from sqlite_master where type='table' order by name";
     FTM_CHAR_PTR	pErrMsg = NULL;
 
@@ -1479,7 +1479,7 @@ static int _FTDM_DBIF_CB_isExist(void *pData, int nArgc, char **pArgv, char **pC
 	{
 		if (atoi(pArgv[0]) != 0)
 		{
-			pParams->bExist = FTM_BOOL_TRUE;
+			pParams->bExist = FTM_TRUE;
 		}
     }
 
@@ -1493,7 +1493,7 @@ FTM_RET _FTDM_DBIF_isExistNode
 	FTM_BOOL_PTR pExist
 )
 {
-	_FTDM_DBIF_CB_IS_EXIST_PARAMS xParams = {.bExist = FTM_BOOL_TRUE };
+	_FTDM_DBIF_CB_IS_EXIST_PARAMS xParams = {.bExist = FTM_TRUE };
     int     nRet;
     char    strSQL[1024];
     char    *strErrMsg = NULL;

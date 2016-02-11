@@ -3,7 +3,7 @@
 
 #include "ftm_types.h"
 #include "libconfig.h"
-#include "simclist.h"
+#include "ftm_list.h"
 
 #define	FTDM_SERVER_DEFAULT_PORT		8888
 #define	FTDM_SERVER_DEFAULT_MAX_SESSION	10
@@ -22,13 +22,13 @@ typedef	struct
 
 typedef	struct
 {
-	list_t					xList;
+	FTM_LIST				xList;
 }	FTDM_CFG_NODE, _PTR_ FTDM_CFG_NODE_PTR;
 
 typedef	struct
 {
-	list_t					xList;
-	list_t					xClassList;
+	FTM_LIST				xList;
+	FTM_LIST				xClassList;
 }	FTDM_CFG_EP, _PTR_ FTDM_CFG_EP_PTR;
 
 typedef	struct
