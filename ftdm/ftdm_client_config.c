@@ -15,7 +15,7 @@ FTM_RET	FTDMC_CFG_init(FTDMC_CFG_PTR pConfig)
 
 	strcpy(pConfig->xNetwork.pServerIP, "127.0.0.1");
 	pConfig->xNetwork.usPort = 8888;
-	list_init(&pConfig->xDiagnostic.xEPList);
+	FTM_LIST_init(&pConfig->xDiagnostic.xEPList);
 	return	FTM_RET_OK;
 }
 
@@ -99,7 +99,7 @@ FTM_RET	FTDMC_CFG_load(FTDMC_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		pEPIDListSetting = config_setting_get_member(pEPTestSetting, "epid");
 		if (pEPIDListSetting != 0)
 		{
-			list_init(&pConfig->xDiagnostic.xEPList);
+			FTM_LIST_init(&pConfig->xDiagnostic.xEPList);
 			for( i = 0 ; i < config_setting_length(pEPIDListSetting) ; i++)
 			{
 				config_setting_t *pElement;
@@ -108,7 +108,7 @@ FTM_RET	FTDMC_CFG_load(FTDMC_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 				if (pElement != NULL)
 				{
 					FTM_INT	nEPID = config_setting_get_int(pElement);	
-					list_append(&pConfig->xDiagnostic.xEPList, (void *)nEPID);
+					FTM_LIST_append(&pConfig->xDiagnostic.xEPList, (void *)nEPID);
 				}
 			}
 		}
@@ -143,7 +143,7 @@ FTM_RET FTDMC_CFG_final(FTDMC_CFG_PTR pConfig)
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	list_destroy(&pConfig->xDiagnostic.xEPList);
+	FTM_LIST_final(&pConfig->xDiagnostic.xEPList);
 
 	return	FTM_RET_OK;
 }
