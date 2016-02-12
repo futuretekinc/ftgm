@@ -2,7 +2,6 @@
 #define	__FTNM_CFG_CLIENT_H__
 
 #include "ftm_types.h"
-#include "simclist.h"
 #include <time.h>
 
 #define	FTNMC_SERVER_IP_LEN	32

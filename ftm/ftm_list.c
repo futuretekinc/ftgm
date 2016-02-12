@@ -35,14 +35,19 @@ FTM_RET FTM_LIST_init(FTM_LIST_PTR pList)
 {
 	ASSERT(pList != NULL);
 
-	
+
+	if (sem_init(&pList->xLock, 0, 1) < 0)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
 	pList->xHead.pNext 	= &pList->xHead;
 	pList->xHead.pPrev 	= &pList->xHead;
 	pList->xHead.pData 	= NULL;
 
 	pList->ulCount 		= 0;
 	pList->bIterator 	= FTM_FALSE;
-	
+
 	return	FTM_RET_OK;
 }
 
@@ -62,13 +67,26 @@ FTM_RET	FTM_LIST_final(FTM_LIST_PTR pList)
 		pEntry = pNext;
 	}
 
-	return	FTM_LIST_init(pList);
+	sem_destroy(&pList->xLock);
+
+	pList->xHead.pNext 	= &pList->xHead;
+	pList->xHead.pPrev 	= &pList->xHead;
+	pList->xHead.pData 	= NULL;
+
+	pList->ulCount 		= 0;
+	pList->bIterator 	= FTM_FALSE;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_LIST_seek(FTM_LIST_PTR pList, FTM_VOID_PTR pKey)
 {
 	ASSERT(pList != NULL);
 	ASSERT(pKey != NULL);
+
+	sem_wait(&pList->xLock);
+
+	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
 
 	if (pList->fSeeker != NULL)
 	{
@@ -79,15 +97,18 @@ FTM_RET	FTM_LIST_seek(FTM_LIST_PTR pList, FTM_VOID_PTR pKey)
 		{
 			FTM_ENTRY_PTR	pNext = pEntry->pNext;
 
-			if (pList->fSeeker(pEntry, pKey) == FTM_TRUE)
+			if (pList->fSeeker(pEntry->pData, pKey) == FTM_TRUE)
 			{
-				return	FTM_RET_OK;
+				xRet = FTM_RET_OK;
+				break;
 			}
 			pEntry = pNext;
 		}
 	}
 
-	return	FTM_RET_OBJECT_NOT_FOUND;
+	sem_post(&pList->xLock);
+
+	return	xRet;
 }
 
 FTM_RET	FTM_LIST_append(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
@@ -95,24 +116,32 @@ FTM_RET	FTM_LIST_append(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 	ASSERT(pList != NULL);
 	ASSERT(pItem != NULL);
 
+	sem_wait(&pList->xLock);
+
+	FTM_RET	xRet = FTM_RET_OK;
+
 	FTM_ENTRY_PTR pEntry;
 	pEntry = FTM_MEM_malloc(sizeof(FTM_ENTRY));
 	if (pEntry == NULL)
 	{
 		ERROR("Not enough memory[size = %d]\n", sizeof(FTM_ENTRY));
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+	else
+	{
+		pEntry->pNext = &pList->xHead;
+		pEntry->pPrev = pList->xHead.pPrev;
+		pEntry->pData = pItem;
+
+		pList->xHead.pPrev->pNext = pEntry;
+		pList->xHead.pPrev = pEntry;
+
+		pList->ulCount++;
 	}
 
-	pEntry->pNext = &pList->xHead;
-	pEntry->pPrev = pList->xHead.pPrev;
-	pEntry->pData = pItem;
+	sem_post(&pList->xLock);
 
-	pList->xHead.pPrev->pNext = pEntry;
-	pList->xHead.pPrev = pEntry;
-
-	pList->ulCount++;
-
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 FTM_RET	FTM_LIST_remove(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
@@ -120,6 +149,9 @@ FTM_RET	FTM_LIST_remove(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 	ASSERT(pList != NULL);
 	ASSERT(pItem != NULL);
 
+	sem_wait(&pList->xLock);
+
+	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
 	FTM_ENTRY_PTR	pEntry;
 
 	pEntry = pList->xHead.pNext;
@@ -135,18 +167,25 @@ FTM_RET	FTM_LIST_remove(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 
 			pList->ulCount--;
 
-			return	FTM_RET_OK;
+			xRet = FTM_RET_OK;
+			break;
 		}
 
 		pEntry = pNext;
 	}
 
-	return	FTM_RET_OBJECT_NOT_FOUND;
+	sem_post(&pList->xLock);
+
+	return	xRet;
 }
 
 FTM_RET	FTM_LIST_removeAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition)
 {
 	ASSERT(pList != NULL);
+
+	sem_wait(&pList->xLock);
+
+	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
 
 	if (ulPosition < pList->ulCount)
 	{
@@ -165,7 +204,8 @@ FTM_RET	FTM_LIST_removeAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition)
 
 				pList->ulCount--;
 
-				return	FTM_RET_OK;
+				xRet = FTM_RET_OK;
+				break;
 			}
 
 			pEntry = pNext;
@@ -173,7 +213,9 @@ FTM_RET	FTM_LIST_removeAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition)
 		}
 	}
 
-	return	FTM_RET_OBJECT_NOT_FOUND;
+	sem_post(&pList->xLock);
+
+	return	xRet;
 }
 
 FTM_RET	FTM_LIST_get(FTM_LIST_PTR pList, FTM_VOID_PTR pKey, FTM_VOID_PTR _PTR_ ppElement)
@@ -181,6 +223,10 @@ FTM_RET	FTM_LIST_get(FTM_LIST_PTR pList, FTM_VOID_PTR pKey, FTM_VOID_PTR _PTR_ p
 	ASSERT(pList != NULL);
 	ASSERT(pKey != NULL);
 	ASSERT(ppElement != NULL);
+
+	sem_wait(&pList->xLock);
+
+	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
 
 	if (pList->fSeeker != NULL)
 	{
@@ -191,23 +237,30 @@ FTM_RET	FTM_LIST_get(FTM_LIST_PTR pList, FTM_VOID_PTR pKey, FTM_VOID_PTR _PTR_ p
 		{
 			FTM_ENTRY_PTR	pNext = pEntry->pNext;
 
-			if (pList->fSeeker(pEntry, pKey) == FTM_TRUE)
+			if (pList->fSeeker(pEntry->pData, pKey) == FTM_TRUE)
 			{
 				*ppElement = pEntry->pData;
 
-				return	FTM_RET_OK;
+				xRet = FTM_RET_OK;
+				break;
 			}
 			pEntry = pNext;
 		}
 	}
 
-	return	FTM_RET_OBJECT_NOT_FOUND;
+	sem_post(&pList->xLock);
+
+	return	xRet;
 }
 
 FTM_RET	FTM_LIST_getAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition, FTM_VOID_PTR _PTR_ ppElement)
 {
 	ASSERT(pList != NULL);
 	ASSERT(ppElement != NULL);
+
+	sem_wait(&pList->xLock);
+
+	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
 
 	if (ulPosition < pList->ulCount)
 	{
@@ -222,7 +275,8 @@ FTM_RET	FTM_LIST_getAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition, FTM_VOID_PTR _P
 			{
 				*ppElement = pEntry->pData;
 
-				return	FTM_RET_OK;
+				xRet = FTM_RET_OK;
+				break;
 			}
 
 			pEntry = pNext;
@@ -230,15 +284,21 @@ FTM_RET	FTM_LIST_getAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition, FTM_VOID_PTR _P
 		}
 	}
 
-	return	FTM_RET_OBJECT_NOT_FOUND;
+	sem_post(&pList->xLock);
+
+	return	xRet;
 }
 
 FTM_RET	FTM_LIST_iteratorStart(FTM_LIST_PTR pList)
 {
 	ASSERT(pList != NULL);
 
+	sem_wait(&pList->xLock);
+
 	pList->bIterator = FTM_TRUE;
 	pList->pIter = &pList->xHead;
+
+	sem_post(&pList->xLock);
 	
 	return	FTM_RET_OK;
 }
@@ -248,19 +308,30 @@ FTM_RET	FTM_LIST_iteratorNext(FTM_LIST_PTR pList, FTM_VOID_PTR _PTR_ ppElement)
 	ASSERT(pList != NULL);
 	ASSERT(ppElement != NULL);
 
+	sem_wait(&pList->xLock);
+
+	FTM_RET	xRet = FTM_RET_OK;
+
 	if (pList->bIterator != FTM_TRUE)
 	{
-		return	FTM_RET_NOT_INITIALIZED;	
+		xRet = FTM_RET_NOT_INITIALIZED;	
 	}
-
-	pList->pIter = pList->pIter->pNext;
-	if (pList->pIter == &pList->xHead)
+	else
 	{
-		return	FTM_RET_OBJECT_NOT_FOUND;
+		pList->pIter = pList->pIter->pNext;
+		if (pList->pIter == &pList->xHead)
+		{
+			xRet = FTM_RET_OBJECT_NOT_FOUND;
+		}
+		else
+		{
+			*ppElement = pList->pIter->pData;
+		}
 	}
 
-	*ppElement = pList->pIter->pData;
-	return	FTM_RET_OK;
+	sem_post(&pList->xLock);
+
+	return	xRet;
 }
 
 FTM_RET	FTM_LIST_count(FTM_LIST_PTR pList, FTM_ULONG_PTR pulCount)

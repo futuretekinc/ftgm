@@ -1,29 +1,23 @@
 TARGET=
 
+COMMON_CFLAGS=-c -Wall -DDEBUG -I. -I../ftm -I../ftnm -I../ftdm -I../libconfig-1.4.9/lib -I../net-snmp-5.7.2/include -I../sqlite-3.8.9
+COMMON_LDFLAGS=-L../ftm -L../ftdm -L../ftnm -L../sqlite-3.8.9/.libs
+
 ifeq ($(TARGET),"FTM-50S")
 CC=armv5-linux-gcc
 AR=armv5-linux-ar
-CFLAGS=-c -fPIC -Wall -DDEBUG -I. -I../include -I../ftdm -I../ftnm  -I../devtools/include -I../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib
-LDFLAGS=-L../devtools/lib -L. -L../lib -L../ftdm -L../../ftm-50s/rootfs/apps/libconfig-1.4.9/lib/.libs/
+CFLAGS=-fPIC $(COMMON_CFLAGS)  -I../devtools/include 
+LDFLAGS=-L../devtools/lib $(COMMON_LDFLAGS)
 else ifeq ($(TARGET),"FTM-100S")
 CC=arm-openwrt-linux-uclibcgnueabi-gcc
 AR=arm-openwrt-linux-uclibcgnueabi-ar
-CFLAGS=-c -fPIC -Wall -DDEBUG \
-		-I. \
-		-I../include \
-		-I../ftdm \
-		-I../ftnm \
-		-I../devtools/include \
-		-I../libconfig-1.4.9/lib
-LDFLAGS= -L/usr/local/lib -L. -L../lib -L../ftdm 
+CFLAGS=-fPIC \
+		$(COMMON_CFLAGS) \
+		-I../devtools/include 
+LDFLAGS= -L/usr/local/lib $(COMMON_LDFLAGS)
 else
 CC=gcc
-CFLAGS=-c -Wall -DDEBUG \
-		-I/usr/local/include \
-		-I../include \
-		-I../ftdm \
-		-I../libconfig-1.4.9/lib \
-		-I../net-snmp-5.7.2/include \
-		-I../sqlite-3.8.9
-LDFLAGS= -L/usr/local/lib -L. -L../ftm -L../ftdm 
+CFLAGS= $(COMMON_CFLAGS) \
+		-I/usr/local/include 
+LDFLAGS= -L/usr/local/lib $(COMMON_LDFLAGS)
 endif

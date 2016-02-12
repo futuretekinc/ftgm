@@ -12,20 +12,18 @@
 #include "ftdm_params.h"
 #include "ftdm_server.h"
 
-#define	FTDM_PACKET_LEN					2048
-
-typedef	struct
+typedef struct
 {
-	FTM_INT				hSocket;
-	struct sockaddr_in	xPeer;
-	FTM_BYTE			pReqBuff[FTDM_PACKET_LEN];
-	FTM_BYTE			pRespBuff[FTDM_PACKET_LEN];
-}	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
+	FTDM_CMD				xCmd;
+	FTM_CHAR_PTR			pCmdString;
+	FTDM_SERVICE_CALLBACK	fService;
+}	FTDMS_CMD_SET, _PTR_ FTDMS_CMD_SET_PTR;
 
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTDM_SERVICE_CALLBACK)FUN }
 
-static FTM_VOID_PTR FTDMS_startDaemon(FTM_VOID_PTR pData);
-static FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData);
+static FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData);
+static FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData);
+static FTM_BOOL		FTDMS_SESSION_LIST_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
 static FTDMS_CMD_SET	pCmdSet[] =
 {
@@ -56,10 +54,15 @@ static FTDMS_CMD_SET	pCmdSet[] =
 
 static sem_t		xSemaphore;
 static pthread_t	xPThread;
+static FTM_LIST		xSessionList;
 
 FTM_RET	FTDMS_run(FTDM_CFG_SERVER_PTR pConfig, pthread_t *pPThread )
 {
-	pthread_create(&xPThread, NULL, FTDMS_startDaemon, (void *)pConfig);
+	FTM_LIST_init(&xSessionList);
+	FTM_LIST_setSeeker(&xSessionList, FTDMS_SESSION_LIST_seeker);
+
+
+	pthread_create(&xPThread, NULL, FTDMS_process, (void *)pConfig);
 
 	if (pPThread != NULL)
 	{
@@ -69,7 +72,7 @@ FTM_RET	FTDMS_run(FTDM_CFG_SERVER_PTR pConfig, pthread_t *pPThread )
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTDMS_startDaemon(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 {
 	FTM_INT				nRet;
 	FTM_INT				hSocket;
@@ -104,7 +107,7 @@ FTM_VOID_PTR FTDMS_startDaemon(FTM_VOID_PTR pData)
 	listen(hSocket, 3);
 
 
-	while(1)
+	while(FTM_TRUE)
 	{
 		FTM_INT	hClient;
 		FTM_INT	nValue;
@@ -115,7 +118,6 @@ FTM_VOID_PTR FTDMS_startDaemon(FTM_VOID_PTR pData)
 		hClient = accept(hSocket, (struct sockaddr *)&xClient, (socklen_t *)&nSockAddrInLen);
 		if (hClient != 0)
 		{
-			pthread_t xPthread;	
 
 			TRACE("Accept new connection.[ %s:%d ]\n", inet_ntoa(xClient.sin_addr), ntohs(xClient.sin_port));
 
@@ -132,7 +134,7 @@ FTM_VOID_PTR FTDMS_startDaemon(FTM_VOID_PTR pData)
 
 				pSession->hSocket = hClient;
 				memcpy(&pSession->xPeer, &xClient, sizeof(xClient));
-				pthread_create(&xPthread, NULL, FTDMS_serviceHandler, pSession);
+				pthread_create(&pSession->xPthread, NULL, FTDMS_service, pSession);
 			}
 		}
 	}
@@ -140,7 +142,7 @@ FTM_VOID_PTR FTDMS_startDaemon(FTM_VOID_PTR pData)
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 {
 	FTDM_SESSION_PTR		pSession= (FTDM_SESSION_PTR)pData;
 	FTDM_REQ_PARAMS_PTR		pReq 	= (FTDM_REQ_PARAMS_PTR)pSession->pReqBuff;
@@ -154,7 +156,15 @@ FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData)
 		return	0;	
 	}
 
-	while(1)
+	if (sem_init(&pSession->xSemaphore, 0, 1) < 0)
+	{
+		ERROR("Can't alloc semaphore!\n");
+		return	0;	
+	}
+
+	FTM_LIST_append(&xSessionList, pSession);	
+
+	while(FTM_TRUE)
 	{
 		int	nLen;
 
@@ -190,6 +200,10 @@ FTM_VOID_PTR FTDMS_serviceHandler(FTM_VOID_PTR pData)
 	close(pSession->hSocket);
 	TRACE("The session(%08x) was closed\n", pSession->hSocket);
 
+	sem_destroy(&pSession->xSemaphore);
+
+	FTM_LIST_remove(&xSessionList, (FTM_VOID_PTR)&pSession->xPthread);	
+
 	sem_post(&xSemaphore);
 
 	return	0;
@@ -217,6 +231,39 @@ FTM_RET	FTDMS_serviceCall
 	ERROR("FUNCTION NOT SUPPORTED\n");
 	ERROR("CMD : %08lx\n", pReq->xCmd);
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+}
+
+FTM_BOOL	FTDMS_SESSION_LIST_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+{
+	ASSERT(pElement != NULL);
+	ASSERT(pIndicator != NULL);
+
+	FTDM_SESSION_PTR	pSession = (FTDM_SESSION_PTR)pElement;
+	pthread_t 			*pPThread = (pthread_t *)pIndicator;	
+
+	return (pSession->xPthread == *pPThread);
+}
+
+FTM_RET	FTDMS_getSessionCount(FTM_ULONG_PTR pulCount)
+{
+	ASSERT(pulCount != NULL);
+
+	return	FTM_LIST_count(&xSessionList, pulCount);
+}
+
+FTM_RET	FTDMS_getSessionInfo(FTM_ULONG ulIndex, FTDM_SESSION_PTR pSession)
+{
+	ASSERT(pSession != NULL);
+	FTM_RET				xRet;
+	FTDM_SESSION_PTR	pElement;
+
+	xRet = FTM_LIST_getAt(&xSessionList, ulIndex, (FTM_VOID_PTR _PTR_)&pElement);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(pSession, pElement, sizeof(FTDM_SESSION));
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTDMS_NODE_INFO_add

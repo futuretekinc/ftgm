@@ -349,7 +349,7 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 	ASSERT(pNode != NULL);
 
 	//TRACE("Node[%s:%08lx] waiting for complete\n", pNode->xInfo.pDID, pNode->xState);
-	while(FTNM_NODE_SNMPC_isRunning((FTNM_NODE_SNMPC_PTR)pNode) == FTM_BOOL_TRUE)
+	while(FTNM_NODE_SNMPC_isRunning((FTNM_NODE_SNMPC_PTR)pNode) == FTM_TRUE)
 	{
 		int64_t			xCurrentTime;
 #if 0

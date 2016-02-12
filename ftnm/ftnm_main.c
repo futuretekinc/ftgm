@@ -16,8 +16,9 @@ FTM_VOID_PTR	FTNM_process(FTM_VOID_PTR pData);
 int main(int nArgc, char *pArgv[])
 {
 	FTM_INT				nOpt;
-	FTM_BOOL			bDaemon = FTM_BOOL_FALSE;
+	FTM_BOOL			bDaemon = FTM_FALSE;
 	pthread_t			xMainThread;
+	FTM_CONSOLE_CONFIG	xConsoleConfig;
 
 	while((nOpt = getopt(nArgc, pArgv, "c:d?")) != -1)
 	{
@@ -28,13 +29,19 @@ int main(int nArgc, char *pArgv[])
 		
 		case	'd':
 			{
-				bDaemon = FTM_BOOL_TRUE;	
+				bDaemon = FTM_TRUE;	
 			}
 			break;
 		}
 	}
 
+	xConsoleConfig.pPrompt 		= "FTNM>";
+	xConsoleConfig.pCmdList 	= FTNM_xCmds;
+	xConsoleConfig.ulCmdCount 	= FTNM_ulCmds;
+
 	FTM_DEBUG_printModeSet(2);
+	FTM_CONSOLE_init(&xConsoleConfig);
+
 	if (bDaemon)
 	{
 		if (fork() == 0)
@@ -45,7 +52,7 @@ int main(int nArgc, char *pArgv[])
 	else
 	{
 		pthread_create(&xMainThread, NULL, FTNM_process, NULL);
-		FTM_CONSOLE_run(FTNM_xCmds, FTNM_ulCmds);
+		FTM_CONSOLE_run();
 	}
 
 	return	0;

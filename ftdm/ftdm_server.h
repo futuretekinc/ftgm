@@ -3,12 +3,19 @@
 
 typedef	FTM_RET	(*FTDM_SERVICE_CALLBACK)(FTDM_REQ_PARAMS_PTR, FTDM_RESP_PARAMS_PTR);
 
-typedef struct
+#define	FTDM_PACKET_LEN					2048
+
+typedef	struct
 {
-	FTDM_CMD				xCmd;
-	FTM_CHAR_PTR			pCmdString;
-	FTDM_SERVICE_CALLBACK	fService;
-}	FTDMS_CMD_SET, _PTR_ FTDMS_CMD_SET_PTR;
+	pthread_t 			xPthread;	
+	FTM_INT				hSocket;
+	sem_t				xSemaphore;
+	struct sockaddr_in	xPeer;
+	FTM_BYTE			pReqBuff[FTDM_PACKET_LEN];
+	FTM_BYTE			pRespBuff[FTDM_PACKET_LEN];
+}	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
+
+
 
 FTM_RET	FTDMS_run
 (
@@ -20,6 +27,17 @@ FTM_RET	FTDMS_serviceCall
 (
 	FTDM_REQ_PARAMS_PTR		pReq,
 	FTDM_RESP_PARAMS_PTR	pResp
+);
+
+FTM_RET	FTDMS_getSessionCount
+(	
+	FTM_ULONG_PTR pulCount
+);
+
+FTM_RET	FTDMS_getSessionInfo
+(
+	FTM_ULONG 			ulIndex, 
+	FTDM_SESSION_PTR 	pSession
 );
 
 FTM_RET	FTDMS_NODE_INFO_add

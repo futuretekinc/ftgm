@@ -2,6 +2,7 @@
 #define __FTM_LIST_H__
 
 #include "ftm_types.h"
+#include <semaphore.h>
 
 typedef	FTM_BOOL	(*FTM_LIST_ELEM_SEEKER)(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 typedef	FTM_INT		(*FTM_LIST_ELEM_COMPARATOR)(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2);
@@ -24,6 +25,8 @@ typedef	struct FTM_LIST_STRUCT
 
 	FTM_LIST_ELEM_SEEKER		fSeeker;
 	FTM_LIST_ELEM_COMPARATOR	fComparator;
+
+	sem_t			xLock;
 } FTM_LIST, _PTR_ FTM_LIST_PTR;
 
 

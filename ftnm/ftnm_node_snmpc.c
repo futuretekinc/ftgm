@@ -38,16 +38,12 @@ FTM_RET	FTNM_SNMPC_init(FTM_CHAR_PTR pAppName, FTNM_CFG_SNMPC_PTR pConfig)
 		}
 	}
 
-	FTM_initEPOIDInfo();
-
 	pthread_create(&xSNMPManager, NULL, FTNM_SNMPC_asyncResponseManager, 0);
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_SNMPC_final(FTM_VOID)
 {
-	FTM_finalEPOIDInfo();
-
 	return	FTM_RET_OK;
 }
 
@@ -156,10 +152,10 @@ FTM_BOOL	FTNM_NODE_SNMPC_isRunning(FTNM_NODE_SNMPC_PTR pNode)
 
 	if (pNode->xSNMPC.nState == FTNM_SNMPC_STATE_RUNNING)
 	{
-		return	FTM_BOOL_TRUE;	
+		return	FTM_TRUE;	
 	}
 
-	return	FTM_BOOL_FALSE;
+	return	FTM_FALSE;
 }
 
 FTM_BOOL	FTNM_NODE_SNMPC_isCompleted(FTNM_NODE_SNMPC_PTR pNode)
@@ -168,10 +164,10 @@ FTM_BOOL	FTNM_NODE_SNMPC_isCompleted(FTNM_NODE_SNMPC_PTR pNode)
 
 	if (pNode->xSNMPC.nState != FTNM_SNMPC_STATE_RUNNING)
 	{
-		return	FTM_BOOL_TRUE;	
+		return	FTM_TRUE;	
 	}
 
-	return	FTM_BOOL_FALSE;
+	return	FTM_FALSE;
 }
 
 FTM_RET FTNM_NODE_SNMPC_startAsync(FTNM_NODE_SNMPC_PTR pNode)

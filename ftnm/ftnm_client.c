@@ -94,11 +94,11 @@ FTM_RET FTNMC_isConnected
 {
 	if ((pSession != NULL) && (pSession->hSock != 0))
 	{
-		*pbConnected = FTM_BOOL_TRUE;	
+		*pbConnected = FTM_TRUE;	
 	}
 	else
 	{
-		*pbConnected = FTM_BOOL_FALSE;	
+		*pbConnected = FTM_FALSE;	
 	}
 
 	return	FTM_RET_OK;

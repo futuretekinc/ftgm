@@ -1,5 +1,5 @@
-#ifndef	__FTM_EP_H__
-#define	__FTM_EP_H__
+#ifndef	__FTDM_EP_H__
+#define	__FTDM_EP_H__
 
 FTM_RET	FTDM_EP_INFO_init
 (
