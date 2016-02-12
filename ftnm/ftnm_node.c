@@ -7,7 +7,7 @@
 #include "ftnm_ep.h"
 #include "ftnm_node_snmpc.h"
 
-static FTM_LIST	xNodeList;
+static FTM_LIST_PTR	pNodeList = NULL;
 
 FTM_VOID_PTR 	FTNM_NODE_task(FTM_VOID_PTR pData);
 static FTM_RET	FTNM_NODE_taskInit(FTNM_NODE_PTR pNode);
@@ -19,50 +19,59 @@ static FTM_RET	FTNM_NODE_unlock(FTNM_NODE_PTR pNode);
 FTM_INT			FTNM_NODE_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 FTM_INT			FTNM_NODE_comparator(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
-FTM_RET FTNM_NODE_init(FTNM_CONTEXT_PTR pCTX)
+FTM_RET FTNM_NODE_init(void)
 {
-	FTM_RET	nRet;
-	
-	nRet = FTM_LIST_init(&xNodeList);
-	if (nRet != FTM_RET_OK)
+	FTM_RET	xRet;
+
+	pNodeList = (FTM_LIST_PTR)FTM_MEM_malloc(sizeof(FTM_LIST));
+	if (pNodeList == NULL)
 	{
-		return	nRet;	
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	FTM_LIST_setSeeker(&xNodeList, FTNM_NODE_seek);
-	FTM_LIST_setComparator(&xNodeList, FTNM_NODE_comparator);
-
-	return	nRet;
-}
-
-FTM_RET FTNM_NODE_final(FTNM_CONTEXT_PTR pCTX)
-{
-	FTNM_NODE_PTR	pNode;
-
-	while(FTM_LIST_getAt(&xNodeList, 0, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
+	xRet = FTM_LIST_init(pNodeList);
+	if (xRet != FTM_RET_OK)
 	{
-		TRACE("Destroy Node : %s\n", pNode->xInfo.pDID);
-		FTNM_NODE_destroy(pCTX, pNode);
+		return	xRet;	
 	}
-	
-	FTM_LIST_destroy(&xNodeList);
+
+	FTM_LIST_setSeeker(pNodeList, FTNM_NODE_seek);
+	FTM_LIST_setComparator(pNodeList, FTNM_NODE_comparator);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_NODE_create(FTNM_CONTEXT_PTR pCTX, FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
+FTM_RET FTNM_NODE_final(void)
+{	
+	ASSERT(pNodeList != NULL);
+	
+	FTNM_NODE_PTR	pNode = NULL;
+
+	FTM_LIST_iteratorStart(pNodeList);
+	while(FTM_LIST_iteratorNext(pNodeList, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
+	{
+		FTNM_NODE_destroy(pNode);	
+	}
+
+	FTM_MEM_free(pNodeList);
+	pNodeList = NULL;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 {
 	ASSERT(pInfo != NULL);
 	ASSERT(ppNode != NULL);
 
-	FTM_RET			nRet;
+	FTM_RET			xRet;
 	FTNM_NODE_PTR	pNewNode;
 
 	switch(pInfo->xType)
 	{
 	case	FTM_NODE_TYPE_SNMP:
 		{
-			pNewNode = (FTNM_NODE_PTR)FTM_MEM_calloc(1, sizeof(FTNM_NODE_SNMPC));
+			pNewNode = (FTNM_NODE_PTR)FTM_MEM_malloc(sizeof(FTNM_NODE_SNMPC));
 			if (pNewNode == NULL)
 			{
 				ERROR("Not enough memory!\n");
@@ -82,8 +91,8 @@ FTM_RET	FTNM_NODE_create(FTNM_CONTEXT_PTR pCTX, FTM_NODE_INFO_PTR pInfo, FTNM_NO
 	FTM_LIST_init(&pNewNode->xEPList);
 	pthread_mutex_init(&pNewNode->xMutexLock, NULL);
 
-	nRet = FTM_LIST_append(&xNodeList, pNewNode);
-	if (nRet != FTM_RET_OK)
+	xRet = FTM_LIST_append(pNodeList, pNewNode);
+	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pNewNode);	
 	}
@@ -92,14 +101,14 @@ FTM_RET	FTNM_NODE_create(FTNM_CONTEXT_PTR pCTX, FTM_NODE_INFO_PTR pInfo, FTNM_NO
 
 	*ppNode = pNewNode;
 
-	return	nRet;
+	return	xRet;
 }
 
-FTM_RET	FTNM_NODE_destroy(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR	pNode)
+FTM_RET	FTNM_NODE_destroy(FTNM_NODE_PTR	pNode)
 {
 	ASSERT(pNode != NULL);
 
-	FTM_RET			nRet;
+	FTM_RET			xRet;
 	FTNM_EP_PTR		pEP;
 
 	FTNM_NODE_lock(pNode);
@@ -107,7 +116,7 @@ FTM_RET	FTNM_NODE_destroy(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR	pNode)
 	FTM_LIST_iteratorStart(&pNode->xEPList);
 	while(FTM_LIST_iteratorNext(&pNode->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
 	{
-		FTNM_EP_detach(pCTX, pEP);
+		FTNM_EP_detach(pEP);
 	}
 	FTM_LIST_final(&pNode->xEPList);
 
@@ -115,56 +124,56 @@ FTM_RET	FTNM_NODE_destroy(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR	pNode)
 
 	pthread_mutex_destroy(&pNode->xMutexLock);
 
-	nRet = FTM_LIST_remove(&xNodeList, (FTM_VOID_PTR)pNode);
-	if (nRet == FTM_RET_OK)
+	xRet = FTM_LIST_remove(pNodeList, (FTM_VOID_PTR)pNode);
+	if (xRet == FTM_RET_OK)
 	{
 		TRACE("FTNM_NODE_destroy Success\n");
 		FTM_MEM_free(pNode);
 	}
 
-	return	nRet;
+	return	xRet;
 }
 
-FTM_RET FTNM_NODE_get(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode)
+FTM_RET FTNM_NODE_get(FTM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode)
 {
 	ASSERT(pDID != NULL);
 	ASSERT(ppNode != NULL);
 
-	FTM_RET			nRet;
+	FTM_RET			xRet;
 	FTNM_NODE_PTR	pNode;
 	
-	nRet = FTM_LIST_get(&xNodeList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
-	if (nRet == FTM_RET_OK)
+	xRet = FTM_LIST_get(pNodeList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
+	if (xRet == FTM_RET_OK)
 	{
 		*ppNode = pNode;
 	}
 
-	return	nRet;
+	return	xRet;
 }
 
-FTM_RET FTNM_NODE_getAt(FTNM_CONTEXT_PTR pCTX, FTM_ULONG ulIndex, FTNM_NODE_PTR _PTR_ ppNode)
+FTM_RET FTNM_NODE_getAt(FTM_ULONG ulIndex, FTNM_NODE_PTR _PTR_ ppNode)
 {
 	ASSERT(ppNode != NULL);
 
-	FTM_RET			nRet;
+	FTM_RET			xRet;
 	FTNM_NODE_PTR	pNode;
 
-	nRet = FTM_LIST_getAt(&xNodeList, ulIndex, (FTM_VOID_PTR _PTR_)&pNode);
-	if (nRet == FTM_RET_OK)
+	xRet = FTM_LIST_getAt(pNodeList, ulIndex, (FTM_VOID_PTR _PTR_)&pNode);
+	if (xRet == FTM_RET_OK)
 	{
 		*ppNode = pNode;
 	}
 
-	return	nRet;
+	return	xRet;
 }
 
-FTM_RET	FTNM_NODE_count(FTNM_CONTEXT_PTR pCTX, FTM_ULONG_PTR pulCount)
+FTM_RET	FTNM_NODE_count(FTM_ULONG_PTR pulCount)
 {
-	return	FTM_LIST_count(&xNodeList, pulCount);
+	return	FTM_LIST_count(pNodeList, pulCount);
 
 }
 
-FTM_RET	FTNM_NODE_linkEP(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
+FTM_RET	FTNM_NODE_linkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 {
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
@@ -172,21 +181,21 @@ FTM_RET	FTNM_NODE_linkEP(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTNM_EP_PTR
 	FTNM_NODE_lock(pNode);
 
 	FTM_LIST_append(&pNode->xEPList, pEP);
-	FTNM_EP_attach(pCTX, pEP, pNode);
+	FTNM_EP_attach(pEP, pNode);
 
 	FTNM_NODE_unlock(pNode);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_NODE_unlinkEP(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
+FTM_RET	FTNM_NODE_unlinkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 {
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
 	FTNM_NODE_lock(pNode);
 
-	FTNM_EP_detach(pCTX, pEP);
+	FTNM_EP_detach(pEP);
 	FTM_LIST_remove(&pNode->xEPList, pEP);
 	
 	FTNM_NODE_unlock(pNode);
@@ -194,7 +203,7 @@ FTM_RET	FTNM_NODE_unlinkEP(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTNM_EP_P
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_NODE_EP_count(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTM_ULONG_PTR pulCount)
+FTM_RET	FTNM_NODE_EP_count(FTNM_NODE_PTR pNode, FTM_ULONG_PTR pulCount)
 {
 	ASSERT(pNode != NULL);
 	ASSERT(pulCount != NULL);
@@ -202,7 +211,7 @@ FTM_RET	FTNM_NODE_EP_count(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTM_ULONG
 	return FTM_LIST_count(&pNode->xEPList, pulCount);
 }
 
-FTM_RET	FTNM_NODE_EP_get(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTM_EPID xEPID, FTNM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTNM_NODE_EP_get(FTNM_NODE_PTR pNode, FTM_EPID xEPID, FTNM_EP_PTR _PTR_ ppEP)
 {
 	ASSERT(pNode != NULL);
 	ASSERT(ppEP != NULL);
@@ -210,7 +219,7 @@ FTM_RET	FTNM_NODE_EP_get(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTM_EPID xE
 	return	FTM_LIST_get(&pNode->xEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
-FTM_RET	FTNM_NODE_EP_getAt(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTNM_NODE_EP_getAt(FTNM_NODE_PTR pNode, FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP)
 {
 	ASSERT(pNode != NULL);
 	ASSERT(ppEP != NULL);
@@ -218,7 +227,7 @@ FTM_RET	FTNM_NODE_EP_getAt(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode, FTM_ULONG
 	return	FTM_LIST_getAt(&pNode->xEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
-FTM_RET	FTNM_NODE_run(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_PTR pNode)
+FTM_RET	FTNM_NODE_run(FTNM_NODE_PTR pNode)
 {
 	ASSERT(pNode != NULL);
 
@@ -337,7 +346,7 @@ FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode)
 
 FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode)
 {
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 
 	ASSERT(pNode != NULL);
 
@@ -356,8 +365,8 @@ FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode)
 	{
 	case	FTM_NODE_TYPE_SNMP:
 		{
-			nRet = FTNM_NODE_SNMPC_startAsync((FTNM_NODE_SNMPC_PTR)pNode);
-			if (nRet == FTM_RET_OK)
+			xRet = FTNM_NODE_SNMPC_startAsync((FTNM_NODE_SNMPC_PTR)pNode);
+			if (xRet == FTM_RET_OK)
 			{
 				pNode->xState = FTNM_NODE_STATE_RUNNING;
 			}
@@ -472,7 +481,7 @@ FTM_INT	FTNM_NODE_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pE
 }
 
 
-FTM_CHAR_PTR	FTNM_NODE_stateString(FTNM_CONTEXT_PTR pCTX, FTNM_NODE_STATE xState)
+FTM_CHAR_PTR	FTNM_NODE_stateString(FTNM_NODE_STATE xState)
 {
 	switch(xState)
 	{

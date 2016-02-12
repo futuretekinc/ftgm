@@ -19,6 +19,7 @@ typedef	struct
 {
 	FTM_INT				hSocket;
 	struct sockaddr_in	xPeer;
+	pthread_t			xPThread;
 	FTM_BYTE			pReqBuff[FTNM_PACKET_LEN];
 	FTM_BYTE			pRespBuff[FTNM_PACKET_LEN];
 }	FTNM_SESSION, _PTR_ FTNM_SESSION_PTR;
@@ -57,6 +58,7 @@ FTM_RET	FTNM_SRV_init
 	ASSERT(pServer != NULL);
 
 	FTNM_SRV_initConfig(pServer);
+	FTM_LIST_init(&pServer->xSessionList);
 
 	return	FTM_RET_OK;
 }
@@ -68,6 +70,20 @@ FTM_RET	FTNM_SRV_final
 {
 	ASSERT(pServer != NULL);
 
+	FTNM_SESSION_PTR	pSession = NULL;
+
+	FTM_LIST_iteratorStart(&pServer->xSessionList);
+	while(FTM_LIST_iteratorNext(&pServer->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
+	{
+		void *pRes;
+
+		pthread_cancel(pSession->xPThread);
+		pthread_join(pSession->xPThread, &pRes);
+
+		FTM_MEM_free(pSession);		
+	}
+
+	FTM_LIST_final(&pServer->xSessionList);
 	FTNM_SRV_finalConfig(pServer);
 
 	return	FTM_RET_OK;
@@ -140,8 +156,6 @@ FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData)
 			hClient = accept(hSocket, (struct sockaddr *)&xClientAddr, (socklen_t *)&nSockAddrIulLen);
 			if (hClient != 0)
 			{
-				pthread_t xPthread;	
-
 				TRACE("Accept new connection.[ %s:%d ]\n", inet_ntoa(xClientAddr.sin_addr), ntohs(xClientAddr.sin_port));
 
 				FTNM_SESSION_PTR pSession = (FTNM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTNM_SESSION));
@@ -157,7 +171,7 @@ FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData)
 
 					pSession->hSocket = hClient;
 					memcpy(&pSession->xPeer, &xClientAddr, sizeof(xClientAddr));
-					pthread_create(&xPthread, NULL, FTNM_SRV_serviceHandler, pSession);
+					pthread_create(&pSession->xPThread, NULL, FTNM_SRV_serviceHandler, pSession);
 				}
 			
 			}
@@ -255,7 +269,7 @@ FTM_RET	FTNM_SRV_NODE_create
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_create(&xFTNM, &pReq->xNodeInfo, &pNode);
+	pResp->nRet = FTNM_NODE_create(&pReq->xNodeInfo, &pNode);
 
 	return	pResp->nRet;
 }
@@ -271,11 +285,11 @@ FTM_RET	FTNM_SRV_NODE_destroy
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_get(&xFTNM, pReq->pDID, &pNode);
+	pResp->nRet = FTNM_NODE_get(pReq->pDID, &pNode);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		pResp->nRet = FTNM_NODE_destroy(&xFTNM, pNode);
+		pResp->nRet = FTNM_NODE_destroy(pNode);
 	}
 
 	return	pResp->nRet;
@@ -289,7 +303,7 @@ FTM_RET	FTNM_SRV_NODE_count
 {
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_count(&xFTNM, &pResp->ulCount);
+	pResp->nRet = FTNM_NODE_count(&pResp->ulCount);
 
 	return	pResp->nRet;
 }
@@ -304,7 +318,7 @@ FTM_RET	FTNM_SRV_NODE_get
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_get(&xFTNM, pReq->pDID, &pNode);
+	pResp->nRet = FTNM_NODE_get(pReq->pDID, &pNode);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE_INFO));
@@ -323,7 +337,7 @@ FTM_RET	FTNM_SRV_NODE_getAt
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_getAt(&xFTNM, pReq->ulIndex, &pNode);
+	pResp->nRet = FTNM_NODE_getAt(pReq->ulIndex, &pNode);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE_INFO));
@@ -342,7 +356,7 @@ FTM_RET	FTNM_SRV_EP_create
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_create(&xFTNM, &pReq->xInfo, &pEP);
+	pResp->nRet = FTNM_EP_create(&pReq->xInfo, &pEP);
 
 	return	pResp->nRet;
 }
@@ -357,11 +371,11 @@ FTM_RET	FTNM_SRV_EP_destroy
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_get(&xFTNM, pReq->xEPID, &pEP);
+	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		pResp->nRet = FTNM_EP_destroy(&xFTNM, pEP);
+		pResp->nRet = FTNM_EP_destroy(pEP);
 	}
 
 	return	pResp->nRet;
@@ -375,7 +389,7 @@ FTM_RET	FTNM_SRV_EP_count
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_count(&xFTNM, pReq->xClass, &pResp->nCount);
+	pResp->nRet = FTNM_EP_count(pReq->xClass, &pResp->nCount);
 	TRACE("EP COUNT : %d\n", pResp->nCount);
 	return	pResp->nRet;
 }
@@ -390,7 +404,7 @@ FTM_RET	FTNM_SRV_EP_get
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_get(&xFTNM, pReq->xEPID, &pEP);
+	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP_INFO));
@@ -406,7 +420,7 @@ FTM_RET	FTNM_SRV_EP_getList
 )
 {
 	pResp->xCmd = pReq->xCmd;
-	pResp->nRet = FTNM_EP_getList(&xFTNM, pReq->xClass, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
+	pResp->nRet = FTNM_EP_getList(pReq->xClass, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EPID) * pResp->ulCount;
 
 	return	pResp->nRet;
@@ -422,7 +436,7 @@ FTM_RET	FTNM_SRV_EP_getAt
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_getAt(&xFTNM, pReq->ulIndex, &pEP);
+	pResp->nRet = FTNM_EP_getAt(pReq->ulIndex, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP_INFO));
@@ -439,7 +453,11 @@ FTM_RET	FTNM_SRV_EP_DATA_info
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_DATA_info(&xFTNM, pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
+	pResp->nRet = FTNM_DMC_EP_DATA_info(&xFTNM.xDMC, 
+					pReq->xEPID, 
+					&pResp->ulBeginTime, 
+					&pResp->ulEndTime, 
+					&pResp->ulCount);
 
 	return	pResp->nRet;
 }
@@ -453,7 +471,7 @@ FTM_RET	FTNM_SRV_EP_DATA_getLast
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_get(&xFTNM, pReq->xEPID, &pEP);
+	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xData, &pEP->xData, sizeof(FTM_EP_DATA));
@@ -472,7 +490,7 @@ FTM_RET	FTNM_SRV_EP_DATA_count
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_DATA_count(&xFTNM, pReq->xEPID, &ulCount);
+	pResp->nRet = FTNM_DMC_EP_DATA_count(&xFTNM.xDMC, pReq->xEPID, &ulCount);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		pResp->ulCount = ulCount;

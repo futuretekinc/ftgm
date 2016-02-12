@@ -53,9 +53,9 @@ FTM_RET			FTM_MEM_final(void)
 			MESSAGE("%3d : %s[%3d] - %08lx(%d)\n", i, pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
 			if (pMB->pFile != NULL)
 			{
-				FTM_MEM_free(pMB->pFile);	
+				free(pMB->pFile);	
 			}
-			FTM_MEM_free(pMB);
+			free(pMB);
 		}
 	}
 
@@ -135,8 +135,8 @@ FTM_VOID	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long 
 			MESSAGE("%s[%3d] - %08lx(%d)\n", pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
 		}
 		FTM_LIST_remove(pMemList, pMB);
-		FTM_MEM_free(pMB->pFile);
-		FTM_MEM_free(pMB);
+		free(pMB->pFile);
+		free(pMB);
 	}
 	else
 	{

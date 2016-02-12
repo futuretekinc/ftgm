@@ -34,7 +34,7 @@ FTM_RET FTNM_EP_CLASS_INFO_final(FTM_VOID)
 		FTNM_EP_CLASS_INFO_destroy(pEP);
 	}
 	
-	FTM_LIST_destroy(&xEPList);
+	FTM_LIST_final(&xEPList);
 
 	return	FTM_RET_OK;
 }
@@ -45,7 +45,7 @@ FTM_RET	FTNM_EP_CLASS_INFO_create(FTM_EP_CLASS_INFO_PTR pInfo)
 
 	ASSERT(pInfo != NULL);
 
-	pNewEP = (FTM_EP_CLASS_INFO_PTR)FTM_MEM_calloc(1, sizeof(FTM_EP_CLASS_INFO));
+	pNewEP = (FTM_EP_CLASS_INFO_PTR)FTM_MEM_malloc(sizeof(FTM_EP_CLASS_INFO));
 	memcpy(pNewEP, pInfo, sizeof(FTM_EP_CLASS_INFO));
 
 	FTM_LIST_append(&xEPList, pNewEP);

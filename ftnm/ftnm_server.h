@@ -26,6 +26,8 @@ typedef	struct
 	FTNM_SRV_CONFIG	xConfig;
 	pthread_t 		xPThread;
 	sem_t			xSemaphore;
+
+	FTM_LIST		xSessionList;
 }	FTNM_SERVER, _PTR_ FTNM_SERVER_PTR;
 
 FTM_RET	FTNM_SRV_init(FTNM_SERVER_PTR 		pSRV);

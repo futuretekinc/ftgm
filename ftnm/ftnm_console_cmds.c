@@ -67,17 +67,17 @@ FTM_RET	FTNM_CONSOLE_CMD_list
 
 	MESSAGE("\n< NODE LIST >\n");
 	MESSAGE("%-16s %-16s %-16s\n", "DID", "STATE", "EPs");
-	FTNM_NODE_count(&xFTNM, &ulNodeCount);
+	FTNM_NODE_count(&ulNodeCount);
 	for(i = 0 ; i < ulNodeCount ; i++)
 	{
-		FTNM_NODE_getAt(&xFTNM, i, &pNode);
-		MESSAGE("%-16s %-16s ", pNode->xInfo.pDID, FTNM_NODE_stateString(&xFTNM, pNode->xState));
+		FTNM_NODE_getAt(i, &pNode);
+		MESSAGE("%-16s %-16s ", pNode->xInfo.pDID, FTNM_NODE_stateString(pNode->xState));
 
-		FTNM_NODE_EP_count(&xFTNM, pNode, &ulEPCount);
+		FTNM_NODE_EP_count(pNode, &ulEPCount);
 		MESSAGE("%3d [ ", ulEPCount);
 		for(j = 0; j < ulEPCount ; j++)
 		{
-			if (FTNM_NODE_EP_getAt(&xFTNM, pNode, j, &pEP) == FTM_RET_OK)
+			if (FTNM_NODE_EP_getAt(pNode, j, &pEP) == FTM_RET_OK)
 			{
 				MESSAGE("%08lx ", pEP->xInfo.xEPID);
 			}
@@ -87,10 +87,10 @@ FTM_RET	FTNM_CONSOLE_CMD_list
 
 	MESSAGE("\n< EP LIST >\n");
 	MESSAGE("%-16s %-16s %-16s %-8s %-24s\n", "EPID", "TYPE", "DID", "VALUE", "TIME");
-	FTNM_EP_count(&xFTNM, 0, &ulEPCount);
+	FTNM_EP_count(0, &ulEPCount);
 	for(i = 0; i < ulEPCount ; i++)
 	{
-		if (FTNM_EP_getAt(&xFTNM, i, &pEP) == FTM_RET_OK)
+		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
 		{
 			FTM_CHAR	pTimeString[64];
 			

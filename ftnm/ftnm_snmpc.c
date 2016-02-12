@@ -125,7 +125,7 @@ FTM_RET	FTNM_SNMPC_finalConfig(FTNM_SNMPC_PTR pSNMPC)
 		}
 	}
 
-	FTM_LIST_destroy(&pSNMPC->xConfig.xMIBList);
+	FTM_LIST_final(&pSNMPC->xConfig.xMIBList);
 
 	return	FTM_RET_OK;
 }
@@ -159,9 +159,7 @@ FTM_RET FTNM_SNMPC_loadConfig(FTNM_SNMPC_PTR pSNMPC, FTM_CHAR_PTR pFileName)
 				const char * pMIBFileName = config_setting_get_string_elem(pField, i);	
 				if (pMIBFileName != NULL)
 				{
-					printf("Hello\n");
 					FTM_CHAR_PTR pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(strlen(pMIBFileName)+1);
-					printf("Hello\n");
 					if (pBuff != NULL)
 					{
 						strcpy(pBuff, pMIBFileName);

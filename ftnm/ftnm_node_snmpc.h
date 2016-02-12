@@ -4,20 +4,10 @@
 #include "ftnm.h"
 #include "ftnm_node.h"
 
-typedef	FTM_ULONG		FTNM_SNMPC_STATE, _PTR_ FTNM_SNMPC_STATE_PTR;
-
-#define	FTNM_SNMPC_STATE_UNKNOWN		0x00000000
-#define	FTNM_SNMPC_STATE_INITIALIZED	0x00000001
-#define	FTNM_SNMPC_STATE_RUNNING		0x00000002
-#define	FTNM_SNMPC_STATE_TIMEOUT		0x00000003
-#define	FTNM_SNMPC_STATE_ERROR			0x00000004
-#define	FTNM_SNMPC_STATE_COMPLETED		0x00000005
-
 typedef	struct 
 {
 	FTNM_NODE			xCommon;
 
-	FTNM_SNMPC_STATE		nState;
 	FTNM_EP_PTR				pCurrentEP;
 	struct snmp_session 	*pSession;		/* SNMP session data */
 	struct 

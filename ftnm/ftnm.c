@@ -23,31 +23,9 @@ FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
-	FTM_RET	nRet;
-
-	nRet = FTNM_NODE_init(pCTX);
-	if (nRet != FTM_RET_OK)
-	{
-		ERROR("Node initialization failed.\n");
-		return	nRet;
-	}
-
-	nRet = FTNM_EP_init(pCTX);
-	if (nRet != FTM_RET_OK)
-	{
-		ERROR("EP initialization failed.\n");
-		FTNM_NODE_final(pCTX);
-		return	nRet;
-	}
-
-	nRet = FTNM_EP_CLASS_INFO_init();
-	if (nRet != FTM_RET_OK)
-	{
-		ERROR("EP CLASS initialization failed.\n");
-		FTNM_EP_final(pCTX);
-		FTNM_NODE_final(pCTX);
-		return	nRet;
-	}
+	FTNM_EP_init();
+	FTNM_NODE_init();
+	FTNM_EP_CLASS_INFO_init();
 
 	FTNM_DMC_init(&pCTX->xDMC);
 	FTNM_SRV_init(&pCTX->xServer);
@@ -65,8 +43,9 @@ FTM_RET	FTNM_final(FTNM_CONTEXT_PTR pCTX)
 	FTNM_SRV_final(&pCTX->xServer);
 	FTNM_DMC_final(&pCTX->xDMC);
 
-	FTNM_EP_final(pCTX);
-	FTNM_NODE_final(pCTX);
+	FTNM_EP_CLASS_INFO_final();
+	FTNM_NODE_final();
+	FTNM_EP_final();
 
 	return	FTM_RET_OK;
 }
@@ -76,11 +55,9 @@ FTM_RET	FTNM_loadConfig(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pFileName)
 	ASSERT(pCTX != NULL);
 	ASSERT(pFileName != NULL);
 
-	FTM_RET	nRet;
-
-	FTNM_DMC_loadConfig(&pCTX->xDMC, pConfigFileName);
-	FTNM_SRV_loadConfig(&pCTX->xServer, pConfigFileName);
-	FTNM_SNMPC_loadConfig(&pCTX->xSNMPC, pConfigFileName);
+	FTNM_DMC_loadConfig(&pCTX->xDMC, pFileName);
+	FTNM_SRV_loadConfig(&pCTX->xServer, pFileName);
+	FTNM_SNMPC_loadConfig(&pCTX->xSNMPC, pFileName);
 
 	TRACE("FTNM was loaded configuration.\n");
 	return	FTM_RET_OK;
@@ -120,7 +97,6 @@ FTM_RET FTNM_waitingForFinished(FTNM_CONTEXT_PTR pCTX)
 
 FTM_VOID_PTR	FTNM_task(FTM_VOID_PTR pData)
 {
-	ASSERT(pCTX != NULL);
 	ASSERT (pData != NULL);
 	
 	FTNM_CONTEXT_PTR	pCTX = (FTNM_CONTEXT_PTR)pData;
@@ -173,13 +149,12 @@ FTM_RET	FTNM_taskInit(FTNM_CONTEXT_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
-	FTM_RET	nRet;
+	FTM_RET	xRet;
 
-	TRACE("FTNM_taskInit\n");
-	nRet = FTDMC_init(&pCTX->xDMC.xConfig);
-	if (nRet != FTM_RET_OK)
+	xRet = FTDMC_init(&pCTX->xDMC.xConfig);
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 	pCTX->xState = FTNM_STATE_INITIALIZED;
 
@@ -188,33 +163,33 @@ FTM_RET	FTNM_taskInit(FTNM_CONTEXT_PTR pCTX)
 
 FTM_RET	FTNM_taskConnect(FTNM_CONTEXT_PTR pCTX)
 {
-	FTM_RET			nRet;
+	FTM_RET			xRet;
 
-	nRet = FTDMC_connect(&pCTX->xDMC.xSession, 
+	xRet = FTDMC_connect(&pCTX->xDMC.xSession, 
 		inet_addr(pCTX->xDMC.xConfig.xNetwork.pServerIP),
 		pCTX->xDMC.xConfig.xNetwork.usPort);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		usleep(1000000);
-		return	nRet;	
+		return	xRet;	
 	}
 
 	pCTX->xState = FTNM_STATE_CONNECTED;
 
-	return	nRet;
+	return	xRet;
 }
 
 FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
-	FTM_RET			nRet;
+	FTM_RET			xRet;
 	FTM_ULONG		ulCount, i;
 
-	nRet = FTDMC_NODE_INFO_count(&pCTX->xDMC.xSession, &ulCount);
-	if (nRet != FTM_RET_OK)
+	xRet = FTDMC_NODE_INFO_count(&pCTX->xDMC.xSession, &ulCount);
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
 	for(i = 0 ; i < ulCount ; i++)
@@ -222,54 +197,54 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 		FTM_NODE_INFO	xNodeInfo;
 		FTNM_NODE_PTR	pNode;
 
-		nRet = FTDMC_NODE_INFO_getAt(&pCTX->xDMC.xSession, i, &xNodeInfo);	
-		if (nRet != FTM_RET_OK)
+		xRet = FTDMC_NODE_INFO_getAt(&pCTX->xDMC.xSession, i, &xNodeInfo);	
+		if (xRet != FTM_RET_OK)
 		{
 			ERROR("FTDMC_NODE_INFO_getAt(%08lx, %d, &xNodeInfo) = %08lx\n",
-					pCTX->xDMC.xSession.hSock, i, nRet);
+					pCTX->xDMC.xSession.hSock, i, xRet);
 			continue;	
 		}
 
-		nRet = FTNM_NODE_create(pCTX, &xNodeInfo, &pNode);
-		if (nRet != FTM_RET_OK)
+		xRet = FTNM_NODE_create(&xNodeInfo, &pNode);
+		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTNM_NODE_create(xNode, &pNode) = %08lx\n", nRet);
+			ERROR("FTNM_NODE_create(xNode, &pNode) = %08lx\n", xRet);
 			continue;	
 		}
 
 		TRACE("Node[%s] creating success.\n", pNode->xInfo.pDID);
 	}
 
-	nRet = FTDMC_EP_CLASS_INFO_count(&pCTX->xDMC.xSession, &ulCount);
-	if (nRet != FTM_RET_OK)
+	xRet = FTDMC_EP_CLASS_INFO_count(&pCTX->xDMC.xSession, &ulCount);
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTM_EP_CLASS_INFO	xEPClassInfo;
 
-		nRet = FTDMC_EP_CLASS_INFO_getAt(&pCTX->xDMC.xSession, i, &xEPClassInfo);
-		if (nRet != FTM_RET_OK)
+		xRet = FTDMC_EP_CLASS_INFO_getAt(&pCTX->xDMC.xSession, i, &xEPClassInfo);
+		if (xRet != FTM_RET_OK)
 		{
 			ERROR("FTDMC_EP_CLASS_INFO_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
-					pCTX->xDMC.xSession.hSock, i, nRet);
+					pCTX->xDMC.xSession.hSock, i, xRet);
 			continue;
 		}
 
-		nRet = FTNM_EP_CLASS_INFO_create(&xEPClassInfo);
-		if (nRet != FTM_RET_OK)
+		xRet = FTNM_EP_CLASS_INFO_create(&xEPClassInfo);
+		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTNM_EP_CLASS_append(&xEPClassInfo) = %08lx\n", nRet);
+			ERROR("FTNM_EP_CLASS_append(&xEPClassInfo) = %08lx\n", xRet);
 			continue;	
 		}
 	}
 
-	nRet = FTDMC_EP_INFO_count(&pCTX->xDMC.xSession, 0, &ulCount);
-	if (nRet != FTM_RET_OK)
+	xRet = FTDMC_EP_INFO_count(&pCTX->xDMC.xSession, 0, &ulCount);
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
 	for(i = 0 ; i < ulCount ; i++)
@@ -278,29 +253,28 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 		FTM_EP_INFO	xEPInfo;
 		FTNM_EP_PTR	pEP;
 
-		nRet = FTDMC_EP_INFO_getAt(&pCTX->xDMC.xSession, i, &xEPInfo);
-		if (nRet != FTM_RET_OK)
+		xRet = FTDMC_EP_INFO_getAt(&pCTX->xDMC.xSession, i, &xEPInfo);
+		if (xRet != FTM_RET_OK)
 		{
 			ERROR("FTDMC_EP_INFO_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
-					pCTX->xDMC.xSession.hSock, i, nRet);
+					pCTX->xDMC.xSession.hSock, i, xRet);
 			continue;
 		}
 
-		nRet = FTNM_EP_create(pCTX, &xEPInfo, &pEP);
-		if (nRet != FTM_RET_OK)
+		xRet = FTNM_EP_create(&xEPInfo, &pEP);
+		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTNM_EP_create(xEP, &pNode) = %08lx\n", nRet);
+			ERROR("FTNM_EP_create(xEP, &pNode) = %08lx\n", xRet);
 			continue;	
 		}
 
-		if (FTNM_NODE_get(pCTX, xEPInfo.pDID, &pNode) == FTM_RET_OK)
+		if (FTNM_NODE_get(xEPInfo.pDID, &pNode) == FTM_RET_OK)
 		{
-			FTNM_NODE_linkEP(pCTX, pNode, pEP);
+			FTNM_NODE_linkEP(pNode, pEP);
 		}
 		
 		TRACE("EP[%08lx] creating success.\n", pEP->xInfo.xEPID);
 	}
-
 
 	pCTX->xState = FTNM_STATE_SYNCHRONIZED;
 	return	FTM_RET_OK;
@@ -313,12 +287,13 @@ FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX)
 	FTNM_NODE_PTR	pNode;
 	FTM_ULONG		i, ulCount;
 
-	FTNM_NODE_count(pCTX, &ulCount);
+	TRACE("FTNM_taskRunChild\n");
+	FTNM_NODE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		if (FTNM_NODE_getAt(pCTX, i, &pNode) == FTM_RET_OK)
+		if (FTNM_NODE_getAt(i, &pNode) == FTM_RET_OK)
 		{
-			FTNM_NODE_run(pCTX, pNode);
+			FTNM_NODE_run(pNode);
 			usleep(100000);
 		}
 	}
