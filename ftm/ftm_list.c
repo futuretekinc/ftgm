@@ -7,7 +7,7 @@ FTM_RET FTM_LIST_create(FTM_LIST_PTR _PTR_ ppList)
 {
 	FTM_LIST_PTR	pList;
 
-	pList = (FTM_LIST_PTR)FTM_MEM_malloc(sizeof(FTM_LIST));
+	pList = (FTM_LIST_PTR)malloc(sizeof(FTM_LIST));
 	if (pList == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -26,7 +26,7 @@ FTM_RET FTM_LIST_destroy(FTM_LIST_PTR pList)
 
 	FTM_LIST_final(pList);
 
-	FTM_MEM_free(pList);
+	free(pList);
 
 	return	FTM_RET_OK;
 }
@@ -62,7 +62,7 @@ FTM_RET	FTM_LIST_final(FTM_LIST_PTR pList)
 	{
 		FTM_ENTRY_PTR	pNext = pEntry->pNext;
 		
-		FTM_MEM_free(pEntry);
+		free(pEntry);
 
 		pEntry = pNext;
 	}
@@ -121,7 +121,7 @@ FTM_RET	FTM_LIST_append(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 	FTM_RET	xRet = FTM_RET_OK;
 
 	FTM_ENTRY_PTR pEntry;
-	pEntry = FTM_MEM_malloc(sizeof(FTM_ENTRY));
+	pEntry = (FTM_ENTRY_PTR)malloc(sizeof(FTM_ENTRY));
 	if (pEntry == NULL)
 	{
 		ERROR("Not enough memory[size = %d]\n", sizeof(FTM_ENTRY));
@@ -163,7 +163,7 @@ FTM_RET	FTM_LIST_remove(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 		{
 			pEntry->pPrev->pNext = pNext;
 			pNext->pPrev = pEntry->pPrev;
-			FTM_MEM_free(pEntry);
+			free(pEntry);
 
 			pList->ulCount--;
 
@@ -200,7 +200,7 @@ FTM_RET	FTM_LIST_removeAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition)
 			{
 				pEntry->pPrev->pNext = pNext;
 				pNext->pPrev = pEntry->pPrev;
-				FTM_MEM_free(pEntry);
+				free(pEntry);
 
 				pList->ulCount--;
 

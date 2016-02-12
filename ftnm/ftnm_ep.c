@@ -41,11 +41,17 @@ FTM_RET FTNM_EP_final(FTM_VOID)
 
 FTM_RET	FTNM_EP_create(FTM_EP_INFO_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
 {
+	ASSERT(pInfo != NULL);
+	ASSERT(ppEP != NULL);
+
 	FTNM_EP_PTR	pNewEP;
 
-	ASSERT((pInfo != NULL) && (ppEP != NULL));
-
 	pNewEP = (FTNM_EP_PTR)FTM_MEM_calloc(1, sizeof(FTNM_EP));
+	if (pNewEP == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
 	memcpy(&pNewEP->xInfo, pInfo, sizeof(FTM_EP_INFO));
 
 	FTM_LIST_append(&xEPList, pNewEP);
@@ -112,10 +118,11 @@ FTM_RET FTNM_EP_getList
 	FTM_ULONG_PTR 	pulCount
 )
 {
+	ASSERT(pEPIDList != NULL);
+	ASSERT(pulCount != NULL);
+
 	FTM_ULONG	i, ulTotalCount, ulCount = 0;
 	
-	ASSERT((pEPIDList != NULL) && (pulCount != NULL));
-
 	FTM_LIST_count(&xEPList, &ulTotalCount);
 	for(i = 0 ; i < ulTotalCount && ulCount < ulMaxCount; i++)
 	{
@@ -145,11 +152,20 @@ FTM_RET FTNM_EP_getAt(FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP)
 	return	FTM_LIST_getAt(&xEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
-FTM_RET	FTNM_EP_setNode(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode)
+FTM_RET	FTNM_EP_attach(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode)
 {
 	ASSERT(pEP != NULL);
 
 	pEP->pNode = pNode;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_EP_detach(FTNM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+
+	pEP->pNode = NULL;
 
 	return	FTM_RET_OK;
 }
@@ -166,19 +182,20 @@ FTM_RET	FTNM_EP_DATA_count(FTM_EPID xEPID, FTM_ULONG_PTR pulCount)
 
 FTM_INT	FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
 {
+	ASSERT(pElement != NULL);
+	ASSERT(pIndicator != NULL);
+
 	FTNM_EP_PTR		pEP = (FTNM_EP_PTR)pElement;
 	FTM_EPID_PTR	pEPID=(FTM_EPID_PTR)pIndicator;
-
-	if ((pElement == NULL) || (pIndicator == NULL))
-	{
-		return	0;	
-	}
 
 	return	(pEP->xInfo.xEPID == *pEPID);
 }
 
 FTM_INT	FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2)
 {
+	ASSERT(pElement1 != NULL);
+	ASSERT(pElement2 != NULL);
+
 	FTNM_EP_PTR		pEP1 = (FTNM_EP_PTR)pElement1;
 	FTNM_EP_PTR		pEP2 = (FTNM_EP_PTR)pElement2;
 	

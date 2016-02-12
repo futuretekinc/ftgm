@@ -9,7 +9,7 @@ CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftnmc -lftm -lconfig -lpthread 
 
 FTNM=ftnm
-FTNM_SRCS=ftnm_main.c ftnm.c
+FTNM_SRCS=ftnm_server_main.c ftnm.c
 FTNM_OBJS=$(FTNM_SRCS:.c=.o)
 FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmp
 

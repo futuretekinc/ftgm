@@ -19,6 +19,7 @@ static FTM_INT	FTM_MEM_comparator(const FTM_VOID_PTR pA, const FTM_VOID_PTR pB);
 
 static FTM_BOOL	bInitialized = FTM_FALSE;
 static FTM_LIST_PTR	pMemList = NULL;
+static FTM_BOOL bTrace = FTM_FALSE;
 
 FTM_RET			FTM_MEM_init(void)
 {
@@ -83,7 +84,10 @@ FTM_VOID_PTR	FTM_MEM_TRACE_malloc(size_t xSize, const char *pFile, unsigned long
 	pMB->xSize = xSize;
 	FTM_LIST_append(pMemList, pMB);
 
-	TRACE("Memory allocated.- %08lx(%3d) \n", pMB->pMem, xSize);
+	if (bTrace)
+	{
+		TRACE("Memory allocated.- %08lx(%3d) \n", pMB->pMem, xSize);
+	}
 	return	pMB->pMem;
 }
 
@@ -108,7 +112,10 @@ FTM_VOID_PTR	FTM_MEM_TRACE_calloc(size_t xNumber, size_t xSize, const char *pFil
 	pMB->xSize = xNumber * xSize;
 	FTM_LIST_append(pMemList, pMB);
 
-	TRACE("Memory allocated.- %08lx(%3d) \n", pMB->pMem, xSize);
+	if (bTrace)
+	{
+		TRACE("Memory allocated.- %08lx(%3d) \n", pMB->pMem, xSize);
+	}
 	return	pMB->pMem;
 }
 
@@ -123,7 +130,10 @@ FTM_VOID	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long 
 
 	if (FTM_LIST_get(pMemList, pMem, (FTM_VOID_PTR _PTR_)&pMB) == FTM_RET_OK)
 	{
-		MESSAGE("%s[%3d] - %08lx(%d)\n", pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
+		if (bTrace)
+		{
+			MESSAGE("%s[%3d] - %08lx(%d)\n", pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
+		}
 		FTM_LIST_remove(pMemList, pMB);
 		FTM_MEM_free(pMB->pFile);
 		FTM_MEM_free(pMB);

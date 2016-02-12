@@ -39,14 +39,8 @@ typedef	struct
 	FTNM_STATE		xState;
 	pthread_t		xThread;
 	FTDMC_SESSION	xSession;
-
+	FTDMC_CFG		xConfig;
 }	FTNM_DMC, _PTR_	FTNM_DMC_PTR;
-
-typedef	struct
-{
-	FTNM_CFG		xConfig;
-	FTNM_DMC		xDMC;	
-}	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
 FTM_RET	FTNM_init(FTM_CHAR_PTR pConfigFileName);
 FTM_RET	FTNM_final(FTM_VOID);

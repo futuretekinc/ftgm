@@ -67,5 +67,4 @@ FTM_VOID	FTM_DEBUG_packetDump
 #define	TRACE(format, ...) FTM_DEBUG_printOut(MSG_TRACE, __func__, __LINE__, format, ## __VA_ARGS__)
 #endif
 #define	ERROR(format, ...) FTM_DEBUG_printOut(MSG_ERROR, __func__, __LINE__, format, ## __VA_ARGS__)
-
 #endif

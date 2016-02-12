@@ -25,7 +25,7 @@ typedef	struct
 
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTNM_SERVICE_CALLBACK)FUN }
 
-static FTM_VOID_PTR FTNMS_startDaemon(FTM_VOID_PTR pData);
+static FTM_VOID_PTR FTNMS_process(FTM_VOID_PTR pData);
 static FTM_VOID_PTR FTNMS_serviceHandler(FTM_VOID_PTR pData);
 
 static FTNMS_CMD_SET	pCmdSet[] =
@@ -54,7 +54,7 @@ FTM_RET	FTNMS_run(FTNM_CFG_SERVER_PTR pConfig, pthread_t *pPThread )
 {
 	int	nRet;
 
-	nRet = pthread_create(&xPThread, NULL, FTNMS_startDaemon, (void *)pConfig);
+	nRet = pthread_create(&xPThread, NULL, FTNMS_process, (void *)pConfig);
 	if (nRet != 0)
 	{
 		ERROR("Can't create thread[%d]\n", nRet);
@@ -69,7 +69,7 @@ FTM_RET	FTNMS_run(FTNM_CFG_SERVER_PTR pConfig, pthread_t *pPThread )
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTNMS_startDaemon(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTNMS_process(FTM_VOID_PTR pData)
 {
 	FTM_INT				nRet;
 	FTM_INT				hSocket;
@@ -414,9 +414,6 @@ FTM_RET	FTNMS_EP_DATA_info
 	FTNM_RESP_EP_DATA_INFO_PARAMS_PTR pResp
 )
 {
-	FTNM_EP_PTR	pEP;
-	FTM_ULONG	ulCount = 0;
-
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->nRet = FTNM_EP_DATA_info(pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);

@@ -14,10 +14,12 @@ static FTM_RET	FTNM_NODE_taskInit(FTNM_NODE_PTR pNode);
 static FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode);
 static FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode);
 static FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode);
+static FTM_RET	FTNM_NODE_lock(FTNM_NODE_PTR pNode);
+static FTM_RET	FTNM_NODE_unlock(FTNM_NODE_PTR pNode);
 FTM_INT			FTNM_NODE_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 FTM_INT			FTNM_NODE_comparator(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
-FTM_RET FTNM_NODE_MNGR_init(FTM_VOID)
+FTM_RET FTNM_NODE_init(FTM_VOID)
 {
 	FTM_RET	nRet;
 	
@@ -33,7 +35,7 @@ FTM_RET FTNM_NODE_MNGR_init(FTM_VOID)
 	return	nRet;
 }
 
-FTM_RET FTNM_NODE_MNGR_final(FTM_VOID)
+FTM_RET FTNM_NODE_final(FTM_VOID)
 {
 	FTNM_NODE_PTR	pNode;
 
@@ -50,10 +52,11 @@ FTM_RET FTNM_NODE_MNGR_final(FTM_VOID)
 
 FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 {
+	ASSERT(pInfo != NULL);
+	ASSERT(ppNode != NULL);
+
 	FTM_RET			nRet;
 	FTNM_NODE_PTR	pNewNode;
-
-	ASSERT((pInfo != NULL) && (ppNode != NULL));
 
 	switch(pInfo->xType)
 	{
@@ -94,7 +97,23 @@ FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 
 FTM_RET	FTNM_NODE_destroy(FTNM_NODE_PTR	pNode)
 {
+	ASSERT(pNode != NULL);
+
 	FTM_RET			nRet;
+	FTNM_EP_PTR		pEP;
+
+	FTNM_NODE_lock(pNode);
+
+	FTM_LIST_iteratorStart(&pNode->xEPList);
+	while(FTM_LIST_iteratorNext(&pNode->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
+	{
+		FTNM_EP_detach(pEP);
+	}
+	FTM_LIST_final(&pNode->xEPList);
+
+	FTNM_NODE_unlock(pNode);
+
+	pthread_mutex_destroy(&pNode->xMutexLock);
 
 	nRet = FTM_LIST_remove(&xNodeList, (FTM_VOID_PTR)pNode);
 	if (nRet == FTM_RET_OK)
@@ -108,6 +127,9 @@ FTM_RET	FTNM_NODE_destroy(FTNM_NODE_PTR	pNode)
 
 FTM_RET FTNM_NODE_get(FTM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode)
 {
+	ASSERT(pDID != NULL);
+	ASSERT(ppNode != NULL);
+
 	FTM_RET			nRet;
 	FTNM_NODE_PTR	pNode;
 	
@@ -122,9 +144,11 @@ FTM_RET FTNM_NODE_get(FTM_CHAR_PTR pDID, FTNM_NODE_PTR _PTR_ ppNode)
 
 FTM_RET FTNM_NODE_getAt(FTM_ULONG ulIndex, FTNM_NODE_PTR _PTR_ ppNode)
 {
+	ASSERT(ppNode != NULL);
+
 	FTM_RET			nRet;
 	FTNM_NODE_PTR	pNode;
-	
+
 	nRet = FTM_LIST_getAt(&xNodeList, ulIndex, (FTM_VOID_PTR _PTR_)&pNode);
 	if (nRet == FTM_RET_OK)
 	{
@@ -142,47 +166,54 @@ FTM_RET	FTNM_NODE_count(FTM_ULONG_PTR pulCount)
 
 FTM_RET	FTNM_NODE_linkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 {
-	ASSERT((pNode != NULL) && (pEP != NULL));
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
 
-	pthread_mutex_lock(&pNode->xMutexLock);
+	FTNM_NODE_lock(pNode);
+
 	FTM_LIST_append(&pNode->xEPList, pEP);
-	FTNM_EP_setNode(pEP, pNode);
-	pthread_mutex_unlock(&pNode->xMutexLock);
+	FTNM_EP_attach(pEP, pNode);
+
+	FTNM_NODE_unlock(pNode);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_NODE_unlinkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 {
-	ASSERT((pNode != NULL) && (pEP != NULL));
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
 
-	pthread_mutex_lock(&pNode->xMutexLock);
+	FTNM_NODE_lock(pNode);
 
-	FTNM_EP_setNode(pEP, NULL);
+	FTNM_EP_detach(pEP);
 	FTM_LIST_remove(&pNode->xEPList, pEP);
 	
-	pthread_mutex_unlock(&pNode->xMutexLock);
+	FTNM_NODE_unlock(pNode);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_NODE_EP_count(FTNM_NODE_PTR pNode, FTM_ULONG_PTR pulCount)
 {
-	ASSERT((pNode != NULL) && (pulCount != NULL));
+	ASSERT(pNode != NULL);
+	ASSERT(pulCount != NULL);
 
 	return FTM_LIST_count(&pNode->xEPList, pulCount);
 }
 
 FTM_RET	FTNM_NODE_EP_get(FTNM_NODE_PTR pNode, FTM_EPID xEPID, FTNM_EP_PTR _PTR_ ppEP)
 {
-	ASSERT((pNode != NULL) && (ppEP != NULL));
+	ASSERT(pNode != NULL);
+	ASSERT(ppEP != NULL);
 
 	return	FTM_LIST_get(&pNode->xEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
 FTM_RET	FTNM_NODE_EP_getAt(FTNM_NODE_PTR pNode, FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP)
 {
-	ASSERT((pNode != NULL) && (ppEP != NULL));
+	ASSERT(pNode != NULL);
+	ASSERT(ppEP != NULL);
 
 	return	FTM_LIST_getAt(&pNode->xEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
 }
@@ -393,6 +424,25 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 	return	FTM_RET_OK;
 }
 
+
+FTM_RET	FTNM_NODE_lock(FTNM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	pthread_mutex_lock(&pNode->xMutexLock);
+
+	return	FTM_RET_OK;
+}
+
+
+FTM_RET	FTNM_NODE_unlock(FTNM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	pthread_mutex_unlock(&pNode->xMutexLock);
+
+	return	FTM_RET_OK;
+}
 
 
 FTM_INT	FTNM_NODE_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
