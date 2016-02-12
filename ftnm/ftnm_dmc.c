@@ -14,7 +14,7 @@ FTM_RET FTNM_DMC_init(FTNM_DMC_PTR pDMC)
 {
 	ASSERT(pDMC != NULL);
 
-	FTNM_DMC_CFG_init(&pDMC->xConfig);
+	FTNM_DMC_initConfig(pDMC);
 
 	return	FTM_RET_OK;
 }
@@ -24,13 +24,6 @@ FTM_RET FTNM_DMC_final(FTNM_DMC_PTR pDMC)
 	ASSERT(pDMC != NULL);
 
 	return	FTM_RET_OK;
-}
-
-FTM_RET FTNM_DMC_loadConfig(FTNM_DMC_PTR pDMC, FTM_CHAR_PTR pConfigFileName)
-{
-	ASSERT(pDMC != NULL);
-
-	return	FTNM_DMC_CFG_load(&pDMC->xConfig, pConfigFileName);
 }
 
 FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_DMC_PTR pDMC, FTM_EPID xEPID, FTM_EP_DATA_PTR pData)
@@ -102,79 +95,26 @@ FTM_RET FTNM_DMC_EP_DATA_info
 }
 
 
-FTM_RET	FTNM_DMC_CFG_create(FTDMC_CFG_PTR _PTR_ ppConfig)
+FTM_RET	FTNM_DMC_initConfig(FTNM_DMC_PTR pDMC)
 {
-	FTDMC_CFG_PTR	pConfig;
+	ASSERT(pDMC != NULL);
 
-	ASSERT(ppConfig != NULL);
+	memset(&pDMC->xConfig, 0, sizeof(FTDMC_CFG));
 
-	pConfig = FTM_MEM_calloc(1, sizeof(FTDMC_CFG));
-	if (pConfig == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	FTNM_DMC_CFG_init(pConfig);
-
-	*ppConfig = pConfig;
+	strcpy(pDMC->xConfig.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
+	pDMC->xConfig.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_DMC_CFG_copyCreate(FTDMC_CFG_PTR _PTR_ ppConfig, FTDMC_CFG_PTR pOldConfig)
-{
-	ASSERT(pOldConfig != NULL);
-	ASSERT(ppConfig != NULL);
-
-	FTDMC_CFG_PTR	pConfig;
-
-	pConfig = FTM_MEM_calloc(1, sizeof(FTDMC_CFG));
-	if (pConfig == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	if (FTNM_DMC_CFG_copy(pConfig, pOldConfig) != FTM_RET_OK)
-	{
-		FTM_MEM_free(pConfig);
-		return	FTM_RET_INTERNAL_ERROR;
-	}
-
-	*ppConfig = pConfig;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_DMC_CFG_destroy(FTDMC_CFG_PTR pConfig)
-{
-	ASSERT(pConfig != NULL);
-
-	FTNM_DMC_CFG_final(pConfig);
-	FTM_MEM_free(pConfig);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_DMC_CFG_init(FTDMC_CFG_PTR pConfig)
-{
-	ASSERT(pConfig != NULL);
-
-	memset(pConfig, 0, sizeof(FTDMC_CFG));
-
-	strcpy(pConfig->xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
-	pConfig->xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_DMC_CFG_final(FTDMC_CFG_PTR pConfig)
+FTM_RET	FTNM_DMC_finalConfig(FTNM_DMC_PTR pDMC)
 {
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_DMC_CFG_load(FTDMC_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_DMC_loadConfig(FTNM_DMC_PTR pDMC, FTM_CHAR_PTR pFileName)
 {
-	ASSERT(pConfig != NULL);
+	ASSERT(pDMC != NULL);
 	ASSERT(pFileName != NULL);
 
 	config_t			xConfig;
@@ -194,13 +134,13 @@ FTM_RET FTNM_DMC_CFG_load(FTDMC_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		pField = config_setting_get_member(pSection, "server_ip");
 		if (pField != NULL)
 		{
-			strncpy(pConfig->xNetwork.pServerIP, config_setting_get_string(pField), FTDMC_SERVER_IP_LEN);
+			strncpy(pDMC->xConfig.xNetwork.pServerIP, config_setting_get_string(pField), FTDMC_SERVER_IP_LEN);
 		}
 	
 		pField = config_setting_get_member(pSection, "port");
 		if (pField != NULL)
 		{
-			pConfig->xNetwork.usPort = (FTM_ULONG)config_setting_get_int(pField);
+			pDMC->xConfig.xNetwork.usPort = (FTM_ULONG)config_setting_get_int(pField);
 		}
 	}
 
@@ -209,23 +149,13 @@ FTM_RET FTNM_DMC_CFG_load(FTDMC_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_DMC_CFG_copy(FTDMC_CFG_PTR pDestCfg, FTDMC_CFG_PTR pSrcCfg)
+FTM_RET FTNM_DMC_showConfig(FTNM_DMC_PTR pDMC)
 {
-	ASSERT(pDestCfg != NULL);
-	ASSERT(pSrcCfg != NULL);
-
-	memcpy(pDestCfg, pSrcCfg, sizeof(FTDMC_CFG));
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTNM_DMC_CFG_show(FTDMC_CFG_PTR pConfig)
-{
-	ASSERT(pConfig != NULL);
+	ASSERT(pDMC != NULL);
 
 	MESSAGE("\n[ DATA MANAGER CONNECTION CONFIGURATION ]\n");
-	MESSAGE("%16s : %s\n", "SERVER", pConfig->xNetwork.pServerIP);
-	MESSAGE("%16s : %d\n", "PORT", pConfig->xNetwork.usPort);
+	MESSAGE("%16s : %s\n", "SERVER", pDMC->xConfig.xNetwork.pServerIP);
+	MESSAGE("%16s : %d\n", "PORT", pDMC->xConfig.xNetwork.usPort);
 
 	return	FTM_RET_OK;
 }

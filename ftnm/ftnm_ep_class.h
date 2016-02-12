@@ -4,7 +4,7 @@
 #include "ftm_types.h"
 #include "ftm_object.h"
 #include "ftm_list.h"
-#include "ftnm_object.h"
+#include "ftnm_node.h"
 #include <pthread.h>
 
 FTM_RET	FTNM_EP_CLASS_INFO_init(FTM_VOID);

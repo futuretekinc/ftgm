@@ -56,7 +56,7 @@ FTM_RET	FTNM_SRV_init
 {
 	ASSERT(pServer != NULL);
 
-	FTNM_SRV_CFG_init(&pServer->xConfig);
+	FTNM_SRV_initConfig(pServer);
 
 	return	FTM_RET_OK;
 }
@@ -68,14 +68,9 @@ FTM_RET	FTNM_SRV_final
 {
 	ASSERT(pServer != NULL);
 
+	FTNM_SRV_finalConfig(pServer);
+
 	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SRV_loadConfig(FTNM_SERVER_PTR pServer, FTM_CHAR_PTR pConfigFileName)
-{
-	ASSERT(pServer != NULL);
-
-	return	FTNM_SRV_CFG_load(&pServer->xConfig, pConfigFileName);
 }
 
 FTM_RET	FTNM_SRV_run(FTNM_SERVER_PTR pServer)
@@ -486,79 +481,26 @@ FTM_RET	FTNM_SRV_EP_DATA_count
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_CFG_create(FTNM_SRV_CONFIG_PTR _PTR_ ppConfig)
+FTM_RET	FTNM_SRV_initConfig(FTNM_SERVER_PTR pSRV)
 {
-	ASSERT(ppConfig != NULL);
+	ASSERT(pSRV != NULL);
 
-	FTNM_SRV_CONFIG_PTR	pConfig;
+	memset(&pSRV->xConfig, 0, sizeof(FTNM_SRV_CONFIG));
 
-	pConfig = FTM_MEM_calloc(1, sizeof(FTNM_SRV_CONFIG));
-	if (pConfig == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	FTNM_SRV_CFG_init(pConfig);
-
-	*ppConfig = pConfig;
+	pSRV->xConfig.usPort		= FTNM_DEFAULT_SERVER_PORT;
+	pSRV->xConfig.ulMaxSession	= FTNM_DEFAULT_SERVER_SESSION_COUNT	;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SRV_CFG_copyCreate(FTNM_SRV_CONFIG_PTR _PTR_ ppConfig, FTNM_SRV_CONFIG_PTR pOldConfig)
-{
-	ASSERT(pOldConfig != NULL);
-	ASSERT(ppConfig != NULL);
-
-	FTNM_SRV_CONFIG_PTR	pConfig;
-
-	pConfig = FTM_MEM_calloc(1, sizeof(FTNM_SRV_CONFIG));
-	if (pConfig == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	if (FTNM_SRV_CFG_copy(pConfig, pOldConfig) != FTM_RET_OK)
-	{
-		FTM_MEM_free(pConfig);
-		return	FTM_RET_INTERNAL_ERROR;
-	}
-
-	*ppConfig = pConfig;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SRV_CFG_destroy(FTNM_SRV_CONFIG_PTR pConfig)
-{
-	ASSERT(pConfig != NULL);
-
-	FTNM_SRV_CFG_final(pConfig);
-	FTM_MEM_free(pConfig);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SRV_CFG_init(FTNM_SRV_CONFIG_PTR pConfig)
-{
-	ASSERT(pConfig != NULL);
-
-	memset(pConfig, 0, sizeof(FTNM_SRV_CONFIG));
-
-	pConfig->usPort			= FTNM_DEFAULT_SERVER_PORT;
-	pConfig->ulMaxSession	= FTNM_DEFAULT_SERVER_SESSION_COUNT	;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SRV_CFG_final(FTNM_SRV_CONFIG_PTR pConfig)
+FTM_RET	FTNM_SRV_finalConfig(FTNM_SERVER_PTR pSRV)
 {
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SRV_CFG_load(FTNM_SRV_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_SRV_loadConfig(FTNM_SERVER_PTR pSRV, FTM_CHAR_PTR pFileName)
 {
-	ASSERT(pConfig != NULL);
+	ASSERT(pSRV != NULL);
 	ASSERT(pFileName != NULL);
 
 	config_t			xConfig;
@@ -579,13 +521,13 @@ FTM_RET FTNM_SRV_CFG_load(FTNM_SRV_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		pField = config_setting_get_member(pSection, "max_session");
 		if (pField != NULL)
 		{
-			pConfig->ulMaxSession = (FTM_ULONG)config_setting_get_int(pField);
+			pSRV->xConfig.ulMaxSession = (FTM_ULONG)config_setting_get_int(pField);
 		}
 	
 		pField = config_setting_get_member(pSection, "port");
 		if (pField != NULL)
 		{
-			pConfig->usPort = (FTM_ULONG)config_setting_get_int(pField);
+			pSRV->xConfig.usPort = (FTM_ULONG)config_setting_get_int(pField);
 		}
 	}
 
@@ -594,23 +536,13 @@ FTM_RET FTNM_SRV_CFG_load(FTNM_SRV_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SRV_CFG_copy(FTNM_SRV_CONFIG_PTR pDestCfg, FTNM_SRV_CONFIG_PTR pSrcCfg)
+FTM_RET FTNM_SRV_showConfig(FTNM_SERVER_PTR pSRV)
 {
-	ASSERT(pDestCfg != NULL);
-	ASSERT(pSrcCfg != NULL);
-
-	memcpy(pDestCfg, pSrcCfg, sizeof(FTNM_SRV_CONFIG));
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTNM_SRV_CFG_show(FTNM_SRV_CONFIG_PTR pConfig)
-{
-	ASSERT(pConfig != NULL);
+	ASSERT(pSRV != NULL);
 
 	MESSAGE("\n[ SERVER CONFIGURATION ]\n");
-	MESSAGE("%16s : %d\n", "PORT", pConfig->usPort);
-	MESSAGE("%16s : %lu\n", "MAX SESSION", pConfig->ulMaxSession);
+	MESSAGE("%16s : %d\n", "PORT", pSRV->xConfig.usPort);
+	MESSAGE("%16s : %lu\n", "MAX SESSION", pSRV->xConfig.ulMaxSession);
 
 	return	FTM_RET_OK;
 }

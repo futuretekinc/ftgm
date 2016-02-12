@@ -5,8 +5,25 @@
 #include "ftm_object.h"
 #include "ftm_list.h"
 #include "ftnm.h"
-#include "ftnm_object.h"
 #include <pthread.h>
+#include <net-snmp/net-snmp-config.h>
+#include <net-snmp/net-snmp-includes.h>
+
+typedef	struct _FTNM_NODE _PTR_ FTNM_NODE_PTR;
+typedef	struct 
+{
+	FTM_EP_INFO		xInfo;
+	FTNM_NODE_PTR 	pNode;
+	FTM_EP_DATA		xData;
+	union
+	{
+		struct	
+		{
+			oid		pOID[MAX_OID_LEN];
+			size_t	nOIDLen;
+		}	xSNMP;
+	}	xOption;
+}	FTNM_EP, _PTR_ FTNM_EP_PTR;
 
 FTM_RET	FTNM_EP_init(FTNM_CONTEXT_PTR pCTX);
 FTM_RET FTNM_EP_final(FTNM_CONTEXT_PTR pCTX);

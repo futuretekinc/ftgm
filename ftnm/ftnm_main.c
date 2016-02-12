@@ -47,7 +47,9 @@ int main(int nArgc, char *pArgv[])
 	xConsoleConfig.ulCmdCount 	= FTNM_ulCmds;
 
 	FTM_CONSOLE_init(&xConsoleConfig);
-	FTNM_init(&xFTNM, pConfigFileName);
+	FTNM_init(&xFTNM);
+	
+	FTNM_loadConfig(&xFTNM, pConfigFileName);
 
 	if (bDaemon)
 	{

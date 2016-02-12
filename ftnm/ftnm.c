@@ -19,21 +19,23 @@ FTM_RET			FTNM_taskSync(FTNM_CONTEXT_PTR pCTX);
 FTM_RET			FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX);
 FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX);
 
-FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pConfigFileName)
+FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pCTX)
 {
+	ASSERT(pCTX != NULL);
+
 	FTM_RET	nRet;
 
 	nRet = FTNM_NODE_init(pCTX);
 	if (nRet != FTM_RET_OK)
 	{
-		ERROR("Node manager initialization failed.\n");
+		ERROR("Node initialization failed.\n");
 		return	nRet;
 	}
 
 	nRet = FTNM_EP_init(pCTX);
 	if (nRet != FTM_RET_OK)
 	{
-		ERROR("EP manager initialization failed.\n");
+		ERROR("EP initialization failed.\n");
 		FTNM_NODE_final(pCTX);
 		return	nRet;
 	}
@@ -41,20 +43,15 @@ FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pConfigFileName)
 	nRet = FTNM_EP_CLASS_INFO_init();
 	if (nRet != FTM_RET_OK)
 	{
-		ERROR("EP manager initialization failed.\n");
+		ERROR("EP CLASS initialization failed.\n");
 		FTNM_EP_final(pCTX);
 		FTNM_NODE_final(pCTX);
 		return	nRet;
 	}
 
 	FTNM_DMC_init(&pCTX->xDMC);
-	FTNM_DMC_loadConfig(&pCTX->xDMC, pConfigFileName);
-
 	FTNM_SRV_init(&pCTX->xServer);
-	FTNM_SRV_loadConfig(&pCTX->xServer, pConfigFileName);
-
 	FTNM_SNMPC_init(&pCTX->xSNMPC);
-	FTNM_SNMPC_loadConfig(&pCTX->xSNMPC, pConfigFileName);
 
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
@@ -62,6 +59,8 @@ FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pConfigFileName)
 
 FTM_RET	FTNM_final(FTNM_CONTEXT_PTR pCTX)
 {
+	ASSERT(pCTX != NULL);
+
 	FTNM_SNMPC_final(&pCTX->xSNMPC);
 	FTNM_SRV_final(&pCTX->xServer);
 	FTNM_DMC_final(&pCTX->xDMC);
@@ -72,17 +71,36 @@ FTM_RET	FTNM_final(FTNM_CONTEXT_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_loadConfig(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pFileName)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pFileName != NULL);
+
+	FTM_RET	nRet;
+
+	FTNM_DMC_loadConfig(&pCTX->xDMC, pConfigFileName);
+	FTNM_SRV_loadConfig(&pCTX->xServer, pConfigFileName);
+	FTNM_SNMPC_loadConfig(&pCTX->xSNMPC, pConfigFileName);
+
+	TRACE("FTNM was loaded configuration.\n");
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTNM_showConfig(FTNM_CONTEXT_PTR pCTX)
 {
-	FTNM_DMC_CFG_show(&pCTX->xDMC.xConfig);
-	FTNM_SRV_CFG_show(&pCTX->xServer.xConfig);
-	FTNM_SNMPC_CFG_show(&pCTX->xSNMPC.xConfig);
+	ASSERT(pCTX != NULL);
+
+	FTNM_DMC_showConfig(&pCTX->xDMC);
+	FTNM_SRV_showConfig(&pCTX->xServer);
+	FTNM_SNMPC_showConfig(&pCTX->xSNMPC);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET FTNM_run(FTNM_CONTEXT_PTR pCTX)
 {
+	ASSERT(pCTX != NULL);
+
 	if (pthread_create(&pCTX->xPThread, NULL, FTNM_task, (FTM_VOID_PTR)pCTX) < 0)
 	{
 		return	FTM_RET_ERROR;	
@@ -93,6 +111,8 @@ FTM_RET FTNM_run(FTNM_CONTEXT_PTR pCTX)
 
 FTM_RET FTNM_waitingForFinished(FTNM_CONTEXT_PTR pCTX)
 {
+	ASSERT(pCTX != NULL);
+
 	pthread_join(pCTX->xPThread, NULL);
 
 	return	FTM_RET_OK;
@@ -100,6 +120,7 @@ FTM_RET FTNM_waitingForFinished(FTNM_CONTEXT_PTR pCTX)
 
 FTM_VOID_PTR	FTNM_task(FTM_VOID_PTR pData)
 {
+	ASSERT(pCTX != NULL);
 	ASSERT (pData != NULL);
 	
 	FTNM_CONTEXT_PTR	pCTX = (FTNM_CONTEXT_PTR)pData;

@@ -15,7 +15,7 @@ FTM_RET	FTNM_SNMPC_init(FTNM_SNMPC_PTR pSNMPC)
 {
 	ASSERT(pSNMPC != NULL);
 	
-	FTNM_SNMPC_CFG_init(&pSNMPC->xConfig);
+	FTNM_SNMPC_initConfig(pSNMPC);
 
 	return	FTM_RET_OK;
 }
@@ -24,15 +24,9 @@ FTM_RET	FTNM_SNMPC_final(FTNM_SNMPC_PTR pSNMPC)
 {
 	ASSERT(pSNMPC != NULL);
 
+	FTNM_SNMPC_finalConfig(pSNMPC);
+
 	return	FTM_RET_OK;
-}
-
-FTM_RET		FTNM_SNMPC_loadConfig(FTNM_SNMPC_PTR pSNMPC, FTM_CHAR_PTR pConfigFileName)
-{
-	ASSERT(pSNMPC != NULL);
-	ASSERT(pConfigFileName != NULL);
-
-	return	FTNM_SNMPC_CFG_load(&pSNMPC->xConfig, pConfigFileName);
 }
 
 FTM_RET FTNM_SNMPC_run(FTNM_SNMPC_PTR pSNMPC)
@@ -104,94 +98,41 @@ FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET	FTNM_SNMPC_CFG_create(FTNM_SNMPC_CONFIG_PTR _PTR_ ppConfig)
+FTM_RET	FTNM_SNMPC_initConfig(FTNM_SNMPC_PTR pSNMPC)
 {
-	ASSERT(ppConfig != NULL);
+	ASSERT(pSNMPC != NULL);
 
-	FTNM_SNMPC_CONFIG_PTR	pConfig;
+	memset(&pSNMPC->xConfig, 0, sizeof(FTNM_SNMPC_CONFIG));
 
-	pConfig = FTM_MEM_calloc(1, sizeof(FTNM_SNMPC_CONFIG));
-	if (pConfig == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	FTNM_SNMPC_CFG_init(pConfig);
-
-	*ppConfig = pConfig;
+	strcpy(pSNMPC->xConfig.pName, "ftnm");
+	FTM_LIST_init(&pSNMPC->xConfig.xMIBList);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SNMPC_CFG_copyCreate(FTNM_SNMPC_CONFIG_PTR _PTR_ ppConfig, FTNM_SNMPC_CONFIG_PTR pOldConfig)
-{
-	ASSERT(pOldConfig != NULL);
-	ASSERT(ppConfig != NULL);
-
-	FTNM_SNMPC_CONFIG_PTR	pConfig;
-
-	pConfig = FTM_MEM_calloc(1, sizeof(FTNM_SNMPC_CONFIG));
-	if (pConfig == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	if (FTNM_SNMPC_CFG_copy(pConfig, pOldConfig) != FTM_RET_OK)
-	{
-		FTM_MEM_free(pConfig);
-		return	FTM_RET_INTERNAL_ERROR;
-	}
-
-	*ppConfig = pConfig;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SNMPC_CFG_destroy(FTNM_SNMPC_CONFIG_PTR pConfig)
-{
-	ASSERT(pConfig != NULL);
-
-	FTNM_SNMPC_CFG_final(pConfig);
-	FTM_MEM_free(pConfig);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SNMPC_CFG_init(FTNM_SNMPC_CONFIG_PTR pConfig)
-{
-	ASSERT(pConfig != NULL);
-
-	memset(pConfig, 0, sizeof(FTNM_SNMPC_CONFIG));
-
-	strcpy(pConfig->pName, "ftnm");
-	FTM_LIST_init(&pConfig->xMIBList);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SNMPC_CFG_final(FTNM_SNMPC_CONFIG_PTR pConfig)
+FTM_RET	FTNM_SNMPC_finalConfig(FTNM_SNMPC_PTR pSNMPC)
 {
 	FTM_ULONG i, ulCount;
 
-	FTM_LIST_count(&pConfig->xMIBList, &ulCount);
+	FTM_LIST_count(&pSNMPC->xConfig.xMIBList, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTM_VOID_PTR pValue;
 
-		if (FTM_LIST_getAt(&pConfig->xMIBList, i, &pValue) == FTM_RET_OK)
+		if (FTM_LIST_getAt(&pSNMPC->xConfig.xMIBList, i, &pValue) == FTM_RET_OK)
 		{
 			FTM_MEM_free(pValue);
 		}
 	}
 
-	FTM_LIST_destroy(&pConfig->xMIBList);
+	FTM_LIST_destroy(&pSNMPC->xConfig.xMIBList);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SNMPC_CFG_load(FTNM_SNMPC_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_SNMPC_loadConfig(FTNM_SNMPC_PTR pSNMPC, FTM_CHAR_PTR pFileName)
 {
-	ASSERT(pConfig != NULL);
+	ASSERT(pSNMPC != NULL);
 	ASSERT(pFileName != NULL);
 
 	config_t			xConfig;
@@ -224,7 +165,7 @@ FTM_RET FTNM_SNMPC_CFG_load(FTNM_SNMPC_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileNam
 					if (pBuff != NULL)
 					{
 						strcpy(pBuff, pMIBFileName);
-						FTM_LIST_append(&pConfig->xMIBList, pBuff);
+						FTM_LIST_append(&pSNMPC->xConfig.xMIBList, pBuff);
 					}
 				}
 			
@@ -237,23 +178,13 @@ FTM_RET FTNM_SNMPC_CFG_load(FTNM_SNMPC_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileNam
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SNMPC_CFG_copy(FTNM_SNMPC_CONFIG_PTR pDestCfg, FTNM_SNMPC_CONFIG_PTR pSrcCfg)
+FTM_RET FTNM_SNMPC_showConfig(FTNM_SNMPC_PTR pSNMPC)
 {
-	ASSERT(pDestCfg != NULL);
-	ASSERT(pSrcCfg != NULL);
-
-	memcpy(pDestCfg, pSrcCfg, sizeof(FTNM_SNMPC_CONFIG));
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTNM_SNMPC_CFG_show(FTNM_SNMPC_CONFIG_PTR pConfig)
-{
-	ASSERT(pConfig != NULL);
+	ASSERT(pSNMPC != NULL);
 
 	FTM_ULONG	ulCount;
 
-	if (FTM_LIST_count(&pConfig->xMIBList, &ulCount) == FTM_RET_OK)
+	if (FTM_LIST_count(&pSNMPC->xConfig.xMIBList, &ulCount) == FTM_RET_OK)
 	{
 		FTM_ULONG i;
 
@@ -262,7 +193,7 @@ FTM_RET FTNM_SNMPC_CFG_show(FTNM_SNMPC_CONFIG_PTR pConfig)
 		{
 			FTM_VOID_PTR	pValue;
 
-			if (FTM_LIST_getAt(&pConfig->xMIBList, i, &pValue) == FTM_RET_OK)
+			if (FTM_LIST_getAt(&pSNMPC->xConfig.xMIBList, i, &pValue) == FTM_RET_OK)
 			{
 				MESSAGE("%16d : %s\n", i+1, (FTM_CHAR_PTR)pValue);
 			}
