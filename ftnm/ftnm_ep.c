@@ -189,6 +189,16 @@ FTM_RET	FTNM_EP_detach(FTNM_EP_PTR pEP)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_DATA_PTR pData)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+	memcpy(&pEP->xData, pData, sizeof(FTM_DATA));
+
+	return	FTM_RET_OK;
+}
+
 FTM_INT	FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
 {
 	ASSERT(pElement != NULL);

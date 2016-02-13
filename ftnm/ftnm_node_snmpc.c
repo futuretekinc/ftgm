@@ -190,9 +190,10 @@ FTM_VOID_PTR	FTNM_NODE_SNMPC_process(FTM_VOID_PTR pData)
 			snmp_add_null_var(pReqPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
 			pNode->xStatistics.ulRequest++;
 
-			if (snmp_synch_response(pNode->pSession, pReqPDU, &pRespPDU) == 0)
+			int nRet = snmp_synch_response(pNode->pSession, pReqPDU, &pRespPDU);
+			if (nRet != 0)
 			{
-				ERROR("snmp_send: %s\n", snmp_errstring(snmp_errno));
+				ERROR("snmp_synch_response error! - %s\n", snmp_errstring(nRet));
 				pNode->xCommon.xState = FTNM_NODE_STATE_ERROR;
 			}
 			else
@@ -222,6 +223,7 @@ FTM_VOID_PTR	FTNM_NODE_SNMPC_process(FTM_VOID_PTR pData)
 									pBuff[1023] = 0;
 								}
 
+		
 								xData.ulTime = time(NULL);
 								xData.xType  = FTM_EP_DATA_TYPE_FLOAT;
 								xData.xValue.fValue = strtod(pBuff, NULL);

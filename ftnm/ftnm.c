@@ -304,3 +304,9 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 }
 
 
+FTM_RET	FTNM_setEPData(FTNM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+
+	return	FTM_RET_OK;
+}

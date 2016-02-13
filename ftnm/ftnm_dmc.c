@@ -14,7 +14,10 @@ FTM_RET FTNM_DMC_init(FTNM_DMC_PTR pDMC)
 {
 	ASSERT(pDMC != NULL);
 
-	FTNM_DMC_initConfig(pDMC);
+	memset(&pDMC->xConfig, 0, sizeof(FTDMC_CFG));
+
+	strcpy(pDMC->xConfig.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
+	pDMC->xConfig.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
 
 	return	FTM_RET_OK;
 }
@@ -92,24 +95,6 @@ FTM_RET FTNM_DMC_EP_DATA_info
 	ASSERT(pDMC != NULL);
 
 	return	FTDMC_EP_DATA_info(&pDMC->xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
-}
-
-
-FTM_RET	FTNM_DMC_initConfig(FTNM_DMC_PTR pDMC)
-{
-	ASSERT(pDMC != NULL);
-
-	memset(&pDMC->xConfig, 0, sizeof(FTDMC_CFG));
-
-	strcpy(pDMC->xConfig.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
-	pDMC->xConfig.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_DMC_finalConfig(FTNM_DMC_PTR pDMC)
-{
-	return	FTM_RET_OK;
 }
 
 FTM_RET FTNM_DMC_loadConfig(FTNM_DMC_PTR pDMC, FTM_CHAR_PTR pFileName)
