@@ -171,8 +171,12 @@ FTM_VOID_PTR	FTNM_NODE_SNMPC_process(FTM_VOID_PTR pData)
 		return	0;	
 	}
 
+	FTNM_TIMER_init(&pNode->xTimer, 0);
+
 	while(pNode->bRun)
 	{
+		FTNM_TIMER_add(&pNode->xTimer, pNode->xCommon.xInfo.ulTimeout * 1000000);
+	
 		FTM_LIST_iteratorStart(&pNode->xCommon.xEPList);
 		while (pNode->bRun && (FTM_LIST_iteratorNext(&pNode->xCommon.xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK))
 		{
@@ -258,6 +262,8 @@ FTM_VOID_PTR	FTNM_NODE_SNMPC_process(FTM_VOID_PTR pData)
 				}
 			}
 		}
+	
+		FTNM_TIMER_waitForExpired(&pNode->xTimer);
 	}
 
 	snmp_close(pNode->pSession);

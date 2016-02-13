@@ -193,6 +193,10 @@ static int _FTDM_DBIF_NODE_INFO_getListCB(void *pData, int nArgc, char **pArgv, 
 			{
 				pNodeInfo->ulInterval = strtoul(pArgv[i], NULL, 10);
 			}
+			else if (strcasecmp(pColName[i], "TIMEOUT") == 0)
+			{
+				pNodeInfo->ulTimeout = strtoul(pArgv[i], NULL, 10);
+			}
 			else if (strcasecmp(pColName[i], "OPT0") == 0)
 			{
 				switch (pNodeInfo->xType)

@@ -348,7 +348,7 @@ FTM_RET	FTDM_CFG_NODE_INFO_append(FTDM_CFG_NODE_PTR pConfig, FTM_NODE_INFO_PTR p
 	ASSERT(pConfig != NULL);
 	ASSERT(pInfo != NULL);
 
-	pNewInfo = (FTM_NODE_INFO_PTR)calloc(1, sizeof(FTM_NODE_INFO));
+	pNewInfo = (FTM_NODE_INFO_PTR)FTM_MEM_malloc(sizeof(FTM_NODE_INFO));
 	if (pNewInfo == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -396,7 +396,7 @@ FTM_RET	FTDM_CFG_EP_INFO_append(FTDM_CFG_EP_PTR pConfig, FTM_EP_INFO_PTR pInfo)
 
 	ASSERT((pConfig != NULL) && (pInfo != NULL));
 
-	pNewInfo = (FTM_EP_INFO_PTR)calloc(1, sizeof(FTM_EP_INFO));
+	pNewInfo = (FTM_EP_INFO_PTR)FTM_MEM_malloc(sizeof(FTM_EP_INFO));
 	if (pNewInfo == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -443,7 +443,7 @@ FTM_RET FTDM_CFG_EP_CLASS_INFO_append(FTDM_CFG_EP_PTR pConfig, FTM_EP_CLASS_INFO
 	
 	ASSERT((pConfig != NULL) && (pInfo != NULL));
 
-	pNewInfo = (FTM_EP_CLASS_INFO_PTR)calloc(1, sizeof(FTM_EP_CLASS_INFO));
+	pNewInfo = (FTM_EP_CLASS_INFO_PTR)FTM_MEM_malloc(sizeof(FTM_EP_CLASS_INFO));
 	if (pNewInfo == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	

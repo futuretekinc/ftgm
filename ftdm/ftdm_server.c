@@ -336,7 +336,7 @@ FTM_RET	FTDMS_NODE_INFO_getAt
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nRet = FTDM_NODE_INFO_getAt(pReq->nIndex, &pNodeInfo);
-
+	
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, pNodeInfo, sizeof(FTM_NODE_INFO));

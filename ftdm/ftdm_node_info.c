@@ -4,6 +4,7 @@
 #include "ftdm.h"
 #include "ftdm_node_info.h"
 #include "ftdm_sqlite.h"
+#include "ftm_mem.h"
 
 static int FTDM_NODE_INFO_seeker
 (
@@ -52,7 +53,7 @@ FTM_RET	FTDM_NODE_INFO_init
 		FTM_NODE_INFO_PTR	pNodeInfos;
 		FTM_ULONG			nNodeCount = 0;
 		
-		pNodeInfos = (FTM_NODE_INFO_PTR)calloc(nMaxNodeCount, sizeof(FTM_NODE_INFO));
+		pNodeInfos = (FTM_NODE_INFO_PTR)FTM_MEM_malloc(nMaxNodeCount * sizeof(FTM_NODE_INFO));
 		if (pNodeInfos == NULL)
 		{
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -66,7 +67,7 @@ FTM_RET	FTDM_NODE_INFO_init
 			{
 				FTM_NODE_INFO_PTR pNodeInfo;
 				
-				pNodeInfo = (FTM_NODE_INFO_PTR)calloc(1, sizeof(FTM_NODE_INFO));
+				pNodeInfo = (FTM_NODE_INFO_PTR)FTM_MEM_malloc(sizeof(FTM_NODE_INFO));
 				if (pNodeInfo == NULL)
 				{
 					return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -146,7 +147,7 @@ FTM_RET    FTDM_NODE_INFO_add
 		return	FTM_RET_ALREADY_EXIST_OBJECT;
 	}
 
-	pNewNodeInfo = (FTM_NODE_INFO_PTR)malloc(sizeof(FTM_NODE_INFO));
+	pNewNodeInfo = (FTM_NODE_INFO_PTR)FTM_MEM_malloc(sizeof(FTM_NODE_INFO));
 	if (pNewNodeInfo == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	

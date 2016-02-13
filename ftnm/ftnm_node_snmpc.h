@@ -1,9 +1,10 @@
 #ifndef	__FTNM_NODE_SNMP_CLIENT_H__
 #define	__FTNM_NODE_SNMP_CLIENT_H__
 
+#include <semaphore.h>
 #include "ftnm.h"
 #include "ftnm_node.h"
-#include <semaphore.h>
+#include "ftnm_timer.h"
 
 typedef	struct 
 {
@@ -12,6 +13,7 @@ typedef	struct
 	FTNM_EP_PTR				pCurrentEP;
 	struct snmp_session 	*pSession;		/* SNMP session data */
 	FTM_BOOL				bRun;
+	FTNM_TIMER				xTimer;
 	struct 
 	{
 		FTM_ULONG			ulRequest;
