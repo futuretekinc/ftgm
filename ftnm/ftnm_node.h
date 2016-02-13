@@ -27,17 +27,16 @@ typedef	FTM_RET		(*FTNM_NODE_START)(FTNM_NODE_PTR pNode);
 typedef	FTM_RET		(*FTNM_NODE_STOP)(FTNM_NODE_PTR pNode);
 typedef	FTM_BOOL	(*FTNM_NODE_IS_RUNNING)(FTNM_NODE_PTR pNode);
 
-typedef	struct _FTNM_NODE
+typedef	struct FTNM_NODE_STRUCT
 {
-	FTM_NODE_TYPE		xType;
-	FTM_NODE_INFO		xInfo;
-	FTM_LIST			xEPList;
+	FTM_NODE_INFO			xInfo;
+	FTM_LIST				xEPList;
 
-	pthread_t			xPThread;
-	pthread_mutex_t		xMutexLock;
-	FTNM_NODE_STATE		xState;
-	FTM_ULONG			ulRetry;
-	int64_t				xTimeout;
+	pthread_t				xPThread;
+	pthread_mutex_t			xMutexLock;
+	FTNM_NODE_STATE			xState;
+	FTM_ULONG				ulRetry;
+	int64_t					xTimeout;
 
 	FTNM_NODE_START			fStart;
 	FTNM_NODE_STOP			fStop;

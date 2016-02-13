@@ -41,7 +41,7 @@ FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNo
 
 	pNode->xCommon.fStart	= (FTNM_NODE_START)FTNM_NODE_SNMPC_start;
 	pNode->xCommon.fStop 	= (FTNM_NODE_STOP)FTNM_NODE_SNMPC_stop;
-
+	pNode->xCommon.fIsRunning=(FTNM_NODE_IS_RUNNING)FTNM_NODE_SNMPC_isRunning;
 	*ppNode = (FTNM_NODE_PTR)pNode;
 
 	return	FTM_RET_OK;

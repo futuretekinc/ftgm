@@ -9,7 +9,7 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 
-typedef	struct _FTNM_NODE _PTR_ FTNM_NODE_PTR;
+typedef	struct FTNM_NODE_STRUCT _PTR_ FTNM_NODE_PTR;
 typedef	struct 
 {
 	FTM_EP_INFO		xInfo;

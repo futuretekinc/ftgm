@@ -12,8 +12,8 @@ typedef	struct
 	struct snmp_session 	*pSession;		/* SNMP session data */
 	struct 
 	{
-		FTM_ULONG				ulRequest;
-		FTM_ULONG				ulResponse;
+		FTM_ULONG			ulRequest;
+		FTM_ULONG			ulResponse;
 	}	xStatistics;	
 }	FTNM_NODE_SNMPC, _PTR_ FTNM_NODE_SNMPC_PTR;
 

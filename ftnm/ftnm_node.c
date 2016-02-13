@@ -9,6 +9,7 @@
 
 static FTM_LIST_PTR	pNodeList = NULL;
 
+
 FTM_VOID_PTR 	FTNM_NODE_task(FTM_VOID_PTR pData);
 static FTM_RET	FTNM_NODE_taskInit(FTNM_NODE_PTR pNode);
 static FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode);
@@ -16,8 +17,11 @@ static FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode);
 static FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode);
 static FTM_RET	FTNM_NODE_lock(FTNM_NODE_PTR pNode);
 static FTM_RET	FTNM_NODE_unlock(FTNM_NODE_PTR pNode);
-FTM_INT			FTNM_NODE_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
-FTM_INT			FTNM_NODE_comparator(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+static FTM_RET  FTNM_NODE_initTimeout(FTNM_NODE_PTR pNode);
+static FTM_BOOL FTNM_NODE_isTimeout(FTNM_NODE_PTR pNode);
+static FTM_RET	FTNM_NODE_updateTimeout(FTNM_NODE_PTR pNode);;
+static FTM_INT	FTNM_NODE_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+static FTM_INT	FTNM_NODE_comparator(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
 FTM_RET FTNM_NODE_init(void)
 {
@@ -174,15 +178,11 @@ FTM_RET	FTNM_NODE_linkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	FTM_ULONG	ulCount = 0;
-	TRACE("FTNM_NODE_linkEP(%s, %08x)\n", pNode->xInfo.pDID, pEP->xInfo.xEPID);
 	FTNM_NODE_lock(pNode);
 
 	FTM_LIST_append(&pNode->xEPList, pEP);
 	FTNM_EP_attach(pEP, pNode);
 
-	FTNM_NODE_EP_count(pNode, &ulCount);
-	TRACE("Node = %08x, EP coun = %d\n", pNode, ulCount);
 	FTNM_NODE_unlock(pNode);
 
 	return	FTM_RET_OK;
@@ -276,22 +276,9 @@ FTM_VOID_PTR FTNM_NODE_task(FTM_VOID_PTR pData)
 
 		case	FTNM_NODE_STATE_PROCESS_FINISHED:
 			{
-				int64_t				xCurrentTime;
-#if 0
-				struct	timespec	xTime;
-				if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
+				while (FTNM_NODE_isTimeout(pNode) != FTM_TRUE)
 				{
-					xCurrentTime = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
-				}
-				else
-#endif
-				{
-					xCurrentTime = time(NULL) * 1000000 ;
-				}
-
-				if (xCurrentTime < pNode->xTimeout)
-				{
-					usleep(pNode->xTimeout - xCurrentTime);
+					usleep(1000);
 				}
 				pNode->xState = FTNM_NODE_STATE_RUN;
 			}
@@ -321,17 +308,7 @@ FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode)
 
 	ASSERT(pNode != NULL);
 
-#if 0
-	struct timespec	xTime;
-	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
-	{
-		pNode->xTimeout = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
-	}
-	else
-#endif
-	{
-		pNode->xTimeout = time(NULL) * 1000000 ;
-	}
+	FTNM_NODE_initTimeout(pNode);
 
 	pNode->xState = FTNM_NODE_STATE_SYNCHRONIZED;
 
@@ -344,15 +321,7 @@ FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode)
 
 	ASSERT(pNode != NULL);
 
-
-	if (pNode->xInfo.ulInterval != 0 && pNode->xInfo.ulInterval < 3600)
-	{
-		pNode->xTimeout += pNode->xInfo.ulInterval * 1000000;
-	}
-	else
-	{
-		pNode->xTimeout += 60 * 1000000;
-	}
+	FTNM_NODE_updateTimeout(pNode);
 
 	pNode->ulRetry 	= 0;
 	xRet = pNode->fStart(pNode);
@@ -372,23 +341,9 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 {
 	ASSERT(pNode != NULL);
 
-	//TRACE("Node[%s:%08lx] waiting for complete\n", pNode->xInfo.pDID, pNode->xState);
-	while(FTNM_NODE_SNMPC_isRunning((FTNM_NODE_SNMPC_PTR)pNode) == FTM_TRUE)
+	while(pNode->fIsRunning(pNode) == FTM_TRUE)
 	{
-		int64_t			xCurrentTime;
-#if 0
-		struct timespec	xTime;
-		if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
-		{
-			xCurrentTime = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
-		}
-		else
-#endif
-		{
-			xCurrentTime = time(NULL) * 1000000 ;
-		}
-
-		if (xCurrentTime >= pNode->xTimeout)
+		if (FTNM_NODE_isTimeout(pNode) == FTM_TRUE)
 		{
 			TRACE("Node[%s:%08lx] timeout %d\n", pNode->xInfo.pDID, pNode->xState, pNode->ulRetry);
 			if (++pNode->ulRetry > 3)
@@ -396,14 +351,7 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 				break;
 			}
 
-			if (pNode->xInfo.ulInterval != 0 && pNode->xInfo.ulInterval < 3600)
-			{
-				pNode->xTimeout += pNode->xInfo.ulInterval * 1000000;
-			}
-			else
-			{
-				pNode->xTimeout += 60 * 1000000;
-			}
+			FTNM_NODE_updateTimeout(pNode);
 		}
 
 		usleep(100000);
@@ -411,7 +359,6 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 
 	pNode->fStop(pNode);
 
-	//TRACE("Node[%s:%08lx] completed\n", pNode->xInfo.pDID, pNode->xState);
 	pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;	
 
 	return	FTM_RET_OK;
@@ -437,6 +384,57 @@ FTM_RET	FTNM_NODE_unlock(FTNM_NODE_PTR pNode)
 	return	FTM_RET_OK;
 }
 
+FTM_RET FTNM_NODE_initTimeout(FTNM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	struct timespec	xTime;
+	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
+	{
+		pNode->xTimeout = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
+	}
+	else
+	{
+		pNode->xTimeout = time(NULL) * 1000000 ;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_BOOL FTNM_NODE_isTimeout(FTNM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	int64_t			xCurrentTime;
+
+	struct timespec	xTime;
+	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
+	{
+		xCurrentTime = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
+	}
+	else
+	{
+		xCurrentTime = time(NULL) * 1000000 ;
+	}
+
+	return	(xCurrentTime >= pNode->xTimeout);
+}
+
+FTM_RET	FTNM_NODE_updateTimeout(FTNM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	if (pNode->xInfo.ulInterval != 0 && pNode->xInfo.ulInterval < 3600)
+	{
+		pNode->xTimeout += pNode->xInfo.ulInterval * 1000000;
+	}
+	else
+	{
+		pNode->xTimeout += 60 * 1000000;
+	}
+
+	return	FTM_RET_OK;
+}
 
 FTM_INT	FTNM_NODE_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
 {
