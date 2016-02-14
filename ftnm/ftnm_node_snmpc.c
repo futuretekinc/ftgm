@@ -151,6 +151,7 @@ static FTM_CHAR_PTR	pOIDNamePrefix[] =
 FTM_RET		FTNM_NODE_SNMPC_getOID(FTNM_NODE_SNMPC_PTR pNode, FTM_ULONG ulType, FTM_ULONG ulIndex, oid *pOID, size_t *pnOIDLen)
 {
 	ASSERT(pNode != NULL);
+	ASSERT(pOID != NULL);
 	ASSERT(pnOIDLen != NULL);
 
 	FTM_CHAR	pBuff[1024];

@@ -12,6 +12,7 @@
 
 FTM_RET	FTDMS_CONSOLE_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_CONSOLE_CMD_session(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTDMS_CONSOLE_CMD_debug(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_CONSOLE_CMD_node(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_CONSOLE_CMD_ep(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_CONSOLE_CMD_EP_showData(FTM_EPID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
@@ -25,6 +26,13 @@ FTM_CONSOLE_CMD	FTDMS_pCmdList[] =
 		.pShortHelp	= "Configuration Data Manager.",
 		.pHelp		= "\n"\
 					  "\tConfiguration Data Manager.\n"
+	},
+	{
+		.pString	= "debug",
+		.function	= FTDMS_CONSOLE_CMD_debug,
+		.pShortHelp	= "Debug Manager.",
+		.pHelp		= "\n"\
+					  "\tDebug Manager.\n"
 	},
 	{
 		.pString	= "session",
@@ -95,6 +103,26 @@ FTM_RET	FTDMS_CONSOLE_CMD_session
 	return	FTM_RET_OK;
 }
 
+FTM_RET FTDMS_CONSOLE_CMD_debug
+(
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[]
+)
+{
+	switch(nArgc)
+	{
+	case	1:
+		{
+			FTM_ULONG	ulLevel;
+			FTM_PRINT_getLevel(&ulLevel);
+			MESSAGE("MODE : %s\n", FTM_PRINT_levelString(ulLevel));
+		}
+		break;
+
+	}
+	return	FTM_RET_OK;
+}
+
 FTM_RET FTDMS_CONSOLE_CMD_node
 (
 	FTM_INT			nArgc,
@@ -118,8 +146,8 @@ FTM_RET FTDMS_CONSOLE_CMD_ep
 			FTM_ULONG	ulCount;
 
 			MESSAGE("# PRE-REGISTERED ENDPOINT\n");
-			MESSAGE("%-5s %-8s %-16s %-16s %-8s %-8s %-8s %-16s %-8s %-16s %-08s\n",
-					"INDEX", "EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID");
+			MESSAGE("%-5s %-8s %-16s %-16s %-8s %-8s %-8s %-8s %-16s %-8s\n",
+					"INDEX", "EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID");
 			if (FTDM_CFG_EP_INFO_count(&xConfig.xEP, &ulCount) == FTM_RET_OK)
 			{
 				FTM_ULONG	i;
@@ -145,13 +173,11 @@ FTM_RET FTDMS_CONSOLE_CMD_ep
 					default: MESSAGE("%-8s ", "UNKNOWN");
 					}
 		
-					MESSAGE("%-8lu %-8lu %-16s %08lx %-16s %08lx\n",
+					MESSAGE("%-8lu %-8lu %-16s %08lx\n",
 						xEPInfo.ulInterval,
 						xEPInfo.ulTimeout,
 						xEPInfo.pDID,
-						xEPInfo.xDEPID,
-						xEPInfo.pPID,
-						xEPInfo.xPEPID);
+						xEPInfo.xDEPID);
 				}
 			}
 

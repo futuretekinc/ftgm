@@ -1106,14 +1106,16 @@ static int _FTDM_DBIF_EP_DATA_getCB(void *pData, int nArgc, char **pArgv, char *
 		pParams->nCount++;
 		for(i = 0 ; i < nArgc ; i++)
 		{
-			TRACE("%s : %s\n", pColName[i], pArgv[i]);
-
 			if (strcmp(pColName[i],"TIME") == 0)
 			{
 				if (pParams->nCount <= pParams->nMaxCount)
 				{
 					pParams->pEPData[pParams->nCount-1].ulTime = strtoul(pArgv[i], 0, 10);
 				}
+			}
+			else if (strcmp(pColName[i], "STATE") == 0)
+			{
+				pParams->pEPData[pParams->nCount-1].xState = strtoul(&pArgv[i][1], NULL, 10);
 			}
 			else if (strcmp(pColName[i], "VALUE") == 0)
 			{
@@ -1169,7 +1171,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_get
 	xParams.pEPData = pEPData;
 	xParams.nMaxCount = nMaxCount;
 	xParams.nCount = 0;
-	TRACE("SQL : %s\n", pSQL);
+	printf("SQL : %s\n", pSQL);
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_getCB, &xParams, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{

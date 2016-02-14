@@ -964,38 +964,23 @@ FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	{
 		if (nArgc == 2)
 		{
-			FTM_ULONG	nMode;
+			FTM_ULONG	ulLevel;
 
-			FTM_PRINT_getLevel(&nMode);
-			switch(nMode)
-			{
-			case	0: MESSAGE("DEBUG OUT MODE : NONE\n"); break;
-			case	1: MESSAGE("DEBUG OUT MODE : NORMAL\n"); break;
-			case	2: MESSAGE("DEBUG OUT MODE : ALL\n"); break;
-			}
+			FTM_PRINT_getLevel(&ulLevel);
+			MESSAGE("DEBUG OUT MODE : %s\n", FTM_PRINT_levelString(ulLevel));
 		}
 		else if (nArgc == 3)
 		{
-			FTM_ULONG	nMode, nNewMode;
+			FTM_ULONG	ulLevel, ulNewLevel;
 
-			nNewMode = strtoul(pArgv[2], NULL, 10);
+			ulNewLevel = strtoul(pArgv[2], NULL, 10);
 		
-			FTM_PRINT_getLevel(&nMode);
-			FTM_PRINT_setLevel(nNewMode);
+			FTM_PRINT_getLevel(&ulLevel);
+			FTM_PRINT_setLevel(ulLevel);
 
-			switch(nMode)
-			{
-			case	0: MESSAGE("DEBUG OUT MODE : NONE"); break;
-			case	1: MESSAGE("DEBUG OUT MODE : NORMAL"); break;
-			case	2: MESSAGE("DEBUG OUT MODE : ALL"); break;
-			}
-
-			switch(nNewMode)
-			{
-			case	0: MESSAGE(" to NONE\n"); break;
-			case	1: MESSAGE(" to NORMAL\n"); break;
-			case	2: MESSAGE(" to ALL\n"); break;
-			}
+			MESSAGE("DEBUG OUT MODE : %s to %s\n",
+				FTM_PRINT_levelString(ulLevel),
+				FTM_PRINT_levelString(ulNewLevel));
 		}
 		else
 		{

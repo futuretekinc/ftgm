@@ -11,7 +11,7 @@ FTM_RET	FTM_PRINT_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_P
 
 static FTM_PRINT_CFG	_xConfig = 
 {
-	.ulLevel = FTM_PRINT_LEVEL_ERROR,
+	.ulLevel = FTM_PRINT_LEVEL_ALL,
 	.xTrace = 
 	{
 		.bToFile = FTM_FALSE,
@@ -309,4 +309,33 @@ FTM_RET	FTM_PRINT_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
+struct 
+{
+	FTM_ULONG		ulLevel;
+	FTM_CHAR_PTR	pName;
+} FTM_levelStrings[] =
+{
+	{ FTM_PRINT_LEVEL_ALL, "ALL" },
+	{ FTM_PRINT_LEVEL_TRACE, "TRACE"},
+	{ FTM_PRINT_LEVEL_DEBUG, "DEBUG"},
+	{ FTM_PRINT_LEVEL_INFO, "INFO"},
+	{ FTM_PRINT_LEVEL_WARN, "WARN"}, 
+	{ FTM_PRINT_LEVEL_ERROR, "ERROR"},
+	{ FTM_PRINT_LEVEL_FATAL, "FATAL"},
+};
+
+FTM_CHAR_PTR	FTM_PRINT_levelString(FTM_ULONG ulLevel)
+{
+	FTM_ULONG	i;
+
+	for(i = 0 ; i < sizeof(FTM_levelStrings) / sizeof(FTM_levelStrings[0]) ; i++)
+	{
+		if (FTM_levelStrings[i].ulLevel == ulLevel)
+		{
+			return	FTM_levelStrings[i].pName;	
+		}
+	}
+
+	return	"UNKNOWN";
+}
 

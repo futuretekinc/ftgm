@@ -14,7 +14,7 @@
 #define	FTM_PRINT_LEVEL_WARN		8
 #define	FTM_PRINT_LEVEL_ERROR		10
 #define	FTM_PRINT_LEVEL_FATAL		12
-#define	FTM_PRINT_LEVEL_ALWAYS		100	
+#define	FTM_PRINT_LEVEL_MESSAGE		100
 
 typedef	struct
 {
@@ -50,6 +50,7 @@ FTM_RET	FTM_PRINT_out
 	const char *	pFormat,
 	...
 );
+FTM_CHAR_PTR	FTM_PRINT_levelString(FTM_ULONG ulLevel);
 
 FTM_RET	FTM_PRINT_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 
@@ -63,7 +64,7 @@ FTM_VOID	FTM_PRINT_packetDump
 	FTM_INT			nLen
 );
 
-#define MESSAGE(format, ...) FTM_PRINT_out(FTM_PRINT_LEVEL_ALWAYS, NULL, 0, FTM_FALSE, format, ## __VA_ARGS__)
+#define MESSAGE(format, ...) FTM_PRINT_out(FTM_PRINT_LEVEL_MESSAGE, NULL, 0, FTM_FALSE, format, ## __VA_ARGS__)
 
 #ifdef	TRACE_OFF
 #define	TRACE(format, ...) 

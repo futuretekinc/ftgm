@@ -201,9 +201,13 @@ FTM_RET	FTNM_EP_attach(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode)
 	{
 	case	FTM_NODE_TYPE_SNMP:
 		{
-			pEP->xOption.xSNMP.nOIDLen = sizeof(pEP->xOption.xSNMP.pOID); 
+			pEP->xOption.xSNMP.nOIDLen = MAX_OID_LEN;
 
-			FTNM_NODE_SNMPC_getOID((FTNM_NODE_SNMPC_PTR)pNode, (pEP->xInfo.xEPID >> 24) & 0xFF, (pEP->xInfo.xEPID & 0xFF), pEP->xOption.xSNMP.pOID, &pEP->xOption.xSNMP.nOIDLen);
+			FTNM_NODE_SNMPC_getOID((FTNM_NODE_SNMPC_PTR)pNode, 
+					(pEP->xInfo.xEPID >> 24) & 0xFF, 
+					(pEP->xInfo.xEPID & 0xFF), 
+					pEP->xOption.xSNMP.pOID, 
+					&pEP->xOption.xSNMP.nOIDLen);
 		}
 		break;
 	}
