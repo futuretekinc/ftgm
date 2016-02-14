@@ -115,12 +115,39 @@ FTM_RET FTDMS_SHELL_CMD_debug
 	case	1:
 		{
 			FTM_ULONG	ulLevel;
+
 			FTM_PRINT_getLevel(&ulLevel);
-			MESSAGE("MODE : %s\n", FTM_PRINT_levelString(ulLevel));
+			MESSAGE("LEVEL : %s\n", FTM_PRINT_levelString(ulLevel));
 		}
 		break;
 
+	case	2:
+		{
+			if (strcasecmp(pArgv[1], "help") == 0)
+			{
+				MESSAGE("Usage : %s [<cmd> <level>]\n",	pArgv[0]);
+				MESSAGE("    Debugging configuration\n");
+				MESSAGE("  Commands:\n");
+				MESSAGE("    %8s   Set debugging level\n", "level");
+				MESSAGE("  Parameters:\n");
+				MESSAGE("    %8s   Debugging level (0 ~ 10)\n");
+			}
+		}
+		break;
+
+	case	3:
+		{
+			if (strcasecmp(pArgv[1], "level") == 0)
+			{
+				FTM_ULONG	ulLevel;
+
+				ulLevel = strtoul(pArgv[2], NULL, 10);
+				FTM_PRINT_setLevel(ulLevel);
+			}
+		}
+		break;
 	}
+
 	return	FTM_RET_OK;
 }
 
@@ -142,15 +169,14 @@ FTM_RET FTDMS_SHELL_CMD_node
 		{
 			if (strcasecmp(pArgv[1], "help") == 0)
 			{
-								
-				MESSAGE("Usage : node [<DID> [<cmd>] [<index> <count>]]\n");	
+				MESSAGE("Usage : %s [<DID> [<cmd>] [<index> <count>]]\n", pArgv[0]);	
 				MESSAGE("    Node management\n");
 				MESSAGE("  Commands:\n");
-				MESSAGE("    %-8s - Display data\n", "data");
+				MESSAGE("    %8s  Display data\n", "data");
 				MESSAGE("  Parameters:\n");
-				MESSAGE("    %-8s - identifer of DID\n", "DID");
-				MESSAGE("    %-8s - The starting index of the data for display.\n", "index");
-				MESSAGE("    %-8s - Number of the data for display.\n", "count");
+				MESSAGE("    %8s  Identifer of DID\n", "DID");
+				MESSAGE("    %8s  The starting index of the data for display.\n", "index");
+				MESSAGE("    %8s  Number of the data for display.\n", "count");
 			}
 			else
 			{
@@ -183,14 +209,14 @@ FTM_RET FTDMS_SHELL_CMD_ep
 			if (strcasecmp(pArgv[1], "help") == 0)
 			{
 								
-				MESSAGE("Usage : ep [<EPID> [<cmd>] [<index> <count>]]\n");	
+				MESSAGE("Usage : %s [<EPID> [<cmd>] [<index> <count>]]\n", pArgv[0]);	
 				MESSAGE("    EP management\n");
 				MESSAGE("  Commands:\n");
-				MESSAGE("    %-8s - Display data\n", "data");
+				MESSAGE("    %8s  Display data\n", "data");
 				MESSAGE("  Parameters:\n");
-				MESSAGE("    %-8s - identifer of EP\n", "EPID");
-				MESSAGE("    %-8s - The starting index of the data for display.\n", "index");
-				MESSAGE("    %-8s - Number of the data for display.\n", "count");
+				MESSAGE("    %8s  Identifer of EP\n", "EPID");
+				MESSAGE("    %8s  The starting index of the data for display.\n", "index");
+				MESSAGE("    %8s  Number of the data for display.\n", "count");
 			}
 			else
 			{
