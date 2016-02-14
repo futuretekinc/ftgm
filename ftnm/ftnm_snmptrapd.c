@@ -614,8 +614,9 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 	pTransport = netsnmp_transport_open_server(pTrapd->xConfig.pName, pPort); 
 	if (pTransport == NULL) 
 	{
-		snmp_log(LOG_ERR, "couldn't open %s -- errno %d (\"%s\")\n",
-							"162", errno, strerror(errno));
+		ERROR("Couldn't open %d -- errno %d(\"%s\")\n", 
+				pTrapd->xConfig.usPort
+				errno, strerror(errno));
 		FTNM_SNMPTRAPD_closeSessions(pSessionList);
 		SOCK_CLEANUP;
 
@@ -632,7 +633,7 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 			 */
 			FTNM_SNMPTRAPD_closeSessions(pSessionList);
 			netsnmp_transport_free(pTransport);
-			snmp_log(LOG_ERR, "couldn't open snmp - %s", strerror(errno));
+			ERROR("couldn't open snmp - %s", strerror(errno));
 			SOCK_CLEANUP;
 
 			return	0;
@@ -658,8 +659,6 @@ FTM_RET	FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU)
 	for(vars = pPDU->variables; vars ; vars = vars->next_variable)
 	{
 		int	i ;
-		u_char *buf = NULL;
-		size_t buf_len = 0, out_len = 0;
 		char	pBuff[1024];
 
 		MESSAGE("Name : ");
