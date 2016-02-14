@@ -1,7 +1,13 @@
 #include <stdlib.h>
 #include "ftnm.h"
 #include "ftnm_node_snmpc.h"
+#include "ftnm_dmc.h"
+#include "ftnm_ep.h"
+#include "ftnm_ep_class.h"
 
+extern	FTNM_CONTEXT	xFTNM;
+
+FTM_ULONG	active_hosts = 0;
 FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData);
 FTM_CHAR_PTR	FTNM_NODE_SNMPC_getStateString(FTNM_SNMPC_STATE xState);
 
@@ -14,74 +20,6 @@ static FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 	FTM_VOID_PTR		magic
 );
 
-pthread_t	xSNMPManager;
-int	active_hosts = 0;
-
-FTM_RET	FTNM_SNMPC_init(FTNM_CFG_SNMPC_PTR pConfig)
-{
-	FTM_ULONG	i, ulCount;
-
-	ASSERT(pConfig != NULL);
-
-	init_snmp(pConfig->pName);
-
-	if (FTM_LIST_count(&pConfig->xMIBList, &ulCount) == FTM_RET_OK)
-	{
-		for(i = 0 ; i < ulCount ; i++)
-		{
-			FTM_VOID_PTR	pValue;
-
-			if (FTM_LIST_getAt(&pConfig->xMIBList, i, &pValue) == FTM_RET_OK)
-			{
-				TRACE("Load MIB : %s\n", (FTM_CHAR_PTR)pValue);
-
-				read_mib((FTM_CHAR_PTR)pValue);
-			}
-		}
-	}
-
-	pthread_create(&xSNMPManager, NULL, FTNM_SNMPC_asyncResponseManager, 0);
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SNMPC_final(FTM_VOID)
-{
-	return	FTM_RET_OK;
-}
-
-
-FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData)
-{
-	while (FTM_TRUE)
-	{	
-		if (active_hosts) 
-		{
-			FTM_INT	fds = 0, block = 1;
-			fd_set fdset;
-			struct timeval timeout;
-
-			FD_ZERO(&fdset);
-			snmp_select_info(&fds, &fdset, &timeout, &block);
-			fds = select(fds, &fdset, NULL, NULL, block ? NULL : &timeout);
-			if (fds < 0) 
-			{
-				perror("select failed");
-				exit(1);
-			}
-			if (fds)
-			{
-				snmp_read(&fdset);
-			}
-			else
-			{
-				snmp_timeout();
-			}
-		}
-		usleep(1000);
-	}
-
-	return	0;
-}
 
 FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 {
@@ -92,7 +30,7 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 
 	FTM_LIST_init(&pNode->xCommon.xEPList);
 
-	nRet = FTNM_NODE_EP_count((FTNM_NODE_PTR)pNode, &ulEPCount);
+	nRet = FTNM_NODE_EP_count(&xFTNM, (FTNM_NODE_PTR)pNode, &ulEPCount);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -109,7 +47,7 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 			FTM_EP_CLASS_INFO_PTR	pEPClassInfo;
 			FTM_CHAR				pOIDName[1024];
 
-			if (FTNM_NODE_EP_getAt((FTNM_NODE_PTR)pNode, i, (FTNM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
+			if (FTNM_NODE_EP_getAt(&xFTNM, (FTNM_NODE_PTR)pNode, i, (FTNM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
 			{
 				TRACE("EP[%d] information not found\n", i);
 				continue;
@@ -279,6 +217,7 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 					case	6:
 						{
 							FTM_CHAR	pBuff[1024];
+							FTM_EP_DATA	xData;
 
 							if (pVariable->val_len < 1024)
 							{
@@ -291,11 +230,11 @@ FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 								pBuff[1023] = 0;
 							}
 
-							pEP->xData.ulTime = time(NULL);
-							pEP->xData.xType  = FTM_EP_DATA_TYPE_FLOAT;
-							pEP->xData.xValue.fValue = strtod(pBuff, NULL);
+							xData.ulTime = time(NULL);
+							xData.xType  = FTM_EP_DATA_TYPE_FLOAT;
+							xData.xValue.fValue = strtod(pBuff, NULL);
 
-							FTNM_DMC_EP_DATA_set(pEP);
+							FTNM_EP_DATA_set(&xFTNM, pEP->xInfo.xEPID, &xData);
 						}
 						break;
 					};

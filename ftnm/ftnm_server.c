@@ -5,11 +5,11 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <semaphore.h>
-#include <pthread.h>
+#include "libconfig.h"
 #include "ftnm.h"
-#include "ftnm_config.h"
 #include "ftnm_params.h"
+#include "ftnm_node.h"
+#include "ftnm_ep.h"
 #include "ftnm_server.h"
 #include "ftnm_server_cmd.h"
 
@@ -25,59 +25,86 @@ typedef	struct
 
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTNM_SERVICE_CALLBACK)FUN }
 
-static FTM_VOID_PTR FTNMS_process(FTM_VOID_PTR pData);
-static FTM_VOID_PTR FTNMS_serviceHandler(FTM_VOID_PTR pData);
+static FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData);
+static FTM_VOID_PTR FTNM_SRV_serviceHandler(FTM_VOID_PTR pData);
 
-static FTNMS_CMD_SET	pCmdSet[] =
+static FTNM_SRV_CMD_SET	pCmdSet[] =
 {
-	MK_CMD_SET(FTNM_CMD_NODE_CREATE,		FTNMS_NODE_create),
-	MK_CMD_SET(FTNM_CMD_NODE_DESTROY,		FTNMS_NODE_destroy),
-	MK_CMD_SET(FTNM_CMD_NODE_COUNT,			FTNMS_NODE_count),
-	MK_CMD_SET(FTNM_CMD_NODE_GET,			FTNMS_NODE_get),
-	MK_CMD_SET(FTNM_CMD_NODE_GET_AT,		FTNMS_NODE_getAt),
-	MK_CMD_SET(FTNM_CMD_EP_CREATE,			FTNMS_EP_create),
-	MK_CMD_SET(FTNM_CMD_EP_DESTROY,			FTNMS_EP_destroy),
-	MK_CMD_SET(FTNM_CMD_EP_COUNT,			FTNMS_EP_count),
-	MK_CMD_SET(FTNM_CMD_EP_GET_LIST,		FTNMS_EP_getList),
-	MK_CMD_SET(FTNM_CMD_EP_GET,				FTNMS_EP_get),
-	MK_CMD_SET(FTNM_CMD_EP_GET_AT,			FTNMS_EP_getAt),
-	MK_CMD_SET(FTNM_CMD_EP_DATA_INFO,		FTNMS_EP_DATA_info),
-	MK_CMD_SET(FTNM_CMD_EP_DATA_GET_LAST,	FTNMS_EP_DATA_getLast),
-	MK_CMD_SET(FTNM_CMD_EP_DATA_COUNT,		FTNMS_EP_DATA_count),
+	MK_CMD_SET(FTNM_CMD_NODE_CREATE,		FTNM_SRV_NODE_create),
+	MK_CMD_SET(FTNM_CMD_NODE_DESTROY,		FTNM_SRV_NODE_destroy),
+	MK_CMD_SET(FTNM_CMD_NODE_COUNT,			FTNM_SRV_NODE_count),
+	MK_CMD_SET(FTNM_CMD_NODE_GET,			FTNM_SRV_NODE_get),
+	MK_CMD_SET(FTNM_CMD_NODE_GET_AT,		FTNM_SRV_NODE_getAt),
+	MK_CMD_SET(FTNM_CMD_EP_CREATE,			FTNM_SRV_EP_create),
+	MK_CMD_SET(FTNM_CMD_EP_DESTROY,			FTNM_SRV_EP_destroy),
+	MK_CMD_SET(FTNM_CMD_EP_COUNT,			FTNM_SRV_EP_count),
+	MK_CMD_SET(FTNM_CMD_EP_GET_LIST,		FTNM_SRV_EP_getList),
+	MK_CMD_SET(FTNM_CMD_EP_GET,				FTNM_SRV_EP_get),
+	MK_CMD_SET(FTNM_CMD_EP_GET_AT,			FTNM_SRV_EP_getAt),
+	MK_CMD_SET(FTNM_CMD_EP_DATA_INFO,		FTNM_SRV_EP_DATA_info),
+	MK_CMD_SET(FTNM_CMD_EP_DATA_GET_LAST,	FTNM_SRV_EP_DATA_getLast),
+	MK_CMD_SET(FTNM_CMD_EP_DATA_COUNT,		FTNM_SRV_EP_DATA_count),
 	MK_CMD_SET(FTNM_CMD_UNKNOWN, 		NULL)
 };
 
-static sem_t		xSemaphore;
-static pthread_t	xPThread;
+extern FTNM_CONTEXT	xFTNM;
 
-FTM_RET	FTNMS_run(FTNM_CFG_SERVER_PTR pConfig, pthread_t *pPThread )
+FTM_RET	FTNM_SRV_init
+(
+	FTNM_SERVER_PTR 		pServer 
+)
 {
+	ASSERT(pServer != NULL);
+
+	FTNM_SRV_CFG_init(&pServer->xConfig);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SRV_final
+(
+	FTNM_SERVER_PTR 		pServer 
+)
+{
+	ASSERT(pServer != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SRV_loadConfig(FTNM_SERVER_PTR pServer, FTM_CHAR_PTR pConfigFileName)
+{
+	ASSERT(pServer != NULL);
+
+	return	FTNM_SRV_CFG_load(&pServer->xConfig, pConfigFileName);
+}
+
+FTM_RET	FTNM_SRV_run(FTNM_SERVER_PTR pServer)
+{
+	ASSERT(pServer != NULL);
+
 	int	nRet;
 
-	nRet = pthread_create(&xPThread, NULL, FTNMS_process, (void *)pConfig);
+	nRet = pthread_create(&pServer->xPThread, NULL, FTNM_SRV_process, (FTM_VOID_PTR)pServer);
 	if (nRet != 0)
 	{
 		ERROR("Can't create thread[%d]\n", nRet);
 		return	FTM_RET_CANT_CREATE_THREAD;
 	}
 
-	if (pPThread != NULL)
-	{
-		*pPThread = xPThread;	
-	}
-
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTNMS_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData)
 {
+	ASSERT(pData != NULL);
+
 	FTM_INT				nRet;
 	FTM_INT				hSocket;
-	struct sockaddr_in	xServer, xClient;
-	FTNM_CFG_SERVER_PTR pServer = (FTNM_CFG_SERVER_PTR)pData;
+	struct sockaddr_in	xServerAddr, xClientAddr;
+	FTNM_SERVER_PTR 	pServer = (FTNM_SERVER_PTR)pData;
 
 
-	if (sem_init(&xSemaphore, 0,pServer->ulMaxSession) < 0)
+	if (sem_init(&pServer->xSemaphore, 0,pServer->xConfig.ulMaxSession) < 0)
 	{
 		ERROR("Can't alloc semaphore!\n");
 		return	0;	
@@ -90,11 +117,11 @@ FTM_VOID_PTR FTNMS_process(FTM_VOID_PTR pData)
 		return	0;
 	}
 
-	xServer.sin_family 		= AF_INET;
-	xServer.sin_addr.s_addr = INADDR_ANY;
-	xServer.sin_port 		= htons( pServer->usPort );
+	xServerAddr.sin_family 		= AF_INET;
+	xServerAddr.sin_addr.s_addr = INADDR_ANY;
+	xServerAddr.sin_port 		= htons( pServer->xConfig.usPort );
 
-	nRet = bind( hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
+	nRet = bind( hSocket, (struct sockaddr *)&xServerAddr, sizeof(xServerAddr));
 	if (nRet < 0)
 	{
 		ERROR("bind failed.[nRet = %d]\n", nRet);
@@ -104,55 +131,58 @@ FTM_VOID_PTR FTNMS_process(FTM_VOID_PTR pData)
 	listen(hSocket, 3);
 
 
-	while(1)
+	while(FTM_TRUE)
 	{
 		FTM_INT	hClient;
 		FTM_INT	nValue;
 		FTM_INT	nSockAddrIulLen = sizeof(struct sockaddr_in);	
+		struct timespec			xTimeout = { .tv_sec = 2, .tv_nsec = 0};
 
-		sem_getvalue(&xSemaphore, &nValue);
-		MESSAGE("Waiting for connections ...[%d]\n", nValue);
-		hClient = accept(hSocket, (struct sockaddr *)&xClient, (socklen_t *)&nSockAddrIulLen);
-		if (hClient != 0)
+		if (sem_timedwait(&pServer->xSemaphore, &xTimeout) == 0)
 		{
-			pthread_t xPthread;	
-
-			TRACE("Accept new connection.[ %s:%d ]\n", inet_ntoa(xClient.sin_addr), ntohs(xClient.sin_port));
-
-			FTNM_SESSION_PTR pSession = (FTNM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTNM_SESSION));
-			if (pSession == NULL)
+			sem_getvalue(&pServer->xSemaphore, &nValue);
+			MESSAGE("Waiting for connections ...[%d]\n", nValue);
+			hClient = accept(hSocket, (struct sockaddr *)&xClientAddr, (socklen_t *)&nSockAddrIulLen);
+			if (hClient != 0)
 			{
-				ERROR("System memory is not enough!\n");
-				close(hClient);
-				TRACE("The session(%08x) was closed.\n", hClient);
-			}
-			else
-			{
-				TRACE("The new session(%08x) has beed connected\n", hClient);
+				pthread_t xPthread;	
 
-				pSession->hSocket = hClient;
-				memcpy(&pSession->xPeer, &xClient, sizeof(xClient));
-				pthread_create(&xPthread, NULL, FTNMS_serviceHandler, pSession);
+				TRACE("Accept new connection.[ %s:%d ]\n", inet_ntoa(xClientAddr.sin_addr), ntohs(xClientAddr.sin_port));
+
+				FTNM_SESSION_PTR pSession = (FTNM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTNM_SESSION));
+				if (pSession == NULL)
+				{
+					ERROR("System memory is not enough!\n");
+					close(hClient);
+					TRACE("The session(%08x) was closed.\n", hClient);
+				}
+				else
+				{
+					TRACE("The new session(%08x) has beed connected\n", hClient);
+
+					pSession->hSocket = hClient;
+					memcpy(&pSession->xPeer, &xClientAddr, sizeof(xClientAddr));
+					pthread_create(&xPthread, NULL, FTNM_SRV_serviceHandler, pSession);
+				}
+			
 			}
+		}
+		else
+		{
+			TRACE("It has exceeded the allowed number of sessions.\n");
+			shutdown(hSocket, SHUT_RD);
 		}
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTNMS_serviceHandler(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTNM_SRV_serviceHandler(FTM_VOID_PTR pData)
 {
 	FTNM_SESSION_PTR		pSession= (FTNM_SESSION_PTR)pData;
 	FTNM_REQ_PARAMS_PTR		pReq 	= (FTNM_REQ_PARAMS_PTR)pSession->pReqBuff;
 	FTNM_RESP_PARAMS_PTR	pResp 	= (FTNM_RESP_PARAMS_PTR)pSession->pRespBuff;
-	struct timespec			xTimeout = { .tv_sec = 2, .tv_nsec = 0};
 
-	if (sem_timedwait(&xSemaphore, &xTimeout) < 0)
-	{
-		TRACE("The session(%08x) was closed\n", pSession->hSocket);
-		shutdown(pSession->hSocket, SHUT_RD);
-		return	0;	
-	}
 
 	while(1)
 	{
@@ -171,7 +201,7 @@ FTM_VOID_PTR FTNMS_serviceHandler(FTM_VOID_PTR pData)
 			break;	
 		}
 
-		if (FTM_RET_OK != FTNMS_serviceCall(pReq, pResp))
+		if (FTM_RET_OK != FTNM_SRV_serviceCall(pReq, pResp))
 		{
 			pResp->xCmd = pReq->xCmd;
 			pResp->nRet = FTM_RET_INTERNAL_ERROR;
@@ -190,19 +220,17 @@ FTM_VOID_PTR FTNMS_serviceHandler(FTM_VOID_PTR pData)
 	close(pSession->hSocket);
 	TRACE("The session(%08x) was closed\n", pSession->hSocket);
 
-	sem_post(&xSemaphore);
-
 	return	0;
 }
 
-FTM_RET	FTNMS_serviceCall
+FTM_RET	FTNM_SRV_serviceCall
 (
 	FTNM_REQ_PARAMS_PTR		pReq,
 	FTNM_RESP_PARAMS_PTR	pResp
 )
 {
 	FTM_RET				nRet;
-	FTNMS_CMD_SET_PTR	pSet = pCmdSet;
+	FTNM_SRV_CMD_SET_PTR	pSet = pCmdSet;
 
 	while(pSet->xCmd != FTNM_CMD_UNKNOWN)
 	{
@@ -222,7 +250,7 @@ FTM_RET	FTNMS_serviceCall
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 
-FTM_RET	FTNMS_NODE_create
+FTM_RET	FTNM_SRV_NODE_create
 (
 	FTNM_REQ_NODE_CREATE_PARAMS_PTR		pReq,
 	FTNM_RESP_NODE_CREATE_PARAMS_PTR	pResp
@@ -232,13 +260,13 @@ FTM_RET	FTNMS_NODE_create
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_create(&pReq->xNodeInfo, &pNode);
+	pResp->nRet = FTNM_NODE_create(&xFTNM, &pReq->xNodeInfo, &pNode);
 
 	return	pResp->nRet;
 }
 
 
-FTM_RET	FTNMS_NODE_destroy
+FTM_RET	FTNM_SRV_NODE_destroy
 (
  	FTNM_REQ_NODE_DESTROY_PARAMS_PTR	pReq,
 	FTNM_RESP_NODE_DESTROY_PARAMS_PTR	pResp
@@ -248,17 +276,17 @@ FTM_RET	FTNMS_NODE_destroy
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_get(pReq->pDID, &pNode);
+	pResp->nRet = FTNM_NODE_get(&xFTNM, pReq->pDID, &pNode);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		pResp->nRet = FTNM_NODE_destroy(pNode);
+		pResp->nRet = FTNM_NODE_destroy(&xFTNM, pNode);
 	}
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_NODE_count
+FTM_RET	FTNM_SRV_NODE_count
 (
  	FTNM_REQ_NODE_COUNT_PARAMS_PTR		pReq,
 	FTNM_RESP_NODE_COUNT_PARAMS_PTR	pResp
@@ -266,12 +294,12 @@ FTM_RET	FTNMS_NODE_count
 {
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_count(&pResp->ulCount);
+	pResp->nRet = FTNM_NODE_count(&xFTNM, &pResp->ulCount);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_NODE_get
+FTM_RET	FTNM_SRV_NODE_get
 (
  	FTNM_REQ_NODE_GET_PARAMS_PTR	pReq,
 	FTNM_RESP_NODE_GET_PARAMS_PTR	pResp
@@ -281,7 +309,7 @@ FTM_RET	FTNMS_NODE_get
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_get(pReq->pDID, &pNode);
+	pResp->nRet = FTNM_NODE_get(&xFTNM, pReq->pDID, &pNode);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE_INFO));
@@ -290,7 +318,7 @@ FTM_RET	FTNMS_NODE_get
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_NODE_getAt
+FTM_RET	FTNM_SRV_NODE_getAt
 (
  	FTNM_REQ_NODE_GET_AT_PARAMS_PTR		pReq,
 	FTNM_RESP_NODE_GET_AT_PARAMS_PTR	pResp
@@ -300,7 +328,7 @@ FTM_RET	FTNMS_NODE_getAt
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_NODE_getAt(pReq->ulIndex, &pNode);
+	pResp->nRet = FTNM_NODE_getAt(&xFTNM, pReq->ulIndex, &pNode);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE_INFO));
@@ -309,7 +337,7 @@ FTM_RET	FTNMS_NODE_getAt
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_EP_create
+FTM_RET	FTNM_SRV_EP_create
 (
  	FTNM_REQ_EP_CREATE_PARAMS_PTR	pReq,
 	FTNM_RESP_EP_CREATE_PARAMS_PTR	pResp
@@ -319,12 +347,12 @@ FTM_RET	FTNMS_EP_create
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_create(&pReq->xInfo, &pEP);
+	pResp->nRet = FTNM_EP_create(&xFTNM, &pReq->xInfo, &pEP);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_EP_destroy
+FTM_RET	FTNM_SRV_EP_destroy
 (
  	FTNM_REQ_EP_DESTROY_PARAMS_PTR	pReq,
 	FTNM_RESP_EP_DESTROY_PARAMS_PTR	pResp
@@ -334,17 +362,17 @@ FTM_RET	FTNMS_EP_destroy
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
+	pResp->nRet = FTNM_EP_get(&xFTNM, pReq->xEPID, &pEP);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		pResp->nRet = FTNM_EP_destroy(pEP);
+		pResp->nRet = FTNM_EP_destroy(&xFTNM, pEP);
 	}
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_EP_count
+FTM_RET	FTNM_SRV_EP_count
 (
  	FTNM_REQ_EP_COUNT_PARAMS_PTR	pReq,
 	FTNM_RESP_EP_COUNT_PARAMS_PTR	pResp
@@ -352,12 +380,12 @@ FTM_RET	FTNMS_EP_count
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_count(pReq->xClass, &pResp->nCount);
+	pResp->nRet = FTNM_EP_count(&xFTNM, pReq->xClass, &pResp->nCount);
 	TRACE("EP COUNT : %d\n", pResp->nCount);
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_EP_get
+FTM_RET	FTNM_SRV_EP_get
 (
  	FTNM_REQ_EP_GET_PARAMS_PTR		pReq,
 	FTNM_RESP_EP_GET_PARAMS_PTR		pResp
@@ -367,7 +395,7 @@ FTM_RET	FTNMS_EP_get
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
+	pResp->nRet = FTNM_EP_get(&xFTNM, pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP_INFO));
@@ -376,20 +404,20 @@ FTM_RET	FTNMS_EP_get
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_EP_getList
+FTM_RET	FTNM_SRV_EP_getList
 (
  	FTNM_REQ_EP_GET_LIST_PARAMS_PTR		pReq,
 	FTNM_RESP_EP_GET_LIST_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
-	pResp->nRet = FTNM_EP_getList(pReq->xClass, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
+	pResp->nRet = FTNM_EP_getList(&xFTNM, pReq->xClass, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EPID) * pResp->ulCount;
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_EP_getAt
+FTM_RET	FTNM_SRV_EP_getAt
 (
  	FTNM_REQ_EP_GET_AT_PARAMS_PTR	pReq,
 	FTNM_RESP_EP_GET_AT_PARAMS_PTR	pResp
@@ -399,7 +427,7 @@ FTM_RET	FTNMS_EP_getAt
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_getAt(pReq->ulIndex, &pEP);
+	pResp->nRet = FTNM_EP_getAt(&xFTNM, pReq->ulIndex, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP_INFO));
@@ -408,7 +436,7 @@ FTM_RET	FTNMS_EP_getAt
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_EP_DATA_info
+FTM_RET	FTNM_SRV_EP_DATA_info
 (
 	FTNM_REQ_EP_DATA_INFO_PARAMS_PTR pReq,
 	FTNM_RESP_EP_DATA_INFO_PARAMS_PTR pResp
@@ -416,11 +444,11 @@ FTM_RET	FTNMS_EP_DATA_info
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_DATA_info(pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
+	pResp->nRet = FTNM_EP_DATA_info(&xFTNM, pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
 
 	return	pResp->nRet;
 }
-FTM_RET	FTNMS_EP_DATA_getLast
+FTM_RET	FTNM_SRV_EP_DATA_getLast
 (
 	FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR pReq,
 	FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR pResp
@@ -430,7 +458,7 @@ FTM_RET	FTNMS_EP_DATA_getLast
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
+	pResp->nRet = FTNM_EP_get(&xFTNM, pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xData, &pEP->xData, sizeof(FTM_EP_DATA));
@@ -439,22 +467,150 @@ FTM_RET	FTNMS_EP_DATA_getLast
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNMS_EP_DATA_count
+FTM_RET	FTNM_SRV_EP_DATA_count
 (
 	FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR pReq,
 	FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR pResp
 )
 {
-	FTNM_EP_PTR	pEP;
 	FTM_ULONG	ulCount = 0;
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_DATA_count(pReq->xEPID, &ulCount);
+	pResp->nRet = FTNM_EP_DATA_count(&xFTNM, pReq->xEPID, &ulCount);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		pResp->ulCount = ulCount;
 	}
 
 	return	pResp->nRet;
+}
+
+FTM_RET	FTNM_SRV_CFG_create(FTNM_SRV_CONFIG_PTR _PTR_ ppConfig)
+{
+	ASSERT(ppConfig != NULL);
+
+	FTNM_SRV_CONFIG_PTR	pConfig;
+
+	pConfig = FTM_MEM_calloc(1, sizeof(FTNM_SRV_CONFIG));
+	if (pConfig == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	FTNM_SRV_CFG_init(pConfig);
+
+	*ppConfig = pConfig;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SRV_CFG_copyCreate(FTNM_SRV_CONFIG_PTR _PTR_ ppConfig, FTNM_SRV_CONFIG_PTR pOldConfig)
+{
+	ASSERT(pOldConfig != NULL);
+	ASSERT(ppConfig != NULL);
+
+	FTNM_SRV_CONFIG_PTR	pConfig;
+
+	pConfig = FTM_MEM_calloc(1, sizeof(FTNM_SRV_CONFIG));
+	if (pConfig == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	if (FTNM_SRV_CFG_copy(pConfig, pOldConfig) != FTM_RET_OK)
+	{
+		FTM_MEM_free(pConfig);
+		return	FTM_RET_INTERNAL_ERROR;
+	}
+
+	*ppConfig = pConfig;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SRV_CFG_destroy(FTNM_SRV_CONFIG_PTR pConfig)
+{
+	ASSERT(pConfig != NULL);
+
+	FTNM_SRV_CFG_final(pConfig);
+	FTM_MEM_free(pConfig);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SRV_CFG_init(FTNM_SRV_CONFIG_PTR pConfig)
+{
+	ASSERT(pConfig != NULL);
+
+	memset(pConfig, 0, sizeof(FTNM_SRV_CONFIG));
+
+	pConfig->usPort			= FTNM_DEFAULT_SERVER_PORT;
+	pConfig->ulMaxSession	= FTNM_DEFAULT_SERVER_SESSION_COUNT	;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SRV_CFG_final(FTNM_SRV_CONFIG_PTR pConfig)
+{
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_SRV_CFG_load(FTNM_SRV_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileName)
+{
+	ASSERT(pConfig != NULL);
+	ASSERT(pFileName != NULL);
+
+	config_t			xConfig;
+	config_setting_t	*pSection;
+	
+
+	config_init(&xConfig);
+	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
+	{
+		return	FTM_RET_CONFIG_LOAD_FAILED;
+	}
+
+	pSection = config_lookup(&xConfig, "server");
+	if (pSection != NULL)
+	{
+		config_setting_t	*pField;
+
+		pField = config_setting_get_member(pSection, "max_session");
+		if (pField != NULL)
+		{
+			pConfig->ulMaxSession = (FTM_ULONG)config_setting_get_int(pField);
+		}
+	
+		pField = config_setting_get_member(pSection, "port");
+		if (pField != NULL)
+		{
+			pConfig->usPort = (FTM_ULONG)config_setting_get_int(pField);
+		}
+	}
+
+	config_destroy(&xConfig);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_SRV_CFG_copy(FTNM_SRV_CONFIG_PTR pDestCfg, FTNM_SRV_CONFIG_PTR pSrcCfg)
+{
+	ASSERT(pDestCfg != NULL);
+	ASSERT(pSrcCfg != NULL);
+
+	memcpy(pDestCfg, pSrcCfg, sizeof(FTNM_SRV_CONFIG));
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_SRV_CFG_show(FTNM_SRV_CONFIG_PTR pConfig)
+{
+	ASSERT(pConfig != NULL);
+
+	MESSAGE("\n[ SERVER CONFIGURATION ]\n");
+	MESSAGE("%16s : %d\n", "PORT", pConfig->usPort);
+	MESSAGE("%16s : %lu\n", "MAX SESSION", pConfig->ulMaxSession);
+
+	return	FTM_RET_OK;
 }

@@ -1,8 +1,7 @@
-#ifndef	__FTNM_SNMP_CLIENT_H__
-#define	__FTNM_SNMP_CLIENT_H__
+#ifndef	__FTNM_NODE_SNMP_CLIENT_H__
+#define	__FTNM_NODE_SNMP_CLIENT_H__
 
 #include "ftnm.h"
-#include "ftnm_config.h"
 #include "ftnm_node.h"
 
 typedef	FTM_ULONG		FTNM_SNMPC_STATE, _PTR_ FTNM_SNMPC_STATE_PTR;
@@ -27,8 +26,6 @@ typedef	struct
 		FTM_ULONG				ulResponse;
 	}	xStatistics;	
 }	FTNM_NODE_SNMPC, _PTR_ FTNM_NODE_SNMPC_PTR;
-
-FTM_RET		FTNM_SNMPC_init(FTNM_CFG_SNMPC_PTR pConfig);
 
 FTM_RET		FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode);
 FTM_RET		FTNM_NODE_SNMPC_final(FTNM_NODE_SNMPC_PTR pNode);

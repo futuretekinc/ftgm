@@ -9,7 +9,7 @@ CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftnmc -lftm -lconfig -lpthread 
 
 FTNM=ftnm
-FTNM_SRCS=ftnm_server_main.c ftnm.c
+FTNM_SRCS=ftnm_main.c ftnm.c
 FTNM_OBJS=$(FTNM_SRCS:.c=.o)
 FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmp
 
@@ -20,9 +20,10 @@ LIB_FTNM_SRCS= ftnm.c \
 			   ftnm_node.c\
 			   ftnm_ep.c\
 			   ftnm_ep_class.c\
-			   ftnm_config.c\
 			   ftnm_node_snmpc.c\
-			   ftnm_cmds.c
+			   ftnm_snmpc.c\
+			   ftnm_console_cmds.c\
+			   ftnm_dmc.c
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)
 
 LIB_FTNMC=libftnmc

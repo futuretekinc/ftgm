@@ -6,12 +6,11 @@
 #include "ftnm.h"
 #include "ftm_mem.h"
 #include "ftm_debug.h"
-#include "ftnm_cmds.h"
-#include "ftnm_config.h"
+#include "ftnm_console_cmds.h"
 
 extern char *program_invocation_short_name;
 
-FTM_VOID_PTR	FTNMS_process(FTM_VOID_PTR pData);
+FTNM_CONTEXT	xFTNM;
 
 int main(int nArgc, char *pArgv[])
 {
@@ -48,30 +47,25 @@ int main(int nArgc, char *pArgv[])
 	xConsoleConfig.ulCmdCount 	= FTNM_ulCmds;
 
 	FTM_CONSOLE_init(&xConsoleConfig);
-	FTNM_init(pConfigFileName);
+	FTNM_init(&xFTNM, pConfigFileName);
 
 	if (bDaemon)
 	{
 		if (fork() == 0)
 		{
-			FTNMS_process(NULL);
+			FTNM_run(&xFTNM);
+			FTNM_waitingForFinished(&xFTNM);
 		}
 	}
 	else
 	{
-		FTNMS_process(NULL);
+		FTNM_run(&xFTNM);
 		FTM_CONSOLE_run();
 	}
 
-	FTNM_final();
+	FTNM_final(&xFTNM);
 	FTM_MEM_final();
 
 	return	0;
 }
 
-FTM_VOID_PTR	FTNMS_process(FTM_VOID_PTR pData)
-{
-	FTNM_run();
-
-	return	0;
-}

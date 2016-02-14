@@ -7,10 +7,9 @@
 #include "ftm_mem.h"
 #include "ftm_value.h"
 #include "ftnm_types.h"
-#include "ftnm_config.h"
-#include "ftnm_node.h"
-#include "ftnm_ep.h"
-#include "ftnm_ep_class.h"
+#include "ftnm_dmc.h"
+#include "ftnm_server.h"
+#include "ftnm_snmpc.h"
 
 #define	FTNM_DEFAULT_SERVER_PORT			8889
 #define	FTNM_DEFAULT_SERVER_SESSION_COUNT	10
@@ -36,25 +35,22 @@ typedef	FTM_ULONG	FTNM_STATE;
 
 typedef	struct
 {
-	FTNM_STATE		xState;
-	pthread_t		xThread;
-	FTDMC_SESSION	xSession;
-	FTDMC_CFG		xConfig;
-}	FTNM_DMC, _PTR_	FTNM_DMC_PTR;
+	FTNM_STATE	xState;
+	FTM_LIST	xEPList;
+	pthread_t	xPThread;
 
-FTM_RET	FTNM_init(FTM_CHAR_PTR pConfigFileName);
-FTM_RET	FTNM_final(FTM_VOID);
-
-FTM_RET	FTNM_showConfig(FTM_VOID);
-
-FTM_RET FTNM_run(FTM_VOID);
+	FTNM_DMC	xDMC;
+	FTNM_SERVER	xServer;
+	FTNM_SNMPC	xSNMPC;
+}	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
 
-FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_EP_PTR pEP);
-FTM_RET FTNM_DMC_EP_DATA_setINT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_INT nValue);
-FTM_RET FTNM_DMC_EP_DATA_setULONG(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue);
-FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTM_EPID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue);
-FTM_RET	FTNM_DMC_EP_DATA_count(FTM_EPID xEPID, FTM_ULONG_PTR pulCount);
-FTM_RET	FTNM_DMC_EP_DATA_info(FTM_EPID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount);
+FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pConfigFileName);
+FTM_RET	FTNM_final(FTNM_CONTEXT_PTR pCTX);
+
+FTM_RET	FTNM_showConfig(FTNM_CONTEXT_PTR pCTX);
+FTM_RET FTNM_run(FTNM_CONTEXT_PTR pCTX);
+FTM_RET FTNM_waitingForFinished(FTNM_CONTEXT_PTR pCTX);
+
 #endif
 
