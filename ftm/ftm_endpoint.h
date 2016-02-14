@@ -71,11 +71,17 @@ typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
 #define	FTM_EP_DATA_TYPE_ULONG	1
 #define	FTM_EP_DATA_TYPE_FLOAT	2
 
+typedef	enum
+{
+	FTM_EP_DATA_STATE_VALID =0,
+	FTM_EP_DATA_STATE_INVALID,
+} FTM_EP_DATA_STATE, _PTR_ FTM_EP_DATA_STATE_PTR;
+
 typedef	struct
 {
 	FTM_ULONG			ulTime;
 	FTM_EP_DATA_TYPE	xType;
-	FTM_ULONG			ulState;
+	FTM_EP_DATA_STATE	xState;
 	union 
 	{
 		FTM_INT		nValue;

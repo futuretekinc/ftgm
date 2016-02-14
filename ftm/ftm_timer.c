@@ -62,3 +62,23 @@ FTM_RET FTM_TIMER_waitForExpired(FTM_TIMER_PTR pTimer)
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET FTM_TIMER_remain(FTM_TIMER_PTR pTimer, FTM_ULONG_PTR pulTime)
+{
+	ASSERT(pTimer != NULL);
+	struct timeval xCurrentTime;
+	struct timeval xDiffTime;
+
+	gettimeofday(&xCurrentTime, NULL);
+	if (timercmp(&pTimer->xTime, &xCurrentTime, >))
+	{
+		timersub(&pTimer->xTime, &xCurrentTime, &xDiffTime);
+		*pulTime = xDiffTime.tv_sec * 1000000 + xDiffTime.tv_usec;
+	}
+	else
+	{
+		*pulTime = 0;	
+	}
+
+	return	FTM_RET_OK;
+}

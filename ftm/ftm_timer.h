@@ -20,6 +20,7 @@ FTM_RET		FTM_TIMER_init(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout);
 FTM_RET		FTM_TIMER_add(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout);
 FTM_BOOL 	FTM_TIMER_isExpired(FTM_TIMER_PTR pTimer);
 FTM_RET 	FTM_TIMER_waitForExpired(FTM_TIMER_PTR pTimer);
+FTM_RET 	FTM_TIMER_remain(FTM_TIMER_PTR pTimer, FTM_ULONG_PTR pulTime);
 
 #endif
 

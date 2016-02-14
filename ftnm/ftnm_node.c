@@ -196,6 +196,19 @@ FTM_RET	FTNM_NODE_unlinkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 	return	FTM_RET_OK;
 }
 
+FTM_RET FTNM_NODE_EP_getData(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+
+	if (pNode->fGetEPData == NULL)
+	{
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
+	}
+
+	return	pNode->fGetEPData(pNode, pEP, pData);
+}
+
 FTM_RET	FTNM_NODE_updateEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 {
 	ASSERT(pNode != NULL);
