@@ -4,6 +4,7 @@
 #include "ftnm.h"
 #include "ftnm_node.h"
 #include "ftnm_ep.h"
+#include "ftnm_snmptrapd.h"
 
 typedef	FTM_ULONG		FTNM_SNMPC_STATE, _PTR_ FTNM_SNMPC_STATE_PTR;
 
@@ -38,6 +39,7 @@ typedef	struct
 typedef	struct 
 {
 	FTNM_SNMPC_CONFIG	xConfig;
+	FTNM_SNMPTRAPD		xTrapd;
 	pthread_t			xPThread;
 	pthread_t			xTrapD;
 }	FTNM_SNMPC, _PTR_ FTNM_SNMPC_PTR;

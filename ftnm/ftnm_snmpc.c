@@ -67,16 +67,6 @@ FTM_RET	FTNM_SNMPC_final(void)
 	return	FTM_RET_OK;
 }
 
-FTNM_SNMPTRAPD xTrapd = 
-{
-	.xConfig = 
-	{
-		.pName = "ftnm",
-		.usPort = 162
-	},
-
-};
-
 FTM_RET FTNM_SNMPC_run(void)
 {
 	ASSERT(pSNMPC != NULL);
@@ -105,7 +95,7 @@ FTM_RET FTNM_SNMPC_run(void)
 		}
 	}
 
-	nRet = pthread_create(&pSNMPC->xTrapD, NULL, FTNM_SNMPTRAPD_process, &xTrapd);
+	nRet = pthread_create(&pSNMPC->xTrapD, NULL, FTNM_SNMPTRAPD_process, &pSNMPC->xTrapd);
 	nRet = pthread_create(&pSNMPC->xPThread, NULL, FTNM_SNMPC_asyncResponseManager, 0);
 	if (nRet != 0)
 	{
@@ -167,6 +157,7 @@ FTM_RET FTNM_SNMPC_loadConfig(FTM_CHAR_PTR pFileName)
 	pSection = config_lookup(&xConfig, "snmpc");
 	if (pSection != NULL)
 	{
+		config_setting_t	*pSubSection;
 		config_setting_t	*pField;
 
 		pField = config_setting_get_member(pSection, "mibs");
@@ -189,6 +180,25 @@ FTM_RET FTNM_SNMPC_loadConfig(FTM_CHAR_PTR pFileName)
 			}
 		}
 
+		pSubSection = config_setting_get_member(pSection, "trapd");
+		if (pSubSection != NULL)
+		{
+			pField = config_setting_get_member(pSubSection, "name");
+			if (pField != NULL)
+			{
+				memset(pSNMPC->xTrapd.xConfig.pName, 0, sizeof(pSNMPC->xTrapd.xConfig.pName));
+				strncpy(pSNMPC->xTrapd.xConfig.pName,  config_setting_get_string(pField), sizeof(pSNMPC->xTrapd.xConfig.pName) - 1);
+			}
+
+			pField = config_setting_get_member(pSubSection, "port");
+			if (pField != NULL)
+			{
+				pSNMPC->xTrapd.xConfig.usPort =  config_setting_get_int(pField);
+			}
+
+
+		}
+		
 		pField = config_setting_get_member(pSection, "retry_count");
 		if (pField != NULL)
 		{
@@ -198,6 +208,7 @@ FTM_RET FTNM_SNMPC_loadConfig(FTM_CHAR_PTR pFileName)
 		{
 			pSNMPC->xConfig.ulMaxRetryCount = 1;
 		}
+		
 	}
 	config_destroy(&xConfig);
 

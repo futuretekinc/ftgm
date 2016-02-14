@@ -84,9 +84,9 @@ FTNM_SNMPTRAPD_inputCB
     int trapOidLen;
     netsnmp_variable_list *vars;
     //netsnmp_trapd_handler *traph;
+#if 0
     netsnmp_transport *pTransport = (netsnmp_transport *) pMagic;
-    int ret, idx;
-
+#endif
     switch (op) 
 	{
     case NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE:
@@ -184,7 +184,7 @@ FTNM_SNMPTRAPD_inputCB
 			}
 					for(vars = pPDU->variables; vars ; vars = vars->next_variable)
 					{
-						int	i, overflow = 0;
+						int	i ;
 						u_char *buf = NULL;
 						size_t buf_len = 0, out_len = 0;
 						MESSAGE("Name : ");
@@ -494,3 +494,73 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 
 }
 
+FTM_RET FTNM_SNMPTRAPD_loadConfig(FTNM_SNMPTRAPD_PTR pSNMPTrapd, FTM_CHAR_PTR pFileName)
+{
+	ASSERT(pSNMPTrapd != NULL);
+	ASSERT(pFileName != NULL);
+
+	config_t			xConfig;
+	config_setting_t	*pSection;
+	
+	config_init(&xConfig);
+	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
+	{
+		return	FTM_RET_CONFIG_LOAD_FAILED;
+	}
+
+	pSection = config_lookup(&xConfig, "snmptrapd");
+	if (pSection != NULL)
+	{
+		config_setting_t	*pField;
+
+		pField = config_setting_get_member(pSection, "name");
+		if (pField != NULL)
+		{
+			memset(pSNMPTrapd->xConfig.pName, 0, sizeof(pSNMPTrapd->xConfig.pName));
+			strncpy(pSNMPTrapd->xConfig.pName,  config_setting_get_string(pField), sizeof(pSNMPTrapd->xConfig.pName) - 1);
+		}
+
+		pField = config_setting_get_member(pSection, "port");
+		if (pField != NULL)
+		{
+			pSNMPTrapd->xConfig.usPort =  config_setting_get_int(pField);
+		}
+	}
+	config_destroy(&xConfig);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_SNMPTRAPD_start(FTNM_SNMPTRAPD_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+	FTM_INT	nRet;
+
+	nRet = pthread_create(&pCTX->xPThread, NULL, FTNM_SNMPTRAPD_process, pCTX);
+	switch(nRet)
+	{
+	case	EAGAIN: MESSAGE(" Insufficient resources to create another thread, or a system-imposed limit on the number of threads was encountered.\n"); break;
+	case	EINVAL:	MESSAGE("Invalid settings in attr.\n"); break;
+	case	EPERM:	MESSAGE("No permission to set the scheduling policy and parameters specified in attr.\n"); break;
+	}
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_SNMPTRAPD_stop(FTNM_SNMPTRAPD_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+	FTM_INT	nRet;
+
+	pCTX->bRunning = FTM_FALSE;
+	nRet = pthread_join(&pCTX->xPThread, NULL);
+
+	switch(nRet)
+	{ 
+	case	EDEADLK: MESSAGE("A deadlock was detected (e.g., two threads tried to join with each other); or thread specifies the calling thread.\n"); break;
+	case	EINVAL: MESSAGE("thread is not a joinable thread. Another thread is already waiting to join with this thread.\n"); break;
+	case	ESRCH:  MESSAGE("No thread with the ID thread could be found.\n");
+	}
+
+
+	return	FTM_RET_OK;
+}

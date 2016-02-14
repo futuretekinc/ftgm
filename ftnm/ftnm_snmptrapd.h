@@ -1,11 +1,14 @@
 #ifndef	_FTNM_SNMPTRAPD_H_
 #define	_FTNM_SNMPTRAPD_H_
 
+#include <pthread.h>
 #include "ftm_types.h"
+
+#define	FTNM_SNMPTRAPD_NAME_LENGTH	128
 
 typedef struct
 {
-	FTM_CHAR	pName[128];
+	FTM_CHAR	pName[FTNM_SNMPTRAPD_NAME_LENGTH + 1];
 	FTM_USHORT	usPort;
 }	FTNM_SNMPTRAPD_CONFIG, _PTR_ FTNM_SNMPTRAPD_CONFIG_PTR;
 	
@@ -13,6 +16,12 @@ typedef	struct
 {
 	FTNM_SNMPTRAPD_CONFIG	xConfig;
 	FTM_BOOL				bRunning;
+	pthread_t				xPThread;
 }	FTNM_SNMPTRAPD, _PTR_ FTNM_SNMPTRAPD_PTR;
+
+FTM_RET FTNM_SNMPTRAPD_loadConfig(FTNM_SNMPTRAPD_PTR pSNMPTrapd, FTM_CHAR_PTR pFileName);
+
+FTM_RET FTNM_SNMPTRAPD_start(FTNM_SNMPTRAPD_PTR pSNMPTrapd);
+FTM_RET FTNM_SNMPTRAPD_stop(FTNM_SNMPTRAPD_PTR pSNMPTrapd);
 
 #endif
