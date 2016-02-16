@@ -20,6 +20,43 @@ static FTM_INT	FTNM_NODE_SNMPC_asyncResponse
 	FTM_VOID_PTR		magic
 );
 
+FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
+{
+	ASSERT(pInfo != NULL);
+	ASSERT(ppNode != NULL);
+
+	FTNM_NODE_SNMPC_PTR	pNode;
+	
+	
+	pNode = (FTNM_NODE_SNMPC_PTR)FTM_MEM_malloc(sizeof(FTNM_NODE_SNMPC));
+	if (pNode == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE_INFO));
+	FTM_LIST_init(&pNode->xCommon.xEPList);
+	pthread_mutex_init(&pNode->xCommon.xMutexLock, NULL);
+
+	pNode->xCommon.fStart	= (FTNM_NODE_START)FTNM_NODE_SNMPC_start;
+	pNode->xCommon.fStop 	= (FTNM_NODE_STOP)FTNM_NODE_SNMPC_stop;
+
+	*ppNode = (FTNM_NODE_PTR)pNode;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_NODE_SNMPC_destroy(FTNM_NODE_SNMPC_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	FTM_LIST_final(&pNode->xCommon.xEPList);
+
+	FTM_MEM_free(pNode);
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 {
@@ -28,15 +65,13 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 
 	ASSERT(pNode != NULL);
 
-	FTM_LIST_init(&pNode->xCommon.xEPList);
-
 	nRet = FTNM_NODE_EP_count((FTNM_NODE_PTR)pNode, &ulEPCount);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
 	}
 
-	TRACE("NODE[%s] has %d EPs\n", pNode->xCommon.xInfo.pDID, ulEPCount);
+	TRACE("NODE(%08x)[%s] has %d EPs\n", pNode, pNode->xCommon.xInfo.pDID, ulEPCount);
 	if (ulEPCount != 0)
 	{
 		FTM_ULONG	i;
@@ -110,7 +145,7 @@ FTM_BOOL	FTNM_NODE_SNMPC_isCompleted(FTNM_NODE_SNMPC_PTR pNode)
 	return	FTM_FALSE;
 }
 
-FTM_RET FTNM_NODE_SNMPC_startAsync(FTNM_NODE_SNMPC_PTR pNode)
+FTM_RET FTNM_NODE_SNMPC_start(FTNM_NODE_SNMPC_PTR pNode)
 {
 	/* startup all hosts */
 	//struct snmp_pdu 	*pPDU;

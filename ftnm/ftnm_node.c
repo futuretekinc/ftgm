@@ -71,12 +71,7 @@ FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 	{
 	case	FTM_NODE_TYPE_SNMP:
 		{
-			pNewNode = (FTNM_NODE_PTR)FTM_MEM_malloc(sizeof(FTNM_NODE_SNMPC));
-			if (pNewNode == NULL)
-			{
-				ERROR("Not enough memory!\n");
-				return	FTM_RET_NOT_ENOUGH_MEMORY;
-			}
+			xRet = FTNM_NODE_SNMPC_create(pInfo, &pNewNode);
 		}
 		break;
 
@@ -87,9 +82,10 @@ FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 		}
 	}
 
-	memcpy(&pNewNode->xInfo, pInfo, sizeof(FTM_NODE_INFO));
-	FTM_LIST_init(&pNewNode->xEPList);
-	pthread_mutex_init(&pNewNode->xMutexLock, NULL);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
 	xRet = FTM_LIST_append(pNodeList, pNewNode);
 	if (xRet != FTM_RET_OK)
@@ -178,11 +174,15 @@ FTM_RET	FTNM_NODE_linkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
+	FTM_ULONG	ulCount = 0;
+	TRACE("FTNM_NODE_linkEP(%s, %08x)\n", pNode->xInfo.pDID, pEP->xInfo.xEPID);
 	FTNM_NODE_lock(pNode);
 
 	FTM_LIST_append(&pNode->xEPList, pEP);
 	FTNM_EP_attach(pEP, pNode);
 
+	FTNM_NODE_EP_count(pNode, &ulCount);
+	TRACE("Node = %08x, EP coun = %d\n", pNode, ulCount);
 	FTNM_NODE_unlock(pNode);
 
 	return	FTM_RET_OK;
@@ -311,14 +311,8 @@ FTM_RET	FTNM_NODE_taskInit(FTNM_NODE_PTR pNode)
 {
 	ASSERT(pNode != NULL);
 
-	if (FTNM_NODE_SNMPC_init((FTNM_NODE_SNMPC_PTR)pNode) != FTM_RET_OK)
-	{
-		ERROR("SNMP Client initialization failed.\n");	
-		pNode->xState = FTNM_NODE_STATE_ABORT;
-	}
-	
 	pNode->xState = FTNM_NODE_STATE_INITIALIZED;
-
+	
 	return	FTM_RET_OK;
 }
 
@@ -361,23 +355,13 @@ FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode)
 	}
 
 	pNode->ulRetry 	= 0;
-	switch(pNode->xInfo.xType)
+	xRet = pNode->fStart(pNode);
+	if (xRet == FTM_RET_OK)
 	{
-	case	FTM_NODE_TYPE_SNMP:
-		{
-			xRet = FTNM_NODE_SNMPC_startAsync((FTNM_NODE_SNMPC_PTR)pNode);
-			if (xRet == FTM_RET_OK)
-			{
-				pNode->xState = FTNM_NODE_STATE_RUNNING;
-			}
-			else
-			{
-				pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;
-			}
-		}
-		break;
-
-	default:
+		pNode->xState = FTNM_NODE_STATE_RUNNING;
+	}
+	else
+	{
 		pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;
 	}
 
@@ -425,7 +409,7 @@ FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
 		usleep(100000);
 	}
 
-	FTNM_NODE_SNMPC_stop((FTNM_NODE_SNMPC_PTR)pNode);
+	pNode->fStop(pNode);
 
 	//TRACE("Node[%s:%08lx] completed\n", pNode->xInfo.pDID, pNode->xState);
 	pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;	

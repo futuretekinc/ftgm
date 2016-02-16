@@ -6,7 +6,7 @@
 
 typedef	struct 
 {
-	FTNM_NODE			xCommon;
+	FTNM_NODE				xCommon;
 
 	FTNM_EP_PTR				pCurrentEP;
 	struct snmp_session 	*pSession;		/* SNMP session data */
@@ -17,11 +17,15 @@ typedef	struct
 	}	xStatistics;	
 }	FTNM_NODE_SNMPC, _PTR_ FTNM_NODE_SNMPC_PTR;
 
+FTM_RET		FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode);
+FTM_RET		FTNM_NODE_SNMPC_destroy(FTNM_NODE_SNMPC_PTR pNode);
+
 FTM_RET		FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode);
 FTM_RET		FTNM_NODE_SNMPC_final(FTNM_NODE_SNMPC_PTR pNode);
+
 FTM_BOOL	FTNM_NODE_SNMPC_isRunning(FTNM_NODE_SNMPC_PTR pNode);
 
-FTM_RET 	FTNM_NODE_SNMPC_startAsync(FTNM_NODE_SNMPC_PTR pNode);
+FTM_RET 	FTNM_NODE_SNMPC_start(FTNM_NODE_SNMPC_PTR pNode);
 FTM_RET 	FTNM_NODE_SNMPC_stop(FTNM_NODE_SNMPC_PTR pNode);
 #endif
 

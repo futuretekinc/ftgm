@@ -23,6 +23,10 @@ typedef	FTM_ULONG		FTNM_NODE_STATE;
 #define	FTNM_NODE_STATE_ERROR					0x0000000B
 #define	FTNM_NODE_STATE_COMPLETED				0x0000000C
 
+typedef	FTM_RET		(*FTNM_NODE_START)(FTNM_NODE_PTR pNode);
+typedef	FTM_RET		(*FTNM_NODE_STOP)(FTNM_NODE_PTR pNode);
+typedef	FTM_BOOL	(*FTNM_NODE_IS_RUNNING)(FTNM_NODE_PTR pNode);
+
 typedef	struct _FTNM_NODE
 {
 	FTM_NODE_TYPE		xType;
@@ -34,6 +38,10 @@ typedef	struct _FTNM_NODE
 	FTNM_NODE_STATE		xState;
 	FTM_ULONG			ulRetry;
 	int64_t				xTimeout;
+
+	FTNM_NODE_START			fStart;
+	FTNM_NODE_STOP			fStop;
+	FTNM_NODE_IS_RUNNING	fIsRunning;
 }	FTNM_NODE, _PTR_ FTNM_NODE_PTR;
 
 FTM_RET FTNM_NODE_init(void);
