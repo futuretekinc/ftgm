@@ -7,6 +7,8 @@
 #define	FTM_SNMP_COMMUNITY_LEN				128
 #define	FTM_SNMP_MIB_LEN					128
 
+#define	FTM_MQTT_TOPIC_LEN					128
+
 #define	FTM_NAME_LEN						256
 #define	FTM_UNIT_LEN						32
 
@@ -16,13 +18,6 @@ typedef	unsigned long	FTM_NODE_TYPE, _PTR_ FTM_NODE_TYPE_PTR;
 #define	FTM_NODE_TYPE_MODBUS_OVER_TCP		0x00000102
 #define	FTM_NODE_TYPE_MODBUS_OVER_SERIAL	0x00000202
 
-typedef	struct
-{
-	FTM_ULONG			ulVersion;
-	FTM_CHAR			pURL[FTM_URL_LEN + 1];
-	FTM_CHAR			pCommunity[FTM_SNMP_COMMUNITY_LEN + 1];
-	FTM_CHAR			pMIB[FTM_SNMP_MIB_LEN + 1];
-}	FTM_SNMP_NODE_INFO, _PTR_ FTM_SNMP_NODE_INFO_PTR;
 
 typedef	struct 
 {
@@ -33,7 +28,20 @@ typedef	struct
 	FTM_ULONG			ulTimeout;
 	union 
 	{
-		FTM_SNMP_NODE_INFO	xSNMP;
+		struct
+		{
+			FTM_ULONG	ulVersion;
+			FTM_CHAR	pURL[FTM_URL_LEN + 1];
+			FTM_CHAR	pCommunity[FTM_SNMP_COMMUNITY_LEN + 1];
+			FTM_CHAR	pMIB[FTM_SNMP_MIB_LEN + 1];
+		} xSNMP;
+
+		struct
+		{
+			FTM_ULONG	ulVersion;
+			FTM_CHAR	pURL[FTM_URL_LEN + 1];
+			FTM_CHAR	pTopic[FTM_MQTT_TOPIC_LEN + 1];
+		} xMQTT;
 	}					xOption;
 }	FTM_NODE_INFO, _PTR_ FTM_NODE_INFO_PTR;
 

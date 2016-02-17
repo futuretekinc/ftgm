@@ -163,9 +163,7 @@ FTM_RET	FTNM_taskConnect(FTNM_CONTEXT_PTR pCTX)
 {
 	FTM_RET			xRet;
 
-	xRet = FTDMC_connect(&pCTX->xDMC.xSession, 
-		inet_addr(pCTX->xDMC.xConfig.xNetwork.pServerIP),
-		pCTX->xDMC.xConfig.xNetwork.usPort);
+	xRet = FTDMC_connect(&pCTX->xDMC.xSession, inet_addr(pCTX->xDMC.xConfig.xNetwork.pServerIP), pCTX->xDMC.xConfig.xNetwork.usPort);
 	if (xRet != FTM_RET_OK)
 	{
 		usleep(1000000);

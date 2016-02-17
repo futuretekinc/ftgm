@@ -35,6 +35,8 @@ FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNo
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
+	memset(pNode, 0, sizeof(FTNM_NODE_SNMPC));
+
 	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE_INFO));
 	FTM_LIST_init(&pNode->xCommon.xEPList);
 	pthread_mutex_init(&pNode->xCommon.xMutexLock, NULL);

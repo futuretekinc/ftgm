@@ -66,12 +66,12 @@ FTM_RET	FTNM_CONSOLE_CMD_list
 	FTM_ULONG		j, ulEPCount;
 
 	MESSAGE("\n< NODE LIST >\n");
-	MESSAGE("%-16s %-16s %-16s\n", "DID", "STATE", "EPs");
+	MESSAGE("%-16s %-16s %-16s %8s %8s \n", "DID", "STATE", "EPs", "INTERVAL", "TIMEOUT");
 	FTNM_NODE_count(&ulNodeCount);
 	for(i = 0 ; i < ulNodeCount ; i++)
 	{
 		FTNM_NODE_getAt(i, &pNode);
-		MESSAGE("%-16s %-16s ", pNode->xInfo.pDID, FTNM_NODE_stateString(pNode->xState));
+		MESSAGE("%-16s %-16s %8d %8d ", pNode->xInfo.pDID, FTNM_NODE_stateString(pNode->xState), pNode->xInfo.ulInterval, pNode->xInfo.ulTimeout);
 
 		FTNM_NODE_EP_count(pNode, &ulEPCount);
 		MESSAGE("%3d [ ", ulEPCount);

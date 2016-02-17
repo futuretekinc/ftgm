@@ -391,7 +391,7 @@ FTM_RET FTNM_NODE_initTimeout(FTNM_NODE_PTR pNode)
 	struct timespec	xTime;
 	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
 	{
-		pNode->xTimeout = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
+		pNode->xTimeout = xTime.tv_sec * (int64_t)1000000 + xTime.tv_nsec / 1000;	
 	}
 	else
 	{
@@ -410,7 +410,7 @@ FTM_BOOL FTNM_NODE_isTimeout(FTNM_NODE_PTR pNode)
 	struct timespec	xTime;
 	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
 	{
-		xCurrentTime = xTime.tv_sec * 1000000 + xTime.tv_nsec / 1000;	
+		xCurrentTime = xTime.tv_sec * (int64_t)1000000 + xTime.tv_nsec / 1000;	
 	}
 	else
 	{

@@ -125,15 +125,7 @@ configure:3663: checking for special C compiler options needed for large files
 configure:3708: result: no
 configure:3714: checking for _FILE_OFFSET_BITS value needed for large files
 configure:3739: gcc -c -g -O2  conftest.c >&5
-conftest.c:17:3: warning: left shift count >= width of type [enabled by default]
-   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
-   ^
-conftest.c:17:3: warning: left shift count >= width of type [enabled by default]
-conftest.c:18:10: warning: left shift count >= width of type [enabled by default]
-          && LARGE_OFF_T % 2147483647 == 1)
-          ^
-conftest.c:18:10: warning: left shift count >= width of type [enabled by default]
-conftest.c:17:7: error: variably modified 'off_t_is_large' at file scope
+conftest.c:17:7: error: size of array 'off_t_is_large' is negative
    int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
        ^
 configure:3739: $? = 1
@@ -153,7 +145,7 @@ configure: failed program was:
 |     We can't simply define LARGE_OFF_T to be 9223372036854775807,
 |     since some C++ compilers masquerading as C compilers
 |     incorrectly reject 9223372036854775807.  */
-| #define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+| #define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
 |   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 | 		       && LARGE_OFF_T % 2147483647 == 1)
 | 		      ? 1 : -1];
@@ -434,7 +426,7 @@ configure:12200: $? = 0
 configure:12200: result: yes
 configure:12200: checking for fullfsync
 configure:12200: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccnsmM9U.o: In function `main':
+/tmp/ccxEZHyZ.o: In function `main':
 /home/xtra/ftgm/sqlite-3.8.9/conftest.c:60: undefined reference to `fullfsync'
 collect2: error: ld returned 1 exit status
 configure:12200: $? = 1
@@ -607,7 +599,7 @@ configure: failed program was:
 configure:12293: result: no
 configure:12319: checking for library containing tgetent
 configure:12350: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccVAq8j9.o: In function `main':
+/tmp/ccM1Molf.o: In function `main':
 /home/xtra/ftgm/sqlite-3.8.9/conftest.c:41: undefined reference to `tgetent'
 collect2: error: ld returned 1 exit status
 configure:12350: $? = 1
@@ -661,7 +653,7 @@ configure:12350: $? = 0
 configure:12367: result: -lcurses
 configure:12375: checking for library containing readline
 configure:12406: gcc -o conftest -g -O2   conftest.c -lcurses  >&5
-/tmp/cccLApIe.o: In function `main':
+/tmp/cc7UL2Qk.o: In function `main':
 /home/xtra/ftgm/sqlite-3.8.9/conftest.c:41: undefined reference to `readline'
 collect2: error: ld returned 1 exit status
 configure:12406: $? = 1
@@ -762,7 +754,7 @@ configure: failed program was:
 configure:12423: result: no
 configure:12435: checking for readline
 configure:12435: gcc -o conftest -g -O2   conftest.c -lcurses  >&5
-/tmp/ccoMqF9k.o: In function `main':
+/tmp/cc2eKjvp.o: In function `main':
 /home/xtra/ftgm/sqlite-3.8.9/conftest.c:64: undefined reference to `readline'
 collect2: error: ld returned 1 exit status
 configure:12435: $? = 1
@@ -837,7 +829,7 @@ configure: failed program was:
 configure:12435: result: no
 configure:12463: checking for library containing pthread_create
 configure:12494: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccAqx7Ln.o: In function `main':
+/tmp/ccKqhFUr.o: In function `main':
 /home/xtra/ftgm/sqlite-3.8.9/conftest.c:41: undefined reference to `pthread_create'
 collect2: error: ld returned 1 exit status
 configure:12494: $? = 1
@@ -891,7 +883,7 @@ configure:12494: $? = 0
 configure:12511: result: -lpthread
 configure:12534: checking for library containing dlopen
 configure:12565: gcc -o conftest -g -O2   conftest.c -lpthread  >&5
-/tmp/cctEi1rt.o: In function `main':
+/tmp/ccVw8Max.o: In function `main':
 /home/xtra/ftgm/sqlite-3.8.9/conftest.c:41: undefined reference to `dlopen'
 collect2: error: ld returned 1 exit status
 configure:12565: $? = 1

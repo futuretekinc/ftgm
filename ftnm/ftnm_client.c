@@ -10,11 +10,11 @@
 
 static FTM_RET FTNMC_request
 (
-	FTNMC_SESSION_PTR	pSession, 
-	FTNM_REQ_PARAMS_PTR	pReq,
-	FTM_ULONG			ulReqLen,
-	FTNM_REQ_PARAMS_PTR	pResp,
-	FTM_ULONG			ulRespLen
+	FTNMC_SESSION_PTR		pSession, 
+	FTNM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
+	FTNM_RESP_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 FTM_RET	FTNMC_init
@@ -266,7 +266,7 @@ FTM_RET FTNMC_NODE_getAt
 	{
 		memcpy(pInfo, &xResp.xNodeInfo, sizeof(FTM_NODE_INFO));
 	}
-	
+
 	return	xResp.nRet;
 }
 
@@ -857,11 +857,11 @@ FTM_RET	FTNMC_EP_DATA_count
  *****************************************************************/
 FTM_RET FTNMC_request
 (
-	FTNMC_SESSION_PTR 	pSession, 
-	FTNM_REQ_PARAMS_PTR	pReq,
-	FTM_ULONG			ulReqLen,
-	FTNM_REQ_PARAMS_PTR	pResp,
-	FTM_ULONG			ulRespLen
+	FTNMC_SESSION_PTR 		pSession, 
+	FTNM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
+	FTNM_RESP_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 )
 {
 	FTM_ULONG	ulTimeout;
@@ -872,7 +872,7 @@ FTM_RET FTNMC_request
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-//	TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, ulReqLen);
+	TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, ulReqLen);
 
 	if( send(pSession->hSock, pReq, ulReqLen, 0) < 0)
 	{
@@ -885,7 +885,7 @@ FTM_RET FTNMC_request
 		int	nLen = recv(pSession->hSock, pResp, ulRespLen, MSG_DONTWAIT);
 		if (nLen > 0)
 		{
-//			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
+			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
 			return	FTM_RET_OK;	
 		}
 

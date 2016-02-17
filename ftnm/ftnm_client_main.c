@@ -664,9 +664,9 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 						nRet = FTNMC_EP_get(&_xSession, pEPIDs[i], &xInfo);
 						if (nRet == FTM_RET_OK)
 						{
-							MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
+							MESSAGE("%08lx %08x %16s %16s %8lu %16s %16s\n",
 									xInfo.xEPID,
-									FTM_getEPTypeString(xInfo.xType),
+									xInfo.xType,//"UNKNOWN",//FTM_getEPTypeString(xInfo.xType),
 									xInfo.pName,
 									xInfo.pUnit,
 									xInfo.ulInterval,
