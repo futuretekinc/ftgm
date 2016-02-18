@@ -289,7 +289,7 @@ FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX)
 	{
 		if (FTNM_NODE_getAt(i, &pNode) == FTM_RET_OK)
 		{
-			FTNM_NODE_run(pNode);
+			FTNM_NODE_start(pNode);
 		}
 	}
 	

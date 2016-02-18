@@ -7,18 +7,10 @@
 
 extern	FTNM_CONTEXT	xFTNM;
 
-FTM_ULONG	active_hosts = 0;
-FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData);
-FTM_CHAR_PTR	FTNM_NODE_SNMPC_getStateString(FTNM_SNMPC_STATE xState);
-
-static FTM_INT	FTNM_NODE_SNMPC_asyncResponse
-(
-	FTM_INT				operation, 
-	struct snmp_session *sp, 
-	FTM_INT				reqid,
-	struct snmp_pdu 	*pdu, 
-	FTM_VOID_PTR		magic
-);
+FTM_ULONG		active_hosts = 0;
+FTM_VOID_PTR	FTNM_NODE_SNMPC_process(FTM_VOID_PTR pData);
+FTM_RET			FTNM_NODE_SNMPC_start(FTNM_NODE_SNMPC_PTR pNode);
+FTM_RET			FTNM_NODE_SNMPC_stop(FTNM_NODE_SNMPC_PTR pNode);
 
 FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 {
@@ -40,10 +32,9 @@ FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNo
 	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE_INFO));
 	FTM_LIST_init(&pNode->xCommon.xEPList);
 	pthread_mutex_init(&pNode->xCommon.xMutexLock, NULL);
-
+	
 	pNode->xCommon.fStart	= (FTNM_NODE_START)FTNM_NODE_SNMPC_start;
 	pNode->xCommon.fStop 	= (FTNM_NODE_STOP)FTNM_NODE_SNMPC_stop;
-	pNode->xCommon.fIsRunning=(FTNM_NODE_IS_RUNNING)FTNM_NODE_SNMPC_isRunning;
 	*ppNode = (FTNM_NODE_PTR)pNode;
 
 	return	FTM_RET_OK;
@@ -123,39 +114,42 @@ FTM_RET	FTNM_NODE_SNMPC_final(FTNM_NODE_SNMPC_PTR pNode)
 	return	FTM_RET_OK;
 }
 
-FTM_BOOL	FTNM_NODE_SNMPC_isRunning(FTNM_NODE_SNMPC_PTR pNode)
+FTM_RET	FTNM_NODE_SNMPC_start(FTNM_NODE_SNMPC_PTR pNode)
+{
+	if (pthread_create(&pNode->xCommon.xPThread, NULL, FTNM_NODE_SNMPC_process, pNode) == 0)
+	{
+		return	FTM_RET_OK;
+	}
+
+	return	FTM_RET_OK;
+}
+
+
+FTM_RET	FTNM_NODE_SNMPC_stop(FTNM_NODE_SNMPC_PTR pNode)
 {
 	ASSERT(pNode != NULL);
 
-	if (pNode->xCommon.xState == FTNM_NODE_STATE_RUNNING)
+	FTM_VOID_PTR	xRet;
+
+	pthread_cancel(pNode->xCommon.xPThread);
+
+	pthread_join(pNode->xCommon.xPThread, (FTM_VOID_PTR _PTR_)&xRet);
+	if (xRet != PTHREAD_CANCELED)
 	{
-		return	FTM_TRUE;	
+		ERROR("The node is not stopped. [ID = %s]\n", pNode->xCommon.xInfo.pDID);
+		return	FTM_RET_NODE_IS_NOT_STOPPED;
 	}
 
-	return	FTM_FALSE;
+	return	FTM_RET_OK;
 }
 
-FTM_BOOL	FTNM_NODE_SNMPC_isCompleted(FTNM_NODE_SNMPC_PTR pNode)
+FTM_VOID_PTR	FTNM_NODE_SNMPC_process(FTM_VOID_PTR pData)
 {
-	ASSERT(pNode != NULL);
+	ASSERT(pData != NULL);
 
-	if (pNode->xCommon.xState != FTNM_NODE_STATE_RUNNING)
-	{
-		return	FTM_TRUE;	
-	}
-
-	return	FTM_FALSE;
-}
-
-FTM_RET FTNM_NODE_SNMPC_start(FTNM_NODE_SNMPC_PTR pNode)
-{
-	/* startup all hosts */
-	//struct snmp_pdu 	*pPDU;
-	netsnmp_pdu 		*pPDU;
+	FTNM_NODE_SNMPC_PTR	pNode = (FTNM_NODE_SNMPC_PTR)pData;
 	struct snmp_session	xSession;
 	FTNM_EP_PTR			pEP;
-
-	ASSERT(pNode != NULL);
 
 	snmp_sess_init(&xSession);			/* initialize session */
 
@@ -163,201 +157,104 @@ FTM_RET FTNM_NODE_SNMPC_start(FTNM_NODE_SNMPC_PTR pNode)
 	xSession.peername 		= pNode->xCommon.xInfo.xOption.xSNMP.pURL;
 	xSession.community 		= (u_char *)pNode->xCommon.xInfo.xOption.xSNMP.pCommunity;
 	xSession.community_len	= strlen(pNode->xCommon.xInfo.xOption.xSNMP.pCommunity);
-	xSession.callback 		= FTNM_NODE_SNMPC_asyncResponse;
-	xSession.callback_magic	= pNode;
-
-	FTM_LIST_iteratorStart(&pNode->xCommon.xEPList);
-	if (FTM_LIST_iteratorNext(&pNode->xCommon.xEPList, (FTM_VOID_PTR _PTR_)&pEP) != FTM_RET_OK)
-	{
-		pNode->xCommon.xState = FTNM_NODE_STATE_COMPLETED;
-		return	FTM_RET_OK;
-	}
 
 	pNode->pSession = snmp_open(&xSession);
 	if (pNode->pSession == NULL)
 	{
 		ERROR("snmp_open: %s\n", snmp_errstring(snmp_errno));
-		pNode->xCommon.xState = FTNM_NODE_STATE_ERROR;
-		return	FTM_RET_COMM_ERROR;
+		pNode->xCommon.xState = FTNM_NODE_STATE_CANT_OPEN_SESSION;
+		return	0;
 	}
 
-	pPDU = snmp_pdu_create(SNMP_MSG_GET);	/* send the first GET */
-	if (pPDU == NULL)
-	{
-		ERROR("snmp_pdu_create: %s\n", snmp_errstring(snmp_errno));
-		snmp_close(pNode->pSession);
-		pNode->pSession = NULL;
-
-		return	FTM_RET_COMM_ERROR;
-	}
-
-	pPDU->time = pNode->xCommon.xInfo.ulTimeout;
-	snmp_add_null_var(pPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
-	if (snmp_send(pNode->pSession, pPDU) == 0)
-	{
-		ERROR("snmp_send: %s\n", snmp_errstring(snmp_errno));
-		pNode->xCommon.xState = FTNM_NODE_STATE_ERROR;
-		snmp_free_pdu(pPDU);
-		return	FTM_RET_COMM_ERROR;
-	}
-
-	pNode->pCurrentEP = pEP;
-	pNode->xStatistics.ulRequest++;
+	pNode->bRun = FTM_TRUE;
 	pNode->xCommon.xState = FTNM_NODE_STATE_RUNNING;
 
-	active_hosts++;
-
-	return	FTM_RET_OK;
-}
-
-FTM_INT	FTNM_NODE_SNMPC_asyncResponse
-(
-	FTM_INT				nOperation, 
-	struct snmp_session *pSession, 
-	FTM_INT				nReqID,
-	netsnmp_pdu			*pRespPDU, 
-	FTM_VOID_PTR		pParams
-)
-{
-	FTM_RET					nRet;
-	FTNM_NODE_SNMPC_PTR		pNode = (FTNM_NODE_SNMPC_PTR)pParams;
-
-	active_hosts--;
-
-	switch(nOperation)
+	while(pNode->bRun)
 	{
-	case	NETSNMP_CALLBACK_OP_TIMED_OUT:
+		
+		FTM_LIST_iteratorStart(&pNode->xCommon.xEPList);
+		while (pNode->bRun && (FTM_LIST_iteratorNext(&pNode->xCommon.xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK))
 		{
-			if (pNode->pSession != NULL)
+			netsnmp_pdu 		*pReqPDU;
+			netsnmp_pdu			*pRespPDU = NULL; 
+
+			pReqPDU = snmp_pdu_create(SNMP_MSG_GET);	/* send the first GET */
+			if (pReqPDU == NULL)
 			{
-				pNode->xCommon.xState = FTNM_NODE_STATE_TIMEOUT;
-				TRACE("NODE : %s, SNMP STATE : %s\n", 
-					pNode->xCommon.xInfo.pDID, 
-					FTNM_NODE_SNMPC_getStateString(pNode->xCommon.xState));
+				ERROR("snmp_pdu_create: %s\n", snmp_errstring(snmp_errno));
+				pNode->xCommon.xState = FTNM_NODE_STATE_ERROR;
+				break;
 			}
-		}
-		break;
 
-	case	NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE: 
-		{
-			FTNM_EP_PTR			pEP;
-			if (pRespPDU->errstat == SNMP_ERR_NOERROR) 
+			pReqPDU->time = pNode->xCommon.xInfo.ulTimeout;
+			snmp_add_null_var(pReqPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
+			pNode->xStatistics.ulRequest++;
+
+			if (snmp_synch_response(pNode->pSession, pReqPDU, &pRespPDU) == 0)
 			{
-				struct variable_list *pVariable;
-				pEP = pNode->pCurrentEP;
-
-				pVariable= pRespPDU->variables;
-				while (pVariable) 
+				ERROR("snmp_send: %s\n", snmp_errstring(snmp_errno));
+				pNode->xCommon.xState = FTNM_NODE_STATE_ERROR;
+			}
+			else
+			{
+				if (pRespPDU->errstat == SNMP_ERR_NOERROR) 
 				{
-					switch(pVariable->name[pVariable->name_length-2])
+					struct variable_list *pVariable;
+
+					pVariable= pRespPDU->variables;
+					while (pVariable) 
 					{
-					case	6:
+						switch(pVariable->name[pVariable->name_length-2])
 						{
-							FTM_CHAR	pBuff[1024];
-							FTM_EP_DATA	xData;
-
-							if (pVariable->val_len < 1024)
+						case	6:
 							{
-								memcpy(pBuff, pVariable->val.string, pVariable->val_len);
-								pBuff[pVariable->val_len] = 0;
+								FTM_CHAR	pBuff[1024];
+								FTM_EP_DATA	xData;
+
+								if (pVariable->val_len < 1024)
+								{
+									memcpy(pBuff, pVariable->val.string, pVariable->val_len);
+									pBuff[pVariable->val_len] = 0;
+								}
+								else
+								{
+									memcpy(pBuff, pVariable->val.string, 1023);
+									pBuff[1023] = 0;
+								}
+
+								xData.ulTime = time(NULL);
+								xData.xType  = FTM_EP_DATA_TYPE_FLOAT;
+								xData.xValue.fValue = strtod(pBuff, NULL);
+
+								FTNM_DMC_EP_DATA_set(&xFTNM.xDMC, pEP->xInfo.xEPID, &xData);
 							}
-							else
-							{
-								memcpy(pBuff, pVariable->val.string, 1023);
-								pBuff[1023] = 0;
-							}
+							break;
+						};
 
-							xData.ulTime = time(NULL);
-							xData.xType  = FTM_EP_DATA_TYPE_FLOAT;
-							xData.xValue.fValue = strtod(pBuff, NULL);
-
-							FTNM_DMC_EP_DATA_set(&xFTNM.xDMC, pEP->xInfo.xEPID, &xData);
-						}
-						break;
-					};
-
-					pVariable= pVariable->next_variable;
+						pVariable= pVariable->next_variable;
+					}
 				}
 
 				pNode->xStatistics.ulResponse++;
 			}
-			else
-			{
-			//	ERROR(om
-			}
 
-			nRet = FTM_LIST_iteratorNext(&pNode->xCommon.xEPList,(FTM_VOID_PTR _PTR_)&pEP);
-			if (nRet == FTM_RET_OK)
+			if (pRespPDU != NULL)
 			{
-				netsnmp_pdu	*pPDU;
-
-				pPDU = snmp_pdu_create(SNMP_MSG_GET);
-				if (pPDU == NULL)
-				{
-					ERROR("snmp_pdu_create: %s\n", snmp_errstring(snmp_errno));
-					snmp_close(pNode->pSession);
-					pNode->pSession = NULL;
-
-					return	FTM_RET_COMM_ERROR;
-				}
-				pPDU->time = pNode->xCommon.xInfo.ulTimeout;
-		
-				snmp_add_null_var(pPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
-				if (snmp_send(pNode->pSession, pPDU) == 0)
-				{
-					snmp_perror("snmp_send");
-					snmp_free_pdu(pPDU);
-					pNode->pCurrentEP = NULL;
-					pNode->xCommon.xState = FTNM_NODE_STATE_ERROR;
-				}
-				else
-				{
-					pNode->pCurrentEP = pEP;
-					pNode->xStatistics.ulRequest++;
-					pNode->xCommon.xState = FTNM_NODE_STATE_RUNNING;
-					active_hosts++;
-				}
-			}
-			else
-			{
-				pNode->xCommon.xState = FTNM_NODE_STATE_COMPLETED;
-				TRACE("NODE : %s, SNMP STATE : %s\n", 
-					pNode->xCommon.xInfo.pDID, 
-					FTNM_NODE_SNMPC_getStateString(pNode->xCommon.xState));
+				snmp_free_pdu(pRespPDU);
 			}
 		}
-		break;
 
-	default:
-		{	
+		if (pNode->xCommon.xState != FTNM_NODE_STATE_RUNNING)
+		{
+			break;
 		}
 	}
 
-	return 1;
+	snmp_close(pNode->pSession);
+	pNode->pSession = NULL;
 
-}
-
-FTM_RET	FTNM_NODE_SNMPC_stop(FTNM_NODE_SNMPC_PTR pNode)
-{
-	if (pNode->pSession != NULL)
-	{
-		snmp_close(pNode->pSession);
-		pNode->pSession = NULL;
-	}
+	pNode->xCommon.xState = FTNM_NODE_STATE_STOP;
 
 	return	FTM_RET_OK;
 }
 
-FTM_CHAR_PTR	FTNM_NODE_SNMPC_getStateString(FTNM_SNMPC_STATE xState)
-{
-	switch(xState)
-	{
-	case	FTNM_SNMPC_STATE_INITIALIZED:	return	"INITIALIZED";
-	case	FTNM_SNMPC_STATE_RUNNING:		return	"RUNNING";
-	case	FTNM_SNMPC_STATE_TIMEOUT:		return	"TIMEOUT";
-	case	FTNM_SNMPC_STATE_ERROR:			return	"ERROR";
-	case	FTNM_SNMPC_STATE_COMPLETED:		return	"COMPLETED";
-	default:
-		return	"UNKNOWN";
-	}
-}

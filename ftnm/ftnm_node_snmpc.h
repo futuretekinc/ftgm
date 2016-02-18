@@ -3,6 +3,7 @@
 
 #include "ftnm.h"
 #include "ftnm_node.h"
+#include <semaphore.h>
 
 typedef	struct 
 {
@@ -10,6 +11,7 @@ typedef	struct
 
 	FTNM_EP_PTR				pCurrentEP;
 	struct snmp_session 	*pSession;		/* SNMP session data */
+	FTM_BOOL				bRun;
 	struct 
 	{
 		FTM_ULONG			ulRequest;

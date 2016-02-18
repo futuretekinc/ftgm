@@ -10,11 +10,7 @@
 static FTM_LIST_PTR	pNodeList = NULL;
 
 
-FTM_VOID_PTR 	FTNM_NODE_task(FTM_VOID_PTR pData);
-static FTM_RET	FTNM_NODE_taskInit(FTNM_NODE_PTR pNode);
-static FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode);
-static FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode);
-static FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode);
+FTM_VOID_PTR 	FTNM_NODE_process(FTM_VOID_PTR pData);
 static FTM_RET	FTNM_NODE_lock(FTNM_NODE_PTR pNode);
 static FTM_RET	FTNM_NODE_unlock(FTNM_NODE_PTR pNode);
 static FTM_RET  FTNM_NODE_initTimeout(FTNM_NODE_PTR pNode);
@@ -227,141 +223,34 @@ FTM_RET	FTNM_NODE_EP_getAt(FTNM_NODE_PTR pNode, FTM_ULONG ulIndex, FTNM_EP_PTR _
 	return	FTM_LIST_getAt(&pNode->xEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
-FTM_RET	FTNM_NODE_run(FTNM_NODE_PTR pNode)
+FTM_RET	FTNM_NODE_start(FTNM_NODE_PTR pNode)
 {
 	ASSERT(pNode != NULL);
 
 	if (pNode->xState != FTNM_NODE_STATE_CREATED)
 	{
-		return	FTM_RET_ALREADY_RUNNING;
+		return	FTM_RET_ALREADY_STARTED;
 	}
 
-	pthread_create(&pNode->xPThread, NULL, FTNM_NODE_task, pNode);
-
-	return	FTM_RET_OK;
-}
-
-FTM_VOID_PTR FTNM_NODE_task(FTM_VOID_PTR pData)
-{
-	FTNM_NODE_PTR	pNode = (FTNM_NODE_PTR)pData;
-
-	while(1)
+	if (pNode->fStart == NULL)
 	{
-		switch(pNode->xState)
-		{
-		case	FTNM_NODE_STATE_CREATED:
-			{
-				FTNM_NODE_taskInit(pNode);
-			}
-			break;
-
-		case	FTNM_NODE_STATE_INITIALIZED:
-			{
-				FTNM_NODE_taskSync(pNode);
-			}
-			break;
-
-		case	FTNM_NODE_STATE_SYNCHRONIZED:
-		case	FTNM_NODE_STATE_RUN:
-			{
-				FTNM_NODE_taskRun(pNode);
-			}
-			break;
-		
-		case	FTNM_NODE_STATE_RUNNING:
-			{
-				FTNM_NODE_taskWaitingForComplete(pNode);
-			}
-			break;
-
-		case	FTNM_NODE_STATE_PROCESS_FINISHED:
-			{
-				while (FTNM_NODE_isTimeout(pNode) != FTM_TRUE)
-				{
-					usleep(1000);
-				}
-				pNode->xState = FTNM_NODE_STATE_RUN;
-			}
-			break;
-
-		case	FTNM_NODE_STATE_ABORT:
-			return	FTM_RET_OK;
-		}
-
-		usleep(100000);
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	FTM_RET_OK;
+	return	pNode->fStart(pNode);
 }
 
-FTM_RET	FTNM_NODE_taskInit(FTNM_NODE_PTR pNode)
+FTM_RET FTNM_NODE_stop(FTNM_NODE_PTR pNode)
 {
 	ASSERT(pNode != NULL);
 
-	pNode->xState = FTNM_NODE_STATE_INITIALIZED;
-	
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_NODE_taskSync(FTNM_NODE_PTR pNode)
-{
-
-	ASSERT(pNode != NULL);
-
-	FTNM_NODE_initTimeout(pNode);
-
-	pNode->xState = FTNM_NODE_STATE_SYNCHRONIZED;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_NODE_taskRun(FTNM_NODE_PTR pNode)
-{
-	FTM_RET				xRet;
-
-	ASSERT(pNode != NULL);
-
-	FTNM_NODE_updateTimeout(pNode);
-
-	pNode->ulRetry 	= 0;
-	xRet = pNode->fStart(pNode);
-	if (xRet == FTM_RET_OK)
+	if (pNode->xState != FTNM_NODE_STATE_RUNNING)
 	{
-		pNode->xState = FTNM_NODE_STATE_RUNNING;
-	}
-	else
-	{
-		pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;
+		return	FTM_RET_NOT_START;
 	}
 
-	return	FTM_RET_OK;
-}
 
-FTM_RET	FTNM_NODE_taskWaitingForComplete(FTNM_NODE_PTR pNode)
-{
-	ASSERT(pNode != NULL);
-
-	while(pNode->fIsRunning(pNode) == FTM_TRUE)
-	{
-		if (FTNM_NODE_isTimeout(pNode) == FTM_TRUE)
-		{
-			TRACE("Node[%s:%08lx] timeout %d\n", pNode->xInfo.pDID, pNode->xState, pNode->ulRetry);
-			if (++pNode->ulRetry > 3)
-			{
-				break;
-			}
-
-			FTNM_NODE_updateTimeout(pNode);
-		}
-
-		usleep(100000);
-	}
-
-	pNode->fStop(pNode);
-
-	pNode->xState = FTNM_NODE_STATE_PROCESS_FINISHED;	
-
-	return	FTM_RET_OK;
+	return	pNode->fStop(pNode);
 }
 
 
