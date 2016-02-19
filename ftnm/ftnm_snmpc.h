@@ -16,6 +16,8 @@ typedef	struct
 {
 	FTM_CHAR		pName[1024];
 	FTM_LIST		xMIBList;
+
+	FTM_ULONG		ulMaxRetryCount;
 }	FTNM_SNMPC_CONFIG, _PTR_ FTNM_SNMPC_CONFIG_PTR;
 
 typedef	struct 
@@ -24,16 +26,18 @@ typedef	struct
 	pthread_t			xPThread;
 }	FTNM_SNMPC, _PTR_ FTNM_SNMPC_PTR;
 
-FTM_RET	FTNM_SNMPC_init(FTNM_SNMPC_PTR pSNMPC);
-FTM_RET	FTNM_SNMPC_final(FTNM_SNMPC_PTR pSNMPC);
-FTM_RET FTNM_SNMPC_run(FTNM_SNMPC_PTR pSNMPC);
+FTM_RET	FTNM_SNMPC_init(void);
+FTM_RET	FTNM_SNMPC_final(void);
 
-FTM_RET	FTNM_SNMPC_initConfig(FTNM_SNMPC_PTR pSNMPC);
-FTM_RET	FTNM_SNMPC_finalConfig(FTNM_SNMPC_PTR pSNMPC);
-FTM_RET FTNM_SNMPC_loadConfig(FTNM_SNMPC_PTR pSNMPC, FTM_CHAR_PTR pFileName);
-FTM_RET	FTNM_SNMPC_showConfig(FTNM_SNMPC_PTR pSNMPC);
+FTM_RET FTNM_SNMPC_run(void);
+
+FTM_RET	FTNM_SNMPC_initConfig(void);
+FTM_RET	FTNM_SNMPC_finalConfig(void);
+FTM_RET FTNM_SNMPC_loadConfig(FTM_CHAR_PTR pFileName);
+FTM_RET	FTNM_SNMPC_showConfig(void);
 
 
+FTM_ULONG	FTNM_SNMPC_getMaxRetryCount(void);
 
 #endif
 

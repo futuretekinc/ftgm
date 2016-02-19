@@ -47,7 +47,7 @@ FTM_RET	FTNM_CONSOLE_CMD_config
 	switch(nArgc)
 	{
 	case	1:
-		FTNM_showConfig(&xFTNM);
+		FTNM_showConfig();
 		break;
 	}
 
@@ -66,15 +66,15 @@ FTM_RET	FTNM_CONSOLE_CMD_list
 	FTM_ULONG		j, ulEPCount;
 
 	MESSAGE("\n< NODE LIST >\n");
-	MESSAGE("%-16s %-16s %-16s %8s %8s \n", "DID", "STATE", "EPs", "INTERVAL", "TIMEOUT");
+	MESSAGE("%-16s %-16s %-8s %-8s %-8s \n", "DID", "STATE", "INTERVAL", "TIMEOUT", "EPs");
 	FTNM_NODE_count(&ulNodeCount);
 	for(i = 0 ; i < ulNodeCount ; i++)
 	{
 		FTNM_NODE_getAt(i, &pNode);
-		MESSAGE("%-16s %-16s %8d %8d ", pNode->xInfo.pDID, FTNM_NODE_stateString(pNode->xState), pNode->xInfo.ulInterval, pNode->xInfo.ulTimeout);
+		MESSAGE("%-16s %-16s %-8d %-8d ", pNode->xInfo.pDID, FTNM_NODE_stateString(pNode->xState), pNode->xInfo.ulInterval, pNode->xInfo.ulTimeout);
 
 		FTNM_NODE_EP_count(pNode, &ulEPCount);
-		MESSAGE("%3d [ ", ulEPCount);
+		MESSAGE("%-3d [ ", ulEPCount);
 		for(j = 0; j < ulEPCount ; j++)
 		{
 			if (FTNM_NODE_EP_getAt(pNode, j, &pEP) == FTM_RET_OK)
@@ -86,7 +86,7 @@ FTM_RET	FTNM_CONSOLE_CMD_list
 	}
 
 	MESSAGE("\n< EP LIST >\n");
-	MESSAGE("%-16s %-16s %-16s %-8s %-24s\n", "EPID", "TYPE", "DID", "VALUE", "TIME");
+	MESSAGE("%-16s %-16s %-16s %-16s %-8s %-24s\n", "EPID", "TYPE", "DID", "STATE", "VALUE", "TIME");
 	FTNM_EP_count(0, &ulEPCount);
 	for(i = 0; i < ulEPCount ; i++)
 	{
@@ -106,7 +106,16 @@ FTM_RET	FTNM_CONSOLE_CMD_list
 			{
 				MESSAGE("%-16s ", pEP->pNode->xInfo.pDID);
 			}
-		
+	
+			switch(pEP->xState)
+			{
+			case	FTM_EP_STATE_DISABLE: MESSAGE("%-16s ", "DISABLE"); break;
+			case	FTM_EP_STATE_RUN: 	MESSAGE("%-16s ", "RUN");		break;
+			case	FTM_EP_STATE_STOP: 	MESSAGE("%-16s ", "STOP");		break;
+			case	FTM_EP_STATE_ERROR: MESSAGE("%-16s ", "ERROR");		break;
+			default:					MESSAGE("%-16s ", "UNKNOWN");		break;
+			}
+
 			switch(pEP->xData.xType)
 			{
 			case	FTM_EP_DATA_TYPE_INT: 	MESSAGE("%-8d ", pEP->xData.xValue.nValue); break;

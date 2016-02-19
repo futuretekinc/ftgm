@@ -48,8 +48,6 @@ static FTNM_SRV_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTNM_CMD_UNKNOWN, 		NULL)
 };
 
-extern FTNM_CONTEXT	xFTNM;
-
 FTM_RET	FTNM_SRV_init
 (
 	FTNM_SERVER_PTR 		pServer 
@@ -453,11 +451,7 @@ FTM_RET	FTNM_SRV_EP_DATA_info
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_DMC_EP_DATA_info(&xFTNM.xDMC, 
-					pReq->xEPID, 
-					&pResp->ulBeginTime, 
-					&pResp->ulEndTime, 
-					&pResp->ulCount);
+	pResp->nRet = FTNM_getEPDataInfo(pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
 
 	return	pResp->nRet;
 }
@@ -490,7 +484,7 @@ FTM_RET	FTNM_SRV_EP_DATA_count
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_DMC_EP_DATA_count(&xFTNM.xDMC, pReq->xEPID, &ulCount);
+	pResp->nRet = FTNM_getEPDataCount(pReq->xEPID, &ulCount);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		pResp->ulCount = ulCount;

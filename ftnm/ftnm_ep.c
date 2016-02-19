@@ -189,12 +189,12 @@ FTM_RET	FTNM_EP_detach(FTNM_EP_PTR pEP)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_DATA_PTR pData)
+FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
-	memcpy(&pEP->xData, pData, sizeof(FTM_DATA));
+	memcpy(&pEP->xData, pData, sizeof(FTM_EP_DATA));
 
 	return	FTM_RET_OK;
 }

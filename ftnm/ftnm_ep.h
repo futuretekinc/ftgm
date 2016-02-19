@@ -9,12 +9,20 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 
+#define	FTNM_EP_STATE_RUN		0X00000001
+#define	FTNM_EP_STATE_STOP		0X00000002
+#define	FTNM_EP_STATE_ERROR		0x00000003
+
+typedef	FTM_ULONG	FTNM_EP_STATE, _PTR_ FTNM_EP_STATE_PTR;
+
 typedef	struct FTNM_NODE_STRUCT _PTR_ FTNM_NODE_PTR;
 typedef	struct 
 {
 	FTM_EP_INFO		xInfo;
 	FTNM_NODE_PTR 	pNode;
 	FTM_EP_DATA		xData;
+	FTNM_EP_STATE	xState;
+	FTM_ULONG		ulRetryCount;
 	union
 	{
 		struct	
@@ -47,7 +55,7 @@ FTM_RET FTNM_EP_getAt(FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP);
 FTM_RET	FTNM_EP_attach(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode);
 FTM_RET	FTNM_EP_detach(FTNM_EP_PTR pEP);
 
-FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_DATA_PTR pData);
+FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
 FTM_RET FTNM_EP_setFloat(FTNM_EP_PTR pEP, FTM_ULONG ulTime, FTM_DOUBLE fValue);
 #endif
 

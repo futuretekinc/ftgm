@@ -39,19 +39,22 @@ typedef	struct
 	FTM_LIST	xEPList;
 	pthread_t	xPThread;
 
-	FTNM_DMC	xDMC;
+	FTDMC_SESSION	xDMCSession;
 	FTNM_SERVER	xServer;
 	FTNM_SNMPC	xSNMPC;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
 
-FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pCTX);
-FTM_RET	FTNM_final(FTNM_CONTEXT_PTR pCTX);
-FTM_RET	FTNM_loadConfig(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pConfigFileName);
+FTM_RET	FTNM_init(void);
+FTM_RET	FTNM_final(void);
+FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pConfigFileName);
 
-FTM_RET	FTNM_showConfig(FTNM_CONTEXT_PTR pCTX);
-FTM_RET FTNM_run(FTNM_CONTEXT_PTR pCTX);
-FTM_RET FTNM_waitingForFinished(FTNM_CONTEXT_PTR pCTX);
+FTM_RET	FTNM_showConfig(void);
+FTM_RET FTNM_run(void);
+FTM_RET FTNM_waitingForFinished(void);
 
+FTM_RET	FTNM_setEPData(FTM_EPID xEPID, FTM_EP_DATA_PTR pData);
+FTM_RET	FTNM_getEPDataInfo(FTM_EPID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount);
+FTM_RET	FTNM_getEPDataCount(FTM_EPID xEPID, FTM_ULONG_PTR ulCount);
 #endif
 

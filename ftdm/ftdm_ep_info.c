@@ -7,28 +7,6 @@
 #include "ftm_list.h"
 #include "ftm_mem.h"
 
-static FTM_RET	FTDM_LIST_insertEPInfo
-(
-	FTM_EP_INFO_PTR	pEPInfo
-);
-
-static FTM_RET	FTDM_LIST_delEPInfo
-(
- 	FTM_EP_INFO_PTR	pEPInfo
-);
-
-static FTM_RET	FTDM_LIST_getEPInfo
-(
- 	FTM_EPID				xEPID,
-	FTM_EP_INFO_PTR _PTR_	ppEPInfo
-);
-
-static FTM_RET	FTDM_LIST_isExistEPInfo
-(
- 	FTM_EPID				xEPID,
-	FTM_BOOL_PTR			pExist
-);
-
 static FTM_INT	FTDM_EPSeeker
 (
 	const void *pElement, 
@@ -79,7 +57,7 @@ FTM_RET	FTDM_EP_INFO_init
 	
 				memcpy(pEPInfo, &pEPInfos[i], sizeof(FTM_EP_INFO));
 
-				FTDM_LIST_insertEPInfo(pEPInfo);
+				FTM_LIST_append(&xEPList, pEPInfo);
 			}
 		}
 
@@ -96,10 +74,7 @@ FTM_RET	FTDM_EP_INFO_init
 
 			if (FTDM_CFG_EP_INFO_getAt(pConfig, i, &xEPInfo) == FTM_RET_OK)
 			{
-				FTM_BOOL	bExist;
-
-				FTDM_LIST_isExistEPInfo(xEPInfo.xEPID, &bExist);
-				if (!bExist)
+				if (FTM_LIST_seek(&xEPList, &xEPInfo.xEPID) != FTM_RET_OK)
 				{
 					FTDM_EP_INFO_add(&xEPInfo);	
 				}
@@ -142,7 +117,7 @@ FTM_RET	FTDM_EP_INFO_add
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	nRet = FTDM_LIST_getEPInfo(pEPInfo->xEPID, &pTempInfo);
+	nRet = FTM_LIST_get(&xEPList, &pEPInfo->xEPID, (FTM_VOID_PTR _PTR_)&pTempInfo);
 	if ((nRet == FTM_RET_OK) && (pTempInfo != NULL))
 	{
 		return	FTM_RET_ALREADY_EXIST_OBJECT;	
@@ -156,8 +131,7 @@ FTM_RET	FTDM_EP_INFO_add
 
 	memcpy(pNewInfo, pEPInfo, sizeof(FTM_EP_INFO));
 
-	nRet = FTDM_LIST_insertEPInfo(pNewInfo);
-	
+	nRet = FTM_LIST_append(&xEPList, pNewInfo);
 	if (nRet != FTM_RET_OK)
 	{
 		free(pNewInfo);
@@ -177,7 +151,7 @@ FTM_RET	FTDM_EP_INFO_del
 	FTM_RET	nRet;
 	FTM_EP_INFO_PTR	pEPInfo = NULL;
 
-	nRet = FTDM_LIST_getEPInfo(xEPID, &pEPInfo);
+	nRet = FTM_LIST_get(&xEPList, &xEPID, (FTM_VOID_PTR _PTR_)&pEPInfo);
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_OBJECT_NOT_FOUND;	
@@ -189,7 +163,7 @@ FTM_RET	FTDM_EP_INFO_del
 		return	nRet;	
 	}
 
-	FTDM_LIST_delEPInfo(pEPInfo);
+	FTM_LIST_remove(&xEPList, pEPInfo);
 	free(pEPInfo);
 
 	return	FTM_RET_OK;
@@ -238,7 +212,7 @@ FTM_RET	FTDM_EP_INFO_get
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	nRet = FTDM_LIST_getEPInfo(xEPID, ppEPInfo);
+	nRet = FTM_LIST_get(&xEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEPInfo);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;
@@ -396,58 +370,5 @@ FTM_INT	FTDM_EPSeeker(const void *pElement, const void *pKey)
 	}
 
 	return	0;
-}
-
-FTM_RET	FTDM_LIST_insertEPInfo
-(
-	FTM_EP_INFO_PTR	pEPInfo
-)
-{
-	ASSERT(pEPInfo == NULL);
-
-	FTM_LIST_append(&xEPList, pEPInfo);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTDM_LIST_delEPInfo
-(
- 	FTM_EP_INFO_PTR	pEPInfo
-)
-{
-	ASSERT(pEPInfo == NULL);
-
-	return	FTM_LIST_remove(&xEPList, pEPInfo);
-}
-
-FTM_RET	FTDM_LIST_getEPInfo
-(
- 	FTM_EPID				xEPID,
-	FTM_EP_INFO_PTR _PTR_	ppEPInfo
-)
-{
-	ASSERT(ppEPInfo == NULL);
-
-	return	FTM_LIST_get(&xEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEPInfo);
-}
-
-FTM_RET	FTDM_LIST_isExistEPInfo
-(
- 	FTM_EPID				xEPID,
-	FTM_BOOL_PTR			pExist
-)
-{
-	ASSERT(pExist != NULL);
-
-	if (FTM_LIST_seek(&xEPList, &xEPID) == FTM_RET_OK)
-	{
-		*pExist = FTM_TRUE;
-
-		return	FTM_RET_OK;
-	}
-
-	*pExist = FTM_FALSE;
-
-	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 

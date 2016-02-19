@@ -34,6 +34,7 @@ typedef	struct
 			FTM_CHAR	pURL[FTM_URL_LEN + 1];
 			FTM_CHAR	pCommunity[FTM_SNMP_COMMUNITY_LEN + 1];
 			FTM_CHAR	pMIB[FTM_SNMP_MIB_LEN + 1];
+			FTM_ULONG	ulMaxRetryCount;
 		} xSNMP;
 
 		struct

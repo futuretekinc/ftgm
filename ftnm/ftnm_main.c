@@ -10,8 +10,6 @@
 
 extern char *program_invocation_short_name;
 
-FTNM_CONTEXT	xFTNM;
-
 int main(int nArgc, char *pArgv[])
 {
 	FTM_INT				nOpt;
@@ -47,25 +45,26 @@ int main(int nArgc, char *pArgv[])
 	xConsoleConfig.ulCmdCount 	= FTNM_ulCmds;
 
 	FTM_CONSOLE_init(&xConsoleConfig);
-	FTNM_init(&xFTNM);
+	FTNM_init();
 	
-	FTNM_loadConfig(&xFTNM, pConfigFileName);
+	FTNM_loadConfig(pConfigFileName);
 
 	if (bDaemon)
 	{
 		if (fork() == 0)
 		{
-			FTNM_run(&xFTNM);
-			FTNM_waitingForFinished(&xFTNM);
+			FTNM_run();
+			FTNM_waitingForFinished();
 		}
 	}
 	else
 	{
-		FTNM_run(&xFTNM);
+		FTNM_run();
 		FTM_CONSOLE_run();
 	}
 
-	FTNM_final(&xFTNM);
+	FTNM_final();
+
 	FTM_MEM_final();
 
 	return	0;

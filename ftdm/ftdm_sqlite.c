@@ -510,13 +510,14 @@ FTM_RET	FTDM_DBIF_EP_INFO_append
 	FTM_CHAR		pSQL[1024];
 
 	sprintf(pSQL, 
-			"INSERT INTO ep_info (EPID,DID,DEPID,TYPE,NAME,INTERVAL,TIMEOUT,UNIT,PID,PEPID) "\
-			"VALUES (%lu, \"%s\", %lu, %lu, \"%s\", %lu, %lu, \"%s\", \"%s\", %lu)",
+			"INSERT INTO ep_info (EPID,DID,DEPID,TYPE,NAME,STATE,INTERVAL,TIMEOUT,UNIT,PID,PEPID) "\
+			"VALUES (%lu, \"%s\", %lu, %lu, \"%s\", %lu, %lu, %lu, \"%s\", \"%s\", %lu)",
 			pEPInfo->xEPID, 
 			pEPInfo->pDID, 
 			pEPInfo->xDEPID, 
 			pEPInfo->xType, 
 			pEPInfo->pName, 
+			pEPInfo->xState,
 			pEPInfo->ulInterval, 
 			pEPInfo->ulTimeout, 
 			pEPInfo->pUnit, 
@@ -631,6 +632,10 @@ static int _FTDM_DBIF_EP_INFO_getListCB(void *pData, int nArgc, char **pArgv, ch
 			{
 				strncpy(pParams->pInfos[pParams->nCount-1].pUnit, pArgv[i], FTM_UNIT_LEN);
 			}
+			else if (strcmp(pColName[i], "STATE") == 0)
+			{
+				pParams->pInfos[pParams->nCount-1].xState = atoi(pArgv[i]);
+			}
 			else if (strcmp(pColName[i], "INTERVAL") == 0)
 			{
 				pParams->pInfos[pParams->nCount-1].ulInterval = atoi(pArgv[i]);
@@ -716,6 +721,10 @@ static int _FTDM_DBIF_EP_INFO_getCB(void *pData, int nArgc, char **pArgv, char *
 		else if (strcmp(pColName[0], "UNIT") == 0)
 		{
 			strncpy(pInfo->pUnit, pArgv[0], FTM_UNIT_LEN);
+		}
+		else if (strcmp(pColName[0], "STATE") == 0)
+		{
+			pInfo->xState = atoi(pArgv[0]);
 		}
 		else if (strcmp(pColName[0], "DID") == 0)
 		{
@@ -1531,7 +1540,7 @@ FTM_RET	_FTDM_BDIF_EP_INFO_createTable
 						"DEPID	INTEGER,"\
 						"TYPE	INT,"\
 						"NAME	TEXT,"\
-						"STATUS	INT,"\
+						"STATE	INT,"\
 						"INTERVAL INT,"\
 						"TIMEOUT INT,"\
 						"UNIT	TEXT,"\

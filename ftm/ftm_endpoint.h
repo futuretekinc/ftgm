@@ -8,6 +8,13 @@ typedef	unsigned long	FTM_EP_CLASS, _PTR_ FTM_EP_CLASS_PTR;
 typedef	unsigned long	FTM_EPID, _PTR_ FTM_EPID_PTR;
 typedef	unsigned long	FTM_EP_TYPE, _PTR_ FTM_EP_TYPE_PTR;
 
+typedef	unsigned long	FTM_EP_STATE, _PTR_ FTM_EP_STATE_PTR;
+
+#define	FTM_EP_STATE_DISABLE		0x00000000
+#define	FTM_EP_STATE_RUN			0x00000001
+#define	FTM_EP_STATE_STOP			0x00000002
+#define	FTM_EP_STATE_ERROR			0x00000003
+
 #define	FTM_EP_CLASS_MASK			0x7F000000
 #define	FTM_EP_CLASS_TEMPERATURE	0x01000000
 #define	FTM_EP_CLASS_HUMIDITY		0x02000000
@@ -44,6 +51,7 @@ typedef	struct
 	FTM_EP_TYPE		xType;
 	FTM_CHAR		pName[FTM_EP_NAME_LEN+1];
 	FTM_CHAR		pUnit[FTM_EP_UNIT_LEN+1];
+	FTM_EP_STATE	xState;
 	FTM_ULONG		ulTimeout;
 	FTM_ULONG		ulInterval;	
 	FTM_CHAR		pDID[FTM_DID_LEN+1];

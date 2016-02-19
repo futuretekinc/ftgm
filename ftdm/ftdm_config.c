@@ -37,6 +37,7 @@
 #define	FTDM_FIELD_EP_TYPE_STRING			"type"
 #define	FTDM_FIELD_EP_NAME_STRING			"name"
 #define	FTDM_FIELD_EP_UNIT_STRING			"unit"
+#define	FTDM_FIELD_EP_ENABLE_STRING			"enable"
 #define	FTDM_FIELD_EP_INTERVAL_STRING		"interval"
 #define	FTDM_FIELD_EP_TIMEOUT_STRING		"timeout"
 #define	FTDM_FIELD_EP_DID_STRING			"did"
@@ -248,8 +249,8 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 
 	MESSAGE("\n[ EP ]\n");
 	MESSAGE("# PRE-REGISTERED ENDPOINT\n");
-	MESSAGE("\t%-08s %-16s %-16s %-8s %-8s %-16s %-08s %-16s %-08s\n",
-			"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID");
+	MESSAGE("\t%-08s %-16s %-16s %-8s %-8s %-8s %-16s %-08s %-16s %-08s\n",
+			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID");
 	if (FTDM_CFG_EP_INFO_count(&pConfig->xEP, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -257,11 +258,22 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 			FTM_EP_INFO	xEPInfo;
 
 			FTDM_CFG_EP_INFO_getAt(&pConfig->xEP, i, &xEPInfo);
-			MESSAGE("\t%08lx %-16s %-16s %-8s %-8lu %-8lu %-16s %08lx %-16s %08lx\n",
+			MESSAGE("\t%08lx %-16s %-16s %-8s ",
 				xEPInfo.xEPID,
 				CFG_EPTypeString(xEPInfo.xType),
 				xEPInfo.pName,
-				xEPInfo.pUnit,
+				xEPInfo.pUnit);
+
+			switch(xEPInfo.xState)
+			{
+			case	FTM_EP_STATE_DISABLE: 	MESSAGE("%-8s ", "DISABLE");  	break; 
+			case	FTM_EP_STATE_RUN: 		MESSAGE("%-8s ", "RUN"); 		break; 
+			case	FTM_EP_STATE_STOP: 		MESSAGE("%-8s ", "STOP"); 		break;
+			case	FTM_EP_STATE_ERROR: 	MESSAGE("%-8s ", "ERROR"); 		break;
+			default: MESSAGE("%-8s ", "UNKNOWN");
+			}
+
+			MESSAGE("%-8lu %-8lu %-16s %08lx %-16s %08lx\n",
 				xEPInfo.ulInterval,
 				xEPInfo.ulTimeout,
 				xEPInfo.pDID,
@@ -796,6 +808,19 @@ FTM_RET	CFG_EP_INFO_getAt(config_t *pConfig, FTM_ULONG ulIndex, FTM_EP_INFO_PTR 
 		if(pField != NULL)
 		{
 			strncpy(xEPInfo.pUnit, config_setting_get_string(pField), FTM_UNIT_LEN);
+		}
+
+		pField = config_setting_get_member(pEP, FTDM_FIELD_EP_ENABLE_STRING);	
+		if(pField != NULL)
+		{
+			if (config_setting_get_int(pField) == 0)
+			{
+				xEPInfo.xState = FTM_EP_STATE_DISABLE;	
+			}
+			else
+			{
+				xEPInfo.xState = FTM_EP_STATE_RUN;	
+			}
 		}
 
 		pField = config_setting_get_member(pEP, FTDM_FIELD_EP_INTERVAL_STRING);	
