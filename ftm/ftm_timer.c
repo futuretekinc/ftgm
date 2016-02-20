@@ -1,9 +1,9 @@
 #include <unistd.h>
-#include "ftnm_timer.h"
+#include "ftm_timer.h"
 #include "ftm_error.h"
 #include "ftm_debug.h"
 
-FTM_RET	FTNM_TIMER_init(FTNM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
+FTM_RET	FTM_TIMER_init(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
 {
 	ASSERT(pTimer != NULL);
 	struct timeval	xCurrentTime;
@@ -18,7 +18,7 @@ FTM_RET	FTNM_TIMER_init(FTNM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_TIMER_add(FTNM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
+FTM_RET	FTM_TIMER_add(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
 {
 	ASSERT(pTimer != NULL);
 	struct timeval	xTimeout;
@@ -31,7 +31,7 @@ FTM_RET	FTNM_TIMER_add(FTNM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
 	return	FTM_RET_OK;
 }
 
-FTM_BOOL FTNM_TIMER_isExpired(FTNM_TIMER_PTR pTimer)
+FTM_BOOL FTM_TIMER_isExpired(FTM_TIMER_PTR pTimer)
 {
 	ASSERT(pTimer != NULL);
 	struct timeval xCurrentTime;
@@ -41,7 +41,7 @@ FTM_BOOL FTNM_TIMER_isExpired(FTNM_TIMER_PTR pTimer)
 	return	timercmp(&pTimer->xTime, &xCurrentTime, <);
 }
 
-FTM_RET FTNM_TIMER_waitForExpired(FTNM_TIMER_PTR pTimer)
+FTM_RET FTM_TIMER_waitForExpired(FTM_TIMER_PTR pTimer)
 {
 	ASSERT(pTimer != NULL);
 	struct timeval xCurrentTime;

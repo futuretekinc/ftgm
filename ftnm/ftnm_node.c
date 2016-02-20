@@ -13,9 +13,6 @@ static FTM_LIST_PTR	pNodeList = NULL;
 FTM_VOID_PTR 	FTNM_NODE_process(FTM_VOID_PTR pData);
 static FTM_RET	FTNM_NODE_lock(FTNM_NODE_PTR pNode);
 static FTM_RET	FTNM_NODE_unlock(FTNM_NODE_PTR pNode);
-static FTM_RET  FTNM_NODE_initTimeout(FTNM_NODE_PTR pNode);
-static FTM_BOOL FTNM_NODE_isTimeout(FTNM_NODE_PTR pNode);
-static FTM_RET	FTNM_NODE_updateTimeout(FTNM_NODE_PTR pNode);;
 static FTM_INT	FTNM_NODE_seek(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 static FTM_INT	FTNM_NODE_comparator(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
@@ -199,6 +196,19 @@ FTM_RET	FTNM_NODE_unlinkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_NODE_updateEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+
+	if (pNode->fUpdateEP == NULL)
+	{
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
+	}
+
+	return	pNode->fUpdateEP(pNode, pEP);
+}
+
 FTM_RET	FTNM_NODE_EP_count(FTNM_NODE_PTR pNode, FTM_ULONG_PTR pulCount)
 {
 	ASSERT(pNode != NULL);
@@ -269,58 +279,6 @@ FTM_RET	FTNM_NODE_unlock(FTNM_NODE_PTR pNode)
 	ASSERT(pNode != NULL);
 
 	pthread_mutex_unlock(&pNode->xMutexLock);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTNM_NODE_initTimeout(FTNM_NODE_PTR pNode)
-{
-	ASSERT(pNode != NULL);
-
-	struct timespec	xTime;
-	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
-	{
-		pNode->xTimeout = xTime.tv_sec * (int64_t)1000000 + xTime.tv_nsec / 1000;	
-	}
-	else
-	{
-		pNode->xTimeout = time(NULL) * 1000000 ;
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_BOOL FTNM_NODE_isTimeout(FTNM_NODE_PTR pNode)
-{
-	ASSERT(pNode != NULL);
-
-	int64_t			xCurrentTime;
-
-	struct timespec	xTime;
-	if (clock_gettime(CLOCK_REALTIME, &xTime) == 0)
-	{
-		xCurrentTime = xTime.tv_sec * (int64_t)1000000 + xTime.tv_nsec / 1000;	
-	}
-	else
-	{
-		xCurrentTime = time(NULL) * 1000000 ;
-	}
-
-	return	(xCurrentTime >= pNode->xTimeout);
-}
-
-FTM_RET	FTNM_NODE_updateTimeout(FTNM_NODE_PTR pNode)
-{
-	ASSERT(pNode != NULL);
-
-	if (pNode->xInfo.ulInterval != 0 && pNode->xInfo.ulInterval < 3600)
-	{
-		pNode->xTimeout += pNode->xInfo.ulInterval * 1000000;
-	}
-	else
-	{
-		pNode->xTimeout += 60 * 1000000;
-	}
 
 	return	FTM_RET_OK;
 }

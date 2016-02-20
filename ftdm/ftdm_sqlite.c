@@ -856,7 +856,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_initTable
 		FTM_CHAR_PTR	pErrMsg = NULL;
 		FTM_CHAR		pSQL[1024];
 
-		sprintf(pSQL, "CREATE TABLE ep_%08lx (ID INT64,TIME INT,VALUE TEXT)", xEPID);
+		sprintf(pSQL, "CREATE TABLE ep_%08lx (ID INT64,TIME INT,STATE INT,VALUE TEXT)", xEPID);
 
 		nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 		if (nRet != SQLITE_OK)
@@ -890,30 +890,33 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 	{
 	case	FTM_EP_DATA_TYPE_INT:
 		{
-			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'i%d')", 
+			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, %lu, 'i%d')", 
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
+					pData->ulState,
 					pData->xValue.nValue);
 		}
 		break;
 
 	case	FTM_EP_DATA_TYPE_ULONG:
 		{
-			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'u%lu')", 
+			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, %lu, 'u%lu')", 
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
+					pData->ulState,
 					pData->xValue.ulValue);
 		}
 		break;
 
 	case	FTM_EP_DATA_TYPE_FLOAT:
 		{
-			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, 'f%8.3lf')", 
+			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, %lu, 'f%8.3lf')", 
 					xEPID, 
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
+					pData->ulState,
 					pData->xValue.fValue);
 		}
 		break;

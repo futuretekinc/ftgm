@@ -75,6 +75,7 @@ typedef	struct
 {
 	FTM_ULONG			ulTime;
 	FTM_EP_DATA_TYPE	xType;
+	FTM_ULONG			ulState;
 	union 
 	{
 		FTM_INT		nValue;

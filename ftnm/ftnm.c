@@ -266,16 +266,15 @@ FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
-	FTNM_NODE_PTR	pNode;
-	FTM_ULONG		i, ulCount;
+	FTNM_EP_PTR	pEP;
+	FTM_ULONG	i, ulCount;
 
-	TRACE("FTNM_taskRunChild\n");
-	FTNM_NODE_count(&ulCount);
+	FTNM_EP_count(0, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		if (FTNM_NODE_getAt(i, &pNode) == FTM_RET_OK)
+		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
 		{
-			FTNM_NODE_start(pNode);
+			FTNM_EP_start(pEP);
 		}
 	}
 	

@@ -1,0 +1,13 @@
+#ifndef	_FTM_MSG_QUEUE_H_
+#define	_FTM_MSG_QUEUE_H_
+
+#include "ftm_types.h"
+typedef	struct FTM_MSG_QUEUE_STRUCT _PTR_ FTM_MSG_QUEUE_PTR;
+
+FTM_RET	FTM_MSGQ_create(FTM_ULONG ulMsgSize, FTM_MSG_QUEUE_PTR _PTR_ pMsgQ);
+FTM_RET	FTM_MSGQ_destroy(FTM_MSG_QUEUE_PTR _PTR_ pMsgQ);
+
+FTM_RET FTM_MSGQ_push(FTM_MSG_QUEUE_PTR _PTR_ pMsgQ, FTM_VOID_PTR pMsg);
+FTM_RET FTM_MSGQ_pop(FTM_MSG_QUEUE_PTR _PTR_ pMsgQ, FTM_VOID_PTR _PTR_ ppMsg);
+
+#endif

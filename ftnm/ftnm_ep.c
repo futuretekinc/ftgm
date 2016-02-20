@@ -2,11 +2,13 @@
 #include <string.h>
 #include "ftnm.h"
 #include "ftm_list.h"
+#include "ftm_timer.h"
 #include "ftnm_ep.h"
 #include "ftnm_dmc.h"
 
-FTM_INT	FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
-FTM_INT	FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2);
+static FTM_VOID_PTR	FTNM_EP_process(FTM_VOID_PTR pData);
+static FTM_INT		FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+static FTM_INT		FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2);
 
 static FTM_LIST_PTR	pEPList = NULL;
 
@@ -56,19 +58,20 @@ FTM_RET	FTNM_EP_create(FTM_EP_INFO_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
 	ASSERT(pInfo != NULL);
 	ASSERT(ppEP != NULL);
 
-	FTNM_EP_PTR	pNewEP = NULL;
+	FTNM_EP_PTR	pEP = NULL;
 
-	pNewEP = (FTNM_EP_PTR)FTM_MEM_malloc(sizeof(FTNM_EP));
-	if (pNewEP == NULL)
+	pEP = (FTNM_EP_PTR)FTM_MEM_malloc(sizeof(FTNM_EP));
+	if (pEP == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	memcpy(&pNewEP->xInfo, pInfo, sizeof(FTM_EP_INFO));
+	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP_INFO));
+	sem_init(&pEP->xLock, 0, 1);
+	
+	FTM_LIST_append(pEPList, pEP);
 
-	FTM_LIST_append(pEPList, pNewEP);
-
-	*ppEP = pNewEP;
+	*ppEP = pEP;
 
 	return	FTM_RET_OK;
 }
@@ -125,7 +128,7 @@ FTM_RET	FTNM_EP_count
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_EP_getList
+FTM_RET FTNM_EP_getIDList
 (
 	FTM_EP_CLASS 	xClass, 
 	FTM_EPID_PTR 	pEPIDList, 
@@ -187,6 +190,41 @@ FTM_RET	FTNM_EP_detach(FTNM_EP_PTR pEP)
 	pEP->pNode = NULL;
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_EP_start(FTNM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+	
+	if (pEP->pNode == NULL)
+	{
+		return	FTM_RET_EP_IS_NOT_ATTACHED;	
+	}
+	
+	pthread_create(&pEP->xPThread, NULL, FTNM_EP_process, (FTM_VOID_PTR)pEP);
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
+{
+	ASSERT(pData != NULL);
+
+	FTNM_EP_PTR	pEP = (FTNM_EP_PTR)pData;
+	FTM_TIMER	xTimer;
+
+	FTM_TIMER_init(&xTimer, pEP->xInfo.ulTimeout);
+
+	while(FTM_TRUE)
+	{
+		FTNM_NODE_updateEP(pEP->pNode, pEP);
+
+		FTM_TIMER_waitForExpired(&xTimer);
+
+		FTM_TIMER_add(&xTimer, pEP->xInfo.ulTimeout);
+	}
+
+	return	0;
 }
 
 FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)

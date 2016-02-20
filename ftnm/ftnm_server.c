@@ -418,7 +418,7 @@ FTM_RET	FTNM_SRV_EP_getList
 )
 {
 	pResp->xCmd = pReq->xCmd;
-	pResp->nRet = FTNM_EP_getList(pReq->xClass, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
+	pResp->nRet = FTNM_EP_getIDList(pReq->xClass, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EPID) * pResp->ulCount;
 
 	return	pResp->nRet;

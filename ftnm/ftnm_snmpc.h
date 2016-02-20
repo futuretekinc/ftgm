@@ -2,6 +2,8 @@
 #define	__FTNM_SNMP_CLIENT_H__
 
 #include "ftnm.h"
+#include "ftnm_node.h"
+#include "ftnm_ep.h"
 
 typedef	FTM_ULONG		FTNM_SNMPC_STATE, _PTR_ FTNM_SNMPC_STATE_PTR;
 
@@ -38,6 +40,7 @@ FTM_RET	FTNM_SNMPC_showConfig(void);
 
 
 FTM_ULONG	FTNM_SNMPC_getMaxRetryCount(void);
+FTM_RET		FTNM_SNMPC_updateEP(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP);
 
 #endif
 

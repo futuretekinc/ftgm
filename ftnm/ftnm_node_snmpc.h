@@ -3,17 +3,14 @@
 
 #include <semaphore.h>
 #include "ftnm.h"
+#include "ftm_timer.h"
 #include "ftnm_node.h"
-#include "ftnm_timer.h"
 
 typedef	struct 
 {
 	FTNM_NODE				xCommon;
-
-	FTNM_EP_PTR				pCurrentEP;
 	struct snmp_session 	*pSession;		/* SNMP session data */
-	FTM_BOOL				bRun;
-	FTNM_TIMER				xTimer;
+	sem_t					xLock;
 	struct 
 	{
 		FTM_ULONG			ulRequest;
