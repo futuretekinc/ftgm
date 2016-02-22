@@ -209,19 +209,6 @@ FTM_RET FTNM_NODE_EP_getData(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_DATA_P
 	return	pNode->fGetEPData(pNode, pEP, pData);
 }
 
-FTM_RET	FTNM_NODE_updateEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pEP != NULL);
-
-	if (pNode->fUpdateEP == NULL)
-	{
-		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
-	}
-
-	return	pNode->fUpdateEP(pNode, pEP);
-}
-
 FTM_RET	FTNM_NODE_EP_count(FTNM_NODE_PTR pNode, FTM_ULONG_PTR pulCount)
 {
 	ASSERT(pNode != NULL);

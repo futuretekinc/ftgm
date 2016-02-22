@@ -9,6 +9,8 @@
 
 #define	FTM_MQTT_TOPIC_LEN					128
 
+#define	FTM_DEVICE_NAME_LEN					256
+
 #define	FTM_NAME_LEN						256
 #define	FTM_UNIT_LEN						32
 
@@ -43,6 +45,12 @@ typedef	struct
 			FTM_CHAR	pURL[FTM_URL_LEN + 1];
 			FTM_CHAR	pTopic[FTM_MQTT_TOPIC_LEN + 1];
 		} xMQTT;
+
+		struct
+		{
+			FTM_ULONG	ulVersion;	
+			FTM_CHAR	pDevice[FTM_DEVICE_NAME_LEN + 1];
+		} xLoRa;
 	}					xOption;
 }	FTM_NODE_INFO, _PTR_ FTM_NODE_INFO_PTR;
 

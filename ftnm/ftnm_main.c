@@ -38,7 +38,7 @@ int main(int nArgc, char *pArgv[])
 	}
 
 	FTM_MEM_init();
-	FTM_DEBUG_printModeSet(2);
+	FTM_PRINT_setLevel(0);
 
 	xConsoleConfig.pPrompt 		= "FTNMS>";
 	xConsoleConfig.pCmdList 	= FTNM_xCmds;

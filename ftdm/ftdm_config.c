@@ -83,7 +83,6 @@ static FTM_RET	CFG_EP_CLASS_INFO_getAt(config_t *pConfig, FTM_ULONG ulIndex, FTM
 static int		CFG_EP_CLASS_INFO_seeker(const void *pItem, const void *pKey);
 
 static FTM_CHAR_PTR	CFG_nodeTypeString(FTM_ULONG ulType);
-static FTM_CHAR_PTR	CFG_EPTypeString(FTM_ULONG ulType);
 static FTM_CHAR_PTR	CFG_SNMPVersionString(FTM_ULONG ulVersion);
 
 extern char *program_invocation_short_name;
@@ -152,8 +151,8 @@ FTM_RET	FTDM_CFG_load(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 
 	ASSERT((pConfig != NULL) && (pFileName != NULL));
 
-	FTM_DEBUG_configLoad(&pConfig->xDebug, pFileName);	
-	FTM_DEBUG_configSet(&pConfig->xDebug);
+	FTM_PRINT_configLoad(&pConfig->xPrint, pFileName);	
+	FTM_PRINT_configSet(&pConfig->xPrint);
 
 	config_init(&xConfig);
 	config_read_file(&xConfig, pFileName);
@@ -200,7 +199,6 @@ FTM_RET	FTDM_CFG_load(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		FTM_ULONG			i;
 		FTM_EP_CLASS_INFO	xInfo;
 
-		TRACE("EP Class : %d\n", ulCount);
 		for( i = 0 ; i < ulCount ; i++)
 		{
 			CFG_EP_CLASS_INFO_getAt(&xConfig, i, &xInfo);
@@ -260,7 +258,7 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 			FTDM_CFG_EP_INFO_getAt(&pConfig->xEP, i, &xEPInfo);
 			MESSAGE("\t%08lx %-16s %-16s %-8s ",
 				xEPInfo.xEPID,
-				CFG_EPTypeString(xEPInfo.xType),
+				FTDM_CFG_EP_getTypeString(xEPInfo.xType),
 				xEPInfo.pName,
 				xEPInfo.pUnit);
 
@@ -887,7 +885,6 @@ FTM_RET	CFG_EP_CLASS_INFO_count(config_t *pConfig, FTM_ULONG_PTR pCount)
 
 	pField = config_setting_get_member(pSection, FTDM_FIELD_EP_CLASSES_STRING);
 	
-	TRACE("pField = %08lx\n", pField);
 	if ((pField != NULL) && (config_setting_is_list(pField) == CONFIG_TRUE))
 	{
 		*pCount	= config_setting_length(pField);
@@ -1086,7 +1083,7 @@ FTM_CHAR_PTR	CFG_nodeTypeString(FTM_ULONG ulType)
 	return	"UNKNOWN";
 }
 
-FTM_CHAR_PTR	CFG_EPTypeString(FTM_ULONG ulType)
+FTM_CHAR_PTR	FTDM_CFG_EP_getTypeString(FTM_ULONG ulType)
 {
 	static	FTM_CHAR	pBuff[16];
 	switch(ulType)

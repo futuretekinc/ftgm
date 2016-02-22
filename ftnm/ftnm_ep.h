@@ -10,12 +10,6 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 
-#define	FTNM_EP_STATE_STOP		0X00000000
-#define	FTNM_EP_STATE_RUN		0X00000001
-#define	FTNM_EP_STATE_ERROR		0x00000002
-
-typedef	FTM_ULONG	FTNM_EP_STATE, _PTR_ FTNM_EP_STATE_PTR;
-
 typedef	struct FTNM_NODE_STRUCT _PTR_ FTNM_NODE_PTR;
 typedef	struct 
 {
@@ -24,7 +18,7 @@ typedef	struct
 	FTNM_NODE_PTR 		pNode;
 	FTM_EP_DATA			xData;
 
-	FTNM_EP_STATE		xState;
+	FTM_EP_STATE		xState;
 	FTM_ULONG			ulRetryCount;
 
 	pthread_t			xPThread;

@@ -966,7 +966,7 @@ FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		{
 			FTM_ULONG	nMode;
 
-			FTM_DEBUG_printModeGet(&nMode);
+			FTM_PRINT_getLevel(&nMode);
 			switch(nMode)
 			{
 			case	0: MESSAGE("DEBUG OUT MODE : NONE\n"); break;
@@ -980,8 +980,8 @@ FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 			nNewMode = strtoul(pArgv[2], NULL, 10);
 		
-			FTM_DEBUG_printModeGet(&nMode);
-			FTM_DEBUG_printModeSet(nNewMode);
+			FTM_PRINT_getLevel(&nMode);
+			FTM_PRINT_setLevel(nNewMode);
 
 			switch(nMode)
 			{

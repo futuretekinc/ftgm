@@ -193,8 +193,20 @@ FTM_RET FTNM_EP_getAt(FTM_ULONG ulIndex, FTNM_EP_PTR _PTR_ ppEP)
 FTM_RET	FTNM_EP_attach(FTNM_EP_PTR pEP, FTNM_NODE_PTR pNode)
 {
 	ASSERT(pEP != NULL);
+	ASSERT(pNode != NULL);
 
 	pEP->pNode = pNode;
+
+	switch (pNode->xInfo.xType)
+	{
+	case	FTM_NODE_TYPE_SNMP:
+		{
+			pEP->xOption.xSNMP.nOIDLen = sizeof(pEP->xOption.xSNMP.pOID); 
+
+			FTNM_NODE_SNMPC_getOID((FTNM_NODE_SNMPC_PTR)pNode, (pEP->xInfo.xEPID >> 24) & 0xFF, (pEP->xInfo.xEPID & 0xFF), pEP->xOption.xSNMP.pOID, &pEP->xOption.xSNMP.nOIDLen);
+		}
+		break;
+	}
 
 	return	FTM_RET_OK;
 }
@@ -217,7 +229,7 @@ FTM_RET FTNM_EP_start(FTNM_EP_PTR pEP)
 		return	FTM_RET_EP_IS_NOT_ATTACHED;	
 	}
 
-	if (pEP->xState != FTNM_EP_STATE_STOP)
+	if (pEP->xState == FTM_EP_STATE_RUN)
 	{
 		return	FTM_RET_ALREADY_STARTED;
 	}
@@ -259,23 +271,26 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 
 	FTM_TIMER_init(&xInterval, 0);
 
-	while(bStop)
+	while(!bStop)
 	{
 		FTM_ULONG		ulRemainTime = 0;
 		FTM_EP_DATA		xData, xReadData;
 		FTNM_EP_MSG		xMsg;
 		
 		FTM_TIMER_add(&xInterval, pEP->xInfo.ulInterval * 1000000);
+		FTM_TIMER_remain(&xInterval, &ulRemainTime);
 
 		xData.ulTime = time(NULL);
 		if (FTNM_NODE_EP_getData(pEP->pNode, pEP, &xReadData) == FTM_RET_OK)
 		{
+			TRACE("EP(%08x:%s) - The data import was successful.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
 			xData.xState = FTM_EP_DATA_STATE_VALID;
 			xData.xType = xReadData.xType;
 			memcpy(&xData.xValue, &xReadData.xValue, sizeof(xData.xValue));
 		}
 		else
 		{
+			TRACE("EP(%08x:%s) - The data import was failed.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
 			if (pEP->xData.xState == FTM_EP_DATA_STATE_VALID)
 			{
 				xData.xState = FTM_EP_DATA_STATE_INVALID;
@@ -288,11 +303,11 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 			memcpy(&xData.xValue, &pEP->xData.xValue, sizeof(xData.xValue));
 		}
 
+
 		FTNM_setEPData(pEP->xInfo.xEPID, &xData);
 		FTNM_EP_setData(pEP, &xData);
 		
 		FTM_TIMER_remain(&xInterval, &ulRemainTime);
-
 		while (!bStop && (FTM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, (FTM_VOID_PTR )&xMsg) == FTM_RET_OK))
 		{
 			switch(xMsg.xCmd)

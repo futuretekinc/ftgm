@@ -10,6 +10,7 @@ typedef struct
 {
 	FTM_INT	hSock;
 	FTM_INT	nTimeout;
+	sem_t	xLock;
 }	FTDMC_SESSION, _PTR_ FTDMC_SESSION_PTR;
 
 FTM_RET	FTDMC_init

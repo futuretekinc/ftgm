@@ -107,6 +107,7 @@ FTM_VOID_PTR	FTNM_task(FTM_VOID_PTR pData)
 		case	FTNM_STATE_INITIALIZED:
 			{
 				FTNM_SRV_run(&pCTX->xServer);
+				FTNM_SNMPC_run();
 				FTNM_taskConnect(pCTX);
 			}
 			break;

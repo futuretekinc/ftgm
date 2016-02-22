@@ -218,111 +218,6 @@ FTM_ULONG	FTNM_SNMPC_getMaxRetryCount(void)
 	return	pSNMPC->xConfig.ulMaxRetryCount;
 }
 
-FTM_RET	FTNM_SNMPC_updateEP(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pEP != NULL);
-
-	FTM_RET			xRet = FTM_RET_SNMP_ERROR;
-	struct snmp_session	*pSession = NULL;
-	struct snmp_session	xSession;
-
-	sem_wait(&pEP->xLock);
-
-	snmp_sess_init(&xSession);			/* initialize session */
-
-	xSession.version 		= pNode->xCommon.xInfo.xOption.xSNMP.ulVersion;
-	xSession.peername 		= pNode->xCommon.xInfo.xOption.xSNMP.pURL;
-	xSession.community 		= (u_char *)pNode->xCommon.xInfo.xOption.xSNMP.pCommunity;
-	xSession.community_len	= strlen(pNode->xCommon.xInfo.xOption.xSNMP.pCommunity);
-
-	pSession = snmp_open(&xSession);
-	if (pSession != NULL)
-	{
-		netsnmp_pdu 	*pReqPDU = NULL;
-		netsnmp_pdu		*pRespPDU = NULL; 
-
-		pReqPDU = snmp_pdu_create(SNMP_MSG_GET);	/* send the first GET */
-		if (pReqPDU == NULL)
-		{
-			ERROR("SNMP PDU creation error - %s\n", snmp_errstring(snmp_errno));
-			xRet = FTM_RET_SNMP_ERROR;
-		}
-		else
-		{
-			pReqPDU->time = pNode->xCommon.xInfo.ulTimeout;
-			snmp_add_null_var(pReqPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
-			pNode->xStatistics.ulRequest++;
-		
-			int nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
-		
-			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
-			{
-				struct variable_list *pVariable = pRespPDU->variables;
-				while (pVariable) 
-				{
-					switch(pVariable->name[pVariable->name_length-2])
-					{
-					case	6:
-						{
-							FTM_CHAR	pBuff[1024];
-							FTM_EP_DATA	xData;
-	
-							if (pVariable->val_len < 1024)
-							{
-								memcpy(pBuff, pVariable->val.string, pVariable->val_len);
-								pBuff[pVariable->val_len] = 0;
-							}
-							else
-							{
-								memcpy(pBuff, pVariable->val.string, 1023);
-								pBuff[1023] = 0;
-							}
-	
-	
-							xData.ulTime = time(NULL);
-							xData.xType  = FTM_EP_DATA_TYPE_FLOAT;
-							xData.ulState= 0;
-							xData.xValue.fValue = strtod(pBuff, NULL);
-	
-							xRet = FTNM_setEPData(pEP->xInfo.xEPID, &xData);
-						}
-						break;
-					};
-	
-					pVariable= pVariable->next_variable;
-				}
-		
-				pNode->xStatistics.ulResponse++;
-			}
-			else
-			{
-				ERROR("EP(%08x:%s) is occurred synch response error! - %s\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID, snmp_errstring(nRet));
-				xRet = FTM_RET_SNMP_ERROR;
-			}
-		}
-
-		if (pRespPDU != NULL)
-		{
-			snmp_free_pdu(pRespPDU);
-		}
-
-		snmp_close(pSession);
-
-	}
-	else
-	{
-		ERROR("snmp_open: %s\n", snmp_errstring(snmp_errno));
-		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
-	}
-
-	pEP->xRet = xRet;
-
-	sem_post(&pEP->xLock);
-
-	return	xRet;
-}
-
 FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pNode != NULL);
@@ -372,7 +267,6 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 					case	6:
 						{
 							FTM_CHAR	pBuff[1024];
-							FTM_EP_DATA	xData;
 	
 							if (pVariable->val_len < 1024)
 							{
@@ -388,7 +282,7 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 	
 							pData->ulTime = time(NULL);
 							pData->xType  = FTM_EP_DATA_TYPE_FLOAT;
-							pData->ulState= 0;
+							pData->xState = FTM_EP_STATE_RUN;
 							pData->xValue.fValue = strtod(pBuff, NULL);
 
 							xRet = FTM_RET_OK;
@@ -403,7 +297,7 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 			}
 			else
 			{
-				ERROR("EP(%08x:%s) is occurred synch response error! - %s\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID, snmp_errstring(nRet));
+				//ERROR("EP(%08x:%s) is occurred synch response error! - %s\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID, snmp_errstring(nRet));
 				xRet = FTM_RET_SNMP_ERROR;
 			}
 		}
@@ -422,10 +316,18 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
 	}
 
-	pEP->xRet = xRet;
-
 	sem_post(&pEP->xLock);
 
 	return	xRet;
 }
 
+FTM_RET		FTNM_SNMPC_getOID(FTM_CHAR_PTR pInput, oid *pOID, size_t	*pnOIDLen)
+{
+	if (read_objid(pInput, pOID, pnOIDLen) == 1)
+	{
+		return	FTM_RET_OK;
+	}
+
+	return	FTM_RET_SNMP_CANT_FIND_OID;
+
+}

@@ -58,8 +58,16 @@ FTM_RET	FTM_QUEUE_pop(FTM_QUEUE_PTR pQueue, FTM_VOID_PTR _PTR_ ppItem)
 {
 	ASSERT(pQueue != NULL);
 	ASSERT(ppItem != NULL);
+	
+	FTM_RET	xRet;
 
-	return	FTM_LIST_getAt(&pQueue->xList, 0, ppItem);
+	xRet = FTM_LIST_getAt(&pQueue->xList, 0, ppItem);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return FTM_LIST_remove(&pQueue->xList, *ppItem);
 }
 
 FTM_RET	FTM_QUEUE_count(FTM_QUEUE_PTR pQueue, FTM_ULONG_PTR pulCount)

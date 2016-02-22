@@ -169,7 +169,7 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 		int	nLen;
 
 		nLen = recv(pSession->hSocket, pReq, sizeof(pSession->pReqBuff), 0);
-		TRACE("recv(%08x, pReq, %lu, MSG_DONTWAIT)\n", pSession->hSocket, nLen);
+//		TRACE("recv(%08x, pReq, %lu, MSG_DONTWAIT)\n", pSession->hSocket, nLen);
 		if (nLen == 0)
 		{
 			TRACE("The connection is terminated.\n");
@@ -188,7 +188,7 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 			pResp->nLen = sizeof(FTDM_RESP_PARAMS);
 		}
 
-		TRACE("send(%08x, pResp, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->nLen);
+//		TRACE("send(%08x, pResp, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->nLen);
 		nLen = send(pSession->hSocket, pResp, pResp->nLen, MSG_DONTWAIT);
 		if (nLen < 0)
 		{
@@ -221,7 +221,7 @@ FTM_RET	FTDMS_serviceCall
 	{
 		if (pSet->xCmd == pReq->xCmd)
 		{
-			TRACE("CMD : %s\n", pSet->pCmdString);
+	//		TRACE("CMD : %s\n", pSet->pCmdString);
 			return	pSet->fService(pReq, pResp);
 		}
 

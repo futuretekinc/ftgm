@@ -76,7 +76,7 @@ int main(int nArgc, char *pArgv[])
 
 		if (nDebugLevel >= 0)
 		{
-			xConfig.xDebug.ulMode = nDebugLevel;	
+			xConfig.xPrint.ulLevel = nDebugLevel;	
 		}
 
 		/* apply configuration */

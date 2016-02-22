@@ -894,7 +894,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
-					pData->ulState,
+					pData->xState,
 					pData->xValue.nValue);
 		}
 		break;
@@ -905,7 +905,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
-					pData->ulState,
+					pData->xState,
 					pData->xValue.ulValue);
 		}
 		break;
@@ -916,7 +916,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 					xEPID, 
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
-					pData->ulState,
+					pData->xState,
 					pData->xValue.fValue);
 		}
 		break;

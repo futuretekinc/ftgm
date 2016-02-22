@@ -8,7 +8,6 @@
 FTM_ULONG		active_hosts = 0;
 FTM_RET			FTNM_NODE_SNMPC_start(FTNM_NODE_SNMPC_PTR pNode);
 FTM_RET			FTNM_NODE_SNMPC_stop(FTNM_NODE_SNMPC_PTR pNode);
-FTM_RET			FTNM_NODE_SNMPC_updateEP(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP);
 FTM_RET			FTNM_NODE_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
 
 FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
@@ -35,7 +34,6 @@ FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNo
 	
 	pNode->xCommon.fStart	= (FTNM_NODE_START)FTNM_NODE_SNMPC_start;
 	pNode->xCommon.fStop 	= (FTNM_NODE_STOP)FTNM_NODE_SNMPC_stop;
-	pNode->xCommon.fUpdateEP= (FTNM_NODE_EP_UPDATE)FTNM_NODE_SNMPC_updateEP;
 	pNode->xCommon.fGetEPData=(FTNM_NODE_EP_GET_DATA)FTNM_NODE_SNMPC_getEPData;
 	*ppNode = (FTNM_NODE_PTR)pNode;
 
@@ -130,12 +128,34 @@ FTM_RET	FTNM_NODE_SNMPC_stop(FTNM_NODE_SNMPC_PTR pNode)
 }
 
 
-FTM_RET	FTNM_NODE_SNMPC_updateEP(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP)
-{
-	return	FTNM_SNMPC_updateEP(pNode, pEP);
-}
-
 FTM_RET	FTNM_NODE_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 {
 	return	FTNM_SNMPC_getEPData(pNode, pEP, pData);
+}
+
+static FTM_CHAR_PTR	pOIDNamePrefix[] =
+{
+	"",
+	"temp",
+	"humi",
+	"vlt",
+	"curr",
+	"di",
+	"do",
+	"cnt",
+	"prs",
+	"dsc",
+	"dev"
+};
+
+FTM_RET		FTNM_NODE_SNMPC_getOID(FTNM_NODE_SNMPC_PTR pNode, FTM_ULONG ulType, FTM_ULONG ulIndex, oid *pOID, size_t *pnOIDLen)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pnOIDLen != NULL);
+
+	FTM_CHAR	pBuff[1024];
+
+	sprintf(pBuff, "%s:%sValue.%lu", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pOIDNamePrefix[ulType], ulIndex);
+
+	return	FTNM_SNMPC_getOID(pBuff, pOID, pnOIDLen);
 }

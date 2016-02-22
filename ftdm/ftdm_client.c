@@ -53,6 +53,7 @@ FTM_RET FTDMC_connect
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
+	sem_init(&pSession->xLock, 0, 1);
 	hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (hSock == -1)
 	{
@@ -89,6 +90,7 @@ FTM_RET FTDMC_disconnect
 	}
 
 	close(pSession->hSock);
+	sem_destroy(&pSession->xLock);
 	pSession->hSock = 0;
 	
 	return	FTM_RET_OK;
@@ -1088,6 +1090,7 @@ FTM_RET FTDMC_request
 	FTM_INT			nRespLen
 )
 {
+	FTM_RET	xRet = FTM_RET_OK;
 	FTM_INT	nTimeout;
 
 
@@ -1096,27 +1099,38 @@ FTM_RET FTDMC_request
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-//	TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, nReqLen);
+	sem_wait(&pSession->xLock);
 
+//	TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, nReqLen);
 
 	if( send(pSession->hSock, pReq, nReqLen, 0) < 0)
 	{
-		return	FTM_RET_ERROR;	
+		xRet = FTM_RET_ERROR;	
 	}
-
-	nTimeout = pSession->nTimeout;
-	while(--nTimeout > 0)
+	else
 	{
-		int	nLen = recv(pSession->hSock, pResp, nRespLen, MSG_DONTWAIT);
-		if (nLen > 0)
+		nTimeout = pSession->nTimeout;
+		while(--nTimeout > 0)
 		{
+			int	nLen = recv(pSession->hSock, pResp, nRespLen, MSG_DONTWAIT);
 //			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
-			return	FTM_RET_OK;	
+			if (nLen > 0)
+			{
+				break;
+			}
+
+			usleep(1000);
 		}
 
-		usleep(1000);
+		if (nTimeout == 0)
+		{
+			xRet = FTM_RET_COMM_TIMEOUT;	
+		}
+
 	}
 
-	return	FTM_RET_COMM_TIMEOUT;	
+	sem_post(&pSession->xLock);
+
+	return	xRet;
 }
 

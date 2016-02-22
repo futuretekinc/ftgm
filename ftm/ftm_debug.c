@@ -6,12 +6,12 @@
 #include "ftm_error.h"
 #include "libconfig.h"
 
-FTM_RET	FTM_DEBUG_printToTerm(FTM_CHAR_PTR szmsg);
-FTM_RET	FTM_DEBUG_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
+FTM_RET	FTM_PRINT_printToTerm(FTM_CHAR_PTR szmsg);
+FTM_RET	FTM_PRINT_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
 
-static FTM_DEBUG_CFG	_xConfig = 
+static FTM_PRINT_CFG	_xConfig = 
 {
-	.ulMode =MSG_NORMAL,
+	.ulLevel = FTM_PRINT_LEVEL_ERROR,
 	.xTrace = 
 	{
 		.bToFile = FTM_FALSE,
@@ -30,7 +30,7 @@ static FTM_DEBUG_CFG	_xConfig =
 };
 
 
-FTM_RET	FTM_DEBUG_configLoad(FTM_DEBUG_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
+FTM_RET	FTM_PRINT_configLoad(FTM_PRINT_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
 {
 	config_t		xLibConfig;
 	config_setting_t	*pSection;
@@ -50,7 +50,7 @@ FTM_RET	FTM_DEBUG_configLoad(FTM_DEBUG_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
 		pField = config_setting_get_member(pSection, "mode");
 		if (pField != NULL)
 		{
-			pCfg->ulMode = (FTM_ULONG)config_setting_get_int(pField);
+			pCfg->ulLevel = (FTM_ULONG)config_setting_get_int(pField);
 		}
 
 		pSubSection = config_setting_get_member(pSection, "trace");
@@ -124,19 +124,19 @@ FTM_RET	FTM_DEBUG_configLoad(FTM_DEBUG_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_DEBUG_configSet(FTM_DEBUG_CFG_PTR pCfg)
+FTM_RET	FTM_PRINT_configSet(FTM_PRINT_CFG_PTR pCfg)
 {
 	if (pCfg != NULL)
 	{
-		memcpy(&_xConfig, pCfg, sizeof(FTM_DEBUG_CFG));	
+		memcpy(&_xConfig, pCfg, sizeof(FTM_PRINT_CFG));	
 	}
 
-	FTM_DEBUG_printModeSet(_xConfig.ulMode);
+	FTM_PRINT_setLevel(_xConfig.ulLevel);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_DEBUG_dumpPacket
+FTM_RET	FTM_PRINT_dumpPacket
 (
 	FTM_CHAR_PTR	pName,
 	FTM_BYTE_PTR	pPacket,
@@ -163,56 +163,55 @@ FTM_RET	FTM_DEBUG_dumpPacket
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_DEBUG_printModeSet
+FTM_RET FTM_PRINT_setLevel
 (
-	FTM_ULONG ulMode
+	FTM_ULONG ulLevel
 )
 {
-	switch(ulMode)
-	{
-	case	0:	_xConfig.ulMode = 0; break;
-	case	1:	_xConfig.ulMode = MSG_NORMAL; break;
-	case	2:	_xConfig.ulMode = MSG_ALL; break;
-	}
+	_xConfig.ulLevel = ulLevel;
 
 	return	FTM_RET_OK;
 }
-FTM_RET	FTM_DEBUG_printModeGet
+FTM_RET	FTM_PRINT_getLevel
 (
-	FTM_ULONG_PTR pMode
+	FTM_ULONG_PTR pulLevel
 )
 {
-	*pMode = _xConfig.ulMode;
+	*pulLevel = _xConfig.ulLevel;
 
 	return	FTM_RET_OK;
 }
 
 
-FTM_RET	FTM_DEBUG_printOut
+FTM_RET	FTM_PRINT_out
 (
-	unsigned long	nLevel,
-	const char		*pFunction,
+	unsigned long	ulLevel,
+	const char *	pFunction,
 	int				nLine,
-	char 			*format, 
+	int				bTimeInfo,
+	const char *	format, 
 	...
 )
 {
+	static	FTM_INT	nOutputLine = 0;
     va_list 		argptr;
+	time_t			xTime;
 	FTM_BOOL		bFile = FTM_FALSE;
 	FTM_BOOL		bLine = FTM_FALSE;
 	FTM_CHAR_PTR	pPath;
 	FTM_CHAR_PTR	pPrefix;
 	FTM_INT			nLen = 0;
 	FTM_CHAR		szBuff[2048];
+	FTM_CHAR		szTime[32];
 
-	if ((nLevel & _xConfig.ulMode) == 0)
+	if (ulLevel < _xConfig.ulLevel)
 	{
 		return FTM_RET_OK;	
 	}
 
-	switch(nLevel)
+	switch(ulLevel)
 	{
-	case	MSG_TRACE:
+	case	FTM_PRINT_LEVEL_TRACE:
 		if (_xConfig.xTrace.bToFile)
 		{
 			bFile 	= FTM_TRUE;
@@ -222,7 +221,7 @@ FTM_RET	FTM_DEBUG_printOut
 		bLine	= _xConfig.xTrace.bLine;
 		break;
 
-	case	MSG_ERROR:
+	case	FTM_PRINT_LEVEL_ERROR:
 		if (_xConfig.xError.bToFile)
 		{
 			bFile = FTM_TRUE;
@@ -234,9 +233,17 @@ FTM_RET	FTM_DEBUG_printOut
 	}
 
 	va_start ( argptr, format );           
+	xTime = time(NULL);
+	strcpy(szTime, ctime(&xTime));
+	szTime[strlen(szTime)-1] = '\0';
+
+	if (bTimeInfo)
+	{
+		nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%4d : [%s] - ", ++nOutputLine, szTime);
+	}
 	if (bLine && (pFunction != NULL))
 	{
-		nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%32s[%4d] : ", pFunction, nLine);
+		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%32s[%4d] - ", pFunction, nLine);
 	}
 	nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, format, argptr);
 	va_end(argptr);
@@ -245,25 +252,25 @@ FTM_RET	FTM_DEBUG_printOut
 
 	if (bFile)
 	{
-		FTM_DEBUG_printToFile(szBuff, pPath, pPrefix);
+		FTM_PRINT_printToFile(szBuff, pPath, pPrefix);
 
 	}
 	else
 	{
-		FTM_DEBUG_printToTerm(szBuff);
+		FTM_PRINT_printToTerm(szBuff);
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_DEBUG_printToTerm(FTM_CHAR_PTR szMsg)
+FTM_RET	FTM_PRINT_printToTerm(FTM_CHAR_PTR szMsg)
 {
 	fprintf(stdout, "%s", szMsg);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_DEBUG_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix)
+FTM_RET	FTM_PRINT_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix)
 {
 	FILE 		*pFile;
 	time_t		rawTime;
@@ -277,7 +284,7 @@ FTM_RET	FTM_DEBUG_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_P
 
 	if(sprintf(szFileName, "%s%s-%s.log", pPath, pPrefix, szTime) <= 0)
 	{
-		return FTM_DEBUG_printToTerm(szMsg);	
+		return FTM_PRINT_printToTerm(szMsg);	
 	}
 
 	pFile = fopen(szFileName, "a");
@@ -296,8 +303,10 @@ FTM_RET	FTM_DEBUG_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_P
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_DEBUG_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTM_PRINT_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 
 	return	FTM_RET_OK;
 }
+
+
