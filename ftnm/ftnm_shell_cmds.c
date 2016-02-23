@@ -1,44 +1,44 @@
 #include "ftnm.h"
-#include "ftnm_console_cmds.h"
+#include "ftnm_shell_cmds.h"
 #include "ftnm_node.h"
 #include "ftnm_ep.h"
 #include "ftnm_ep_class.h"
 
 extern	FTNM_CONTEXT	xFTNM;
 
-FTM_RET	FTNM_CONSOLE_CMD_config
+FTM_RET	FTNM_SHELL_CMD_config
 (
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[]
 );
 
-FTM_RET	FTNM_CONSOLE_CMD_list
+FTM_RET	FTNM_SHELL_CMD_list
 (
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[]
 );
 
-FTM_CONSOLE_CMD	FTNM_xCmds[] = 
+FTM_SHELL_CMD	FTNM_xCmds[] = 
 {
 	{
 		.pString	= "config",
-		.function	= FTNM_CONSOLE_CMD_config,
+		.function	= FTNM_SHELL_CMD_config,
 		.pShortHelp	= "Configuration Management",
 		.pHelp		= "\n"\
 					  "\tConfiguration Management.\n"
 	},
 	{
 		.pString	= "list",
-		.function	= FTNM_CONSOLE_CMD_list,
+		.function	= FTNM_SHELL_CMD_list,
 		.pShortHelp	= "show object list.",
 		.pHelp		= "\n"\
 					  "\tShow object list.\n"
 	}
 };
 
-FTM_ULONG		FTNM_ulCmds = sizeof(FTNM_xCmds) / sizeof(FTM_CONSOLE_CMD);
+FTM_ULONG		FTNM_ulCmds = sizeof(FTNM_xCmds) / sizeof(FTM_SHELL_CMD);
 
-FTM_RET	FTNM_CONSOLE_CMD_config
+FTM_RET	FTNM_SHELL_CMD_config
 (
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[]
@@ -54,7 +54,7 @@ FTM_RET	FTNM_CONSOLE_CMD_config
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_CONSOLE_CMD_list
+FTM_RET	FTNM_SHELL_CMD_list
 (
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[]

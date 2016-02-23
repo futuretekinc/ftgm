@@ -6,7 +6,7 @@
 #include "ftnm.h"
 #include "ftm_mem.h"
 #include "ftm_debug.h"
-#include "ftnm_console_cmds.h"
+#include "ftnm_shell_cmds.h"
 
 extern char *program_invocation_short_name;
 
@@ -14,7 +14,7 @@ int main(int nArgc, char *pArgv[])
 {
 	FTM_INT				nOpt;
 	FTM_BOOL			bDaemon = FTM_FALSE;
-	FTM_CONSOLE_CONFIG	xConsoleConfig;
+	FTM_SHELL_CONFIG	xShellConfig;
 	FTM_CHAR			pConfigFileName[1024];
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
@@ -40,11 +40,11 @@ int main(int nArgc, char *pArgv[])
 	FTM_MEM_init();
 	FTM_PRINT_setLevel(0);
 
-	xConsoleConfig.pPrompt 		= "FTNMS>";
-	xConsoleConfig.pCmdList 	= FTNM_xCmds;
-	xConsoleConfig.ulCmdCount 	= FTNM_ulCmds;
+	xShellConfig.pPrompt 		= "FTNMS>";
+	xShellConfig.pCmdList 	= FTNM_xCmds;
+	xShellConfig.ulCmdCount 	= FTNM_ulCmds;
 
-	FTM_CONSOLE_init(&xConsoleConfig);
+	FTM_SHELL_init(&xShellConfig);
 	FTNM_init();
 	
 	FTNM_loadConfig(pConfigFileName);
@@ -60,7 +60,7 @@ int main(int nArgc, char *pArgv[])
 	else
 	{
 		FTNM_run();
-		FTM_CONSOLE_run();
+		FTM_SHELL_run();
 	}
 
 	FTNM_final();

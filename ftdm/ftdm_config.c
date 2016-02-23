@@ -83,7 +83,6 @@ static FTM_RET	CFG_EP_CLASS_INFO_getAt(config_t *pConfig, FTM_ULONG ulIndex, FTM
 static int		CFG_EP_CLASS_INFO_seeker(const void *pItem, const void *pKey);
 
 static FTM_CHAR_PTR	CFG_nodeTypeString(FTM_ULONG ulType);
-static FTM_CHAR_PTR	CFG_SNMPVersionString(FTM_ULONG ulVersion);
 
 extern char *program_invocation_short_name;
 
@@ -238,7 +237,7 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 				xNodeInfo.pLocation,
 				xNodeInfo.ulInterval,
 				xNodeInfo.ulTimeout,
-				CFG_SNMPVersionString(xNodeInfo.xOption.xSNMP.ulVersion),
+				FTDM_CFG_SNMP_getVersionString(xNodeInfo.xOption.xSNMP.ulVersion),
 				xNodeInfo.xOption.xSNMP.pURL,
 				xNodeInfo.xOption.xSNMP.pCommunity,
 				xNodeInfo.xOption.xSNMP.pMIB);
@@ -1104,7 +1103,7 @@ FTM_CHAR_PTR	FTDM_CFG_EP_getTypeString(FTM_ULONG ulType)
 	return	pBuff;
 }
 
-FTM_CHAR_PTR	CFG_SNMPVersionString(FTM_ULONG ulVersion)
+FTM_CHAR_PTR	FTDM_CFG_SNMP_getVersionString(FTM_ULONG ulVersion)
 {
 	switch(ulVersion)
 	{

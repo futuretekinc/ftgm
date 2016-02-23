@@ -8,7 +8,7 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h>
 #include "libconfig.h"
-#include "ftm_console.h"
+#include "ftm_shell.h"
 #include "ftdm_client.h"
 #include "ftdm_client_cmds.h"
 #include "ftdm_client_config.h"
@@ -26,7 +26,7 @@ extern FTDMC_CFG		xClientConfig;
 extern FTDMC_SESSION	_xSession;
 extern FTM_BOOL			_bQuit;
 
-FTM_CONSOLE_CMD			FTDMC_pCmdList[] = 
+FTM_SHELL_CMD			FTDMC_pCmdList[] = 
 {
 	{	
 		.pString	= "connect",
@@ -124,7 +124,7 @@ FTM_CONSOLE_CMD			FTDMC_pCmdList[] =
 	}
 };
 
-FTM_ULONG		FTDMC_ulCmdCount = sizeof(FTDMC_pCmdList) / sizeof(FTM_CONSOLE_CMD);
+FTM_ULONG		FTDMC_ulCmdCount = sizeof(FTDMC_pCmdList) / sizeof(FTM_SHELL_CMD);
 FTM_CHAR_PTR	FTDMC_pPrompt = "FTDMC>";
 
 FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])

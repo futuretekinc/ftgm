@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ftm_console.h"
+#include "ftm_shell.h"
 #include "ftm_error.h"
 #include "ftm_debug.h"
 #include "ftm_list.h"
 
-static FTM_RET	FTM_CONSOLE_parseLine
+static FTM_RET	FTM_SHELL_parseLine
 (
 	FTM_CHAR_PTR 	pLine, 
 	FTM_CHAR_PTR 	pArgv[], 
@@ -14,34 +14,34 @@ static FTM_RET	FTM_CONSOLE_parseLine
 	FTM_INT_PTR 	pArgc
 );
 
-static FTM_RET FTM_CONSOLE_getCmd
+static FTM_RET FTM_SHELL_getCmd
 (
 	FTM_CHAR_PTR 				pCmdString, 
-	FTM_CONSOLE_CMD_PTR _PTR_ 	ppCmd
+	FTM_SHELL_CMD_PTR _PTR_ 	ppCmd
 );
 
-static FTM_RET	FTM_CONSOLE_cmdHelp
+static FTM_RET	FTM_SHELL_cmdHelp
 (
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[]
 );
 
-static FTM_RET	FTM_CONSOLE_cmdQuit
+static FTM_RET	FTM_SHELL_cmdQuit
 (
 	FTM_INT nArgc, FTM_CHAR_PTR pArgv[]
 );
 
-static int FTM_CONSOLE_compCmd
+static int FTM_SHELL_compCmd
 (
 	const void *pItem, 
 	const void *pKey
 );
 
-FTM_CONSOLE_CMD	xDefaultCmds[] = 
+FTM_SHELL_CMD	xDefaultCmds[] = 
 {
 	{	
 		.pString	= "help",
-		.function	= FTM_CONSOLE_cmdHelp,
+		.function	= FTM_SHELL_cmdHelp,
 		.pShortHelp = "Help command.",
 		.pHelp	    = "<COMMAND>\n"\
 					  "\tHelp command.\n"\
@@ -50,7 +50,7 @@ FTM_CONSOLE_CMD	xDefaultCmds[] =
 	},
 	{	
 		.pString	= "?",
-		.function	= FTM_CONSOLE_cmdHelp,
+		.function	= FTM_SHELL_cmdHelp,
 		.pShortHelp = "Help command.",
 		.pHelp	    = "<COMMAND>\n"\
 					  "\tHelp command.\n"\
@@ -59,7 +59,7 @@ FTM_CONSOLE_CMD	xDefaultCmds[] =
 	},
 	{	
 		.pString	= "quit",
-		.function	= FTM_CONSOLE_cmdQuit,
+		.function	= FTM_SHELL_cmdQuit,
 		.pShortHelp = "Quit program.",
 		.pHelp 		= "\n"\
 					  "\tQuit program."
@@ -72,13 +72,13 @@ FTM_CONSOLE_CMD	xDefaultCmds[] =
 FTM_CHAR		pConsolePrompt[128] = "FTM > ";
 FTM_LIST_PTR	pCmdList = NULL;
 
-FTM_RET FTM_CONSOLE_run(void)
+FTM_RET FTM_SHELL_run(void)
 {
 	FTM_RET			nRet;
 	FTM_BOOL		bQuit = FTM_FALSE;
 	FTM_CHAR		pCmdLine[2048];
 	FTM_INT			nArgc;
-	FTM_CHAR_PTR	pArgv[FTM_CONSOLE_MAX_ARGS];
+	FTM_CHAR_PTR	pArgv[FTM_SHELL_MAX_ARGS];
 
 	
 	while(!bQuit)
@@ -88,13 +88,13 @@ FTM_RET FTM_CONSOLE_run(void)
 		memset(pCmdLine, 0, sizeof(pCmdLine));
 		fgets(pCmdLine, sizeof(pCmdLine), stdin);
 
-		FTM_CONSOLE_parseLine(pCmdLine, pArgv, FTM_CONSOLE_MAX_ARGS, &nArgc);
+		FTM_SHELL_parseLine(pCmdLine, pArgv, FTM_SHELL_MAX_ARGS, &nArgc);
 
 		if (nArgc != 0)
 		{
-			FTM_CONSOLE_CMD_PTR 	pCmd;
+			FTM_SHELL_CMD_PTR 	pCmd;
 
-			nRet = FTM_CONSOLE_getCmd(pArgv[0], &pCmd);
+			nRet = FTM_SHELL_getCmd(pArgv[0], &pCmd);
 			if (nRet == FTM_RET_OK)
 			{
 				nRet = pCmd->function(nArgc, pArgv);
@@ -106,7 +106,7 @@ FTM_RET FTM_CONSOLE_run(void)
 					}
 					break;
 
-				case	FTM_RET_CONSOLE_QUIT:
+				case	FTM_RET_SHELL_QUIT:
 					{
 						bQuit = FTM_TRUE;
 					}
@@ -116,7 +116,7 @@ FTM_RET FTM_CONSOLE_run(void)
 			{
 				FTM_CHAR_PTR pNewArgv[] = {"help"};
 				MESSAGE("%s is invalid command.\n", pArgv[0]);
-				FTM_CONSOLE_cmdHelp(1, pNewArgv);
+				FTM_SHELL_cmdHelp(1, pNewArgv);
 
 			}
 		}
@@ -125,13 +125,13 @@ FTM_RET FTM_CONSOLE_run(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_CONSOLE_init(FTM_CONSOLE_CONFIG_PTR pConfig)
+FTM_RET FTM_SHELL_init(FTM_SHELL_CONFIG_PTR pConfig)
 {
-	FTM_CONSOLE_CMD_PTR	pCmd;
+	FTM_SHELL_CMD_PTR	pCmd;
 	FTM_ULONG			i;
 
 	FTM_LIST_create(&pCmdList);
-	FTM_LIST_setSeeker(pCmdList, FTM_CONSOLE_compCmd);
+	FTM_LIST_setSeeker(pCmdList, FTM_SHELL_compCmd);
 
 	pCmd = xDefaultCmds;
 	while(pCmd->pString != NULL)
@@ -156,14 +156,14 @@ FTM_RET FTM_CONSOLE_init(FTM_CONSOLE_CONFIG_PTR pConfig)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_CONSOLE_final(FTM_VOID)
+FTM_RET	FTM_SHELL_final(FTM_VOID)
 {
 	FTM_LIST_destroy(pCmdList);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_CONSOLE_setPrompt
+FTM_RET	FTM_SHELL_setPrompt
 (
 	FTM_CHAR_PTR		pPrompt
 )
@@ -173,7 +173,7 @@ FTM_RET	FTM_CONSOLE_setPrompt
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_CONSOLE_appendCmd(FTM_CONSOLE_CMD_PTR pCmd)
+FTM_RET	FTM_SHELL_appendCmd(FTM_SHELL_CMD_PTR pCmd)
 {
 	if (FTM_LIST_seek(pCmdList, pCmd->pString) == FTM_RET_OK)
 	{
@@ -185,9 +185,9 @@ FTM_RET	FTM_CONSOLE_appendCmd(FTM_CONSOLE_CMD_PTR pCmd)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_CONSOLE_getCmd(FTM_CHAR_PTR pCmdString, FTM_CONSOLE_CMD_PTR _PTR_ ppCmd)
+FTM_RET FTM_SHELL_getCmd(FTM_CHAR_PTR pCmdString, FTM_SHELL_CMD_PTR _PTR_ ppCmd)
 {
-	FTM_CONSOLE_CMD_PTR pCmd;
+	FTM_SHELL_CMD_PTR pCmd;
 
 	if (FTM_LIST_get(pCmdList, pCmdString, (FTM_VOID_PTR _PTR_)&pCmd) == FTM_RET_OK)
 	{
@@ -198,7 +198,7 @@ FTM_RET FTM_CONSOLE_getCmd(FTM_CHAR_PTR pCmdString, FTM_CONSOLE_CMD_PTR _PTR_ pp
 	return	FTM_RET_INVALID_COMMAND;
 }
 
-FTM_RET	FTM_CONSOLE_parseLine(FTM_CHAR_PTR pLine, FTM_CHAR_PTR pArgv[], FTM_INT nMaxArgs, FTM_INT_PTR pArgc)
+FTM_RET	FTM_SHELL_parseLine(FTM_CHAR_PTR pLine, FTM_CHAR_PTR pArgv[], FTM_INT nMaxArgs, FTM_INT_PTR pArgc)
 {
 	FTM_INT		nCount = 0;
 	FTM_CHAR_PTR	pWord = NULL;
@@ -216,14 +216,14 @@ FTM_RET	FTM_CONSOLE_parseLine(FTM_CHAR_PTR pLine, FTM_CHAR_PTR pArgv[], FTM_INT 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_CONSOLE_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTM_SHELL_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 
 	switch(nArgc)
 	{
 	case	1:
 		{
-			FTM_CONSOLE_CMD_PTR	pCmd; 
+			FTM_SHELL_CMD_PTR	pCmd; 
 		
 			FTM_LIST_iteratorStart(pCmdList);
 			while(FTM_LIST_iteratorNext(pCmdList, (FTM_VOID_PTR _PTR_)&pCmd) == FTM_RET_OK)
@@ -235,9 +235,9 @@ FTM_RET	FTM_CONSOLE_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 	case	2:
 		{
-			FTM_CONSOLE_CMD_PTR pCmd;
+			FTM_SHELL_CMD_PTR pCmd;
 
-			if (FTM_CONSOLE_getCmd(pArgv[1], &pCmd) == FTM_RET_OK)
+			if (FTM_SHELL_getCmd(pArgv[1], &pCmd) == FTM_RET_OK)
 			{
 				MESSAGE("Usage : %s %s\n", pArgv[1], pCmd->pHelp);
 			}
@@ -251,14 +251,14 @@ FTM_RET	FTM_CONSOLE_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_CONSOLE_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTM_SHELL_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
-	return	FTM_RET_CONSOLE_QUIT;
+	return	FTM_RET_SHELL_QUIT;
 }
 
-int FTM_CONSOLE_compCmd(const void *pItem, const void *pKey)
+int FTM_SHELL_compCmd(const void *pItem, const void *pKey)
 {
-	FTM_CONSOLE_CMD_PTR	pCmd = (FTM_CONSOLE_CMD_PTR)pItem;
+	FTM_SHELL_CMD_PTR	pCmd = (FTM_SHELL_CMD_PTR)pItem;
 	FTM_CHAR_PTR			pCmdString = (FTM_CHAR_PTR)pKey;
 
 	return	(strcmp(pCmd->pString, pCmdString) == 0);

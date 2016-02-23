@@ -22,7 +22,7 @@ LIB_FTNM_SRCS= ftnm.c \
 			   ftnm_ep_class.c\
 			   ftnm_node_snmpc.c\
 			   ftnm_snmpc.c\
-			   ftnm_console_cmds.c\
+			   ftnm_shell_cmds.c\
 			   ftnm_dmc.c
 
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)

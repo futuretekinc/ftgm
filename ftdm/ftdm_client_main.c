@@ -8,7 +8,7 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h>
 #include "libconfig.h"
-#include "ftm_console.h"
+#include "ftm_shell.h"
 #include "ftdm_client.h"
 #include "ftdm_client_cmds.h"
 #include "ftdm_client_config.h"
@@ -23,11 +23,11 @@ extern	char *		program_invocation_short_name;
 int main(int argc , char *argv[])
 {
 	FTM_CHAR		pConfigFileName[FTM_FILE_NAME_LEN];
-	FTM_CONSOLE_CONFIG	xConsoleConfig;
+	FTM_SHELL_CONFIG	xShellConfig;
 
-	xConsoleConfig.pCmdList 	= FTDMC_pCmdList;
-	xConsoleConfig.ulCmdCount	= FTDMC_ulCmdCount;
-	xConsoleConfig.pPrompt		= FTDMC_pPrompt;
+	xShellConfig.pCmdList 	= FTDMC_pCmdList;
+	xShellConfig.ulCmdCount	= FTDMC_ulCmdCount;
+	xShellConfig.pPrompt		= FTDMC_pPrompt;
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
@@ -38,8 +38,8 @@ int main(int argc , char *argv[])
 	/* apply configuraton */
 	FTDMC_init(&xClientConfig);
 
-	FTM_CONSOLE_init(&xConsoleConfig);
-	FTM_CONSOLE_run();
+	FTM_SHELL_init(&xShellConfig);
+	FTM_SHELL_run();
 
 	FTDMC_final();
 

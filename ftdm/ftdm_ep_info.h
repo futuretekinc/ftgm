@@ -1,6 +1,8 @@
 #ifndef	__FTDM_EP_H__
 #define	__FTDM_EP_H__
 
+#include "ftdm_config.h"
+
 FTM_RET	FTDM_EP_INFO_init
 (
 	FTDM_CFG_EP_PTR	pConfig

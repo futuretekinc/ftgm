@@ -54,6 +54,8 @@ typedef	struct
 	FTM_EP_STATE	xState;
 	FTM_ULONG		ulTimeout;
 	FTM_ULONG		ulInterval;	
+	FTM_ULONG		ulPeriod;
+	FTM_ULONG		ulLimit;
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
 	FTM_EPID		xDEPID;
 	FTM_CHAR		pPID[FTM_DID_LEN+1];

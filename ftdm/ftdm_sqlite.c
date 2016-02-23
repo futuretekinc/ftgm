@@ -894,7 +894,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
-					pData->xState,
+					(FTM_ULONG)pData->xState,
 					pData->xValue.nValue);
 		}
 		break;
@@ -905,7 +905,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
-					pData->xState,
+					(FTM_ULONG)pData->xState,
 					pData->xValue.ulValue);
 		}
 		break;
@@ -916,7 +916,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 					xEPID, 
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
-					pData->xState,
+					(FTM_ULONG)pData->xState,
 					pData->xValue.fValue);
 		}
 		break;
@@ -1171,7 +1171,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_get
 	xParams.pEPData = pEPData;
 	xParams.nMaxCount = nMaxCount;
 	xParams.nCount = 0;
-	printf("SQL : %s\n", pSQL);
+
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_getCB, &xParams, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
@@ -1272,7 +1272,6 @@ FTM_RET	FTDM_DBIF_EP_DATA_del
 
 	nSQLLen += sprintf(pSQL, "DELETE FROM ep_%08lx 	WHERE ROWID >= nIndex ", xEPID);
 
-	MESSAGE("SQL : %s\n", pSQL);
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{

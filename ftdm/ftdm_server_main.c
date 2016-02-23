@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include "ftdm.h"
 #include "libconfig.h"
-#include "ftm_console.h"
+#include "ftm_shell.h"
 #include "ftdm_params.h"
 #include "ftdm_server.h"
 #include "ftdm_config.h"
@@ -27,11 +27,11 @@ int main(int nArgc, char *pArgv[])
 	FTM_BOOL	bShowUsage = FTM_FALSE;
 	FTM_CHAR	pConfigFileName[1024];
 	pthread_t 	xPThread;	
-	FTM_CONSOLE_CONFIG	xConsoleConfig;
+	FTM_SHELL_CONFIG	xShellConfig;
 	
-	xConsoleConfig.pCmdList 	= FTDMS_pCmdList;
-	xConsoleConfig.ulCmdCount	= FTDMS_ulCmdCount;
-	xConsoleConfig.pPrompt		= FTDMS_pPrompt;
+	xShellConfig.pCmdList 	= FTDMS_pCmdList;
+	xShellConfig.ulCmdCount	= FTDMS_ulCmdCount;
+	xShellConfig.pPrompt		= FTDMS_pPrompt;
 	
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
@@ -82,7 +82,7 @@ int main(int nArgc, char *pArgv[])
 		/* apply configuration */
 		
 		FTDM_init(&xConfig);
-		FTM_CONSOLE_init(&xConsoleConfig);
+		FTM_SHELL_init(&xShellConfig);
 
 		if (bDaemon)
 		{ 
@@ -95,7 +95,7 @@ int main(int nArgc, char *pArgv[])
 		else
 		{
 			FTDMS_run(&xConfig.xServer, &xPThread);
-			FTM_CONSOLE_run();
+			FTM_SHELL_run();
 		}
 	
 		FTDM_CFG_final(&xConfig);

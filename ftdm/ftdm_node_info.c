@@ -248,7 +248,7 @@ int FTDM_NODE_INFO_seeker(const void *pElement, const void *pKey)
 	FTM_NODE_INFO_PTR	pNodeInfo = (FTM_NODE_INFO_PTR)pElement;
 	FTM_CHAR_PTR		pDID = (FTM_CHAR_PTR)pKey;
 
-	if (strcmp(pNodeInfo->pDID, pDID) == 0)
+	if (strcasecmp(pNodeInfo->pDID, pDID) == 0)
 	{
 		return	1;	
 	}
