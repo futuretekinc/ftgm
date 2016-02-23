@@ -228,6 +228,7 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 	struct snmp_session	*pSession = NULL;
 	struct snmp_session	xSession;
 
+	sem_wait(&pNode->xLock);
 	sem_wait(&pEP->xLock);
 
 	snmp_sess_init(&xSession);			/* initialize session */
@@ -317,6 +318,7 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 	}
 
 	sem_post(&pEP->xLock);
+	sem_post(&pNode->xLock);
 
 	return	xRet;
 }
