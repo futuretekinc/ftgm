@@ -285,7 +285,7 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 		FTM_TIMER_remain(&xInterval, &ulRemainTime);
 
 		xData.ulTime = time(NULL);
-		if (FTNM_NODE_EP_getData(pEP->pNode, pEP, &xReadData) == FTM_RET_OK)
+		if (FTNM_NODE_getEPData(pEP->pNode, pEP, &xReadData) == FTM_RET_OK)
 		{
 			TRACE("EP(%08x:%s) - The data import was successful.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
 			xData.xState = FTM_EP_DATA_STATE_VALID;

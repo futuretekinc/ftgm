@@ -7,6 +7,7 @@
 #include "ftdm.h"
 #include "ftdm_sqlite.h"
 
+static FTM_BOOL FTDM_DBIF_EP_DATA_bIOTrace = FTM_TRUE;
 
 FTM_RET _FTDM_BDIF_isExistTable
 (
@@ -890,6 +891,16 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 	{
 	case	FTM_EP_DATA_TYPE_INT:
 		{
+			if (FTDM_DBIF_EP_DATA_bIOTrace)
+			{
+				TRACE("INSERT INTO ep_%08lx VALUES (%llu, %lu, %lu, 'i%d')\n", 
+						xEPID,
+						tv.tv_sec * (long long)1000000 + tv.tv_usec, 
+						pData->ulTime, 
+						(FTM_ULONG)pData->xState,
+						pData->xValue.nValue);
+			}
+
 			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, %lu, 'i%d')", 
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
@@ -901,6 +912,15 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 
 	case	FTM_EP_DATA_TYPE_ULONG:
 		{
+			if (FTDM_DBIF_EP_DATA_bIOTrace)
+			{
+				TRACE("INSERT INTO ep_%08lx VALUES (%llu, %lu, %lu, 'u%lu')\n", 
+						xEPID,
+						tv.tv_sec * (long long)1000000 + tv.tv_usec, 
+						pData->ulTime, 
+						(FTM_ULONG)pData->xState,
+						pData->xValue.ulValue);
+			}
 			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, %lu, 'u%lu')", 
 					xEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
@@ -912,6 +932,15 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 
 	case	FTM_EP_DATA_TYPE_FLOAT:
 		{
+			if (FTDM_DBIF_EP_DATA_bIOTrace)
+			{
+				TRACE("INSERT INTO ep_%08lx VALUES (%llu, %lu, %lu, 'f%8.3lf')\n", 
+						xEPID, 
+						tv.tv_sec * (long long)1000000 + tv.tv_usec, 
+						pData->ulTime, 
+						(FTM_ULONG)pData->xState,
+						pData->xValue.fValue);
+			}
 			sprintf(pSQL, "INSERT INTO ep_%08lx VALUES (%llu, %lu, %lu, 'f%8.3lf')", 
 					xEPID, 
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
@@ -1568,3 +1597,22 @@ FTM_RET	_FTDM_BDIF_EP_INFO_createTable
 }
 
 
+FTM_RET FTDM_DBIF_setTrace
+(
+	FTM_BOOL			bTraceON
+)
+{
+	FTDM_DBIF_EP_DATA_bIOTrace = bTraceON;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTDM_DBIF_getTrace
+(	
+	FTM_BOOL_PTR	pbTraceON
+)
+{
+	*pbTraceON = FTDM_DBIF_EP_DATA_bIOTrace;
+
+	return FTM_RET_OK;
+}

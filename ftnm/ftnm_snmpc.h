@@ -39,6 +39,7 @@ typedef	struct
 {
 	FTNM_SNMPC_CONFIG	xConfig;
 	pthread_t			xPThread;
+	pthread_t			xTrapD;
 }	FTNM_SNMPC, _PTR_ FTNM_SNMPC_PTR;
 
 FTM_RET	FTNM_SNMPC_init(void);

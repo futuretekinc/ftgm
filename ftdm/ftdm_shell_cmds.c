@@ -277,7 +277,42 @@ FTM_RET	FTDM_SHELL_showEPData(FTM_EPID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCou
 
 		strcpy(pTime, ctime((time_t *)&pData[i].ulTime));
 		pTime[strlen(pTime) - 1] = '\0';
-		MESSAGE("%4d : %16s %10d %d\n", ulBegin + i + 1, pTime, pData[i].xState, pData[i].xValue.ulValue);
+
+			MESSAGE("%4d : %16s ", ulBegin + i + 1, pTime);
+		switch(pData[i].xState)
+		{
+		case	FTM_EP_DATA_STATE_VALID:
+			{
+				MESSAGE("%10s ", "VALID"); 
+			}
+			break;
+
+		case	FTM_EP_DATA_STATE_INVALID:
+			{
+				MESSAGE("%10s ", "INVALID"); 
+			}
+			break;
+
+		default:
+			{
+				MESSAGE("%10s ", "UNKNOWN"); 
+			}
+		}
+
+		switch(pData[i].xType)
+		{
+		case	FTM_EP_DATA_TYPE_INT:
+			MESSAGE("%d\n", pData[i].xValue.nValue);
+			break;
+
+		case	FTM_EP_DATA_TYPE_ULONG:
+			MESSAGE("%lu\n", pData[i].xValue.ulValue);
+			break;
+
+		case	FTM_EP_DATA_TYPE_FLOAT:
+			MESSAGE("%5.2f\n", pData[i].xValue.fValue);
+			break;
+		}
 	}
 
 	FTM_MEM_free(pData);

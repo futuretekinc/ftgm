@@ -209,4 +209,13 @@ FTM_RET	FTDM_DBIF_EP_DATA_countWithTime
 	FTM_ULONG_PTR		pCount
 );
 
+FTM_RET FTDM_DBIF_setTrace
+(
+	FTM_BOOL			bTraceON
+);
+
+FTM_RET FTDM_DBIF_getTrace
+(
+	FTM_BOOL_PTR		pbTranceON
+);
 #endif

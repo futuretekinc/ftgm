@@ -11,7 +11,7 @@ CLIENT_LDFLAGS=$(LDFLAGS) -lftnmc -lftm -lconfig -lpthread
 FTNM=ftnm
 FTNM_SRCS=ftnm_main.c ftnm.c
 FTNM_OBJS=$(FTNM_SRCS:.c=.o)
-FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmp
+FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -ldl -lnetsnmpagent -lnetsnmp
 
 LIB_FTNM=libftnm
 LIB_FTNM_INCS= ftnm.h 
@@ -22,6 +22,7 @@ LIB_FTNM_SRCS= ftnm.c \
 			   ftnm_ep_class.c\
 			   ftnm_node_snmpc.c\
 			   ftnm_snmpc.c\
+			   ftnm_snmptrapd.c\
 			   ftnm_shell_cmds.c\
 			   ftnm_dmc.c
 

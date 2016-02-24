@@ -1,13 +1,19 @@
 #include <stdlib.h>
-#include "libconfig.h"
+#include <errno.h>
+#include <net-snmp/net-snmp-config.h>
+#include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/agent/net-snmp-agent-includes.h>
 
+#include "libconfig.h"
 #include "ftnm.h"
 #include "ftnm_node_snmpc.h"
 #include "ftnm_dmc.h"
 #include "ftnm_ep.h"
 #include "ftnm_ep_class.h"
+#include "ftnm_snmptrapd.h"
 
 FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData);
+FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
 
 extern int	active_hosts;
 static FTNM_SNMPC_PTR	pSNMPC = NULL;
@@ -61,6 +67,16 @@ FTM_RET	FTNM_SNMPC_final(void)
 	return	FTM_RET_OK;
 }
 
+FTNM_SNMPTRAPD xTrapd = 
+{
+	.xConfig = 
+	{
+		.pName = "ftnm",
+		.usPort = 162
+	},
+
+};
+
 FTM_RET FTNM_SNMPC_run(void)
 {
 	ASSERT(pSNMPC != NULL);
@@ -69,6 +85,7 @@ FTM_RET FTNM_SNMPC_run(void)
 	FTM_ULONG	ulCount;
 	int	nRet;
 
+	init_agent(pSNMPC->xConfig.pName);
 	init_snmp(pSNMPC->xConfig.pName);
 
 	if (FTM_LIST_count(&pSNMPC->xConfig.xMIBList, &ulCount) == FTM_RET_OK)
@@ -88,6 +105,7 @@ FTM_RET FTNM_SNMPC_run(void)
 		}
 	}
 
+	nRet = pthread_create(&pSNMPC->xTrapD, NULL, FTNM_SNMPTRAPD_process, &xTrapd);
 	nRet = pthread_create(&pSNMPC->xPThread, NULL, FTNM_SNMPC_asyncResponseManager, 0);
 	if (nRet != 0)
 	{
@@ -96,6 +114,8 @@ FTM_RET FTNM_SNMPC_run(void)
 
 	return	FTM_RET_OK;
 }
+
+
 
 FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData)
 {

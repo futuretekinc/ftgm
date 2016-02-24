@@ -1,6 +1,6 @@
 TARGET=
 
-COMMON_CFLAGS=-c -Wall -DDEBUG -I. -I../ftm -I../ftnm -I../ftdm -I../libconfig-1.4.9/lib -I../net-snmp-5.7.2/include -I../sqlite-3.8.9
+COMMON_CFLAGS=-c -g -Wall -DDEBUG -I. -I../ftm -I../ftnm -I../ftdm -I../libconfig-1.4.9/lib -I../net-snmp-5.7.2/include -I../sqlite-3.8.9
 COMMON_LDFLAGS=-L../ftm -L../ftdm -L../ftnm -L../sqlite-3.8.9/.libs
 
 ifeq ($(TARGET),"FTM-50S")

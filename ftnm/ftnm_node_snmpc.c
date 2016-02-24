@@ -34,7 +34,7 @@ FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNo
 	
 	pNode->xCommon.fStart	= (FTNM_NODE_START)FTNM_NODE_SNMPC_start;
 	pNode->xCommon.fStop 	= (FTNM_NODE_STOP)FTNM_NODE_SNMPC_stop;
-	pNode->xCommon.fGetEPData=(FTNM_NODE_EP_GET_DATA)FTNM_NODE_SNMPC_getEPData;
+	pNode->xCommon.fGetEPData=(FTNM_NODE_GET_EP_DATA)FTNM_NODE_SNMPC_getEPData;
 	*ppNode = (FTNM_NODE_PTR)pNode;
 
 	return	FTM_RET_OK;
@@ -58,7 +58,7 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 
 	ASSERT(pNode != NULL);
 
-	nRet = FTNM_NODE_EP_count((FTNM_NODE_PTR)pNode, &ulEPCount);
+	nRet = FTNM_NODE_getEPCount((FTNM_NODE_PTR)pNode, &ulEPCount);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -75,7 +75,7 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 			FTM_EP_CLASS_INFO_PTR	pEPClassInfo;
 			FTM_CHAR				pOIDName[1024];
 
-			if (FTNM_NODE_EP_getAt((FTNM_NODE_PTR)pNode, i, (FTNM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
+			if (FTNM_NODE_getEPAt((FTNM_NODE_PTR)pNode, i, (FTNM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
 			{
 				TRACE("EP[%d] information not found\n", i);
 				continue;
