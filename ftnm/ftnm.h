@@ -10,6 +10,7 @@
 #include "ftnm_dmc.h"
 #include "ftnm_server.h"
 #include "ftnm_snmpc.h"
+#include "ftnm_snmptrapd.h"
 
 #define	FTNM_DEFAULT_SERVER_PORT			8889
 #define	FTNM_DEFAULT_SERVER_SESSION_COUNT	10
@@ -35,13 +36,14 @@ typedef	FTM_ULONG	FTNM_STATE;
 
 typedef	struct
 {
-	FTNM_STATE	xState;
-	FTM_LIST	xEPList;
-	pthread_t	xPThread;
+	FTNM_STATE		xState;
+	FTM_LIST		xEPList;
+	pthread_t		xPThread;
 
-	FTDMC_SESSION	xDMCSession;
-	FTNM_SERVER	xServer;
-	FTNM_SNMPC	xSNMPC;
+	FTDMC_SESSION		xDMCSession;
+	FTNM_SERVER			xServer;
+	FTNM_SNMPC_PTR		pSNMPC;
+	FTNM_SNMPTRAPD_PTR	pSNMPTrapd;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
 

@@ -46,7 +46,7 @@ int main(int nArgc, char *pArgv[])
 
 	FTM_SHELL_init(&xShellConfig);
 	FTNM_init();
-	
+
 	FTNM_loadConfig(pConfigFileName);
 
 	if (bDaemon)

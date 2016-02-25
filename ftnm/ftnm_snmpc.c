@@ -16,69 +16,66 @@ FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData);
 FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
 
 extern int	active_hosts;
-static FTNM_SNMPC_PTR	pSNMPC = NULL;
 
-FTM_RET	FTNM_SNMPC_init(void)
+FTM_RET	FTNM_SNMPC_create(FTNM_SNMPC_PTR _PTR_ ppCTX)
 {
+	ASSERT(ppCTX != NULL);
+	FTNM_SNMPC_PTR	pCTX;
 
-	if (pSNMPC != NULL)
+	pCTX = (FTNM_SNMPC_PTR)FTM_MEM_malloc(sizeof(FTNM_SNMPC));
+	if (pCTX == NULL)
 	{
-		return	FTM_RET_ALREADY_INITIALIZED;	
-	}
-
-	pSNMPC = (FTNM_SNMPC_PTR)FTM_MEM_malloc(sizeof(FTNM_SNMPC));
-	if (pSNMPC == NULL)
-	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 	
-	memset(&pSNMPC->xConfig, 0, sizeof(FTNM_SNMPC_CONFIG));
+	memset(pCTX, 0, sizeof(FTNM_SNMPC));
 
-	strcpy(pSNMPC->xConfig.pName, "ftnm");
-	FTM_LIST_init(&pSNMPC->xConfig.xMIBList);
-	pSNMPC->xConfig.ulMaxRetryCount = 3;
+	strcpy(pCTX->xConfig.pName, FTNM_SNMPC_NAME);
+	FTM_LIST_init(&pCTX->xConfig.xMIBList);
+	pCTX->xConfig.ulMaxRetryCount = FTNM_SNMPC_RETRY_COUNT;
+
+	*ppCTX = pCTX;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SNMPC_final(void)
+FTM_RET	FTNM_SNMPC_destroy(FTNM_SNMPC_PTR pCTX)
 {
-	ASSERT(pSNMPC != NULL);
+	ASSERT(pCTX != NULL);
 
 	FTM_ULONG i, ulCount;
 
-	FTM_LIST_count(&pSNMPC->xConfig.xMIBList, &ulCount);
+	FTM_LIST_count(&pCTX->xConfig.xMIBList, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTM_VOID_PTR pValue;
 
-		if (FTM_LIST_getAt(&pSNMPC->xConfig.xMIBList, i, &pValue) == FTM_RET_OK)
+		if (FTM_LIST_getAt(&pCTX->xConfig.xMIBList, i, &pValue) == FTM_RET_OK)
 		{
 			FTM_MEM_free(pValue);
 		}
 	}
 
-	FTM_LIST_final(&pSNMPC->xConfig.xMIBList);
+	FTM_LIST_final(&pCTX->xConfig.xMIBList);
 
 
-	FTM_MEM_free(pSNMPC);
-	pSNMPC = NULL;
+	FTM_MEM_free(pCTX);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SNMPC_run(void)
+FTM_RET FTNM_SNMPC_start(FTNM_SNMPC_PTR pCTX)
 {
-	ASSERT(pSNMPC != NULL);
-
+	ASSERT(pCTX != NULL);
 
 	FTM_ULONG	ulCount;
 	int	nRet;
 
-	init_agent(pSNMPC->xConfig.pName);
-	init_snmp(pSNMPC->xConfig.pName);
+	init_agent(pCTX->xConfig.pName);
+	init_snmp(pCTX->xConfig.pName);
 
-	if (FTM_LIST_count(&pSNMPC->xConfig.xMIBList, &ulCount) == FTM_RET_OK)
+	if (FTM_LIST_count(&pCTX->xConfig.xMIBList, &ulCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
 
@@ -86,7 +83,7 @@ FTM_RET FTNM_SNMPC_run(void)
 		{
 			FTM_VOID_PTR	pValue;
 
-			if (FTM_LIST_getAt(&pSNMPC->xConfig.xMIBList, i, &pValue) == FTM_RET_OK)
+			if (FTM_LIST_getAt(&pCTX->xConfig.xMIBList, i, &pValue) == FTM_RET_OK)
 			{
 				TRACE("Load MIB : %s\n", (FTM_CHAR_PTR)pValue);
 
@@ -95,17 +92,80 @@ FTM_RET FTNM_SNMPC_run(void)
 		}
 	}
 
-	nRet = pthread_create(&pSNMPC->xTrapD, NULL, FTNM_SNMPTRAPD_process, &pSNMPC->xTrapd);
-	nRet = pthread_create(&pSNMPC->xPThread, NULL, FTNM_SNMPC_asyncResponseManager, 0);
+	nRet = pthread_create(&pCTX->xPThread, NULL, FTNM_SNMPC_asyncResponseManager, 0);
 	if (nRet != 0)
 	{
-		return	FTM_RET_ERROR;		
+		switch(nRet)
+		{
+		case	EAGAIN: 
+			{
+				MESSAGE(" Insufficient resources to create another thread, or a system-imposed limit on the number of threads was encountered.\n"); 
+			}
+			break;
+
+		case	EINVAL:	
+			{
+				MESSAGE("Invalid settings in attr.\n");
+			}
+ 			break;
+
+		case	EPERM:	
+			{
+				MESSAGE("No permission to set the scheduling policy and parameters specified in attr.\n"); 
+			}
+			break;
+		}
+
+		return	FTM_RET_THREAD_CREATION_ERROR;
 	}
 
 	return	FTM_RET_OK;
 }
 
 
+FTM_RET	FTNM_SNMPC_stop(FTNM_SNMPC_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+	
+	FTM_INT			nRet;
+	FTM_VOID_PTR 	pRet = NULL;
+
+	nRet = pthread_join(pCTX->xPThread, &pRet);
+	if (nRet != 0)
+	{
+		switch(nRet)
+		{ 
+		case	EDEADLK: 
+			{
+				MESSAGE("A deadlock was detected (e.g., two threads tried to join with each other); or thread specifies the calling thread.\n"); 
+			}
+			break;
+
+		case	EINVAL: 
+			{
+				MESSAGE("thread is not a joinable thread. Another thread is already waiting to join with this thread.\n"); 
+			}
+			break;
+
+		case	ESRCH:  
+			{	
+				MESSAGE("No thread with the ID thread could be found.\n");
+			}
+			break;
+
+		default:
+			{
+				MESSAGE("Unknown error[%d]\n", nRet); 
+			}
+			break;
+		}
+
+		return	FTM_RET_THREAD_JOIN_ERROR;
+	}
+
+
+	return	FTM_RET_OK;
+}
 
 FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData)
 {
@@ -140,15 +200,16 @@ FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET FTNM_SNMPC_loadConfig(FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_SNMPC_loadConfig(FTNM_SNMPC_PTR pCTX, FTM_CHAR_PTR pFileName)
 {
-	ASSERT(pSNMPC != NULL);
+	ASSERT(pCTX != NULL);
 	ASSERT(pFileName != NULL);
 
 	config_t			xConfig;
 	config_setting_t	*pSection;
 	
 	config_init(&xConfig);
+	printf("pFileName = %s\n", pFileName);
 	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
 	{
 		return	FTM_RET_CONFIG_LOAD_FAILED;
@@ -157,7 +218,6 @@ FTM_RET FTNM_SNMPC_loadConfig(FTM_CHAR_PTR pFileName)
 	pSection = config_lookup(&xConfig, "snmpc");
 	if (pSection != NULL)
 	{
-		config_setting_t	*pSubSection;
 		config_setting_t	*pField;
 
 		pField = config_setting_get_member(pSection, "mibs");
@@ -174,56 +234,36 @@ FTM_RET FTNM_SNMPC_loadConfig(FTM_CHAR_PTR pFileName)
 					if (pBuff != NULL)
 					{
 						strcpy(pBuff, pMIBFileName);
-						FTM_LIST_append(&pSNMPC->xConfig.xMIBList, pBuff);
+						FTM_LIST_append(&pCTX->xConfig.xMIBList, pBuff);
 					}
 				}
 			}
 		}
 
-		pSubSection = config_setting_get_member(pSection, "trapd");
-		if (pSubSection != NULL)
-		{
-			pField = config_setting_get_member(pSubSection, "name");
-			if (pField != NULL)
-			{
-				memset(pSNMPC->xTrapd.xConfig.pName, 0, sizeof(pSNMPC->xTrapd.xConfig.pName));
-				strncpy(pSNMPC->xTrapd.xConfig.pName,  config_setting_get_string(pField), sizeof(pSNMPC->xTrapd.xConfig.pName) - 1);
-			}
-
-			pField = config_setting_get_member(pSubSection, "port");
-			if (pField != NULL)
-			{
-				pSNMPC->xTrapd.xConfig.usPort =  config_setting_get_int(pField);
-			}
-
-
-		}
-		
 		pField = config_setting_get_member(pSection, "retry_count");
 		if (pField != NULL)
 		{
-			pSNMPC->xConfig.ulMaxRetryCount = config_setting_get_int(pField);		
+			pCTX->xConfig.ulMaxRetryCount = config_setting_get_int(pField);		
 		}
 		else
 		{
-			pSNMPC->xConfig.ulMaxRetryCount = 1;
+			pCTX->xConfig.ulMaxRetryCount = 1;
 		}
-		
 	}
 	config_destroy(&xConfig);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SNMPC_showConfig(void)
+FTM_RET FTNM_SNMPC_showConfig(FTNM_SNMPC_PTR pCTX)
 {
-	ASSERT(pSNMPC != NULL);
+	ASSERT(pCTX != NULL);
 
 	FTM_ULONG	ulCount;
 
 	MESSAGE("\n[ SNMP CONFIGURATION ]\n");
-	MESSAGE("%16s : %d\n", "MAX RETRY COUNT", pSNMPC->xConfig.ulMaxRetryCount);
-	if (FTM_LIST_count(&pSNMPC->xConfig.xMIBList, &ulCount) == FTM_RET_OK)
+	MESSAGE("%16s : %d\n", "MAX RETRY COUNT", pCTX->xConfig.ulMaxRetryCount);
+	if (FTM_LIST_count(&pCTX->xConfig.xMIBList, &ulCount) == FTM_RET_OK)
 	{
 		FTM_ULONG i;
 
@@ -232,7 +272,7 @@ FTM_RET FTNM_SNMPC_showConfig(void)
 		{
 			FTM_VOID_PTR	pValue;
 
-			if (FTM_LIST_getAt(&pSNMPC->xConfig.xMIBList, i, &pValue) == FTM_RET_OK)
+			if (FTM_LIST_getAt(&pCTX->xConfig.xMIBList, i, &pValue) == FTM_RET_OK)
 			{
 				MESSAGE("%16d - %s\n", i+1, (FTM_CHAR_PTR)pValue);
 			}
@@ -240,13 +280,6 @@ FTM_RET FTNM_SNMPC_showConfig(void)
 	}
 
 	return	FTM_RET_OK;
-}
-
-FTM_ULONG	FTNM_SNMPC_getMaxRetryCount(void)
-{
-	ASSERT(pSNMPC != NULL);
-
-	return	pSNMPC->xConfig.ulMaxRetryCount;
 }
 
 FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)

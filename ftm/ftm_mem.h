@@ -1,6 +1,8 @@
 #ifndef	__FTM_MEM_H__
 #define	__FTM_MEM_H__
 
+#include "ftm_types.h"
+
 FTM_RET			FTM_MEM_init(void);
 FTM_RET			FTM_MEM_final(void);
 

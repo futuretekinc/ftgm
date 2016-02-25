@@ -29,7 +29,8 @@ FTM_RET	FTNM_init(void)
 
 	FTNM_DMC_init();
 	FTNM_SRV_init(&xCTX.xServer);
-	FTNM_SNMPC_init();
+	FTNM_SNMPC_create(&xCTX.pSNMPC);
+	FTNM_SNMPTRAPD_create(&xCTX.pSNMPTrapd);
 
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
@@ -37,7 +38,8 @@ FTM_RET	FTNM_init(void)
 
 FTM_RET	FTNM_final(void)
 {
-	FTNM_SNMPC_final();
+	FTNM_SNMPTRAPD_destroy(xCTX.pSNMPTrapd);
+	FTNM_SNMPC_destroy(xCTX.pSNMPC);
 	FTNM_SRV_final(&xCTX.xServer);
 	FTNM_DMC_final();
 
@@ -54,7 +56,8 @@ FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pFileName)
 
 	FTNM_DMC_loadConfig(pFileName);
 	FTNM_SRV_loadConfig(&xCTX.xServer, pFileName);
-	FTNM_SNMPC_loadConfig(pFileName);
+	FTNM_SNMPC_loadConfig(xCTX.pSNMPC, pFileName);
+	FTNM_SNMPTRAPD_loadConfig(xCTX.pSNMPTrapd, pFileName);
 
 	TRACE("FTNM was loaded configuration.\n");
 	return	FTM_RET_OK;
@@ -64,7 +67,8 @@ FTM_RET	FTNM_showConfig(void)
 {
 	FTNM_DMC_showConfig();
 	FTNM_SRV_showConfig(&xCTX.xServer);
-	FTNM_SNMPC_showConfig();
+	FTNM_SNMPC_showConfig(xCTX.pSNMPC);
+	FTNM_SNMPTRAPD_showConfig(xCTX.pSNMPTrapd);
 
 	return	FTM_RET_OK;
 }
@@ -107,7 +111,8 @@ FTM_VOID_PTR	FTNM_task(FTM_VOID_PTR pData)
 		case	FTNM_STATE_INITIALIZED:
 			{
 				FTNM_SRV_run(&pCTX->xServer);
-				FTNM_SNMPC_run();
+				FTNM_SNMPC_start(pCTX->pSNMPC);
+				FTNM_SNMPTRAPD_start(pCTX->pSNMPTrapd);
 				FTNM_taskConnect(pCTX);
 			}
 			break;

@@ -5,12 +5,194 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
 #include "libconfig.h"
+#include "ftm_mem.h"
 #include "ftnm.h"
 #include "ftnm_snmptrapd.h"
 #include "ftnm_node_snmpc.h"
 #include "ftnm_dmc.h"
 #include "ftnm_ep.h"
 #include "ftnm_ep_class.h"
+
+static FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
+static FTM_RET		FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) ;
+
+FTM_RET	FTNM_SNMPTRAPD_create(FTNM_SNMPTRAPD_PTR _PTR_ ppCTX)
+{
+	ASSERT(ppCTX != NULL);
+	FTNM_SNMPTRAPD_PTR	pCTX;
+
+	pCTX = (FTNM_SNMPTRAPD_PTR)FTM_MEM_malloc(sizeof(FTNM_SNMPTRAPD));
+	if (pCTX == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	memset(pCTX, 0, sizeof(FTNM_SNMPTRAPD));
+	strcpy(pCTX->xConfig.pName, FTNM_SNMPTRAPD_NAME);
+	pCTX->xConfig.usPort= FTNM_SNMPTRAPD_PORT;
+	pCTX->bRunning		= FTM_FALSE;
+
+	*ppCTX = pCTX;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SNMPTRAPD_destroy(FTNM_SNMPTRAPD_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+
+	if (pCTX->bRunning)
+	{
+		FTNM_SNMPTRAPD_stop(pCTX);	
+	}
+
+	FTM_MEM_free(pCTX);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_SNMPTRAPD_start(FTNM_SNMPTRAPD_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+	FTM_INT	nRet;
+
+	nRet = pthread_create(&pCTX->xPThread, NULL, FTNM_SNMPTRAPD_process, pCTX);
+	if (nRet != 0)
+	{
+		switch(nRet)
+		{
+		case	EAGAIN: 
+			{
+				MESSAGE(" Insufficient resources to create another thread, or a system-imposed limit on the number of threads was encountered.\n"); 
+			}
+			break;
+
+		case	EINVAL:	
+			{
+				MESSAGE("Invalid settings in attr.\n");
+			}
+ 			break;
+
+		case	EPERM:	
+			{
+				MESSAGE("No permission to set the scheduling policy and parameters specified in attr.\n"); 
+			}
+			break;
+
+		default:
+			{
+				MESSAGE("Unknown error[%d]\n", nRet); 
+			}
+			break;
+		}
+
+		return	FTM_RET_THREAD_CREATION_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_SNMPTRAPD_stop(FTNM_SNMPTRAPD_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+	FTM_INT	nRet;
+	void*	pRet;
+
+	pCTX->bRunning = FTM_FALSE;
+	nRet = pthread_join(pCTX->xPThread, &pRet);
+	if (nRet != 0)
+	{
+		switch(nRet)
+		{ 
+		case	EDEADLK: 
+			{
+				MESSAGE("A deadlock was detected (e.g., two threads tried to join with each other); or thread specifies the calling thread.\n"); 
+			}
+			break;
+
+		case	EINVAL: 
+			{
+				MESSAGE("thread is not a joinable thread. Another thread is already waiting to join with this thread.\n"); 
+			}
+			break;
+
+		case	ESRCH:  
+			{	
+				MESSAGE("No thread with the ID thread could be found.\n");
+			}
+			break;
+
+		default:
+			{
+				MESSAGE("Unknown error[%d]\n", nRet); 
+			}
+			break;
+		}
+
+		return	FTM_RET_THREAD_JOIN_ERROR;
+	}
+
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_SNMPTRAPD_loadConfig(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pFileName)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pFileName != NULL);
+
+	config_t			xConfig;
+	config_setting_t	*pSection;
+	
+	config_init(&xConfig);
+	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
+	{
+		return	FTM_RET_CONFIG_LOAD_FAILED;
+	}
+
+	pSection = config_lookup(&xConfig, "snmptrapd");
+	if (pSection != NULL)
+	{
+		config_setting_t	*pField;
+
+		pField = config_setting_get_member(pSection, "name");
+		if (pField != NULL)
+		{
+			memset(pCTX->xConfig.pName, 0, sizeof(pCTX->xConfig.pName));
+			strncpy(pCTX->xConfig.pName,  config_setting_get_string(pField), sizeof(pCTX->xConfig.pName) - 1);
+		}
+
+		pField = config_setting_get_member(pSection, "port");
+		if (pField != NULL)
+		{
+			pCTX->xConfig.usPort =  config_setting_get_int(pField);
+		}
+	}
+	config_destroy(&xConfig);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_SNMPTRAPD_showConfig(FTNM_SNMPTRAPD_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+
+	MESSAGE("[ SNMPTRAPD CONFIGURATION ]\n");
+	MESSAGE("%16s : %s\n", "Name", pCTX->xConfig.pName);
+	MESSAGE("%16s : %d\n", "Port", pCTX->xConfig.usPort);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SNMPTRAPD_setTrapCB(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SNMPTRAPD_CALLBACK fTrapCB)
+{
+	ASSERT(pCTX != NULL);
+	
+	pCTX->fTrapCB = fTrapCB;
+
+	return	FTM_RET_OK;
+}
 
 static 
 FTM_INT FTNM_SNMPTRAPD_preParse
@@ -166,6 +348,7 @@ FTNM_SNMPTRAPD_inputCB
 		     				 * Still can't find it!  Give up.
 		     				 */
 		    				snmp_log(LOG_ERR, "Cannot find TrapOID in TRAP2 PDU\n");
+							FTNM_SNMPTRAPD_dumpPDU(pPDU) ;
 		    				return 1;		/* ??? */
 						}
 	    			}
@@ -182,33 +365,6 @@ FTNM_SNMPTRAPD_inputCB
             		return 1;	/* ??? */
 				}
 			}
-					for(vars = pPDU->variables; vars ; vars = vars->next_variable)
-					{
-						int	i ;
-						u_char *buf = NULL;
-						size_t buf_len = 0, out_len = 0;
-						MESSAGE("Name : ");
-						for(i = 0 ; i < vars->name_length ; i++)
-							MESSAGE(".%d", vars->name[i]);
-						MESSAGE("\n");
-						sprint_realloc_variable(&buf, &buf_len, &out_len, 1, vars->name, vars->name_length, vars);
-
-						//sprint_realloc_objid(&buf, &buf_len, &out_len, 1, vars->val.objid, vars->val_len /sizeof(oid));
-						MESSAGE("Trap OID : %s\n", buf);
-						if (buf != NULL)
-						{
-							free(buf);	
-						}
-					}
-			u_char *buf = NULL;
-			size_t buf_len = 0, out_len = 0;
-			sprint_realloc_objid(&buf, &buf_len, &out_len, 1, trapOid, trapOidLen);
-			MESSAGE("Trap OID : %s\n", buf);
-			if (buf != NULL)
-			{
-				free(buf);	
-			}
-
 
 			/*
 			 *  OK - We've found the Trap OID used to identify this trap.
@@ -494,73 +650,30 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 
 }
 
-FTM_RET FTNM_SNMPTRAPD_loadConfig(FTNM_SNMPTRAPD_PTR pSNMPTrapd, FTM_CHAR_PTR pFileName)
+
+FTM_RET	FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) 
 {
-	ASSERT(pSNMPTrapd != NULL);
-	ASSERT(pFileName != NULL);
+    netsnmp_variable_list *vars;
 
-	config_t			xConfig;
-	config_setting_t	*pSection;
-	
-	config_init(&xConfig);
-	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
+	for(vars = pPDU->variables; vars ; vars = vars->next_variable)
 	{
-		return	FTM_RET_CONFIG_LOAD_FAILED;
-	}
+		int	i ;
+		u_char *buf = NULL;
+		size_t buf_len = 0, out_len = 0;
+		char	pBuff[1024];
 
-	pSection = config_lookup(&xConfig, "snmptrapd");
-	if (pSection != NULL)
-	{
-		config_setting_t	*pField;
-
-		pField = config_setting_get_member(pSection, "name");
-		if (pField != NULL)
+		MESSAGE("Name : ");
+		for(i = 0 ; i < vars->name_length ; i++)
 		{
-			memset(pSNMPTrapd->xConfig.pName, 0, sizeof(pSNMPTrapd->xConfig.pName));
-			strncpy(pSNMPTrapd->xConfig.pName,  config_setting_get_string(pField), sizeof(pSNMPTrapd->xConfig.pName) - 1);
+			MESSAGE(".%d", vars->name[i]);
 		}
-
-		pField = config_setting_get_member(pSection, "port");
-		if (pField != NULL)
-		{
-			pSNMPTrapd->xConfig.usPort =  config_setting_get_int(pField);
-		}
+		MESSAGE("\n");
+		print_objid(vars->name, vars->name_length);
+		MESSAGE("TYPE : %d\n", vars->type);
+		memcpy(pBuff, vars->val.string, vars->val_len);
+		pBuff[vars->val_len] = 0;
+		MESSAGE("VAL : %s\n", pBuff);
 	}
-	config_destroy(&xConfig);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTNM_SNMPTRAPD_start(FTNM_SNMPTRAPD_PTR pCTX)
-{
-	ASSERT(pCTX != NULL);
-	FTM_INT	nRet;
-
-	nRet = pthread_create(&pCTX->xPThread, NULL, FTNM_SNMPTRAPD_process, pCTX);
-	switch(nRet)
-	{
-	case	EAGAIN: MESSAGE(" Insufficient resources to create another thread, or a system-imposed limit on the number of threads was encountered.\n"); break;
-	case	EINVAL:	MESSAGE("Invalid settings in attr.\n"); break;
-	case	EPERM:	MESSAGE("No permission to set the scheduling policy and parameters specified in attr.\n"); break;
-	}
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTNM_SNMPTRAPD_stop(FTNM_SNMPTRAPD_PTR pCTX)
-{
-	ASSERT(pCTX != NULL);
-	FTM_INT	nRet;
-
-	pCTX->bRunning = FTM_FALSE;
-	nRet = pthread_join(&pCTX->xPThread, NULL);
-
-	switch(nRet)
-	{ 
-	case	EDEADLK: MESSAGE("A deadlock was detected (e.g., two threads tried to join with each other); or thread specifies the calling thread.\n"); break;
-	case	EINVAL: MESSAGE("thread is not a joinable thread. Another thread is already waiting to join with this thread.\n"); break;
-	case	ESRCH:  MESSAGE("No thread with the ID thread could be found.\n");
-	}
-
 
 	return	FTM_RET_OK;
 }
