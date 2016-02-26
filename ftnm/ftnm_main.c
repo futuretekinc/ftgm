@@ -37,6 +37,8 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
+//	FTM_DEBUG_initSignals();
+
 	FTM_MEM_init();
 	FTM_PRINT_setLevel(0);
 

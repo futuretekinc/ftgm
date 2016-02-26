@@ -50,44 +50,65 @@ static FTNM_SRV_CMD_SET	pCmdSet[] =
 
 FTM_RET	FTNM_SRV_init
 (
-	FTNM_SERVER_PTR 		pServer 
+	FTM_VOID
 )
 {
-	ASSERT(pServer != NULL);
-
-	FTNM_SRV_initConfig(pServer);
-	FTM_LIST_init(&pServer->xSessionList);
-
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_SRV_final
+(
+	FTM_VOID
+)
+{
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SRV_create
+(
+	FTNM_SERVER_PTR _PTR_	ppServer 
+)
+{
+	ASSERT(ppServer != NULL);
+	FTNM_SERVER_PTR	pServer;
+
+	pServer = (FTNM_SERVER_PTR)FTM_MEM_malloc(sizeof(FTNM_SERVER));
+	if (pServer == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	memset(pServer, 0, sizeof(FTNM_SERVER));
+
+	memset(&pSRV->xConfig, 0, sizeof(FTNM_SRV_CONFIG));
+
+	pSRV->xConfig.usPort		= FTNM_DEFAULT_SERVER_PORT;
+	pSRV->xConfig.ulMaxSession	= FTNM_DEFAULT_SERVER_SESSION_COUNT	;
+
+	FTM_LIST_init(&pServer->xSessionList);
+
+	*ppServer = pServer;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SRV_destroy
 (
 	FTNM_SERVER_PTR 		pServer 
 )
 {
 	ASSERT(pServer != NULL);
 
-	FTNM_SESSION_PTR	pSession = NULL;
-
-	FTM_LIST_iteratorStart(&pServer->xSessionList);
-	while(FTM_LIST_iteratorNext(&pServer->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
-	{
-		void *pRes;
-
-		pthread_cancel(pSession->xPThread);
-		pthread_join(pSession->xPThread, &pRes);
-
-		FTM_MEM_free(pSession);		
-	}
+	FTNM_SRV_stop(pServer);
 
 	FTM_LIST_final(&pServer->xSessionList);
-	FTNM_SRV_finalConfig(pServer);
+
+	FTM_MEM_free(pServer);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SRV_run(FTNM_SERVER_PTR pServer)
+FTM_RET	FTNM_SRV_start(FTNM_SERVER_PTR pServer)
 {
 	ASSERT(pServer != NULL);
 
@@ -99,6 +120,29 @@ FTM_RET	FTNM_SRV_run(FTNM_SERVER_PTR pServer)
 		ERROR("Can't create thread[%d]\n", nRet);
 		return	FTM_RET_CANT_CREATE_THREAD;
 	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SRV_stop(FTNM_SERVER_PTR pServer)
+{
+
+	ASSERT(pServer != NULL);
+	FTM_VOID_PTR	pRes;
+
+	FTNM_SESSION_PTR	pSession = NULL;
+
+	FTM_LIST_iteratorStart(&pServer->xSessionList);
+	while(FTM_LIST_iteratorNext(&pServer->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
+	{
+		pthread_cancel(pSession->xPThread);
+		pthread_join(pSession->xPThread, &pRes);
+
+		FTM_MEM_free(pSession);		
+	}
+
+	pthread_cancel(pServer->xPThread);
+	pthread_join(pServer->xPThread, &pRes);
 
 	return	FTM_RET_OK;
 }
@@ -491,23 +535,6 @@ FTM_RET	FTNM_SRV_EP_DATA_count
 	}
 
 	return	pResp->nRet;
-}
-
-FTM_RET	FTNM_SRV_initConfig(FTNM_SERVER_PTR pSRV)
-{
-	ASSERT(pSRV != NULL);
-
-	memset(&pSRV->xConfig, 0, sizeof(FTNM_SRV_CONFIG));
-
-	pSRV->xConfig.usPort		= FTNM_DEFAULT_SERVER_PORT;
-	pSRV->xConfig.ulMaxSession	= FTNM_DEFAULT_SERVER_SESSION_COUNT	;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SRV_finalConfig(FTNM_SERVER_PTR pSRV)
-{
-	return	FTM_RET_OK;
 }
 
 FTM_RET FTNM_SRV_loadConfig(FTNM_SERVER_PTR pSRV, FTM_CHAR_PTR pFileName)

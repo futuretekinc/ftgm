@@ -9,7 +9,7 @@
 #include "ftm_mem.h"
 #include "ftm_msg_queue.h"
 
-FTM_RET	FTM_MSGQ_create(FTM_ULONG ulMsgSize, FTM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
+FTM_RET	FTM_MSGQ_create(FTM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
 {
 	FTM_MSG_QUEUE_PTR	pMsgQ;
 
@@ -69,60 +69,46 @@ FTM_RET FTM_MSGQ_push(FTM_MSG_QUEUE_PTR pMsgQ, FTM_VOID_PTR pMsg)
 	ASSERT(pMsg != NULL);
 
 	FTM_RET	xRet;
-	FTM_VOID_PTR pNewMsg;
 
-	pNewMsg = FTM_MEM_malloc(pMsgQ->ulMsgSize);
-	if (pNewMsg == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	memcpy(pNewMsg, pMsg, pMsgQ->ulMsgSize);
-
-	xRet = FTM_QUEUE_push(&pMsgQ->xQueue, pNewMsg);
+	xRet = FTM_QUEUE_push(&pMsgQ->xQueue, pMsg);
 	if (xRet == FTM_RET_OK)
 	{
 		sem_post(&pMsgQ->xLock);
-	}
-	else
-	{
-		FTM_MEM_free(pNewMsg);	
 	}
 
 	return	xRet;
 }
 
-FTM_RET FTM_MSGQ_pop(FTM_MSG_QUEUE_PTR pMsgQ, FTM_VOID_PTR pMsg)
+FTM_RET FTM_MSGQ_pop(FTM_MSG_QUEUE_PTR pMsgQ, FTM_VOID_PTR _PTR_ ppMsg)
 {
 	ASSERT(pMsgQ != NULL);
-	ASSERT(pMsg != NULL);
+	ASSERT(ppMsg != NULL);
 
 	FTM_RET			xRet;
-	FTM_VOID_PTR	pTmpMsg;
+	FTM_VOID_PTR	pMsg;
 
 	sem_wait(&pMsgQ->xLock);
 
-	xRet = FTM_QUEUE_pop(&pMsgQ->xQueue, &pTmpMsg);
+	xRet = FTM_QUEUE_pop(&pMsgQ->xQueue, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		sem_post(&pMsgQ->xLock);
 	}
 	else	
 	{
-		memcpy(pMsg, pTmpMsg, pMsgQ->ulMsgSize);
-		FTM_MEM_free(pTmpMsg);		
+		*ppMsg = pMsg;
 	}
 
 	return	xRet;
 }
 
-FTM_RET FTM_MSGQ_timedPop(FTM_MSG_QUEUE_PTR pMsgQ, FTM_ULONG ulTimeout, FTM_VOID_PTR pMsg)
+FTM_RET FTM_MSGQ_timedPop(FTM_MSG_QUEUE_PTR pMsgQ, FTM_ULONG ulTimeout, FTM_VOID_PTR _PTR_ ppMsg)
 {
 	ASSERT(pMsgQ != NULL);
-	ASSERT(pMsg != NULL);
+	ASSERT(ppMsg != NULL);
 
 	FTM_RET	xRet;
-	FTM_VOID_PTR	pTmpMsg;
+	FTM_VOID_PTR	pMsg;
 	struct timespec	xTime;
 
 	xTime.tv_sec = ulTimeout / 1000000;
@@ -133,15 +119,14 @@ FTM_RET FTM_MSGQ_timedPop(FTM_MSG_QUEUE_PTR pMsgQ, FTM_ULONG ulTimeout, FTM_VOID
 		return	FTM_RET_TIMEOUT;
 	}
 
-	xRet = FTM_QUEUE_pop(&pMsgQ->xQueue, &pTmpMsg);
+	xRet = FTM_QUEUE_pop(&pMsgQ->xQueue, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		sem_post(&pMsgQ->xLock);
 	}
 	else	
 	{
-		memcpy(pMsg, pTmpMsg, pMsgQ->ulMsgSize);
-		FTM_MEM_free(pTmpMsg);		
+		*ppMsg = pMsg;
 	}
 
 	return	xRet;

@@ -1,6 +1,12 @@
+#include <stdlib.h>
 #include <stdarg.h>
+#include <signal.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include <time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "ftm_types.h"
 #include "ftm_debug.h"
 #include "ftm_error.h"
@@ -8,6 +14,8 @@
 
 FTM_RET	FTM_PRINT_printToTerm(FTM_CHAR_PTR szmsg);
 FTM_RET	FTM_PRINT_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
+
+extern char *program_invocation_short_name;
 
 static FTM_PRINT_CFG	_xConfig = 
 {
@@ -339,3 +347,105 @@ FTM_CHAR_PTR	FTM_PRINT_levelString(FTM_ULONG ulLevel)
 	return	"UNKNOWN";
 }
 
+static void signal_handler(int);
+static void dumpstack(void);
+static void cleanup(void);
+void init_signals(void);
+void panic(const char *, ...);
+
+static struct sigaction sigact;
+
+FTM_RET	FTM_DEBUG_initSignals(FTM_VOID)
+{
+	atexit(cleanup);
+
+	sigact.sa_handler = signal_handler;
+	sigemptyset(&sigact.sa_mask);
+	sigact.sa_flags = 0;
+	sigaction(SIGINT, &sigact, (struct sigaction *)NULL);
+
+	sigaddset(&sigact.sa_mask, SIGSEGV);
+	sigaction(SIGSEGV, &sigact, (struct sigaction *)NULL);
+
+	sigaddset(&sigact.sa_mask, SIGBUS);
+	sigaction(SIGBUS, &sigact, (struct sigaction *)NULL);
+
+	sigaddset(&sigact.sa_mask, SIGQUIT);
+	sigaction(SIGQUIT, &sigact, (struct sigaction *)NULL);
+
+	sigaddset(&sigact.sa_mask, SIGHUP);
+	sigaction(SIGHUP, &sigact, (struct sigaction *)NULL);
+
+	sigaddset(&sigact.sa_mask, SIGKILL);
+	sigaction(SIGKILL, &sigact, (struct sigaction *)NULL);
+
+	return	FTM_RET_OK;
+}
+
+
+static void signal_handler(int sig)
+{
+	switch(sig)
+	{
+	case	SIGHUP:
+		{
+			panic("FATAL: Program hanged up\n");
+		}
+		break;
+
+	case	SIGSEGV:
+	case	SIGBUS:
+		{
+			dumpstack();
+			panic("FATAL: %s Fault. Logged StackTrace\n", (sig == SIGSEGV) ? "Segmentation" : ((sig == SIGBUS) ? "Bus" : "Unknown"));
+		}
+		break;
+
+	case SIGQUIT:
+		{
+			panic("QUIT signal ended program\n");
+		}
+		break;
+
+	case	SIGKILL:
+		{
+			panic("KILL signal ended program\n");
+		}
+		break;
+	
+	//case	SIGINT:
+	}
+
+}
+
+void panic(const char *fmt, ...)
+{
+		char buf[50];
+		va_list argptr;
+		va_start(argptr, fmt);
+		vsprintf(buf, fmt, argptr);
+		va_end(argptr);
+		fprintf(stderr, "%s", buf);
+		exit(-1);
+}
+
+static void dumpstack(void)
+{
+	/* Got this routine from http://www.whitefang.com/unix/faq_toc.html
+	 ** Section 6.5. Modified to redirect to file to prevent clutter
+	 */
+	/* This needs to be changed... */
+	char dbx[160];
+
+	sprintf(dbx, "echo 'where\ndetach' | dbx -a %d > %s.dump", getpid(), program_invocation_short_name);
+	/* Change the dbx to gdb */
+
+	system(dbx);
+	return;
+}
+
+void cleanup(void)
+{
+	sigemptyset(&sigact.sa_mask);
+	/* Do any cleaning up chores here */
+}

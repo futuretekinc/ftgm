@@ -17,6 +17,19 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
 
 extern int	active_hosts;
 
+FTM_RET	FTNM_SNMPC_init(void)
+{
+	init_agent("ftnm:snmpc");
+	init_snmp("ftnm:snmpc");
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SNMPC_final(void)
+{
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTNM_SNMPC_create(FTNM_SNMPC_PTR _PTR_ ppCTX)
 {
 	ASSERT(ppCTX != NULL);
@@ -69,28 +82,7 @@ FTM_RET FTNM_SNMPC_start(FTNM_SNMPC_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
-	FTM_ULONG	ulCount;
-	int	nRet;
-
-	init_agent(pCTX->xConfig.pName);
-	init_snmp(pCTX->xConfig.pName);
-
-	if (FTM_LIST_count(&pCTX->xConfig.xMIBList, &ulCount) == FTM_RET_OK)
-	{
-		FTM_ULONG	i;
-
-		for(i = 0 ; i < ulCount ; i++)
-		{
-			FTM_VOID_PTR	pValue;
-
-			if (FTM_LIST_getAt(&pCTX->xConfig.xMIBList, i, &pValue) == FTM_RET_OK)
-			{
-				TRACE("Load MIB : %s\n", (FTM_CHAR_PTR)pValue);
-
-				read_mib((FTM_CHAR_PTR)pValue);
-			}
-		}
-	}
+	FTM_INT	nRet;
 
 	nRet = pthread_create(&pCTX->xPThread, NULL, FTNM_SNMPC_asyncResponseManager, 0);
 	if (nRet != 0)
@@ -235,6 +227,7 @@ FTM_RET FTNM_SNMPC_loadConfig(FTNM_SNMPC_PTR pCTX, FTM_CHAR_PTR pFileName)
 					{
 						strcpy(pBuff, pMIBFileName);
 						FTM_LIST_append(&pCTX->xConfig.xMIBList, pBuff);
+				read_mib(pBuff);
 					}
 				}
 			}

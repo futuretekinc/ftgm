@@ -126,5 +126,6 @@ FTM_RET	FTNM_SHELL_CMD_list
 			MESSAGE("%24s\n", pTimeString);
 		}
 	}
+
 	return	FTM_RET_OK;
 }

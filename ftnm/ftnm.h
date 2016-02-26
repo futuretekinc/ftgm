@@ -41,7 +41,7 @@ typedef	struct
 	pthread_t		xPThread;
 
 	FTDMC_SESSION		xDMCSession;
-	FTNM_SERVER			xServer;
+	FTNM_SERVER_PTR		pServer;
 	FTNM_SNMPC_PTR		pSNMPC;
 	FTNM_SNMPTRAPD_PTR	pSNMPTrapd;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;

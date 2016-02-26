@@ -16,6 +16,7 @@ FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -
 LIB_FTNM=libftnm
 LIB_FTNM_INCS= ftnm.h 
 LIB_FTNM_SRCS= ftnm.c \
+			   ftnm_msg.c \
 			   ftnm_server.c\
 			   ftnm_node.c\
 			   ftnm_ep.c\

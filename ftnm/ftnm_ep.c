@@ -95,15 +95,18 @@ FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)
 
 	FTM_RET	xRet;
 	
-	FTNM_EP_stop(pEP, FTM_TRUE);
-	sem_destroy(&pEP->xLock);
-	FTM_MSGQ_final(&pEP->xMsgQ);
-
 	xRet = FTM_LIST_remove(pEPList, pEP);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pEP);	
+		return	xRet;	
 	}
+
+	FTNM_EP_stop(pEP, FTM_TRUE);
+
+	FTM_MSGQ_final(&pEP->xMsgQ);
+	sem_destroy(&pEP->xLock);
+
+	FTM_MEM_free(pEP);	
 
 	return	xRet;
 }
@@ -245,15 +248,21 @@ FTM_RET FTNM_EP_start(FTNM_EP_PTR pEP)
 
 FTM_RET	FTNM_EP_stop(FTNM_EP_PTR pEP, FTM_BOOL bWaitForStop)
 {
-	void 		*xRet;
-	FTNM_EP_MSG	xMsg;
+	FTM_VOID_PTR	xRet;
+	FTNM_EP_MSG_PTR	pMsg;
 	if (pEP->xState == FTM_EP_STATE_STOP)
 	{
 		return	FTM_RET_EP_DID_NOT_START;
 	}
 
-	xMsg.xCmd = FTNM_EP_CMD_STOP;
-	FTM_MSGQ_push(&pEP->xMsgQ, &xMsg);
+	pMsg = (FTNM_EP_MSG_PTR)FTM_MEM_malloc(sizeof(FTNM_EP_MSG));
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;		
+	}
+
+	pMsg->xCmd = FTNM_EP_CMD_STOP;
+	FTM_MSGQ_push(&pEP->xMsgQ, pMsg);
 
 	if (bWaitForStop)
 	{
@@ -279,7 +288,7 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 	{
 		FTM_ULONG		ulRemainTime = 0;
 		FTM_EP_DATA		xData, xReadData;
-		FTNM_EP_MSG		xMsg;
+		FTNM_EP_MSG_PTR	pMsg = NULL;
 		
 		FTM_TIMER_add(&xInterval, pEP->xInfo.ulInterval * 1000000);
 		FTM_TIMER_remain(&xInterval, &ulRemainTime);
@@ -308,13 +317,12 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 		}
 
 
-		FTNM_setEPData(pEP->xInfo.xEPID, &xData);
 		FTNM_EP_setData(pEP, &xData);
 		
 		FTM_TIMER_remain(&xInterval, &ulRemainTime);
-		while (!bStop && (FTM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, (FTM_VOID_PTR )&xMsg) == FTM_RET_OK))
+		while (!bStop && (FTM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, (FTM_VOID_PTR _PTR_)&pMsg) == FTM_RET_OK))
 		{
-			switch(xMsg.xCmd)
+			switch(pMsg->xCmd)
 			{
 			case	FTNM_EP_CMD_STOP:
 				{
@@ -324,6 +332,8 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 			}
 
 			FTM_TIMER_remain(&xInterval, &ulRemainTime);
+
+			FTM_MEM_free(pMsg);
 		}
 	
 		if (!bStop)
@@ -337,13 +347,74 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 	return	0;
 }
 
+FTM_RET	FTNM_EP_getData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+	memcpy(pData, &pEP->xData, sizeof(FTM_EP_DATA));
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
 	memcpy(&pEP->xData, pData, sizeof(FTM_EP_DATA));
+	FTNM_setEPData(pEP->xInfo.xEPID, pData);
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_CHAR	pTimeString[64];
+
+	if (pEP->xData.xType != pData->xType)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	TRACE("The event occurred in EP[%08x].\n", pEP->xInfo.xEPID);
+	TRACE("%6s : %d\n", "STATE", pData->xState);
+
+	strcpy(pTimeString, ctime((time_t *)&pData->ulTime));
+	pTimeString[strlen(pTimeString) - 1] = 0;
+
+	TRACE("%6s : %s\n", "TIME", pTimeString);
+	switch(pData->xType)
+	{
+	case	FTM_EP_DATA_TYPE_INT:
+		{
+			TRACE("%6s : %d\n", "VALUE", pData->xValue.nValue);
+		}
+		break;
+	
+	case	FTM_EP_DATA_TYPE_ULONG:
+		{
+			TRACE("%6s : %lu\n", "VALUE", pData->xValue.ulValue);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_FLOAT:
+		{
+			TRACE("%6s : %5.2f\n", "VALUE", pData->xValue.fValue);
+		}
+		break;
+
+	default:
+		{
+			TRACE("%6s : %s\n", "VALUE", "INVALID");
+		}
+		break;
+
+
+	}
 	return	FTM_RET_OK;
 }
 
@@ -368,3 +439,4 @@ FTM_INT	FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pEle
 	
 	return	(pEP1->xInfo.xEPID - pEP2->xInfo.xEPID);
 }
+

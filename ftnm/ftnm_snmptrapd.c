@@ -3,18 +3,54 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
+#include <net-snmp/output_api.h>
 
 #include "libconfig.h"
 #include "ftm_mem.h"
 #include "ftnm.h"
+#include "ftnm_msg.h"
 #include "ftnm_snmptrapd.h"
 #include "ftnm_node_snmpc.h"
 #include "ftnm_dmc.h"
 #include "ftnm_ep.h"
 #include "ftnm_ep_class.h"
 
+typedef	struct
+{
+	FTNM_SNMP_OID				xOID;
+	FTNM_SNMPTRAPD_CALLBACK		fCallback;
+} FTNM_CALLBACK, _PTR_ FTNM_CALLBACK_PTR;
+
 static FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
-static FTM_RET		FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) ;
+//static FTM_RET		FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) ;
+static FTM_BOOL		FTNM_SNMPTRAPD_seekTrapCB(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+
+static FTM_BOOL	bInit = 0;
+static FTM_LIST	xTrapCallbackList;
+
+FTM_RET	FTNM_SNMPTRAPD_init(FTM_VOID)
+{
+	FTM_RET	xRet;
+
+	xRet = FTM_LIST_init(&xTrapCallbackList);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	FTM_LIST_setSeeker(&xTrapCallbackList, FTNM_SNMPTRAPD_seekTrapCB);
+
+	bInit = FTM_TRUE;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_SNMPTRAPD_final(FTM_VOID)
+{
+	FTM_LIST_final(&xTrapCallbackList);
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTNM_SNMPTRAPD_create(FTNM_SNMPTRAPD_PTR _PTR_ ppCTX)
 {
@@ -155,6 +191,7 @@ FTM_RET FTNM_SNMPTRAPD_loadConfig(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pFileNam
 	if (pSection != NULL)
 	{
 		config_setting_t	*pField;
+		config_setting_t	*pList;
 
 		pField = config_setting_get_member(pSection, "name");
 		if (pField != NULL)
@@ -168,6 +205,33 @@ FTM_RET FTNM_SNMPTRAPD_loadConfig(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pFileNam
 		{
 			pCTX->xConfig.usPort =  config_setting_get_int(pField);
 		}
+
+		pList = config_setting_get_member(pSection, "traps");
+		if (pList != NULL)
+        {
+			FTM_ULONG	i, ulCount;
+			
+			ulCount = config_setting_length(pList);
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				pField = config_setting_get_elem(pList, i);
+				if (pField != NULL)
+				{
+					FTNM_SNMP_OID	xOID;
+					
+					xOID.ulOIDLen = FTNM_SNMP_OID_LENGTH;
+
+					MESSAGE("pObID = %s\n", config_setting_get_string(pField));
+					if (read_objid(config_setting_get_string(pField), xOID.pOID, (size_t *)&xOID.ulOIDLen) == 1)
+					{
+						MESSAGE("SNMP_PARSE_OID success!\n");
+						FTNM_SNMPTRAPD_addTrapOID(pCTX, &xOID);
+					}
+				
+				}
+			}
+		}
+
 	}
 	config_destroy(&xConfig);
 
@@ -188,11 +252,49 @@ FTM_RET FTNM_SNMPTRAPD_showConfig(FTNM_SNMPTRAPD_PTR pCTX)
 FTM_RET	FTNM_SNMPTRAPD_setTrapCB(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SNMPTRAPD_CALLBACK fTrapCB)
 {
 	ASSERT(pCTX != NULL);
-	
+	ASSERT(fTrapCB != NULL);
+
 	pCTX->fTrapCB = fTrapCB;
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTNM_SNMPTRAPD_addTrapOID(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SNMP_OID_PTR pOID)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pOID != NULL);
+
+	FTM_RET				xRet;
+	FTNM_CALLBACK_PTR 	pCB;
+	
+	pCB = (FTNM_CALLBACK_PTR)FTM_MEM_malloc(sizeof(FTNM_CALLBACK));
+	if (pCB == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	memcpy(&pCB->xOID, pOID, sizeof(FTNM_SNMP_OID));
+
+	xRet = FTM_LIST_append(&xTrapCallbackList, pCB);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pCB);	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_BOOL	FTNM_SNMPTRAPD_seekTrapCB(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+{
+	ASSERT(pElement != NULL);
+	ASSERT(pIndicator != NULL);
+
+	FTNM_CALLBACK_PTR	pCB = (FTNM_CALLBACK_PTR)pElement;
+	FTNM_SNMP_OID_PTR	pOID = (FTNM_SNMP_OID_PTR)pIndicator;
+
+	return	snmp_oid_compare(pCB->xOID.pOID, pCB->xOID.ulOIDLen, pOID->pOID, pOID->ulOIDLen) == 0;
+}
+
 
 static 
 FTM_INT FTNM_SNMPTRAPD_preParse
@@ -253,23 +355,17 @@ FTM_INT FTNM_SNMPTRAPD_preParse
 FTM_INT
 FTNM_SNMPTRAPD_inputCB
 (
-	FTM_INT 		op, 
+	FTM_INT 		nOP, 
 	netsnmp_session *pSession,
 	FTM_INT 		nReqID, 
 	netsnmp_pdu 	*pPDU, 
 	FTM_VOID_PTR 	pMagic
 )
 {
-    oid stdTrapOidRoot[] = { 1, 3, 6, 1, 6, 3, 1, 1, 5 };
-    oid snmpTrapOid[]    = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
     oid trapOid[MAX_OID_LEN+2] = {0};
     int trapOidLen;
-    netsnmp_variable_list *vars;
-    //netsnmp_trapd_handler *traph;
-#if 0
-    netsnmp_transport *pTransport = (netsnmp_transport *) pMagic;
-#endif
-    switch (op) 
+
+    switch (nOP) 
 	{
     case NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE:
 		{
@@ -285,7 +381,6 @@ FTNM_SNMPTRAPD_inputCB
         	/*
 	 		 * Determine the OID that identifies the trap being handled
 	 		 */
-        	TRACE("input: %x\n", pPDU->command);
         	switch (pPDU->command) 
 			{
         	case SNMP_MSG_TRAP:
@@ -305,57 +400,37 @@ FTNM_SNMPTRAPD_inputCB
                 		}
                 		trapOid[trapOidLen++] = pPDU->specific_type;
             		} 
-					else 
-					{
-                		memcpy(trapOid, stdTrapOidRoot, sizeof(stdTrapOidRoot));
-                		trapOidLen = OID_LENGTH(stdTrapOidRoot);  /* 9 */
-                		trapOid[trapOidLen++] = pPDU->trap_type+1;
-					}
 				}
    	        	break;
 
 			case SNMP_MSG_TRAP2: 
 			case SNMP_MSG_INFORM:
 				{
+    				netsnmp_variable_list *vars;
+
 					/*
 					 * v2c/v3 notifications *should* have snmpTrapOID as the
 					 *    second varbind, so we can go straight there.
 					 *    But check, just to make sure
 					 */
-					vars = pPDU->variables;
-					if (vars)
+					for ( vars = pPDU->variables; vars; vars=vars->next_variable) 
 					{
-						vars = vars->next_variable;
-						if (!vars || snmp_oid_compare(vars->name, vars->name_length,
-													snmpTrapOid, OID_LENGTH(snmpTrapOid))) 
+						FTNM_CALLBACK_PTR	pCB;
+						FTNM_SNMP_OID		xOID;
+						memcpy(xOID.pOID, vars->name, sizeof(oid) * vars->name_length);
+						xOID.ulOIDLen  = vars->name_length;
+						if (FTM_LIST_get(&xTrapCallbackList, &xOID, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
 						{
-							/*
-						 	 * Didn't find it!
-						 	 * Let's look through the full list....
-						 	 */
-							for ( vars = pPDU->variables; vars; vars=vars->next_variable) 
+							if (vars->type == ASN_OCTET_STR)
 							{
-                    			if (!snmp_oid_compare(vars->name, vars->name_length, snmpTrapOid, OID_LENGTH(snmpTrapOid)))
-								{
-                        			break;
-								}
+								FTM_CHAR	pBuff[1024];
+		
+								memcpy(pBuff, vars->val.string, vars->val_len);
+								pBuff[vars->val_len] = 0;
+								FTNM_MSG_pushSNMPTRAP(pBuff);
 							}
-                		}
-
-                		if (!vars) 
-						{
-	            			/*
-		     				 * Still can't find it!  Give up.
-		     				 */
-		    				snmp_log(LOG_ERR, "Cannot find TrapOID in TRAP2 PDU\n");
-							FTNM_SNMPTRAPD_dumpPDU(pPDU) ;
-		    				return 1;		/* ??? */
-						}
-	    			}
-
-            		memcpy(trapOid, vars->val.objid, vars->val_len);
-            		trapOidLen = vars->val_len /sizeof(oid);
-
+						}	
+					}
 				}	
             	break;
 
@@ -366,59 +441,6 @@ FTNM_SNMPTRAPD_inputCB
 				}
 			}
 
-			/*
-			 *  OK - We've found the Trap OID used to identify this trap.
-			 *  Call each of the various lists of handlers:
-			 *     a) authentication-related handlers,
-			 *     b) other handlers to be applied to all traps
-			 *		(*before* trap-specific handlers)
-			 *     c) the handler(s) specific to this trap
-			 *     d) any other global handlers
-			 *
-			 *  In each case, a particular trap handler can abort further
-			 *     processing - either just for that particular list,
-			 *     or for the trap completely.
-			 *
-			 *  This is particularly designed for authentication-related
-			 *     handlers, but can also be used elsewhere.
-			 *
-			 *  OK - Enough waffling, let's get to work.....
-			*/
-#if 0
-			for( idx = 0; handlers[idx].descr; ++idx ) 
-			{
-				DEBUGMSGTL(("snmptrapd", "Running %s handlers\n",
-							handlers[idx].descr));
-				if (NULL == handlers[idx].handler) /* specific */
-				{
-					traph = netsnmp_get_traphandler(trapOid, trapOidLen);
-				}
-				else
-				{
-					traph = *handlers[idx].handler;
-				}
-
-				for( ; traph; traph = traph->nexth) 
-				{
-					if (!netsnmp_trapd_check_auth(traph->authtypes))
-					{
-						continue; /* we continue on and skip this one */
-					}
-
-					ret = (*(traph->handler))(pdu, pTransport, traph);
-					if(NETSNMPTRAPD_HANDLER_FINISH == ret)
-					{
-						return 1;
-					}
-
-					if (ret == NETSNMPTRAPD_HANDLER_BREAK)
-					{
-						break; /* move on to next type */
-					}
-				} /* traph */
-			} /* handlers */
-
-#endif
 			if (pPDU->command == SNMP_MSG_INFORM) 
 			{
 				netsnmp_pdu *reply = snmp_clone_pdu(pPDU);
@@ -434,7 +456,12 @@ FTNM_SNMPTRAPD_inputCB
 
 					if (!snmp_send(pSession, reply)) 
 					{
-						snmp_sess_perror("snmptrapd: Couldn't respond to inform pdu", pSession);
+						FTM_CHAR_PTR	pErrMsg = NULL;
+
+						snmp_error(pSession, NULL, NULL, &pErrMsg);
+						ERROR("Couldn't respond to inform pdu - %s\n", pErrMsg);
+						SNMP_FREE(pErrMsg);
+
 						snmp_free_pdu(reply);
 					}
 				}
@@ -444,13 +471,13 @@ FTNM_SNMPTRAPD_inputCB
 
 	case NETSNMP_CALLBACK_OP_TIMED_OUT:
 		{
-			snmp_log(LOG_ERR, "Timeout: This shouldn't happen!\n");
+			ERROR("Timeout: This shouldn't happen!\n");
 		}
         break;
 
     case NETSNMP_CALLBACK_OP_SEND_FAILED:
 		{
-			snmp_log(LOG_ERR, "Send Failed: This shouldn't happen either!\n");
+			ERROR("Send Failed: This shouldn't happen either!\n");
 		}
         break;
 
@@ -463,7 +490,7 @@ FTNM_SNMPTRAPD_inputCB
 
     default:
 		{
-        	snmp_log(LOG_ERR, "Unknown operation (%d): This shouldn't happen!\n", op);
+        	ERROR("Unknown operation (%d): This shouldn't happen!\n", nOP);
 		}
         break;
     }
@@ -490,7 +517,10 @@ netsnmp_session * FTNM_SNMPTRAPD_addSession(netsnmp_transport *pTransport)
 	pRet = snmp_add(&xSession, pTransport, FTNM_SNMPTRAPD_preParse, NULL);
 	if (pRet == NULL) 
 	{
-		snmp_sess_perror("snmptrapd", &xSession);
+		FTM_CHAR_PTR	pErrMsg = NULL;
+		snmp_error(&xSession, NULL, NULL, &pErrMsg);
+		ERROR("%s\n", pErrMsg);
+		SNMP_FREE(pErrMsg);
 	}
 	return pRet;
 }
@@ -583,7 +613,7 @@ FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pTrapd)
 					{
 						continue;
 					}
-					snmp_log_perror("select");
+					ERROR("select - %s\n", strerror(errno));
 					pTrapd->bRunning = FTM_FALSE;
 				}
 				break;
@@ -615,7 +645,7 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 	if (pTransport == NULL) 
 	{
 		ERROR("Couldn't open %d -- errno %d(\"%s\")\n", 
-				pTrapd->xConfig.usPort
+				pTrapd->xConfig.usPort,
 				errno, strerror(errno));
 		FTNM_SNMPTRAPD_closeSessions(pSessionList);
 		SOCK_CLEANUP;
@@ -652,27 +682,45 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 }
 
 
+#if 0
 FTM_RET	FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) 
 {
     netsnmp_variable_list *vars;
 
 	for(vars = pPDU->variables; vars ; vars = vars->next_variable)
 	{
-		int	i ;
+		int	i;
 		char	pBuff[1024];
 
-		MESSAGE("Name : ");
+		memset(pBuff, 0, sizeof(pBuff));
+		snprint_objid(pBuff, sizeof(pBuff) - 1, vars->name, vars->name_length);
+		//MESSAGE("%6s : %S\n", "NAME", pBuff);
+		MESSAGE("%6s : ", "NAME");
 		for(i = 0 ; i < vars->name_length ; i++)
 		{
 			MESSAGE(".%d", vars->name[i]);
 		}
 		MESSAGE("\n");
-		print_objid(vars->name, vars->name_length);
-		MESSAGE("TYPE : %d\n", vars->type);
-		memcpy(pBuff, vars->val.string, vars->val_len);
-		pBuff[vars->val_len] = 0;
-		MESSAGE("VAL : %s\n", pBuff);
+		switch(vars->type)
+		{
+		case	ASN_OBJECT_ID:
+			{
+				memset(pBuff, 0, sizeof(pBuff));
+				snprint_objid(pBuff, sizeof(pBuff) - 1, vars->val.objid, vars->val_len / sizeof(oid));
+			}
+			break;
+
+		case	ASN_OCTET_STR:
+			{
+				memcpy(pBuff, vars->val.string, vars->val_len);
+				pBuff[vars->val_len] = 0;
+			}
+			break;
+		}
+		MESSAGE("%6s : %s\n", "VALUE", pBuff);
 	}
 
 	return	FTM_RET_OK;
 }
+
+#endif
