@@ -96,6 +96,8 @@ typedef	struct
 	}	xValue;
 }	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
 
+FTM_RET	FTM_EP_DATA_compare(FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_INT_PTR pResult);
+
 FTM_CHAR_PTR FTM_nodeTypeString(FTM_NODE_TYPE nType);
 
 

@@ -107,6 +107,94 @@ int	_FTM_EPTypeSeeker(const void *pElement, const void *pKey)
 	return	0;
 }
 
+FTM_RET	FTM_EP_DATA_compare(FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_INT_PTR pResult)
+{
+	ASSERT(pData1 != NULL);
+	ASSERT(pData2 != NULL);
+	ASSERT(pResult != NULL);
+
+	if (pData1->xType != pData2->xType)
+	{
+		return	FTM_RET_NOT_COMPARABLE;
+	}
+	
+	switch(pData1->xType)
+	{
+	case	FTM_EP_DATA_TYPE_INT:
+		{	
+			if (pData1->xValue.nValue > pData2->xValue.nValue)
+			{
+				*pResult = 1;
+			}
+			else if (pData1->xValue.nValue < pData2->xValue.nValue)
+			{
+				*pResult = -1;	
+			}
+			else
+			{
+				*pResult = 0;	
+			}
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_ULONG:
+		{	
+			if (pData1->xValue.ulValue > pData2->xValue.ulValue)
+			{
+				*pResult = 1;
+			}
+			else if (pData1->xValue.ulValue < pData2->xValue.ulValue)
+			{
+				*pResult = -1;	
+			}
+			else
+			{
+				*pResult = 0;	
+			}
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_FLOAT:
+		{	
+			if (pData1->xValue.fValue > pData2->xValue.fValue)
+			{
+				*pResult = 1;
+			}
+			else if (pData1->xValue.fValue < pData2->xValue.fValue)
+			{
+				*pResult = -1;	
+			}
+			else
+			{
+				*pResult = 0;	
+			}
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_BOOL:
+		{	
+			if (pData1->xValue.fValue > pData2->xValue.fValue)
+			{
+				*pResult = 1;
+			}
+			else if (pData1->xValue.fValue < pData2->xValue.fValue)
+			{
+				*pResult = -1;	
+			}
+			else
+			{
+				*pResult = 0;	
+			}
+		}
+		break;
+
+	default:
+		return	FTM_RET_INVALID_DATA;
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_EP_DATA_snprint(FTM_CHAR_PTR pBuff, FTM_ULONG ulMaxLen, FTM_EP_DATA_PTR pData)
 {
 	if ((pBuff == NULL) || (pData == NULL))
