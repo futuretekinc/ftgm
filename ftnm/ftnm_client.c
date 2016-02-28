@@ -2,26 +2,67 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <pthread.h>
+#include <semaphore.h>
 #include "ftm_error.h"
 #include "ftm_debug.h"
 #include "ftm_mem.h"
 #include "ftnm_client.h"
 #include "ftnm_params.h"
+#include "ftm_msg_queue.h"
 
 static FTM_RET FTNMC_request
 (
 	FTNMC_SESSION_PTR		pSession, 
 	FTNM_REQ_PARAMS_PTR		pReq,
 	FTM_ULONG				ulReqLen,
+	FTNM_RESP_PARAMS_PTR	pRespBuff,
+	FTM_ULONG				ulRespBuffLen,
+	FTM_ULONG_PTR			pulRespLen
+);
+
+static FTM_RET FTNMC_TRANS_init
+(
+	FTNMC_TRANS_PTR			pTrans,
+	FTNM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
 	FTNM_RESP_PARAMS_PTR	pResp,
 	FTM_ULONG				ulRespLen
 );
+
+FTM_RET FTNMC_TRANS_final
+(
+	FTNMC_TRANS_PTR			pTrans
+);
+
+static FTM_VOID_PTR	FTNMC_process(FTM_VOID_PTR pData);
+static FTM_BOOL 	FTNMC_transSeeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+
+static pthread_t		xThread = 0;
+static FTM_BOOL			bRun = FTM_FALSE;
+static FTM_MSG_QUEUE	xMsgQ;
+static FTM_LIST			xSessionList;
+static FTNMC_NOTIFY_CALLBACK fEPNotifyCallback = NULL;
+static FTNMC_NOTIFY_CALLBACK fNodeNotifyCallback = NULL;
 
 FTM_RET	FTNMC_init
 (
 	FTNM_CFG_CLIENT_PTR	pConfig
 )
 {
+	if (xThread != 0)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	FTM_MSGQ_init(&xMsgQ);
+	FTM_LIST_init(&xSessionList);
+
+	if (pthread_create(&xThread, NULL, FTNMC_process, NULL) < 0)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -30,6 +71,123 @@ FTM_RET	FTNMC_final
 	FTM_VOID
 )
 {
+	FTM_VOID_PTR	pRet;
+	
+	if (xThread == 0)
+	{
+		return	FTM_RET_NOT_INITIALIZED;
+	}
+
+	if (bRun)
+	{
+		bRun = FTM_FALSE;
+		pthread_join(xThread, &pRet);
+	}
+
+	FTM_LIST_final(&xSessionList);
+	FTM_MSGQ_final(&xMsgQ);
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR	FTNMC_process(FTM_VOID_PTR pData)
+{
+	bRun = FTM_TRUE;
+	
+	FTM_BYTE				pBuff[2048];
+	FTNM_RESP_PARAMS_PTR 	pResp = (FTNM_RESP_PARAMS_PTR)pBuff;
+
+	while(bRun)
+	{
+		FTNMC_SESSION_PTR	pSession;
+
+		FTM_LIST_iteratorStart(&xSessionList);
+		while(FTM_LIST_iteratorNext(&xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
+		{
+			int	nLen = recv(pSession->hSock, pResp, 2048, MSG_DONTWAIT);
+			if (nLen > 0)
+			{
+				FTNMC_TRANS_PTR	pTrans;
+
+				if (FTM_LIST_get(&pSession->xTransList, &pResp->ulReqID, (FTM_VOID_PTR _PTR_)&pTrans) == FTM_RET_OK)
+				{
+					memcpy(pTrans->pResp, pResp, nLen);
+					pTrans->ulRespLen = nLen;
+
+					sem_post(&pTrans->xDone);
+				}
+				else if (pResp->ulReqID == 0)
+				{
+					FTNMC_MSG_PTR pMsg = (FTNMC_MSG_PTR)pResp;
+					switch(pMsg->xType)
+					{
+					case	FTNMC_MSG_TYPE_EP_NOTIFY:
+						{
+							if (fEPNotifyCallback != NULL)
+							{
+								fEPNotifyCallback(NULL);	
+							}
+						}
+						break;
+
+					case	FTNMC_MSG_TYPE_NODE_NOTIFY:
+						{
+							if (fNodeNotifyCallback != NULL)
+							{
+								fNodeNotifyCallback(NULL);	
+							}
+						}
+						break;
+					}
+				}
+				else
+				{
+					ERROR("Invalid ReqID[%ul]\n", pResp->ulReqID);	
+				}
+			}
+		}
+
+		usleep(1000);
+	}
+
+	return	0;
+}
+
+FTM_RET	FTNMC_createSession
+(
+	FTNMC_SESSION_PTR _PTR_ ppSession
+)
+{
+	ASSERT(ppSession != NULL);
+
+	FTNMC_SESSION_PTR	pSession;
+
+	pSession = (FTNMC_SESSION_PTR)FTM_MEM_malloc(sizeof(FTNMC_SESSION));
+	if (pSession == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+	
+	memset(pSession, 0, sizeof(FTNMC_SESSION));
+	sem_init(&pSession->xReqLock, 0, 0);
+	FTM_LIST_init(&pSession->xTransList);
+	FTM_LIST_setSeeker(&pSession->xTransList, FTNMC_transSeeker);
+
+	*ppSession = pSession;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNMC_destroySession
+(
+	FTNMC_SESSION_PTR pSession
+)
+{
+	ASSERT(pSession != NULL);
+	
+	FTM_LIST_final(&pSession->xTransList);
+	sem_destroy(&pSession->xReqLock);
+
 	return	FTM_RET_OK;
 }
 
@@ -113,6 +271,7 @@ FTM_RET FTNMC_NODE_create
 	FTM_RET							nRet;
 	FTNM_REQ_NODE_CREATE_PARAMS		xReq;
 	FTNM_RESP_NODE_CREATE_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -135,7 +294,8 @@ FTM_RET FTNMC_NODE_create
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;
@@ -153,6 +313,7 @@ FTM_RET FTNMC_NODE_destroy
 	FTM_RET							nRet;
 	FTNM_REQ_NODE_DESTROY_PARAMS	xReq;
 	FTNM_RESP_NODE_DESTROY_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -175,7 +336,8 @@ FTM_RET FTNMC_NODE_destroy
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;
@@ -193,6 +355,7 @@ FTM_RET FTNMC_NODE_count
 	FTM_RET						nRet;
 	FTNM_REQ_NODE_COUNT_PARAMS	xReq;
 	FTNM_RESP_NODE_COUNT_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -214,7 +377,8 @@ FTM_RET FTNMC_NODE_count
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;
@@ -238,6 +402,7 @@ FTM_RET FTNMC_NODE_getAt
 	FTM_RET							nRet;
 	FTNM_REQ_NODE_GET_AT_PARAMS		xReq;
 	FTNM_RESP_NODE_GET_AT_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -256,7 +421,8 @@ FTM_RET FTNMC_NODE_getAt
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -280,6 +446,7 @@ FTM_RET FTNMC_NODE_get
 	FTM_RET							nRet;
 	FTNM_REQ_NODE_GET_PARAMS		xReq;
 	FTNM_RESP_NODE_GET_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -302,7 +469,8 @@ FTM_RET FTNMC_NODE_get
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -325,6 +493,7 @@ FTM_RET FTNMC_EP_create
 	FTM_RET						nRet;
 	FTNM_REQ_EP_CREATE_PARAMS	xReq;
 	FTNM_RESP_EP_CREATE_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -345,7 +514,8 @@ FTM_RET FTNMC_EP_create
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -363,6 +533,7 @@ FTM_RET FTNMC_EP_destroy
 	FTM_RET					nRet;
 	FTNM_REQ_EP_DESTROY_PARAMS	xReq;
 	FTNM_RESP_EP_DESTROY_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -378,7 +549,8 @@ FTM_RET FTNMC_EP_destroy
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;
@@ -397,6 +569,7 @@ FTM_RET FTNMC_EP_count
 	FTM_RET						nRet;
 	FTNM_REQ_EP_COUNT_PARAMS	xReq;
 	FTNM_RESP_EP_COUNT_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -417,7 +590,8 @@ FTM_RET FTNMC_EP_count
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	nRet;	
@@ -444,6 +618,7 @@ FTM_RET	FTNMC_EP_getList
 	FTNM_REQ_EP_GET_LIST_PARAMS		xReq;
 	FTM_ULONG						nRespSize = 0;
 	FTNM_RESP_EP_GET_LIST_PARAMS_PTR	pResp;
+	FTM_ULONG					ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -467,7 +642,8 @@ FTM_RET	FTNMC_EP_getList
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
-				nRespSize);
+				nRespSize,
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pResp);
@@ -496,7 +672,8 @@ FTM_RET FTNMC_EP_get
 {
 	FTM_RET						nRet;
 	FTNM_REQ_EP_GET_PARAMS		xReq;
-	FTNM_RESP_EP_GET_PARAMS	xResp;
+	FTNM_RESP_EP_GET_PARAMS		xResp;
+	FTM_ULONG					ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -517,7 +694,8 @@ FTM_RET FTNMC_EP_get
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
@@ -540,6 +718,7 @@ FTM_RET FTNMC_EP_getAt
 	FTM_RET						nRet;
 	FTNM_REQ_EP_GET_AT_PARAMS	xReq;
 	FTNM_RESP_EP_GET_AT_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -560,7 +739,8 @@ FTM_RET FTNMC_EP_getAt
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
@@ -588,6 +768,7 @@ FTM_RET	FTNMC_EP_DATA_add
 	FTM_RET							nRet;
 	FTNM_REQ_EP_DATA_ADD_PARAMS		xReq;
 	FTNM_RESP_EP_DATA_ADD_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -604,7 +785,8 @@ FTM_RET	FTNMC_EP_DATA_add
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
@@ -628,6 +810,7 @@ FTM_RET	FTNMC_EP_DATA_info
 	FTM_RET							nRet;
 	FTNM_REQ_EP_DATA_INFO_PARAMS	xReq;
 	FTNM_RESP_EP_DATA_INFO_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -643,7 +826,8 @@ FTM_RET	FTNMC_EP_DATA_info
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
@@ -672,7 +856,8 @@ FTM_RET FTNMC_EP_DATA_getLast
 	FTM_RET								nRet;
 	FTNM_REQ_EP_DATA_GET_LAST_PARAMS	xReq;
 	FTNM_RESP_EP_DATA_GET_LAST_PARAMS	xResp;
-
+	FTM_ULONG						ulRespLen;
+	
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
@@ -692,7 +877,8 @@ FTM_RET FTNMC_EP_DATA_getLast
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
@@ -722,6 +908,7 @@ FTM_RET	FTNMC_EP_DATA_getList
 	FTNM_REQ_EP_DATA_GET_LIST_PARAMS			xReq;
 	FTM_ULONG							nRespSize = 0;
 	FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp = NULL;
+	FTM_ULONG						ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -746,7 +933,8 @@ FTM_RET	FTNMC_EP_DATA_getList
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
-				nRespSize);
+				nRespSize,
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pResp);
@@ -787,6 +975,7 @@ FTM_RET	FTDMC_EP_DATA_del
 	FTM_RET							nRet;
 	FTNM_REQ_EP_DATA_DEL_PARAMS		xReq;
 	FTNM_RESP_EP_DATA_DEL_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -804,7 +993,8 @@ FTM_RET	FTDMC_EP_DATA_del
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
@@ -823,6 +1013,7 @@ FTM_RET	FTNMC_EP_DATA_count
 	FTM_RET						nRet;
 	FTNM_REQ_EP_DATA_COUNT_PARAMS	xReq;
 	FTNM_RESP_EP_DATA_COUNT_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -838,7 +1029,8 @@ FTM_RET	FTNMC_EP_DATA_count
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
-				sizeof(xResp));
+				sizeof(xResp),
+				&ulRespLen);
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
@@ -861,37 +1053,101 @@ FTM_RET FTNMC_request
 	FTNM_REQ_PARAMS_PTR		pReq,
 	FTM_ULONG				ulReqLen,
 	FTNM_RESP_PARAMS_PTR	pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG				ulRespLen,
+	FTM_ULONG_PTR			pulRespLen
 )
 {
-	FTM_ULONG	ulTimeout;
-
+	FTM_RET		xRet;
+	FTNMC_TRANS	xTrans;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-	TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, ulReqLen);
+	pReq->ulReqID = ++pSession->ulReqID;
+
+	TRACE("SEND[%08lx:%08x] : Len = %d\n", pSession->hSock, pReq->ulReqID, ulReqLen);
+	
+	FTNMC_TRANS_init(&xTrans, pReq, ulReqLen, pResp, ulRespLen);
 
 	if( send(pSession->hSock, pReq, ulReqLen, 0) < 0)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	ulTimeout = pSession->ulTimeout;
-	while(--ulTimeout > 0)
-	{
-		int	nLen = recv(pSession->hSock, pResp, ulRespLen, MSG_DONTWAIT);
-		if (nLen > 0)
-		{
-			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
-			return	FTM_RET_OK;	
-		}
+	FTM_LIST_append(&pSession->xTransList, (FTM_VOID_PTR)&xTrans);
 
-		usleep(1000);
+	struct timespec xTimeout;
+	xTimeout.tv_sec  = pSession->ulTimeout / 1000000;
+	xTimeout.tv_nsec = (pSession->ulTimeout % 1000000) * 1000;
+
+	if (sem_timedwait(&xTrans.xDone, &xTimeout) < 0)
+	{
+		TRACE("RECV[%08lx:%08x] : Timeout\n", pSession->hSock, xTrans.pResp->ulReqID);
+		xRet = FTM_RET_COMM_TIMEOUT;	
+	}
+	else
+	{
+		TRACE("RECV[%08lx:%08x] : Len = %d\n", pSession->hSock, xTrans.pResp->ulReqID, xTrans.ulRespLen);
+
+		*pulRespLen = xTrans.ulRespLen;
+
+		xRet = FTM_RET_OK;
 	}
 
-	return	FTM_RET_COMM_TIMEOUT;	
+	FTM_LIST_remove(&pSession->xTransList, (FTM_VOID_PTR)&xTrans);
+	FTNMC_TRANS_final(&xTrans);
+
+	return	xRet;	
 }
 
+
+FTM_BOOL FTNMC_transSeeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+{
+	ASSERT(pElement != NULL);
+	ASSERT(pIndicator != NULL);
+
+	FTNMC_TRANS_PTR	pTrans = (FTNMC_TRANS_PTR)pElement;
+	FTM_ULONG_PTR	pReqID = (FTM_ULONG_PTR)pIndicator;
+
+	return	(pTrans->pReq->ulReqID == *pReqID);
+}
+
+FTM_RET FTNMC_TRANS_init
+(
+	FTNMC_TRANS_PTR			pTrans,
+	FTNM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
+	FTNM_RESP_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pTrans != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pTrans->pReq 		= pReq;
+	pTrans->ulReqLen 	= ulReqLen;
+	pTrans->pResp 		= pResp;
+	pTrans->ulRespLen 	= ulRespLen;
+	sem_init(&pTrans->xDone, 0, 0);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTNMC_TRANS_final
+(
+	FTNMC_TRANS_PTR		pTrans
+)
+{
+	ASSERT(pTrans != NULL);
+
+	pTrans->pReq 		= NULL;
+	pTrans->ulReqLen 	= 0;
+	pTrans->pResp 		= NULL;
+	pTrans->ulRespLen 	= 0;
+	sem_destroy(&pTrans->xDone);
+
+	return	FTM_RET_OK;
+}

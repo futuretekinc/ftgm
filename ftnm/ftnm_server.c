@@ -3,8 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include "libconfig.h"
 #include "ftnm.h"
 #include "ftnm_params.h"
@@ -13,42 +11,153 @@
 #include "ftnm_server.h"
 #include "ftnm_server_cmd.h"
 
-#define	FTNM_PACKET_LEN					2048
-
-typedef	struct
-{
-	FTM_INT				hSocket;
-	struct sockaddr_in	xPeer;
-	pthread_t			xPThread;
-	FTM_BYTE			pReqBuff[FTNM_PACKET_LEN];
-	FTM_BYTE			pRespBuff[FTNM_PACKET_LEN];
-}	FTNM_SESSION, _PTR_ FTNM_SESSION_PTR;
 
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTNM_SERVICE_CALLBACK)FUN }
 
-static FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData);
-static FTM_VOID_PTR FTNM_SRV_serviceHandler(FTM_VOID_PTR pData);
+static FTM_VOID_PTR FTNM_SERVER_process(FTM_VOID_PTR pData);
+static FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData);
 
-static FTNM_SRV_CMD_SET	pCmdSet[] =
+static FTM_RET	FTNM_SERVER_serviceCall
+(
+	FTNM_SESSION_PTR		pSession,
+	FTNM_REQ_PARAMS_PTR		pReq,
+	FTNM_RESP_PARAMS_PTR	pResp
+);
+
+static FTM_RET	FTNM_SERVER_NODE_create
+(
+	FTNM_SESSION_PTR					pSession,
+	FTNM_REQ_NODE_CREATE_PARAMS_PTR		pReq,
+	FTNM_RESP_NODE_CREATE_PARAMS_PTR	pResp
+);
+
+static FTM_RET	FTNM_SERVER_NODE_destroy
+(
+	FTNM_SESSION_PTR					pSession,
+	FTNM_REQ_NODE_DESTROY_PARAMS_PTR	pReq,
+	FTNM_RESP_NODE_DESTROY_PARAMS_PTR	presp
+);
+
+static FTM_RET	FTNM_SERVER_NODE_count
+(
+	FTNM_SESSION_PTR					pSession,
+ 	FTNM_REQ_NODE_COUNT_PARAMS_PTR		pReq,
+	FTNM_RESP_NODE_COUNT_PARAMS_PTR		pResp
+);
+
+static FTM_RET	FTNM_SERVER_NODE_get
+(
+	FTNM_SESSION_PTR					pSession,
+ 	FTNM_REQ_NODE_GET_PARAMS_PTR		pReq,
+	FTNM_RESP_NODE_GET_PARAMS_PTR		pResp
+);
+
+static FTM_RET	FTNM_SERVER_NODE_getAt
+(
+	FTNM_SESSION_PTR					pSession,
+ 	FTNM_REQ_NODE_GET_AT_PARAMS_PTR		pReq,
+	FTNM_RESP_NODE_GET_AT_PARAMS_PTR	pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_create
+(
+	FTNM_SESSION_PTR					pSession,
+ 	FTNM_REQ_EP_CREATE_PARAMS_PTR		pReq,
+	FTNM_RESP_EP_CREATE_PARAMS_PTR		pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_destroy
+(
+	FTNM_SESSION_PTR					pSession,
+ 	FTNM_REQ_EP_DESTROY_PARAMS_PTR		pReq,
+	FTNM_RESP_EP_DESTROY_PARAMS_PTR		pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_count
+(
+	FTNM_SESSION_PTR					pSession,
+ 	FTNM_REQ_EP_COUNT_PARAMS_PTR		pReq,
+	FTNM_RESP_EP_COUNT_PARAMS_PTR		pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_getList
+(
+	FTNM_SESSION_PTR					pSession,
+ 	FTNM_REQ_EP_GET_LIST_PARAMS_PTR		pReq,
+	FTNM_RESP_EP_GET_LIST_PARAMS_PTR	pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_get
+(
+	FTNM_SESSION_PTR					pSession,
+ 	FTNM_REQ_EP_GET_PARAMS_PTR			pReq,
+	FTNM_RESP_EP_GET_PARAMS_PTR			pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_getAt
+(
+	FTNM_SESSION_PTR					pSession,
+ 	FTNM_REQ_EP_GET_AT_PARAMS_PTR		pReq,
+	FTNM_RESP_EP_GET_AT_PARAMS_PTR		pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_registrationNotifyReceiver
+(
+	FTNM_SESSION_PTR							pSession,
+ 	FTNM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pReq,
+ 	FTNM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_DATA_info
+(
+	FTNM_SESSION_PTR					pSession,
+	FTNM_REQ_EP_DATA_INFO_PARAMS_PTR 	pReq,
+	FTNM_RESP_EP_DATA_INFO_PARAMS_PTR 	pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_DATA_count
+(
+	FTNM_SESSION_PTR						pSession,
+ 	FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR		pReq,
+	FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR		pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_DATA_getLast
+(
+	FTNM_SESSION_PTR						pSession,
+ 	FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR	pReq,
+	FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR	pResp
+);
+
+static FTM_RET	FTNM_SERVER_EP_DATA_getList
+(
+	FTNM_SESSION_PTR						pSession,
+ 	FTNM_REQ_EP_DATA_GET_LIST_PARAMS_PTR	pReq,
+	FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp
+);
+
+static FTNM_SERVER_CMD_SET	pCmdSet[] =
 {
-	MK_CMD_SET(FTNM_CMD_NODE_CREATE,		FTNM_SRV_NODE_create),
-	MK_CMD_SET(FTNM_CMD_NODE_DESTROY,		FTNM_SRV_NODE_destroy),
-	MK_CMD_SET(FTNM_CMD_NODE_COUNT,			FTNM_SRV_NODE_count),
-	MK_CMD_SET(FTNM_CMD_NODE_GET,			FTNM_SRV_NODE_get),
-	MK_CMD_SET(FTNM_CMD_NODE_GET_AT,		FTNM_SRV_NODE_getAt),
-	MK_CMD_SET(FTNM_CMD_EP_CREATE,			FTNM_SRV_EP_create),
-	MK_CMD_SET(FTNM_CMD_EP_DESTROY,			FTNM_SRV_EP_destroy),
-	MK_CMD_SET(FTNM_CMD_EP_COUNT,			FTNM_SRV_EP_count),
-	MK_CMD_SET(FTNM_CMD_EP_GET_LIST,		FTNM_SRV_EP_getList),
-	MK_CMD_SET(FTNM_CMD_EP_GET,				FTNM_SRV_EP_get),
-	MK_CMD_SET(FTNM_CMD_EP_GET_AT,			FTNM_SRV_EP_getAt),
-	MK_CMD_SET(FTNM_CMD_EP_DATA_INFO,		FTNM_SRV_EP_DATA_info),
-	MK_CMD_SET(FTNM_CMD_EP_DATA_GET_LAST,	FTNM_SRV_EP_DATA_getLast),
-	MK_CMD_SET(FTNM_CMD_EP_DATA_COUNT,		FTNM_SRV_EP_DATA_count),
+	MK_CMD_SET(FTNM_CMD_NODE_CREATE,			FTNM_SERVER_NODE_create),
+	MK_CMD_SET(FTNM_CMD_NODE_DESTROY,			FTNM_SERVER_NODE_destroy),
+	MK_CMD_SET(FTNM_CMD_NODE_COUNT,				FTNM_SERVER_NODE_count),
+	MK_CMD_SET(FTNM_CMD_NODE_GET,				FTNM_SERVER_NODE_get),
+	MK_CMD_SET(FTNM_CMD_NODE_GET_AT,			FTNM_SERVER_NODE_getAt),
+	MK_CMD_SET(FTNM_CMD_EP_CREATE,				FTNM_SERVER_EP_create),
+	MK_CMD_SET(FTNM_CMD_EP_DESTROY,				FTNM_SERVER_EP_destroy),
+	MK_CMD_SET(FTNM_CMD_EP_COUNT,				FTNM_SERVER_EP_count),
+	MK_CMD_SET(FTNM_CMD_EP_GET_LIST,			FTNM_SERVER_EP_getList),
+	MK_CMD_SET(FTNM_CMD_EP_GET,					FTNM_SERVER_EP_get),
+	MK_CMD_SET(FTNM_CMD_EP_GET_AT,				FTNM_SERVER_EP_getAt),
+	MK_CMD_SET(FTNM_CMD_EP_REG_NOTIFY_RECEIVER, FTNM_SERVER_EP_registrationNotifyReceiver),
+	MK_CMD_SET(FTNM_CMD_EP_DATA_INFO,			FTNM_SERVER_EP_DATA_info),
+	MK_CMD_SET(FTNM_CMD_EP_DATA_GET_LAST,		FTNM_SERVER_EP_DATA_getLast),
+	MK_CMD_SET(FTNM_CMD_EP_DATA_GET_LIST,		FTNM_SERVER_EP_DATA_getList),
+	MK_CMD_SET(FTNM_CMD_EP_DATA_COUNT,			FTNM_SERVER_EP_DATA_count),
 	MK_CMD_SET(FTNM_CMD_UNKNOWN, 		NULL)
 };
 
-FTM_RET	FTNM_SRV_init
+FTM_RET	FTNM_SERVER_init
 (
 	FTM_VOID
 )
@@ -56,7 +165,7 @@ FTM_RET	FTNM_SRV_init
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SRV_final
+FTM_RET	FTNM_SERVER_final
 (
 	FTM_VOID
 )
@@ -64,7 +173,7 @@ FTM_RET	FTNM_SRV_final
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SRV_create
+FTM_RET	FTNM_SERVER_create
 (
 	FTNM_SERVER_PTR _PTR_	ppServer 
 )
@@ -80,10 +189,10 @@ FTM_RET	FTNM_SRV_create
 
 	memset(pServer, 0, sizeof(FTNM_SERVER));
 
-	memset(&pSRV->xConfig, 0, sizeof(FTNM_SRV_CONFIG));
+	memset(&pServer->xConfig, 0, sizeof(FTNM_SERVER_CONFIG));
 
-	pSRV->xConfig.usPort		= FTNM_DEFAULT_SERVER_PORT;
-	pSRV->xConfig.ulMaxSession	= FTNM_DEFAULT_SERVER_SESSION_COUNT	;
+	pServer->xConfig.usPort			= FTNM_DEFAULT_SERVER_PORT;
+	pServer->xConfig.ulMaxSession	= FTNM_DEFAULT_SERVER_SESSION_COUNT	;
 
 	FTM_LIST_init(&pServer->xSessionList);
 
@@ -92,14 +201,14 @@ FTM_RET	FTNM_SRV_create
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SRV_destroy
+FTM_RET	FTNM_SERVER_destroy
 (
 	FTNM_SERVER_PTR 		pServer 
 )
 {
 	ASSERT(pServer != NULL);
 
-	FTNM_SRV_stop(pServer);
+	FTNM_SERVER_stop(pServer);
 
 	FTM_LIST_final(&pServer->xSessionList);
 
@@ -108,13 +217,13 @@ FTM_RET	FTNM_SRV_destroy
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SRV_start(FTNM_SERVER_PTR pServer)
+FTM_RET	FTNM_SERVER_start(FTNM_SERVER_PTR pServer)
 {
 	ASSERT(pServer != NULL);
 
 	int	nRet;
 
-	nRet = pthread_create(&pServer->xPThread, NULL, FTNM_SRV_process, (FTM_VOID_PTR)pServer);
+	nRet = pthread_create(&pServer->xPThread, NULL, FTNM_SERVER_process, (FTM_VOID_PTR)pServer);
 	if (nRet != 0)
 	{
 		ERROR("Can't create thread[%d]\n", nRet);
@@ -124,7 +233,7 @@ FTM_RET	FTNM_SRV_start(FTNM_SERVER_PTR pServer)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SRV_stop(FTNM_SERVER_PTR pServer)
+FTM_RET	FTNM_SERVER_stop(FTNM_SERVER_PTR pServer)
 {
 
 	ASSERT(pServer != NULL);
@@ -147,7 +256,7 @@ FTM_RET	FTNM_SRV_stop(FTNM_SERVER_PTR pServer)
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTNM_SERVER_process(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
 
@@ -157,7 +266,7 @@ FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData)
 	FTNM_SERVER_PTR 	pServer = (FTNM_SERVER_PTR)pData;
 
 
-	if (sem_init(&pServer->xSemaphore, 0,pServer->xConfig.ulMaxSession) < 0)
+	if (sem_init(&pServer->xLock, 0,pServer->xConfig.ulMaxSession) < 0)
 	{
 		ERROR("Can't alloc semaphore!\n");
 		return	0;	
@@ -191,9 +300,9 @@ FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData)
 		FTM_INT	nSockAddrIulLen = sizeof(struct sockaddr_in);	
 		struct timespec			xTimeout = { .tv_sec = 2, .tv_nsec = 0};
 
-		if (sem_timedwait(&pServer->xSemaphore, &xTimeout) == 0)
+		if (sem_timedwait(&pServer->xLock, &xTimeout) == 0)
 		{
-			sem_getvalue(&pServer->xSemaphore, &nValue);
+			sem_getvalue(&pServer->xLock, &nValue);
 			MESSAGE("Waiting for connections ...[%d]\n", nValue);
 			hClient = accept(hSocket, (struct sockaddr *)&xClientAddr, (socklen_t *)&nSockAddrIulLen);
 			if (hClient != 0)
@@ -213,7 +322,8 @@ FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData)
 
 					pSession->hSocket = hClient;
 					memcpy(&pSession->xPeer, &xClientAddr, sizeof(xClientAddr));
-					pthread_create(&pSession->xPThread, NULL, FTNM_SRV_serviceHandler, pSession);
+					pSession->pServer = pServer;
+					pthread_create(&pSession->xPThread, NULL, FTNM_SERVER_serviceHandler, pSession);
 				}
 			
 			}
@@ -228,7 +338,7 @@ FTM_VOID_PTR FTNM_SRV_process(FTM_VOID_PTR pData)
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTNM_SRV_serviceHandler(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 {
 	FTNM_SESSION_PTR		pSession= (FTNM_SESSION_PTR)pData;
 	FTNM_REQ_PARAMS_PTR		pReq 	= (FTNM_REQ_PARAMS_PTR)pSession->pReqBuff;
@@ -252,7 +362,9 @@ FTM_VOID_PTR FTNM_SRV_serviceHandler(FTM_VOID_PTR pData)
 			break;	
 		}
 
-		if (FTM_RET_OK != FTNM_SRV_serviceCall(pReq, pResp))
+		pResp->ulReqID = pReq->ulReqID;
+
+		if (FTM_RET_OK != FTNM_SERVER_serviceCall(pSession, pReq, pResp))
 		{
 			pResp->xCmd = pReq->xCmd;
 			pResp->nRet = FTM_RET_INTERNAL_ERROR;
@@ -274,21 +386,22 @@ FTM_VOID_PTR FTNM_SRV_serviceHandler(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET	FTNM_SRV_serviceCall
+FTM_RET	FTNM_SERVER_serviceCall
 (
+	FTNM_SESSION_PTR		pSession,
 	FTNM_REQ_PARAMS_PTR		pReq,
 	FTNM_RESP_PARAMS_PTR	pResp
 )
 {
 	FTM_RET				nRet;
-	FTNM_SRV_CMD_SET_PTR	pSet = pCmdSet;
+	FTNM_SERVER_CMD_SET_PTR	pSet = pCmdSet;
 
 	while(pSet->xCmd != FTNM_CMD_UNKNOWN)
 	{
 		if (pSet->xCmd == pReq->xCmd)
 		{
 			TRACE("CMD : %s\n", pSet->pCmdString);
-			nRet = pSet->fService(pReq, pResp);
+			nRet = pSet->fService(pSession, pReq, pResp);
 			TRACE("RET : %08lx\n", nRet);
 			return	nRet;
 		}
@@ -301,8 +414,9 @@ FTM_RET	FTNM_SRV_serviceCall
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 
-FTM_RET	FTNM_SRV_NODE_create
+FTM_RET	FTNM_SERVER_NODE_create
 (
+	FTNM_SESSION_PTR					pSession,
 	FTNM_REQ_NODE_CREATE_PARAMS_PTR		pReq,
 	FTNM_RESP_NODE_CREATE_PARAMS_PTR	pResp
 )
@@ -317,8 +431,9 @@ FTM_RET	FTNM_SRV_NODE_create
 }
 
 
-FTM_RET	FTNM_SRV_NODE_destroy
+FTM_RET	FTNM_SERVER_NODE_destroy
 (
+	FTNM_SESSION_PTR					pSession,
  	FTNM_REQ_NODE_DESTROY_PARAMS_PTR	pReq,
 	FTNM_RESP_NODE_DESTROY_PARAMS_PTR	pResp
 )
@@ -337,8 +452,9 @@ FTM_RET	FTNM_SRV_NODE_destroy
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_NODE_count
+FTM_RET	FTNM_SERVER_NODE_count
 (
+	FTNM_SESSION_PTR					pSession,
  	FTNM_REQ_NODE_COUNT_PARAMS_PTR		pReq,
 	FTNM_RESP_NODE_COUNT_PARAMS_PTR	pResp
 )
@@ -350,8 +466,9 @@ FTM_RET	FTNM_SRV_NODE_count
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_NODE_get
+FTM_RET	FTNM_SERVER_NODE_get
 (
+	FTNM_SESSION_PTR				pSession,
  	FTNM_REQ_NODE_GET_PARAMS_PTR	pReq,
 	FTNM_RESP_NODE_GET_PARAMS_PTR	pResp
 )
@@ -369,8 +486,9 @@ FTM_RET	FTNM_SRV_NODE_get
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_NODE_getAt
-(
+FTM_RET	FTNM_SERVER_NODE_getAt
+(	
+	FTNM_SESSION_PTR					pSession,
  	FTNM_REQ_NODE_GET_AT_PARAMS_PTR		pReq,
 	FTNM_RESP_NODE_GET_AT_PARAMS_PTR	pResp
 )
@@ -388,8 +506,9 @@ FTM_RET	FTNM_SRV_NODE_getAt
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_EP_create
+FTM_RET	FTNM_SERVER_EP_create
 (
+	FTNM_SESSION_PTR				pSession,
  	FTNM_REQ_EP_CREATE_PARAMS_PTR	pReq,
 	FTNM_RESP_EP_CREATE_PARAMS_PTR	pResp
 )
@@ -403,8 +522,9 @@ FTM_RET	FTNM_SRV_EP_create
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_EP_destroy
-(
+FTM_RET	FTNM_SERVER_EP_destroy
+(		
+	FTNM_SESSION_PTR				pSession,
  	FTNM_REQ_EP_DESTROY_PARAMS_PTR	pReq,
 	FTNM_RESP_EP_DESTROY_PARAMS_PTR	pResp
 )
@@ -423,8 +543,9 @@ FTM_RET	FTNM_SRV_EP_destroy
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_EP_count
+FTM_RET	FTNM_SERVER_EP_count
 (
+	FTNM_SESSION_PTR				pSession,
  	FTNM_REQ_EP_COUNT_PARAMS_PTR	pReq,
 	FTNM_RESP_EP_COUNT_PARAMS_PTR	pResp
 )
@@ -436,8 +557,9 @@ FTM_RET	FTNM_SRV_EP_count
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_EP_get
+FTM_RET	FTNM_SERVER_EP_get
 (
+	FTNM_SESSION_PTR				pSession,
  	FTNM_REQ_EP_GET_PARAMS_PTR		pReq,
 	FTNM_RESP_EP_GET_PARAMS_PTR		pResp
 )
@@ -455,8 +577,9 @@ FTM_RET	FTNM_SRV_EP_get
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_EP_getList
-(
+FTM_RET	FTNM_SERVER_EP_getList
+(	
+	FTNM_SESSION_PTR					pSession,
  	FTNM_REQ_EP_GET_LIST_PARAMS_PTR		pReq,
 	FTNM_RESP_EP_GET_LIST_PARAMS_PTR	pResp
 )
@@ -468,8 +591,9 @@ FTM_RET	FTNM_SRV_EP_getList
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_EP_getAt
+FTM_RET	FTNM_SERVER_EP_getAt
 (
+	FTNM_SESSION_PTR				pSession,
  	FTNM_REQ_EP_GET_AT_PARAMS_PTR	pReq,
 	FTNM_RESP_EP_GET_AT_PARAMS_PTR	pResp
 )
@@ -487,10 +611,26 @@ FTM_RET	FTNM_SRV_EP_getAt
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_EP_DATA_info
+FTM_RET	FTNM_SERVER_EP_registrationNotifyReceiver
 (
-	FTNM_REQ_EP_DATA_INFO_PARAMS_PTR pReq,
-	FTNM_RESP_EP_DATA_INFO_PARAMS_PTR pResp
+	FTNM_SESSION_PTR							pSession,
+ 	FTNM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pReq,
+ 	FTNM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	FTM_RET_OK;
+}
+
+
+
+FTM_RET	FTNM_SERVER_EP_DATA_info
+(
+	FTNM_SESSION_PTR					pSession,
+	FTNM_REQ_EP_DATA_INFO_PARAMS_PTR 	pReq,
+	FTNM_RESP_EP_DATA_INFO_PARAMS_PTR 	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
@@ -499,10 +639,11 @@ FTM_RET	FTNM_SRV_EP_DATA_info
 
 	return	pResp->nRet;
 }
-FTM_RET	FTNM_SRV_EP_DATA_getLast
-(
-	FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR pReq,
-	FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR pResp
+FTM_RET	FTNM_SERVER_EP_DATA_getLast
+(	
+	FTNM_SESSION_PTR						pSession,
+	FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR 	pReq,
+	FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR 	pResp
 )
 {
 	FTNM_EP_PTR	pEP;
@@ -518,10 +659,37 @@ FTM_RET	FTNM_SRV_EP_DATA_getLast
 	return	pResp->nRet;
 }
 
-FTM_RET	FTNM_SRV_EP_DATA_count
+FTM_RET	FTNM_SERVER_EP_DATA_getList
 (
-	FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR pReq,
-	FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR pResp
+	FTNM_SESSION_PTR						pSession,
+ 	FTNM_REQ_EP_DATA_GET_LIST_PARAMS_PTR	pReq,
+	FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp
+)
+{
+	FTM_RET		xRet;
+	FTNM_EP_PTR	pEP;
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	xRet = FTNM_EP_get(pReq->xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		pResp->nRet = xRet;
+	}
+	else
+	{
+	
+	}
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTNM_SERVER_EP_DATA_count
+(
+	FTNM_SESSION_PTR					pSession,
+	FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR 	pReq,
+	FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR 	pResp
 )
 {
 	FTM_ULONG	ulCount = 0;
@@ -537,9 +705,9 @@ FTM_RET	FTNM_SRV_EP_DATA_count
 	return	pResp->nRet;
 }
 
-FTM_RET FTNM_SRV_loadConfig(FTNM_SERVER_PTR pSRV, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_SERVER_loadConfig(FTNM_SERVER_PTR pSERVER, FTM_CHAR_PTR pFileName)
 {
-	ASSERT(pSRV != NULL);
+	ASSERT(pSERVER != NULL);
 	ASSERT(pFileName != NULL);
 
 	config_t			xConfig;
@@ -560,13 +728,13 @@ FTM_RET FTNM_SRV_loadConfig(FTNM_SERVER_PTR pSRV, FTM_CHAR_PTR pFileName)
 		pField = config_setting_get_member(pSection, "max_session");
 		if (pField != NULL)
 		{
-			pSRV->xConfig.ulMaxSession = (FTM_ULONG)config_setting_get_int(pField);
+			pSERVER->xConfig.ulMaxSession = (FTM_ULONG)config_setting_get_int(pField);
 		}
 	
 		pField = config_setting_get_member(pSection, "port");
 		if (pField != NULL)
 		{
-			pSRV->xConfig.usPort = (FTM_ULONG)config_setting_get_int(pField);
+			pSERVER->xConfig.usPort = (FTM_ULONG)config_setting_get_int(pField);
 		}
 	}
 
@@ -575,13 +743,13 @@ FTM_RET FTNM_SRV_loadConfig(FTNM_SERVER_PTR pSRV, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SRV_showConfig(FTNM_SERVER_PTR pSRV)
+FTM_RET FTNM_SERVER_showConfig(FTNM_SERVER_PTR pSERVER)
 {
-	ASSERT(pSRV != NULL);
+	ASSERT(pSERVER != NULL);
 
 	MESSAGE("\n[ SERVER CONFIGURATION ]\n");
-	MESSAGE("%16s : %d\n", "PORT", pSRV->xConfig.usPort);
-	MESSAGE("%16s : %lu\n", "MAX SESSION", pSRV->xConfig.ulMaxSession);
+	MESSAGE("%16s : %d\n", "PORT", pSERVER->xConfig.usPort);
+	MESSAGE("%16s : %lu\n", "MAX SESSION", pSERVER->xConfig.ulMaxSession);
 
 	return	FTM_RET_OK;
 }

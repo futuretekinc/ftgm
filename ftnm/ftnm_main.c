@@ -55,13 +55,13 @@ int main(int nArgc, char *pArgv[])
 	{
 		if (fork() == 0)
 		{
-			FTNM_run();
+			FTNM_start();
 			FTNM_waitingForFinished();
 		}
 	}
 	else
 	{
-		FTNM_run();
+		FTNM_start();
 		FTM_SHELL_run();
 	}
 

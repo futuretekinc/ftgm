@@ -52,11 +52,12 @@ FTM_RET	FTNM_final(void);
 FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pConfigFileName);
 
 FTM_RET	FTNM_showConfig(void);
-FTM_RET FTNM_run(void);
+FTM_RET FTNM_start(void);
 FTM_RET FTNM_waitingForFinished(void);
 
 FTM_RET	FTNM_setEPData(FTM_EPID xEPID, FTM_EP_DATA_PTR pData);
 FTM_RET	FTNM_getEPDataInfo(FTM_EPID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount);
 FTM_RET	FTNM_getEPDataCount(FTM_EPID xEPID, FTM_ULONG_PTR ulCount);
+
 #endif
 

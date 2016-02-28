@@ -6,12 +6,14 @@
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 }	FTNM_REQ_PARAMS, _PTR_ FTNM_REQ_PARAMS_PTR;
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -19,6 +21,7 @@ typedef	struct
 
 typedef	struct 
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_NODE_INFO		xNodeInfo;
@@ -26,6 +29,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -34,6 +38,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_CHAR			pDID[FTM_DID_LEN+1];
@@ -41,6 +46,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -48,12 +54,14 @@ typedef	struct
 
 typedef struct	
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 }	FTNM_REQ_NODE_COUNT_PARAMS, _PTR_ FTNM_REQ_NODE_COUNT_PARAMS_PTR;
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -62,6 +70,7 @@ typedef	struct
 
 typedef struct	
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_CHAR			pDID[FTM_DID_LEN+1];
@@ -69,6 +78,7 @@ typedef struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -77,6 +87,7 @@ typedef	struct
 
 typedef struct	
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_ULONG			ulIndex;
@@ -84,6 +95,7 @@ typedef struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -92,6 +104,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EP_INFO     	xInfo;
@@ -99,6 +112,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -106,6 +120,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EPID 			xEPID;
@@ -113,6 +128,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -120,6 +136,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EP_CLASS		xClass;
@@ -127,6 +144,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -135,6 +153,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EP_CLASS		xClass;
@@ -143,6 +162,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -152,6 +172,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EPID			xEPID;
@@ -159,6 +180,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -167,6 +189,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_ULONG			ulIndex;
@@ -174,14 +197,32 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
 	FTM_EP_INFO			xInfo;
 }	FTNM_RESP_EP_GET_AT_PARAMS, _PTR_	FTNM_RESP_EP_GET_AT_PARAMS_PTR;
 
+typedef struct
+{
+	FTM_ULONG			ulReqID;
+	FTNM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EPID			xEPID;
+}	FTNM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS, _PTR_ FTNM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR;
+
+typedef struct
+{
+	FTM_ULONG			ulReqID;
+	FTNM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTNM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS, _PTR_ FTNM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR;
+
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_EPID			xEPID;
@@ -190,6 +231,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				nRet;
@@ -197,6 +239,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EPID			xEPID;
@@ -204,6 +247,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -214,6 +258,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EPID			xEPID;
@@ -221,6 +266,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
@@ -229,6 +275,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EPID			xEPID;
@@ -238,8 +285,9 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
-	FTM_ULONG			nLen;
+	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
 	FTM_ULONG			nCount; 
 	FTM_EP_DATA 		pData[];
@@ -247,6 +295,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_EPID			xEPID;
@@ -256,6 +305,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				nRet;
@@ -263,6 +313,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_EPID			xEPID;
@@ -270,6 +321,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;

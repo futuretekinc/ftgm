@@ -34,8 +34,9 @@ FTM_RET	FTNM_init(void)
 
 	FTNM_DMC_init();
 
-	FTNM_SRV_init();
-	FTNM_SRV_create(&xCTX.pServer);
+	
+	FTNM_SERVER_init();
+	FTNM_SERVER_create(&xCTX.pServer);
 
 	FTNM_SNMPC_init();
 	FTNM_SNMPC_create(&xCTX.pSNMPC);
@@ -56,8 +57,8 @@ FTM_RET	FTNM_final(void)
 	FTNM_SNMPC_destroy(xCTX.pSNMPC);
 	FTNM_SNMPC_final();
 
-	FTNM_SRV_destroy(xCTX.pServer);
-	FTNM_SRV_final();
+	FTNM_SERVER_destroy(xCTX.pServer);
+	FTNM_SERVER_final();
 
 	FTNM_DMC_final();
 
@@ -74,7 +75,7 @@ FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pFileName)
 	ASSERT(pFileName != NULL);
 
 	FTNM_DMC_loadConfig(pFileName);
-	FTNM_SRV_loadConfig(xCTX.pServer, pFileName);
+	FTNM_SERVER_loadConfig(xCTX.pServer, pFileName);
 	FTNM_SNMPC_loadConfig(xCTX.pSNMPC, pFileName);
 	FTNM_SNMPTRAPD_loadConfig(xCTX.pSNMPTrapd, pFileName);
 
@@ -85,14 +86,14 @@ FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pFileName)
 FTM_RET	FTNM_showConfig(void)
 {
 	FTNM_DMC_showConfig();
-	FTNM_SRV_showConfig(xCTX.pServer);
+	FTNM_SERVER_showConfig(xCTX.pServer);
 	FTNM_SNMPC_showConfig(xCTX.pSNMPC);
 	FTNM_SNMPTRAPD_showConfig(xCTX.pSNMPTrapd);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_run(void)
+FTM_RET FTNM_start(void)
 {
 	if (pthread_create(&xCTX.xPThread, NULL, FTNM_task, (FTM_VOID_PTR)&xCTX) < 0)
 	{
@@ -129,7 +130,7 @@ FTM_VOID_PTR	FTNM_task(FTM_VOID_PTR pData)
 
 		case	FTNM_STATE_INITIALIZED:
 			{
-				FTNM_SRV_start(pCTX->pServer);
+				FTNM_SERVER_start(pCTX->pServer);
 				FTNM_SNMPC_start(pCTX->pSNMPC);
 				FTNM_SNMPTRAPD_start(pCTX->pSNMPTrapd);
 

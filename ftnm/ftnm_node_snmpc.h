@@ -11,6 +11,7 @@ typedef	struct
 	FTNM_NODE				xCommon;
 	struct snmp_session 	*pSession;		/* SNMP session data */
 	sem_t					xLock;
+
 	struct 
 	{
 		FTM_ULONG			ulRequest;

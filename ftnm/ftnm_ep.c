@@ -101,6 +101,7 @@ FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)
 		return	xRet;	
 	}
 
+
 	FTNM_EP_stop(pEP, FTM_TRUE);
 
 	FTM_MSGQ_final(&pEP->xMsgQ);
@@ -373,7 +374,8 @@ FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
-	FTM_CHAR	pTimeString[64];
+	FTM_RET				xRet;
+	FTM_CHAR			pTimeString[64];
 
 	if (pEP->xData.xType != pData->xType)
 	{
@@ -392,8 +394,7 @@ FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	case	FTM_EP_DATA_TYPE_INT:
 		{
 			TRACE("%6s : %d\n", "VALUE", pData->xValue.nValue);
-		}
-		break;
+		} break;
 	
 	case	FTM_EP_DATA_TYPE_ULONG:
 		{
@@ -412,9 +413,14 @@ FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 			TRACE("%6s : %s\n", "VALUE", "INVALID");
 		}
 		break;
-
-
 	}
+
+	xRet = FTNM_EP_setData(pEP, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
 	return	FTM_RET_OK;
 }
 

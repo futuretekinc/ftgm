@@ -1,14 +1,43 @@
 #ifndef	__FTNM_CLIENT_H__
 #define	__FTNM_CLIENT_H__
 
+#include <semaphore.h>
 #include "ftm.h"
+#include "ftm_list.h"
+#include "ftnm_params.h"
 #include "ftnm_client_config.h"
+
+typedef	FTM_RET (*FTNMC_NOTIFY_CALLBACK)(FTM_VOID_PTR);
+
+typedef struct 
+{
+	FTNM_REQ_PARAMS_PTR		pReq;
+	FTM_ULONG				ulReqLen;
+	FTNM_RESP_PARAMS_PTR	pResp;
+	FTM_ULONG				ulRespLen;
+	sem_t					xDone;
+}	FTNMC_TRANS, _PTR_ FTNMC_TRANS_PTR;
 
 typedef	struct
 {
-	FTM_INT		hSock;
-	FTM_ULONG	ulTimeout;
+	FTM_INT			hSock;
+	FTM_ULONG		ulTimeout;
+	FTM_ULONG		ulReqID;
+	FTM_BOOL		bRequested;
+	sem_t			xReqLock;
+	FTM_LIST		xTransList;
 }	FTNMC_SESSION, _PTR_ FTNMC_SESSION_PTR;
+
+typedef	enum
+{
+	FTNMC_MSG_TYPE_EP_NOTIFY = 0,
+	FTNMC_MSG_TYPE_NODE_NOTIFY
+}	FTNMC_MSG_TYPE, _PTR_ FTNMC_MSG_TYPE_PTR;
+
+typedef	struct
+{
+	FTNMC_MSG_TYPE	xType;
+}	FTNMC_MSG, _PTR_ FTNMC_MSG_PTR;
 
 FTM_RET	FTNMC_init
 (
@@ -36,6 +65,12 @@ FTM_RET FTNMC_isConnected
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_BOOL_PTR			pbConnected
+);
+
+FTM_RET	FTNMC_setEPNotifyCallback
+(
+	FTNMC_SESSION_PTR		pSession,
+	FTNMC_NOTIFY_CALLBACK	pCB
 );
 
 FTM_RET FTNMC_NODE_create
