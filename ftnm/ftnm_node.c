@@ -56,7 +56,7 @@ FTM_RET FTNM_NODE_final(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_NODE_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
+FTM_RET	FTNM_NODE_create(FTM_NODE_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 {
 	ASSERT(pInfo != NULL);
 	ASSERT(ppNode != NULL);
@@ -217,7 +217,7 @@ FTM_RET	FTNM_NODE_getEPCount(FTNM_NODE_PTR pNode, FTM_ULONG_PTR pulCount)
 	return FTM_LIST_count(&pNode->xEPList, pulCount);
 }
 
-FTM_RET	FTNM_NODE_getEP(FTNM_NODE_PTR pNode, FTM_EPID xEPID, FTNM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTNM_NODE_getEP(FTNM_NODE_PTR pNode, FTM_EP_ID xEPID, FTNM_EP_PTR _PTR_ ppEP)
 {
 	ASSERT(pNode != NULL);
 	ASSERT(ppEP != NULL);

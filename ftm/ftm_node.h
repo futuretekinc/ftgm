@@ -52,7 +52,7 @@ typedef	struct
 			FTM_CHAR	pDevice[FTM_DEVICE_NAME_LEN + 1];
 		} xLoRa;
 	}					xOption;
-}	FTM_NODE_INFO, _PTR_ FTM_NODE_INFO_PTR;
+}	FTM_NODE, _PTR_ FTM_NODE_PTR;
 
 #endif
 

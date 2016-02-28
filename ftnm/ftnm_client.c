@@ -271,7 +271,7 @@ FTM_RET	FTNMC_setNotifyCallback
 FTM_RET FTNMC_NODE_create
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_NODE_INFO_PTR		pInfo
+	FTM_NODE_PTR		pInfo
 )
 {
 	FTM_RET							nRet;
@@ -293,7 +293,7 @@ FTM_RET FTNMC_NODE_create
 
 	xReq.xCmd	=	FTNM_CMD_NODE_CREATE;
 	xReq.ulLen	=	sizeof(xReq);
-	memcpy(&xReq.xNodeInfo, pInfo, sizeof(FTM_NODE_INFO));
+	memcpy(&xReq.xNodeInfo, pInfo, sizeof(FTM_NODE));
 
 	nRet = FTNMC_request(
 				pSession, 
@@ -402,7 +402,7 @@ FTM_RET FTNMC_NODE_getAt
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_ULONG				ulIndex,
-	FTM_NODE_INFO_PTR		pInfo
+	FTM_NODE_PTR		pInfo
 )
 {
 	FTM_RET							nRet;
@@ -436,7 +436,7 @@ FTM_RET FTNMC_NODE_getAt
 
 	if (xResp.nRet == FTM_RET_OK)
 	{
-		memcpy(pInfo, &xResp.xNodeInfo, sizeof(FTM_NODE_INFO));
+		memcpy(pInfo, &xResp.xNodeInfo, sizeof(FTM_NODE));
 	}
 
 	return	xResp.nRet;
@@ -446,7 +446,7 @@ FTM_RET FTNMC_NODE_get
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_CHAR_PTR			pDID,
-	FTM_NODE_INFO_PTR		pInfo
+	FTM_NODE_PTR		pInfo
 )
 {
 	FTM_RET							nRet;
@@ -484,7 +484,7 @@ FTM_RET FTNMC_NODE_get
 
 	if (xResp.nRet == FTM_RET_OK)
 	{
-		memcpy(pInfo, &xResp.xNodeInfo, sizeof(FTM_NODE_INFO));
+		memcpy(pInfo, &xResp.xNodeInfo, sizeof(FTM_NODE));
 	}
 	
 	return	xResp.nRet;
@@ -493,7 +493,7 @@ FTM_RET FTNMC_NODE_get
 FTM_RET FTNMC_EP_create
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EP_INFO_PTR			pInfo
+	FTM_EP_PTR			pInfo
 )
 {
 	FTM_RET						nRet;
@@ -513,7 +513,7 @@ FTM_RET FTNMC_EP_create
 
 	xReq.xCmd	=	FTNM_CMD_EP_CREATE;
 	xReq.ulLen	=	sizeof(xReq);
-	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP_INFO));
+	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
 
 	nRet = FTNMC_request(
 				pSession, 
@@ -533,7 +533,7 @@ FTM_RET FTNMC_EP_create
 FTM_RET FTNMC_EP_destroy
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EPID				xEPID
+	FTM_EP_ID				xEPID
 )
 {
 	FTM_RET					nRet;
@@ -615,7 +615,7 @@ FTM_RET	FTNMC_EP_getList
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_EP_CLASS			xClass,
-	FTM_EPID_PTR			pEPIDList,
+	FTM_EP_ID_PTR			pEPIDList,
 	FTM_ULONG				ulMaxCount,
 	FTM_ULONG_PTR			pnCount
 )
@@ -631,7 +631,7 @@ FTM_RET	FTNMC_EP_getList
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-	nRespSize = sizeof(FTNM_RESP_EP_GET_LIST_PARAMS) + sizeof(FTM_EPID) * ulMaxCount;
+	nRespSize = sizeof(FTNM_RESP_EP_GET_LIST_PARAMS) + sizeof(FTM_EP_ID) * ulMaxCount;
 	pResp = (FTNM_RESP_EP_GET_LIST_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
 	if (pResp == NULL)
 	{
@@ -660,7 +660,7 @@ FTM_RET	FTNMC_EP_getList
 
 	if (nRet == FTM_RET_OK)
 	{
-		memcpy(pEPIDList, pResp->pEPIDList, sizeof(FTM_EPID) * pResp->ulCount);
+		memcpy(pEPIDList, pResp->pEPIDList, sizeof(FTM_EP_ID) * pResp->ulCount);
 		*pnCount = pResp->ulCount;
 	}
 
@@ -672,8 +672,8 @@ FTM_RET	FTNMC_EP_getList
 FTM_RET FTNMC_EP_get
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EPID				xEPID,
-	FTM_EP_INFO_PTR			pInfo
+	FTM_EP_ID				xEPID,
+	FTM_EP_PTR			pInfo
 )
 {
 	FTM_RET						nRet;
@@ -709,7 +709,7 @@ FTM_RET FTNMC_EP_get
 
 	if (xResp.nRet == FTM_RET_OK)
 	{
-		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_INFO));
+		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP));
 	}
 	return	xResp.nRet;
 }
@@ -718,7 +718,7 @@ FTM_RET FTNMC_EP_getAt
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_ULONG				ulIndex,
-	FTM_EP_INFO_PTR			pInfo
+	FTM_EP_PTR			pInfo
 )
 {
 	FTM_RET						nRet;
@@ -754,7 +754,7 @@ FTM_RET FTNMC_EP_getAt
 
 	if (xResp.nRet == FTM_RET_OK)
 	{
-		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_INFO));
+		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP));
 	}
 	
 	return	xResp.nRet;
@@ -767,7 +767,7 @@ FTM_RET FTNMC_EP_getAt
 FTM_RET	FTNMC_EP_DATA_add
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EPID				xEPID,
+	FTM_EP_ID				xEPID,
 	FTM_EP_DATA_PTR			pEPData
 )
 {
@@ -807,7 +807,7 @@ FTM_RET	FTNMC_EP_DATA_add
 FTM_RET	FTNMC_EP_DATA_info
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EPID				xEPID,
+	FTM_EP_ID				xEPID,
 	FTM_ULONG_PTR			pulBeginTime,
 	FTM_ULONG_PTR			pulEndTime,
 	FTM_ULONG_PTR			pCount
@@ -855,7 +855,7 @@ FTM_RET	FTNMC_EP_DATA_info
 FTM_RET FTNMC_EP_DATA_getLast
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EPID				xEPID,
+	FTM_EP_ID				xEPID,
 	FTM_EP_DATA_PTR			pData
 )
 {
@@ -903,7 +903,7 @@ FTM_RET FTNMC_EP_DATA_getLast
 FTM_RET	FTNMC_EP_DATA_getList
 (
 	FTNMC_SESSION_PTR	pSession,
-	FTM_EPID			xEPID,
+	FTM_EP_ID			xEPID,
 	FTM_ULONG			nStartIndex,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			nMaxCount,
@@ -973,7 +973,7 @@ FTM_RET	FTNMC_EP_DATA_getList
 FTM_RET	FTDMC_EP_DATA_del
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EPID				xEPID,
+	FTM_EP_ID				xEPID,
 	FTM_ULONG				nIndex,
 	FTM_ULONG				nCount
 )
@@ -1012,7 +1012,7 @@ FTM_RET	FTDMC_EP_DATA_del
 FTM_RET	FTNMC_EP_DATA_count
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EPID				xEPID,
+	FTM_EP_ID				xEPID,
 	FTM_ULONG_PTR			pCount
 )
 {

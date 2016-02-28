@@ -18,7 +18,7 @@ FTM_RET	FTDMS_SHELL_CMD_session(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_debug(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_node(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_ep(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_EPID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
+FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
 
 extern FTDM_CFG	xConfig;
 FTM_SHELL_CMD	FTDMS_pCmdList[] =
@@ -224,7 +224,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 			}
 			else
 			{
-				FTM_EPID 		xEPID;
+				FTM_EP_ID 		xEPID;
 
 				xEPID = strtoul(pArgv[1], NULL, 16);
 
@@ -238,7 +238,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 		{
 			if (strcasecmp(pArgv[2], "data") == 0)
 			{
-				FTM_EPID 		xEPID;
+				FTM_EP_ID 		xEPID;
 
 				xEPID = strtoul(pArgv[1], NULL, 16);
 
@@ -251,7 +251,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 		{
 			if (strcasecmp(pArgv[2], "data") == 0)
 			{
-				FTM_EPID 		xEPID;
+				FTM_EP_ID 		xEPID;
 				FTM_ULONG		ulStart = 0, ulCount = 0;
 
 				xEPID 	= strtoul(pArgv[1], NULL, 16);

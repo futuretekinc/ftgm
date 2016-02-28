@@ -44,7 +44,7 @@ FTM_RET	FTM_ACT_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_ACT_create(FTM_ACT_ID xID, FTM_ACT_TYPE xType, FTM_EPID xTargetID, FTM_ACT_PTR _PTR_ ppActor)
+FTM_RET	FTM_ACT_create(FTM_ACT_ID xID, FTM_ACT_TYPE xType, FTM_EP_ID xTargetID, FTM_ACT_PTR _PTR_ ppActor)
 {
 	ASSERT(pActorList != NULL);
 

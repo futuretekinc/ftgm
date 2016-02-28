@@ -16,8 +16,8 @@
 
 static FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_EP_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTDMC_NODE_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTDMC_EP_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_EVENT_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
@@ -49,7 +49,7 @@ FTM_SHELL_CMD			FTDMC_pCmdList[] =
 	},
 	{	
 		.pString	= "node",
-		.function	= FTDMC_NODE_INFO_cmd,
+		.function	= FTDMC_NODE_cmd,
 		.pShortHelp = "Node management command set.",
 		.pHelp		= "<COMMAND>\n"\
 					  "\tNode management command set.\n"\
@@ -72,7 +72,7 @@ FTM_SHELL_CMD			FTDMC_pCmdList[] =
 	},
 	{	
 		.pString	= "ep",
-		.function   = FTDMC_EP_INFO_cmd,
+		.function   = FTDMC_EP_cmd,
 		.pShortHelp = "EndPoint management command set.",
 		.pHelp      = "<COMMAND> ...\n"\
 					  "\tEndPoint management.\n"\
@@ -202,11 +202,11 @@ FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_NODE_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	FTM_RET	nRet;
 	FTM_INT	i;
-	FTM_NODE_INFO	xNodeInfo;
+	FTM_NODE	xNodeInfo;
 	FTM_CHAR	pDID[FTM_DID_LEN + 1];
 	FTM_CHAR	pURL[FTM_URL_LEN + 1];
 	FTM_CHAR	pLocation[FTM_LOCATION_LEN + 1];
@@ -227,7 +227,7 @@ FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		memset(&xNodeInfo, 0, sizeof(FTM_NODE_INFO));
+		memset(&xNodeInfo, 0, sizeof(FTM_NODE));
 		if (strcasecmp(pArgv[3], "SNMP") == 0)
 		{
 			xNodeInfo.xType = FTM_NODE_TYPE_SNMP;	
@@ -271,7 +271,7 @@ FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				xNodeInfo.pDID[i] = toupper(pArgv[2][i]);	
 			}
 
-			nRet = FTDMC_NODE_INFO_append(&_xSession, &xNodeInfo);
+			nRet = FTDMC_NODE_append(&_xSession, &xNodeInfo);
 			if (nRet != FTM_RET_OK)
 			{
 				ERROR("%s : ERROR - %lx\n", pArgv[0], nRet);
@@ -302,7 +302,7 @@ FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			pDID[i] = toupper(pArgv[2][i]);	
 		}
 
-		nRet = FTDMC_NODE_INFO_remove(&_xSession, pDID);
+		nRet = FTDMC_NODE_remove(&_xSession, pDID);
 		if (nRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -315,7 +315,7 @@ FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	else if (strcasecmp(pArgv[1], "info") == 0)
 	{
 		FTM_INT			i;
-		FTM_NODE_INFO	xInfo;
+		FTM_NODE	xInfo;
 
 		if ((nArgc < 3) || (strlen(pArgv[2]) > FTM_DID_LEN))
 		{
@@ -328,7 +328,7 @@ FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			pDID[i] = toupper(pArgv[2][i]);	
 		}
 
-		nRet = FTDMC_NODE_INFO_get(&_xSession, pDID, &xInfo);
+		nRet = FTDMC_NODE_get(&_xSession, pDID, &xInfo);
 		if (nRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -348,7 +348,7 @@ FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	{
 		FTM_ULONG	i, nNodeCount = 0;
 
-		nRet = FTDMC_NODE_INFO_count(&_xSession, &nNodeCount);
+		nRet = FTDMC_NODE_count(&_xSession, &nNodeCount);
 		if (nRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -361,9 +361,9 @@ FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 		for(i = 0 ; i < nNodeCount; i++)
 		{
-			FTM_NODE_INFO	xInfo;
+			FTM_NODE	xInfo;
 
-			nRet = FTDMC_NODE_INFO_getAt(&_xSession, i, &xInfo);
+			nRet = FTDMC_NODE_getAt(&_xSession, i, &xInfo);
 			if (nRet == FTM_RET_OK)
 			{
 				MESSAGE("%-16s %-16s %-16s %8d ", 
@@ -398,7 +398,7 @@ FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_EP_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_EP_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	FTM_RET		nRet;
 	FTM_INT		i;
@@ -406,8 +406,8 @@ FTM_RET	FTDMC_EP_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	FTM_CHAR		pDID[FTM_DID_LEN + 1];
 	FTM_CHAR		pName[FTM_NAME_LEN + 1];
 	FTM_CHAR		pUnit[FTM_UNIT_LEN + 1];
-	FTM_EPID		xEPID = 0;
-	FTM_EP_INFO		xInfo;
+	FTM_EP_ID		xEPID = 0;
+	FTM_EP		xInfo;
 
 	memset(pPID, 0, sizeof(pPID));
 	memset(pDID, 0, sizeof(pDID));
@@ -484,7 +484,7 @@ FTM_RET	FTDMC_EP_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 			xInfo.xType = (xEPID & FTM_EP_TYPE_MASK);
 
-			nRet = FTDMC_EP_INFO_append(&_xSession, &xInfo);
+			nRet = FTDMC_EP_append(&_xSession, &xInfo);
 			if (nRet != FTM_RET_OK)
 			{
 				ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -501,7 +501,7 @@ FTM_RET	FTDMC_EP_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		}
 
 		xEPID = strtoul(pArgv[2], 0, 16);
-		nRet = FTDMC_EP_INFO_remove(&_xSession, xEPID);	
+		nRet = FTDMC_EP_remove(&_xSession, xEPID);	
 		if (nRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
@@ -511,7 +511,7 @@ FTM_RET	FTDMC_EP_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	{
 		FTM_ULONG	nCount;
 
-		nRet = FTDMC_EP_INFO_count(&_xSession, 0, &nCount);
+		nRet = FTDMC_EP_count(&_xSession, 0, &nCount);
 		if (nRet == FTM_RET_OK)
 		{
 			MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
@@ -519,9 +519,9 @@ FTM_RET	FTDMC_EP_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 			for(i = 0 ; i< nCount ; i++)
 			{
-				FTM_EP_INFO	xInfo;
+				FTM_EP	xInfo;
 
-				nRet = FTDMC_EP_INFO_getAt(&_xSession, i, &xInfo);
+				nRet = FTDMC_EP_getAt(&_xSession, i, &xInfo);
 				if (nRet == FTM_RET_OK)
 				{
 					MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
@@ -554,7 +554,7 @@ FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	FTM_INT			nOpt = 0;
 	FTM_ULONG		nBeginTime = 0;
 	FTM_ULONG		nEndTime = 0;
-	FTM_EPID		xEPID;
+	FTM_EP_ID		xEPID;
 	FTM_EP_DATA		xData;
 	FTM_EP_DATA_PTR	pEPData;	
 	FTM_ULONG		nStartIndex=0;
@@ -915,7 +915,7 @@ FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	}
 	else if (strcmp(pArgv[1], "test_gen") == 0)
 	{
-		FTM_EPID	xEPID;
+		FTM_EP_ID	xEPID;
 		FTM_EP_DATA	xData;
 		FTM_INT		i, nDataGenCount;
 		time_t		_startTime;
@@ -1012,7 +1012,7 @@ FTM_RET	FTDMC_EVENT_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		FTM_EVENT		xEvent;
 
 		memset(&xEvent, 0, sizeof(xEvent));
-		xEvent.xEPID 	= (FTM_EPID)strtoul(pArgv[2], 0, 10);
+		xEvent.xEPID 	= (FTM_EP_ID)strtoul(pArgv[2], 0, 10);
 		
 		if (strcasecmp(pArgv[3], "ge") == 0)
 		{
@@ -1082,7 +1082,7 @@ FTM_RET	FTDMC_EVENT_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		FTM_EVENT		xEvent;
 
 		memset(&xEvent, 0, sizeof(xEvent));
-		xEvent.xEPID 	= (FTM_EPID)strtoul(pArgv[2], 0, 10);
+		xEvent.xEPID 	= (FTM_EP_ID)strtoul(pArgv[2], 0, 10);
 
 		if (strcasecmp(pArgv[3], "include") == 0)
 		{

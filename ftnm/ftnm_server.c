@@ -507,7 +507,7 @@ FTM_RET	FTNM_SERVER_NODE_get
 	pResp->nRet = FTNM_NODE_get(pReq->pDID, &pNode);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE_INFO));
+		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
 	}
 
 	return	pResp->nRet;
@@ -527,7 +527,7 @@ FTM_RET	FTNM_SERVER_NODE_getAt
 	pResp->nRet = FTNM_NODE_getAt(pReq->ulIndex, &pNode);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE_INFO));
+		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
 	}
 
 	return	pResp->nRet;
@@ -598,7 +598,7 @@ FTM_RET	FTNM_SERVER_EP_get
 	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP_INFO));
+		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
 	}
 
 	return	pResp->nRet;
@@ -613,7 +613,7 @@ FTM_RET	FTNM_SERVER_EP_getList
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nRet = FTNM_EP_getIDList(pReq->xClass, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
-	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EPID) * pResp->ulCount;
+	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_ID) * pResp->ulCount;
 
 	return	pResp->nRet;
 }
@@ -632,7 +632,7 @@ FTM_RET	FTNM_SERVER_EP_getAt
 	pResp->nRet = FTNM_EP_getAt(pReq->ulIndex, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP_INFO));
+		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
 	}
 	
 	return	pResp->nRet;

@@ -14,7 +14,7 @@ FTM_RET	FTDM_SHELL_showNodeList(void)
 	FTM_RET	xRet;
 	FTM_ULONG	i, ulCount = 0;
 
-	xRet = FTDM_NODE_INFO_count(&ulCount);
+	xRet = FTDM_NODE_count(&ulCount);
 	
 	if (xRet == FTM_RET_OK)
 	{
@@ -22,9 +22,9 @@ FTM_RET	FTDM_SHELL_showNodeList(void)
 
 		for(i = 0 ; i < ulCount; i++)
 		{
-			FTM_NODE_INFO_PTR	pInfo = NULL;
+			FTM_NODE_PTR	pInfo = NULL;
 
-			xRet = FTDM_NODE_INFO_getAt(i, &pInfo);
+			xRet = FTDM_NODE_getAt(i, &pInfo);
 			if (xRet == FTM_RET_OK)
 			{
 				MESSAGE("%-16s %-16s %-16s %8d %8d ", 
@@ -59,9 +59,9 @@ FTM_RET	FTDM_SHELL_showNodeList(void)
 FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 {
 	FTM_RET	xRet;
-	FTM_NODE_INFO_PTR	pNodeInfo = NULL;
+	FTM_NODE_PTR	pNodeInfo = NULL;
 
-	xRet = FTDM_NODE_INFO_get(pDID, &pNodeInfo);
+	xRet = FTDM_NODE_get(pDID, &pNodeInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		MESSAGE("Node[%s] not found.\n", pDID);
@@ -79,15 +79,15 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 		MESSAGE("%-16s : %s\n", "OPT 1", 	pNodeInfo->xOption.xSNMP.pURL);	
 		MESSAGE("%-16s : %s\n", "OPT 2", 	pNodeInfo->xOption.xSNMP.pCommunity);	
 
-		if (FTDM_EP_INFO_count(0, &ulCount) == FTM_RET_OK)
+		if (FTDM_EP_count(0, &ulCount) == FTM_RET_OK)
 		{
 			FTM_ULONG	i, ulIndex = 0, ulEPCount = 0;
 
 			for(i = 0 ; i < ulCount ; i++)
 			{
-				FTM_EP_INFO_PTR	pEPInfo;
+				FTM_EP_PTR	pEPInfo;
 		
-				xRet = FTDM_EP_INFO_getAt(i, &pEPInfo);
+				xRet = FTDM_EP_getAt(i, &pEPInfo);
 				if (xRet == FTM_RET_OK)
 				{
 					if (strcasecmp(pEPInfo->pDID, pDID) == 0)
@@ -105,9 +105,9 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 					"", "INDEX", "EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID");
 				for(i = 0 ; i < ulCount ; i++)
 				{
-					FTM_EP_INFO_PTR	pEPInfo;
+					FTM_EP_PTR	pEPInfo;
 			
-					xRet = FTDM_EP_INFO_getAt(i, &pEPInfo);
+					xRet = FTDM_EP_getAt(i, &pEPInfo);
 					if (xRet == FTM_RET_OK)
 					{
 						if (strcasecmp(pEPInfo->pDID, pDID) == 0)
@@ -151,15 +151,15 @@ FTM_RET	FTDM_SHELL_showEPList(void)
 	MESSAGE("# PRE-REGISTERED ENDPOINT\n");
 	MESSAGE("%-5s %-8s %-16s %-16s %-8s %-8s %-8s %-8s %-16s %-8s\n",
 			"INDEX", "EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID");
-	if (FTDM_EP_INFO_count(0, &ulCount) == FTM_RET_OK)
+	if (FTDM_EP_count(0, &ulCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
 
 		for(i = 0 ; i < ulCount ; i++)
 		{
-			FTM_EP_INFO_PTR	pEPInfo;
+			FTM_EP_PTR	pEPInfo;
 		
-			FTDM_EP_INFO_getAt(i, &pEPInfo);
+			FTDM_EP_getAt(i, &pEPInfo);
 			MESSAGE("%5d %08lx %-16s %-16s %-8s ",
 				i+1,
 				pEPInfo->xEPID,
@@ -187,13 +187,13 @@ FTM_RET	FTDM_SHELL_showEPList(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_SHELL_showEPInfo(FTM_EPID xEPID)
+FTM_RET	FTDM_SHELL_showEPInfo(FTM_EP_ID xEPID)
 {
 	FTM_RET			xRet;
-	FTM_EP_INFO_PTR	pEPInfo = NULL;
+	FTM_EP_PTR	pEPInfo = NULL;
 	FTM_ULONG		ulDataCount = 0;
 
-	if (FTDM_EP_INFO_get(xEPID, &pEPInfo) != FTM_RET_OK)
+	if (FTDM_EP_get(xEPID, &pEPInfo) != FTM_RET_OK)
 	{
 		MESSAGE("Invalid EPID [%08x]\n", xEPID);
 		return	FTM_RET_OBJECT_NOT_FOUND;
@@ -234,7 +234,7 @@ FTM_RET	FTDM_SHELL_showEPInfo(FTM_EPID xEPID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_SHELL_showEPData(FTM_EPID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount)
+FTM_RET	FTDM_SHELL_showEPData(FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount)
 {
 	FTM_RET			xRet;
 	FTM_ULONG		i, ulTotalCount = 0;

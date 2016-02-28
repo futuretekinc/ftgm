@@ -64,7 +64,7 @@ FTM_RET	FTNM_EP_final(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EP_create(FTM_EP_INFO_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTNM_EP_create(FTM_EP_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
 {
 	ASSERT(pEPList != NULL);
 	ASSERT(pInfo != NULL);
@@ -81,7 +81,7 @@ FTM_RET	FTNM_EP_create(FTM_EP_INFO_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
 	}
 
 	memset(pEP, 0, sizeof(FTNM_EP));
-	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP_INFO));
+	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
 	switch(pInfo->xEPID & FTM_EP_CLASS_MASK)
 	{
 	case	FTM_EP_CLASS_TEMPERATURE:
@@ -204,7 +204,7 @@ FTM_RET	FTNM_EP_count
 FTM_RET FTNM_EP_getIDList
 (
 	FTM_EP_CLASS 	xClass, 
-	FTM_EPID_PTR 	pEPIDList, 
+	FTM_EP_ID_PTR 	pEPIDList, 
 	FTM_ULONG 		ulMaxCount, 
 	FTM_ULONG_PTR 	pulCount
 )
@@ -233,7 +233,7 @@ FTM_RET FTNM_EP_getIDList
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EP_get(FTM_EPID xEPID, FTNM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTNM_EP_get(FTM_EP_ID xEPID, FTNM_EP_PTR _PTR_ ppEP)
 {
 	ASSERT(pEPList != NULL);
 
@@ -522,7 +522,7 @@ FTM_INT	FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicato
 	ASSERT(pIndicator != NULL);
 
 	FTNM_EP_PTR		pEP = (FTNM_EP_PTR)pElement;
-	FTM_EPID_PTR	pEPID=(FTM_EPID_PTR)pIndicator;
+	FTM_EP_ID_PTR	pEPID=(FTM_EP_ID_PTR)pIndicator;
 
 	return	(pEP->xInfo.xEPID == *pEPID);
 }

@@ -16,6 +16,7 @@
 #include "ftdm_server.h"
 #include "ftdm_sqlite.h"
 #include "ftdm_event.h"
+#include "ftdm_act.h"
 
 
 FTM_RET 	FTDM_init(FTDM_CFG_PTR pConfig)
@@ -29,13 +30,13 @@ FTM_RET 	FTDM_init(FTDM_CFG_PTR pConfig)
 		return	xRet;
 	}
 
-	xRet = FTDM_NODE_INFO_init(&pConfig->xNode);
+	xRet = FTDM_NODE_init(&pConfig->xNode);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("FTDM_initNodeInfo failed\n");	
 	}
 
-	xRet = FTDM_EP_INFO_init(&pConfig->xEP);
+	xRet = FTDM_EP_init(&pConfig->xEP);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("FTDM_initEPInfo failed\n");	
@@ -65,13 +66,13 @@ FTM_RET	FTDM_final(void)
 		ERROR("FTDM_finalNodeInfo failed\n");	
 	}
 
-	xRet = FTDM_EP_INFO_final();
+	xRet = FTDM_EP_final();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("FTDM_finalNodeInfo failed\n");	
 	}
 
-	xRet = FTDM_NODE_INFO_final();
+	xRet = FTDM_NODE_final();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("FTDM_finalNodeInfo failed\n");	

@@ -17,13 +17,13 @@ typedef	struct
 {
 	FTM_ACT_ID		xID;
 	FTM_ACT_TYPE	xType;
-	FTM_EPID		xTargetID;
+	FTM_EP_ID		xTargetID;
 }	FTM_ACT, _PTR_ FTM_ACT_PTR;
 
 FTM_RET	FTM_ACT_init(FTM_VOID);
 FTM_RET	FTM_ACT_final(FTM_VOID);
 
-FTM_RET	FTM_ACT_create(FTM_ACT_ID xID, FTM_ACT_TYPE xType, FTM_EPID xTargetID, FTM_ACT_PTR _PTR_ ppActor);
+FTM_RET	FTM_ACT_create(FTM_ACT_ID xID, FTM_ACT_TYPE xType, FTM_EP_ID xTargetID, FTM_ACT_PTR _PTR_ ppActor);
 FTM_RET	FTM_ACT_destroy(FTM_ACT_PTR ppActor);
 
 FTM_RET FTM_ACT_count(FTM_ULONG_PTR pulCount);

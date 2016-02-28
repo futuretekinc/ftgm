@@ -10,7 +10,7 @@ FTM_RET			FTNM_NODE_SNMPC_start(FTNM_NODE_SNMPC_PTR pNode);
 FTM_RET			FTNM_NODE_SNMPC_stop(FTNM_NODE_SNMPC_PTR pNode);
 FTM_RET			FTNM_NODE_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
 
-FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
+FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 {
 	ASSERT(pInfo != NULL);
 	ASSERT(ppNode != NULL);
@@ -27,7 +27,7 @@ FTM_RET	FTNM_NODE_SNMPC_create(FTM_NODE_INFO_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNo
 
 	memset(pNode, 0, sizeof(FTNM_NODE_SNMPC));
 
-	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE_INFO));
+	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
 	FTM_LIST_init(&pNode->xCommon.xEPList);
 	pthread_mutex_init(&pNode->xCommon.xMutexLock, NULL);
 	sem_init(&pNode->xLock, 0, 1);

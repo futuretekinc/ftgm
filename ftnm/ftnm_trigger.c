@@ -27,7 +27,7 @@ typedef	struct
 	{
 		struct
 		{
-			FTM_EPID	xEPID;
+			FTM_EP_ID	xEPID;
 			FTM_EP_DATA	xLastData;
 			FTM_EP_DATA	xNewData;
 		}	xUpdateEP;
@@ -294,7 +294,7 @@ FTM_RET	FTNM_TRIG_getAt(FTM_ULONG ulIndex, FTNM_TRIG_PTR _PTR_ ppTrigger)
 	return	FTM_LIST_getAt(pTriggerList, ulIndex, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
-FTM_RET	FTNM_TRIG_updateEP(FTM_EPID xEPID, FTM_EP_DATA_PTR pLastData, FTM_EP_DATA_PTR pNewData)
+FTM_RET	FTNM_TRIG_updateEP(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pLastData, FTM_EP_DATA_PTR pNewData)
 {
 	FTM_RET				xRet;
 	FTNM_TRIG_MSG_PTR	pMsg;

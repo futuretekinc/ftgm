@@ -198,7 +198,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 	FTM_RET			xRet;
 	FTM_ULONG		ulCount, i;
 
-	xRet = FTDMC_NODE_INFO_count(&pCTX->xDMCSession, &ulCount);
+	xRet = FTDMC_NODE_count(&pCTX->xDMCSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -206,13 +206,13 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_NODE_INFO	xNodeInfo;
+		FTM_NODE	xNodeInfo;
 		FTNM_NODE_PTR	pNode;
 
-		xRet = FTDMC_NODE_INFO_getAt(&pCTX->xDMCSession, i, &xNodeInfo);	
+		xRet = FTDMC_NODE_getAt(&pCTX->xDMCSession, i, &xNodeInfo);	
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTDMC_NODE_INFO_getAt(%08lx, %d, &xNodeInfo) = %08lx\n",
+			ERROR("FTDMC_NODE_getAt(%08lx, %d, &xNodeInfo) = %08lx\n",
 					pCTX->xDMCSession.hSock, i, xRet);
 			continue;	
 		}
@@ -253,7 +253,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 		}
 	}
 
-	xRet = FTDMC_EP_INFO_count(&pCTX->xDMCSession, 0, &ulCount);
+	xRet = FTDMC_EP_count(&pCTX->xDMCSession, 0, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -262,13 +262,13 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTNM_NODE_PTR	pNode;
-		FTM_EP_INFO	xEPInfo;
+		FTM_EP	xEPInfo;
 		FTNM_EP_PTR	pEP;
 
-		xRet = FTDMC_EP_INFO_getAt(&pCTX->xDMCSession, i, &xEPInfo);
+		xRet = FTDMC_EP_getAt(&pCTX->xDMCSession, i, &xEPInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTDMC_EP_INFO_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
+			ERROR("FTDMC_EP_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
 					pCTX->xDMCSession.hSock, i, xRet);
 			continue;
 		}
@@ -359,7 +359,7 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 			{
 			case	FTNM_MSG_TYPE_SNMPTRAP:
 				{
-					FTM_EPID		xEPID = 0;
+					FTM_EP_ID		xEPID = 0;
 					FTNM_EP_PTR		pEP = NULL;
 					FTM_EP_DATA		xData;
 
@@ -516,17 +516,17 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 }
 
 
-FTM_RET	FTNM_setEPData(FTM_EPID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET	FTNM_setEPData(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
 	return	FTNM_DMC_EP_DATA_set(&xCTX.xDMCSession, xEPID, pData);
 }
 
-FTM_RET	FTNM_getEPDataInfo(FTM_EPID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount)
+FTM_RET	FTNM_getEPDataInfo(FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount)
 {
 	return	FTNM_DMC_EP_DATA_info(&xCTX.xDMCSession, xEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
-FTM_RET	FTNM_getEPDataCount(FTM_EPID xEPID, FTM_ULONG_PTR pulCount)
+FTM_RET	FTNM_getEPDataCount(FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
 {
 	return	FTNM_DMC_EP_DATA_count(&xCTX.xDMCSession, xEPID, pulCount);
 }

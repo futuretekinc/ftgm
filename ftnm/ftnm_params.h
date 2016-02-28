@@ -25,7 +25,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_NODE_INFO		xNodeInfo;
+	FTM_NODE		xNodeInfo;
 }	FTNM_REQ_NODE_CREATE_PARAMS,	_PTR_ FTNM_REQ_NODE_CREATE_PARAMS_PTR;
 
 typedef	struct
@@ -83,7 +83,7 @@ typedef	struct
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
-	FTM_NODE_INFO		xNodeInfo;
+	FTM_NODE		xNodeInfo;
 }	FTNM_RESP_NODE_GET_PARAMS, _PTR_ FTNM_RESP_NODE_GET_PARAMS_PTR;
 
 typedef struct	
@@ -100,7 +100,7 @@ typedef	struct
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
-	FTM_NODE_INFO		xNodeInfo;
+	FTM_NODE		xNodeInfo;
 }	FTNM_RESP_NODE_GET_AT_PARAMS, _PTR_ FTNM_RESP_NODE_GET_AT_PARAMS_PTR;
 
 typedef	struct
@@ -108,7 +108,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EP_INFO     	xInfo;
+	FTM_EP     	xInfo;
 }	FTNM_REQ_EP_CREATE_PARAMS, _PTR_ FTNM_REQ_EP_CREATE_PARAMS_PTR;
 
 typedef	struct
@@ -124,7 +124,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EPID 			xEPID;
+	FTM_EP_ID 			xEPID;
 }	FTNM_REQ_EP_DESTROY_PARAMS, _PTR_	FTNM_REQ_EP_DESTROY_PARAMS_PTR;
 
 typedef	struct
@@ -168,7 +168,7 @@ typedef	struct
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
 	FTM_ULONG			ulCount;
-	FTM_EPID			pEPIDList[];
+	FTM_EP_ID			pEPIDList[];
 }	FTNM_RESP_EP_GET_LIST_PARAMS, _PTR_	FTNM_RESP_EP_GET_LIST_PARAMS_PTR;
 
 typedef	struct
@@ -176,7 +176,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EPID			xEPID;
+	FTM_EP_ID			xEPID;
 }	FTNM_REQ_EP_GET_PARAMS, _PTR_ 	FTNM_REQ_EP_GET_PARAMS_PTR;
 
 typedef	struct
@@ -185,7 +185,7 @@ typedef	struct
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
-	FTM_EP_INFO			xInfo;
+	FTM_EP			xInfo;
 }	FTNM_RESP_EP_GET_PARAMS, _PTR_	FTNM_RESP_EP_GET_PARAMS_PTR;
 
 typedef	struct
@@ -202,7 +202,7 @@ typedef	struct
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				nRet;
-	FTM_EP_INFO			xInfo;
+	FTM_EP			xInfo;
 }	FTNM_RESP_EP_GET_AT_PARAMS, _PTR_	FTNM_RESP_EP_GET_AT_PARAMS_PTR;
 
 typedef struct
@@ -210,7 +210,7 @@ typedef struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EPID			xEPID;
+	FTM_EP_ID			xEPID;
 }	FTNM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS, _PTR_ FTNM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR;
 
 typedef struct
@@ -226,7 +226,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EPID			xEPID;
+	FTM_EP_ID			xEPID;
 	FTM_EP_DATA			xData;
 }	FTNM_REQ_EP_DATA_ADD_PARAMS, _PTR_ FTNM_REQ_EP_DATA_ADD_PARAMS_PTR;
 
@@ -243,7 +243,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EPID			xEPID;
+	FTM_EP_ID			xEPID;
 }	FTNM_REQ_EP_DATA_INFO_PARAMS, _PTR_ FTNM_REQ_EP_DATA_INFO_PARAMS_PTR;
 
 typedef	struct
@@ -262,7 +262,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EPID			xEPID;
+	FTM_EP_ID			xEPID;
 }	FTNM_REQ_EP_DATA_GET_LAST_PARAMS, _PTR_	FTNM_REQ_EP_DATA_GET_LAST_PARAMS_PTR;
 
 typedef	struct
@@ -279,7 +279,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EPID			xEPID;
+	FTM_EP_ID			xEPID;
 	FTM_ULONG			nStartIndex;
 	FTM_ULONG			nCount; 
 }	FTNM_REQ_EP_DATA_GET_LIST_PARAMS, _PTR_	FTNM_REQ_EP_DATA_GET_LIST_PARAMS_PTR;
@@ -299,7 +299,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EPID			xEPID;
+	FTM_EP_ID			xEPID;
 	FTM_ULONG 			nIndex; 
 	FTM_ULONG			nCount;
 }	FTNM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTNM_REQ_EP_DATA_DEL_PARAMS_PTR; 
@@ -317,7 +317,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EPID			xEPID;
+	FTM_EP_ID			xEPID;
 }	FTNM_REQ_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_REQ_EP_DATA_COUNT_PARAMS_PTR;
 
 typedef	struct

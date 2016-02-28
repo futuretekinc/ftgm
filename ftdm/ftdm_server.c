@@ -29,16 +29,16 @@ static FTM_BOOL		FTDMS_SESSION_LIST_seeker(const FTM_VOID_PTR pElement, const FT
 
 static FTDMS_CMD_SET	pCmdSet[] =
 {
-	MK_CMD_SET(FTDM_CMD_NODE_INFO_ADD,				FTDMS_NODE_INFO_add ),
-	MK_CMD_SET(FTDM_CMD_NODE_INFO_DEL,				FTDMS_NODE_INFO_del ),
-	MK_CMD_SET(FTDM_CMD_NODE_INFO_COUNT,			FTDMS_NODE_INFO_count ),
-	MK_CMD_SET(FTDM_CMD_NODE_INFO_GET,				FTDMS_NODE_INFO_get ),
-	MK_CMD_SET(FTDM_CMD_NODE_INFO_GET_AT,			FTDMS_NODE_INFO_getAt ),
-	MK_CMD_SET(FTDM_CMD_EP_INFO_ADD,				FTDMS_EP_INFO_add ),
-	MK_CMD_SET(FTDM_CMD_EP_INFO_DEL,				FTDMS_EP_INFO_del ),
-	MK_CMD_SET(FTDM_CMD_EP_INFO_COUNT,				FTDMS_EP_INFO_count ),
-	MK_CMD_SET(FTDM_CMD_EP_INFO_GET,				FTDMS_EP_INFO_get ),
-	MK_CMD_SET(FTDM_CMD_EP_INFO_GET_AT,				FTDMS_EP_INFO_getAt ),
+	MK_CMD_SET(FTDM_CMD_NODE_ADD,				FTDMS_NODE_add ),
+	MK_CMD_SET(FTDM_CMD_NODE_DEL,				FTDMS_NODE_del ),
+	MK_CMD_SET(FTDM_CMD_NODE_COUNT,			FTDMS_NODE_count ),
+	MK_CMD_SET(FTDM_CMD_NODE_GET,				FTDMS_NODE_get ),
+	MK_CMD_SET(FTDM_CMD_NODE_GET_AT,			FTDMS_NODE_getAt ),
+	MK_CMD_SET(FTDM_CMD_EP_ADD,				FTDMS_EP_add ),
+	MK_CMD_SET(FTDM_CMD_EP_DEL,				FTDMS_EP_del ),
+	MK_CMD_SET(FTDM_CMD_EP_COUNT,				FTDMS_EP_count ),
+	MK_CMD_SET(FTDM_CMD_EP_GET,				FTDMS_EP_get ),
+	MK_CMD_SET(FTDM_CMD_EP_GET_AT,				FTDMS_EP_getAt ),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_INFO_ADD,			FTDMS_EP_CLASS_INFO_add),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_INFO_DEL,			FTDMS_EP_CLASS_INFO_del),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_INFO_COUNT,		FTDMS_EP_CLASS_INFO_count ),
@@ -278,80 +278,80 @@ FTM_RET	FTDMS_getSessionInfo(FTM_ULONG ulIndex, FTDM_SESSION_PTR pSession)
 	return	xRet;
 }
 
-FTM_RET	FTDMS_NODE_INFO_add
+FTM_RET	FTDMS_NODE_add
 (
-	FTDM_REQ_NODE_INFO_ADD_PARAMS_PTR	pReq,
-	FTDM_RESP_NODE_INFO_ADD_PARAMS_PTR	pResp
+	FTDM_REQ_NODE_ADD_PARAMS_PTR	pReq,
+	FTDM_RESP_NODE_ADD_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_INFO_add(&pReq->xNodeInfo);
+	pResp->nRet = FTDM_NODE_add(&pReq->xNodeInfo);
 
 	return	pResp->nRet;
 }
 
 
-FTM_RET	FTDMS_NODE_INFO_del
+FTM_RET	FTDMS_NODE_del
 (
- 	FTDM_REQ_NODE_INFO_DEL_PARAMS_PTR	pReq,
-	FTDM_RESP_NODE_INFO_DEL_PARAMS_PTR	pResp
+ 	FTDM_REQ_NODE_DEL_PARAMS_PTR	pReq,
+	FTDM_RESP_NODE_DEL_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_INFO_del(pReq->pDID);
+	pResp->nRet = FTDM_NODE_del(pReq->pDID);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_NODE_INFO_count
+FTM_RET	FTDMS_NODE_count
 (
- 	FTDM_REQ_NODE_INFO_COUNT_PARAMS_PTR	pReq,
-	FTDM_RESP_NODE_INFO_COUNT_PARAMS_PTR	pResp
+ 	FTDM_REQ_NODE_COUNT_PARAMS_PTR	pReq,
+	FTDM_RESP_NODE_COUNT_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_INFO_count(&pResp->nCount);
+	pResp->nRet = FTDM_NODE_count(&pResp->nCount);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_NODE_INFO_get
+FTM_RET	FTDMS_NODE_get
 (
- 	FTDM_REQ_NODE_INFO_GET_PARAMS_PTR		pReq,
-	FTDM_RESP_NODE_INFO_GET_PARAMS_PTR	pResp
+ 	FTDM_REQ_NODE_GET_PARAMS_PTR		pReq,
+	FTDM_RESP_NODE_GET_PARAMS_PTR	pResp
 )
 {
-	FTM_NODE_INFO_PTR	pNodeInfo;
+	FTM_NODE_PTR	pNodeInfo;
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_INFO_get(pReq->pDID, &pNodeInfo);
+	pResp->nRet = FTDM_NODE_get(pReq->pDID, &pNodeInfo);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xNodeInfo, pNodeInfo, sizeof(FTM_NODE_INFO));
+		memcpy(&pResp->xNodeInfo, pNodeInfo, sizeof(FTM_NODE));
 	}
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_NODE_INFO_getAt
+FTM_RET	FTDMS_NODE_getAt
 (
- 	FTDM_REQ_NODE_INFO_GET_AT_PARAMS_PTR	pReq,
-	FTDM_RESP_NODE_INFO_GET_AT_PARAMS_PTR	pResp
+ 	FTDM_REQ_NODE_GET_AT_PARAMS_PTR	pReq,
+	FTDM_RESP_NODE_GET_AT_PARAMS_PTR	pResp
 )
 {
-	FTM_NODE_INFO_PTR	pNodeInfo;
+	FTM_NODE_PTR	pNodeInfo;
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_INFO_getAt(pReq->nIndex, &pNodeInfo);
+	pResp->nRet = FTDM_NODE_getAt(pReq->nIndex, &pNodeInfo);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xNodeInfo, pNodeInfo, sizeof(FTM_NODE_INFO));
+		memcpy(&pResp->xNodeInfo, pNodeInfo, sizeof(FTM_NODE));
 	}
 
 	return	pResp->nRet;
@@ -363,10 +363,10 @@ FTM_RET	FTDMS_getNodeType
 	FTDM_RESP_GET_NODE_TYPE_PARAMS_PTR	pResp
 )
 {
-	FTM_NODE_INFO_PTR	pNodeInfo = NULL;
+	FTM_NODE_PTR	pNodeInfo = NULL;
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_INFO_get(pReq->pDID, &pNodeInfo);
+	pResp->nRet = FTDM_NODE_get(pReq->pDID, &pNodeInfo);
 
 	if (pResp->nRet == FTM_RET_OK)
 	{
@@ -382,12 +382,12 @@ FTM_RET	FTDMS_getNodeURL
 	FTDM_RESP_GET_NODE_URL_PARAMS_PTR	pResp
 )
 {
-	FTM_NODE_INFO_PTR	pNodeInfo = NULL;
+	FTM_NODE_PTR	pNodeInfo = NULL;
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nURLLen = FTM_URL_LEN;
-	pResp->nRet = FTDM_NODE_INFO_get(pReq->pDID, &pNodeInfo);
+	pResp->nRet = FTDM_NODE_get(pReq->pDID, &pNodeInfo);
 
 	if (pResp->nRet == FTM_RET_OK)
 	{
@@ -441,81 +441,81 @@ FTM_RET	FTDMS_setNodeLocation
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_EP_INFO_add
+FTM_RET	FTDMS_EP_add
 (
- 	FTDM_REQ_EP_INFO_ADD_PARAMS_PTR	pReq,
-	FTDM_RESP_EP_INFO_ADD_PARAMS_PTR	pResp
+ 	FTDM_REQ_EP_ADD_PARAMS_PTR	pReq,
+	FTDM_RESP_EP_ADD_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_INFO_add(&pReq->xInfo);
+	pResp->nRet = FTDM_EP_add(&pReq->xInfo);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_EP_INFO_del
+FTM_RET	FTDMS_EP_del
 (
- 	FTDM_REQ_EP_INFO_DEL_PARAMS_PTR	pReq,
-	FTDM_RESP_EP_INFO_DEL_PARAMS_PTR	pResp
+ 	FTDM_REQ_EP_DEL_PARAMS_PTR	pReq,
+	FTDM_RESP_EP_DEL_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_INFO_del(pReq->xEPID);
+	pResp->nRet = FTDM_EP_del(pReq->xEPID);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_EP_INFO_count
+FTM_RET	FTDMS_EP_count
 (
- 	FTDM_REQ_EP_INFO_COUNT_PARAMS_PTR	pReq,
-	FTDM_RESP_EP_INFO_COUNT_PARAMS_PTR	pResp
+ 	FTDM_REQ_EP_COUNT_PARAMS_PTR	pReq,
+	FTDM_RESP_EP_COUNT_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_INFO_count(pReq->xClass, &pResp->nCount);
+	pResp->nRet = FTDM_EP_count(pReq->xClass, &pResp->nCount);
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_EP_INFO_get
+FTM_RET	FTDMS_EP_get
 (
- 	FTDM_REQ_EP_INFO_GET_PARAMS_PTR		pReq,
-	FTDM_RESP_EP_INFO_GET_PARAMS_PTR	pResp
+ 	FTDM_REQ_EP_GET_PARAMS_PTR		pReq,
+	FTDM_RESP_EP_GET_PARAMS_PTR	pResp
 )
 {
-	FTM_EP_INFO_PTR	pEPInfo;
+	FTM_EP_PTR	pEPInfo;
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_INFO_get(
+	pResp->nRet = FTDM_EP_get(
 					pReq->xEPID, 
 					&pEPInfo);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xInfo, pEPInfo, sizeof(FTM_EP_INFO));
+		memcpy(&pResp->xInfo, pEPInfo, sizeof(FTM_EP));
 	}
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_EP_INFO_getAt
+FTM_RET	FTDMS_EP_getAt
 (
- 	FTDM_REQ_EP_INFO_GET_AT_PARAMS_PTR		pReq,
-	FTDM_RESP_EP_INFO_GET_AT_PARAMS_PTR	pResp
+ 	FTDM_REQ_EP_GET_AT_PARAMS_PTR		pReq,
+	FTDM_RESP_EP_GET_AT_PARAMS_PTR	pResp
 )
 {
-	FTM_EP_INFO_PTR	pEPInfo;
+	FTM_EP_PTR	pEPInfo;
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_INFO_getAt(
+	pResp->nRet = FTDM_EP_getAt(
 					pReq->nIndex, 
 					&pEPInfo);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xInfo, pEPInfo, sizeof(FTM_EP_INFO));
+		memcpy(&pResp->xInfo, pEPInfo, sizeof(FTM_EP));
 	}
 	return	pResp->nRet;
 }

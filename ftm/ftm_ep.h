@@ -7,7 +7,7 @@
 #define	FTM_EP_UNIT_LEN						32
 
 typedef	unsigned long	FTM_EP_CLASS, _PTR_ FTM_EP_CLASS_PTR;
-typedef	unsigned long	FTM_EPID, _PTR_ FTM_EPID_PTR;
+typedef	unsigned long	FTM_EP_ID, _PTR_ FTM_EP_ID_PTR;
 typedef	unsigned long	FTM_EP_TYPE, _PTR_ FTM_EP_TYPE_PTR;
 
 typedef	unsigned long	FTM_EP_STATE, _PTR_ FTM_EP_STATE_PTR;
@@ -49,7 +49,7 @@ typedef	struct
 
 typedef	struct
 {
-	FTM_EPID		xEPID;
+	FTM_EP_ID		xEPID;
 	FTM_EP_TYPE		xType;
 	FTM_CHAR		pName[FTM_EP_NAME_LEN+1];
 	FTM_CHAR		pUnit[FTM_EP_UNIT_LEN+1];
@@ -59,10 +59,10 @@ typedef	struct
 	FTM_ULONG		ulPeriod;
 	FTM_ULONG		ulLimit;
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
-	FTM_EPID		xDEPID;
+	FTM_EP_ID		xDEPID;
 	FTM_CHAR		pPID[FTM_DID_LEN+1];
-	FTM_EPID		xPEPID;
-}	FTM_EP_INFO, _PTR_ FTM_EP_INFO_PTR;
+	FTM_EP_ID		xPEPID;
+}	FTM_EP, _PTR_ FTM_EP_PTR;
 
 FTM_RET			FTM_initEPTypeString(void);
 FTM_RET			FTM_finalEPTypeString(void);

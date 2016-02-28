@@ -355,7 +355,7 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	FTM_RET	nRet;
 	FTM_INT	i;
-	FTM_NODE_INFO	xNodeInfo;
+	FTM_NODE	xNodeInfo;
 	FTM_CHAR	pDID[FTM_DID_LEN + 1];
 	FTM_CHAR	pURL[FTM_URL_LEN + 1];
 	FTM_CHAR	pLocation[FTM_LOCATION_LEN + 1];
@@ -376,7 +376,7 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		memset(&xNodeInfo, 0, sizeof(FTM_NODE_INFO));
+		memset(&xNodeInfo, 0, sizeof(FTM_NODE));
 		if (strcasecmp(pArgv[3], "SNMP") == 0)
 		{
 			xNodeInfo.xType = FTM_NODE_TYPE_SNMP;	
@@ -464,7 +464,7 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	else if (strcasecmp(pArgv[1], "info") == 0)
 	{
 		FTM_INT			i;
-		FTM_NODE_INFO	xInfo;
+		FTM_NODE	xInfo;
 
 		if ((nArgc < 3) || (strlen(pArgv[2]) > FTM_DID_LEN))
 		{
@@ -510,7 +510,7 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 		for(i = 0 ; i < nNodeCount; i++)
 		{
-			FTM_NODE_INFO	xInfo;
+			FTM_NODE	xInfo;
 
 			nRet = FTNMC_NODE_getAt(pCurrentSession, i, &xInfo);
 			if (nRet == FTM_RET_OK)
@@ -555,8 +555,8 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	FTM_CHAR		pDID[FTM_DID_LEN + 1];
 	FTM_CHAR		pName[FTM_NAME_LEN + 1];
 	FTM_CHAR		pUnit[FTM_UNIT_LEN + 1];
-	FTM_EPID		xEPID = 0;
-	FTM_EP_INFO		xInfo;
+	FTM_EP_ID		xEPID = 0;
+	FTM_EP		xInfo;
 
 	memset(pPID, 0, sizeof(pPID));
 	memset(pDID, 0, sizeof(pDID));
@@ -665,11 +665,11 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			nRet = FTNMC_EP_count(pCurrentSession, 0, &nCount);
 			if (nRet == FTM_RET_OK)
 			{
-				FTM_EPID_PTR	pEPIDs;
+				FTM_EP_ID_PTR	pEPIDs;
 				FTM_EP_DATA		xData;
 
 				MESSAGE("EP COUNT : %d\n", nCount);
-				pEPIDs = (FTM_EPID_PTR)FTM_MEM_calloc(nCount, sizeof(FTM_EPID));
+				pEPIDs = (FTM_EP_ID_PTR)FTM_MEM_calloc(nCount, sizeof(FTM_EP_ID));
 				if (pEPIDs == NULL)
 				{
 					ERROR("Not enough memory.\n");	
@@ -681,7 +681,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					FTNMC_EP_getList(pCurrentSession, 0x00000000, pEPIDs, nCount, &nCount);
 					for(i = 0 ; i< nCount ; i++)
 					{
-						FTM_EP_INFO	xInfo;
+						FTM_EP	xInfo;
 
 						nRet = FTNMC_EP_get(pCurrentSession, pEPIDs[i], &xInfo);
 						if (nRet == FTM_RET_OK)
@@ -733,7 +733,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		else if (nArgc == 3)
 		{
 			FTM_EP_CLASS	xEPClass;
-			FTM_EPID		pEPID[100];
+			FTM_EP_ID		pEPID[100];
 
 			xEPClass = strtoul(pArgv[2], 0, 16);
 			nRet = FTNMC_EP_getList(pCurrentSession, xEPClass, pEPID, 100, &nCount);
@@ -744,7 +744,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 				for(i = 0 ; i< nCount ; i++)
 				{
-					FTM_EP_INFO	xInfo;
+					FTM_EP	xInfo;
 
 					nRet = FTNMC_EP_get(pCurrentSession, pEPID[i], &xInfo);
 					if (nRet == FTM_RET_OK)
@@ -784,7 +784,7 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	FTM_INT			nOpt = 0;
 	FTM_ULONG		nBeginTime = 0;
 	FTM_ULONG		nEndTime = 0;
-	FTM_EPID		xEPID;
+	FTM_EP_ID		xEPID;
 	FTM_EP_DATA		xData;
 	FTM_EP_DATA_PTR	pEPData;	
 	FTM_ULONG		nStartIndex=0;

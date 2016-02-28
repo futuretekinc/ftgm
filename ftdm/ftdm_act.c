@@ -61,7 +61,7 @@ FTM_RET	FTDM_ACT_loadFromFile
 					if (xRet == FTM_RET_OK)
 					{
 						FTM_ACT_ID		xID;
-						FTM_EPID		xTargetID;
+						FTM_EP_ID		xTargetID;
 						FTM_ACT_TYPE	xType;
 
 						xRet = FTM_CONFIG_ITEM_getInt(&xActItem, "id", (FTM_INT_PTR)&xID);
