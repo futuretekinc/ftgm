@@ -4,6 +4,7 @@
 #include "ftm_debug.h"
 #include "ftm_msg_queue.h"
 #include "ftm_mem.h"
+#include "ftnm_ep.h"
 #include "ftnm_msg.h"
 
 static FTM_MSG_QUEUE_PTR	pMsgQ = NULL;
@@ -42,7 +43,34 @@ FTM_RET	FTNM_MSG_pushSNMPTRAP(FTM_CHAR_PTR pTrapMsg)
 	memset(pMsg, 0, sizeof(FTNM_MSG));
 
 	pMsg->xType = FTNM_MSG_TYPE_SNMPTRAP;
-	strncpy(pMsg->xParams.pString, pTrapMsg, sizeof(pMsg->xParams.pString) - 1);
+	strncpy(pMsg->xParams.xSNMPTRAP.pString, pTrapMsg, sizeof(pMsg->xParams.xSNMPTRAP.pString) - 1);
+
+	xRet = FTM_MSGQ_push(pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pMsg);	
+	}
+
+	return	xRet;
+}
+
+FTM_RET FTNM_MSG_EP_changed(FTM_EPID xEPID, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pData != NULL);
+	FTM_RET			xRet;
+	FTNM_MSG_PTR pMsg;
+
+	pMsg = (FTNM_MSG_PTR)FTM_MEM_malloc(sizeof(FTNM_MSG));
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+	
+	memset(pMsg, 0, sizeof(FTNM_MSG));
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_CHANGED;
+	pMsg->xParams.xEPChanged.xEPID = xEPID;
+	memcpy(&pMsg->xParams.xEPChanged.xData, pData, sizeof(FTM_EP_DATA));
 
 	xRet = FTM_MSGQ_push(pMsgQ, pMsg);
 	if (xRet != FTM_RET_OK)

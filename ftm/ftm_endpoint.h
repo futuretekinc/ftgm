@@ -1,6 +1,8 @@
 #ifndef	__FTM_EP_H__
 #define __FTM_EP_H__
 
+#include "ftm_node.h"
+
 #define	FTM_EP_NAME_LEN						256
 #define	FTM_EP_UNIT_LEN						32
 

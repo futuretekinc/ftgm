@@ -78,6 +78,30 @@ FTM_RET	FTNM_EP_create(FTM_EP_INFO_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
 
 	memset(pEP, 0, sizeof(FTNM_EP));
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP_INFO));
+	switch(pInfo->xEPID & FTM_EP_CLASS_MASK)
+	{
+	case	FTM_EP_CLASS_TEMPERATURE:
+	case	FTM_EP_CLASS_HUMIDITY:
+	case	FTM_EP_CLASS_VOLTAGE:
+	case	FTM_EP_CLASS_CURRENT:
+	case	FTM_EP_CLASS_GAS:
+	case	FTM_EP_CLASS_POWER:
+	case	FTM_EP_CLASS_AI:
+	case	FTM_EP_CLASS_COUNT:
+	case	FTM_EP_CLASS_MULTI:
+		{
+			pEP->xData.xType = FTM_EP_DATA_TYPE_FLOAT;
+		}
+		break;
+
+	case	FTM_EP_CLASS_DI:
+	case	FTM_EP_CLASS_DO:
+		{	
+			pEP->xData.xType = FTM_EP_DATA_TYPE_INT;
+		}
+		break;
+	}
+
 	sem_init(&pEP->xLock, 0, 1);
 	FTM_MSGQ_init(&pEP->xMsgQ);
 
@@ -363,6 +387,66 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
+	FTM_CHAR			pTimeString[64];
+
+	if (pEP->xData.xType != pData->xType)
+	{
+		ERROR("Data type missmatch[%08x:%08x]!\n", pEP->xData.xType, pData->xType);
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+
+	strcpy(pTimeString, ctime((time_t *)&pData->ulTime));
+	pTimeString[strlen(pTimeString) - 1] = 0;
+
+	TRACE("%6s : %s\n", "TIME", pTimeString);
+	switch(pData->xType)
+	{
+	case	FTM_EP_DATA_TYPE_INT:
+		{
+			TRACE("%6s : %d\n", "VALUE", pData->xValue.nValue);
+#if 0
+			if (pEP->xData.xValue.nValue == pData->xValue.nValue)
+			{
+				TRACE("Value not changed [%d:%d]\n", pEP->xData.xValue.nValue, pData->xValue.nValue);
+				return	FTM_RET_OK;	
+			}
+#endif
+		} break;
+	
+	case	FTM_EP_DATA_TYPE_ULONG:
+		{
+			TRACE("%6s : %lu\n", "VALUE", pData->xValue.ulValue);
+#if 0
+			if (pEP->xData.xValue.ulValue == pData->xValue.ulValue)
+			{
+				TRACE("Value not changed [%lu:%lu]\n", pEP->xData.xValue.ulValue, pData->xValue.ulValue);
+				return	FTM_RET_OK;	
+			}
+#endif
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_FLOAT:
+		{
+			TRACE("%6s : %5.2f\n", "VALUE", pData->xValue.fValue);
+#if 0
+			if (pEP->xData.xValue.fValue == pData->xValue.fValue)
+			{
+				TRACE("Value not changed [%5.2f:%5.2f]\n", pEP->xData.xValue.fValue, pData->xValue.fValue);
+				return	FTM_RET_OK;	
+			}
+#endif
+		}
+		break;
+
+	default:
+		{
+			TRACE("%6s : %s\n", "VALUE", "INVALID");
+		}
+		break;
+	}
+
 	memcpy(&pEP->xData, pData, sizeof(FTM_EP_DATA));
 	FTNM_setEPData(pEP->xInfo.xEPID, pData);
 
@@ -375,51 +459,17 @@ FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	ASSERT(pData != NULL);
 
 	FTM_RET				xRet;
-	FTM_CHAR			pTimeString[64];
-
-	if (pEP->xData.xType != pData->xType)
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;
-	}
 
 	TRACE("The event occurred in EP[%08x].\n", pEP->xInfo.xEPID);
 	TRACE("%6s : %d\n", "STATE", pData->xState);
-
-	strcpy(pTimeString, ctime((time_t *)&pData->ulTime));
-	pTimeString[strlen(pTimeString) - 1] = 0;
-
-	TRACE("%6s : %s\n", "TIME", pTimeString);
-	switch(pData->xType)
-	{
-	case	FTM_EP_DATA_TYPE_INT:
-		{
-			TRACE("%6s : %d\n", "VALUE", pData->xValue.nValue);
-		} break;
-	
-	case	FTM_EP_DATA_TYPE_ULONG:
-		{
-			TRACE("%6s : %lu\n", "VALUE", pData->xValue.ulValue);
-		}
-		break;
-
-	case	FTM_EP_DATA_TYPE_FLOAT:
-		{
-			TRACE("%6s : %5.2f\n", "VALUE", pData->xValue.fValue);
-		}
-		break;
-
-	default:
-		{
-			TRACE("%6s : %s\n", "VALUE", "INVALID");
-		}
-		break;
-	}
 
 	xRet = FTNM_EP_setData(pEP, pData);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
+	
+	FTNM_MSG_EP_changed(pEP->xInfo.xEPID, pData);
 
 	return	FTM_RET_OK;
 }

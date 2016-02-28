@@ -2,6 +2,7 @@
 #define	__FTNM_NODE_SNMP_CLIENT_H__
 
 #include <semaphore.h>
+#include <net-snmp/library/oid.h>
 #include "ftnm.h"
 #include "ftm_timer.h"
 #include "ftnm_node.h"

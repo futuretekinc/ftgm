@@ -339,9 +339,28 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 	
 	
 							pData->ulTime = time(NULL);
-							pData->xType  = FTM_EP_DATA_TYPE_FLOAT;
 							pData->xState = FTM_EP_STATE_RUN;
-							pData->xValue.fValue = strtod(pBuff, NULL);
+							pData->xType  = pEP->xData.xType;
+							switch(pData->xType)
+							{
+							case	FTM_EP_DATA_TYPE_INT:
+								{
+									pData->xValue.nValue = strtol(pBuff, NULL, 10);
+								}
+								break;
+
+							case	FTM_EP_DATA_TYPE_ULONG:
+								{
+									pData->xValue.ulValue = strtoul(pBuff, NULL, 10);
+								}
+								break;
+
+							case	FTM_EP_DATA_TYPE_FLOAT:
+								{
+									pData->xValue.fValue = strtod(pBuff, NULL);
+								}
+								break;
+							}
 
 							xRet = FTM_RET_OK;
 						}

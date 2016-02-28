@@ -11,7 +11,8 @@
 #include <net-snmp/net-snmp-includes.h>
 
 typedef	struct FTNM_NODE_STRUCT _PTR_ FTNM_NODE_PTR;
-typedef	struct 
+typedef	struct FTNM_EP_STRUCT _PTR_ FTNM_EP_PTR;
+typedef	struct FTNM_EP_STRUCT
 {
 	FTM_EP_INFO			xInfo;
 
@@ -32,7 +33,7 @@ typedef	struct
 			size_t	nOIDLen;
 		}	xSNMP;
 	}	xOption;
-}	FTNM_EP, _PTR_ FTNM_EP_PTR;
+}	FTNM_EP;
 
 FTM_RET	FTNM_EP_init(void);
 FTM_RET	FTNM_EP_final(void);

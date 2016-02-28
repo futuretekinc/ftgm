@@ -20,12 +20,13 @@ typedef struct
 
 typedef	struct
 {
-	FTM_INT			hSock;
-	FTM_ULONG		ulTimeout;
-	FTM_ULONG		ulReqID;
-	FTM_BOOL		bRequested;
-	sem_t			xReqLock;
-	FTM_LIST		xTransList;
+	FTM_INT					hSock;
+	FTM_ULONG				ulTimeout;
+	FTM_ULONG				ulReqID;
+	FTM_BOOL				bRequested;
+	sem_t					xReqLock;
+	FTM_LIST				xTransList;
+	FTNMC_NOTIFY_CALLBACK 	fNotifyCallback;
 }	FTNMC_SESSION, _PTR_ FTNMC_SESSION_PTR;
 
 typedef	enum
@@ -49,25 +50,35 @@ FTM_RET	FTNMC_final
 	FTM_VOID
 );
 
-FTM_RET	FTNMC_connect
+FTM_RET	FTNMC_SESSION_create
+(
+	FTNMC_SESSION_PTR _PTR_ ppSession
+);
+
+FTM_RET	FTNMC_SESSION_destroy
+(
+	FTNMC_SESSION_PTR 		pSession
+);
+
+FTM_RET	FTNMC_SESSION_connect
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_IP_ADDR				xIP,
 	FTM_USHORT				usPort
 );
 
-FTM_RET FTNMC_disconnect
+FTM_RET FTNMC_SESSION_disconnect
 (
 	FTNMC_SESSION_PTR		pSession
 );
 
-FTM_RET FTNMC_isConnected
+FTM_RET FTNMC_SESSION_isConnected
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_BOOL_PTR			pbConnected
 );
 
-FTM_RET	FTNMC_setEPNotifyCallback
+FTM_RET	FTNMC_setNotifyCallback
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTNMC_NOTIFY_CALLBACK	pCB

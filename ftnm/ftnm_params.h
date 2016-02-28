@@ -3,6 +3,7 @@
 
 #include "ftnm_types.h"
 #include "ftnm_server_cmd.h"
+#include "ftnm_msg.h"
 
 typedef	struct
 {
@@ -327,5 +328,14 @@ typedef	struct
 	FTM_RET				nRet;
 	FTM_ULONG			ulCount;
 }	FTNM_RESP_EP_DATA_COUNT_PARAMS, _PTR_ FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTNM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTNM_MSG			xMsg;
+}	FTNM_RESP_NOTIFY_PARAMS, _PTR_ FTNM_RESP_NOTIFY_PARAMS_PTR;
 
 #endif

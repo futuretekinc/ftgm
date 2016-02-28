@@ -256,6 +256,30 @@ FTM_RET	FTNM_SERVER_stop(FTNM_SERVER_PTR pServer)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_SERVER_notify(FTNM_SERVER_PTR pServer, FTNM_MSG_PTR pMsg)
+{
+	ASSERT(pServer != NULL);
+
+	FTNM_SESSION_PTR	pSession;
+
+	FTM_LIST_iteratorStart(&pServer->xSessionList);
+	while(FTM_LIST_iteratorNext(&pServer->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
+	{
+		FTNM_RESP_NOTIFY_PARAMS	xNotify;
+
+		xNotify.ulReqID = 0;
+		xNotify.xCmd	= 1;
+		xNotify.ulLen	= sizeof(FTNM_RESP_NOTIFY_PARAMS);
+		xNotify.nRet	= FTM_RET_OK;
+		memcpy(&xNotify.xMsg, pMsg, sizeof(FTNM_MSG));
+
+		TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, xNotify.ulReqID, xNotify.ulLen);
+		send(pSession->hSocket, &xNotify, sizeof(xNotify), MSG_DONTWAIT);
+	}
+	
+	return	FTM_RET_OK;
+}
+
 FTM_VOID_PTR FTNM_SERVER_process(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
@@ -323,7 +347,10 @@ FTM_VOID_PTR FTNM_SERVER_process(FTM_VOID_PTR pData)
 					pSession->hSocket = hClient;
 					memcpy(&pSession->xPeer, &xClientAddr, sizeof(xClientAddr));
 					pSession->pServer = pServer;
-					pthread_create(&pSession->xPThread, NULL, FTNM_SERVER_serviceHandler, pSession);
+					if (pthread_create(&pSession->xPThread, NULL, FTNM_SERVER_serviceHandler, pSession) == 0)
+					{
+						FTM_LIST_append(&pServer->xSessionList, pSession);	
+					}
 				}
 			
 			}
@@ -350,7 +377,6 @@ FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 		int	ulLen;
 
 		ulLen = recv(pSession->hSocket, pReq, sizeof(pSession->pReqBuff), 0);
-		TRACE("recv(%08x, pReq, %lu, MSG_DONTWAIT)\n", pSession->hSocket, ulLen);
 		if (ulLen == 0)
 		{
 			TRACE("The connection is terminated.\n");
@@ -361,6 +387,7 @@ FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 			ERROR("recv failed[%d]\n", -ulLen);
 			break;	
 		}
+		TRACE("RECV[%08lx:%08x] : Len = %lu\n", pSession->hSocket, pReq->ulReqID, ulLen);
 
 		pResp->ulReqID = pReq->ulReqID;
 
@@ -371,7 +398,7 @@ FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 			pResp->ulLen = sizeof(FTNM_RESP_PARAMS);
 		}
 
-		TRACE("send(%08x, pResp, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->ulLen);
+		TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->ulReqID, pResp->ulLen);
 		ulLen = send(pSession->hSocket, pResp, pResp->ulLen, MSG_DONTWAIT);
 		if (ulLen < 0)
 		{

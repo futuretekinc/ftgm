@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <errno.h>
 #include "ftm_error.h"
 #include "ftm_debug.h"
 #include "ftm_mem.h"
@@ -42,8 +43,6 @@ static pthread_t		xThread = 0;
 static FTM_BOOL			bRun = FTM_FALSE;
 static FTM_MSG_QUEUE	xMsgQ;
 static FTM_LIST			xSessionList;
-static FTNMC_NOTIFY_CALLBACK fEPNotifyCallback = NULL;
-static FTNMC_NOTIFY_CALLBACK fNodeNotifyCallback = NULL;
 
 FTM_RET	FTNMC_init
 (
@@ -92,11 +91,11 @@ FTM_RET	FTNMC_final
 
 FTM_VOID_PTR	FTNMC_process(FTM_VOID_PTR pData)
 {
-	bRun = FTM_TRUE;
-	
 	FTM_BYTE				pBuff[2048];
 	FTNM_RESP_PARAMS_PTR 	pResp = (FTNM_RESP_PARAMS_PTR)pBuff;
 
+	bRun = FTM_TRUE;
+	
 	while(bRun)
 	{
 		FTNMC_SESSION_PTR	pSession;
@@ -108,7 +107,9 @@ FTM_VOID_PTR	FTNMC_process(FTM_VOID_PTR pData)
 			if (nLen > 0)
 			{
 				FTNMC_TRANS_PTR	pTrans;
+				FTM_ULONG		ulCount = 0;
 
+				FTM_LIST_count(&pSession->xTransList, &ulCount);
 				if (FTM_LIST_get(&pSession->xTransList, &pResp->ulReqID, (FTM_VOID_PTR _PTR_)&pTrans) == FTM_RET_OK)
 				{
 					memcpy(pTrans->pResp, pResp, nLen);
@@ -118,31 +119,16 @@ FTM_VOID_PTR	FTNMC_process(FTM_VOID_PTR pData)
 				}
 				else if (pResp->ulReqID == 0)
 				{
-					FTNMC_MSG_PTR pMsg = (FTNMC_MSG_PTR)pResp;
-					switch(pMsg->xType)
+					FTNM_RESP_NOTIFY_PARAMS_PTR pNotify = (FTNM_RESP_NOTIFY_PARAMS_PTR)pResp;
+					ERROR("Received Notify [%08x]\n",pNotify->xCmd);	
+					if (pSession->fNotifyCallback != NULL)
 					{
-					case	FTNMC_MSG_TYPE_EP_NOTIFY:
-						{
-							if (fEPNotifyCallback != NULL)
-							{
-								fEPNotifyCallback(NULL);	
-							}
-						}
-						break;
-
-					case	FTNMC_MSG_TYPE_NODE_NOTIFY:
-						{
-							if (fNodeNotifyCallback != NULL)
-							{
-								fNodeNotifyCallback(NULL);	
-							}
-						}
-						break;
+						pSession->fNotifyCallback(&pNotify->xMsg);	
 					}
 				}
 				else
 				{
-					ERROR("Invalid ReqID[%ul]\n", pResp->ulReqID);	
+					ERROR("Invalid ReqID[%lu]\n", pResp->ulReqID);	
 				}
 			}
 		}
@@ -153,7 +139,7 @@ FTM_VOID_PTR	FTNMC_process(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET	FTNMC_createSession
+FTM_RET	FTNMC_SESSION_create
 (
 	FTNMC_SESSION_PTR _PTR_ ppSession
 )
@@ -178,7 +164,7 @@ FTM_RET	FTNMC_createSession
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNMC_destroySession
+FTM_RET	FTNMC_SESSION_destroy
 (
 	FTNMC_SESSION_PTR pSession
 )
@@ -188,10 +174,12 @@ FTM_RET	FTNMC_destroySession
 	FTM_LIST_final(&pSession->xTransList);
 	sem_destroy(&pSession->xReqLock);
 
+	FTM_MEM_free(pSession);
+
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNMC_connect
+FTM_RET	FTNMC_SESSION_connect
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_IP_ADDR				xIP,
@@ -223,12 +211,14 @@ FTM_RET	FTNMC_connect
 	}
 	
 	pSession->hSock = hSock;
-	pSession->ulTimeout = 5000;
+	pSession->ulTimeout = 5000000;
+
+	FTM_LIST_append(&xSessionList, pSession);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNMC_disconnect
+FTM_RET FTNMC_SESSION_disconnect
 (
 	FTNMC_SESSION_PTR		pSession
 )
@@ -238,13 +228,15 @@ FTM_RET FTNMC_disconnect
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
+	FTM_LIST_remove(&xSessionList, pSession);
+
 	close(pSession->hSock);
 	pSession->hSock = 0;
 	
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNMC_isConnected
+FTM_RET FTNMC_SESSION_isConnected
 (
 	FTNMC_SESSION_PTR		pSession,
 	FTM_BOOL_PTR			pbConnected
@@ -258,6 +250,20 @@ FTM_RET FTNMC_isConnected
 	{
 		*pbConnected = FTM_FALSE;	
 	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNMC_setNotifyCallback
+(
+	FTNMC_SESSION_PTR		pSession,
+	FTNMC_NOTIFY_CALLBACK	pCB
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pCB != NULL);
+
+	pSession->fNotifyCallback = pCB;
 
 	return	FTM_RET_OK;
 }
@@ -1059,6 +1065,7 @@ FTM_RET FTNMC_request
 {
 	FTM_RET		xRet;
 	FTNMC_TRANS	xTrans;
+	FTM_INT		nRet;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -1067,30 +1074,66 @@ FTM_RET FTNMC_request
 
 	pReq->ulReqID = ++pSession->ulReqID;
 
-	TRACE("SEND[%08lx:%08x] : Len = %d\n", pSession->hSock, pReq->ulReqID, ulReqLen);
-	
 	FTNMC_TRANS_init(&xTrans, pReq, ulReqLen, pResp, ulRespLen);
 
 	if( send(pSession->hSock, pReq, ulReqLen, 0) < 0)
 	{
+		TRACE("SEND[%08lx:%08x] - send failed\n", pSession->hSock, xTrans.pReq->ulReqID);
 		return	FTM_RET_ERROR;	
 	}
 
-	FTM_LIST_append(&pSession->xTransList, (FTM_VOID_PTR)&xTrans);
+	xRet =FTM_LIST_append(&pSession->xTransList, (FTM_VOID_PTR)&xTrans);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
 
 	struct timespec xTimeout;
-	xTimeout.tv_sec  = pSession->ulTimeout / 1000000;
-	xTimeout.tv_nsec = (pSession->ulTimeout % 1000000) * 1000;
 
-	if (sem_timedwait(&xTrans.xDone, &xTimeout) < 0)
+	clock_gettime(CLOCK_REALTIME, &xTimeout);
+
+	xTimeout.tv_sec  += pSession->ulTimeout / 1000000 + (xTimeout.tv_nsec + (pSession->ulTimeout % 1000000) * 1000) / 1000000000;
+	xTimeout.tv_nsec = (xTimeout.tv_nsec + (pSession->ulTimeout % 1000000) * 1000) % 1000000;
+
+	nRet = sem_timedwait(&xTrans.xDone, &xTimeout);
+	if (nRet != 0)
 	{
-		TRACE("RECV[%08lx:%08x] : Timeout\n", pSession->hSock, xTrans.pResp->ulReqID);
 		xRet = FTM_RET_COMM_TIMEOUT;	
+		switch(nRet)
+		{
+   		case	EINTR:  
+			{
+				ERROR("The call was interrupted by a signal handler\n");
+			}
+			break;
+
+        case	 EINVAL: 
+			{
+				ERROR("sem is not a valid semaphore.\n");
+		        ERROR("The following additional error can occur for sem_trywait():\n");
+				ERROR("The value of abs_timeout.tv_nsecs is less than 0, or greater than or equal to 1000 million.\n");
+			}
+			break;
+
+		case	EAGAIN:
+			{
+				ERROR("The operation could not be performed without blocking (i.e., the semaphore currently has the value zero).\n");
+				ERROR("The following additional errors can occur for sem_timedwait():\n");
+			}
+			break;
+
+		case	ETIMEDOUT:
+			{
+				ERROR("The call timed out before the semaphore could be locked.\n");
+			}
+			break;
+
+		default:
+			ERROR("Unknown error[%08x]\n", nRet);
+		}	
 	}
 	else
 	{
-		TRACE("RECV[%08lx:%08x] : Len = %d\n", pSession->hSock, xTrans.pResp->ulReqID, xTrans.ulRespLen);
-
 		*pulRespLen = xTrans.ulRespLen;
 
 		xRet = FTM_RET_OK;

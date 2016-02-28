@@ -329,13 +329,13 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 					FTNM_EP_PTR		pEP = NULL;
 					FTM_EP_DATA		xData;
 
-					TRACE("TRAP : %s\n", pMsg->xParams.pString);
+					TRACE("TRAP : %s\n", pMsg->xParams.xSNMPTRAP.pString);
 					const nx_json *pRoot, *pItem;
 
-					pRoot = nx_json_parse_utf8(pMsg->xParams.pString);
+					pRoot = nx_json_parse_utf8(pMsg->xParams.xSNMPTRAP.pString);
 					if (pRoot == NULL)
 					{
-						ERROR("Invalid trap message[%s]\n", pMsg->xParams.pString);
+						ERROR("Invalid trap message[%s]\n", pMsg->xParams.xSNMPTRAP.pString);
 						break;	
 					}
 
@@ -464,6 +464,13 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 					FTNM_EP_trap(pEP, &xData);
 				}	
 				break;
+
+			case	FTNM_MSG_TYPE_EP_CHANGED:
+				{
+					FTNM_SERVER_notify(xCTX.pServer, pMsg);
+
+				}
+				break;
 			}
 
 			FTM_MEM_free(pMsg);
@@ -494,3 +501,5 @@ FTM_RET	FTNM_SNMPTRAPCB(FTM_CHAR_PTR pTrapMsg)
 {
 	return	FTNM_MSG_pushSNMPTRAP(pTrapMsg);
 }
+
+
