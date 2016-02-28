@@ -67,9 +67,6 @@ FTM_RET	FTDM_EVENT_loadFromFile
 	FTM_CONFIG_ITEM		xTrigger;
 	FTM_CONFIG_ITEM		xEvents;
 	FTM_CONFIG_ITEM		xEventItem;
-	FTM_CONFIG_ITEM		xIDItem;
-	FTM_CONFIG_ITEM		xTypeItem;
-	FTM_CONFIG_ITEM		xValueItem;
 
 	if (pEventList == NULL)
 	{
@@ -103,13 +100,13 @@ FTM_RET	FTDM_EVENT_loadFromFile
 						FTM_EVENT		xEvent;
 						FTM_EVENT_PTR	pEvent;
 
-						xRet = FTM_CONFIG_getInt(&xEventItem, "id", &xEvent.xID);
+						xRet = FTM_CONFIG_ITEM_getInt(&xEventItem, "id", (FTM_INT_PTR)&xEvent.xID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 						
-						xRet = FTM_CONFIG_getInt(&xEventItem, "type", &xEvent.xType);
+						xRet = FTM_CONFIG_ITEM_getInt(&xEventItem, "type", (FTM_INT_PTR)&xEvent.xType);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
@@ -119,32 +116,46 @@ FTM_RET	FTDM_EVENT_loadFromFile
 						{
 						case	FTM_EVENT_TYPE_ABOVE:
 							{
-								xRet = FTM_CONFIG_getData(&xEventItem, "value", &xEvent.xParams.xAbove.xValue);
+								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "value", &xEvent.xParams.xAbove.xValue);
 							}
 							break;
 
 						case	FTM_EVENT_TYPE_BELOW:
 							{
-								xRet = FTM_CONFIG_getData(&xEventItem, "value", &xEvent.xParams.xBelow.xValue);
+								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "value", &xEvent.xParams.xBelow.xValue);
 							}
 							break;
 
 						case	FTM_EVENT_TYPE_INCLUDE:
 							{
-								xRet = FTM_CONFIG_getData(&xEventItem, "upper", &xEvent.xParams.xInclude.xUpper.xValue);
-								xRet = FTM_CONFIG_getData(&xEventItem, "lower", &xEvent.xParams.xInclude.xLower.xValue);
+								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "upper", &xEvent.xParams.xInclude.xUpper);
+								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "lower", &xEvent.xParams.xInclude.xLower);
 							}
 							break;
 
 						case	FTM_EVENT_TYPE_EXCEPT:
 							{
-								xRet = FTM_CONFIG_getData(&xEventItem, "upper", &xEvent.xParams.xInclude.xExcept.xValue);
-								xRet = FTM_CONFIG_getData(&xEventItem, "lower", &xEvent.xParams.xInclude.xExcept.xValue);
+								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "upper", &xEvent.xParams.xExcept.xUpper);
+								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "lower", &xEvent.xParams.xExcept.xLower);
+							}
+							break;
+
+						case	FTM_EVENT_TYPE_OR:
+							{
+							}
+							break;
+
+						case	FTM_EVENT_TYPE_AND:
+							{
+							}
+							break;
+
+						case	FTM_EVENT_TYPE_CHANGE:
+							{
 							}
 							break;
 						}
 
-						
 						xRet = FTM_EVENT_createCopy(&xEvent, &pEvent);
 						if (xRet == FTM_RET_OK)
 						{
@@ -231,14 +242,14 @@ FTM_RET	FTDM_EVENT_showList
 	}
 
 
-	MESSAGE("# TRIGGER INFORMATION\n");
-	MESSAGE("%8s %s ", "ID", "CONDITION");
+	MESSAGE("\n# TRIGGER INFORMATION\n");
+	MESSAGE("\t%-8s %-8s %s\n", "ID", "EPID", "CONDITION");
 	FTM_LIST_iteratorStart(pEventList);
 	while(FTM_LIST_iteratorNext(pEventList, (FTM_VOID_PTR _PTR_)&pEvent) == FTM_RET_OK)
 	{
 		FTM_CHAR	pBuff[1024];
 
-		MESSAGE("%08x ", pEvent->xID);
+		MESSAGE("\t%08x %08x ", pEvent->xID, pEvent->xEPID);
 		switch(pEvent->xType)
 		{
 		case	FTM_EVENT_TYPE_ABOVE:

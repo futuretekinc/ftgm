@@ -43,10 +43,9 @@ FTM_RET	FTM_CONFIG_init(FTM_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileName)
 	ASSERT(pFileName != NULL);
 
 	config_init(&pConfig->xLibConfig);
-	if (config_read_file(&pConfig->xLibConfig, pFileName) == CONFIG_FALSE)
-	{
-		FTM_MEM_free(pConfig);	
-
+	if (config_read_file(&pConfig->xLibConfig,pFileName) == CONFIG_FALSE)
+	{	
+		ERROR("config read file error. : %s\n", config_error_text(&pConfig->xLibConfig));
 		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
@@ -302,15 +301,16 @@ FTM_RET	FTM_CONFIG_ITEM_getData(FTM_CONFIG_ITEM_PTR pItem, FTM_CHAR_PTR pName, F
 	{
 		return	FTM_RET_OBJECT_NOT_FOUND;	
 	}
-
+/*
  	if (config_setting_is_list(pSetting) != CONFIG_TRUE)
   	{
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
     }
-
+*/
 	pField = config_setting_get_member(pSetting, "type");
 	if (pField == NULL)
 	{
+		ERROR("Type is not exist.\n");
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
 	}
 
@@ -319,6 +319,7 @@ FTM_RET	FTM_CONFIG_ITEM_getData(FTM_CONFIG_ITEM_PTR pItem, FTM_CHAR_PTR pName, F
 	pField = config_setting_get_member(pSetting, "value");
 	if (pField == NULL)
 	{
+		ERROR("Value is not exist.\n");
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
 	}
 

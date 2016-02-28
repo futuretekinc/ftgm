@@ -40,7 +40,7 @@ FTM_RET 	FTDM_init(FTDM_CFG_PTR pConfig)
 	{
 		ERROR("FTDM_initEPInfo failed\n");	
 	}
-
+	
 	xRet = FTDM_EP_CLASS_INFO_init(&pConfig->xEP);
 	if (xRet != FTM_RET_OK)
 	{
@@ -164,7 +164,12 @@ int main(int nArgc, char *pArgv[])
 	xRet = FTDM_EVENT_init();
 	if (xRet == FTM_RET_OK)
 	{
-		FTDM_EVENT_loadFromFile(pConfigFileName);
+		xRet = FTDM_EVENT_loadFromFile(pConfigFileName);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Event configuration load failed.\n");	
+			return	0;
+		}
 	}
 
 	if (nDebugLevel >= 0)

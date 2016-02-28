@@ -16,24 +16,27 @@ FTM_RET	FTM_EVENT_init(FTM_VOID)
 {
 	if (pEventList != NULL)
 	{
+		ERROR("Event list is already initialized.\n");
 		return	FTM_RET_ALREADY_INITIALIZED;	
 	}
 
-	pEventList = (FTM_LIST_PTR)FTM_MEM_malloc(sizeof(pEventList));
+	pEventList = (FTM_LIST_PTR)FTM_MEM_malloc(sizeof(FTM_LIST));
 	if (pEventList == NULL)
 	{
+		ERROR("Event list is not allocated.\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
 	FTM_LIST_init(pEventList);
 	FTM_LIST_setSeeker(pEventList, FTM_EVENT_seeker);
 
+	TRACE("Event list is initialized.\n");
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_EVENT_final(FTM_VOID)
 {
-	if (pEventList != NULL)
+	if (pEventList == NULL)
 	{
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
@@ -45,8 +48,44 @@ FTM_RET	FTM_EVENT_final(FTM_VOID)
 
 FTM_RET	FTM_EVENT_createCopy(FTM_EVENT_PTR pSrc, FTM_EVENT_PTR _PTR_ ppEvent)
 {
-	return	FTM_EVENT_create1(pSrc->xType, pSrc->xID, pSrc->xEPID,  &pSrc->xParams.xInclude.xUpper, &pSrc->xParams.xInclude.xLower, ppEvent);
-	
+	ASSERT(pSrc != NULL);
+	ASSERT(ppEvent != NULL);
+
+	FTM_RET			xRet;
+	FTM_EVENT_PTR	pEvent;
+	struct timeval	xTime;
+
+	if (pEventList == NULL)
+	{
+		ERROR("Event list is not initialized.\n");
+		FTM_EVENT_init();
+	}
+
+	pEvent = (FTM_EVENT_PTR)FTM_MEM_malloc(sizeof(FTM_EVENT));
+	if (pEvent == NULL)
+	{
+		ERROR("Can't not allocation Event.\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	memcpy(pEvent, pSrc, sizeof(FTM_EVENT));
+
+	xRet = FTM_LIST_append(pEventList, pEvent);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEvent);
+		return	xRet;
+	}
+
+	if (pEvent->xID == 0)
+	{
+		gettimeofday(&xTime, NULL);
+		pEvent->xID = xTime.tv_sec * 1000000 + xTime.tv_usec;
+	}
+
+	*ppEvent = pEvent;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_EVENT_createAbove(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EP_DATA_PTR pData, FTM_EVENT_PTR _PTR_ ppEvent)
@@ -93,6 +132,12 @@ FTM_RET	FTM_EVENT_create1(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID 
 	FTM_EVENT		xEvent;
 	FTM_EVENT_PTR	pEvent;
 	struct timeval	xTime;
+
+	if (pEventList == NULL)
+	{
+		ERROR("Event list is not initialized.\n");
+		FTM_EVENT_init();
+	}
 
 	if (xEventID == 0)
 	{
@@ -159,6 +204,12 @@ FTM_RET	FTM_EVENT_create2(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID 
 	FTM_EVENT_PTR	pEvent;
 	struct timeval	xTime;
 
+	if (pEventList == NULL)
+	{
+		ERROR("Event list is not initialized.\n");
+		FTM_EVENT_init();
+	}
+
 	if (xEventID == 0)
 	{
 		gettimeofday(&xTime, NULL);
@@ -224,6 +275,12 @@ FTM_RET	FTM_EVENT_occurred(FTM_EVENT_PTR pEvent, FTM_EP_DATA_PTR pPrevData, FTM_
 
 	FTM_RET	xRet;
 	FTM_INT	nResult;
+
+	if (pEventList == NULL)
+	{
+		ERROR("Event list is not initialized.\n");
+		FTM_EVENT_init();
+	}
 
 	switch(pEvent->xType)
 	{

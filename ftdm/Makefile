@@ -4,7 +4,7 @@ SERVER=ftdm
 SERVER_INCS=ftdm.h ftdm_server.h ftdm_server_cmds.h
 SERVER_SRCS=ftdm.c ftdm_server.c ftdm_server_cmds.c
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
-SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3 -ldl
+SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3 -ldl 
 
 CLIENT=ftdm_client
 CLIENT_SRCS=ftdm_client_main.c  ftdm_client.c ftdm_client_config.c ftdm_client_cmds.c
