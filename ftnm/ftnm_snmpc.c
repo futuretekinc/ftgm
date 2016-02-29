@@ -17,43 +17,23 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
 
 extern int	active_hosts;
 
-FTM_RET	FTNM_SNMPC_init(void)
+FTM_RET	FTNM_SNMPC_init(FTNM_SNMPC_PTR pCTX)
 {
+	ASSERT(pCTX != NULL);
+
 	init_agent("ftnm:snmpc");
 	init_snmp("ftnm:snmpc");
 
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SNMPC_final(void)
-{
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SNMPC_create(FTNM_SNMPC_PTR _PTR_ ppCTX)
-{
-	ASSERT(ppCTX != NULL);
-	FTNM_SNMPC_PTR	pCTX;
-
-	pCTX = (FTNM_SNMPC_PTR)FTM_MEM_malloc(sizeof(FTNM_SNMPC));
-	if (pCTX == NULL)
-	{
-		ERROR("Not enough memory!\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-	
 	memset(pCTX, 0, sizeof(FTNM_SNMPC));
 
 	strcpy(pCTX->xConfig.pName, FTNM_SNMPC_NAME);
 	FTM_LIST_init(&pCTX->xConfig.xMIBList);
 	pCTX->xConfig.ulMaxRetryCount = FTNM_SNMPC_RETRY_COUNT;
 
-	*ppCTX = pCTX;
-
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SNMPC_destroy(FTNM_SNMPC_PTR pCTX)
+FTM_RET	FTNM_SNMPC_final(FTNM_SNMPC_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
@@ -71,9 +51,6 @@ FTM_RET	FTNM_SNMPC_destroy(FTNM_SNMPC_PTR pCTX)
 	}
 
 	FTM_LIST_final(&pCTX->xConfig.xMIBList);
-
-
-	FTM_MEM_free(pCTX);
 
 	return	FTM_RET_OK;
 }
@@ -192,7 +169,7 @@ FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET FTNM_SNMPC_loadConfig(FTNM_SNMPC_PTR pCTX, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_SNMPC_loadFromFile(FTNM_SNMPC_PTR pCTX, FTM_CHAR_PTR pFileName)
 {
 	ASSERT(pCTX != NULL);
 	ASSERT(pFileName != NULL);

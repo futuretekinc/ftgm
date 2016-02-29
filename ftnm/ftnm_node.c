@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "ftm.h"
 #include "ftnm.h"
-#include "ftm_list.h"
 #include "ftnm_node.h"
 #include "ftnm_ep.h"
 #include "ftnm_node_snmpc.h"
@@ -90,6 +90,8 @@ FTM_RET	FTNM_NODE_create(FTM_NODE_PTR pInfo, FTNM_NODE_PTR _PTR_ ppNode)
 		FTM_MEM_free(pNewNode);	
 	}
 
+	FTM_ULONG	ulCount;
+	FTM_LIST_count(pNodeList, &ulCount);
 	pNewNode->xState = FTNM_NODE_STATE_CREATED;
 
 	*ppNode = pNewNode;
@@ -163,7 +165,6 @@ FTM_RET FTNM_NODE_getAt(FTM_ULONG ulIndex, FTNM_NODE_PTR _PTR_ ppNode)
 FTM_RET	FTNM_NODE_count(FTM_ULONG_PTR pulCount)
 {
 	return	FTM_LIST_count(pNodeList, pulCount);
-
 }
 
 FTM_RET	FTNM_NODE_linkEP(FTNM_NODE_PTR pNode, FTNM_EP_PTR pEP)

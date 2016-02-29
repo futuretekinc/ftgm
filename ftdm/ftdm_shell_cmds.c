@@ -1,11 +1,10 @@
 #include <string.h>
 #include <time.h>
-#include "ftm_error.h"
-#include "ftm_debug.h"
+#include "ftm_trace.h"
 #include "ftm_mem.h"
 #include "ftdm_shell_cmds.h"
-#include "ftdm_node_info.h"
-#include "ftdm_ep_info.h"
+#include "ftdm_node.h"
+#include "ftdm_ep.h"
 #include "ftdm_ep_data.h"
 #include "ftdm_config.h"
 
@@ -29,7 +28,7 @@ FTM_RET	FTDM_SHELL_showNodeList(void)
 			{
 				MESSAGE("%-16s %-16s %-16s %8d %8d ", 
 					pInfo->pDID, 
-					FTM_nodeTypeString(pInfo->xType), 
+					FTM_NODE_typeString(pInfo->xType), 
 				pInfo->pLocation,
 				pInfo->ulInterval,
 				pInfo->ulTimeout);
@@ -71,7 +70,7 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 		FTM_ULONG	ulCount = 0;
 
 		MESSAGE("%-16s : %s\n", "DID", 		pDID);	
-		MESSAGE("%-16s : %s\n", "TYPE", 	FTM_nodeTypeString(pNodeInfo->xType)); 
+		MESSAGE("%-16s : %s\n", "TYPE", 	FTM_NODE_typeString(pNodeInfo->xType)); 
 		MESSAGE("%-16s : %s\n", "LOCATION", pNodeInfo->pLocation);
 		MESSAGE("%-16s : %lu\n", "INTERVAL",pNodeInfo->ulInterval);
 		MESSAGE("%-16s : %lu\n", "TIMEOUT", pNodeInfo->ulTimeout);
@@ -116,17 +115,17 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 								"",
 								++ulIndex,
 								pEPInfo->xEPID,
-								FTDM_CFG_EP_getTypeString(pEPInfo->xType),
+								FTM_EP_typeString(pEPInfo->xType),
 								pEPInfo->pName,
 								pEPInfo->pUnit);
-			
-							switch(pEPInfo->xState)
+		
+							if(pEPInfo->bEnable)
 							{
-							case	FTM_EP_STATE_DISABLE: 	MESSAGE("%-8s ", "DISABLE");  	break; 
-							case	FTM_EP_STATE_RUN: 		MESSAGE("%-8s ", "RUN"); 		break; 
-							case	FTM_EP_STATE_STOP: 		MESSAGE("%-8s ", "STOP"); 		break;
-							case	FTM_EP_STATE_ERROR: 	MESSAGE("%-8s ", "ERROR"); 		break;
-							default: MESSAGE("%-8s ", "UNKNOWN");
+								MESSAGE("%-8s ", "ENABLE");
+							}
+							else
+							{
+								MESSAGE("%-8s ", "DISABLE");
 							}
 		
 							MESSAGE("%-8lu %-8lu %-16s %08lx\n",
@@ -163,17 +162,17 @@ FTM_RET	FTDM_SHELL_showEPList(void)
 			MESSAGE("%5d %08lx %-16s %-16s %-8s ",
 				i+1,
 				pEPInfo->xEPID,
-				FTDM_CFG_EP_getTypeString(pEPInfo->xType),
+				FTM_EP_typeString(pEPInfo->xType),
 				pEPInfo->pName,
 				pEPInfo->pUnit);
-		
-			switch(pEPInfo->xState)
+
+			if (pEPInfo->bEnable)
 			{
-			case	FTM_EP_STATE_DISABLE: 	MESSAGE("%-8s ", "DISABLE");  	break; 
-			case	FTM_EP_STATE_RUN: 		MESSAGE("%-8s ", "RUN"); 		break; 
-			case	FTM_EP_STATE_STOP: 		MESSAGE("%-8s ", "STOP"); 		break;
-			case	FTM_EP_STATE_ERROR: 	MESSAGE("%-8s ", "ERROR"); 		break;
-			default: MESSAGE("%-8s ", "UNKNOWN");
+				MESSAGE("%-8s ", "ENABLE");
+			}
+			else
+			{
+				MESSAGE("%-8s ", "DISABLE");
 			}
 	
 			MESSAGE("%-8lu %-8lu %-16s %08lx\n",
@@ -200,18 +199,18 @@ FTM_RET	FTDM_SHELL_showEPInfo(FTM_EP_ID xEPID)
 	}
 
 	MESSAGE("%-16s : %08x\n", 	"EPID", pEPInfo->xEPID);
-	MESSAGE("%-16s : %s\n", 	"TYPE", FTDM_CFG_EP_getTypeString(pEPInfo->xType));
+	MESSAGE("%-16s : %s\n", 	"TYPE", FTM_EP_typeString(pEPInfo->xType));
 	MESSAGE("%-16s : %s\n", 	"NAME", pEPInfo->pName);
 	MESSAGE("%-16s : %s\n", 	"UNIT", pEPInfo->pUnit);
 	MESSAGE("%-16s : ", 		"STATE");
 
-	switch(pEPInfo->xState)
+	if (pEPInfo->bEnable)
 	{
-	case	FTM_EP_STATE_DISABLE: 	MESSAGE("%-8s\n", "DISABLE");  	break; 
-	case	FTM_EP_STATE_RUN: 		MESSAGE("%-8s\n", "RUN"); 		break; 
-	case	FTM_EP_STATE_STOP: 		MESSAGE("%-8s\n", "STOP"); 		break;
-	case	FTM_EP_STATE_ERROR: 	MESSAGE("%-8s\n", "ERROR"); 	break;
-	default: MESSAGE("%-8s\n", "UNKNOWN");
+		MESSAGE("%-8s\n", "ENABLE");
+	}
+	else
+	{
+		MESSAGE("%-8s\n", "DISABLE");
 	}
 
 	MESSAGE("%-16s : %lu\n", 	"INTERVAL", pEPInfo->ulInterval);

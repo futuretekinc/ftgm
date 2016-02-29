@@ -3,7 +3,6 @@
 
 #include <semaphore.h>
 #include "ftm.h"
-#include "ftm_list.h"
 #include "ftnm_params.h"
 #include "ftnm_client_config.h"
 
@@ -120,14 +119,14 @@ FTM_RET FTNMC_EP_destroy
 FTM_RET FTNMC_EP_count
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EP_CLASS			xClass,
+	FTM_EP_TYPE			xType,
 	FTM_ULONG_PTR			pnCount
 );
 
 FTM_RET	FTNMC_EP_getList
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EP_CLASS			xClass,
+	FTM_EP_TYPE			xType,
 	FTM_EP_ID_PTR			pEPIDList,
 	FTM_ULONG				ulMaxCount,
 	FTM_ULONG_PTR			pnCount

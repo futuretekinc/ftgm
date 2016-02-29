@@ -12,7 +12,7 @@
 #include "ftnm_server_cmd.h"
 
 
-#define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTNM_SERVICE_CALLBACK)FUN }
+#define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTNM_SERVER_CALLBACK)FUN }
 
 static FTM_VOID_PTR FTNM_SERVER_process(FTM_VOID_PTR pData);
 static FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData);
@@ -159,33 +159,10 @@ static FTNM_SERVER_CMD_SET	pCmdSet[] =
 
 FTM_RET	FTNM_SERVER_init
 (
-	FTM_VOID
+	FTNM_SERVER_PTR	pServer
 )
 {
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SERVER_final
-(
-	FTM_VOID
-)
-{
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SERVER_create
-(
-	FTNM_SERVER_PTR _PTR_	ppServer 
-)
-{
-	ASSERT(ppServer != NULL);
-	FTNM_SERVER_PTR	pServer;
-
-	pServer = (FTNM_SERVER_PTR)FTM_MEM_malloc(sizeof(FTNM_SERVER));
-	if (pServer == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
+	ASSERT(pServer != NULL);
 
 	memset(pServer, 0, sizeof(FTNM_SERVER));
 
@@ -196,14 +173,12 @@ FTM_RET	FTNM_SERVER_create
 
 	FTM_LIST_init(&pServer->xSessionList);
 
-	*ppServer = pServer;
-
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SERVER_destroy
+FTM_RET	FTNM_SERVER_final
 (
-	FTNM_SERVER_PTR 		pServer 
+	FTNM_SERVER_PTR pServer
 )
 {
 	ASSERT(pServer != NULL);
@@ -211,8 +186,6 @@ FTM_RET	FTNM_SERVER_destroy
 	FTNM_SERVER_stop(pServer);
 
 	FTM_LIST_final(&pServer->xSessionList);
-
-	FTM_MEM_free(pServer);
 
 	return	FTM_RET_OK;
 }
@@ -579,7 +552,7 @@ FTM_RET	FTNM_SERVER_EP_count
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_count(pReq->xClass, &pResp->nCount);
+	pResp->nRet = FTNM_EP_count(pReq->xType, &pResp->nCount);
 	TRACE("EP COUNT : %d\n", pResp->nCount);
 	return	pResp->nRet;
 }
@@ -612,7 +585,7 @@ FTM_RET	FTNM_SERVER_EP_getList
 )
 {
 	pResp->xCmd = pReq->xCmd;
-	pResp->nRet = FTNM_EP_getIDList(pReq->xClass, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
+	pResp->nRet = FTNM_EP_getIDList(pReq->xType, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_ID) * pResp->ulCount;
 
 	return	pResp->nRet;
@@ -740,7 +713,7 @@ FTM_RET	FTNM_SERVER_EP_DATA_count
 	return	pResp->nRet;
 }
 
-FTM_RET FTNM_SERVER_loadConfig(FTNM_SERVER_PTR pSERVER, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_SERVER_loadFromFile(FTNM_SERVER_PTR pSERVER, FTM_CHAR_PTR pFileName)
 {
 	ASSERT(pSERVER != NULL);
 	ASSERT(pFileName != NULL);

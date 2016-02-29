@@ -7,7 +7,7 @@
 #include "nxjson.h"
 
 #include "libconfig.h"
-#include "ftm_mem.h"
+#include "ftm.h"
 #include "ftnm.h"
 #include "ftnm_msg.h"
 #include "ftnm_snmptrapd.h"
@@ -31,7 +31,7 @@ static FTM_RET			FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PT
 
 static FTM_LIST	xTrapCallbackList;
 
-FTM_RET	FTNM_SNMPTRAPD_init(FTM_VOID)
+FTM_RET	FTNM_SNMPTRAPD_init(FTNM_SNMPTRAPD_PTR pCTX)
 {
 	FTM_RET	xRet;
 
@@ -43,39 +43,15 @@ FTM_RET	FTNM_SNMPTRAPD_init(FTM_VOID)
 
 	FTM_LIST_setSeeker(&xTrapCallbackList, FTNM_SNMPTRAPD_seekTrapCB);
 
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SNMPTRAPD_final(FTM_VOID)
-{
-	FTM_LIST_final(&xTrapCallbackList);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_SNMPTRAPD_create(FTNM_SNMPTRAPD_PTR _PTR_ ppCTX)
-{
-	ASSERT(ppCTX != NULL);
-	FTNM_SNMPTRAPD_PTR	pCTX;
-
-	pCTX = (FTNM_SNMPTRAPD_PTR)FTM_MEM_malloc(sizeof(FTNM_SNMPTRAPD));
-	if (pCTX == NULL)
-	{
-		ERROR("Not enough memory!\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
-
 	memset(pCTX, 0, sizeof(FTNM_SNMPTRAPD));
 	strcpy(pCTX->xConfig.pName, FTNM_SNMPTRAPD_NAME);
 	pCTX->xConfig.usPort= FTNM_SNMPTRAPD_PORT;
 	pCTX->bRunning		= FTM_FALSE;
 
-	*ppCTX = pCTX;
-
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SNMPTRAPD_destroy(FTNM_SNMPTRAPD_PTR pCTX)
+FTM_RET	FTNM_SNMPTRAPD_final(FTNM_SNMPTRAPD_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
@@ -84,7 +60,7 @@ FTM_RET	FTNM_SNMPTRAPD_destroy(FTNM_SNMPTRAPD_PTR pCTX)
 		FTNM_SNMPTRAPD_stop(pCTX);	
 	}
 
-	FTM_MEM_free(pCTX);
+	FTM_LIST_final(&xTrapCallbackList);
 
 	return	FTM_RET_OK;
 }
@@ -174,7 +150,7 @@ FTM_RET FTNM_SNMPTRAPD_stop(FTNM_SNMPTRAPD_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SNMPTRAPD_loadConfig(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_SNMPTRAPD_loadFromFile(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pFileName)
 {
 	ASSERT(pCTX != NULL);
 	ASSERT(pFileName != NULL);
@@ -250,7 +226,7 @@ FTM_RET FTNM_SNMPTRAPD_showConfig(FTNM_SNMPTRAPD_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SNMPTRAPD_setTrapCB(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SNMPTRAPD_CALLBACK fTrapCB)
+FTM_RET	FTNM_SNMPTRAPD_setCallback(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SNMPTRAPD_CALLBACK fTrapCB)
 {
 	ASSERT(pCTX != NULL);
 	ASSERT(fTrapCB != NULL);

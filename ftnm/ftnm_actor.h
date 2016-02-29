@@ -2,11 +2,7 @@
 #define	_FTNM_ACTOR_H_
 
 #include <pthread.h>
-#include "ftm_types.h"
-#include "ftm_act.h"
-#include "ftm_time.h"
-#include "ftm_timer.h"
-#include "ftm_msg_queue.h"
+#include "ftm.h"
 
 typedef	FTM_ACT_ID	FTNM_ACTOR_ID;
 

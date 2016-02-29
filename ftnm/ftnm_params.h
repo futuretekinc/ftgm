@@ -140,7 +140,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EP_CLASS		xClass;
+	FTM_EP_TYPE		xType;
 }	FTNM_REQ_EP_COUNT_PARAMS, _PTR_ 	FTNM_REQ_EP_COUNT_PARAMS_PTR;
 
 typedef	struct
@@ -157,7 +157,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTNM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EP_CLASS		xClass;
+	FTM_EP_TYPE		xType;
 	FTM_ULONG			ulMaxCount;
 }	FTNM_REQ_EP_GET_LIST_PARAMS, _PTR_ 	FTNM_REQ_EP_GET_LIST_PARAMS_PTR;
 

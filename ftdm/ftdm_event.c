@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include <string.h>
-#include "ftm_error.h"
 #include "ftm_config.h"
 #include "ftm_mem.h"
 #include "ftm_msg_queue.h"
@@ -63,25 +62,25 @@ FTM_RET	FTDM_EVENT_loadFromFile
 						FTM_EVENT		xEvent;
 						FTM_EVENT_PTR	pEvent;
 
-						xRet = FTM_CONFIG_ITEM_getInt(&xEventItem, "id", (FTM_INT_PTR)&xEvent.xID);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xEventItem, "id", (FTM_INT_PTR)&xEvent.xID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 						
-						xRet = FTM_CONFIG_ITEM_getInt(&xEventItem, "epid", (FTM_INT_PTR)&xEvent.xEPID);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xEventItem, "epid", (FTM_INT_PTR)&xEvent.xEPID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 
-						xRet = FTM_CONFIG_ITEM_getInt(&xEventItem, "type", (FTM_INT_PTR)&xEvent.xType);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xEventItem, "type", (FTM_INT_PTR)&xEvent.xType);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 
-						xRet = FTM_CONFIG_ITEM_getInt(&xEventItem, "act", (FTM_INT_PTR)&xEvent.xActID);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xEventItem, "act", (FTM_INT_PTR)&xEvent.xActID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
@@ -91,27 +90,27 @@ FTM_RET	FTDM_EVENT_loadFromFile
 						{
 						case	FTM_EVENT_TYPE_ABOVE:
 							{
-								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "value", &xEvent.xParams.xAbove.xValue);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "value", &xEvent.xParams.xAbove.xValue);
 							}
 							break;
 
 						case	FTM_EVENT_TYPE_BELOW:
 							{
-								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "value", &xEvent.xParams.xBelow.xValue);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "value", &xEvent.xParams.xBelow.xValue);
 							}
 							break;
 
 						case	FTM_EVENT_TYPE_INCLUDE:
 							{
-								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "upper", &xEvent.xParams.xInclude.xUpper);
-								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "lower", &xEvent.xParams.xInclude.xLower);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "upper", &xEvent.xParams.xInclude.xUpper);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "lower", &xEvent.xParams.xInclude.xLower);
 							}
 							break;
 
 						case	FTM_EVENT_TYPE_EXCEPT:
 							{
-								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "upper", &xEvent.xParams.xExcept.xUpper);
-								xRet = FTM_CONFIG_ITEM_getData(&xEventItem, "lower", &xEvent.xParams.xExcept.xLower);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "upper", &xEvent.xParams.xExcept.xUpper);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "lower", &xEvent.xParams.xExcept.xLower);
 							}
 							break;
 

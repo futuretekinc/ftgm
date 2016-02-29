@@ -20,7 +20,27 @@ typedef	unsigned long	FTM_NODE_TYPE, _PTR_ FTM_NODE_TYPE_PTR;
 #define	FTM_NODE_TYPE_MODBUS_OVER_TCP		0x00000102
 #define	FTM_NODE_TYPE_MODBUS_OVER_SERIAL	0x00000202
 
+typedef	struct
+{
+	FTM_ULONG	ulVersion;
+	FTM_CHAR	pURL[FTM_URL_LEN + 1];
+	FTM_CHAR	pCommunity[FTM_SNMP_COMMUNITY_LEN + 1];
+	FTM_CHAR	pMIB[FTM_SNMP_MIB_LEN + 1];
+	FTM_ULONG	ulMaxRetryCount;
+}	FTM_NODE_OPT_SNMP, _PTR_ FTM_NODE_OPT_SNMP_PTR;
 
+typedef struct
+{
+	FTM_ULONG	ulVersion;
+	FTM_CHAR	pURL[FTM_URL_LEN + 1];
+	FTM_CHAR	pTopic[FTM_MQTT_TOPIC_LEN + 1];
+} 	FTM_NODE_OPT_MQTT, _PTR_ FTM_NODE_OPT_MQTT_PTR;
+
+typedef struct
+{
+	FTM_ULONG	ulVersion;	
+	FTM_CHAR	pDevice[FTM_DEVICE_NAME_LEN + 1];
+} 	FTM_NODE_OPT_LORA, _PTR_ FTM_NODE_OPT_LORA_PTR;
 typedef	struct 
 {
 	FTM_CHAR			pDID[FTM_DID_LEN + 1];
@@ -30,29 +50,22 @@ typedef	struct
 	FTM_ULONG			ulTimeout;
 	union 
 	{
-		struct
-		{
-			FTM_ULONG	ulVersion;
-			FTM_CHAR	pURL[FTM_URL_LEN + 1];
-			FTM_CHAR	pCommunity[FTM_SNMP_COMMUNITY_LEN + 1];
-			FTM_CHAR	pMIB[FTM_SNMP_MIB_LEN + 1];
-			FTM_ULONG	ulMaxRetryCount;
-		} xSNMP;
+		FTM_NODE_OPT_SNMP	xSNMP;
+		FTM_NODE_OPT_MQTT	xMQTT;
+		FTM_NODE_OPT_LORA	xLoRa;
 
-		struct
-		{
-			FTM_ULONG	ulVersion;
-			FTM_CHAR	pURL[FTM_URL_LEN + 1];
-			FTM_CHAR	pTopic[FTM_MQTT_TOPIC_LEN + 1];
-		} xMQTT;
-
-		struct
-		{
-			FTM_ULONG	ulVersion;	
-			FTM_CHAR	pDevice[FTM_DEVICE_NAME_LEN + 1];
-		} xLoRa;
 	}					xOption;
 }	FTM_NODE, _PTR_ FTM_NODE_PTR;
 
+FTM_RET	FTM_NODE_init(FTM_VOID);
+FTM_RET	FTM_NODE_final(FTM_VOID);
+FTM_RET	FTM_NODE_createCopy(FTM_NODE_PTR pSrc, FTM_NODE_PTR _PTR_ ppNode);
+FTM_RET	FTM_NODE_destroy(FTM_NODE_PTR pNode);
+
+FTM_RET	FTM_NODE_count(FTM_ULONG_PTR pulCount);
+FTM_RET	FTM_NODE_get(FTM_CHAR_PTR pDID, FTM_NODE_PTR _PTR_ ppNode);
+FTM_RET	FTM_NODE_getAt(FTM_ULONG ulIndex, FTM_NODE_PTR _PTR_ ppNode);
+
+FTM_CHAR_PTR	FTM_NODE_typeString(FTM_NODE_TYPE xType);
 #endif
 

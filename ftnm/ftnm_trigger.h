@@ -2,11 +2,7 @@
 #define	_FTNM_TRIGGER_H_
 
 #include <pthread.h>
-#include "ftm_types.h"
-#include "ftm_event.h"
-#include "ftm_time.h"
-#include "ftm_timer.h"
-#include "ftm_msg_queue.h"
+#include "ftm.h"
 
 typedef	FTM_EVENT_ID	FTNM_TRIG_ID;
 

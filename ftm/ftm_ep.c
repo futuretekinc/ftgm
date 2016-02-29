@@ -11,8 +11,141 @@ typedef struct
 	FTM_CHAR_PTR	pTypeString;
 } FTM_EP_TYPE_STRING, _PTR_ FTM_EP_TYPE_STRING_PTR;
 
+FTM_BOOL	FTM_EP_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator);
 FTM_BOOL	_FTM_EPTypeSeeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 FTM_BOOL	_FTM_EPOIDInfoSeeker(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2);
+
+static FTM_LIST_PTR	pEPList = NULL;
+
+FTM_RET	FTM_EP_init(FTM_VOID)
+{
+	if (pEPList != NULL)
+	{
+		ERROR("EP list is already initialized.\n");
+		return	FTM_RET_ALREADY_INITIALIZED;	
+	}
+
+	pEPList = (FTM_LIST_PTR)FTM_MEM_malloc(sizeof(FTM_LIST));
+	if (pEPList == NULL)
+	{
+		ERROR("EP list is not allocated.\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	FTM_LIST_init(pEPList);
+	FTM_LIST_setSeeker(pEPList, FTM_EP_seeker);
+
+	TRACE("EP list is initialized.\n");
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_final(FTM_VOID)
+{
+	FTM_EP_PTR	pEP;
+
+	if (pEPList == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+ 	FTM_LIST_iteratorStart(pEPList);
+  	while(FTM_LIST_iteratorNext(pEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
+   	{   
+    	FTM_EP_destroy(pEP);
+	}
+
+	FTM_LIST_final(pEPList);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_createCopy(FTM_EP_PTR pSrc, FTM_EP_PTR _PTR_ ppEP)
+{
+	ASSERT(pSrc != NULL);
+
+	FTM_RET		xRet;
+	FTM_EP_PTR	pEP;
+
+	if (pEPList == NULL)
+	{
+		ERROR("EP list is not initialized.\n");
+		FTM_EP_init();
+	}
+
+	pEP = (FTM_EP_PTR)FTM_MEM_malloc(sizeof(FTM_EP));
+	if (pEP == NULL)
+	{
+		ERROR("Can't not allocation EP.\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	memcpy(pEP, pSrc, sizeof(FTM_EP));
+
+	xRet = FTM_LIST_append(pEPList, pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEP);
+		return	xRet;
+	}
+
+	if (ppEP != NULL)
+	{
+		*ppEP = pEP;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_destroy(FTM_EP_PTR pEP)
+{
+	ASSERT(pEPList != NULL);
+	ASSERT(pEP != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTM_LIST_remove(pEPList, pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_MEM_free(pEP);	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount)
+{
+	ASSERT(pEPList != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTM_LIST_count(pEPList, pulCount);
+}
+
+FTM_RET	FTM_EP_get(FTM_EP_ID xEPID, FTM_EP_PTR _PTR_ ppEP)
+{
+	ASSERT(pEPList != NULL);
+	ASSERT(ppEP != NULL);
+
+	return	FTM_LIST_get(pEPList, (FTM_VOID_PTR)&xEPID, (FTM_VOID_PTR _PTR_)ppEP);
+}
+
+FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppEP)
+{
+	ASSERT(pEPList != NULL);
+	ASSERT(ppEP != NULL);
+
+	return	FTM_LIST_getAt(pEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
+}
+
+FTM_BOOL		FTM_EP_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator)
+{
+	ASSERT(pItem != NULL);
+	ASSERT(pIndicator != NULL);
+
+	FTM_EP_PTR		pEP = (FTM_EP_PTR)pItem;
+	FTM_EP_ID_PTR	pEPID = (FTM_EP_ID_PTR)pIndicator;
+
+	return	(pEP->xEPID == *pEPID);
+}
 
 static FTM_LIST_PTR _pEPTypeList = NULL;
 
@@ -406,4 +539,26 @@ FTM_RET	FTM_EP_DATA_snprint(FTM_CHAR_PTR pBuff, FTM_ULONG ulMaxLen, FTM_EP_DATA_
 	}
 
 	return	FTM_RET_OK;
+}
+
+FTM_CHAR_PTR	FTM_EP_typeString(FTM_EP_TYPE xType)
+{
+	switch(xType)
+	{
+	case	FTM_EP_TYPE_TEMPERATURE:return	"TEMPERATURE";	
+	case	FTM_EP_TYPE_HUMIDITY:	return	"HUMIDITY";	
+	case	FTM_EP_TYPE_VOLTAGE:	return	"VOLTAGE";	
+	case	FTM_EP_TYPE_CURRENT:	return	"CURRENT";	
+	case	FTM_EP_TYPE_DI:			return	"DIGITAL INPUT";	
+	case	FTM_EP_TYPE_DO:			return	"DIGITAL OUTPUT";	
+	case	FTM_EP_TYPE_GAS:		return	"GAS";	
+	case	FTM_EP_TYPE_POWER:		return	"POWER";	
+	case	FTM_EP_TYPE_AI:			return	"ANALOG INPUT";	
+	case	FTM_EP_TYPE_MULTI:		return	"MULTI-FUNCTION";	
+	}
+
+	static FTM_CHAR	pBuff[16];
+	sprintf(pBuff, "%08lx", xType);
+
+	return	pBuff;
 }

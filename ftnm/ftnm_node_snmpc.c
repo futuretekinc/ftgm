@@ -72,7 +72,7 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 		for(i = 0 ; i < ulEPCount ; i++)
 		{
 			FTNM_EP_PTR				pEP;
-			FTM_EP_CLASS_INFO_PTR	pEPClassInfo;
+			FTM_EP_CLASS_PTR	pEPClassInfo;
 			FTM_CHAR				pOIDName[1024];
 
 			if (FTNM_NODE_getEPAt((FTNM_NODE_PTR)pNode, i, (FTNM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
@@ -81,7 +81,7 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 				continue;
 			}
 
-			if (FTNM_EP_CLASS_INFO_get((pEP->xInfo.xEPID & FTM_EP_CLASS_MASK), &pEPClassInfo) != FTM_RET_OK)
+			if (FTNM_EP_CLASS_get((pEP->xInfo.xEPID & FTM_EP_TYPE_MASK), &pEPClassInfo) != FTM_RET_OK)
 			{
 				TRACE("EP CLASS[%08lx] information not found\n", pEP->xInfo.xEPID);
 				continue;
@@ -89,7 +89,7 @@ FTM_RET	FTNM_NODE_SNMPC_init(FTNM_NODE_SNMPC_PTR pNode)
 
 			snprintf(pOIDName, sizeof(pOIDName) - 1, "%s::%s", 
 				pNode->xCommon.xInfo.xOption.xSNMP.pMIB, 
-				pEPClassInfo->xOIDs.pValue);
+				pEPClassInfo->pValue);
 			pEP->xOption.xSNMP.nOIDLen = MAX_OID_LEN;
 			if (read_objid(pOIDName, pEP->xOption.xSNMP.pOID, &pEP->xOption.xSNMP.nOIDLen) == 0)
 			{

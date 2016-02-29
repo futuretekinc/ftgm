@@ -1,9 +1,5 @@
 #include <string.h>
-#include "ftm_types.h"
-#include "ftm_error.h"
-#include "ftm_debug.h"
-#include "ftm_msg_queue.h"
-#include "ftm_mem.h"
+#include "ftm.h"
 #include "ftnm_ep.h"
 #include "ftnm_msg.h"
 

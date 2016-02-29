@@ -3,8 +3,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include "ftm_types.h"
-#include "ftm_debug.h"
-#include "ftm_error.h"
+#include "ftm_trace.h"
 #include "ftm_queue.h"
 #include "ftm_mem.h"
 #include "ftm_msg_queue.h"

@@ -1,7 +1,7 @@
 #ifndef	__FTDM_CLIENT_H__
 #define	__FTDM_CLIENT_H__
 
-#include "ftdm_type.h"
+#include "ftdm_types.h"
 #include "ftdm_cmd.h"
 #include "ftdm_params.h"
 #include "ftdm_client_config.h"
@@ -20,6 +20,7 @@ FTM_RET	FTDMC_init
 
 FTM_RET FTDMC_final
 (
+	FTM_VOID
 );
 
 FTM_RET FTDMC_connect
@@ -61,21 +62,21 @@ FTM_RET FTDMC_NODE_count
 FTM_RET FTDMC_NODE_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_ULONG				nIndex,
-	FTM_NODE_PTR		pInfo
+	FTM_ULONG				ulIndex,
+	FTM_NODE_PTR			pNode
 );
 
 FTM_RET FTDMC_NODE_get
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_CHAR_PTR			pDID,
-	FTM_NODE_PTR		pInfo
+	FTM_NODE_PTR			pNode
 );
 
 FTM_RET FTDMC_EP_append
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_PTR			pInfo
+	FTM_EP_PTR				pEP
 );
 
 FTM_RET FTDMC_EP_remove
@@ -87,7 +88,7 @@ FTM_RET FTDMC_EP_remove
 FTM_RET FTDMC_EP_count
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_CLASS			xClass,
+	FTM_EP_TYPE				xType,
 	FTM_ULONG_PTR			pnCount
 );
 
@@ -95,48 +96,48 @@ FTM_RET FTDMC_EP_get
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EP_ID				xEPID,
-	FTM_EP_PTR			pEPInfo
+	FTM_EP_PTR				pEP
 );
 
 FTM_RET FTDMC_EP_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_ULONG				nIndex,
-	FTM_EP_PTR			pEPInfo
+	FTM_ULONG				ulIndex,
+	FTM_EP_PTR				pEP
 );
 
-FTM_RET	FTDMC_EP_CLASS_INFO_count
+FTM_RET	FTDMC_EP_CLASS_count
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pnCount
 );
 
-FTM_RET	FTDMC_EP_CLASS_INFO_get
+FTM_RET	FTDMC_EP_CLASS_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_CLASS			xClass,
-	FTM_EP_CLASS_INFO_PTR	pEPClassInfo
+	FTM_EP_TYPE				xType,
+	FTM_EP_CLASS_PTR		pEPClass
 );
 
-FTM_RET	FTDMC_EP_CLASS_INFO_getAt
+FTM_RET	FTDMC_EP_CLASS_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_ULONG				nIndex,
-	FTM_EP_CLASS_INFO_PTR	pInfo
+	FTM_ULONG				ulIndex,
+	FTM_EP_CLASS_PTR		pEPClass
 );
 
 FTM_RET FTDMC_EP_DATA_append
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EP_ID				xEPID,
-	FTM_EP_DATA_PTR			pEPData
+	FTM_EP_DATA_PTR			pData
 );
 
 FTM_RET FTDMC_EP_DATA_remove
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_EP_ID				xEPID,
-	FTM_ULONG				nIndex,
+	FTM_ULONG				ulIndex,
 	FTM_ULONG				nCount
 );
 
@@ -146,7 +147,7 @@ FTM_RET FTDMC_EP_DATA_get
 	FTM_EP_ID				xEPID,
 	FTM_ULONG				nStartIndex,
 	FTM_EP_DATA_PTR			pData,
-	FTM_ULONG				nMaxCount,
+	FTM_ULONG				ulMaxCount,
 	FTM_ULONG_PTR			pnCount
 );
 
@@ -166,7 +167,7 @@ FTM_RET FTDMC_EP_DATA_getWithTime
 	FTM_ULONG				ulBeginTime,
 	FTM_ULONG				ulEndTime,
 	FTM_EP_DATA_PTR			pData,
-	FTM_ULONG				nMaxCount,
+	FTM_ULONG				ulMaxCount,
 	FTM_ULONG_PTR			pnCount
 );
 

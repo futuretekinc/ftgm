@@ -70,12 +70,17 @@ FTM_RET	FTNM_SHELL_CMD_list
 	FTNM_NODE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTNM_NODE_getAt(i, &pNode);
-		MESSAGE("%-16s %-16s %-8d %-8d ", pNode->xInfo.pDID, FTNM_NODE_stateToStr(pNode->xState), pNode->xInfo.ulInterval, pNode->xInfo.ulTimeout);
+		FTM_ULONG	ulEPCount;
 
-		FTNM_NODE_getEPCount(pNode, &ulCount);
+		FTNM_NODE_getAt(i, &pNode);
+		MESSAGE("%-16s ", pNode->xInfo.pDID);
+		MESSAGE("%-16s ", FTNM_NODE_stateToStr(pNode->xState));
+		MESSAGE("%-8d ", pNode->xInfo.ulInterval);
+		MESSAGE("%-8d ", pNode->xInfo.ulTimeout);
+
+		FTNM_NODE_getEPCount(pNode, &ulEPCount);
 		MESSAGE("%-3d [ ", ulCount);
-		for(j = 0; j < ulCount ; j++)
+		for(j = 0; j < ulEPCount ; j++)
 		{
 			if (FTNM_NODE_getEPAt(pNode, j, &pEP) == FTM_RET_OK)
 			{

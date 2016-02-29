@@ -1,11 +1,9 @@
 #ifndef	__FTNM_NODE_H__
 #define	__FTNM_NODE_H__
 
-#include "ftm_types.h"
-#include "ftm_object.h"
-#include "ftm_list.h"
-#include "ftnm_ep.h"
 #include <pthread.h>
+#include "ftm.h"
+#include "ftnm_ep.h"
 
 typedef	FTM_ULONG		FTNM_NODE_STATE;
 

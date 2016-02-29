@@ -1,9 +1,7 @@
 #ifndef	_FTDM_EVENT_H_
 #define	_FTDM_EVENT_H_
 
-#include "ftm_types.h"
-#include "ftm_list.h"
-#include "ftm_event.h"
+#include "ftm.h"
 
 FTM_RET	FTDM_EVENT_init(FTM_VOID);
 FTM_RET FTDM_EVENT_final(FTM_VOID);

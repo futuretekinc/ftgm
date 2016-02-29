@@ -1,8 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ftm_types.h"
-#include "ftm_error.h"
-#include "ftm_debug.h"
+#include "ftm_trace.h"
 #include "ftm_list.h"
 #include "ftm_mem.h"
 

@@ -1,8 +1,8 @@
 #ifndef	__FTNM_CFG_CLIENT_H__
 #define	__FTNM_CFG_CLIENT_H__
 
-#include "ftm_types.h"
 #include <time.h>
+#include "ftm.h"
 
 #define	FTNMC_SERVER_IP_LEN	32
 

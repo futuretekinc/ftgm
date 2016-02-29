@@ -1,9 +1,6 @@
 #include <unistd.h>
 #include <string.h>
-#include "ftm_error.h"
-#include "ftm_config.h"
-#include "ftm_mem.h"
-#include "ftm_msg_queue.h"
+#include "ftm.h"
 #include "ftdm_config.h"
 #include "ftdm_act.h"
 
@@ -64,19 +61,19 @@ FTM_RET	FTDM_ACT_loadFromFile
 						FTM_EP_ID		xTargetID;
 						FTM_ACT_TYPE	xType;
 
-						xRet = FTM_CONFIG_ITEM_getInt(&xActItem, "id", (FTM_INT_PTR)&xID);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xActItem, "id", (FTM_INT_PTR)&xID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 						
-						xRet = FTM_CONFIG_ITEM_getInt(&xActItem, "target", (FTM_INT_PTR)&xTargetID);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xActItem, "target", (FTM_INT_PTR)&xTargetID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 
-						xRet = FTM_CONFIG_ITEM_getInt(&xActItem, "type", (FTM_INT_PTR)&xType);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xActItem, "type", (FTM_INT_PTR)&xType);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;

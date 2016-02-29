@@ -5,12 +5,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <errno.h>
-#include "ftm_error.h"
-#include "ftm_debug.h"
-#include "ftm_mem.h"
+#include "ftm.h"
 #include "ftnm_client.h"
 #include "ftnm_params.h"
-#include "ftm_msg_queue.h"
 
 static FTM_RET FTNMC_request
 (
@@ -568,7 +565,7 @@ FTM_RET FTNMC_EP_destroy
 FTM_RET FTNMC_EP_count
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EP_CLASS			xClass,
+	FTM_EP_TYPE			xType,
 	FTM_ULONG_PTR			pnCount
 )
 {
@@ -588,7 +585,7 @@ FTM_RET FTNMC_EP_count
 	}
 
 	xReq.xCmd	=	FTNM_CMD_EP_COUNT;
-	xReq.xClass	=	xClass;
+	xReq.xType	=	xType;
 	xReq.ulLen	=	sizeof(xReq);
 
 	nRet = FTNMC_request(
@@ -614,7 +611,7 @@ FTM_RET FTNMC_EP_count
 FTM_RET	FTNMC_EP_getList
 (
 	FTNMC_SESSION_PTR		pSession,
-	FTM_EP_CLASS			xClass,
+	FTM_EP_TYPE			xType,
 	FTM_EP_ID_PTR			pEPIDList,
 	FTM_ULONG				ulMaxCount,
 	FTM_ULONG_PTR			pnCount
@@ -640,7 +637,7 @@ FTM_RET	FTNMC_EP_getList
 
 	xReq.xCmd		=	FTNM_CMD_EP_GET_LIST;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xClass		=	xClass;
+	xReq.xType		=	xType;
 	xReq.ulMaxCount	=	ulMaxCount;
 
 	nRet = FTNMC_request(

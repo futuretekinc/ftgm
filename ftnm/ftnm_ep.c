@@ -1,8 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#include "ftm.h"
 #include "ftnm.h"
-#include "ftm_list.h"
-#include "ftm_timer.h"
 #include "ftnm_ep.h"
 #include "ftnm_dmc.h"
 
@@ -82,24 +81,24 @@ FTM_RET	FTNM_EP_create(FTM_EP_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
 
 	memset(pEP, 0, sizeof(FTNM_EP));
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
-	switch(pInfo->xEPID & FTM_EP_CLASS_MASK)
+	switch(pInfo->xEPID & FTM_EP_TYPE_MASK)
 	{
-	case	FTM_EP_CLASS_TEMPERATURE:
-	case	FTM_EP_CLASS_HUMIDITY:
-	case	FTM_EP_CLASS_VOLTAGE:
-	case	FTM_EP_CLASS_CURRENT:
-	case	FTM_EP_CLASS_GAS:
-	case	FTM_EP_CLASS_POWER:
-	case	FTM_EP_CLASS_AI:
-	case	FTM_EP_CLASS_COUNT:
-	case	FTM_EP_CLASS_MULTI:
+	case	FTM_EP_TYPE_TEMPERATURE:
+	case	FTM_EP_TYPE_HUMIDITY:
+	case	FTM_EP_TYPE_VOLTAGE:
+	case	FTM_EP_TYPE_CURRENT:
+	case	FTM_EP_TYPE_GAS:
+	case	FTM_EP_TYPE_POWER:
+	case	FTM_EP_TYPE_AI:
+	case	FTM_EP_TYPE_COUNT:
+	case	FTM_EP_TYPE_MULTI:
 		{
 			xRet = FTM_EP_DATA_createFloat(0, FTM_EP_DATA_STATE_INVALID, 0, &pData);
 		}
 		break;
 
-	case	FTM_EP_CLASS_DI:
-	case	FTM_EP_CLASS_DO:
+	case	FTM_EP_TYPE_DI:
+	case	FTM_EP_TYPE_DO:
 		{	
 			xRet = FTM_EP_DATA_createInt(0, FTM_EP_DATA_STATE_INVALID, 0, &pData);
 		}
@@ -167,14 +166,14 @@ FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)
 
 FTM_RET	FTNM_EP_count
 (
-	FTM_EP_CLASS 	xClass, 
+	FTM_EP_TYPE 	xType, 
 	FTM_ULONG_PTR 	pulCount
 )
 {
 	ASSERT(pEPList != NULL);
 	ASSERT(pulCount != NULL);
 
-	if ((xClass == 0XFFFFFFFF) || (xClass == 0))
+	if ((xType == 0XFFFFFFFF) || (xType == 0))
 {
 		return	FTM_LIST_count(pEPList, pulCount);
 	}
@@ -188,7 +187,7 @@ FTM_RET	FTNM_EP_count
 			FTNM_EP_PTR	pEP;
 
 			FTM_LIST_getAt(pEPList, i,	(FTM_VOID_PTR _PTR_)&pEP);
-			if (xClass == (pEP->xInfo.xEPID & FTM_EP_CLASS_MASK))
+			if (xType == (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK))
 			{
 				ulCount++;
 			}
@@ -203,7 +202,7 @@ FTM_RET	FTNM_EP_count
 
 FTM_RET FTNM_EP_getIDList
 (
-	FTM_EP_CLASS 	xClass, 
+	FTM_EP_TYPE 	xType, 
 	FTM_EP_ID_PTR 	pEPIDList, 
 	FTM_ULONG 		ulMaxCount, 
 	FTM_ULONG_PTR 	pulCount
@@ -221,7 +220,7 @@ FTM_RET FTNM_EP_getIDList
 		FTNM_EP_PTR	pEP;
 
 		FTM_LIST_getAt(pEPList, i,	(FTM_VOID_PTR _PTR_)&pEP);
-		if ((xClass == 0) || (xClass == (pEP->xInfo.xEPID & FTM_EP_CLASS_MASK)))
+		if ((xType == 0) || (xType == (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK)))
 		{
 			pEPIDList[ulCount++] = pEP->xInfo.xEPID;
 		}

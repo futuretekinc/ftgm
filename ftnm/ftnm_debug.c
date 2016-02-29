@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <time.h>
+#include "ftm.h"
 #include "ftnm.h"
-#include "ftm_debug.h"
 
 void printToTerm(char *szmsg);
 void printToFile(char *szMsg);

@@ -12,7 +12,6 @@
 #include "ftdm_client.h"
 #include "ftdm_client_cmds.h"
 #include "ftdm_client_config.h"
-#include "ftm_debug.h"
 
 FTDMC_SESSION	_xSession;
 FTDMC_CFG		xClientConfig;

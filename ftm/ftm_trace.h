@@ -1,5 +1,5 @@
-#ifndef	__FTM_PRINT_H__
-#define	__FTM_PRINT_H__
+#ifndef	__FTM_TRACE_H__
+#define	__FTM_TRACE_H__
 
 #include <stdio.h>
 #include "ftm_types.h"

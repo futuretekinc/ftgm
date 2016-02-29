@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include "ftm_value.h"
-#include "ftm_error.h"
-#include "ftm_debug.h"
+#include "ftm_trace.h"
 #include "ftm_mem.h"
 
 FTM_RET	FTM_VALUE_create(FTM_VALUE_PTR _PTR_ ppValue, FTM_VALUE_TYPE xType)

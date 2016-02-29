@@ -3,9 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
+#include "ftm.h"
 #include "ftnm.h"
-#include "ftm_mem.h"
-#include "ftm_debug.h"
 #include "ftnm_shell_cmds.h"
 
 extern char *program_invocation_short_name;

@@ -2,7 +2,7 @@
 #define	_FTNM_SNMP_H_
 
 #include <net-snmp/library/oid.h>
-#include "ftm_types.h"
+#include "ftm.h"
 
 #define	FTNM_SNMP_OID_LENGTH	32
 

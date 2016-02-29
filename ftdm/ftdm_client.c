@@ -425,7 +425,7 @@ FTM_RET	FTDMC_EP_remove
 FTM_RET	FTDMC_EP_count
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_CLASS			xClass,
+	FTM_EP_TYPE			xType,
 	FTM_ULONG_PTR			pnCount
 )
 {
@@ -444,7 +444,7 @@ FTM_RET	FTDMC_EP_count
 	}
 
 	xReq.xCmd	=	FTDM_CMD_EP_COUNT;
-	xReq.xClass	=	xClass;
+	xReq.xType	=	xType;
 	xReq.nLen	=	sizeof(xReq);
 
 	nRet = FTDMC_request(
@@ -562,15 +562,15 @@ FTM_RET	FTDMC_EP_getAt
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_EP_CLASS_INFO_count
+FTM_RET	FTDMC_EP_CLASS_count
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pnCount
 )
 {
 	FTM_RET						nRet;
-	FTDM_REQ_EP_CLASS_INFO_COUNT_PARAMS	xReq;
-	FTDM_RESP_EP_CLASS_INFO_COUNT_PARAMS	xResp;
+	FTDM_REQ_EP_CLASS_COUNT_PARAMS	xReq;
+	FTDM_RESP_EP_CLASS_COUNT_PARAMS	xResp;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -582,7 +582,7 @@ FTM_RET	FTDMC_EP_CLASS_INFO_count
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
-	xReq.xCmd	=	FTDM_CMD_EP_CLASS_INFO_COUNT;
+	xReq.xCmd	=	FTDM_CMD_EP_CLASS_COUNT;
 	xReq.nLen	=	sizeof(xReq);
 
 	nRet = FTDMC_request(
@@ -607,16 +607,16 @@ FTM_RET	FTDMC_EP_CLASS_INFO_count
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_EP_CLASS_INFO_get
+FTM_RET	FTDMC_EP_CLASS_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_CLASS			xEPClass,
-	FTM_EP_CLASS_INFO_PTR	pInfo
+	FTM_EP_TYPE			xEPClass,
+	FTM_EP_CLASS_PTR	pInfo
 )
 {
 	FTM_RET						nRet;
-	FTDM_REQ_EP_CLASS_INFO_GET_PARAMS		xReq;
-	FTDM_RESP_EP_CLASS_INFO_GET_PARAMS	xResp;
+	FTDM_REQ_EP_CLASS_GET_PARAMS		xReq;
+	FTDM_RESP_EP_CLASS_GET_PARAMS	xResp;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -628,7 +628,7 @@ FTM_RET	FTDMC_EP_CLASS_INFO_get
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
-	xReq.xCmd		=	FTDM_CMD_EP_CLASS_INFO_GET;
+	xReq.xCmd		=	FTDM_CMD_EP_CLASS_GET;
 	xReq.nLen		=	sizeof(xReq);
 	xReq.xEPClass	=	xEPClass;
 
@@ -645,7 +645,7 @@ FTM_RET	FTDMC_EP_CLASS_INFO_get
 
 	if (xResp.nRet == FTM_RET_OK)
 	{
-		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_CLASS_INFO));
+		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_CLASS));
 	}
 	return	xResp.nRet;
 }
@@ -653,16 +653,16 @@ FTM_RET	FTDMC_EP_CLASS_INFO_get
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_EP_CLASS_INFO_getAt
+FTM_RET	FTDMC_EP_CLASS_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				nIndex,
-	FTM_EP_CLASS_INFO_PTR		pInfo
+	FTM_EP_CLASS_PTR		pInfo
 )
 {
 	FTM_RET								nRet;
-	FTDM_REQ_EP_CLASS_INFO_GET_AT_PARAMS	xReq;
-	FTDM_RESP_EP_CLASS_INFO_GET_AT_PARAMS	xResp;
+	FTDM_REQ_EP_CLASS_GET_AT_PARAMS	xReq;
+	FTDM_RESP_EP_CLASS_GET_AT_PARAMS	xResp;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -674,7 +674,7 @@ FTM_RET	FTDMC_EP_CLASS_INFO_getAt
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
-	xReq.xCmd	=	FTDM_CMD_EP_CLASS_INFO_GET_AT;
+	xReq.xCmd	=	FTDM_CMD_EP_CLASS_GET_AT;
 	xReq.nLen	=	sizeof(xReq);
 	xReq.nIndex	=	nIndex;
 
@@ -691,7 +691,7 @@ FTM_RET	FTDMC_EP_CLASS_INFO_getAt
 
 	if (xResp.nRet == FTM_RET_OK)
 	{
-		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_CLASS_INFO));
+		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_CLASS));
 	}
 	
 	return	xResp.nRet;
@@ -832,7 +832,6 @@ FTM_RET	FTDMC_EP_DATA_get
 	{
 		FTM_INT	i;
 
-		TRACE("pResp->nCount = %d\n", pResp->nCount);
 		for( i = 0 ; i < pResp->nCount && i < nMaxCount ; i++)
 		{
 			memcpy(&pData[i], &pResp->pData[i], sizeof(FTM_EP_DATA));
@@ -902,7 +901,6 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 	{
 		FTM_INT	i;
 
-		TRACE("pResp->nCount = %d\n", pResp->nCount);
 		for( i = 0 ; i < pResp->nCount && i < nMaxCount ; i++)
 		{
 			memcpy(&pData[i], &pResp->pData[i], sizeof(FTM_EP_DATA));

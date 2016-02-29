@@ -8,11 +8,10 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h>
 #include "libconfig.h"
-#include "ftm_shell.h"
+#include "ftm.h"
 #include "ftdm_client.h"
 #include "ftdm_client_cmds.h"
 #include "ftdm_client_config.h"
-#include "ftm_debug.h"
 
 static FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
@@ -368,7 +367,7 @@ FTM_RET	FTDMC_NODE_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			{
 				MESSAGE("%-16s %-16s %-16s %8d ", 
 					xInfo.pDID, 
-					FTM_nodeTypeString(xInfo.xType), 
+					FTM_NODE_typeString(xInfo.xType), 
 					xInfo.pLocation,
 					xInfo.ulInterval);
 

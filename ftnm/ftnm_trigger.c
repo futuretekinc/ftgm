@@ -1,11 +1,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <string.h>
-#include "ftm_error.h"
-#include "ftm_debug.h"
-#include "ftm_mem.h"
-#include "ftm_timer.h"
-#include "ftm_act.h"
+#include "ftm.h"
 #include "ftnm_ep.h"
 #include "ftnm_trigger.h"
 #include "ftnm_actor.h"

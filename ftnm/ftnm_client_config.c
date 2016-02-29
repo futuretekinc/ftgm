@@ -1,10 +1,8 @@
 #define	_XOPEN_SOURCE
 #include <string.h>
 #include "libconfig.h"
+#include "ftm.h"
 #include "ftnm_client_config.h"
-#include "ftm_object.h"
-#include "ftm_debug.h"
-#include "ftm_error.h"
 
 FTM_RET	FTNMC_initConfig(FTNM_CFG_CLIENT_PTR pConfig)
 {

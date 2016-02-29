@@ -1,11 +1,7 @@
 #ifndef	__FTNM_H__
 #define	__FTNM_H__
 
-#include "ftm_types.h"
-#include "ftm_debug.h"
-#include "ftm_error.h"
-#include "ftm_mem.h"
-#include "ftm_value.h"
+#include "ftm.h"
 #include "ftnm_types.h"
 #include "ftnm_dmc.h"
 #include "ftnm_server.h"
@@ -42,9 +38,6 @@ typedef	struct
 	pthread_t		xPThread;
 
 	FTDMC_SESSION			xDMCSession;
-	FTNM_SERVER_PTR			pServer;
-	FTNM_SNMPC_PTR			pSNMPC;
-	FTNM_SNMPTRAPD_PTR		pSNMPTrapd;
 	FTNM_TRIG_MANAGER_PTR	pTriggerD;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 

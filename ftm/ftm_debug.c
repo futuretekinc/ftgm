@@ -8,8 +8,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "ftm_types.h"
-#include "ftm_debug.h"
-#include "ftm_error.h"
+#include "ftm_trace.h"
 #include "libconfig.h"
 
 FTM_RET	FTM_PRINT_printToTerm(FTM_CHAR_PTR szmsg);

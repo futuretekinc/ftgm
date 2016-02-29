@@ -1,9 +1,7 @@
 #ifndef	_FTDM_ACT_H_
 #define	_FTDM_ACT_H_
 
-#include "ftm_types.h"
-#include "ftm_list.h"
-#include "ftm_act.h"
+#include "ftm.h"
 
 FTM_RET	FTDM_ACT_init(FTM_VOID);
 FTM_RET FTDM_ACT_final(FTM_VOID);

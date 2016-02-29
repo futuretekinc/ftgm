@@ -1,7 +1,7 @@
 #ifndef	_FTNM_PLUGIN_SERVER_H_
 #define	_FTNM_PLUGIN_SERVER_H_
 
-#include "ftm_types.h"
+#include "ftm.h"
 
 FTM_RET	(*FTNM_PLUGIN_INIT)(FTM_VOID_PTR pData);
 FTM_RET	(*FTNM_PLUGIN_FINAL)(FTM_VOID_PTR pData);

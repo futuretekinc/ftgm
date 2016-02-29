@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include "ftm_timer.h"
-#include "ftm_error.h"
-#include "ftm_debug.h"
+#include "ftm_trace.h"
 
 FTM_RET	FTM_TIMER_init(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
 {

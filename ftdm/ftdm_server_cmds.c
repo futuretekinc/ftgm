@@ -72,6 +72,8 @@ FTM_RET	FTDMS_SHELL_CMD_config
 	if (nArgc == 1)
 	{
 		FTDM_CFG_show(&xConfig);
+		FTDM_NODE_showList();
+		FTDM_EP_showList();
 		FTDM_EVENT_showList();
 		FTDM_ACT_showList();
 		return	FTM_RET_OK;

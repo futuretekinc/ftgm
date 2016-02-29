@@ -6,12 +6,17 @@
 
 FTM_RET	FTDM_DBIF_init
 (
-	FTDM_CFG_DB_PTR	pConfig
+	FTM_VOID
 );
 
 FTM_RET	FTDM_DBIF_final
 (
 	void
+);
+
+FTM_RET	FTDM_DBIF_loadConfig
+(
+	FTDM_CFG_DB_PTR	pConfig
 );
 
 FTM_RET	FTDM_DBIF_NODE_initTable

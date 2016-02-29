@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ftm_shell.h"
-#include "ftm_error.h"
-#include "ftm_debug.h"
+#include "ftm_trace.h"
 #include "ftm_list.h"
 
 static FTM_RET	FTM_SHELL_parseLine

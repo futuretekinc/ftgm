@@ -1,0 +1,51 @@
+#ifndef	__FTM_EP_CLASS_H__
+#define	__FTM_EP_CLASS_H__
+
+FTM_RET	FTDM_EP_CLASS_init
+(
+	FTM_VOID
+);
+
+FTM_RET FTDM_EP_CLASS_final
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_EP_CLASS_loadConfig
+(
+	FTDM_CFG_EP_PTR	pConfig
+);
+
+FTM_RET	FTDM_EP_CLASS_loadFromDB
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_EP_CLASS_add
+(
+	FTM_EP_CLASS_PTR	pInfo
+);
+
+FTM_RET	FTDM_EP_CLASS_del
+(
+	FTM_EP_TYPE			xType
+);
+
+FTM_RET	FTDM_EP_CLASS_count
+(
+	FTM_ULONG_PTR		pulCount
+);
+
+FTM_RET	FTDM_EP_CLASS_get
+(
+	FTM_EP_TYPE			xType,
+	FTM_EP_CLASS_PTR	pInfo
+);
+
+FTM_RET	FTDM_EP_CLASS_getAt
+(
+	FTM_ULONG			nIndex,
+	FTM_EP_CLASS_PTR	pInfo
+);
+
+#endif

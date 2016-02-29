@@ -1,26 +1,28 @@
 #ifndef	__FTDM_H__
 #define	__FTDM_H__
 
-#include "ftm_types.h"
-#include "ftm_debug.h"
-#include "ftm_object.h"
-#include "ftdm_type.h"
+#include "ftm.h"
+#include "ftdm_types.h"
 #include "ftdm_cmd.h"
 #include "ftdm_config.h"
-#include "ftdm_node_info.h"
-#include "ftdm_ep_info.h"
+#include "ftdm_node.h"
+#include "ftdm_ep.h"
 #include "ftdm_ep_data.h"
-#include "ftdm_ep_class_info.h"
+#include "ftdm_ep_class.h"
 
 FTM_RET	FTDM_init
 (
-	FTDM_CFG_PTR pConfig
+	FTM_VOID
 );
 
 FTM_RET	FTDM_final
 (
-	void
+	FTM_VOID
 );
 
+FTM_RET FTDM_loadConfig
+(
+	FTDM_CFG_PTR pConfig
+);
 #endif
 

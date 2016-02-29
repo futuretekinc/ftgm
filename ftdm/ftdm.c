@@ -4,13 +4,12 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "libconfig.h"
+#include "ftm.h"
 #include "ftdm.h"
-#include "ftm_debug.h"
-#include "ftm_shell.h"
 #include "ftdm_config.h"
-#include "ftdm_ep_info.h"
-#include "ftdm_ep_class_info.h"
-#include "ftdm_node_info.h"
+#include "ftdm_ep.h"
+#include "ftdm_ep_class.h"
+#include "ftdm_node.h"
 #include "ftdm_params.h"
 #include "ftdm_server_cmds.h"
 #include "ftdm_server.h"
@@ -18,54 +17,35 @@
 #include "ftdm_event.h"
 #include "ftdm_act.h"
 
-
-FTM_RET 	FTDM_init(FTDM_CFG_PTR pConfig)
+FTM_RET 	FTDM_init(FTM_VOID)
 {
 	FTM_RET	xRet;
 
-	xRet = FTDM_DBIF_init(&pConfig->xDB);
+#if 0
+	xRet = FTDM_EP_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("FTDM initialization failed. [ %08lx ]\n", xRet);
-		return	xRet;
+		ERROR("EP management initialization failed.\n");	
 	}
-
-	xRet = FTDM_NODE_init(&pConfig->xNode);
+#endif	
+	xRet = FTDM_EP_CLASS_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("FTDM_initNodeInfo failed\n");	
+		ERROR("EP type management initialization failed.\n");	
 	}
-
-	xRet = FTDM_EP_init(&pConfig->xEP);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("FTDM_initEPInfo failed\n");	
-	}
-	
-	xRet = FTDM_EP_CLASS_INFO_init(&pConfig->xEP);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("FTDM_initEPClassInfo failed\n");	
-	}
-
-	FTM_PRINT_configSet(&pConfig->xPrint);
-
-
-	TRACE("FTDM initialization completed successfully.\n");
-
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_final(void)
+FTM_RET	FTDM_final(FTM_VOID)
 {
 	FTM_RET	xRet;
 
-	xRet = FTDM_EP_CLASS_INFO_final();
+	xRet = FTDM_EP_CLASS_final();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("FTDM_finalNodeInfo failed\n");	
 	}
-
+#if 0
 	xRet = FTDM_EP_final();
 	if (xRet != FTM_RET_OK)
 	{
@@ -77,7 +57,7 @@ FTM_RET	FTDM_final(void)
 	{
 		ERROR("FTDM_finalNodeInfo failed\n");	
 	}
-
+#endif
 
 	xRet = FTDM_DBIF_final();
 	if (xRet != FTM_RET_OK)
@@ -92,6 +72,36 @@ FTM_RET	FTDM_final(void)
 	return	FTM_RET_OK;
 }
 
+FTM_RET 	FTDM_loadConfig(FTDM_CFG_PTR pConfig)
+{
+	FTM_RET	xRet;
+
+	xRet = FTDM_DBIF_loadConfig(&pConfig->xDB);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("FTDM initialization failed. [ %08lx ]\n", xRet);
+		return	xRet;
+	}
+/*
+	xRet = FTDM_EP_loadConfig(&pConfig->xEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("FTDM_initEPInfo failed\n");	
+	}
+*/	
+	xRet = FTDM_EP_CLASS_loadConfig(&pConfig->xEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("FTDM_initEPClassInfo failed\n");	
+	}
+
+	FTM_PRINT_configSet(&pConfig->xPrint);
+
+
+	TRACE("FTDM initialization completed successfully.\n");
+
+	return	FTM_RET_OK;
+}
 
 static FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName);
 
@@ -160,7 +170,29 @@ int main(int nArgc, char *pArgv[])
 
 	/* load configuration  */
 	FTDM_CFG_init(&xConfig);
-	FTDM_CFG_load(&xConfig, pConfigFileName);
+	FTDM_CFG_readFromFile(&xConfig, pConfigFileName);
+
+	xRet = FTDM_NODE_init();
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTDM_NODE_loadFromFile(pConfigFileName);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Node configuration load failed.\n");
+			return	0;
+		}
+	}
+
+	xRet = FTDM_EP_init();
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTDM_EP_loadFromFile(pConfigFileName);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Node configuration load failed.\n");
+			return	0;
+		}
+	}
 
 	xRet = FTDM_EVENT_init();
 	if (xRet == FTM_RET_OK)
@@ -191,7 +223,8 @@ int main(int nArgc, char *pArgv[])
 
 	/* apply configuration */
 		
-	FTDM_init(&xConfig);
+	FTDM_init();
+	FTDM_loadConfig(&xConfig);
 
 	if (bDaemon)
 	{ 

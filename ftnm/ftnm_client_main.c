@@ -9,12 +9,9 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h>
 #include "libconfig.h"
-#include "ftm_types.h"
-#include "ftm_error.h"
-#include "ftm_mem.h"
+#include "ftm.h"
 #include "ftnm_client.h"
 #include "ftnm_client_config.h"
-#include "ftm_debug.h"
 
 #define		FTNMC_MAX_LINE	2048
 #define		FTNMC_MAX_ARGS	16
@@ -517,7 +514,7 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			{
 				MESSAGE("%-16s %-16s %-16s %8d ", 
 					xInfo.pDID, 
-					FTM_nodeTypeString(xInfo.xType), 
+					FTM_NODE_typeString(xInfo.xType), 
 					xInfo.pLocation,
 					xInfo.ulInterval);
 
@@ -732,7 +729,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		}
 		else if (nArgc == 3)
 		{
-			FTM_EP_CLASS	xEPClass;
+			FTM_EP_TYPE	xEPClass;
 			FTM_EP_ID		pEPID[100];
 
 			xEPClass = strtoul(pArgv[2], 0, 16);

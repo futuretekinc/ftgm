@@ -1,9 +1,8 @@
 #ifndef	__FTDMC_CFG_H__
 #define	__FTDMC_CFG_H__
 
-#include "ftm_types.h"
-#include "ftm_list.h"
 #include <time.h>
+#include "ftm.h"
 
 #define	FTDMC_SERVER_IP_LEN	32
 

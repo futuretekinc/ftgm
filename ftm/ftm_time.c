@@ -1,6 +1,5 @@
 #include "ftm_time.h"
-#include "ftm_error.h"
-#include "ftm_debug.h"
+#include "ftm_trace.h"
 
 FTM_RET	FTM_TIME_getCurrentTime(FTM_TIME_PTR pTime)
 {

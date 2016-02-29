@@ -39,6 +39,14 @@ static sqlite3		*_pSQLiteDB= 0;
 
 FTM_RET	FTDM_DBIF_init
 (
+	FTM_VOID
+)
+{
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_loadConfig
+(
 	FTDM_CFG_DB_PTR	pConfig
 )
 {
@@ -531,13 +539,13 @@ FTM_RET	FTDM_DBIF_EP_append
 
 	sprintf(pSQL, 
 			"INSERT INTO ep_info (EPID,DID,DEPID,TYPE,NAME,STATE,INTERVAL,TIMEOUT,UNIT,PID,PEPID) "\
-			"VALUES (%lu, \"%s\", %lu, %lu, \"%s\", %lu, %lu, %lu, \"%s\", \"%s\", %lu)",
+			"VALUES (%lu, \"%s\", %lu, %lu, \"%s\", %d, %lu, %lu, \"%s\", \"%s\", %lu)",
 			pEPInfo->xEPID, 
 			pEPInfo->pDID, 
 			pEPInfo->xDEPID, 
 			pEPInfo->xType, 
 			pEPInfo->pName, 
-			pEPInfo->xState,
+			pEPInfo->bEnable,
 			pEPInfo->ulInterval, 
 			pEPInfo->ulTimeout, 
 			pEPInfo->pUnit, 
@@ -654,7 +662,7 @@ static int _FTDM_DBIF_EP_getListCB(void *pData, int nArgc, char **pArgv, char **
 			}
 			else if (strcmp(pColName[i], "STATE") == 0)
 			{
-				pParams->pInfos[pParams->nCount-1].xState = atoi(pArgv[i]);
+				pParams->pInfos[pParams->nCount-1].bEnable = atoi(pArgv[i]);
 			}
 			else if (strcmp(pColName[i], "INTERVAL") == 0)
 			{
@@ -744,7 +752,7 @@ static int _FTDM_DBIF_EP_getCB(void *pData, int nArgc, char **pArgv, char **pCol
 		}
 		else if (strcmp(pColName[0], "STATE") == 0)
 		{
-			pInfo->xState = atoi(pArgv[0]);
+			pInfo->bEnable = atoi(pArgv[0]);
 		}
 		else if (strcmp(pColName[0], "DID") == 0)
 		{
