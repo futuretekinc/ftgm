@@ -27,7 +27,7 @@ FTM_RET	FTNM_MSG_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_MSG_pushSNMPTRAP(FTM_CHAR_PTR pTrapMsg)
+FTM_RET	FTNM_MSG_sendSNMPTrap(FTM_CHAR_PTR pTrapMsg)
 {
 	ASSERT(pMsgQ != NULL);
 	ASSERT(pTrapMsg != NULL);
@@ -43,7 +43,7 @@ FTM_RET	FTNM_MSG_pushSNMPTRAP(FTM_CHAR_PTR pTrapMsg)
 	memset(pMsg, 0, sizeof(FTNM_MSG));
 
 	pMsg->xType = FTNM_MSG_TYPE_SNMPTRAP;
-	strncpy(pMsg->xParams.xSNMPTRAP.pString, pTrapMsg, sizeof(pMsg->xParams.xSNMPTRAP.pString) - 1);
+	strncpy(pMsg->xParams.xSNMPTrap.pString, pTrapMsg, sizeof(pMsg->xParams.xSNMPTrap.pString) - 1);
 
 	xRet = FTM_MSGQ_push(pMsgQ, pMsg);
 	if (xRet != FTM_RET_OK)
@@ -54,7 +54,7 @@ FTM_RET	FTNM_MSG_pushSNMPTRAP(FTM_CHAR_PTR pTrapMsg)
 	return	xRet;
 }
 
-FTM_RET FTNM_MSG_EP_changed(FTM_EPID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET FTNM_MSG_sendEPChanged(FTM_EPID xEPID, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pData != NULL);
 	FTM_RET			xRet;

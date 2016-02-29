@@ -4,10 +4,19 @@
 #include <pthread.h>
 #include "ftm_types.h"
 #include "ftnm_snmp.h"
+#include <net-snmp/net-snmp-config.h>
+#include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/agent/net-snmp-agent-includes.h>
 
 #define	FTNM_SNMPTRAPD_NAME_LENGTH	128
 #define	FTNM_SNMPTRAPD_NAME			"ftnm:snmptrapd"
 #define	FTNM_SNMPTRAPD_PORT			162
+
+typedef	enum
+{
+	FTNM_SNMPTRAPD_MSG_TYPE_UNKNOWN = 0,
+	FTNM_SNMPTRAPD_MSG_TYPE_EP_CHANGED,
+} FTNM_SNMPTRAPD_MSG_TYPE, _PTR_ FTNM_SNMPTRAPD_MSG_TYPE_PTR;
 
 typedef	FTM_RET (*FTNM_SNMPTRAPD_CALLBACK)(FTM_CHAR_PTR pTrapMsg);
 
@@ -23,6 +32,7 @@ typedef	struct
 	FTNM_SNMPTRAPD_CALLBACK	fTrapCB;
 	FTM_BOOL				bRunning;
 	pthread_t				xPThread;
+	netsnmp_transport 		*pTransport;
 }	FTNM_SNMPTRAPD, _PTR_ FTNM_SNMPTRAPD_PTR;
 
 FTM_RET	FTNM_SNMPTRAPD_init(FTM_VOID);

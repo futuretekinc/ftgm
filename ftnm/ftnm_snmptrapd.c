@@ -4,6 +4,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/output_api.h>
+#include "nxjson.h"
 
 #include "libconfig.h"
 #include "ftm_mem.h"
@@ -21,11 +22,13 @@ typedef	struct
 	FTNM_SNMPTRAPD_CALLBACK		fCallback;
 } FTNM_CALLBACK, _PTR_ FTNM_CALLBACK_PTR;
 
-static FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
+static FTM_VOID_PTR		FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
+static netsnmp_session* FTNM_SNMPTRAPD_addSession(FTNM_SNMPTRAPD_PTR pCTX);
+static FTM_RET			FTNM_SNMPTRAPD_closeSessions(FTNM_SNMPTRAPD_PTR pCTX, netsnmp_session * pSessionList);
+static FTM_BOOL			FTNM_SNMPTRAPD_seekTrapCB(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+static FTM_RET			FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg);
 //static FTM_RET		FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) ;
-static FTM_BOOL		FTNM_SNMPTRAPD_seekTrapCB(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
-static FTM_BOOL	bInit = 0;
 static FTM_LIST	xTrapCallbackList;
 
 FTM_RET	FTNM_SNMPTRAPD_init(FTM_VOID)
@@ -39,8 +42,6 @@ FTM_RET	FTNM_SNMPTRAPD_init(FTM_VOID)
 	}
 
 	FTM_LIST_setSeeker(&xTrapCallbackList, FTNM_SNMPTRAPD_seekTrapCB);
-
-	bInit = FTM_TRUE;
 
 	return	FTM_RET_OK;
 }
@@ -362,6 +363,8 @@ FTNM_SNMPTRAPD_inputCB
 	FTM_VOID_PTR 	pMagic
 )
 {
+	FTNM_SNMPTRAPD_PTR	pCTX = (FTNM_SNMPTRAPD_PTR)pMagic;
+
     oid trapOid[MAX_OID_LEN+2] = {0};
     int trapOidLen;
 
@@ -427,7 +430,7 @@ FTNM_SNMPTRAPD_inputCB
 		
 								memcpy(pBuff, vars->val.string, vars->val_len);
 								pBuff[vars->val_len] = 0;
-								FTNM_MSG_pushSNMPTRAP(pBuff);
+								FTNM_SNMPTRAPD_receiveTrap(pCTX, pBuff);
 							}
 						}	
 					}
@@ -499,8 +502,10 @@ FTNM_SNMPTRAPD_inputCB
 }
 
 static 
-netsnmp_session * FTNM_SNMPTRAPD_addSession(netsnmp_transport *pTransport)
+netsnmp_session * FTNM_SNMPTRAPD_addSession(FTNM_SNMPTRAPD_PTR pCTX)
 {
+	ASSERT(pCTX != NULL);
+
 	netsnmp_session xSession, *pRet = NULL;
 
 	snmp_sess_init(&xSession);
@@ -510,11 +515,11 @@ netsnmp_session * FTNM_SNMPTRAPD_addSession(netsnmp_transport *pTransport)
 	xSession.retries 		= SNMP_DEFAULT_RETRIES;
 	xSession.timeout 		= SNMP_DEFAULT_TIMEOUT;
 	xSession.callback 		= FTNM_SNMPTRAPD_inputCB;
-	xSession.callback_magic = (void *) pTransport;
+	xSession.callback_magic = (void *)pCTX;
 	xSession.authenticator 	= NULL;
 	xSession.isAuthoritative= SNMP_SESS_UNKNOWNAUTH;
 
-	pRet = snmp_add(&xSession, pTransport, FTNM_SNMPTRAPD_preParse, NULL);
+	pRet = snmp_add(&xSession, pCTX->pTransport, FTNM_SNMPTRAPD_preParse, NULL);
 	if (pRet == NULL) 
 	{
 		FTM_CHAR_PTR	pErrMsg = NULL;
@@ -526,7 +531,7 @@ netsnmp_session * FTNM_SNMPTRAPD_addSession(netsnmp_transport *pTransport)
 }
 
 static 
-FTM_RET	FTNM_SNMPTRAPD_closeSessions(netsnmp_session * pSessionList)
+FTM_RET	FTNM_SNMPTRAPD_closeSessions(FTNM_SNMPTRAPD_PTR pCTX, netsnmp_session * pSessionList)
 {
 	netsnmp_session *pSession = NULL;
 	netsnmp_session *pNextSession = NULL;
@@ -541,13 +546,13 @@ FTM_RET	FTNM_SNMPTRAPD_closeSessions(netsnmp_session * pSessionList)
 }
 
 static void
-FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pTrapd)
+FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pCTX)
 {
 	int             count, numfds, block;
 	fd_set          readfds,writefds,exceptfds;
 	struct timeval  timeout, *tvp;
 
-	while (pTrapd->bRunning) 
+	while (pCTX->bRunning) 
 	{
 #if 0
 		if (reconfig) {
@@ -614,14 +619,14 @@ FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pTrapd)
 						continue;
 					}
 					ERROR("select - %s\n", strerror(errno));
-					pTrapd->bRunning = FTM_FALSE;
+					pCTX->bRunning = FTM_FALSE;
 				}
 				break;
 
 			default:
 				{
 					ERROR("select returned %d\n", count);
-					pTrapd->bRunning = FTM_FALSE;
+					pCTX->bRunning = FTM_FALSE;
 				}
 			}
 		}
@@ -633,36 +638,36 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
 
-	FTNM_SNMPTRAPD_PTR	pTrapd = (FTNM_SNMPTRAPD_PTR)pData;
+	FTNM_SNMPTRAPD_PTR	pCTX = (FTNM_SNMPTRAPD_PTR)pData;
 
     netsnmp_session		*pSessionList = NULL;
     netsnmp_session		*pSession = NULL;
-	netsnmp_transport 	*pTransport = NULL;
 	FTM_CHAR			pPort[16];
 
-	sprintf(pPort, "%d", pTrapd->xConfig.usPort);
-	pTransport = netsnmp_transport_open_server(pTrapd->xConfig.pName, pPort); 
-	if (pTransport == NULL) 
+	sprintf(pPort, "%d", pCTX->xConfig.usPort);
+	pCTX->pTransport = netsnmp_transport_open_server(pCTX->xConfig.pName, pPort); 
+	if (pCTX->pTransport == NULL) 
 	{
 		ERROR("Couldn't open %d -- errno %d(\"%s\")\n", 
-				pTrapd->xConfig.usPort,
+				pCTX->xConfig.usPort,
 				errno, strerror(errno));
-		FTNM_SNMPTRAPD_closeSessions(pSessionList);
+		FTNM_SNMPTRAPD_closeSessions(pCTX, pSessionList);
 		SOCK_CLEANUP;
 
 		return	0;
 	} 
 	else 
 	{
-		pSession  = FTNM_SNMPTRAPD_addSession(pTransport);
+		pSession  = FTNM_SNMPTRAPD_addSession(pCTX);
 		if (pSession == NULL) 
 		{
 			/*   
 			 * Shouldn't happen?  We have already opened the transport
 			 * successfully so what could have gone wrong?  
 			 */
-			FTNM_SNMPTRAPD_closeSessions(pSessionList);
-			netsnmp_transport_free(pTransport);
+			FTNM_SNMPTRAPD_closeSessions(pCTX, pSessionList);
+			netsnmp_transport_free(pCTX->pTransport);
+			pCTX->pTransport = NULL;
 			ERROR("couldn't open snmp - %s", strerror(errno));
 			SOCK_CLEANUP;
 
@@ -675,12 +680,189 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 		}    
 	}    
 
-	FTNM_SNMPTRAPD_mainLoop(pTrapd);
+	FTNM_SNMPTRAPD_mainLoop(pCTX);
 
 	return  FTM_RET_OK;
 
 }
 
+FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pMsg != NULL);
+	
+	FTM_RET					xRet;
+	FTM_EPID				xEPID = 0;
+	FTNM_EP_PTR				pEP = NULL;
+	FTM_EP_DATA				xData;
+	FTNM_SNMPTRAPD_MSG_TYPE	xMsgType = FTNM_SNMPTRAPD_MSG_TYPE_UNKNOWN;	
+	const nx_json 	*pRoot, *pItem;
+
+	pRoot = nx_json_parse_utf8(pMsg);
+	if (pRoot == NULL)
+	{
+		ERROR("Invalid trap message[%s]\n", pMsg);
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	pItem = nx_json_get(pRoot, "type");
+	if (pItem == NULL)
+	{
+		xMsgType = FTNM_SNMPTRAPD_MSG_TYPE_EP_CHANGED;	
+	}
+	else
+	{
+		if (strcasecmp(pItem->text_value, "ep_changed") == 0)
+		{
+			xMsgType = FTNM_SNMPTRAPD_MSG_TYPE_EP_CHANGED;	
+		
+		}
+	}
+
+	switch(xMsgType)
+	{
+	case	FTNM_SNMPTRAPD_MSG_TYPE_EP_CHANGED:
+		{
+			pItem = nx_json_get(pRoot, "id");
+			if (pItem != NULL)
+			{
+				xEPID = strtoul(pItem->text_value, 0, 16);
+		
+				xRet = FTNM_EP_get(xEPID, &pEP);
+				if (xRet == FTM_RET_OK)
+				{
+					FTNM_EP_getData(pEP, &xData);
+		
+					pItem = nx_json_get(pRoot, "value");
+					if (pItem != NULL)
+					{
+						switch(pItem->type)
+						{
+						case	NX_JSON_STRING:
+							{
+								switch(xData.xType)
+								{
+								case	FTM_EP_DATA_TYPE_INT:
+									{
+										xData.xValue.nValue = strtol(pItem->text_value, NULL, 10);
+									}
+									break;
+		
+								case	FTM_EP_DATA_TYPE_ULONG:
+									{
+										xData.xValue.ulValue = strtoul(pItem->text_value, NULL, 10);
+									}
+									break;
+		
+								case	FTM_EP_DATA_TYPE_FLOAT:
+									{
+										xData.xValue.fValue = atof(pItem->text_value);
+									}
+									break;
+								}
+		
+							}
+							break;
+		
+						case 	NX_JSON_INTEGER:
+						case	NX_JSON_BOOL:
+							{
+								xData.xValue.nValue = pItem->int_value;
+							}
+							break;
+		
+						case	NX_JSON_DOUBLE:
+							{
+								switch(xData.xType)
+								{
+								case	FTM_EP_DATA_TYPE_INT:
+									{
+										xData.xValue.nValue = (FTM_INT)pItem->dbl_value;
+									}
+									break;
+		
+								case	FTM_EP_DATA_TYPE_ULONG:
+									{
+										xData.xValue.ulValue = (FTM_ULONG)pItem->dbl_value;
+									}
+									break;
+		
+								case	FTM_EP_DATA_TYPE_FLOAT:
+									{
+										xData.xValue.fValue = pItem->dbl_value;
+									}
+									break;
+								}
+							}
+							break;
+		
+						default:
+							{
+								ERROR("Invalid value type[%d].\n", pItem->type);
+							}
+							break;
+						}
+		
+						pItem = nx_json_get(pRoot, "time");
+						if (pItem != NULL)
+						{
+							xData.ulTime = (FTM_ULONG)pItem->int_value;
+						}
+		
+						pItem = nx_json_get(pRoot, "state");
+						if (pItem != NULL)
+						{
+							if (pItem->type == NX_JSON_STRING)
+							{
+								if (strcasecmp(pItem->text_value, "enable") == 0)
+								{
+									xData.xState = FTM_EP_STATE_RUN;
+								}
+								else if (strcasecmp(pItem->text_value, "disable") == 0)
+								{
+									xData.xState = FTM_EP_STATE_STOP;
+								}
+								else if (strcasecmp(pItem->text_value, "error") == 0)
+								{
+									xData.xState = FTM_EP_STATE_ERROR;
+								}
+							}
+						}
+
+						xRet = FTNM_MSG_sendEPChanged(xEPID, &xData);
+					}
+					else
+					{
+							
+						xRet = FTM_RET_INVALID_DATA;
+						ERROR("TRAP : Value is not exist.\n");
+					}
+				}
+				else
+				{
+					xRet = FTM_RET_OBJECT_NOT_FOUND;
+					ERROR("Can't found EP[%08x]\n", xEPID);	
+				}
+			}
+			else
+			{
+				xRet = FTM_RET_INVALID_DATA;
+				ERROR("TRAP : ID is not exist.\n");
+			}
+		}
+		break;
+
+	default:
+		{
+			xRet = FTM_RET_INVALID_DATA;
+		}
+	}
+
+	nx_json_free(pRoot);
+
+	return	xRet;
+
+}
 
 #if 0
 FTM_RET	FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) 

@@ -74,6 +74,7 @@ typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
 #define	FTM_EP_DATA_TYPE_INT	0
 #define	FTM_EP_DATA_TYPE_ULONG	1
 #define	FTM_EP_DATA_TYPE_FLOAT	2
+#define	FTM_EP_DATA_TYPE_BOOL	3
 
 typedef	enum
 {
@@ -91,6 +92,7 @@ typedef	struct
 		FTM_INT		nValue;
 		FTM_ULONG	ulValue;
 		FTM_DOUBLE	fValue;
+		FTM_BOOL	bValue;
 	}	xValue;
 }	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
 

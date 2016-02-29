@@ -469,7 +469,7 @@ FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 		return	xRet;	
 	}
 	
-	FTNM_MSG_EP_changed(pEP->xInfo.xEPID, pData);
+	FTNM_MSG_sendEPChanged(pEP->xInfo.xEPID, pData);
 
 	return	FTM_RET_OK;
 }

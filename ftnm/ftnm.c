@@ -21,7 +21,7 @@ FTM_RET			FTNM_taskSync(FTNM_CONTEXT_PTR pCTX);
 FTM_RET			FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX);
 FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX);
 
-static	FTM_RET	FTNM_SNMPTRAPCB(FTM_CHAR_PTR pTrapMsg);
+static	FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg);
 
 FTNM_CONTEXT	xCTX;
 
@@ -33,7 +33,6 @@ FTM_RET	FTNM_init(void)
 	FTNM_MSG_init();
 
 	FTNM_DMC_init();
-
 	
 	FTNM_SERVER_init();
 	FTNM_SERVER_create(&xCTX.pServer);
@@ -43,7 +42,7 @@ FTM_RET	FTNM_init(void)
 
 	FTNM_SNMPTRAPD_init();
 	FTNM_SNMPTRAPD_create(&xCTX.pSNMPTrapd);
-	FTNM_SNMPTRAPD_setTrapCB(xCTX.pSNMPTrapd, FTNM_SNMPTRAPCB);
+	FTNM_SNMPTRAPD_setTrapCB(xCTX.pSNMPTrapd, FTNM_SNMPTrapCB);
 
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
@@ -329,13 +328,13 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 					FTNM_EP_PTR		pEP = NULL;
 					FTM_EP_DATA		xData;
 
-					TRACE("TRAP : %s\n", pMsg->xParams.xSNMPTRAP.pString);
+					TRACE("TRAP : %s\n", pMsg->xParams.xSNMPTrap.pString);
 					const nx_json *pRoot, *pItem;
 
-					pRoot = nx_json_parse_utf8(pMsg->xParams.xSNMPTRAP.pString);
+					pRoot = nx_json_parse_utf8(pMsg->xParams.xSNMPTrap.pString);
 					if (pRoot == NULL)
 					{
-						ERROR("Invalid trap message[%s]\n", pMsg->xParams.xSNMPTRAP.pString);
+						ERROR("Invalid trap message[%s]\n", pMsg->xParams.xSNMPTrap.pString);
 						break;	
 					}
 
@@ -497,9 +496,8 @@ FTM_RET	FTNM_getEPDataCount(FTM_EPID xEPID, FTM_ULONG_PTR pulCount)
 	return	FTNM_DMC_EP_DATA_count(&xCTX.xDMCSession, xEPID, pulCount);
 }
 
-FTM_RET	FTNM_SNMPTRAPCB(FTM_CHAR_PTR pTrapMsg)
+FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg)
 {
-	return	FTNM_MSG_pushSNMPTRAP(pTrapMsg);
+	return	FTNM_MSG_sendSNMPTrap(pTrapMsg);
 }
-
 
