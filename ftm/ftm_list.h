@@ -44,6 +44,8 @@ FTM_RET	FTM_LIST_remove(FTM_LIST_PTR pList, FTM_VOID_PTR pItem);
 FTM_RET	FTM_LIST_removeAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition);
 
 FTM_RET	FTM_LIST_get(FTM_LIST_PTR pList, FTM_VOID_PTR pKey, FTM_VOID_PTR _PTR_ ppElement);
+FTM_RET	FTM_LIST_getFirst(FTM_LIST_PTR pList, FTM_VOID_PTR _PTR_ ppElement);
+FTM_RET	FTM_LIST_getLast(FTM_LIST_PTR pList, FTM_VOID_PTR _PTR_ ppElement);
 FTM_RET	FTM_LIST_getAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition, FTM_VOID_PTR _PTR_ ppElement);
 
 FTM_RET	FTM_LIST_iteratorStart(FTM_LIST_PTR pList);

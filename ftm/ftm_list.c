@@ -255,6 +255,36 @@ FTM_RET	FTM_LIST_get(FTM_LIST_PTR pList, FTM_VOID_PTR pKey, FTM_VOID_PTR _PTR_ p
 	return	xRet;
 }
 
+FTM_RET	FTM_LIST_getFirst(FTM_LIST_PTR pList, FTM_VOID_PTR _PTR_ ppElement)
+{
+	ASSERT(pList != NULL);
+	ASSERT(ppElement != NULL);
+
+	if (pList->ulCount == 0)
+	{
+		return	FTM_RET_LIST_EMPTY;	
+	}
+
+	*ppElement = pList->xHead.pNext->pData;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_LIST_getLast(FTM_LIST_PTR pList, FTM_VOID_PTR _PTR_ ppElement)
+{
+	ASSERT(pList != NULL);
+	ASSERT(ppElement != NULL);
+
+	if (pList->ulCount == 0)
+	{
+		return	FTM_RET_LIST_EMPTY;	
+	}
+
+	*ppElement = pList->xHead.pPrev->pData;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_LIST_getAt(FTM_LIST_PTR pList, FTM_ULONG ulPosition, FTM_VOID_PTR _PTR_ ppElement)
 {
 	ASSERT(pList != NULL);

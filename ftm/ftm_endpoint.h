@@ -96,6 +96,14 @@ typedef	struct
 	}	xValue;
 }	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
 
+FTM_RET	FTM_EP_DATA_createCopy(FTM_EP_DATA_PTR pSrcData, FTM_EP_DATA_PTR _PTR_ ppData);
+FTM_RET	FTM_EP_DATA_createInt(FTM_INT nValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
+FTM_RET	FTM_EP_DATA_createUlong(FTM_ULONG ulValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
+FTM_RET	FTM_EP_DATA_createFloat(FTM_DOUBLE fValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
+FTM_RET	FTM_EP_DATA_createBool(FTM_BOOL bValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
+
+FTM_RET	FTM_EP_DATA_destroy(FTM_EP_DATA_PTR pData);
+
 FTM_RET	FTM_EP_DATA_compare(FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_INT_PTR pResult);
 
 FTM_CHAR_PTR FTM_nodeTypeString(FTM_NODE_TYPE nType);

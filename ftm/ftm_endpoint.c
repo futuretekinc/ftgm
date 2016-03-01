@@ -107,6 +107,124 @@ int	_FTM_EPTypeSeeker(const void *pElement, const void *pKey)
 	return	0;
 }
 
+
+FTM_RET	FTM_EP_DATA_createCopy(FTM_EP_DATA_PTR pSrcData, FTM_EP_DATA_PTR _PTR_ ppData)
+{
+	ASSERT(pSrcData != NULL);
+	ASSERT(ppData != NULL);
+
+	FTM_EP_DATA_PTR	pData;
+
+	pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA));
+	if (pData == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	memcpy(pData, pSrcData, sizeof(FTM_EP_DATA));
+
+	*ppData = pData;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_DATA_createInt(FTM_INT nValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData)
+{
+	ASSERT(ppData != NULL);
+
+	FTM_EP_DATA_PTR	pData;
+
+	pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA));
+	if (pData == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pData->xType = FTM_EP_DATA_TYPE_INT;
+	pData->xState = xState;
+	pData->ulTime = ulTime;
+	pData->xValue.nValue = nValue;
+
+	*ppData = pData;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_DATA_createUlong(FTM_ULONG ulValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData)
+{
+	ASSERT(ppData != NULL);
+	
+	FTM_EP_DATA_PTR	pData;
+
+	pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA));
+	if (pData == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pData->xType = FTM_EP_DATA_TYPE_ULONG;
+	pData->xState = xState;
+	pData->ulTime = ulTime;
+	pData->xValue.ulValue = ulValue;
+
+	*ppData = pData;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_DATA_createFloat(FTM_DOUBLE fValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData)
+{
+	ASSERT(ppData != NULL);
+
+	FTM_EP_DATA_PTR	pData;
+
+	pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA));
+	if (pData == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pData->xType = FTM_EP_DATA_TYPE_FLOAT;
+	pData->xState = xState;
+	pData->ulTime = ulTime;
+	pData->xValue.fValue = fValue;
+
+	*ppData = pData;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_DATA_createBool(FTM_BOOL bValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData)
+{
+	ASSERT(ppData != NULL);
+
+	FTM_EP_DATA_PTR	pData;
+
+	pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA));
+	if (pData == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pData->xType = FTM_EP_DATA_TYPE_BOOL;
+	pData->xState = xState;
+	pData->ulTime = ulTime;
+	pData->xValue.bValue = bValue;
+
+	*ppData = pData;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_DATA_destroy(FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pData != NULL);
+
+	FTM_MEM_free(pData);
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_EP_DATA_compare(FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_INT_PTR pResult)
 {
 	ASSERT(pData1 != NULL);

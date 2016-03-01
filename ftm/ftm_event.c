@@ -6,8 +6,8 @@
 #include "ftm_list.h"
 #include "ftm_mem.h"
 
-static	FTM_RET			FTM_EVENT_create1(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_EVENT_PTR _PTR_ ppEvent);
-static  FTM_RET			FTM_EVENT_create2(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_ULONG ulEvent1, FTM_ULONG ulEvent2, FTM_EVENT_PTR _PTR_ ppEvent);
+static	FTM_RET			FTM_EVENT_create1(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_EVENT_PTR _PTR_ ppEvent);
+static  FTM_RET			FTM_EVENT_create2(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_ULONG ulEvent1, FTM_ULONG ulEvent2, FTM_EVENT_PTR _PTR_ ppEvent);
 static 	FTM_BOOL		FTM_EVENT_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator);
 
 static	FTM_LIST_PTR	pEventList = NULL;
@@ -43,93 +43,42 @@ FTM_RET	FTM_EVENT_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_EVENT_create1Above(FTM_EVENT_ID xEventID, FTM_EP_DATA_PTR pData, FTM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTM_EVENT_createAbove(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EP_DATA_PTR pData, FTM_EVENT_PTR _PTR_ ppEvent)
 {
-	return	FTM_EVENT_create1(FTM_EVENT_TYPE_ABOVE, xEventID, pData, NULL, ppEvent);
+	return	FTM_EVENT_create1(FTM_EVENT_TYPE_ABOVE, xEventID, xEPID, pData, NULL, ppEvent);
 }
 
-FTM_RET	FTM_EVENT_create1Below(FTM_EVENT_ID xEventID, FTM_EP_DATA_PTR pData, FTM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTM_EVENT_createBelow(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EP_DATA_PTR pData, FTM_EVENT_PTR _PTR_ ppEvent)
 {
-	return	FTM_EVENT_create1(FTM_EVENT_TYPE_BELOW, xEventID, pData, NULL, ppEvent);
+	return	FTM_EVENT_create1(FTM_EVENT_TYPE_BELOW, xEventID, xEPID, pData, NULL, ppEvent);
 }
 
-FTM_RET	FTM_EVENT_create1Include(FTM_EVENT_ID xEventID, FTM_EP_DATA_PTR pUpper, FTM_EP_DATA_PTR pLower, FTM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTM_EVENT_createInclude(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EP_DATA_PTR pUpper, FTM_EP_DATA_PTR pLower, FTM_EVENT_PTR _PTR_ ppEvent)
 {
-	return	FTM_EVENT_create1(FTM_EVENT_TYPE_INCLUDE, xEventID, pUpper, pLower, ppEvent);
+	return	FTM_EVENT_create1(FTM_EVENT_TYPE_INCLUDE, xEventID, xEPID, pUpper, pLower, ppEvent);
 }
 
-FTM_RET	FTM_EVENT_create1Except(FTM_EVENT_ID xEventID, FTM_EP_DATA_PTR pUpper, FTM_EP_DATA_PTR pLower, FTM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTM_EVENT_createExcept(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EP_DATA_PTR pUpper, FTM_EP_DATA_PTR pLower, FTM_EVENT_PTR _PTR_ ppEvent)
 {
-	return	FTM_EVENT_create1(FTM_EVENT_TYPE_EXCEPT, xEventID, pUpper, pLower, ppEvent);
+	return	FTM_EVENT_create1(FTM_EVENT_TYPE_EXCEPT, xEventID, xEPID, pUpper, pLower, ppEvent);
 }
 
-FTM_RET	FTM_EVENT_create1Change(FTM_EVENT_ID xEventID, FTM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTM_EVENT_createChange(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EVENT_PTR _PTR_ ppEvent)
 {
-	return	FTM_EVENT_create1(FTM_EVENT_TYPE_CHANGE, xEventID, NULL, NULL, ppEvent);
+	return	FTM_EVENT_create1(FTM_EVENT_TYPE_CHANGE, xEventID, xEPID, NULL, NULL, ppEvent);
 }
 
-FTM_RET	FTM_EVENT_create1And(FTM_EVENT_ID xEventID, FTM_EVENT_ID xEvent1, FTM_EVENT_ID xEvent2, FTM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTM_EVENT_createAnd(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EVENT_ID xEvent1, FTM_EVENT_ID xEvent2, FTM_EVENT_PTR _PTR_ ppEvent)
 {
-	return	FTM_EVENT_create2(FTM_EVENT_TYPE_AND, xEventID, xEvent1, xEvent2, ppEvent);
+	return	FTM_EVENT_create2(FTM_EVENT_TYPE_AND, xEventID, xEPID, xEvent1, xEvent2, ppEvent);
 }
 
-FTM_RET	FTM_EVENT_create1Or(FTM_EVENT_ID xEventID, FTM_EVENT_ID xEvent1, FTM_EVENT_ID xEvent2, FTM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTM_EVENT_createOr(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EVENT_ID xEvent1, FTM_EVENT_ID xEvent2, FTM_EVENT_PTR _PTR_ ppEvent)
 {
-	return	FTM_EVENT_create2(FTM_EVENT_TYPE_OR, xEventID, xEvent1, xEvent2, ppEvent);
+	return	FTM_EVENT_create2(FTM_EVENT_TYPE_OR, xEventID, xEPID, xEvent1, xEvent2, ppEvent);
 }
 
-FTM_RET	FTM_EVENT_create2(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EVENT_ID xEvent1, FTM_EVENT_ID xEvent2, FTM_EVENT_PTR _PTR_ ppEvent)
-{
-	ASSERT(pEventList != NULL);
-	ASSERT(ppEvent != NULL);
-
-	FTM_RET			xRet;
-	FTM_EVENT		xEvent;
-	FTM_EVENT_PTR	pEvent;
-	struct timeval	xTime;
-
-	if (xEventID == 0)
-	{
-		gettimeofday(&xTime, NULL);
-
-		xEvent.xID = xTime.tv_sec * 1000000 + xTime.tv_usec;
-	}
-	else
-	{
-		xEvent.xID = xEventID;
-	}
-
-	xEvent.xType = xType;
-	xEvent.xParams.xAnd.xID1 = xEvent1;
-	xEvent.xParams.xAnd.xID2 = xEvent2;
-
-	pEvent = (FTM_EVENT_PTR)FTM_MEM_malloc(sizeof(FTM_EVENT));
-	if (pEvent == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
-
-	memcpy(pEvent, &xEvent, sizeof(FTM_EVENT));
-
-	xRet = FTM_LIST_append(pEventList, pEvent);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pEvent);
-		return	xRet;	
-	}
-
-	*ppEvent = pEvent;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_EVENT_get(FTM_ULONG ulEventID, FTM_EVENT_PTR _PTR_ ppEvent)
-{
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_EVENT_create1(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTM_EVENT_create1(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID xEPID,  FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_EVENT_PTR _PTR_ ppEvent)
 {
 	ASSERT(pEventList != NULL);
 	ASSERT(ppEvent != NULL);
@@ -190,6 +139,57 @@ FTM_RET	FTM_EVENT_create1(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EP_DA
 	}
 
 	*ppEvent = pEvent;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EVENT_create2(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EVENT_ID xEvent1, FTM_EVENT_ID xEvent2, FTM_EVENT_PTR _PTR_ ppEvent)
+{
+	ASSERT(pEventList != NULL);
+	ASSERT(ppEvent != NULL);
+
+	FTM_RET			xRet;
+	FTM_EVENT		xEvent;
+	FTM_EVENT_PTR	pEvent;
+	struct timeval	xTime;
+
+	if (xEventID == 0)
+	{
+		gettimeofday(&xTime, NULL);
+
+		xEvent.xID = xTime.tv_sec * 1000000 + xTime.tv_usec;
+	}
+	else
+	{
+		xEvent.xID = xEventID;
+	}
+
+	xEvent.xType = xType;
+	xEvent.xParams.xAnd.xID1 = xEvent1;
+	xEvent.xParams.xAnd.xID2 = xEvent2;
+
+	pEvent = (FTM_EVENT_PTR)FTM_MEM_malloc(sizeof(FTM_EVENT));
+	if (pEvent == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	memcpy(pEvent, &xEvent, sizeof(FTM_EVENT));
+
+	xRet = FTM_LIST_append(pEventList, pEvent);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEvent);
+		return	xRet;	
+	}
+
+	*ppEvent = pEvent;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EVENT_get(FTM_ULONG ulEventID, FTM_EVENT_PTR _PTR_ ppEvent)
+{
 
 	return	FTM_RET_OK;
 }
