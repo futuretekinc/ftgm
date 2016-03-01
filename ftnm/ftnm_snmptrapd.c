@@ -430,7 +430,7 @@ FTNM_SNMPTRAPD_inputCB
 		
 								memcpy(pBuff, vars->val.string, vars->val_len);
 								pBuff[vars->val_len] = 0;
-						//		FTNM_SNMPTRAPD_receiveTrap(pCTX, pBuff);
+								FTNM_SNMPTRAPD_receiveTrap(pCTX, pBuff);
 							}
 						}	
 					}
@@ -551,6 +551,8 @@ FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pCTX)
 	int             count, numfds, block;
 	fd_set          readfds,writefds,exceptfds;
 	struct timeval  timeout, *tvp;
+	
+	pCTX->bRunning = FTM_TRUE;
 
 	while (pCTX->bRunning) 
 	{
@@ -632,6 +634,8 @@ FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pCTX)
 		}
 		run_alarms();
 	}
+
+	TRACE("exit SNMP Trapd mainloop!\n");
 }
 
 FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
@@ -698,6 +702,7 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 	FTNM_SNMPTRAPD_MSG_TYPE	xMsgType = FTNM_SNMPTRAPD_MSG_TYPE_UNKNOWN;	
 	const nx_json 	*pRoot, *pItem;
 
+	TRACE("TRAP : %s\n", pMsg);
 	pRoot = nx_json_parse_utf8(pMsg);
 	if (pRoot == NULL)
 	{
@@ -706,12 +711,13 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 	}
 
 	pItem = nx_json_get(pRoot, "type");
-	if (pItem == NULL)
+	if (pItem->type == NX_JSON_NULL)
 	{
 		xMsgType = FTNM_SNMPTRAPD_MSG_TYPE_EP_CHANGED;	
 	}
 	else
 	{
+		
 		if (strcasecmp(pItem->text_value, "ep_changed") == 0)
 		{
 			xMsgType = FTNM_SNMPTRAPD_MSG_TYPE_EP_CHANGED;	
@@ -724,17 +730,17 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 	case	FTNM_SNMPTRAPD_MSG_TYPE_EP_CHANGED:
 		{
 			pItem = nx_json_get(pRoot, "id");
-			if (pItem != NULL)
+			if (pItem->type != NX_JSON_NULL)
 			{
 				xEPID = strtoul(pItem->text_value, 0, 16);
-		
+	
 				xRet = FTNM_EP_get(xEPID, &pEP);
 				if (xRet == FTM_RET_OK)
 				{
 					FTNM_EP_getData(pEP, &xData);
 		
 					pItem = nx_json_get(pRoot, "value");
-					if (pItem != NULL)
+					if (pItem->type != NX_JSON_NULL)
 					{
 						switch(pItem->type)
 						{
@@ -804,13 +810,13 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 						}
 		
 						pItem = nx_json_get(pRoot, "time");
-						if (pItem != NULL)
+						if (pItem->type != NX_JSON_NULL)
 						{
 							xData.ulTime = (FTM_ULONG)pItem->int_value;
 						}
 		
 						pItem = nx_json_get(pRoot, "state");
-						if (pItem != NULL)
+						if (pItem->type != NX_JSON_NULL)
 						{
 							if (pItem->type == NX_JSON_STRING)
 							{

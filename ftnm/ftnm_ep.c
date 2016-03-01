@@ -412,18 +412,18 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	FTM_RET				xRet;
 	FTM_ULONG			ulCount;
 	FTM_CHAR			pTimeString[64];
-	FTM_EP_DATA_PTR		pTempData;
+	FTM_EP_DATA_PTR		pLastData;
 	FTM_EP_DATA_PTR		pNewData = NULL;
 
-	xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pTempData);
+	xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pLastData);
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;
 	}
 
-	if (pTempData->xType != pData->xType)
+	if (pLastData->xType != pData->xType)
 	{
-		ERROR("Data type missmatch[%08x:%08x]!\n", pTempData->xType, pData->xType);
+		ERROR("Data type missmatch[%08x:%08x]!\n", pLastData->xType, pData->xType);
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
@@ -431,30 +431,11 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	strcpy(pTimeString, ctime((time_t *)&pData->ulTime));
 	pTimeString[strlen(pTimeString) - 1] = 0;
 
-	TRACE("%6s : %s\n", "TIME", pTimeString);
 	xRet = FTM_EP_DATA_createCopy(pData, &pNewData);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
-
-#if 0
-	FTM_EVENT_ID		xEventID;
-
-	xRet = FTM_LIST_count(pEP->xEventList, &ulEventCount);
-	if (xRet  == FTM_RET_OK)
-	{
-		FTM_ULONG	i;
-
-		for(i = 0; i < ulEventCount ; i++)
-		{
-			xRet = FTM_LIST_getAt(&pEP->xEventList, i, &xEventID);
-			if (xRet == FTM_RET_OK)
-			{
-			}
-		}
-	}
-#endif
 
 	xRet = FTM_LIST_count(&pEP->xDataList, &ulCount);
 	if (xRet != FTM_RET_OK)
@@ -482,6 +463,7 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	{
 		FTM_EP_DATA_destroy(pNewData);	
 	}
+
 
 	FTNM_setEPData(pEP->xInfo.xEPID, pNewData);
 
