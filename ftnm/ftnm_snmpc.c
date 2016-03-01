@@ -324,6 +324,7 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 					{
 					case	6:
 						{
+							FTM_EP_DATA	xLastData;
 							FTM_CHAR	pBuff[1024];
 	
 							if (pVariable->val_len < 1024)
@@ -336,11 +337,16 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 								memcpy(pBuff, pVariable->val.string, 1023);
 								pBuff[1023] = 0;
 							}
-	
-	
+
+							xRet = FTNM_EP_getData(pEP, &xLastData);
+							if (xRet != FTM_RET_OK)
+							{
+								break;
+							}
+
 							pData->ulTime = time(NULL);
 							pData->xState = FTM_EP_STATE_RUN;
-							pData->xType  = pEP->xData.xType;
+							pData->xType  = xLastData.xType;
 							switch(pData->xType)
 							{
 							case	FTM_EP_DATA_TYPE_INT:

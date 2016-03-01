@@ -4,6 +4,7 @@
 #include "ftm_types.h"
 #include "ftm_object.h"
 #include "ftm_list.h"
+#include "ftm_event.h"
 #include "ftnm.h"
 #include "ftm_msg_queue.h"
 #include <pthread.h>
@@ -17,7 +18,6 @@ typedef	struct FTNM_EP_STRUCT
 	FTM_EP_INFO			xInfo;
 
 	FTNM_NODE_PTR 		pNode;
-	FTM_EP_DATA			xData;
 
 	FTM_EP_STATE		xState;
 	FTM_ULONG			ulRetryCount;
@@ -25,6 +25,10 @@ typedef	struct FTNM_EP_STRUCT
 	pthread_t			xPThread;
 	sem_t				xLock;
 	FTM_MSG_QUEUE		xMsgQ;
+
+	FTM_LIST			xDataList;
+	FTM_LIST			xEventList;
+
 	union
 	{
 		struct	
@@ -57,6 +61,9 @@ FTM_RET FTNM_EP_stop(FTNM_EP_PTR pEP, FTM_BOOL bWaitForStop);
 FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
 FTM_RET	FTNM_EP_getData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
 FTM_RET FTNM_EP_setFloat(FTNM_EP_PTR pEP, FTM_ULONG ulTime, FTM_DOUBLE fValue);
+
+FTM_RET	FTNM_EP_getEventCount(FTNM_EP_PTR pEP, FTM_ULONG_PTR pulCount);
+FTM_RET	FTNM_EP_getEventAt(FTNM_EP_PTR pEP, FTM_ULONG ulIndex, FTM_EVENT_ID_PTR pEventID);
 
 FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
 

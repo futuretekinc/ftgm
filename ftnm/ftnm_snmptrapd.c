@@ -430,7 +430,7 @@ FTNM_SNMPTRAPD_inputCB
 		
 								memcpy(pBuff, vars->val.string, vars->val_len);
 								pBuff[vars->val_len] = 0;
-								FTNM_SNMPTRAPD_receiveTrap(pCTX, pBuff);
+						//		FTNM_SNMPTRAPD_receiveTrap(pCTX, pBuff);
 							}
 						}	
 					}

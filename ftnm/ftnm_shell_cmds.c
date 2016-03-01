@@ -93,8 +93,11 @@ FTM_RET	FTNM_SHELL_CMD_list
 		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
 		{
 			FTM_CHAR	pTimeString[64];
-			
-			ctime_r((time_t *)&pEP->xData.ulTime, pTimeString);
+			FTM_EP_DATA	xData;
+		
+			FTNM_EP_getData(pEP, &xData);
+
+			ctime_r((time_t *)&xData.ulTime, pTimeString);
 			if (strlen(pTimeString) != 0)
 			{
 				pTimeString[strlen(pTimeString) - 1] = '\0';
@@ -116,11 +119,11 @@ FTM_RET	FTNM_SHELL_CMD_list
 			default:					MESSAGE("%-16s ", "UNKNOWN");		break;
 			}
 
-			switch(pEP->xData.xType)
+			switch(xData.xType)
 			{
-			case	FTM_EP_DATA_TYPE_INT: 	MESSAGE("%-8d ", pEP->xData.xValue.nValue); break;
-			case	FTM_EP_DATA_TYPE_ULONG:	MESSAGE("%-8lu ", pEP->xData.xValue.ulValue); break;
-			case	FTM_EP_DATA_TYPE_FLOAT:	MESSAGE("%-8.2lf ", pEP->xData.xValue.fValue); break;
+			case	FTM_EP_DATA_TYPE_INT: 	MESSAGE("%-8d ", xData.xValue.nValue); break;
+			case	FTM_EP_DATA_TYPE_ULONG:	MESSAGE("%-8lu ", xData.xValue.ulValue); break;
+			case	FTM_EP_DATA_TYPE_FLOAT:	MESSAGE("%-8.2lf ", xData.xValue.fValue); break;
 			default: 						MESSAGE("%-8s ", "UNKNOWN"); break;
 			}
 			MESSAGE("%24s\n", pTimeString);

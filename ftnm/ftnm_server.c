@@ -673,6 +673,7 @@ FTM_RET	FTNM_SERVER_EP_DATA_getLast
 	FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR 	pResp
 )
 {
+	FTM_RET		xRet;
 	FTNM_EP_PTR	pEP;
 
 	pResp->xCmd = pReq->xCmd;
@@ -680,7 +681,14 @@ FTM_RET	FTNM_SERVER_EP_DATA_getLast
 	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xData, &pEP->xData, sizeof(FTM_EP_DATA));
+		FTM_EP_DATA_PTR	pData;
+
+		xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+		if (xRet != FTM_RET_OK)
+		{	
+			return	xRet;
+		}
+		memcpy(&pResp->xData, pData, sizeof(FTM_EP_DATA));
 	}
 
 	return	pResp->nRet;
