@@ -1,0 +1,40 @@
+#ifndef	_FTM_CONFIG_H_
+#define	_FTM_CONFIG_H_
+
+#include "ftm_types.h"
+#include "libconfig.h"
+#include "ftm_endpoint.h"
+
+typedef	struct
+{
+	config_t		xLibConfig;
+}	FTM_CONFIG, _PTR_ FTM_CONFIG_PTR;
+
+typedef	struct
+{
+	config_setting_t	*pSetting;
+}	FTM_CONFIG_ITEM, _PTR_ FTM_CONFIG_ITEM_PTR;
+
+FTM_RET	FTM_CONFIG_create(FTM_CHAR_PTR pFileName, FTM_CONFIG_PTR _PTR_ pConfig);
+FTM_RET	FTM_CONFIG_destroy(FTM_CONFIG_PTR pConfig);
+
+FTM_RET	FTM_CONFIG_init(FTM_CONFIG_PTR pConfig, FTM_CHAR_PTR pFileName);
+FTM_RET	FTM_CONFIG_final(FTM_CONFIG_PTR pConfig);
+
+FTM_RET	FTM_CONFIG_getItem(FTM_CONFIG_PTR pConfig, FTM_CHAR_PTR pName, FTM_CONFIG_ITEM_PTR pItem);
+
+FTM_RET	FTM_CONFIG_LIST_getItemCount(FTM_CONFIG_ITEM_PTR pItem, FTM_ULONG_PTR pulCount);
+FTM_RET	FTM_CONFIG_LIST_getItemAt(FTM_CONFIG_ITEM_PTR pItem, FTM_ULONG ulIndex, FTM_CONFIG_ITEM_PTR pChildItem);
+
+FTM_RET	FTM_CONFIG_ITEM_create(FTM_CONFIG_ITEM_PTR _PTR_ ppItem);
+FTM_RET	FTM_CONFIG_ITEM_destroy(FTM_CONFIG_ITEM_PTR pItem);
+
+FTM_RET	FTM_CONFIG_ITEM_getChildItem(FTM_CONFIG_ITEM_PTR pItem, FTM_CHAR_PTR pName, FTM_CONFIG_ITEM_PTR pChildItem);
+FTM_RET	FTM_CONFIG_ITEM_getItemAt(FTM_CONFIG_ITEM_PTR pItem, FTM_ULONG ulIndex, FTM_CONFIG_ITEM_PTR pChildItem);
+
+FTM_RET	FTM_CONFIG_ITEM_getInt(FTM_CONFIG_ITEM_PTR pItem, FTM_CHAR_PTR pName, FTM_INT_PTR pnValue);
+FTM_RET	FTM_CONFIG_ITEM_getUlong(FTM_CONFIG_ITEM_PTR pItem, FTM_CHAR_PTR pName, FTM_ULONG_PTR pulValue);
+FTM_RET	FTM_CONFIG_ITEM_getFloat(FTM_CONFIG_ITEM_PTR pItem, FTM_CHAR_PTR pName, FTM_FLOAT_PTR pfValue);
+FTM_RET	FTM_CONFIG_ITEM_getData(FTM_CONFIG_ITEM_PTR pItem, FTM_CHAR_PTR pName, FTM_EP_DATA_PTR pData);
+
+#endif

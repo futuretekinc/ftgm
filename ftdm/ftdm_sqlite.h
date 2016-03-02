@@ -1,6 +1,9 @@
 #ifndef	__SQLITE_IF_H__
 #define	__SQLITE_IF_H__
 
+#include "ftm_types.h"
+#include "ftm_event.h"
+
 FTM_RET	FTDM_DBIF_init
 (
 	FTDM_CFG_DB_PTR	pConfig
@@ -217,5 +220,28 @@ FTM_RET FTDM_DBIF_setTrace
 FTM_RET FTDM_DBIF_getTrace
 (
 	FTM_BOOL_PTR		pbTranceON
+);
+
+FTM_RET	FTDM_DBIF_EVENT_initTable
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_DBIF_EVENT_append
+(
+ 	FTM_EVENT_PTR	pEvent
+);
+
+FTM_RET	FTDM_DBIF_EVENT_get
+(
+	FTM_EVENT_ID	xID,
+ 	FTM_EVENT_PTR	pEvent
+);
+
+FTM_RET	FTDM_DBIF_EVENT_getList
+(
+	FTM_EVENT_PTR		pEvents, 
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pulCount
 );
 #endif

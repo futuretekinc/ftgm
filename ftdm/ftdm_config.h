@@ -4,6 +4,8 @@
 #include "ftm_types.h"
 #include "libconfig.h"
 #include "ftm_list.h"
+#include "ftm_debug.h"
+#include "ftm_endpoint.h"
 
 #define	FTDM_SERVER_DEFAULT_PORT		8888
 #define	FTDM_SERVER_DEFAULT_MAX_SESSION	10

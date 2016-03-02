@@ -8,6 +8,7 @@
 #include "ftnm_ep.h"
 #include "ftnm_event.h"
 #include "ftnm_msg.h"
+#include "libconfig.h"
 
 #define	FTNM_EVENTM_LOOP_INTERVAL	1000	// 1000 us
 
@@ -25,67 +26,125 @@ FTM_RET	FTNM_EVENTM_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EVENTM_create(FTNM_EVENT_MANAGER_PTR _PTR_ ppManager)
+FTM_RET	FTNM_EVENTM_create(FTNM_EVENT_MANAGER_PTR _PTR_ ppCTX)
 {
-	ASSERT(ppManager != NULL);
-	FTNM_EVENT_MANAGER_PTR	pManager;
+	ASSERT(ppCTX != NULL);
+	FTNM_EVENT_MANAGER_PTR	pCTX;
 	FTM_RET	xRet;
 
-	pManager = (FTNM_EVENT_MANAGER_PTR)FTM_MEM_malloc(sizeof(FTNM_EVENT_MANAGER));
-	if (pManager == NULL)
+	pCTX = (FTNM_EVENT_MANAGER_PTR)FTM_MEM_malloc(sizeof(FTNM_EVENT_MANAGER));
+	if (pCTX == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	memset(pManager, 0, sizeof(FTNM_EVENT_MANAGER));
+	memset(pCTX, 0, sizeof(FTNM_EVENT_MANAGER));
 
-	xRet = FTM_MSGQ_create(&pManager->pMsgQ);
+	xRet = FTM_MSGQ_create(&pCTX->pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pManager);
+		FTM_MEM_free(pCTX);
 		return	xRet;	
 	}
 
-	*ppManager = pManager;
+	*ppCTX = pCTX;
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EVENTM_destroy(FTNM_EVENT_MANAGER_PTR pManager)
+FTM_RET	FTNM_EVENTM_destroy(FTNM_EVENT_MANAGER_PTR pCTX)
 {
-	ASSERT(pManager != NULL);
+	ASSERT(pCTX != NULL);
 	
-	FTM_MSGQ_destroy(pManager->pMsgQ);
-	pManager->pMsgQ = NULL;
+	FTM_MSGQ_destroy(pCTX->pMsgQ);
+	pCTX->pMsgQ = NULL;
 
-	FTM_MEM_free(pManager);
-
-	return	FTM_RET_OK;
-}
-
-
-FTM_RET	FTNM_EVENTM_start(FTNM_EVENT_MANAGER_PTR pManager)
-{
-	ASSERT(pManager != NULL);
-
-	pthread_create(&pManager->xPThread, NULL, FTNM_EVENTM_process, pManager);
+	FTM_MEM_free(pCTX);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EVENTM_stop(FTNM_EVENT_MANAGER_PTR pManager)
-{
-	ASSERT(pManager != NULL);
 
-	pthread_cancel(pManager->xPThread);
-	pthread_join(pManager->xPThread, NULL);
+FTM_RET	FTNM_EVENTM_loadConfig(FTNM_EVENT_MANAGER_PTR pCTX, FTM_CHAR_PTR pFileName)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pFileName != NULL);
+#if 0
+	config_t			xConfig;
+	config_setting_t	*pSection;
+	
+	config_init(&xConfig);
+	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
+	{
+		return	FTM_RET_CONFIG_LOAD_FAILED;
+	}
+
+	pSection = config_lookup(&xConfig, "event");
+	if (pSection != NULL)
+	{
+		config_setting_t	*pField;
+		config_setting_t	*pList;
+
+		pField = config_setting_get_member(pSection, "port");
+		if (pField != NULL)
+		{
+			pCTX->xConfig.usPort =  config_setting_get_int(pField);
+		}
+
+		pList = config_setting_get_member(pSection, "traps");
+		if (pList != NULL)
+        {
+			FTM_ULONG	i, ulCount;
+			
+			ulCount = config_setting_length(pList);
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				pField = config_setting_get_elem(pList, i);
+				if (pField != NULL)
+				{
+					FTNM_SNMP_OID	xOID;
+					
+					xOID.ulOIDLen = FTNM_SNMP_OID_LENGTH;
+
+					MESSAGE("pObID = %s\n", config_setting_get_string(pField));
+					if (read_objid(config_setting_get_string(pField), xOID.pOID, (size_t *)&xOID.ulOIDLen) == 1)
+					{
+						MESSAGE("SNMP_PARSE_OID success!\n");
+						FTNM_SNMPTRAPD_addTrapOID(pCTX, &xOID);
+					}
+				
+				}
+			}
+		}
+
+	}
+	config_destroy(&xConfig);
+#endif
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_EVENTM_start(FTNM_EVENT_MANAGER_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+
+	pthread_create(&pCTX->xPThread, NULL, FTNM_EVENTM_process, pCTX);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_EVENTM_stop(FTNM_EVENT_MANAGER_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+
+	pthread_cancel(pCTX->xPThread);
+	pthread_join(pCTX->xPThread, NULL);
 
 	return	FTM_RET_OK;
 }
 
 #if 0
-FTM_RET	FTNM_EVENTM_notify(FTNM_EVENT_MANAGER_PTR pManager, FTNM_MSG_PTR pMsg)
+FTM_RET	FTNM_EVENTM_notify(FTNM_EVENT_MANAGER_PTR pCTX, FTNM_MSG_PTR pMsg)
 {
-	ASSERT(pManager != NULL);
+	ASSERT(pCTX != NULL);
 	ASSERT(pMsg != NULL);
 
 	FTM_RET		xRet;
@@ -106,20 +165,20 @@ FTM_RET	FTNM_EVENTM_notify(FTNM_EVENT_MANAGER_PTR pManager, FTNM_MSG_PTR pMsg)
 FTM_VOID_PTR FTNM_EVENTM_process(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
-	FTNM_EVENT_MANAGER_PTR	pManager = (FTNM_EVENT_MANAGER_PTR)pData;
+	FTNM_EVENT_MANAGER_PTR	pCTX = (FTNM_EVENT_MANAGER_PTR)pData;
 	FTM_RET			xRet;
 	FTM_VOID_PTR	pMsg;
 	FTM_TIMER		xTimer;
 	
-	pManager->bRun = FTM_TRUE;
+	pCTX->bRun = FTM_TRUE;
 
 	FTM_TIMER_init(&xTimer, 0);
 
-	while(pManager->bRun)
+	while(pCTX->bRun)
 	{
 		FTM_TIMER_add(&xTimer, FTNM_EVENTM_LOOP_INTERVAL);
 
-		xRet = FTM_MSGQ_timedPop(pManager->pMsgQ, FTNM_EVENTM_LOOP_INTERVAL, &pMsg);
+		xRet = FTM_MSGQ_timedPop(pCTX->pMsgQ, FTNM_EVENTM_LOOP_INTERVAL, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_MEM_free(pMsg);

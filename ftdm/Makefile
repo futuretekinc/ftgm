@@ -1,7 +1,8 @@
 include ../Makefile.in
 
 SERVER=ftdm
-SERVER_SRCS=ftdm_server_main.c ftdm_server.c ftdm_server_cmds.c
+SERVER_INCS=ftdm.h ftdm_server.h ftdm_server_cmds.h
+SERVER_SRCS=ftdm.c ftdm_server.c ftdm_server_cmds.c
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
 SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3 -ldl
 
@@ -11,8 +12,8 @@ CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftdmc -lftm -lconfig -lpthread
 
 LIB_FTDM=libftdm
-LIB_FTDM_INCS= ftdm.h ftdm_config.h ftdm_server.h ftdm_sqlite.h ftdm_node_info.h ftdm_ep_info.h ftdm_ep_class_info.h 
-LIB_FTDM_SRCS= ftdm.c ftdm_config.c ftdm_server.c ftdm_sqlite.c ftdm_node_info.c ftdm_ep_info.c ftdm_ep_class_info.c  ftdm_shell_cmds.c
+LIB_FTDM_INCS= ftdm_config.h ftdm_server.h ftdm_sqlite.h ftdm_node_info.h ftdm_ep_info.h ftdm_ep_class_info.h 
+LIB_FTDM_SRCS= ftdm_config.c ftdm_server.c ftdm_sqlite.c ftdm_node_info.c ftdm_ep_info.c ftdm_ep_class_info.c  ftdm_shell_cmds.c ftdm_event.c
 LIB_FTDM_OBJS=$(LIB_FTDM_SRCS:.c=.o)
 
 LIB_FTDMC=libftdmc

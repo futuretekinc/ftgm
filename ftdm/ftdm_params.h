@@ -1,6 +1,8 @@
 #ifndef	__FTDM_PARAMS_H__
 #define	__FTDM_PARAMS_H__
 
+#include "ftm_types.h"
+#include "ftm_event.h"
 typedef	struct
 {
 	FTDM_CMD			xCmd;
@@ -444,5 +446,77 @@ typedef	struct
 	FTM_RET				nRet;
 	FTM_ULONG			nCount;
 }	FTDM_RESP_EP_DATA_COUNT_WITH_TIME_PARAMS, _PTR_ FTDM_RESP_EP_DATA_COUNT_WITH_TIME_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_EVENT     		xEvent;
+}	FTDM_REQ_EVENT_ADD_PARAMS, _PTR_ FTDM_REQ_EVENT_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTDM_RESP_EVENT_ADD_PARAMS, _PTR_	FTDM_RESP_EVENT_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_EVENT_ID		xID;
+}	FTDM_REQ_EVENT_DEL_PARAMS, _PTR_	FTDM_REQ_EVENT_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET			nRet;
+}	FTDM_RESP_EVENT_DEL_PARAMS, _PTR_ 	FTDM_RESP_EVENT_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+}	FTDM_REQ_EVENT_COUNT_PARAMS, _PTR_ 	FTDM_REQ_EVENT_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			nCount;
+}	FTDM_RESP_EVENT_COUNT_PARAMS, _PTR_	FTDM_RESP_EVENT_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_EVENT_ID		xID;
+}	FTDM_REQ_EVENT_GET_PARAMS, _PTR_ 	FTDM_REQ_EVENT_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_EVENT			xEvent;
+}	FTDM_RESP_EVENT_GET_PARAMS, _PTR_	FTDM_RESP_EVENT_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ULONG			nIndex;
+}	FTDM_REQ_EVENT_GET_AT_PARAMS, _PTR_	FTDM_REQ_EVENT_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_EVENT			xEvent;
+}	FTDM_RESP_EVENT_GET_AT_PARAMS, _PTR_	FTDM_RESP_EVENT_GET_AT_PARAMS_PTR;
 
 #endif

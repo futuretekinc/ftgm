@@ -43,6 +43,12 @@ FTM_RET	FTM_EVENT_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_EVENT_createCopy(FTM_EVENT_PTR pSrc, FTM_EVENT_PTR _PTR_ ppEvent)
+{
+	return	FTM_EVENT_create1(pSrc->xType, pSrc->xID, pSrc->xEPID,  &pSrc->xParams.xInclude.xUpper, &pSrc->xParams.xInclude.xLower, ppEvent);
+	
+}
+
 FTM_RET	FTM_EVENT_createAbove(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EP_DATA_PTR pData, FTM_EVENT_PTR _PTR_ ppEvent)
 {
 	return	FTM_EVENT_create1(FTM_EVENT_TYPE_ABOVE, xEventID, xEPID, pData, NULL, ppEvent);

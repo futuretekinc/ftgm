@@ -10,6 +10,7 @@
 #include "ftdm_config.h"
 #include "ftdm_server.h"
 #include "ftdm_server_cmds.h"
+#include "ftdm_event.h"
 
 FTM_RET	FTDMS_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_session(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
@@ -70,6 +71,7 @@ FTM_RET	FTDMS_SHELL_CMD_config
 	if (nArgc == 1)
 	{
 		FTDM_CFG_show(&xConfig);
+		FTDM_EVENT_showList();
 		return	FTM_RET_OK;
 	}
 

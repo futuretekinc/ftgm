@@ -138,13 +138,21 @@ FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)
 	ASSERT(pEPList != NULL);
 
 	FTM_RET	xRet;
-	
+	FTM_EP_DATA_PTR	pData;
+
 	xRet = FTM_LIST_remove(pEPList, pEP);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
+	FTM_LIST_iteratorStart(&pEP->xDataList);
+	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+	{
+		FTM_EP_DATA_destroy(pData);	
+	}
+
+	FTM_LIST_final(&pEP->xDataList);
 
 	FTNM_EP_stop(pEP, FTM_TRUE);
 
@@ -438,36 +446,35 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	}
 
 	xRet = FTM_LIST_count(&pEP->xDataList, &ulCount);
-	if (xRet != FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
-		FTM_EP_DATA_destroy(pNewData);
-		return	xRet;	
-	}
-	
-	if (ulCount >= FTNM_EP_DATA_COUNT)
-	{
-		FTM_EP_DATA_PTR	pTempData;
-
-		xRet = FTM_LIST_getFirst(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pTempData);	
-		if (xRet != FTM_RET_OK)
+		if (ulCount >= FTNM_EP_DATA_COUNT)
 		{
-			FTM_EP_DATA_destroy(pNewData);
-			return	xRet;	
-		}
+			FTM_EP_DATA_PTR	pTempData;
 
-		FTM_LIST_remove(&pEP->xDataList, pTempData);	
-	}
+			xRet = FTM_LIST_getFirst(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pTempData);	
+			if (xRet != FTM_RET_OK)
+			{
+				FTM_EP_DATA_destroy(pNewData);
+				return	xRet;	
+			}
+
+			FTM_LIST_remove(&pEP->xDataList, pTempData);	
+		}
 	
-	xRet = FTM_LIST_append(&pEP->xDataList, pNewData);
+		xRet = FTM_LIST_append(&pEP->xDataList, pNewData);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTNM_setEPData(pEP->xInfo.xEPID, pNewData);
+		}
+	}
+
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_EP_DATA_destroy(pNewData);	
 	}
 
-
-	FTNM_setEPData(pEP->xInfo.xEPID, pNewData);
-
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 FTM_RET	FTNM_EP_getEventCount(FTNM_EP_PTR pEP, FTM_ULONG_PTR pulCount)

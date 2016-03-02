@@ -44,12 +44,18 @@ FTM_RET	FTNM_init(void)
 	FTNM_SNMPTRAPD_create(&xCTX.pSNMPTrapd);
 	FTNM_SNMPTRAPD_setTrapCB(xCTX.pSNMPTrapd, FTNM_SNMPTrapCB);
 
+	FTNM_EVENTM_init();
+
+	FTNM_EVENTM_create(&xCTX.pEventM);
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_final(void)
 {
+	FTNM_EVENTM_destroy(xCTX.pEventM);
+	FTNM_EVENTM_final();
+
 	FTNM_SNMPTRAPD_destroy(xCTX.pSNMPTrapd);
 	FTNM_SNMPTRAPD_final();
 

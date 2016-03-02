@@ -11,6 +11,7 @@
 #include "ftdm_config.h"
 #include "ftdm_params.h"
 #include "ftdm_server.h"
+#include "ftdm_event.h"
 
 typedef struct
 {
@@ -49,6 +50,11 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_EP_DATA_GET,				FTDMS_EP_DATA_get),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_COUNT,				FTDMS_EP_DATA_count),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_COUNT_WITH_TIME,	FTDMS_EP_DATA_countWithTime),
+	MK_CMD_SET(FTDM_CMD_EVENT_ADD,					FTDMS_EVENT_add ),
+	MK_CMD_SET(FTDM_CMD_EVENT_DEL,					FTDMS_EVENT_del ),
+	MK_CMD_SET(FTDM_CMD_EVENT_COUNT,				FTDMS_EVENT_count ),
+	MK_CMD_SET(FTDM_CMD_EVENT_GET,					FTDMS_EVENT_get ),
+	MK_CMD_SET(FTDM_CMD_EVENT_GET_AT,				FTDMS_EVENT_getAt ),
 	MK_CMD_SET(FTDM_CMD_UNKNOWN, 					NULL)
 };
 
@@ -725,6 +731,85 @@ FTM_RET 	FTDMS_EP_DATA_countWithTime
 					pReq->nBeginTime, 
 					pReq->nEndTime,
 					&pResp->nCount);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_EVENT_add
+(
+	FTDM_REQ_EVENT_ADD_PARAMS_PTR	pReq,
+	FTDM_RESP_EVENT_ADD_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_EVENT_add(&pReq->xEvent);
+
+	return	pResp->nRet;
+}
+
+
+FTM_RET	FTDMS_EVENT_del
+(
+ 	FTDM_REQ_EVENT_DEL_PARAMS_PTR	pReq,
+	FTDM_RESP_EVENT_DEL_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_EVENT_del(pReq->xID);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_EVENT_count
+(
+ 	FTDM_REQ_EVENT_COUNT_PARAMS_PTR	pReq,
+	FTDM_RESP_EVENT_COUNT_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_EVENT_count(&pResp->nCount);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_EVENT_get
+(
+ 	FTDM_REQ_EVENT_GET_PARAMS_PTR		pReq,
+	FTDM_RESP_EVENT_GET_PARAMS_PTR	pResp
+)
+{
+	FTM_EVENT_PTR	pNodeInfo;
+ 
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_EVENT_get(pReq->xID, &pNodeInfo);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		memcpy(&pResp->xEvent, pNodeInfo, sizeof(FTM_EVENT));
+	}
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_EVENT_getAt
+(
+ 	FTDM_REQ_EVENT_GET_AT_PARAMS_PTR	pReq,
+	FTDM_RESP_EVENT_GET_AT_PARAMS_PTR	pResp
+)
+{
+	FTM_EVENT_PTR	pNodeInfo;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_EVENT_getAt(pReq->nIndex, &pNodeInfo);
+	
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		memcpy(&pResp->xEvent, pNodeInfo, sizeof(FTM_EVENT));
+	}
 
 	return	pResp->nRet;
 }
