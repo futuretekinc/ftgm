@@ -12,6 +12,7 @@
 #include "ftdm_params.h"
 #include "ftdm_server.h"
 #include "ftdm_event.h"
+#include "ftdm_act.h"
 
 typedef struct
 {
@@ -55,6 +56,11 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_EVENT_COUNT,				FTDMS_EVENT_count ),
 	MK_CMD_SET(FTDM_CMD_EVENT_GET,					FTDMS_EVENT_get ),
 	MK_CMD_SET(FTDM_CMD_EVENT_GET_AT,				FTDMS_EVENT_getAt ),
+	MK_CMD_SET(FTDM_CMD_ACT_ADD,					FTDMS_ACT_add ),
+	MK_CMD_SET(FTDM_CMD_ACT_DEL,					FTDMS_ACT_del ),
+	MK_CMD_SET(FTDM_CMD_ACT_COUNT,					FTDMS_ACT_count ),
+	MK_CMD_SET(FTDM_CMD_ACT_GET,					FTDMS_ACT_get ),
+	MK_CMD_SET(FTDM_CMD_ACT_GET_AT,					FTDMS_ACT_getAt ),
 	MK_CMD_SET(FTDM_CMD_UNKNOWN, 					NULL)
 };
 
@@ -809,6 +815,85 @@ FTM_RET	FTDMS_EVENT_getAt
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xEvent, pNodeInfo, sizeof(FTM_EVENT));
+	}
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_ACT_add
+(
+	FTDM_REQ_ACT_ADD_PARAMS_PTR	pReq,
+	FTDM_RESP_ACT_ADD_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_ACT_add(&pReq->xAct);
+
+	return	pResp->nRet;
+}
+
+
+FTM_RET	FTDMS_ACT_del
+(
+ 	FTDM_REQ_ACT_DEL_PARAMS_PTR	pReq,
+	FTDM_RESP_ACT_DEL_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_ACT_del(pReq->xID);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_ACT_count
+(
+ 	FTDM_REQ_ACT_COUNT_PARAMS_PTR	pReq,
+	FTDM_RESP_ACT_COUNT_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_ACT_count(&pResp->nCount);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_ACT_get
+(
+ 	FTDM_REQ_ACT_GET_PARAMS_PTR		pReq,
+	FTDM_RESP_ACT_GET_PARAMS_PTR	pResp
+)
+{
+	FTM_ACT_PTR	pAct;
+ 
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_ACT_get(pReq->xID, &pAct);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		memcpy(&pResp->xAct, pAct, sizeof(FTM_ACT));
+	}
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_ACT_getAt
+(
+ 	FTDM_REQ_ACT_GET_AT_PARAMS_PTR	pReq,
+	FTDM_RESP_ACT_GET_AT_PARAMS_PTR	pResp
+)
+{
+	FTM_ACT_PTR	pAct;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_ACT_getAt(pReq->nIndex, &pAct);
+	
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		memcpy(&pResp->xAct, pAct, sizeof(FTM_ACT));
 	}
 
 	return	pResp->nRet;

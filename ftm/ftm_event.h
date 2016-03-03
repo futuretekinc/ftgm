@@ -2,7 +2,8 @@
 #define	_FTM_EVENT_H_
 
 #include "ftm_types.h"
-#include "ftm_endpoint.h"
+#include "ftm_ep.h"
+#include "ftm_act.h"
 
 typedef	enum
 {
@@ -12,7 +13,7 @@ typedef	enum
 	FTM_EVENT_TYPE_EXCEPT,
 	FTM_EVENT_TYPE_CHANGE,
 	FTM_EVENT_TYPE_AND,
-	FTM_EVENT_TYPE_OR,
+	FTM_EVENT_TYPE_OR
 }	FTM_EVENT_TYPE, _PTR_ FTM_EVENT_TYPE_PTR;
 
 typedef	FTM_ULONG	FTM_EVENT_ID, _PTR_ FTM_EVENT_ID_PTR;
@@ -39,6 +40,7 @@ typedef	struct
 			FTM_EVENT_ID	xID2;
 		} xAnd, xOr;
 	}	xParams;
+	FTM_ACT_ID		xActID;
 }	FTM_EVENT, _PTR_ FTM_EVENT_PTR;
 
 FTM_RET	FTM_EVENT_init(FTM_VOID);
@@ -54,7 +56,12 @@ FTM_RET	FTM_EVENT_createAnd(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EVENT_ID 
 FTM_RET	FTM_EVENT_createOr(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EVENT_ID xEventID1, FTM_EVENT_ID xEventID2, FTM_EVENT_PTR _PTR_ ppEvent);
 FTM_RET	FTM_EVENT_destroy(FTM_EVENT_PTR pEvent);
 
+FTM_RET	FTM_EVENT_count(FTM_ULONG_PTR pulCount);
 FTM_RET	FTM_EVENT_get(FTM_EVENT_ID xEventID, FTM_EVENT_PTR _PTR_ ppEvent);
+FTM_RET	FTM_EVENT_getAt(FTM_ULONG ulIndex, FTM_EVENT_PTR _PTR_ ppEvent);
 
 FTM_RET	FTM_EVENT_occurred(FTM_EVENT_PTR pEvent, FTM_EP_DATA_PTR pPrevData, FTM_EP_DATA_PTR pCurrData, FTM_BOOL_PTR pResult);
+
+FTM_CHAR_PTR	FTM_EVENT_typeString(FTM_EVENT_TYPE xType);
+FTM_RET	FTM_EVENT_conditionToString(FTM_EVENT_PTR pEvent, FTM_CHAR_PTR pBuff, FTM_ULONG ulLen);
 #endif

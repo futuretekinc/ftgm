@@ -3,7 +3,7 @@
 
 #include "ftm_types.h"
 #include "libconfig.h"
-#include "ftm_endpoint.h"
+#include "ftm_ep.h"
 
 typedef	struct
 {

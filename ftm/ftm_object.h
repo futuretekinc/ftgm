@@ -2,6 +2,6 @@
 #define __FTM_OBJECT_H__
 
 #include "ftm_node.h"
-#include "ftm_endpoint.h"
+#include "ftm_ep.h"
 
 #endif

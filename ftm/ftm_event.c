@@ -36,9 +36,17 @@ FTM_RET	FTM_EVENT_init(FTM_VOID)
 
 FTM_RET	FTM_EVENT_final(FTM_VOID)
 {
+	FTM_EVENT_PTR	pEvent;
+
 	if (pEventList == NULL)
 	{
 		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+ 	FTM_LIST_iteratorStart(pEventList);
+  	while(FTM_LIST_iteratorNext(pEventList, (FTM_VOID_PTR _PTR_)&pEvent) == FTM_RET_OK)
+   	{   
+    	FTM_EVENT_destroy(pEvent);
 	}
 
 	FTM_LIST_final(pEventList);
@@ -49,7 +57,6 @@ FTM_RET	FTM_EVENT_final(FTM_VOID)
 FTM_RET	FTM_EVENT_createCopy(FTM_EVENT_PTR pSrc, FTM_EVENT_PTR _PTR_ ppEvent)
 {
 	ASSERT(pSrc != NULL);
-	ASSERT(ppEvent != NULL);
 
 	FTM_RET			xRet;
 	FTM_EVENT_PTR	pEvent;
@@ -83,7 +90,10 @@ FTM_RET	FTM_EVENT_createCopy(FTM_EVENT_PTR pSrc, FTM_EVENT_PTR _PTR_ ppEvent)
 		pEvent->xID = xTime.tv_sec * 1000000 + xTime.tv_usec;
 	}
 
-	*ppEvent = pEvent;
+	if (ppEvent != NULL)
+	{
+		*ppEvent = pEvent;
+	}
 
 	return	FTM_RET_OK;
 }
@@ -126,7 +136,6 @@ FTM_RET	FTM_EVENT_createOr(FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EVENT_ID x
 FTM_RET	FTM_EVENT_create1(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID xEPID,  FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_EVENT_PTR _PTR_ ppEvent)
 {
 	ASSERT(pEventList != NULL);
-	ASSERT(ppEvent != NULL);
 
 	FTM_RET			xRet;
 	FTM_EVENT		xEvent;
@@ -189,7 +198,10 @@ FTM_RET	FTM_EVENT_create1(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID 
 		return	xRet;	
 	}
 
-	*ppEvent = pEvent;
+	if (ppEvent != NULL)
+	{
+		*ppEvent = pEvent;
+	}
 
 	return	FTM_RET_OK;
 }
@@ -197,7 +209,6 @@ FTM_RET	FTM_EVENT_create1(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID 
 FTM_RET	FTM_EVENT_create2(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID xEPID, FTM_EVENT_ID xEvent1, FTM_EVENT_ID xEvent2, FTM_EVENT_PTR _PTR_ ppEvent)
 {
 	ASSERT(pEventList != NULL);
-	ASSERT(ppEvent != NULL);
 
 	FTM_RET			xRet;
 	FTM_EVENT		xEvent;
@@ -240,15 +251,33 @@ FTM_RET	FTM_EVENT_create2(FTM_EVENT_TYPE xType, FTM_EVENT_ID xEventID, FTM_EPID 
 		return	xRet;	
 	}
 
-	*ppEvent = pEvent;
+	if (ppEvent != NULL)
+	{
+		*ppEvent = pEvent;
+	}
 
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_EVENT_count(FTM_ULONG_PTR pulCount)
+{
+	return	FTM_LIST_count(pEventList, pulCount);
+}
+
 FTM_RET	FTM_EVENT_get(FTM_ULONG ulEventID, FTM_EVENT_PTR _PTR_ ppEvent)
 {
+	ASSERT(pEventList != NULL);
+	ASSERT(ppEvent != NULL);
 
-	return	FTM_RET_OK;
+	return	FTM_LIST_get(pEventList, &ulEventID, (FTM_VOID_PTR _PTR_)ppEvent);
+}
+
+FTM_RET	FTM_EVENT_getAt(FTM_ULONG ulIndex, FTM_EVENT_PTR _PTR_ ppEvent)
+{
+	ASSERT(pEventList != NULL);
+	ASSERT(ppEvent != NULL);
+
+	return	FTM_LIST_getAt(pEventList, ulIndex, (FTM_VOID_PTR _PTR_)ppEvent);
 }
 
 FTM_RET	FTM_EVENT_destroy(FTM_EVENT_PTR pEvent)
@@ -424,6 +453,99 @@ FTM_RET	FTM_EVENT_occurred(FTM_EVENT_PTR pEvent, FTM_EP_DATA_PTR pPrevData, FTM_
 	}
 
 	return	xRet;
+}
+
+static FTM_CHAR_PTR	pTypeString[] =
+{
+	"ABOVE",
+	"BELOW",
+	"INCLUDE",
+	"EXCEPT",
+	"CHANGE",
+	"AND",
+	"OR"
+};
+
+FTM_CHAR_PTR	FTM_EVENT_typeString(FTM_EVENT_TYPE xType)
+{
+	if (xType < sizeof(pTypeString) / sizeof(FTM_CHAR_PTR))
+	{
+		return	pTypeString[xType];
+	}
+
+	return	"UNKNOWN";
+}
+
+FTM_RET	FTM_EVENT_conditionToString(FTM_EVENT_PTR pEvent, FTM_CHAR_PTR pBuff, FTM_ULONG ulBuffLen)
+{
+	ASSERT(pEvent != NULL);
+	ASSERT(pBuff != NULL);
+
+	FTM_ULONG	ulLen = 0;
+	FTM_CHAR	pTemp[256];
+
+	switch(pEvent->xType)
+	{   
+	case    FTM_EVENT_TYPE_ABOVE:
+		{   
+			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pEvent->xParams.xAbove.xValue);
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "x >= %s", pTemp);
+		}   
+		break;
+
+	case    FTM_EVENT_TYPE_BELOW:
+		{   
+			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pEvent->xParams.xBelow.xValue);
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "x <= %s", pTemp);
+		}   
+		break;
+
+	case    FTM_EVENT_TYPE_INCLUDE:
+		{   
+			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pEvent->xParams.xInclude.xLower);
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "%s <= x <= ", pTemp);
+
+			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pEvent->xParams.xInclude.xUpper);
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "%s)", pTemp);
+		}   
+		break;
+
+	case    FTM_EVENT_TYPE_EXCEPT:
+		{   
+			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pEvent->xParams.xExcept.xLower);
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "(x < %s) && ", pTemp);
+
+			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pEvent->xParams.xExcept.xUpper);
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "(%s < x)", pTemp);
+		}   
+		break;
+
+	case    FTM_EVENT_TYPE_CHANGE:
+		{   
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "CHANGE");
+		}   
+		break;
+
+	case    FTM_EVENT_TYPE_AND:
+		{   
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "%lu and %lu", pEvent->xParams.xAnd.xID1, pEvent->xParams.xAnd.xID2);
+		}   
+		break;
+
+	case    FTM_EVENT_TYPE_OR:
+		{   
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "%lu or %lu", pEvent->xParams.xAnd.xID1, pEvent->xParams.xAnd.xID2);
+		}
+		break;
+
+	default:
+		{   
+			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "UNKNOWN");
+		}
+	}
+
+	return	FTM_RET_OK;
+
 }
 
 FTM_BOOL		FTM_EVENT_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator)

@@ -1078,6 +1078,348 @@ FTM_RET	FTDMC_EP_DATA_countWithTime
 	return	xResp.nRet;
 }
 
+FTM_RET	FTDMC_EVENT_add
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_EVENT_PTR     		pEvent
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pEvent != NULL);
+
+	FTM_RET						nRet;
+	FTDM_REQ_EVENT_ADD_PARAMS	xReq;
+	FTDM_RESP_EVENT_ADD_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_EVENT_ADD;
+	xReq.nLen	=	sizeof(xReq);
+	memcpy(&xReq.xEvent, pEvent, sizeof(FTM_EVENT));
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_EVENT_del
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_EVENT_ID     		xEventID
+)
+{
+	ASSERT(pSession != NULL);
+
+	FTM_RET						nRet;
+	FTDM_REQ_EVENT_DEL_PARAMS	xReq;
+	FTDM_RESP_EVENT_DEL_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_EVENT_DEL;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.xID	=	xEventID;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_EVENT_count
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG_PTR			pulCount
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET							nRet;
+ 	FTDM_REQ_EVENT_COUNT_PARAMS		xReq;
+	FTDM_RESP_EVENT_COUNT_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_EVENT_COUNT;
+	xReq.nLen	=	sizeof(xReq);
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		*pulCount = xResp.nCount;
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_EVENT_get
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_EVENT_ID     		xEventID,
+	FTM_EVENT_PTR			pEvent
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pEvent != NULL);
+
+	FTM_RET						nRet;
+ 	FTDM_REQ_EVENT_GET_PARAMS	xReq;
+	FTDM_RESP_EVENT_GET_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_EVENT_GET;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.xID	=	xEventID;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pEvent, &xResp.xEvent, sizeof(FTM_EVENT));
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_EVENT_getAt
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				ulIndex,
+	FTM_EVENT_PTR			pEvent
+
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pEvent != NULL);
+
+	FTM_RET							nRet;
+ 	FTDM_REQ_EVENT_GET_AT_PARAMS	xReq;
+	FTDM_RESP_EVENT_GET_AT_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_EVENT_GET_AT;
+	xReq.nLen 	=	sizeof(xReq);
+	xReq.nIndex	=	ulIndex;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pEvent, &xResp.xEvent, sizeof(FTM_EVENT));
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_ACT_add
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ACT_PTR     		pAct
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pAct != NULL);
+
+	FTM_RET						nRet;
+	FTDM_REQ_ACT_ADD_PARAMS	xReq;
+	FTDM_RESP_ACT_ADD_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_ACT_ADD;
+	xReq.nLen	=	sizeof(xReq);
+	memcpy(&xReq.xAct, pAct, sizeof(FTM_ACT));
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_ACT_del
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ACT_ID     		xActID
+)
+{
+	ASSERT(pSession != NULL);
+
+	FTM_RET						nRet;
+	FTDM_REQ_ACT_DEL_PARAMS	xReq;
+	FTDM_RESP_ACT_DEL_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_ACT_DEL;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.xID	=	xActID;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_ACT_count
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG_PTR			pulCount
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET							nRet;
+ 	FTDM_REQ_ACT_COUNT_PARAMS		xReq;
+	FTDM_RESP_ACT_COUNT_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_ACT_COUNT;
+	xReq.nLen	=	sizeof(xReq);
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		*pulCount = xResp.nCount;
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_ACT_get
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ACT_ID     		xActID,
+	FTM_ACT_PTR			pAct
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pAct != NULL);
+
+	FTM_RET						nRet;
+ 	FTDM_REQ_ACT_GET_PARAMS	xReq;
+	FTDM_RESP_ACT_GET_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_ACT_GET;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.xID	=	xActID;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pAct, &xResp.xAct, sizeof(FTM_ACT));
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_ACT_getAt
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				ulIndex,
+	FTM_ACT_PTR			pAct
+
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pAct != NULL);
+
+	FTM_RET							nRet;
+ 	FTDM_REQ_ACT_GET_AT_PARAMS	xReq;
+	FTDM_RESP_ACT_GET_AT_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_ACT_GET_AT;
+	xReq.nLen 	=	sizeof(xReq);
+	xReq.nIndex	=	ulIndex;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pAct, &xResp.xAct, sizeof(FTM_ACT));
+	}
+
+	return	xResp.nRet;
+}
+
 /*****************************************************************
  * Internal Functions
  *****************************************************************/

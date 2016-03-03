@@ -233,81 +233,159 @@ FTM_RET	FTM_EP_DATA_compare(FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_
 
 	if (pData1->xType != pData2->xType)
 	{
-		return	FTM_RET_NOT_COMPARABLE;
+		FTM_FLOAT	fValue1;
+		FTM_FLOAT	fValue2;
+
+
+		switch(pData1->xType)
+		{
+		case	FTM_EP_DATA_TYPE_INT:
+			{	
+				fValue1 = pData1->xValue.nValue;
+			}
+			break;
+
+		case	FTM_EP_DATA_TYPE_ULONG:
+			{	
+				fValue1 = pData1->xValue.ulValue;
+			}
+			break;
+
+		case	FTM_EP_DATA_TYPE_FLOAT:
+			{	
+				fValue1 = pData1->xValue.fValue;
+			}
+			break;
+
+		case	FTM_EP_DATA_TYPE_BOOL:
+			{	
+				fValue1 = pData1->xValue.bValue;
+			}
+			break;
+
+		default:
+			return	FTM_RET_ERROR;
+		}
+
+		switch(pData2->xType)
+		{
+		case	FTM_EP_DATA_TYPE_INT:
+			{	
+				fValue2 = pData2->xValue.nValue;
+			}
+			break;
+
+		case	FTM_EP_DATA_TYPE_ULONG:
+			{	
+				fValue2 = pData2->xValue.ulValue;
+			}
+			break;
+
+		case	FTM_EP_DATA_TYPE_FLOAT:
+			{	
+				fValue2 = pData2->xValue.fValue;
+			}
+			break;
+
+		case	FTM_EP_DATA_TYPE_BOOL:
+			{	
+				fValue2 = pData2->xValue.bValue;
+			}
+			break;
+
+		default:
+			return	FTM_RET_ERROR;
+		}
+
+		if (fValue1 > fValue2)
+		{
+			*pResult = 1;
+		}
+		else if (fValue1 < fValue2)
+		{
+			*pResult = -1;	
+		}
+		else
+		{
+			*pResult = 0;	
+		}
+
 	}
-	
-	switch(pData1->xType)
+	else
 	{
-	case	FTM_EP_DATA_TYPE_INT:
-		{	
-			if (pData1->xValue.nValue > pData2->xValue.nValue)
-			{
-				*pResult = 1;
+		switch(pData1->xType)
+		{
+		case	FTM_EP_DATA_TYPE_INT:
+			{	
+				if (pData1->xValue.nValue > pData2->xValue.nValue)
+				{
+					*pResult = 1;
+				}
+				else if (pData1->xValue.nValue < pData2->xValue.nValue)
+				{
+					*pResult = -1;	
+				}
+				else
+				{
+					*pResult = 0;	
+				}
 			}
-			else if (pData1->xValue.nValue < pData2->xValue.nValue)
-			{
-				*pResult = -1;	
-			}
-			else
-			{
-				*pResult = 0;	
-			}
-		}
-		break;
+			break;
 
-	case	FTM_EP_DATA_TYPE_ULONG:
-		{	
-			if (pData1->xValue.ulValue > pData2->xValue.ulValue)
-			{
-				*pResult = 1;
+		case	FTM_EP_DATA_TYPE_ULONG:
+			{	
+				if (pData1->xValue.ulValue > pData2->xValue.ulValue)
+				{
+					*pResult = 1;
+				}
+				else if (pData1->xValue.ulValue < pData2->xValue.ulValue)
+				{
+					*pResult = -1;	
+				}
+				else
+				{
+					*pResult = 0;	
+				}
 			}
-			else if (pData1->xValue.ulValue < pData2->xValue.ulValue)
-			{
-				*pResult = -1;	
-			}
-			else
-			{
-				*pResult = 0;	
-			}
-		}
-		break;
+			break;
 
-	case	FTM_EP_DATA_TYPE_FLOAT:
-		{	
-			if (pData1->xValue.fValue > pData2->xValue.fValue)
-			{
-				*pResult = 1;
+		case	FTM_EP_DATA_TYPE_FLOAT:
+			{	
+				if (pData1->xValue.fValue > pData2->xValue.fValue)
+				{
+					*pResult = 1;
+				}
+				else if (pData1->xValue.fValue < pData2->xValue.fValue)
+				{
+					*pResult = -1;	
+				}
+				else
+				{
+					*pResult = 0;	
+				}
 			}
-			else if (pData1->xValue.fValue < pData2->xValue.fValue)
-			{
-				*pResult = -1;	
-			}
-			else
-			{
-				*pResult = 0;	
-			}
-		}
-		break;
+			break;
 
-	case	FTM_EP_DATA_TYPE_BOOL:
-		{	
-			if (pData1->xValue.fValue > pData2->xValue.fValue)
-			{
-				*pResult = 1;
+		case	FTM_EP_DATA_TYPE_BOOL:
+			{	
+				if (pData1->xValue.fValue > pData2->xValue.fValue)
+				{
+					*pResult = 1;
+				}
+				else if (pData1->xValue.fValue < pData2->xValue.fValue)
+				{
+					*pResult = -1;	
+				}
+				else
+				{
+					*pResult = 0;	
+				}
 			}
-			else if (pData1->xValue.fValue < pData2->xValue.fValue)
-			{
-				*pResult = -1;	
-			}
-			else
-			{
-				*pResult = 0;	
-			}
-		}
-		break;
+			break;
 
-	default:
-		return	FTM_RET_INVALID_DATA;
+		default:
+			return	FTM_RET_INVALID_DATA;
+		}
 	}
 
 	return	FTM_RET_OK;

@@ -60,22 +60,22 @@ FTM_RET	FTNM_SHELL_CMD_list
 	FTM_CHAR_PTR	pArgv[]
 )
 {
+	FTM_RET			xRet;
 	FTNM_NODE_PTR	pNode;
 	FTNM_EP_PTR		pEP;
-	FTM_ULONG		i, ulNodeCount;
-	FTM_ULONG		j, ulEPCount;
+	FTM_ULONG		i,j, ulCount;
 
 	MESSAGE("\n< NODE LIST >\n");
 	MESSAGE("%-16s %-16s %-8s %-8s %-8s \n", "DID", "STATE", "INTERVAL", "TIMEOUT", "EPs");
-	FTNM_NODE_count(&ulNodeCount);
-	for(i = 0 ; i < ulNodeCount ; i++)
+	FTNM_NODE_count(&ulCount);
+	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTNM_NODE_getAt(i, &pNode);
 		MESSAGE("%-16s %-16s %-8d %-8d ", pNode->xInfo.pDID, FTNM_NODE_stateToStr(pNode->xState), pNode->xInfo.ulInterval, pNode->xInfo.ulTimeout);
 
-		FTNM_NODE_getEPCount(pNode, &ulEPCount);
-		MESSAGE("%-3d [ ", ulEPCount);
-		for(j = 0; j < ulEPCount ; j++)
+		FTNM_NODE_getEPCount(pNode, &ulCount);
+		MESSAGE("%-3d [ ", ulCount);
+		for(j = 0; j < ulCount ; j++)
 		{
 			if (FTNM_NODE_getEPAt(pNode, j, &pEP) == FTM_RET_OK)
 			{
@@ -87,8 +87,8 @@ FTM_RET	FTNM_SHELL_CMD_list
 
 	MESSAGE("\n< EP LIST >\n");
 	MESSAGE("%-16s %-16s %-16s %-16s %-8s %-24s\n", "EPID", "TYPE", "DID", "STATE", "VALUE", "TIME");
-	FTNM_EP_count(0, &ulEPCount);
-	for(i = 0; i < ulEPCount ; i++)
+	FTNM_EP_count(0, &ulCount);
+	for(i = 0; i < ulCount ; i++)
 	{
 		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
 		{
@@ -130,5 +130,27 @@ FTM_RET	FTNM_SHELL_CMD_list
 		}
 	}
 
+	MESSAGE("\n< TRIGGER >\n");
+	FTNM_TRIG_count(&ulCount);
+	MESSAGE("\t%-8s %-8s %-16s %s\n", "ID", "EPID", "TYPE", "CONDITION");
+	for(i = 0; i< ulCount ; i++)
+	{
+		FTNM_TRIG_PTR	pTrigger;
+
+		xRet = FTNM_TRIG_getAt(i, &pTrigger);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_CHAR	pCondition[1024];
+
+			FTM_EVENT_conditionToString(&pTrigger->xEvent, pCondition, sizeof(pCondition));
+
+			MESSAGE("\t%08x %08x %-16s %s\n", 
+				pTrigger->xEvent.xID, 
+				pTrigger->xEvent.xEPID, 
+				FTM_EVENT_typeString(pTrigger->xEvent.xType),
+				pCondition);
+		}
+
+	}
 	return	FTM_RET_OK;
 }

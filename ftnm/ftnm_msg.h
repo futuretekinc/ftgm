@@ -1,7 +1,7 @@
 #ifndef	_FTNM_MSG_H_
 #define	_FTNM_MSG_H_
 
-#include "ftm_endpoint.h"
+#include "ftm_ep.h"
 #define	FTNM_MSG_STRING_LENGTH	1024
 typedef	enum
 {

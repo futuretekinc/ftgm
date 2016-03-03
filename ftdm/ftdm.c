@@ -172,6 +172,17 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
+	xRet = FTDM_ACT_init();
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTDM_ACT_loadFromFile(pConfigFileName);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Actor configuration load failed.\n");	
+			return	0;
+		}
+	}
+
 	if (nDebugLevel >= 0)
 	{
 		xConfig.xPrint.ulLevel = nDebugLevel;	
@@ -194,6 +205,8 @@ int main(int nArgc, char *pArgv[])
 		FTDMS_run(&xConfig.xServer, &xPThread);
 		FTM_SHELL_run();
 	}
+
+	FTDM_ACT_final();
 
 	FTDM_EVENT_final();
 

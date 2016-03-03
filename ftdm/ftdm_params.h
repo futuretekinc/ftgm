@@ -519,4 +519,76 @@ typedef	struct
 	FTM_EVENT			xEvent;
 }	FTDM_RESP_EVENT_GET_AT_PARAMS, _PTR_	FTDM_RESP_EVENT_GET_AT_PARAMS_PTR;
 
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ACT     		xAct;
+}	FTDM_REQ_ACT_ADD_PARAMS, _PTR_ FTDM_REQ_ACT_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTDM_RESP_ACT_ADD_PARAMS, _PTR_	FTDM_RESP_ACT_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ACT_ID			xID;
+}	FTDM_REQ_ACT_DEL_PARAMS, _PTR_	FTDM_REQ_ACT_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTDM_RESP_ACT_DEL_PARAMS, _PTR_ 	FTDM_RESP_ACT_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+}	FTDM_REQ_ACT_COUNT_PARAMS, _PTR_ 	FTDM_REQ_ACT_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			nCount;
+}	FTDM_RESP_ACT_COUNT_PARAMS, _PTR_	FTDM_RESP_ACT_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ACT_ID			xID;
+}	FTDM_REQ_ACT_GET_PARAMS, _PTR_ 	FTDM_REQ_ACT_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ACT				xAct;
+}	FTDM_RESP_ACT_GET_PARAMS, _PTR_	FTDM_RESP_ACT_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ULONG			nIndex;
+}	FTDM_REQ_ACT_GET_AT_PARAMS, _PTR_	FTDM_REQ_ACT_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ACT				xAct;
+}	FTDM_RESP_ACT_GET_AT_PARAMS, _PTR_	FTDM_RESP_ACT_GET_AT_PARAMS_PTR;
+
 #endif

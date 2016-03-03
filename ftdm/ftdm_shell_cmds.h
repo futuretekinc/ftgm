@@ -3,7 +3,7 @@
 
 #include "ftm_types.h"
 #include "ftm_node.h"
-#include "ftm_endpoint.h"
+#include "ftm_ep.h"
 
 FTM_RET	FTDM_SHELL_showNodeList(void);
 FTM_RET	FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID);

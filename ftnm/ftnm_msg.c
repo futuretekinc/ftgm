@@ -56,6 +56,7 @@ FTM_RET	FTNM_MSG_sendSNMPTrap(FTM_CHAR_PTR pTrapMsg)
 
 FTM_RET FTNM_MSG_sendEPChanged(FTM_EPID xEPID, FTM_EP_DATA_PTR pData)
 {
+	ASSERT(pMsgQ != NULL);
 	ASSERT(pData != NULL);
 	FTM_RET			xRet;
 	FTNM_MSG_PTR pMsg;

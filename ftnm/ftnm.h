@@ -11,7 +11,7 @@
 #include "ftnm_server.h"
 #include "ftnm_snmpc.h"
 #include "ftnm_snmptrapd.h"
-#include "ftnm_event.h"
+#include "ftnm_trigger.h"
 
 #define	FTNM_DEFAULT_SERVER_PORT			8889
 #define	FTNM_DEFAULT_SERVER_SESSION_COUNT	10
@@ -45,7 +45,7 @@ typedef	struct
 	FTNM_SERVER_PTR			pServer;
 	FTNM_SNMPC_PTR			pSNMPC;
 	FTNM_SNMPTRAPD_PTR		pSNMPTrapd;
-	FTNM_EVENT_MANAGER_PTR	pEventM;
+	FTNM_TRIG_MANAGER_PTR	pTriggerD;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
 

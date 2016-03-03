@@ -44,17 +44,15 @@ FTM_RET	FTNM_init(void)
 	FTNM_SNMPTRAPD_create(&xCTX.pSNMPTrapd);
 	FTNM_SNMPTRAPD_setTrapCB(xCTX.pSNMPTrapd, FTNM_SNMPTrapCB);
 
-	FTNM_EVENTM_init();
+	FTNM_TRIG_init();
 
-	FTNM_EVENTM_create(&xCTX.pEventM);
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_final(void)
 {
-	FTNM_EVENTM_destroy(xCTX.pEventM);
-	FTNM_EVENTM_final();
+	FTNM_TRIG_final();
 
 	FTNM_SNMPTRAPD_destroy(xCTX.pSNMPTrapd);
 	FTNM_SNMPTRAPD_final();
@@ -290,6 +288,31 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 		TRACE("EP[%08lx] creating success.\n", pEP->xInfo.xEPID);
 	}
 
+	xRet = FTDMC_EVENT_count(&pCTX->xDMCSession, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTM_EVENT		xEvent;
+
+		xRet = FTDMC_EVENT_getAt(&pCTX->xDMCSession, i, &xEvent);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Event[%d] data load failed.\n", i);	
+			continue;
+		}
+
+		xRet = FTNM_TRIG_create(&xEvent);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("The new event can not registration!\n") ;
+			continue;
+		}
+	}
+
 	xCTX.xState = FTNM_STATE_SYNCHRONIZED;
 	return	FTM_RET_OK;
 }
@@ -301,6 +324,7 @@ FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX)
 	FTNM_EP_PTR	pEP;
 	FTM_ULONG	i, ulCount;
 	
+	FTNM_TRIG_start();
 	FTNM_EP_count(0, &ulCount);
 	TRACE("EP count : %lu\n", ulCount);
 	for(i = 0 ; i < ulCount ; i++)

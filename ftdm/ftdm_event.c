@@ -1,30 +1,18 @@
 #include <unistd.h>
+#include <string.h>
 #include "ftm_error.h"
 #include "ftm_config.h"
+#include "ftm_mem.h"
+#include "ftm_msg_queue.h"
 #include "ftdm_config.h"
 #include "ftdm_event.h"
-
-static FTM_LIST_PTR	pEventList = NULL;
 
 FTM_RET	FTDM_EVENT_init
 (
 	FTM_VOID
 )
 {
-	FTM_RET	xRet;
-
-	if (pEventList != NULL)
-	{
-		return	FTM_RET_ALREADY_INITIALIZED;
-	}
-
-	xRet = FTM_LIST_create(&pEventList);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	return	FTM_RET_OK;
+	return	FTM_EVENT_init();
 }
 
 FTM_RET FTDM_EVENT_final
@@ -32,27 +20,7 @@ FTM_RET FTDM_EVENT_final
 	FTM_VOID
 )
 {
-	FTM_RET			xRet;
-	FTM_VOID_PTR	pEvent;
-
-	if (pEventList == NULL)
-	{
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
-
-	FTM_LIST_iteratorStart(pEventList);
-	while(FTM_LIST_iteratorNext(pEventList, &pEvent) == FTM_RET_OK)
-	{
-		FTM_EVENT_destroy(pEvent);			
-	}
-	
-	xRet = FTM_LIST_destroy(pEventList);
-	if (xRet == FTM_RET_OK)
-	{
-		pEventList = NULL;
-	}
-
-	return	xRet;
+	return	FTM_EVENT_final();
 }
 
 FTM_RET	FTDM_EVENT_loadFromFile
@@ -67,11 +35,6 @@ FTM_RET	FTDM_EVENT_loadFromFile
 	FTM_CONFIG_ITEM		xTrigger;
 	FTM_CONFIG_ITEM		xEvents;
 	FTM_CONFIG_ITEM		xEventItem;
-
-	if (pEventList == NULL)
-	{
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
 
 	xRet = FTM_CONFIG_init(&xConfig, pFileName);
 	if (xRet != FTM_RET_OK)
@@ -106,7 +69,19 @@ FTM_RET	FTDM_EVENT_loadFromFile
 							continue;
 						}
 						
+						xRet = FTM_CONFIG_ITEM_getInt(&xEventItem, "epid", (FTM_INT_PTR)&xEvent.xEPID);
+						if (xRet != FTM_RET_OK)
+						{
+							continue;
+						}
+
 						xRet = FTM_CONFIG_ITEM_getInt(&xEventItem, "type", (FTM_INT_PTR)&xEvent.xType);
+						if (xRet != FTM_RET_OK)
+						{
+							continue;
+						}
+
+						xRet = FTM_CONFIG_ITEM_getInt(&xEventItem, "act", (FTM_INT_PTR)&xEvent.xActID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
@@ -157,9 +132,9 @@ FTM_RET	FTDM_EVENT_loadFromFile
 						}
 
 						xRet = FTM_EVENT_createCopy(&xEvent, &pEvent);
-						if (xRet == FTM_RET_OK)
+						if (xRet != FTM_RET_OK)
 						{
-							FTM_LIST_append(pEventList, pEvent);
+							ERROR("The new event can not creation.\n");
 						}
 					
 					}
@@ -188,11 +163,10 @@ FTM_RET	FTDM_EVENT_loadFromDB
 
 FTM_RET	FTDM_EVENT_add
 (
-	FTM_EVENT_PTR 	pInfo
+	FTM_EVENT_PTR 	pEvent
 )
 {
-	
-	return	FTM_RET_OK;
+	return	FTM_EVENT_createCopy(pEvent, NULL);
 }
 
 FTM_RET	FTDM_EVENT_del
@@ -200,15 +174,26 @@ FTM_RET	FTDM_EVENT_del
 	FTM_EVENT_ID	xID
 )
 {
-	return	FTM_RET_OK;
+	FTM_RET			xRet;
+	FTM_EVENT_PTR	pEvent = NULL;
+
+	xRet = FTM_EVENT_get(xID, &pEvent);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTM_EVENT_destroy(pEvent);
 }
 
 FTM_RET	FTDM_EVENT_count
 (
-	FTM_ULONG_PTR		pnCount
+	FTM_ULONG_PTR		pulCount
 )
 {
-	return	FTM_RET_OK;
+	ASSERT(pulCount != NULL);
+
+	return	FTM_EVENT_count(pulCount);
 }
 
 FTM_RET	FTDM_EVENT_get
@@ -217,7 +202,7 @@ FTM_RET	FTDM_EVENT_get
 	FTM_EVENT_PTR	_PTR_ 	ppEvent
 )
 {
-	return	FTM_RET_OK;
+	return	FTM_EVENT_get(xID, ppEvent);
 }
 
 FTM_RET	FTDM_EVENT_getAt
@@ -226,7 +211,7 @@ FTM_RET	FTDM_EVENT_getAt
 	FTM_EVENT_PTR	_PTR_ 	ppEvent
 )
 {
-	return	FTM_RET_OK;
+	return	FTM_EVENT_getAt(nIndex, ppEvent);
 }
 
 FTM_RET	FTDM_EVENT_showList
@@ -235,83 +220,88 @@ FTM_RET	FTDM_EVENT_showList
 )
 {
 	FTM_EVENT_PTR	pEvent;
-
-	if (pEventList == NULL)
-	{
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
-
-
+	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# TRIGGER INFORMATION\n");
-	MESSAGE("\t%-8s %-8s %s\n", "ID", "EPID", "CONDITION");
-	FTM_LIST_iteratorStart(pEventList);
-	while(FTM_LIST_iteratorNext(pEventList, (FTM_VOID_PTR _PTR_)&pEvent) == FTM_RET_OK)
+	MESSAGE("\t%-8s %-8s %-8s %s\n", "ID", "EPID", "ACTOR", "CONDITION");
+
+	FTM_EVENT_count(&ulCount);
+	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_CHAR	pBuff[1024];
-
-		MESSAGE("\t%08x %08x ", pEvent->xID, pEvent->xEPID);
-		switch(pEvent->xType)
+		if (FTM_EVENT_getAt(i, &pEvent) == FTM_RET_OK)
 		{
-		case	FTM_EVENT_TYPE_ABOVE:
+			FTM_CHAR	pBuff[1024];
+
+			MESSAGE("\t%08x %08x %-8d", pEvent->xID, pEvent->xEPID, pEvent->xActID);
+			switch(pEvent->xType)
 			{
-				FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xAbove.xValue);
-				MESSAGE("x >= %s ", pBuff);
+			case	FTM_EVENT_TYPE_ABOVE:
+				{
+					FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xAbove.xValue);
+					MESSAGE("x >= %s ", pBuff);
+				}
+				break;
+
+			case	FTM_EVENT_TYPE_BELOW:
+				{
+					FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xBelow.xValue);
+					MESSAGE("x <= %s ", pBuff);
+				}
+				break;
+
+			case	FTM_EVENT_TYPE_INCLUDE:
+				{
+					FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xInclude.xLower);
+					MESSAGE("(%s <= x <= ", pBuff);
+
+					FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xInclude.xUpper);
+					MESSAGE("%s) ", pBuff);
+				}
+				break;
+
+			case	FTM_EVENT_TYPE_EXCEPT:
+				{
+					FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xExcept.xLower);
+					MESSAGE("(x < %s) && ", pBuff);
+
+					FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xExcept.xUpper);
+					MESSAGE("(%s < x) ", pBuff);
+				}
+				break;
+
+			case	FTM_EVENT_TYPE_CHANGE:
+				{
+				}
+				break;
+
+			case	FTM_EVENT_TYPE_AND:
+				{
+					MESSAGE("%d and %d", 
+							pEvent->xParams.xAnd.xID1,
+							pEvent->xParams.xAnd.xID2);
+				}
+				break;
+
+			case	FTM_EVENT_TYPE_OR:
+				{
+					MESSAGE("%d or %d", 
+							pEvent->xParams.xAnd.xID1,
+							pEvent->xParams.xAnd.xID2);
+				}
+				break;
 			}
-			break;
-
-		case	FTM_EVENT_TYPE_BELOW:
-			{
-				FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xBelow.xValue);
-				MESSAGE("x <= %s ", pBuff);
-			}
-			break;
-
-		case	FTM_EVENT_TYPE_INCLUDE:
-			{
-				FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xInclude.xLower);
-				MESSAGE("(%s <= x <= ", pBuff);
-
-				FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xInclude.xUpper);
-				MESSAGE("%s) ", pBuff);
-			}
-			break;
-
-		case	FTM_EVENT_TYPE_EXCEPT:
-			{
-				FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xExcept.xLower);
-				MESSAGE("(x < %s) && ", pBuff);
-
-				FTM_EP_DATA_snprint(pBuff, 1023, &pEvent->xParams.xExcept.xUpper);
-				MESSAGE("(%s < x) ", pBuff);
-			}
-			break;
-
-		case	FTM_EVENT_TYPE_CHANGE:
-			{
-			}
-			break;
-
-		case	FTM_EVENT_TYPE_AND:
-			{
-				MESSAGE("%d and %d", 
-					pEvent->xParams.xAnd.xID1,
-					pEvent->xParams.xAnd.xID2);
-			}
-			break;
-
-		case	FTM_EVENT_TYPE_OR:
-			{
-				MESSAGE("%d or %d", 
-					pEvent->xParams.xAnd.xID1,
-					pEvent->xParams.xAnd.xID2);
-			}
-			break;
+			MESSAGE("\n");
 		}
-
-		MESSAGE("\n");
 	}
-	MESSAGE("\n");
 
 	return	FTM_RET_OK;
 }
 
+FTM_BOOL	FTDM_EVENT_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+{
+	ASSERT(pElement != NULL);
+	ASSERT(pIndicator != NULL);
+	FTM_EVENT_PTR		pEvent = (FTM_EVENT_PTR)pElement;
+	FTM_EVENT_ID_PTR	pEventID = (FTM_EVENT_ID_PTR)pIndicator;
+
+	return	(pEvent->xID == *pEventID);
+}

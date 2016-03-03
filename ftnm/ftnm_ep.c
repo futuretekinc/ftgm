@@ -466,12 +466,14 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 		if (xRet == FTM_RET_OK)
 		{
 			xRet = FTNM_setEPData(pEP->xInfo.xEPID, pNewData);
+			if (xRet != FTM_RET_OK)
+			{
+				FTM_EP_DATA_destroy(pNewData);	
+				return	xRet;
+			}
+		
+			FTNM_TRIG_updateEP(pEP->xInfo.xEPID, pLastData, pNewData);
 		}
-	}
-
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_EP_DATA_destroy(pNewData);	
 	}
 
 	return	xRet;

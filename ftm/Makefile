@@ -1,8 +1,8 @@
 include ../Makefile.in
 
 LIB_FTM=libftm
-LIB_FTM_INCS= ftm_types.h ftm_node.h ftm_endpoint.h ftm_object.h ftm_debug.h ftm_list.h ftm_shell.h 
-LIB_FTM_SRCS= ftm_debug.c convert.c ftm_node.c ftm_endpoint.c ftm_list.c ftm_queue.c ftm_msg_queue.c ftm_shell.c ftm_mem.c ftm_value.c ftm_timer.c nxjson.c ftm_event.c ftm_config.c
+LIB_FTM_INCS= ftm_types.h ftm_node.h ftm_ep.h ftm_object.h ftm_debug.h ftm_list.h ftm_shell.h 
+LIB_FTM_SRCS= ftm_debug.c convert.c ftm_node.c ftm_ep.c ftm_list.c ftm_queue.c ftm_msg_queue.c ftm_shell.c ftm_mem.c ftm_value.c ftm_timer.c nxjson.c ftm_event.c ftm_config.c ftm_time.c ftm_act.c
 LIB_FTM_OBJS=$(LIB_FTM_SRCS:.c=.o)
 
 all: $(LIB_FTM)

@@ -19,6 +19,7 @@ static FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_NODE_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_EP_INFO_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET	FTDMC_EVENT_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 
@@ -110,6 +111,16 @@ FTM_SHELL_CMD			FTDMC_pCmdList[] =
 					  "\tCount  Element count"
 		
 	},
+	{	.pString	= "event",
+		.function	= FTDMC_EVENT_cmd,
+		.pShortHelp = "Event management command set.",
+		.pHelp		= "<COMMAND> ...\n"\
+					 "\tEvent management\n"\
+					 "COMMANDS:\n"\
+					 "\tadd     EPID <Type> [<Condition 1> [<Condition 2>]]\n"\
+					 "\tdel     EPID\n"\
+					 "\tlist    Show event list"
+	},
 	{	.pString	= "debug",
 		.function	= FTDMC_DEBUG_cmd,
 		.pShortHelp = "",
@@ -125,7 +136,7 @@ FTM_SHELL_CMD			FTDMC_pCmdList[] =
 };
 
 FTM_ULONG		FTDMC_ulCmdCount = sizeof(FTDMC_pCmdList) / sizeof(FTM_SHELL_CMD);
-FTM_CHAR_PTR	FTDMC_pPrompt = "FTDMC>";
+FTM_CHAR_PTR	FTDMC_pPrompt = "FTDMC> ";
 
 FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
@@ -944,6 +955,240 @@ FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 		}
 		MESSAGE("\rTest generation completed : %4d\n", nDataGenCount);	
+	}
+	else
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDMC_EVENT_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+{
+	FTM_RET	xRet;
+
+	if ((nArgc == 1) || (strcasecmp(pArgv[1], "list") == 0))
+	{
+		FTM_ULONG	i, ulCount;
+
+		xRet = FTDMC_EVENT_count(&_xSession, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			return	xRet;
+		}
+
+		MESSAGE("\t%-8s %-8s %-16s %s\n", "ID", "EPID", "TYPE", "CONDITION");
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			FTM_EVENT	xEvent;
+			xRet = FTDMC_EVENT_getAt(&_xSession, i, &xEvent);
+			if (xRet == FTM_RET_OK)
+			{
+				FTM_CHAR	pBuff[1024];
+
+				FTM_EVENT_conditionToString(&xEvent, pBuff, sizeof(pBuff) );
+				MESSAGE("\t%08x %08x %-16s %s\n", xEvent.xID, xEvent.xEPID, FTM_EVENT_typeString(xEvent.xType), pBuff);
+			}
+		}
+	}
+	else if ((nArgc == 3) && (strcasecmp(pArgv[1], "del") == 0))
+	{
+		FTM_EVENT_ID	xEventID;
+
+		xEventID 	= (FTM_EVENT_ID)strtoul(pArgv[2], 0, 10);
+		xRet = FTDMC_EVENT_del(&_xSession, xEventID);
+		if (xRet == FTM_RET_OK)
+		{
+			MESSAGE("The event deleted successfully.\n");	
+		}
+		else
+		{
+			MESSAGE("The event failed to unregistration.\n");	
+		}
+	}
+	else if ((nArgc == 5) && (strcasecmp(pArgv[1], "add") == 0))
+	{
+		FTM_EVENT		xEvent;
+
+		memset(&xEvent, 0, sizeof(xEvent));
+		xEvent.xEPID 	= (FTM_EPID)strtoul(pArgv[2], 0, 10);
+		
+		if (strcasecmp(pArgv[3], "ge") == 0)
+		{
+			xEvent.xType = FTM_EVENT_TYPE_ABOVE;
+			if ((pArgv[4][0] | 0x20) == 'f')
+			{
+				xEvent.xParams.xAbove.xValue.xType = FTM_EP_DATA_TYPE_FLOAT;
+				xEvent.xParams.xAbove.xValue.xValue.fValue = strtod(&pArgv[4][1], 0);
+			}
+			else if ((pArgv[4][0] | 0x20) == 'i')
+			{
+		TRACE("3\n");
+				xEvent.xParams.xAbove.xValue.xType = FTM_EP_DATA_TYPE_INT;
+				xEvent.xParams.xAbove.xValue.xValue.nValue = strtol(&pArgv[4][1], 0, 10);
+			}
+			else if ((pArgv[4][0] | 0x20) == 'b')
+			{
+				xEvent.xParams.xAbove.xValue.xType = FTM_EP_DATA_TYPE_BOOL;
+				xEvent.xParams.xAbove.xValue.xValue.bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+			}
+			else
+			{
+				return	FTM_RET_INVALID_ARGUMENTS;	
+			}
+		}
+		else if (strcasecmp(pArgv[3], "le") == 0)
+		{
+			xEvent.xType = FTM_EVENT_TYPE_BELOW;
+			if ((pArgv[4][0] | 0x20) == 'f')
+			{
+				xEvent.xParams.xBelow.xValue.xType = FTM_EP_DATA_TYPE_FLOAT;
+				xEvent.xParams.xBelow.xValue.xValue.fValue = strtod(&pArgv[4][1], 0);
+			}
+			else if ((pArgv[4][0] | 0x20) == 'i')
+			{
+				xEvent.xParams.xBelow.xValue.xType = FTM_EP_DATA_TYPE_INT;
+				xEvent.xParams.xBelow.xValue.xValue.nValue = strtol(&pArgv[4][1], 0, 10);
+			}
+			else if ((pArgv[4][0] | 0x20) == 'b')
+			{
+				xEvent.xParams.xBelow.xValue.xType = FTM_EP_DATA_TYPE_BOOL;
+				xEvent.xParams.xBelow.xValue.xValue.bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+			}
+			else
+			{
+				return	FTM_RET_INVALID_ARGUMENTS;	
+			}
+		}
+		else
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
+
+		xRet = FTDMC_EVENT_add(&_xSession, &xEvent);
+		if (xRet == FTM_RET_OK)
+		{
+			MESSAGE("The event added successfully.\n");	
+		}
+		else
+		{
+			MESSAGE("The event failed to registration.\n");	
+		
+		}
+	}
+	else if ((nArgc == 6) && (strcasecmp(pArgv[1], "add") == 0))
+	{
+		FTM_EVENT		xEvent;
+
+		memset(&xEvent, 0, sizeof(xEvent));
+		xEvent.xEPID 	= (FTM_EPID)strtoul(pArgv[2], 0, 10);
+
+		if (strcasecmp(pArgv[3], "include") == 0)
+		{
+			xEvent.xType = FTM_EVENT_TYPE_INCLUDE;
+			if ((pArgv[4][0] | 0x20) == 'f')
+			{
+				xEvent.xParams.xInclude.xLower.xType = FTM_EP_DATA_TYPE_FLOAT;
+				xEvent.xParams.xInclude.xLower.xValue.fValue = strtod(&pArgv[4][1], 0);
+			}
+			else if ((pArgv[4][0] | 0x20) == 'i')
+			{
+				xEvent.xParams.xInclude.xLower.xType = FTM_EP_DATA_TYPE_INT;
+				xEvent.xParams.xInclude.xLower.xValue.nValue = strtol(&pArgv[4][1], 0, 10);
+			}
+			else if ((pArgv[4][0] | 0x20) == 'b')
+			{
+				xEvent.xParams.xInclude.xLower.xType = FTM_EP_DATA_TYPE_BOOL;
+				xEvent.xParams.xInclude.xLower.xValue.bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+			}
+			if ((pArgv[5][0] | 0x20) == 'f')
+			{
+				xEvent.xParams.xInclude.xUpper.xType = FTM_EP_DATA_TYPE_FLOAT;
+				xEvent.xParams.xInclude.xUpper.xValue.fValue = strtod(&pArgv[5][1], 0);
+			}
+			else if ((pArgv[5][0] | 0x20) == 'i')
+			{
+				xEvent.xParams.xInclude.xUpper.xType = FTM_EP_DATA_TYPE_INT;
+				xEvent.xParams.xInclude.xUpper.xValue.nValue = strtol(&pArgv[5][1], 0, 10);
+			}
+			else if ((pArgv[5][0] | 0x20) == 'b')
+			{
+				xEvent.xParams.xInclude.xUpper.xType = FTM_EP_DATA_TYPE_BOOL;
+				xEvent.xParams.xInclude.xUpper.xValue.bValue= (strtoul(&pArgv[5][1], 0, 10) != 0);
+			}
+			else
+			{
+				return	FTM_RET_INVALID_ARGUMENTS;	
+			}
+		}
+		else if (strcasecmp(pArgv[3], "except") == 0)
+		{
+			xEvent.xType = FTM_EVENT_TYPE_EXCEPT;
+			if ((pArgv[4][0] | 0x20) == 'f')
+			{
+				xEvent.xParams.xExcept.xLower.xType = FTM_EP_DATA_TYPE_FLOAT;
+				xEvent.xParams.xExcept.xLower.xValue.fValue = strtod(&pArgv[4][1], 0);
+			}
+			else if ((pArgv[4][0] | 0x20) == 'i')
+			{
+				xEvent.xParams.xExcept.xLower.xType = FTM_EP_DATA_TYPE_INT;
+				xEvent.xParams.xExcept.xLower.xValue.nValue = strtol(&pArgv[4][1], 0, 10);
+			}
+			else if ((pArgv[4][0] | 0x20) == 'b')
+			{
+				xEvent.xParams.xExcept.xLower.xType = FTM_EP_DATA_TYPE_BOOL;
+				xEvent.xParams.xExcept.xLower.xValue.bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+			}
+			if ((pArgv[5][0] | 0x20) == 'f')
+			{
+				xEvent.xParams.xExcept.xUpper.xType = FTM_EP_DATA_TYPE_FLOAT;
+				xEvent.xParams.xExcept.xUpper.xValue.fValue = strtod(&pArgv[5][1], 0);
+			}
+			else if ((pArgv[5][0] | 0x20) == 'i')
+			{
+				xEvent.xParams.xExcept.xUpper.xType = FTM_EP_DATA_TYPE_INT;
+				xEvent.xParams.xExcept.xUpper.xValue.nValue = strtol(&pArgv[5][1], 0, 10);
+			}
+			else if ((pArgv[5][0] | 0x20) == 'b')
+			{
+				xEvent.xParams.xExcept.xUpper.xType = FTM_EP_DATA_TYPE_BOOL;
+				xEvent.xParams.xExcept.xUpper.xValue.bValue = (strtoul(&pArgv[5][1], 0, 10) != 0);
+			}
+			else
+			{
+				return	FTM_RET_INVALID_ARGUMENTS;	
+			}
+		}
+		else if (strcasecmp(pArgv[3], "and") == 0)
+		{
+			xEvent.xType = FTM_EVENT_TYPE_AND;
+			xEvent.xParams.xAnd.xID1 = strtol(pArgv[4], 0, 10);
+			xEvent.xParams.xAnd.xID2 = strtol(pArgv[5], 0, 10);
+		}
+		else if (strcasecmp(pArgv[3], "or") == 0)
+		{
+			xEvent.xType = FTM_EVENT_TYPE_OR;
+			xEvent.xParams.xOr.xID1 = strtol(pArgv[4], 0, 10);
+			xEvent.xParams.xOr.xID2 = strtol(pArgv[5], 0, 10);
+		}
+		else
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
+
+		xRet = FTDMC_EVENT_add(&_xSession, &xEvent);
+		if (xRet == FTM_RET_OK)
+		{
+			MESSAGE("The event added successfully.\n");	
+		}
+		else
+		{
+			MESSAGE("The event failed to registration.\n");	
+		
+		}
+
+		return	xRet;
 	}
 	else
 	{
