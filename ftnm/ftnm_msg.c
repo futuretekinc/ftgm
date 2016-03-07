@@ -23,6 +23,33 @@ FTM_RET	FTNM_MSG_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_MSG_create(FTNM_MSG_PTR _PTR_ ppMsg)
+{
+	ASSERT(ppMsg != NULL);
+	FTNM_MSG_PTR	pMsg;
+
+	pMsg = (FTNM_MSG_PTR)FTM_MEM_malloc(sizeof(FTNM_MSG));
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	memset(pMsg, 0, sizeof(FTNM_MSG));
+
+	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_MSG_destroy(FTNM_MSG_PTR pMsg)
+{
+	ASSERT(pMsg != NULL);
+
+	FTM_MEM_free(pMsg);
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTNM_MSG_sendSNMPTrap(FTM_CHAR_PTR pTrapMsg)
 {
 	ASSERT(pMsgQ != NULL);
@@ -30,21 +57,19 @@ FTM_RET	FTNM_MSG_sendSNMPTrap(FTM_CHAR_PTR pTrapMsg)
 	FTM_RET			xRet;
 	FTNM_MSG_PTR 	pMsg;
 
-	pMsg = (FTNM_MSG_PTR)FTM_MEM_malloc(sizeof(FTNM_MSG));
-	if (pMsg == NULL)
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		return	xRet;
 	}
 	
-	memset(pMsg, 0, sizeof(FTNM_MSG));
-
 	pMsg->xType = FTNM_MSG_TYPE_SNMPTRAP;
 	strncpy(pMsg->xParams.xSNMPTrap.pString, pTrapMsg, sizeof(pMsg->xParams.xSNMPTrap.pString) - 1);
 
 	xRet = FTM_MSGQ_push(pMsgQ, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pMsg);	
+		FTNM_MSG_destroy(pMsg);
 	}
 
 	return	xRet;
@@ -57,14 +82,13 @@ FTM_RET FTNM_MSG_sendEPChanged(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 	FTM_RET			xRet;
 	FTNM_MSG_PTR pMsg;
 
-	pMsg = (FTNM_MSG_PTR)FTM_MEM_malloc(sizeof(FTNM_MSG));
-	if (pMsg == NULL)
+	TRACE("Send EP[%08x] changed!\n", xEPID);
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		return	xRet;
 	}
 	
-	memset(pMsg, 0, sizeof(FTNM_MSG));
-
 	pMsg->xType = FTNM_MSG_TYPE_EP_CHANGED;
 	pMsg->xParams.xEPChanged.xEPID = xEPID;
 	memcpy(&pMsg->xParams.xEPChanged.xData, pData, sizeof(FTM_EP_DATA));
@@ -72,7 +96,7 @@ FTM_RET FTNM_MSG_sendEPChanged(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 	xRet = FTM_MSGQ_push(pMsgQ, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pMsg);	
+		FTNM_MSG_destroy(pMsg);
 	}
 
 	return	xRet;

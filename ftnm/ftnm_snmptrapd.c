@@ -678,7 +678,7 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 	FTNM_SNMPTRAPD_MSG_TYPE	xMsgType = FTNM_SNMPTRAPD_MSG_TYPE_UNKNOWN;	
 	const nx_json 	*pRoot, *pItem;
 
-	TRACE("TRAP : %s\n", pMsg);
+	TRACE("SNMPTRAPD : %s\n", pMsg);
 	pRoot = nx_json_parse_utf8(pMsg);
 	if (pRoot == NULL)
 	{

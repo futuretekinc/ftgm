@@ -354,7 +354,6 @@ FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX)
 	
 	FTNM_TRIG_start();
 	FTNM_EP_count(0, &ulCount);
-	TRACE("EP count : %lu\n", ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
