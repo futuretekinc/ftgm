@@ -23,9 +23,10 @@ FTM_RET			FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX);
 FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX);
 
 static	FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg);
-static	FTNM_SERVER	xServer;
-static	FTNM_SNMPC	xSNMPC;
-static	FTNM_SNMPC	xSNMPTRAPD;
+static	FTNM_SERVER		xServer;
+static	FTNM_SNMPC		xSNMPC;
+static	FTNM_SNMPTRAPD	xSNMPTRAPD;
+static	FTNM_DMC		xDMC;
 
 static 	FTNM_CONTEXT	xCTX;
 
@@ -67,6 +68,18 @@ static 	FTNM_SERVICE	pServices[] =
 		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTNM_SNMPTRAPD_loadFromFile,
 		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTNM_SNMPTRAPD_showConfig,
 		.pData		=	(FTM_VOID_PTR)&xSNMPTRAPD
+	},
+	{
+		.xType		=	FTNM_SERVICE_DBM,
+		.fInit		=	(FTNM_SERVICE_INIT)FTNM_DMC_init,
+		.fFinal		=	(FTNM_SERVICE_FINAL)FTNM_DMC_final,
+		.fStart 	=	(FTNM_SERVICE_START)FTNM_DMC_start,
+		.fStop		=	(FTNM_SERVICE_STOP)FTNM_DMC_stop,
+		.fSetCallback=	NULL,
+		.fCallback	=	NULL,
+		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTNM_DMC_loadFromFile,
+		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTNM_DMC_showConfig,
+		.pData		=	(FTM_VOID_PTR)&xDMC
 	}
 };
 
@@ -76,8 +89,6 @@ FTM_RET	FTNM_init(void)
 	FTNM_NODE_init();
 	FTNM_EP_CLASS_init();
 	FTNM_MSG_init();
-
-	FTNM_DMC_init();
 
 	FTNM_SERVICE_init(pServices, sizeof(pServices) / sizeof(FTNM_SERVICE));
 
@@ -93,8 +104,6 @@ FTM_RET	FTNM_final(void)
 
 	FTNM_SERVICE_final();
 
-	FTNM_DMC_final();
-
 	FTNM_MSG_final();
 	FTNM_EP_CLASS_final();
 	FTNM_NODE_final();
@@ -109,8 +118,6 @@ FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pFileName)
 {
 	ASSERT(pFileName != NULL);
 
-	FTNM_DMC_loadConfig(pFileName);
-
 	FTNM_SERVICE_loadFromFile(FTNM_SERVICE_ALL, pFileName);
 
 	TRACE("FTNM was loaded configuration.\n");
@@ -119,8 +126,6 @@ FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pFileName)
 
 FTM_RET	FTNM_showConfig(void)
 {
-	FTNM_DMC_showConfig();
-
 	FTNM_SERVICE_showConfig(FTNM_SERVICE_ALL);
 
 	return	FTM_RET_OK;
@@ -163,8 +168,6 @@ FTM_VOID_PTR	FTNM_task(FTM_VOID_PTR pData)
 
 		case	FTNM_STATE_INITIALIZED:
 			{
-				FTNM_SERVICE_start(FTNM_SERVICE_ALL);
-
 				FTNM_taskConnect(pCTX);
 			}
 			break;
@@ -205,18 +208,11 @@ FTM_RET	FTNM_taskConnect(FTNM_CONTEXT_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
-	FTM_RET			xRet;
-
-	xRet = FTNM_DMC_connect(&pCTX->xDMCSession);
-	if (xRet != FTM_RET_OK)
-	{
-		usleep(1000000);
-		return	xRet;	
-	}
+	FTNM_SERVICE_start(FTNM_SERVICE_ALL);
 
 	xCTX.xState = FTNM_STATE_CONNECTED;
 
-	return	xRet;
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
@@ -226,7 +222,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 	FTM_RET			xRet;
 	FTM_ULONG		ulCount, i;
 
-	xRet = FTDMC_NODE_count(&pCTX->xDMCSession, &ulCount);
+	xRet = FTDMC_NODE_count(&xDMC.xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -237,11 +233,11 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 		FTM_NODE	xNodeInfo;
 		FTNM_NODE_PTR	pNode;
 
-		xRet = FTDMC_NODE_getAt(&pCTX->xDMCSession, i, &xNodeInfo);	
+		xRet = FTDMC_NODE_getAt(&xDMC.xSession, i, &xNodeInfo);	
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("FTDMC_NODE_getAt(%08lx, %d, &xNodeInfo) = %08lx\n",
-					pCTX->xDMCSession.hSock, i, xRet);
+					xDMC.xSession.hSock, i, xRet);
 			continue;	
 		}
 
@@ -255,7 +251,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 		TRACE("Node[%s] creating success.\n", pNode->xInfo.pDID);
 	}
 
-	xRet = FTDMC_EP_CLASS_count(&pCTX->xDMCSession, &ulCount);
+	xRet = FTDMC_EP_CLASS_count(&xDMC.xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -265,11 +261,11 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 	{
 		FTM_EP_CLASS	xEPClassInfo;
 
-		xRet = FTDMC_EP_CLASS_getAt(&pCTX->xDMCSession, i, &xEPClassInfo);
+		xRet = FTDMC_EP_CLASS_getAt(&xDMC.xSession, i, &xEPClassInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("FTDMC_EP_CLASS_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
-					pCTX->xDMCSession.hSock, i, xRet);
+					xDMC.xSession.hSock, i, xRet);
 			continue;
 		}
 
@@ -281,7 +277,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 		}
 	}
 
-	xRet = FTDMC_EP_count(&pCTX->xDMCSession, 0, &ulCount);
+	xRet = FTDMC_EP_count(&xDMC.xSession, 0, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -293,11 +289,11 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 		FTM_EP			xEPInfo;
 		FTNM_EP_PTR		pEP;
 
-		xRet = FTDMC_EP_getAt(&pCTX->xDMCSession, i, &xEPInfo);
+		xRet = FTDMC_EP_getAt(&xDMC.xSession, i, &xEPInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("FTDMC_EP_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
-					pCTX->xDMCSession.hSock, i, xRet);
+					xDMC.xSession.hSock, i, xRet);
 			continue;
 		}
 
@@ -316,7 +312,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 		TRACE("EP[%08lx] creating success.\n", pEP->xInfo.xEPID);
 	}
 
-	xRet = FTDMC_EVENT_count(&pCTX->xDMCSession, &ulCount);
+	xRet = FTDMC_EVENT_count(&xDMC.xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
@@ -326,7 +322,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 	{
 		FTM_EVENT		xEvent;
 
-		xRet = FTDMC_EVENT_getAt(&pCTX->xDMCSession, i, &xEvent);
+		xRet = FTDMC_EVENT_getAt(&xDMC.xSession, i, &xEvent);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Event[%d] data load failed.\n", i);	
@@ -545,17 +541,17 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 
 FTM_RET	FTNM_setEPData(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
-	return	FTNM_DMC_EP_DATA_set(&xCTX.xDMCSession, xEPID, pData);
+	return	FTNM_DMC_EP_DATA_set(&xDMC.xSession, xEPID, pData);
 }
 
 FTM_RET	FTNM_getEPDataInfo(FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount)
 {
-	return	FTNM_DMC_EP_DATA_info(&xCTX.xDMCSession, xEPID, pulBeginTime, pulEndTime, pulCount);
+	return	FTNM_DMC_EP_DATA_info(&xDMC.xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
 FTM_RET	FTNM_getEPDataCount(FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
 {
-	return	FTNM_DMC_EP_DATA_count(&xCTX.xDMCSession, xEPID, pulCount);
+	return	FTNM_DMC_EP_DATA_count(&xDMC.xSession, xEPID, pulCount);
 }
 
 FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg)

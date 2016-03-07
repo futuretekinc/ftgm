@@ -10,48 +10,69 @@
 #include "ftnm_server.h"
 #include "ftnm_dmc.h"
 
-typedef	struct
+static FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData);
+
+FTM_RET FTNM_DMC_init(FTNM_DMC_PTR pCTX)
 {
-	pthread_t		xThread;
-	FTDMC_CFG		xConfig;
-}	FTNM_DMC, _PTR_	FTNM_DMC_PTR;
+	ASSERT(pCTX != NULL);
 
-static FTNM_DMC_PTR pDMC = NULL;
+	memset(pCTX, 0, sizeof(FTNM_DMC));
 
-FTM_RET FTNM_DMC_init(void)
-{
-	if (pDMC != NULL)
-	{
-		return	FTM_RET_ALREADY_INITIALIZED;	
-	}
-
-	pDMC = (FTNM_DMC_PTR)FTM_MEM_malloc(sizeof(FTNM_DMC));
-	if (pDMC == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	memset(pDMC, 0, sizeof(FTNM_DMC));
-
-	strcpy(pDMC->xConfig.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
-	pDMC->xConfig.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
+	strcpy(pCTX->xConfig.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
+	pCTX->xConfig.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_DMC_final(void)
+FTM_RET FTNM_DMC_final(FTNM_DMC_PTR pCTX)
 {
-	ASSERT(pDMC != NULL);
+	ASSERT(pCTX != NULL);
 	
-	FTM_MEM_free(pDMC);
-	pDMC = NULL;
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_DMC_start(FTNM_DMC_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+
+	if (pthread_create(&pCTX->xThread, NULL, FTNM_DMC_process, pCTX) < 0)
+	{
+		return	FTM_RET_ERROR;	
+	}
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_DMC_stop(FTNM_DMC_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData)
+{
+	ASSERT(pData != NULL);
+
+	FTM_RET			xRet;
+	FTNM_DMC_PTR	pCTX = (FTNM_DMC_PTR)pData;
+		
+	xRet = FTDMC_connect(&pCTX->xSession, inet_addr(pCTX->xConfig.xNetwork.pServerIP), pCTX->xConfig.xNetwork.usPort);
+	if (xRet != FTM_RET_OK)
+	{
+		printf("DB connection failed.\n");	
+	}
+
+	while(!pCTX->bStop)
+	{
+		usleep(1000);
+	}
+
+	return	0;
 }
 
 FTM_RET	FTNM_DMC_EP_DATA_set(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
-	ASSERT(pDMC != NULL);
 	ASSERT(pData != NULL);
 
 	return	FTDMC_EP_DATA_append(pSession, xEPID, pData);
@@ -59,8 +80,6 @@ FTM_RET	FTNM_DMC_EP_DATA_set(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_EP
 
 FTM_RET FTNM_DMC_EP_DATA_setINT(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
 {
-	ASSERT(pDMC != NULL);
-
 	FTM_EP_DATA	xEPData;
 
 	xEPData.ulTime = ulTime;
@@ -72,8 +91,8 @@ FTM_RET FTNM_DMC_EP_DATA_setINT(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM
 
 FTM_RET FTNM_DMC_EP_DATA_setULONG(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue)
 {
-	ASSERT(pDMC != NULL);
-
+	ASSERT(pSession != NULL);
+	
 	FTM_EP_DATA	xEPData;
 
 	xEPData.ulTime = ulTime;
@@ -85,8 +104,8 @@ FTM_RET FTNM_DMC_EP_DATA_setULONG(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, F
 
 FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue)
 {
-	ASSERT(pDMC != NULL);
-
+	ASSERT(pSession != NULL);
+	
 	FTM_EP_DATA	xEPData;
 
 	xEPData.ulTime = ulTime;
@@ -98,7 +117,8 @@ FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, F
 
 FTM_RET	FTNM_DMC_EP_DATA_count(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
 {
-	ASSERT(pDMC != NULL);
+	ASSERT(pSession != NULL);
+	ASSERT(pulCount != NULL);
 
 	return	FTDMC_EP_DATA_count(pSession, xEPID, pulCount);
 }
@@ -112,14 +132,13 @@ FTM_RET FTNM_DMC_EP_DATA_info
 	FTM_ULONG_PTR 	pulCount
 )
 {
-	ASSERT(pDMC != NULL);
+	ASSERT(pSession != NULL);
 
 	return	FTDMC_EP_DATA_info(pSession, xEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
-FTM_RET FTNM_DMC_loadConfig(FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_DMC_loadFromFile(FTNM_DMC_PTR pCTX, FTM_CHAR_PTR pFileName)
 {
-	ASSERT(pDMC != NULL);
 	ASSERT(pFileName != NULL);
 
 	FTM_RET				xRet;
@@ -140,19 +159,19 @@ FTM_RET FTNM_DMC_loadConfig(FTM_CHAR_PTR pFileName)
 		pField = config_setting_get_member(pSection, "server_ip");
 		if (pField != NULL)
 		{
-			strncpy(pDMC->xConfig.xNetwork.pServerIP, config_setting_get_string(pField), FTDMC_SERVER_IP_LEN);
+			strncpy(pCTX->xConfig.xNetwork.pServerIP, config_setting_get_string(pField), FTDMC_SERVER_IP_LEN);
 		}
 	
 		pField = config_setting_get_member(pSection, "port");
 		if (pField != NULL)
 		{
-			pDMC->xConfig.xNetwork.usPort = (FTM_ULONG)config_setting_get_int(pField);
+			pCTX->xConfig.xNetwork.usPort = (FTM_ULONG)config_setting_get_int(pField);
 		}
 	}
 
 	config_destroy(&xConfig);
 
-	xRet = FTDMC_init(&pDMC->xConfig);
+	xRet = FTDMC_init(&pCTX->xConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -161,21 +180,13 @@ FTM_RET FTNM_DMC_loadConfig(FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_DMC_connect(FTDMC_SESSION_PTR pSession)
+FTM_RET FTNM_DMC_showConfig(FTNM_DMC_PTR pCTX)
 {
-	ASSERT(pDMC != NULL);
-	ASSERT(pSession != NULL);
-
-	return	FTDMC_connect(pSession, inet_addr(pDMC->xConfig.xNetwork.pServerIP), pDMC->xConfig.xNetwork.usPort);
-}
-
-FTM_RET FTNM_DMC_showConfig(void)
-{
-	ASSERT(pDMC != NULL);
+	ASSERT(pCTX != NULL);
 
 	MESSAGE("\n[ DATA MANAGER CONNECTION CONFIGURATION ]\n");
-	MESSAGE("%16s : %s\n", "SERVER", pDMC->xConfig.xNetwork.pServerIP);
-	MESSAGE("%16s : %d\n", "PORT", pDMC->xConfig.xNetwork.usPort);
+	MESSAGE("%16s : %s\n", "SERVER", pCTX->xConfig.xNetwork.pServerIP);
+	MESSAGE("%16s : %d\n", "PORT", pCTX->xConfig.xNetwork.usPort);
 
 	return	FTM_RET_OK;
 }

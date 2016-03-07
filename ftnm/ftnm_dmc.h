@@ -4,13 +4,22 @@
 #include "ftm.h"
 #include "ftdm_client.h"
 
-FTM_RET FTNM_DMC_init(void);
-FTM_RET FTNM_DMC_final(void);
+typedef	struct
+{
+	FTDMC_SESSION	xSession;
+	pthread_t		xThread;
+	FTDMC_CFG		xConfig;
+	FTM_BOOL		bStop;
+}	FTNM_DMC, _PTR_	FTNM_DMC_PTR;
 
-FTM_RET FTNM_DMC_loadConfig(FTM_CHAR_PTR pConfigFileName);
-FTM_RET	FTNM_DMC_showConfig(void);
+FTM_RET FTNM_DMC_init(FTNM_DMC_PTR pCTX);
+FTM_RET FTNM_DMC_final(FTNM_DMC_PTR pCTX);
 
-FTM_RET	FTNM_DMC_connect(FTDMC_SESSION_PTR pSession);
+FTM_RET FTNM_DMC_loadFromFile(FTNM_DMC_PTR pCTX, FTM_CHAR_PTR pConfigFileName);
+FTM_RET	FTNM_DMC_showConfig(FTNM_DMC_PTR pCTX);
+
+FTM_RET	FTNM_DMC_start(FTNM_DMC_PTR pCTX);
+FTM_RET	FTNM_DMC_stop(FTNM_DMC_PTR pCTX);
 
 FTM_RET	FTNM_DMC_EP_DATA_set(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
 FTM_RET FTNM_DMC_EP_DATA_setINT(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue);

@@ -30,6 +30,7 @@ typedef	FTM_ULONG	FTNM_STATE;
 #define	FTNM_STATE_FINISHING			0x0000000E
 #define	FTNM_STATE_FINISHED				0x0000000F
 #define	FTNM_STATE_CONNECTED			0x00000010
+#define	FTNM_STATE_INITIALIZE			0x00000011
 
 typedef	struct
 {
@@ -37,7 +38,6 @@ typedef	struct
 	FTM_LIST		xEPList;
 	pthread_t		xPThread;
 
-	FTDMC_SESSION			xDMCSession;
 	FTNM_TRIG_MANAGER_PTR	pTriggerD;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
