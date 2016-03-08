@@ -1,11 +1,11 @@
 #include "ftm_time.h"
 #include "ftm_trace.h"
 
-FTM_RET	FTM_DATE_getCurrent(FTM_DATE_PTR pDate)
+FTM_RET	FTM_TIME_getCurrent(FTM_TIME_PTR pTime)
 {
-	ASSERT(pDate != NULL);
+	ASSERT(pTime != NULL);
 	
-	gettimeofday(&pDate->xTimeVal, NULL);
+	gettimeofday(&pTime->xTimeval, NULL);
 
 	return	FTM_RET_OK;
 }
