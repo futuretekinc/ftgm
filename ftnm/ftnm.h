@@ -7,7 +7,7 @@
 #include "ftnm_server.h"
 #include "ftnm_snmpc.h"
 #include "ftnm_snmptrapd.h"
-#include "ftnm_trigger.h"
+#include "ftnm_event.h"
 
 #define	FTNM_DEFAULT_SERVER_PORT			8889
 #define	FTNM_DEFAULT_SERVER_SESSION_COUNT	10
@@ -38,7 +38,7 @@ typedef	struct
 	FTM_LIST		xEPList;
 	pthread_t		xPThread;
 
-	FTNM_TRIG_MANAGER_PTR	pTriggerD;
+	FTNM_EVENTM_PTR	pEventM;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
 
@@ -53,6 +53,7 @@ FTM_RET FTNM_waitingForFinished(void);
 FTM_RET	FTNM_setEPData(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
 FTM_RET	FTNM_getEPDataInfo(FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount);
 FTM_RET	FTNM_getEPDataCount(FTM_EP_ID xEPID, FTM_ULONG_PTR ulCount);
+FTM_RET	FTNM_NOTIFY_EPChanged(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
 
 #endif
 

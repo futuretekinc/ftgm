@@ -265,6 +265,8 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 	sem_wait(&pNode->xLock);
 	sem_wait(&pEP->xLock);
 
+	TRACE("ENTRY - %s-%08x - %s\n", pNode->xCommon.xInfo.pDID, pEP->xInfo.xEPID, __func__);
+
 	snmp_sess_init(&xSession);			/* initialize session */
 
 	xSession.version 		= pNode->xCommon.xInfo.xOption.xSNMP.ulVersion;
@@ -375,6 +377,8 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 		ERROR("snmp_open: %s\n", snmp_errstring(snmp_errno));
 		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
 	}
+
+	TRACE("EXIT - %s-%08x - %s\n", pNode->xCommon.xInfo.pDID, pEP->xInfo.xEPID, __func__);
 
 	sem_post(&pEP->xLock);
 	sem_post(&pNode->xLock);

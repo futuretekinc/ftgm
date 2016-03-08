@@ -27,7 +27,9 @@ static	FTNM_SERVER		xServer;
 static	FTNM_SNMPC		xSNMPC;
 static	FTNM_SNMPTRAPD	xSNMPTRAPD;
 static	FTNM_DMC		xDMC;
+static  FTNM_MSG_QUEUE	xMsgQ;
 
+		FTNM_EVENTM		xEventM;
 static 	FTNM_CONTEXT	xCTX;
 
 static 	FTNM_SERVICE	pServices[] =
@@ -88,11 +90,11 @@ FTM_RET	FTNM_init(void)
 	FTNM_EP_init();
 	FTNM_NODE_init();
 	FTNM_EP_CLASS_init();
-	FTNM_MSG_init();
+	FTNM_MSGQ_init(&xMsgQ);
 
 	FTNM_SERVICE_init(pServices, sizeof(pServices) / sizeof(FTNM_SERVICE));
 
-	FTNM_TRIG_init();
+	FTNM_EVENTM_init(&xEventM);
 
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
@@ -100,11 +102,11 @@ FTM_RET	FTNM_init(void)
 
 FTM_RET	FTNM_final(void)
 {
-	FTNM_TRIG_final();
+	FTNM_EVENTM_final(&xEventM);
 
 	FTNM_SERVICE_final();
 
-	FTNM_MSG_final();
+	FTNM_MSGQ_final(&xMsgQ);
 	FTNM_EP_CLASS_final();
 	FTNM_NODE_final();
 	FTNM_EP_final();
@@ -329,7 +331,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 			continue;
 		}
 
-		xRet = FTNM_TRIG_create(&xEvent);
+		xRet = FTNM_EVENTM_create(&xEventM, &xEvent);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new event can not registration!\n") ;
@@ -348,7 +350,7 @@ FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX)
 	FTNM_EP_PTR	pEP;
 	FTM_ULONG	i, ulCount;
 	
-	FTNM_TRIG_start();
+	FTNM_EVENTM_start(&xEventM);
 	FTNM_EP_count(0, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
@@ -375,7 +377,7 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 
 	while(1)
 	{
-		xRet = FTNM_MSG_pop(&pMsg);
+		xRet = FTNM_MSGQ_pop(&xMsgQ, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			switch(pMsg->xType)
@@ -524,10 +526,21 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 
 			case	FTNM_MSG_TYPE_EP_CHANGED:
 				{
+					xRet = FTNM_setEPData(pMsg->xParams.xEPChanged.xEPID, &pMsg->xParams.xEPChanged.xData);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("EP[%08x] data save failed.\n", pMsg->xParams.xEPChanged.xEPID);
+					}
+		
+					FTNM_EVENTM_updateEP(&xEventM, pMsg->xParams.xEPChanged.xEPID, &pMsg->xParams.xEPChanged.xData);
 					FTNM_SERVICE_notify(FTNM_SERVICE_SERVER, pMsg);
 
 				}
 				break;
+			default:
+				{
+					ERROR("Message[%08x] not supported.\n", pMsg->xType);
+				}
 			}
 
 			FTM_MEM_free(pMsg);
@@ -541,21 +554,31 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 
 FTM_RET	FTNM_setEPData(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
-	return	FTNM_DMC_EP_DATA_set(&xDMC.xSession, xEPID, pData);
+	FTNM_EVENTM_updateEP(&xEventM, xEPID, pData);
+	FTNM_DMC_EP_DATA_set(&xDMC, xEPID, pData);
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_getEPDataInfo(FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount)
 {
-	return	FTNM_DMC_EP_DATA_info(&xDMC.xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
+	return	FTNM_DMC_EP_DATA_info(&xDMC, xEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
 FTM_RET	FTNM_getEPDataCount(FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
 {
-	return	FTNM_DMC_EP_DATA_count(&xDMC.xSession, xEPID, pulCount);
+	return	FTNM_DMC_EP_DATA_count(&xDMC, xEPID, pulCount);
 }
 
 FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg)
 {
-	return	FTNM_MSG_sendSNMPTrap(pTrapMsg);
+	return	FTNM_MSGQ_sendSNMPTrap(&xMsgQ, pTrapMsg);
 }
 
+FTM_RET FTNM_NOTIFY_EPChanged(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+{
+	FTNM_EVENTM_updateEP(&xEventM, xEPID, pData);
+	FTNM_DMC_EP_DATA_set(&xDMC, xEPID, pData);
+
+	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+}

@@ -1,0 +1,49 @@
+#ifndef	_FTNM_EVENT_H_
+#define	_FTNM_EVENT_H_
+
+#include <pthread.h>
+#include "ftm.h"
+
+typedef	FTM_EVENT_ID	FTNM_EVENT_ID;
+
+typedef	struct
+{
+	FTM_EVENT	xInfo;
+	FTM_TIMER	xTimer;
+	FTM_EP_DATA	xData;
+	FTM_BOOL	bOccurrence;
+	FTM_TIME	xOccurrenceTime;
+	FTM_TIME	xReleaseTime;
+}	FTNM_EVENT, _PTR_ FTNM_EVENT_PTR;
+
+typedef	struct
+{
+}	FTNM_EVENTM_CONFIG, _PTR_ FTNM_EVENTM_CONFIG_PTR;
+
+typedef	struct
+{
+	FTNM_EVENTM_CONFIG	xConfig;
+	FTM_MSG_QUEUE_PTR	pMsgQ;
+	FTM_BOOL			bStop;
+	FTM_LIST			xEventList;
+	pthread_t			xEventThread;
+	FTM_LIST			xDelayedEventList;
+	pthread_t			xDelayedEventThread;
+}	FTNM_EVENTM, _PTR_ FTNM_EVENTM_PTR;
+	
+FTM_RET	FTNM_EVENTM_init(FTNM_EVENTM_PTR pCTX);
+FTM_RET	FTNM_EVENTM_final(FTNM_EVENTM_PTR pCTX);
+
+FTM_RET	FTNM_EVENTM_loadConfig(FTNM_EVENTM_PTR pCTX, FTM_CHAR_PTR pFileName);
+
+FTM_RET	FTNM_EVENTM_start(FTNM_EVENTM_PTR pCTX);
+FTM_RET	FTNM_EVENTM_stop(FTNM_EVENTM_PTR pCTX);
+
+FTM_RET	FTNM_EVENTM_create(FTNM_EVENTM_PTR pCTX, FTM_EVENT_PTR pEvent);
+FTM_RET	FTNM_EVENTM_del(FTNM_EVENTM_PTR pCTX, FTNM_EVENT_ID  xEventID);
+FTM_RET	FTNM_EVENTM_count(FTNM_EVENTM_PTR pCTX, FTM_ULONG_PTR pulCount);
+FTM_RET	FTNM_EVENTM_get(FTNM_EVENTM_PTR pCTX, FTNM_EVENT_ID xEventID, FTNM_EVENT_PTR _PTR_ ppEvent);
+FTM_RET	FTNM_EVENTM_getAt(FTNM_EVENTM_PTR pCTX, FTM_ULONG ulIndex, FTNM_EVENT_PTR _PTR_ ppEvent);
+
+FTM_RET	FTNM_EVENTM_updateEP(FTNM_EVENTM_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
+#endif

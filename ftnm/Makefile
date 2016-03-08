@@ -26,7 +26,7 @@ LIB_FTNM_SRCS= ftnm.c \
 			   ftnm_snmptrapd.c\
 			   ftnm_shell_cmds.c\
 			   ftnm_dmc.c\
-			   ftnm_trigger.c\
+			   ftnm_event.c\
 			   ftnm_actor.c\
 			   ftnm_service.c
 

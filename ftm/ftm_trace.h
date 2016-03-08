@@ -74,4 +74,7 @@ FTM_VOID	FTM_PRINT_packetDump
 #define	ERROR(format, ...) FTM_PRINT_out(FTM_PRINT_LEVEL_ERROR, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
 #endif
 
+#define	TRACE_ENTRY()	TRACE("ENTRY - %s\n", __func__)
+#define	TRACE_EXIT()	TRACE("EXIT - %s\n", __func__)
+
 FTM_RET	FTM_DEBUG_initSignals(FTM_VOID);

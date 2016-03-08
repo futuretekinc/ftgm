@@ -3,26 +3,6 @@
 #include "ftnm_ep.h"
 #include "ftnm_msg.h"
 
-static FTM_MSG_QUEUE_PTR	pMsgQ = NULL;
-
-FTM_RET FTNM_MSG_init(FTM_VOID)
-{
-	if (pMsgQ != NULL)
-	{
-		return	FTM_RET_ALREADY_INITIALIZED;	
-	}
-
-	return	FTM_MSGQ_create(&pMsgQ);	
-}
-
-FTM_RET	FTNM_MSG_final(FTM_VOID)
-{
-	FTM_MSGQ_destroy(pMsgQ);
-	pMsgQ = NULL;
-
-	return	FTM_RET_OK;
-}
-
 FTM_RET	FTNM_MSG_create(FTNM_MSG_PTR _PTR_ ppMsg)
 {
 	ASSERT(ppMsg != NULL);
@@ -50,7 +30,21 @@ FTM_RET	FTNM_MSG_destroy(FTNM_MSG_PTR pMsg)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_MSG_sendSNMPTrap(FTM_CHAR_PTR pTrapMsg)
+FTM_RET FTNM_MSGQ_init(FTNM_MSG_QUEUE_PTR pMsgQ)
+{
+	ASSERT(pMsgQ != NULL);
+
+	return	FTM_MSGQ_init(&pMsgQ->xQueue);	
+}
+
+FTM_RET	FTNM_MSGQ_final(FTNM_MSG_QUEUE_PTR pMsgQ)
+{
+	ASSERT(pMsgQ != NULL);
+
+	return	FTM_MSGQ_final(&pMsgQ->xQueue);	
+}
+
+FTM_RET	FTNM_MSGQ_sendSNMPTrap(FTNM_MSG_QUEUE_PTR pMsgQ, FTM_CHAR_PTR pTrapMsg)
 {
 	ASSERT(pMsgQ != NULL);
 	ASSERT(pTrapMsg != NULL);
@@ -66,7 +60,7 @@ FTM_RET	FTNM_MSG_sendSNMPTrap(FTM_CHAR_PTR pTrapMsg)
 	pMsg->xType = FTNM_MSG_TYPE_SNMPTRAP;
 	strncpy(pMsg->xParams.xSNMPTrap.pString, pTrapMsg, sizeof(pMsg->xParams.xSNMPTrap.pString) - 1);
 
-	xRet = FTM_MSGQ_push(pMsgQ, pMsg);
+	xRet = FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		FTNM_MSG_destroy(pMsg);
@@ -75,7 +69,7 @@ FTM_RET	FTNM_MSG_sendSNMPTrap(FTM_CHAR_PTR pTrapMsg)
 	return	xRet;
 }
 
-FTM_RET FTNM_MSG_sendEPChanged(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET FTNM_MSGQ_sendEPChanged(FTNM_MSG_QUEUE_PTR pMsgQ, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pMsgQ != NULL);
 	ASSERT(pData != NULL);
@@ -93,7 +87,7 @@ FTM_RET FTNM_MSG_sendEPChanged(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 	pMsg->xParams.xEPChanged.xEPID = xEPID;
 	memcpy(&pMsg->xParams.xEPChanged.xData, pData, sizeof(FTM_EP_DATA));
 
-	xRet = FTM_MSGQ_push(pMsgQ, pMsg);
+	xRet = FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		FTNM_MSG_destroy(pMsg);
@@ -102,7 +96,26 @@ FTM_RET FTNM_MSG_sendEPChanged(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 	return	xRet;
 }
 
-FTM_RET	FTNM_MSG_pop(FTNM_MSG_PTR _PTR_ ppMsg)
+FTM_RET	FTNM_MSGQ_push(FTNM_MSG_QUEUE_PTR pMsgQ, FTNM_MSG_PTR pMsg)
 {
-	return	FTM_MSGQ_pop(pMsgQ, (FTM_VOID_PTR _PTR_)ppMsg);	
+	ASSERT(pMsgQ != NULL);
+	ASSERT(pMsg != NULL);
+
+	return	FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
+}
+
+FTM_RET	FTNM_MSGQ_pop(FTNM_MSG_QUEUE_PTR pMsgQ, FTNM_MSG_PTR _PTR_ ppMsg)
+{
+	ASSERT(pMsgQ != NULL);
+	ASSERT(ppMsg != NULL);
+
+	return	FTM_MSGQ_pop(&pMsgQ->xQueue, (FTM_VOID_PTR _PTR_)ppMsg);	
+}
+
+FTM_RET	FTNM_MSGQ_timedPop(FTNM_MSG_QUEUE_PTR pMsgQ, FTM_ULONG ulTimeout, FTNM_MSG_PTR _PTR_ ppMsg)
+{
+	ASSERT(pMsgQ != NULL);
+	ASSERT(ppMsg != NULL);
+
+	return	FTM_MSGQ_timedPop(&pMsgQ->xQueue, ulTimeout, (FTM_VOID_PTR _PTR_)ppMsg);	
 }

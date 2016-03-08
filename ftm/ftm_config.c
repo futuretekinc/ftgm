@@ -284,6 +284,28 @@ FTM_RET	FTM_CONFIG_ITEM_getItemString
 	return	FTM_CONFIG_ITEM_getString(&xChildItem, pBuff, ulBuffLen);
 }
 
+FTM_RET	FTM_CONFIG_ITEM_getItemTime
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_TIME_PTR		pTime
+)
+{
+	ASSERT(pItem != NULL);
+	ASSERT(pTime != NULL);
+
+	FTM_RET			xRet;
+	FTM_CONFIG_ITEM	xChildItem;
+
+	xRet = FTM_CONFIG_ITEM_getChildItem(pItem, pName, &xChildItem);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTM_CONFIG_ITEM_getTime(&xChildItem, pTime);
+}
+
 FTM_RET	FTM_CONFIG_ITEM_getItemEPData
 (
 	FTM_CONFIG_ITEM_PTR pItem, 
@@ -578,6 +600,55 @@ FTM_RET	FTM_CONFIG_ITEM_getString(FTM_CONFIG_ITEM_PTR pItem, FTM_CHAR_PTR pBuff,
 
 	return	FTM_RET_OK;
 
+}
+
+FTM_RET	FTM_CONFIG_ITEM_getTime(FTM_CONFIG_ITEM_PTR pItem, FTM_TIME_PTR pTime)
+{
+	ASSERT(pItem != NULL);
+	ASSERT(pTime != NULL);
+
+	FTM_INT				nType;
+	FTM_INT64			nValue;
+
+	if (pItem->pSetting == NULL)
+	{
+		return	FTM_RET_CONFIG_INVALID_OBJECT;	
+	}
+
+	nType = config_setting_type(pItem->pSetting) ;
+	switch(nType)
+	{
+	case	CONFIG_TYPE_INT:
+		{
+			nValue = config_setting_get_int(pItem->pSetting);
+			if ((nValue < 0) || (nValue > (ULONG_MAX)))
+			{
+				return	FTM_RET_CONFIG_INVALID_OBJECT;	
+			}
+
+			pTime->xTimeval.tv_sec = nValue / 1000000;
+			pTime->xTimeval.tv_usec= nValue % 1000000;
+		}
+		break;
+
+	case	CONFIG_TYPE_INT64:
+		{
+			nValue = config_setting_get_int64(pItem->pSetting);
+			if ((nValue < 0) || (nValue > (ULONG_MAX)))
+			{
+				return	FTM_RET_CONFIG_INVALID_OBJECT;	
+			}
+
+			pTime->xTimeval.tv_sec = nValue / 1000000;
+			pTime->xTimeval.tv_usec= nValue % 1000000;
+		}
+		break;
+
+	default:
+		return	FTM_RET_CONFIG_INVALID_OBJECT;
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_CONFIG_ITEM_getNode(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_PTR pNode)

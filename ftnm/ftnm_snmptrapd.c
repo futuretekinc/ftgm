@@ -811,7 +811,7 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 							}
 						}
 
-						xRet = FTNM_MSG_sendEPChanged(xEPID, &xData);
+						xRet = FTNM_NOTIFY_EPChanged(xEPID, &xData);
 					}
 					else
 					{

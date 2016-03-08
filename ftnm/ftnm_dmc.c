@@ -20,6 +20,7 @@ FTM_RET FTNM_DMC_init(FTNM_DMC_PTR pCTX)
 
 	strcpy(pCTX->xConfig.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
 	pCTX->xConfig.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
+	FTNM_MSGQ_init(&pCTX->xMsgQ);
 
 	return	FTM_RET_OK;
 }
@@ -28,12 +29,16 @@ FTM_RET FTNM_DMC_final(FTNM_DMC_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 	
+	FTNM_MSGQ_final(&pCTX->xMsgQ);
+
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_DMC_start(FTNM_DMC_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
+
+	pCTX->bStop = FTM_FALSE;
 
 	if (pthread_create(&pCTX->xThread, NULL, FTNM_DMC_process, pCTX) < 0)
 	{
@@ -47,6 +52,9 @@ FTM_RET	FTNM_DMC_stop(FTNM_DMC_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
+	pCTX->bStop = FTM_TRUE;
+	pthread_join(pCTX->xThread, NULL);
+
 	return	FTM_RET_OK;
 }
 
@@ -57,84 +65,116 @@ FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData)
 	FTM_RET			xRet;
 	FTNM_DMC_PTR	pCTX = (FTNM_DMC_PTR)pData;
 		
-	xRet = FTDMC_connect(&pCTX->xSession, inet_addr(pCTX->xConfig.xNetwork.pServerIP), pCTX->xConfig.xNetwork.usPort);
-	if (xRet != FTM_RET_OK)
-	{
-		printf("DB connection failed.\n");	
-	}
-
 	while(!pCTX->bStop)
 	{
-		usleep(1000);
+		FTM_BOOL	bConnected;
+
+		FTDMC_isConnected(&pCTX->xSession, &bConnected);
+		if (!bConnected)
+		{
+			xRet = FTDMC_connect(&pCTX->xSession, inet_addr(pCTX->xConfig.xNetwork.pServerIP), pCTX->xConfig.xNetwork.usPort);
+			if (xRet != FTM_RET_OK)
+			{
+				TRACE("DB connection failed.\n");	
+				usleep(1000000);
+			}
+		}
+		else
+		{
+			FTNM_MSG_PTR	pMsg= NULL;
+
+			while(FTNM_MSGQ_timedPop(&pCTX->xMsgQ, 1000000, &pMsg) == FTM_RET_OK)
+			{
+				switch(pMsg->xType)
+				{
+				case	FTNM_MSG_TYPE_QUIT:
+					{
+						pCTX->bStop = FTM_TRUE;	
+					}
+					break;
+
+				default:
+					{
+						TRACE("Message[%08x] not supported.\n", pMsg->xType);
+					}
+					
+				}
+
+				FTNM_MSG_destroy(pMsg);
+			}
+		}
 	}
 
 	return	0;
 }
 
-FTM_RET	FTNM_DMC_EP_DATA_set(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
+	ASSERT(pCTX != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTDMC_EP_DATA_append(pSession, xEPID, pData);
+	return	FTDMC_EP_DATA_append(&pCTX->xSession, xEPID, pData);
 }
 
-FTM_RET FTNM_DMC_EP_DATA_setINT(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
+FTM_RET FTNM_DMC_EP_DATA_setINT(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
 {
-	FTM_EP_DATA	xEPData;
+	ASSERT(pCTX != NULL);
 
-	xEPData.ulTime = ulTime;
-	xEPData.xType = FTM_EP_DATA_TYPE_INT;
-	xEPData.xValue.nValue = nValue;
+	FTM_EP_DATA	xData;
 
-	return FTDMC_EP_DATA_append(pSession, xEPID, &xEPData);
+	xData.ulTime = ulTime;
+	xData.xType = FTM_EP_DATA_TYPE_INT;
+	xData.xValue.nValue = nValue;
+
+	return	FTDMC_EP_DATA_append(&pCTX->xSession, xEPID, &xData);
 }
 
-FTM_RET FTNM_DMC_EP_DATA_setULONG(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue)
+FTM_RET FTNM_DMC_EP_DATA_setULONG(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue)
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pCTX != NULL);
 	
-	FTM_EP_DATA	xEPData;
+	FTM_EP_DATA	xData;
 
-	xEPData.ulTime = ulTime;
-	xEPData.xType = FTM_EP_DATA_TYPE_ULONG;
-	xEPData.xValue.ulValue = ulValue;
+	xData.ulTime = ulTime;
+	xData.xType = FTM_EP_DATA_TYPE_ULONG;
+	xData.xValue.ulValue = ulValue;
 
-	return FTDMC_EP_DATA_append(pSession, xEPID, &xEPData);
+	return	FTDMC_EP_DATA_append(&pCTX->xSession, xEPID, &xData);
 }
 
-FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue)
+FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue)
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pCTX != NULL);
 	
-	FTM_EP_DATA	xEPData;
+	FTM_EP_DATA	xData;
 
-	xEPData.ulTime = ulTime;
-	xEPData.xType = FTM_EP_DATA_TYPE_FLOAT;
-	xEPData.xValue.fValue = fValue;
+	xData.ulTime = ulTime;
+	xData.xType = FTM_EP_DATA_TYPE_FLOAT;
+	xData.xValue.fValue = fValue;
 
-	return FTDMC_EP_DATA_append(pSession, xEPID, &xEPData);
+	return	FTDMC_EP_DATA_append(&pCTX->xSession, xEPID, &xData);
 }
 
-FTM_RET	FTNM_DMC_EP_DATA_count(FTDMC_SESSION_PTR pSession, FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
+FTM_RET	FTNM_DMC_EP_DATA_count(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pCTX != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_count(pSession, xEPID, pulCount);
+	return	FTDMC_EP_DATA_count(&pCTX->xSession, xEPID, pulCount);
 }
 
 FTM_RET FTNM_DMC_EP_DATA_info
 (
-	FTDMC_SESSION_PTR pSession, 
+	FTNM_DMC_PTR	pCTX,
 	FTM_EP_ID 		xEPID, 
 	FTM_ULONG_PTR 	pulBeginTime, 
 	FTM_ULONG_PTR 	pulEndTime, 
 	FTM_ULONG_PTR 	pulCount
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pCTX != NULL);
 
-	return	FTDMC_EP_DATA_info(pSession, xEPID, pulBeginTime, pulEndTime, pulCount);
+	return	FTDMC_EP_DATA_info(&pCTX->xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
 FTM_RET FTNM_DMC_loadFromFile(FTNM_DMC_PTR pCTX, FTM_CHAR_PTR pFileName)

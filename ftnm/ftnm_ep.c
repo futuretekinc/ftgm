@@ -464,14 +464,11 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 		xRet = FTM_LIST_append(&pEP->xDataList, pNewData);
 		if (xRet == FTM_RET_OK)
 		{
-			xRet = FTNM_setEPData(pEP->xInfo.xEPID, pNewData);
-			if (xRet != FTM_RET_OK)
-			{
-				FTM_EP_DATA_destroy(pNewData);	
-				return	xRet;
-			}
-		
-			FTNM_TRIG_updateEP(pEP->xInfo.xEPID, pLastData, pNewData);
+			FTNM_setEPData(pEP->xInfo.xEPID, pData);
+		}
+		else
+		{
+			FTM_EP_DATA_destroy(pNewData);	
 		}
 	}
 
@@ -509,8 +506,6 @@ FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	{
 		return	xRet;	
 	}
-
-	FTNM_MSG_sendEPChanged(pEP->xInfo.xEPID, pData);
 
 	return	FTM_RET_OK;
 }

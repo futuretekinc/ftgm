@@ -295,10 +295,9 @@ FTM_RET	FTM_EVENT_destroy(FTM_EVENT_PTR pEvent)
 	return	xRet;
 }
 
-FTM_RET	FTM_EVENT_occurred(FTM_EVENT_PTR pEvent, FTM_EP_DATA_PTR pPrevData, FTM_EP_DATA_PTR pCurrData, FTM_BOOL_PTR pResult)
+FTM_RET	FTM_EVENT_occurred(FTM_EVENT_PTR pEvent, FTM_EP_DATA_PTR pCurrData, FTM_BOOL_PTR pResult)
 {
 	ASSERT(pEvent != NULL);
-	ASSERT(pPrevData != NULL);
 	ASSERT(pCurrData != NULL);
 
 	FTM_RET	xRet;
@@ -386,7 +385,7 @@ FTM_RET	FTM_EVENT_occurred(FTM_EVENT_PTR pEvent, FTM_EP_DATA_PTR pPrevData, FTM_
 				return	xRet;
 			}
 
-			xRet = FTM_EVENT_occurred(pEvent1, pPrevData, pCurrData, &bEvent1);
+			xRet = FTM_EVENT_occurred(pEvent1, pCurrData, &bEvent1);
 			if (xRet != FTM_RET_OK)
 			{
 				return	xRet;	
@@ -404,7 +403,7 @@ FTM_RET	FTM_EVENT_occurred(FTM_EVENT_PTR pEvent, FTM_EP_DATA_PTR pPrevData, FTM_
 				return	xRet;
 			}
 
-			xRet = FTM_EVENT_occurred(pEvent2, pPrevData, pCurrData, &bEvent2);
+			xRet = FTM_EVENT_occurred(pEvent2, pCurrData, &bEvent2);
 			if (xRet != FTM_RET_OK)
 			{
 				return	xRet;	
@@ -423,7 +422,7 @@ FTM_RET	FTM_EVENT_occurred(FTM_EVENT_PTR pEvent, FTM_EP_DATA_PTR pPrevData, FTM_
 				return	xRet;
 			}
 
-			xRet = FTM_EVENT_occurred(pEvent1, pPrevData, pCurrData, &bEvent1);
+			xRet = FTM_EVENT_occurred(pEvent1, pCurrData, &bEvent1);
 			if (xRet != FTM_RET_OK)
 			{
 				return	xRet;	
@@ -441,7 +440,7 @@ FTM_RET	FTM_EVENT_occurred(FTM_EVENT_PTR pEvent, FTM_EP_DATA_PTR pPrevData, FTM_
 				return	xRet;
 			}
 
-			xRet = FTM_EVENT_occurred(pEvent2, pPrevData, pCurrData, &bEvent2);
+			xRet = FTM_EVENT_occurred(pEvent2, pCurrData, &bEvent2);
 			if (xRet != FTM_RET_OK)
 			{
 				return	xRet;	

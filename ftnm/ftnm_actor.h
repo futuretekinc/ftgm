@@ -9,7 +9,7 @@ typedef	FTM_ACT_ID	FTNM_ACTOR_ID;
 typedef	struct
 {
 	FTM_ACT		xAct;
-	FTM_TIME	xTime;
+//	FTM_TIME	xTime;
 	FTM_TIMER	xTimer;
 }	FTNM_ACTOR, _PTR_ FTNM_ACTOR_PTR;
 

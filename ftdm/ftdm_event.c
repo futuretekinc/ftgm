@@ -86,6 +86,18 @@ FTM_RET	FTDM_EVENT_loadFromFile
 							continue;
 						}
 
+						xRet = FTM_CONFIG_ITEM_getItemTime(&xEventItem, "delay",&xEvent.xDetectionTime);
+						if (xRet != FTM_RET_OK)
+						{
+							continue;
+						}
+
+						xRet = FTM_CONFIG_ITEM_getItemTime(&xEventItem, "hold",&xEvent.xHoldingTime);
+						if (xRet != FTM_RET_OK)
+						{
+							continue;
+						}
+
 						switch(xEvent.xType)
 						{
 						case	FTM_EVENT_TYPE_ABOVE:
@@ -221,7 +233,7 @@ FTM_RET	FTDM_EVENT_showList
 	FTM_EVENT_PTR	pEvent;
 	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# TRIGGER INFORMATION\n");
-	MESSAGE("\t%-8s %-8s %-8s %s\n", "ID", "EPID", "ACTOR", "CONDITION");
+	MESSAGE("\t%-8s %-8s %-8s %-8s %-8s %s\n", "ID", "EPID", "ACTOR", "DETECT", "HOLD", "CONDITION");
 
 	FTM_EVENT_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -230,7 +242,10 @@ FTM_RET	FTDM_EVENT_showList
 		{
 			FTM_CHAR	pBuff[1024];
 
-			MESSAGE("\t%08x %08x %-8d", pEvent->xID, pEvent->xEPID, pEvent->xActID);
+			MESSAGE("\t%08x %08x %-8d ", pEvent->xID, pEvent->xEPID, pEvent->xActID);
+			MESSAGE("%8.3f ", (pEvent->xDetectionTime.xTimeval.tv_sec * 1000000 +  pEvent->xDetectionTime.xTimeval.tv_usec) / 1000000.0);
+			MESSAGE("%8.3f ", (pEvent->xHoldingTime.xTimeval.tv_sec * 1000000 +  pEvent->xHoldingTime.xTimeval.tv_usec) / 1000000.0); 
+
 			switch(pEvent->xType)
 			{
 			case	FTM_EVENT_TYPE_ABOVE:

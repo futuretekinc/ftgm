@@ -5,6 +5,7 @@
 #include "libconfig.h"
 #include "ftm_node.h"
 #include "ftm_ep.h"
+#include "ftm_time.h"
 
 typedef	struct
 {
@@ -139,6 +140,13 @@ FTM_RET	FTM_CONFIG_ITEM_getItemEP
 	FTM_EP_DATA_PTR 	pData
 );
 
+FTM_RET	FTM_CONFIG_ITEM_getItemTime
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_TIME_PTR 		pTime
+);
+
 FTM_RET	FTM_CONFIG_ITEM_getItemEPData
 (
 	FTM_CONFIG_ITEM_PTR pItem,
@@ -190,6 +198,12 @@ FTM_RET	FTM_CONFIG_ITEM_getString
 	FTM_ULONG 			ulBuffLen
 );
 
+FTM_RET	FTM_CONFIG_ITEM_getTime
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_TIME_PTR 		pTime
+);
+
 FTM_RET	FTM_CONFIG_ITEM_getNode
 (
 	FTM_CONFIG_ITEM_PTR pItem, 	
@@ -213,6 +227,7 @@ FTM_RET FTM_CONFIG_ITEM_getEPClass
 	FTM_CONFIG_ITEM_PTR pItem,
 	FTM_EP_CLASS_PTR 	pClass
 );
+
 FTM_RET	FTM_CONFIG_ITEM_getSNMP
 (
 	FTM_CONFIG_ITEM_PTR	pItem, 	
