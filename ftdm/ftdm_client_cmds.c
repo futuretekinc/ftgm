@@ -1159,18 +1159,6 @@ FTM_RET	FTDMC_EVENT_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				return	FTM_RET_INVALID_ARGUMENTS;	
 			}
 		}
-		else if (strcasecmp(pArgv[3], "and") == 0)
-		{
-			xEvent.xType = FTM_EVENT_TYPE_AND;
-			xEvent.xParams.xAnd.xID1 = strtol(pArgv[4], 0, 10);
-			xEvent.xParams.xAnd.xID2 = strtol(pArgv[5], 0, 10);
-		}
-		else if (strcasecmp(pArgv[3], "or") == 0)
-		{
-			xEvent.xType = FTM_EVENT_TYPE_OR;
-			xEvent.xParams.xOr.xID1 = strtol(pArgv[4], 0, 10);
-			xEvent.xParams.xOr.xID2 = strtol(pArgv[5], 0, 10);
-		}
 		else
 		{
 			return	FTM_RET_INVALID_ARGUMENTS;

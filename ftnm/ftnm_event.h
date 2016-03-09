@@ -6,14 +6,22 @@
 
 typedef	FTM_EVENT_ID	FTNM_EVENT_ID;
 
+typedef	enum
+{
+	FTNM_EVENT_STATE_RESET,
+	FTNM_EVENT_STATE_PRESET,
+	FTNM_EVENT_STATE_SET,
+	FTNM_EVENT_STATE_PRERESET
+}	FTNM_EVENT_STATE, _PTR_ FTM_EVENT_STATE_PTR;
+
 typedef	struct
 {
-	FTM_EVENT	xInfo;
-	FTM_TIMER	xTimer;
-	FTM_EP_DATA	xData;
-	FTM_BOOL	bOccurrence;
-	FTM_TIME	xOccurrenceTime;
-	FTM_TIME	xReleaseTime;
+	FTM_EVENT			xInfo;
+	FTM_TIMER			xTimer;
+	FTM_EP_DATA			xData;
+	FTNM_EVENT_STATE	xState;
+	FTM_DATE			xTime;
+	FTM_LOCK			xLock;
 }	FTNM_EVENT, _PTR_ FTNM_EVENT_PTR;
 
 typedef	struct
@@ -27,8 +35,6 @@ typedef	struct
 	FTM_BOOL			bStop;
 	FTM_LIST			xEventList;
 	pthread_t			xEventThread;
-	FTM_LIST			xDelayedEventList;
-	pthread_t			xDelayedEventThread;
 }	FTNM_EVENTM, _PTR_ FTNM_EVENTM_PTR;
 	
 FTM_RET	FTNM_EVENTM_init(FTNM_EVENTM_PTR pCTX);

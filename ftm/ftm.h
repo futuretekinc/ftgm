@@ -15,5 +15,7 @@
 #include "ftm_time.h"
 #include "ftm_timer.h"
 #include "ftm_value.h"
+#include "ftm_lock.h"
+#include "ftm_log.h"
 #endif
 

@@ -17,6 +17,19 @@ FTM_RET	FTM_TIMER_init(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_TIMER_initTime(FTM_TIMER_PTR pTimer, FTM_TIME_PTR pTimeout)
+{
+	FTM_RET	xRet;
+
+	xRet = FTM_TIMER_init(pTimer, 0);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	return	FTM_TIMER_addTime(pTimer, pTimeout);
+}
+
 FTM_RET	FTM_TIMER_add(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
 {
 	ASSERT(pTimer != NULL);
@@ -26,6 +39,16 @@ FTM_RET	FTM_TIMER_add(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
 	xTimeout.tv_usec = ulTimeout % 1000000;
 
 	timeradd(&pTimer->xTime, &xTimeout, &pTimer->xTime);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET		FTM_TIMER_addTime(FTM_TIMER_PTR pTimer, FTM_TIME_PTR pTimeout)
+{
+	ASSERT(pTimer != NULL);
+	ASSERT(pTimeout != NULL);
+
+	timeradd(&pTimer->xTime, &pTimeout->xTimeval, &pTimer->xTime);
 
 	return	FTM_RET_OK;
 }

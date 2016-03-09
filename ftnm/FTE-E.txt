@@ -36,9 +36,9 @@
 
         epCurrent       OBJECT IDENTIFIER ::= { endpoints 1024 }
 
-        epDI            OBJECT IDENTIFIER ::= { endpoints 1281 }
+        epDI            OBJECT IDENTIFIER ::= { endpoints 1280 }
 
-        epDO            OBJECT IDENTIFIER ::= { endpoints 1537 }
+        epDO            OBJECT IDENTIFIER ::= { endpoints 1536 }
 
         epRL            OBJECT IDENTIFIER ::= { endpoints 1538 }
 

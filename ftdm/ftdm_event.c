@@ -126,16 +126,6 @@ FTM_RET	FTDM_EVENT_loadFromFile
 							}
 							break;
 
-						case	FTM_EVENT_TYPE_OR:
-							{
-							}
-							break;
-
-						case	FTM_EVENT_TYPE_AND:
-							{
-							}
-							break;
-
 						case	FTM_EVENT_TYPE_CHANGE:
 							{
 							}
@@ -284,22 +274,6 @@ FTM_RET	FTDM_EVENT_showList
 
 			case	FTM_EVENT_TYPE_CHANGE:
 				{
-				}
-				break;
-
-			case	FTM_EVENT_TYPE_AND:
-				{
-					MESSAGE("%d and %d", 
-							pEvent->xParams.xAnd.xID1,
-							pEvent->xParams.xAnd.xID2);
-				}
-				break;
-
-			case	FTM_EVENT_TYPE_OR:
-				{
-					MESSAGE("%d or %d", 
-							pEvent->xParams.xAnd.xID1,
-							pEvent->xParams.xAnd.xID2);
 				}
 				break;
 			}

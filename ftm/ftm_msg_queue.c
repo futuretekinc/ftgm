@@ -2,6 +2,8 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <time.h>
+#include <errno.h>
 #include "ftm_types.h"
 #include "ftm_trace.h"
 #include "ftm_queue.h"
@@ -27,6 +29,7 @@ FTM_RET	FTM_MSGQ_create(FTM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
 
 FTM_RET FTM_MSGQ_init(FTM_MSG_QUEUE_PTR pMsgQ)
 {
+
 	memset(pMsgQ, 0, sizeof(FTM_MSG_QUEUE));
 	FTM_QUEUE_init(&pMsgQ->xQueue);	
 	sem_init(&pMsgQ->xLock, 0, 0);
@@ -109,11 +112,16 @@ FTM_RET FTM_MSGQ_timedPop(FTM_MSG_QUEUE_PTR pMsgQ, FTM_ULONG ulTimeout, FTM_VOID
 	FTM_RET	xRet;
 	FTM_VOID_PTR	pMsg;
 	struct timespec	xTime;
+	FTM_INT	nRet;
 
-	xTime.tv_sec = ulTimeout / 1000000;
-	xTime.tv_nsec = (ulTimeout % 1000000) * 1000;
+	clock_gettime(CLOCK_REALTIME, &xTime);	
 
-	if (sem_timedwait(&pMsgQ->xLock, &xTime) != 0)
+	xTime.tv_nsec += (ulTimeout % 1000000) * 1000;
+	xTime.tv_sec  += (ulTimeout / 1000000 + xTime.tv_nsec / 1000000000);
+	xTime.tv_nsec /= 1000000000;
+
+	nRet = sem_timedwait(&pMsgQ->xLock, &xTime);
+	if (nRet != 0)
 	{
 		return	FTM_RET_TIMEOUT;
 	}

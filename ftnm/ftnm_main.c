@@ -39,7 +39,7 @@ int main(int nArgc, char *pArgv[])
 //	FTM_DEBUG_initSignals();
 
 	FTM_MEM_init();
-	FTM_PRINT_setLevel(0);
+	FTM_PRINT_setLevel(FTM_PRINT_LEVEL_ERROR);
 
 	xShellConfig.pPrompt 		= "FTNMS>";
 	xShellConfig.pCmdList 	= FTNM_xCmds;
