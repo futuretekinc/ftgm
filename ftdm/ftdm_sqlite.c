@@ -5,7 +5,7 @@
 #include <sqlite3.h>
 #include <sys/time.h>
 #include "ftdm.h"
-#include "ftm_event.h"
+#include "ftm_trigger.h"
 #include "ftdm_sqlite.h"
 
 static FTM_BOOL FTDM_DBIF_EP_DATA_bIOTrace = FTM_TRUE;

@@ -11,8 +11,9 @@
 #include "ftdm_config.h"
 #include "ftdm_params.h"
 #include "ftdm_server.h"
-#include "ftdm_event.h"
+#include "ftdm_trigger.h"
 #include "ftdm_action.h"
+#include "ftdm_rule.h"
 
 typedef struct
 {

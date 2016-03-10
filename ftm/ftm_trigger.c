@@ -1,6 +1,6 @@
 #include <sys/time.h>
 #include <string.h>
-#include "ftm_event.h"
+#include "ftm_trigger.h"
 #include "ftm_trace.h"
 #include "ftm_list.h"
 #include "ftm_mem.h"

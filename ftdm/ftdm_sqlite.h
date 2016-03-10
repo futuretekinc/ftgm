@@ -2,7 +2,7 @@
 #define	__SQLITE_IF_H__
 
 #include "ftm_types.h"
-#include "ftm_event.h"
+#include "ftm_trigger.h"
 
 FTM_RET	FTDM_DBIF_init
 (

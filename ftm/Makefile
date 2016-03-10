@@ -15,9 +15,9 @@ LIB_FTM_SRCS= ftm_debug.c \
 			  ftm_value.c \
 			  ftm_timer.c \
 			  nxjson.c \
-			  ftm_event.c \
 			  ftm_config.c \
 			  ftm_time.c \
+			  ftm_trigger.c \
 			  ftm_action.c \
 			  ftm_rule.c \
 			  ftm_lock.c

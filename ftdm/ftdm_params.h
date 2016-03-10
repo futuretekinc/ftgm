@@ -2,7 +2,7 @@
 #define	__FTDM_PARAMS_H__
 
 #include "ftm_types.h"
-#include "ftm_event.h"
+#include "ftm_trigger.h"
 typedef	struct
 {
 	FTDM_CMD			xCmd;

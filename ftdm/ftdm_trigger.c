@@ -4,7 +4,7 @@
 #include "ftm_mem.h"
 #include "ftm_msg_queue.h"
 #include "ftdm_config.h"
-#include "ftdm_event.h"
+#include "ftdm_trigger.h"
 
 FTM_RET	FTDM_TRIGGER_init
 (

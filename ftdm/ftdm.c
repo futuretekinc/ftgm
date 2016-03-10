@@ -14,8 +14,9 @@
 #include "ftdm_server_cmds.h"
 #include "ftdm_server.h"
 #include "ftdm_sqlite.h"
-#include "ftdm_event.h"
+#include "ftdm_trigger.h"
 #include "ftdm_action.h"
+#include "ftdm_rule.h"
 
 FTM_RET 	FTDM_init(FTM_VOID)
 {
@@ -216,6 +217,17 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
+	xRet = FTDM_RULE_init();
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTDM_RULE_loadFromFile(pConfigFileName);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Actor configuration load failed.\n");	
+			return	0;
+		}
+	}
+
 	if (nDebugLevel >= 0)
 	{
 		xConfig.xPrint.ulLevel = nDebugLevel;	
@@ -239,6 +251,8 @@ int main(int nArgc, char *pArgv[])
 		FTDMS_run(&xConfig.xServer, &xPThread);
 		FTM_SHELL_run();
 	}
+
+	FTDM_RULE_final();
 
 	FTDM_ACTION_final();
 

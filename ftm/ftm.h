@@ -10,7 +10,7 @@
 #include "ftm_msg_queue.h"
 #include "ftm_shell.h"
 #include "ftm_list.h"
-#include "ftm_event.h"
+#include "ftm_trigger.h"
 #include "ftm_action.h"
 #include "ftm_rule.h"
 #include "ftm_time.h"
