@@ -17,10 +17,12 @@ typedef	enum
 typedef	struct
 {
 	FTM_EVENT			xInfo;
-	FTM_TIMER			xTimer;
+	FTM_TIMER			xDetectionTimer;
+	FTM_TIMER			xHoldingTimer;
 	FTM_EP_DATA			xData;
 	FTNM_EVENT_STATE	xState;
-	FTM_DATE			xTime;
+	FTM_TIME			xOccurrenceTime;
+	FTM_TIME			xReleaseTime;
 	FTM_LOCK			xLock;
 }	FTNM_EVENT, _PTR_ FTNM_EVENT_PTR;
 

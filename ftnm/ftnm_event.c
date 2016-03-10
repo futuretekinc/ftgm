@@ -10,28 +10,6 @@
 
 #define	FTNM_EVENT_LOOP_INTERVAL	100000	// 1000 us
 
-typedef enum
-{
-	FTNM_EVENT_MSG_TYPE_OCCURRENCE = 0,
-	FTNM_EVENT_MSG_TYPE_RELEASE
-}	FTNM_EVENT_MSG_TYPE, _PTR_ FTNM_EVENT_MSG_TYPE_PTR;
-
-typedef	struct
-{
-	FTNM_EVENT_MSG_TYPE	xType;
-	FTNM_EVENT_ID		xEventID;
-	FTNM_ACTOR_ID		xActID;
-	FTM_DATE			xDate;
-	union
-	{
-		struct
-		{
-			FTM_EP_ID	xEPID;
-			FTM_EP_DATA	xData;
-		}	xEP;
-	}	xParams;
-}	FTNM_EVENT_MSG, _PTR_ FTNM_EVENT_MSG_PTR;
-
 static FTM_VOID_PTR FTNM_EVENTM_process(FTM_VOID_PTR pData);
 static FTM_BOOL		FTNM_EVENTM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
@@ -199,18 +177,21 @@ FTM_VOID_PTR FTNM_EVENTM_process(FTM_VOID_PTR pData)
 
 				if (pEvent->xState == FTNM_EVENT_STATE_PRESET)
 				{
-					if (FTM_TIMER_isExpired(&pEvent->xTimer))
+					if (FTM_TIMER_isExpired(&pEvent->xDetectionTimer))
 					{
 						FTM_LOG(FTM_LOG_TYPE_EVENT, "EVENT[%d] occurred!\n", pEvent->xInfo.xID);
 						pEvent->xState = FTNM_EVENT_STATE_SET;
+						FTM_TIME_getCurrent(&pEvent->xOccurrenceTime);
+						FTM_TIMER_initTime(&pEvent->xHoldingTimer, &pEvent->xInfo.xHoldingTime);
 					}
 				}
 				else if (pEvent->xState == FTNM_EVENT_STATE_PRERESET)
 				{
-					if (FTM_TIMER_isExpired(&pEvent->xTimer))
+					if (FTM_TIMER_isExpired(&pEvent->xHoldingTimer))
 					{
 						FTM_LOG(FTM_LOG_TYPE_EVENT, "EVENT[%d] clrean!\n", pEvent->xInfo.xID);
 						pEvent->xState = FTNM_EVENT_STATE_RESET;
+						FTM_TIME_getCurrent(&pEvent->xReleaseTime);
 					}
 				}
 
@@ -331,7 +312,7 @@ FTM_RET	FTNM_EVENTM_updateEP(FTNM_EVENTM_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_
 					{
 						if (bOccurrence)
 						{
-							FTM_TIMER_initTime(&pEvent->xTimer, &pEvent->xInfo.xDetectionTime);
+							FTM_TIMER_initTime(&pEvent->xDetectionTimer, &pEvent->xInfo.xDetectionTime);
 							pEvent->xState = FTNM_EVENT_STATE_PRESET;
 						}
 					}
@@ -341,7 +322,7 @@ FTM_RET	FTNM_EVENTM_updateEP(FTNM_EVENTM_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_
 					{
 						if (!bOccurrence)
 						{
-							FTM_TIMER_init(&pEvent->xTimer, 0);
+							FTM_TIMER_init(&pEvent->xDetectionTimer, 0);
 							pEvent->xState = FTNM_EVENT_STATE_RESET;
 						}
 					}
@@ -351,7 +332,6 @@ FTM_RET	FTNM_EVENTM_updateEP(FTNM_EVENTM_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_
 					{
 						if (!bOccurrence)
 						{
-							FTM_TIMER_initTime(&pEvent->xTimer, &pEvent->xInfo.xHoldingTime);
 							pEvent->xState = FTNM_EVENT_STATE_PRERESET;
 						}
 					}
@@ -361,7 +341,6 @@ FTM_RET	FTNM_EVENTM_updateEP(FTNM_EVENTM_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_
 					{
 						if (bOccurrence)
 						{
-							FTM_TIMER_init(&pEvent->xTimer, 0);
 							pEvent->xState = FTNM_EVENT_STATE_SET;
 						}
 					}

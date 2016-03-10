@@ -31,9 +31,13 @@ FTM_RET	FTDM_EVENT_loadFromFile
 
 	FTM_RET				xRet;
 	FTM_CONFIG			xConfig;
-	FTM_CONFIG_ITEM		xTrigger;
-	FTM_CONFIG_ITEM		xEvents;
-	FTM_CONFIG_ITEM		xEventItem;
+	FTM_CONFIG_ITEM		xEvent;
+	FTM_CONFIG_ITEM		xTriggers;
+	FTM_CONFIG_ITEM		xTriggerItem;
+	FTM_CONFIG_ITEM		xActions;
+	FTM_CONFIG_ITEM		xActionItem;
+	FTM_CONFIG_ITEM		xRules;
+	FTM_CONFIG_ITEM		xRuleItem;
 
 	xRet = FTM_CONFIG_init(&xConfig, pFileName);
 	if (xRet != FTM_RET_OK)
@@ -41,52 +45,52 @@ FTM_RET	FTDM_EVENT_loadFromFile
 		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
-	xRet = FTM_CONFIG_getItem(&xConfig, "trigger", &xTrigger);
+	xRet = FTM_CONFIG_getItem(&xConfig, "event", &xEvent);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTM_CONFIG_ITEM_getChildItem(&xTrigger, "events", &xEvents);
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xEvent, "triggers", &xTriggers);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_ULONG	ulCount;
 
-			xRet = FTM_CONFIG_LIST_getItemCount(&xEvents, &ulCount);
+			xRet = FTM_CONFIG_LIST_getItemCount(&xTriggers, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				FTM_ULONG	i;
 
 				for(i = 0 ; i < ulCount ; i++)
 				{
-					xRet = FTM_CONFIG_LIST_getItemAt(&xEvents, i, &xEventItem);	
+					xRet = FTM_CONFIG_LIST_getItemAt(&xTriggers, i, &xTriggerItem);	
 					if (xRet == FTM_RET_OK)
 					{
 						FTM_EVENT		xEvent;
 						FTM_EVENT_PTR	pEvent;
 
-						xRet = FTM_CONFIG_ITEM_getItemINT(&xEventItem, "id", (FTM_INT_PTR)&xEvent.xID);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xTriggerItem, "id", (FTM_INT_PTR)&xEvent.xID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 						
-						xRet = FTM_CONFIG_ITEM_getItemINT(&xEventItem, "epid", (FTM_INT_PTR)&xEvent.xEPID);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xTriggerItem, "epid", (FTM_INT_PTR)&xEvent.xEPID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 
-						xRet = FTM_CONFIG_ITEM_getItemINT(&xEventItem, "type", (FTM_INT_PTR)&xEvent.xType);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xTriggerItem, "type", (FTM_INT_PTR)&xEvent.xType);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 
-						xRet = FTM_CONFIG_ITEM_getItemTime(&xEventItem, "detect",&xEvent.xDetectionTime);
+						xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "detect",&xEvent.xDetectionTime);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 
-						xRet = FTM_CONFIG_ITEM_getItemTime(&xEventItem, "hold",&xEvent.xHoldingTime);
+						xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "hold",&xEvent.xHoldingTime);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
@@ -96,27 +100,27 @@ FTM_RET	FTDM_EVENT_loadFromFile
 						{
 						case	FTM_EVENT_TYPE_ABOVE:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "value", &xEvent.xParams.xAbove.xValue);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "value", &xEvent.xParams.xAbove.xValue);
 							}
 							break;
 
 						case	FTM_EVENT_TYPE_BELOW:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "value", &xEvent.xParams.xBelow.xValue);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "value", &xEvent.xParams.xBelow.xValue);
 							}
 							break;
 
 						case	FTM_EVENT_TYPE_INCLUDE:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "upper", &xEvent.xParams.xInclude.xUpper);
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "lower", &xEvent.xParams.xInclude.xLower);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "upper", &xEvent.xParams.xInclude.xUpper);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "lower", &xEvent.xParams.xInclude.xLower);
 							}
 							break;
 
 						case	FTM_EVENT_TYPE_EXCEPT:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "upper", &xEvent.xParams.xExcept.xUpper);
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xEventItem, "lower", &xEvent.xParams.xExcept.xLower);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "upper", &xEvent.xParams.xExcept.xUpper);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "lower", &xEvent.xParams.xExcept.xLower);
 							}
 							break;
 
@@ -131,6 +135,48 @@ FTM_RET	FTDM_EVENT_loadFromFile
 						{
 							ERROR("The new event can not creation.\n");
 						}
+					
+					}
+				}
+			}
+		}
+
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xEvent, "actions", &xActions);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_ULONG	ulCount;
+
+			xRet = FTM_CONFIG_LIST_getItemCount(&xActions, &ulCount);
+			if (xRet == FTM_RET_OK)
+			{
+				FTM_ULONG	i;
+
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					xRet = FTM_CONFIG_LIST_getItemAt(&xActions, i, &xActionItem);	
+					if (xRet == FTM_RET_OK)
+					{
+					
+					}
+				}
+			}
+		}
+
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xEvent, "rules", &xRules);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_ULONG	ulCount;
+
+			xRet = FTM_CONFIG_LIST_getItemCount(&xRules, &ulCount);
+			if (xRet == FTM_RET_OK)
+			{
+				FTM_ULONG	i;
+
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					xRet = FTM_CONFIG_LIST_getItemAt(&xRules, i, &xRuleItem);	
+					if (xRet == FTM_RET_OK)
+					{
 					
 					}
 				}
