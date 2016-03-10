@@ -22,11 +22,6 @@ extern	char *		program_invocation_short_name;
 int main(int argc , char *argv[])
 {
 	FTM_CHAR		pConfigFileName[FTM_FILE_NAME_LEN];
-	FTM_SHELL_CONFIG	xShellConfig;
-
-	xShellConfig.pCmdList 	= FTDMC_pCmdList;
-	xShellConfig.ulCmdCount	= FTDMC_ulCmdCount;
-	xShellConfig.pPrompt		= FTDMC_pPrompt;
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
@@ -37,7 +32,9 @@ int main(int argc , char *argv[])
 	/* apply configuraton */
 	FTDMC_init(&xClientConfig);
 
-	FTM_SHELL_init(&xShellConfig);
+	FTM_SHELL_init();
+	FTM_SHELL_setPrompt(FTDMC_pPrompt);
+	FTM_SHELL_addCmds(FTDMC_pCmdList,FTDMC_ulCmdCount);
 	FTM_SHELL_run();
 
 	FTDMC_final();

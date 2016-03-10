@@ -126,6 +126,21 @@ FTM_RET	FTNM_DMC_setServiceCallback(FTNM_DMC_PTR pCTX, FTNM_SERVICE_ID xServiceI
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_DMC_EP_create(FTNM_DMC_PTR pCTX, FTM_EP_PTR pInfo)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pInfo != NULL);
+
+	return	FTDMC_EP_append(&pCTX->xSession, pInfo);
+}
+
+FTM_RET	FTNM_DMC_EP_destroy(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID)
+{
+	ASSERT(pCTX != NULL)l
+
+	return	FTDMC_EP_remove(pCTX->xSesion, xEPID);
+}
+
 FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pCTX != NULL);

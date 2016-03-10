@@ -489,7 +489,7 @@ FTM_RET FTNMC_NODE_get
 
 FTM_RET FTNMC_EP_create
 (
-	FTNMC_SESSION_PTR		pSession,
+	FTNMC_SESSION_PTR	pSession,
 	FTM_EP_PTR			pInfo
 )
 {
@@ -529,8 +529,8 @@ FTM_RET FTNMC_EP_create
 
 FTM_RET FTNMC_EP_destroy
 (
-	FTNMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID
+	FTNMC_SESSION_PTR	pSession,
+	FTM_EP_ID			xEPID
 )
 {
 	FTM_RET					nRet;

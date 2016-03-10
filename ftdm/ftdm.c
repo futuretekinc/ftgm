@@ -120,11 +120,7 @@ int main(int nArgc, char *pArgv[])
 	FTM_BOOL	bShowUsage = FTM_FALSE;
 	FTM_CHAR	pConfigFileName[1024];
 	pthread_t 	xPThread;	
-	FTM_SHELL_CONFIG	xShellConfig;
 	
-	xShellConfig.pCmdList 	= FTDMS_pCmdList;
-	xShellConfig.ulCmdCount	= FTDMS_ulCmdCount;
-	xShellConfig.pPrompt	= FTDMS_pPrompt;
 	
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
@@ -167,7 +163,6 @@ int main(int nArgc, char *pArgv[])
 		return	0;
 	}
 
-	FTM_SHELL_init(&xShellConfig);
 
 	/* load configuration  */
 	FTDM_CFG_init(&xConfig);
@@ -238,6 +233,7 @@ int main(int nArgc, char *pArgv[])
 	FTDM_init();
 	FTDM_loadConfig(&xConfig);
 
+
 	if (bDaemon)
 	{ 
 		if (fork() == 0)
@@ -245,19 +241,26 @@ int main(int nArgc, char *pArgv[])
 			FTDMS_run(&xConfig.xServer, &xPThread);
 			pthread_join(xPThread, NULL);
 		}
+		else
+		{
+			return	0;	
+		}
 	}
 	else
 	{
 		FTDMS_run(&xConfig.xServer, &xPThread);
+		FTM_SHELL_init();
+		FTM_SHELL_setPrompt(FTDMS_pPrompt);
+		FTM_SHELL_addCmds(FTDMS_pCmdList,FTDMS_ulCmdCount);
 		FTM_SHELL_run();
+
 	}
 
 	FTDM_RULE_final();
-
 	FTDM_ACTION_final();
-
 	FTDM_TRIGGER_final();
-
+	FTDM_EP_final();
+	FTDM_NODE_final();
 	FTDM_CFG_final(&xConfig);
 
 	return	0;

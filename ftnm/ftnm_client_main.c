@@ -573,6 +573,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		case	8:
 			if (strlen(pArgv[7]) > FTM_DID_LEN)
 			{
+				ERROR("Invalid DID - tool long.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
@@ -584,6 +585,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		case	7:
 			if (strlen(pArgv[6]) > FTM_DID_LEN)
 			{
+				ERROR("Invalid DID - tool long.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
@@ -596,12 +598,14 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			xInfo.ulInterval = (FTM_ULONG)strtoul(pArgv[5], 0, 10);
 			if (xInfo.ulInterval < 0)
 			{
+				ERROR("Invalid interval.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
 		case	5:
 			if (strlen(pArgv[4]) > FTM_UNIT_LEN)
 			{
+				ERROR("Invalid unit.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
@@ -613,6 +617,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		case	4:
 			if (strlen(pArgv[3]) > FTM_NAME_LEN)
 			{
+				ERROR("Invalid name.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
@@ -625,6 +630,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			xInfo.xEPID = strtoul(pArgv[2], NULL, 16);
 			if (xEPID < 0)
 			{
+				ERROR("Invalid EPID.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
