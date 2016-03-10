@@ -195,68 +195,68 @@ FTM_RET	FTDMC_EP_DATA_countWithTime
 	FTM_ULONG_PTR			pCount
 );
 
-FTM_RET	FTDMC_EVENT_add
+FTM_RET	FTDMC_TRIGGER_add
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EVENT_PTR     		pEvent
+	FTM_TRIGGER_PTR     		pTrigger
 );
 
-FTM_RET	FTDMC_EVENT_del
+FTM_RET	FTDMC_TRIGGER_del
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EVENT_ID     		xEventID
+	FTM_TRIGGER_ID     		xTriggerID
 );
 
-FTM_RET	FTDMC_EVENT_count
+FTM_RET	FTDMC_TRIGGER_count
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pulCount
 );
 
-FTM_RET	FTDMC_EVENT_get
+FTM_RET	FTDMC_TRIGGER_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EVENT_ID     		xEventID,
-	FTM_EVENT_PTR			pEvent
+	FTM_TRIGGER_ID     		xTriggerID,
+	FTM_TRIGGER_PTR			pTrigger
 );
 
-FTM_RET	FTDMC_EVENT_getAt
+FTM_RET	FTDMC_TRIGGER_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				ulIndex,
-	FTM_EVENT_PTR			pEvent
+	FTM_TRIGGER_PTR			pTrigger
 );
 
-FTM_RET	FTDMC_ACT_add
+FTM_RET	FTDMC_ACTION_add
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_ACT_PTR     		pAct
+	FTM_ACTION_PTR     		pAction
 );
 
-FTM_RET	FTDMC_ACT_del
+FTM_RET	FTDMC_ACTION_del
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_ACT_ID     			xActID
+	FTM_ACTION_ID     			xActID
 );
 
-FTM_RET	FTDMC_ACT_count
+FTM_RET	FTDMC_ACTION_count
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pulCount
 );
 
-FTM_RET	FTDMC_ACT_get
+FTM_RET	FTDMC_ACTION_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_ACT_ID     			xActID,
-	FTM_ACT_PTR				pAct
+	FTM_ACTION_ID     			xActID,
+	FTM_ACTION_PTR				pAction
 );
 
-FTM_RET	FTDMC_ACT_getAt
+FTM_RET	FTDMC_ACTION_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				ulIndex,
-	FTM_ACT_PTR				pAct
+	FTM_ACTION_PTR				pAction
 );
 
 #endif

@@ -11,7 +11,7 @@
 #include "ftdm_server.h"
 #include "ftdm_server_cmds.h"
 #include "ftdm_event.h"
-#include "ftdm_act.h"
+#include "ftdm_action.h"
 
 FTM_RET	FTDMS_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_session(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
@@ -74,8 +74,8 @@ FTM_RET	FTDMS_SHELL_CMD_config
 		FTDM_CFG_show(&xConfig);
 		FTDM_NODE_showList();
 		FTDM_EP_showList();
-		FTDM_EVENT_showList();
-		FTDM_ACT_showList();
+		FTDM_TRIGGER_showList();
+		FTDM_ACTION_showList();
 		return	FTM_RET_OK;
 	}
 

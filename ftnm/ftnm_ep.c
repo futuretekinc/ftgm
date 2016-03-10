@@ -122,7 +122,7 @@ FTM_RET	FTNM_EP_create(FTM_EP_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
 	FTM_LIST_init(&pEP->xDataList);
 	FTM_LIST_append(&pEP->xDataList, pData);
 
-	FTM_LIST_init(&pEP->xEventList);
+	FTM_LIST_init(&pEP->xTriggerList);
 
 	FTM_LIST_append(pEPList, pEP);
 
@@ -155,7 +155,7 @@ FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR	pEP)
 
 	FTNM_EP_stop(pEP, FTM_TRUE);
 
-	FTM_LIST_final(&pEP->xEventList);
+	FTM_LIST_final(&pEP->xTriggerList);
 	FTM_MSGQ_final(&pEP->xMsgQ);
 	sem_destroy(&pEP->xLock);
 
@@ -480,15 +480,15 @@ FTM_RET	FTNM_EP_getEventCount(FTNM_EP_PTR pEP, FTM_ULONG_PTR pulCount)
 	ASSERT(pEP != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTM_LIST_count(&pEP->xEventList, pulCount);
+	return	FTM_LIST_count(&pEP->xTriggerList, pulCount);
 }
 
-FTM_RET	FTNM_EP_getEventAt(FTNM_EP_PTR pEP, FTM_ULONG ulIndex, FTM_EVENT_ID_PTR pEventID)
+FTM_RET	FTNM_EP_getEventAt(FTNM_EP_PTR pEP, FTM_ULONG ulIndex, FTM_TRIGGER_ID_PTR pTriggerID)
 {
 	ASSERT(pEP != NULL);
-	ASSERT(pEventID != NULL);
+	ASSERT(pTriggerID != NULL);
 	
-	return	FTM_LIST_getAt(&pEP->xEventList, ulIndex, (FTM_VOID_PTR _PTR_)&pEventID);
+	return	FTM_LIST_getAt(&pEP->xTriggerList, ulIndex, (FTM_VOID_PTR _PTR_)&pTriggerID);
 }
 
 FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)

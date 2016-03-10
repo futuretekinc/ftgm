@@ -24,7 +24,7 @@ typedef	struct FTNM_EP_STRUCT
 	FTM_MSG_QUEUE		xMsgQ;
 
 	FTM_LIST			xDataList;
-	FTM_LIST			xEventList;
+	FTM_LIST			xTriggerList;
 
 	union
 	{
@@ -59,8 +59,8 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
 FTM_RET	FTNM_EP_getData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
 FTM_RET FTNM_EP_setFloat(FTNM_EP_PTR pEP, FTM_ULONG ulTime, FTM_DOUBLE fValue);
 
-FTM_RET	FTNM_EP_getEventCount(FTNM_EP_PTR pEP, FTM_ULONG_PTR pulCount);
-FTM_RET	FTNM_EP_getEventAt(FTNM_EP_PTR pEP, FTM_ULONG ulIndex, FTM_EVENT_ID_PTR pEventID);
+FTM_RET	FTNM_EP_getTriggerCount(FTNM_EP_PTR pEP, FTM_ULONG_PTR pulCount);
+FTM_RET	FTNM_EP_getTriggerAt(FTNM_EP_PTR pEP, FTM_ULONG ulIndex, FTM_TRIGGER_ID_PTR pTriggerID);
 
 FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
 

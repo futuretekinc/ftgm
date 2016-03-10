@@ -13,7 +13,7 @@ CLIENT_LDFLAGS=$(LDFLAGS) -lftdmc -lftm -lconfig -lpthread
 
 LIB_FTDM=libftdm
 LIB_FTDM_INCS= ftdm_config.h ftdm_server.h ftdm_sqlite.h ftdm_node.h ftdm_ep.h ftdm_ep_class.h 
-LIB_FTDM_SRCS= ftdm_config.c ftdm_server.c ftdm_sqlite.c ftdm_node.c ftdm_ep.c ftdm_ep_class.c  ftdm_shell_cmds.c ftdm_event.c ftdm_act.c
+LIB_FTDM_SRCS= ftdm_config.c ftdm_server.c ftdm_sqlite.c ftdm_node.c ftdm_ep.c ftdm_ep_class.c  ftdm_shell_cmds.c ftdm_event.c ftdm_action.c ftdm_rule.c
 LIB_FTDM_OBJS=$(LIB_FTDM_SRCS:.c=.o)
 
 LIB_FTDMC=libftdmc

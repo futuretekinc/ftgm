@@ -15,7 +15,7 @@
 #include "ftdm_server.h"
 #include "ftdm_sqlite.h"
 #include "ftdm_event.h"
-#include "ftdm_act.h"
+#include "ftdm_action.h"
 
 FTM_RET 	FTDM_init(FTM_VOID)
 {
@@ -194,10 +194,10 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
-	xRet = FTDM_EVENT_init();
+	xRet = FTDM_TRIGGER_init();
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_EVENT_loadFromFile(pConfigFileName);
+		xRet = FTDM_TRIGGER_loadFromFile(pConfigFileName);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Event configuration load failed.\n");	
@@ -205,10 +205,10 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
-	xRet = FTDM_ACT_init();
+	xRet = FTDM_ACTION_init();
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_ACT_loadFromFile(pConfigFileName);
+		xRet = FTDM_ACTION_loadFromFile(pConfigFileName);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Actor configuration load failed.\n");	
@@ -240,9 +240,9 @@ int main(int nArgc, char *pArgv[])
 		FTM_SHELL_run();
 	}
 
-	FTDM_ACT_final();
+	FTDM_ACTION_final();
 
-	FTDM_EVENT_final();
+	FTDM_TRIGGER_final();
 
 	FTDM_CFG_final(&xConfig);
 

@@ -12,7 +12,7 @@
 #include "ftdm_params.h"
 #include "ftdm_server.h"
 #include "ftdm_event.h"
-#include "ftdm_act.h"
+#include "ftdm_action.h"
 
 typedef struct
 {
@@ -51,16 +51,16 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_EP_DATA_GET,			FTDMS_EP_DATA_get),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_COUNT,			FTDMS_EP_DATA_count),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_COUNT_WITH_TIME,FTDMS_EP_DATA_countWithTime),
-	MK_CMD_SET(FTDM_CMD_EVENT_ADD,				FTDMS_EVENT_add ),
-	MK_CMD_SET(FTDM_CMD_EVENT_DEL,				FTDMS_EVENT_del ),
-	MK_CMD_SET(FTDM_CMD_EVENT_COUNT,			FTDMS_EVENT_count ),
-	MK_CMD_SET(FTDM_CMD_EVENT_GET,				FTDMS_EVENT_get ),
-	MK_CMD_SET(FTDM_CMD_EVENT_GET_AT,			FTDMS_EVENT_getAt ),
-	MK_CMD_SET(FTDM_CMD_ACT_ADD,				FTDMS_ACT_add ),
-	MK_CMD_SET(FTDM_CMD_ACT_DEL,				FTDMS_ACT_del ),
-	MK_CMD_SET(FTDM_CMD_ACT_COUNT,				FTDMS_ACT_count ),
-	MK_CMD_SET(FTDM_CMD_ACT_GET,				FTDMS_ACT_get ),
-	MK_CMD_SET(FTDM_CMD_ACT_GET_AT,				FTDMS_ACT_getAt ),
+	MK_CMD_SET(FTDM_CMD_TRIGGER_ADD,			FTDMS_TRIGGER_add ),
+	MK_CMD_SET(FTDM_CMD_TRIGGER_DEL,			FTDMS_TRIGGER_del ),
+	MK_CMD_SET(FTDM_CMD_TRIGGER_COUNT,			FTDMS_TRIGGER_count ),
+	MK_CMD_SET(FTDM_CMD_TRIGGER_GET,			FTDMS_TRIGGER_get ),
+	MK_CMD_SET(FTDM_CMD_TRIGGER_GET_AT,			FTDMS_TRIGGER_getAt ),
+	MK_CMD_SET(FTDM_CMD_ACTION_ADD,				FTDMS_ACTION_add ),
+	MK_CMD_SET(FTDM_CMD_ACTION_DEL,				FTDMS_ACTION_del ),
+	MK_CMD_SET(FTDM_CMD_ACTION_COUNT,			FTDMS_ACTION_count ),
+	MK_CMD_SET(FTDM_CMD_ACTION_GET,				FTDMS_ACTION_get ),
+	MK_CMD_SET(FTDM_CMD_ACTION_GET_AT,			FTDMS_ACTION_getAt ),
 	MK_CMD_SET(FTDM_CMD_UNKNOWN, 				NULL)
 };
 
@@ -741,159 +741,159 @@ FTM_RET 	FTDMS_EP_DATA_countWithTime
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_EVENT_add
+FTM_RET	FTDMS_TRIGGER_add
 (
-	FTDM_REQ_EVENT_ADD_PARAMS_PTR	pReq,
-	FTDM_RESP_EVENT_ADD_PARAMS_PTR	pResp
+	FTDM_REQ_TRIGGER_ADD_PARAMS_PTR	pReq,
+	FTDM_RESP_TRIGGER_ADD_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EVENT_add(&pReq->xEvent);
+	pResp->nRet = FTDM_TRIGGER_add(&pReq->xTrigger);
 
 	return	pResp->nRet;
 }
 
 
-FTM_RET	FTDMS_EVENT_del
+FTM_RET	FTDMS_TRIGGER_del
 (
- 	FTDM_REQ_EVENT_DEL_PARAMS_PTR	pReq,
-	FTDM_RESP_EVENT_DEL_PARAMS_PTR	pResp
+ 	FTDM_REQ_TRIGGER_DEL_PARAMS_PTR	pReq,
+	FTDM_RESP_TRIGGER_DEL_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EVENT_del(pReq->xID);
+	pResp->nRet = FTDM_TRIGGER_del(pReq->xID);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_EVENT_count
+FTM_RET	FTDMS_TRIGGER_count
 (
- 	FTDM_REQ_EVENT_COUNT_PARAMS_PTR	pReq,
-	FTDM_RESP_EVENT_COUNT_PARAMS_PTR	pResp
+ 	FTDM_REQ_TRIGGER_COUNT_PARAMS_PTR	pReq,
+	FTDM_RESP_TRIGGER_COUNT_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EVENT_count(&pResp->nCount);
+	pResp->nRet = FTDM_TRIGGER_count(&pResp->nCount);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_EVENT_get
+FTM_RET	FTDMS_TRIGGER_get
 (
- 	FTDM_REQ_EVENT_GET_PARAMS_PTR		pReq,
-	FTDM_RESP_EVENT_GET_PARAMS_PTR	pResp
+ 	FTDM_REQ_TRIGGER_GET_PARAMS_PTR		pReq,
+	FTDM_RESP_TRIGGER_GET_PARAMS_PTR	pResp
 )
 {
-	FTM_EVENT_PTR	pNodeInfo;
+	FTM_TRIGGER_PTR	pNodeInfo;
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EVENT_get(pReq->xID, &pNodeInfo);
+	pResp->nRet = FTDM_TRIGGER_get(pReq->xID, &pNodeInfo);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xEvent, pNodeInfo, sizeof(FTM_EVENT));
+		memcpy(&pResp->xTrigger, pNodeInfo, sizeof(FTM_TRIGGER));
 	}
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_EVENT_getAt
+FTM_RET	FTDMS_TRIGGER_getAt
 (
- 	FTDM_REQ_EVENT_GET_AT_PARAMS_PTR	pReq,
-	FTDM_RESP_EVENT_GET_AT_PARAMS_PTR	pResp
+ 	FTDM_REQ_TRIGGER_GET_AT_PARAMS_PTR	pReq,
+	FTDM_RESP_TRIGGER_GET_AT_PARAMS_PTR	pResp
 )
 {
-	FTM_EVENT_PTR	pNodeInfo;
+	FTM_TRIGGER_PTR	pNodeInfo;
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EVENT_getAt(pReq->nIndex, &pNodeInfo);
+	pResp->nRet = FTDM_TRIGGER_getAt(pReq->nIndex, &pNodeInfo);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xEvent, pNodeInfo, sizeof(FTM_EVENT));
+		memcpy(&pResp->xTrigger, pNodeInfo, sizeof(FTM_TRIGGER));
 	}
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_ACT_add
+FTM_RET	FTDMS_ACTION_add
 (
-	FTDM_REQ_ACT_ADD_PARAMS_PTR	pReq,
-	FTDM_RESP_ACT_ADD_PARAMS_PTR	pResp
+	FTDM_REQ_ACTION_ADD_PARAMS_PTR	pReq,
+	FTDM_RESP_ACTION_ADD_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACT_add(&pReq->xAct);
+	pResp->nRet = FTDM_ACTION_add(&pReq->xAction);
 
 	return	pResp->nRet;
 }
 
 
-FTM_RET	FTDMS_ACT_del
+FTM_RET	FTDMS_ACTION_del
 (
- 	FTDM_REQ_ACT_DEL_PARAMS_PTR	pReq,
-	FTDM_RESP_ACT_DEL_PARAMS_PTR	pResp
+ 	FTDM_REQ_ACTION_DEL_PARAMS_PTR	pReq,
+	FTDM_RESP_ACTION_DEL_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACT_del(pReq->xID);
+	pResp->nRet = FTDM_ACTION_del(pReq->xID);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_ACT_count
+FTM_RET	FTDMS_ACTION_count
 (
- 	FTDM_REQ_ACT_COUNT_PARAMS_PTR	pReq,
-	FTDM_RESP_ACT_COUNT_PARAMS_PTR	pResp
+ 	FTDM_REQ_ACTION_COUNT_PARAMS_PTR	pReq,
+	FTDM_RESP_ACTION_COUNT_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACT_count(&pResp->nCount);
+	pResp->nRet = FTDM_ACTION_count(&pResp->nCount);
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_ACT_get
+FTM_RET	FTDMS_ACTION_get
 (
- 	FTDM_REQ_ACT_GET_PARAMS_PTR		pReq,
-	FTDM_RESP_ACT_GET_PARAMS_PTR	pResp
+ 	FTDM_REQ_ACTION_GET_PARAMS_PTR		pReq,
+	FTDM_RESP_ACTION_GET_PARAMS_PTR	pResp
 )
 {
-	FTM_ACT_PTR	pAct;
+	FTM_ACTION_PTR	pAct;
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACT_get(pReq->xID, &pAct);
+	pResp->nRet = FTDM_ACTION_get(pReq->xID, &pAct);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xAct, pAct, sizeof(FTM_ACT));
+		memcpy(&pResp->xAction, pAct, sizeof(FTM_ACTION));
 	}
 
 	return	pResp->nRet;
 }
 
-FTM_RET	FTDMS_ACT_getAt
+FTM_RET	FTDMS_ACTION_getAt
 (
- 	FTDM_REQ_ACT_GET_AT_PARAMS_PTR	pReq,
-	FTDM_RESP_ACT_GET_AT_PARAMS_PTR	pResp
+ 	FTDM_REQ_ACTION_GET_AT_PARAMS_PTR	pReq,
+	FTDM_RESP_ACTION_GET_AT_PARAMS_PTR	pResp
 )
 {
-	FTM_ACT_PTR	pAct;
+	FTM_ACTION_PTR	pAct;
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACT_getAt(pReq->nIndex, &pAct);
+	pResp->nRet = FTDM_ACTION_getAt(pReq->nIndex, &pAct);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xAct, pAct, sizeof(FTM_ACT));
+		memcpy(&pResp->xAction, pAct, sizeof(FTM_ACTION));
 	}
 
 	return	pResp->nRet;

@@ -18,7 +18,8 @@ LIB_FTM_SRCS= ftm_debug.c \
 			  ftm_event.c \
 			  ftm_config.c \
 			  ftm_time.c \
-			  ftm_act.c \
+			  ftm_action.c \
+			  ftm_rule.c \
 			  ftm_lock.c
 
 LIB_FTM_OBJS=$(LIB_FTM_SRCS:.c=.o)

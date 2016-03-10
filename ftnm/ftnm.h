@@ -38,7 +38,7 @@ typedef	struct
 	FTM_LIST		xEPList;
 	pthread_t		xPThread;
 
-	FTNM_EVENTM_PTR	pEventM;
+	FTNM_TRIGGERM_PTR	pEventM;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
 

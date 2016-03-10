@@ -8,18 +8,18 @@
 #include "ftnm_msg.h"
 #include "libconfig.h"
 
-#define	FTNM_EVENT_LOOP_INTERVAL	100000	// 1000 us
+#define	FTNM_TRIGGER_LOOP_INTERVAL	100000	// 1000 us
 
-static FTM_VOID_PTR FTNM_EVENTM_process(FTM_VOID_PTR pData);
-static FTM_BOOL		FTNM_EVENTM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+static FTM_VOID_PTR FTNM_TRIGGERM_process(FTM_VOID_PTR pData);
+static FTM_BOOL		FTNM_TRIGGERM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
-FTM_RET	FTNM_EVENTM_init(FTNM_EVENTM_PTR pCTX)
+FTM_RET	FTNM_TRIGGERM_init(FTNM_TRIGGERM_PTR pCTX)
 {
 	ASSERT(pCTX);
 
 	FTM_RET	xRet;
 
-	memset(pCTX, 0, sizeof(FTNM_EVENTM));
+	memset(pCTX, 0, sizeof(FTNM_TRIGGERM));
 
 	xRet = FTM_MSGQ_create(&pCTX->pMsgQ);
 	if (xRet != FTM_RET_OK)
@@ -36,29 +36,29 @@ FTM_RET	FTNM_EVENTM_init(FTNM_EVENTM_PTR pCTX)
 		return	xRet;	
 	}
 
-	FTM_LIST_setSeeker(&pCTX->xEventList, FTNM_EVENTM_seeker);
+	FTM_LIST_setSeeker(&pCTX->xEventList, FTNM_TRIGGERM_seeker);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EVENTM_final(FTNM_EVENTM_PTR pCTX)
+FTM_RET	FTNM_TRIGGERM_final(FTNM_TRIGGERM_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
 	FTM_RET			xRet;
-	FTNM_EVENT_PTR	pEvent;
+	FTNM_TRIGGER_PTR	pTrigger;
 
 	FTM_MSGQ_destroy(pCTX->pMsgQ);
 	pCTX->pMsgQ = NULL;
 
 
 	FTM_LIST_iteratorStart(&pCTX->xEventList);
-	while(FTM_LIST_iteratorNext(&pCTX->xEventList, (FTM_VOID_PTR _PTR_)&pEvent) == FTM_RET_OK)
+	while(FTM_LIST_iteratorNext(&pCTX->xEventList, (FTM_VOID_PTR _PTR_)&pTrigger) == FTM_RET_OK)
 	{
-		xRet = FTM_LIST_remove(&pCTX->xEventList, pEvent);
+		xRet = FTM_LIST_remove(&pCTX->xEventList, pTrigger);
 		if (xRet == FTM_RET_OK)
 		{
-			FTM_MEM_free(pEvent);	
+			FTM_MEM_free(pTrigger);	
 		}
 	}
 
@@ -67,7 +67,7 @@ FTM_RET	FTNM_EVENTM_final(FTNM_EVENTM_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EVENT_loadConfig(FTNM_EVENTM_PTR pCTX, FTM_CHAR_PTR pFileName)
+FTM_RET	FTNM_TRIGGER_loadConfig(FTNM_TRIGGERM_PTR pCTX, FTM_CHAR_PTR pFileName)
 {
 	ASSERT(pCTX != NULL);
 	ASSERT(pFileName != NULL);
@@ -125,13 +125,13 @@ FTM_RET	FTNM_EVENT_loadConfig(FTNM_EVENTM_PTR pCTX, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EVENTM_start(FTNM_EVENTM_PTR pCTX)
+FTM_RET	FTNM_TRIGGERM_start(FTNM_TRIGGERM_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 	
 	FTM_INT	nRet;
 
-	nRet = pthread_create(&pCTX->xEventThread, NULL, FTNM_EVENTM_process, pCTX);
+	nRet = pthread_create(&pCTX->xEventThread, NULL, FTNM_TRIGGERM_process, pCTX);
 	if (nRet < 0)
 	{
 		ERROR("Can't start Event Manager!\n");
@@ -141,7 +141,7 @@ FTM_RET	FTNM_EVENTM_start(FTNM_EVENTM_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_EVENTM_stop(FTNM_EVENTM_PTR pCTX)
+FTM_RET	FTNM_TRIGGERM_stop(FTNM_TRIGGERM_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
@@ -151,10 +151,10 @@ FTM_RET	FTNM_EVENTM_stop(FTNM_EVENTM_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTNM_EVENTM_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTNM_TRIGGERM_process(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
-	FTNM_EVENTM_PTR	pCTX = (FTNM_EVENTM_PTR)pData;
+	FTNM_TRIGGERM_PTR	pCTX = (FTNM_TRIGGERM_PTR)pData;
 	FTM_TIMER				xTimer;
 	
 	FTM_TIMER_init(&xTimer, 0);
@@ -162,40 +162,40 @@ FTM_VOID_PTR FTNM_EVENTM_process(FTM_VOID_PTR pData)
 	while(!pCTX->bStop)
 	{
 		FTM_RET				xRet;
-		FTNM_EVENT_PTR		pEvent;
+		FTNM_TRIGGER_PTR		pTrigger;
 		FTM_ULONG			i, ulCount;
 
-		FTM_TIMER_add(&xTimer, FTNM_EVENT_LOOP_INTERVAL);
+		FTM_TIMER_add(&xTimer, FTNM_TRIGGER_LOOP_INTERVAL);
 	
 		FTM_LIST_count(&pCTX->xEventList, &ulCount);
 		for(i = 0 ; i < ulCount ; i++)
 		{
-			xRet = FTNM_EVENTM_getAt(pCTX, i, &pEvent);
+			xRet = FTNM_TRIGGERM_getAt(pCTX, i, &pTrigger);
 			if (xRet == FTM_RET_OK)
 			{
-				FTM_LOCK_set(&pEvent->xLock);
+				FTM_LOCK_set(&pTrigger->xLock);
 
-				if (pEvent->xState == FTNM_EVENT_STATE_PRESET)
+				if (pTrigger->xState == FTNM_TRIGGER_STATE_PRESET)
 				{
-					if (FTM_TIMER_isExpired(&pEvent->xDetectionTimer))
+					if (FTM_TIMER_isExpired(&pTrigger->xDetectionTimer))
 					{
-						FTM_LOG(FTM_LOG_TYPE_EVENT, "EVENT[%d] occurred!\n", pEvent->xInfo.xID);
-						pEvent->xState = FTNM_EVENT_STATE_SET;
-						FTM_TIME_getCurrent(&pEvent->xOccurrenceTime);
-						FTM_TIMER_initTime(&pEvent->xHoldingTimer, &pEvent->xInfo.xHoldingTime);
+						FTM_LOG(FTM_LOG_TYPE_TRIGGER, "EVENT[%d] occurred!\n", pTrigger->xInfo.xID);
+						pTrigger->xState = FTNM_TRIGGER_STATE_SET;
+						FTM_TIME_getCurrent(&pTrigger->xOccurrenceTime);
+						FTM_TIMER_initTime(&pTrigger->xHoldingTimer, &pTrigger->xInfo.xHoldingTime);
 					}
 				}
-				else if (pEvent->xState == FTNM_EVENT_STATE_PRERESET)
+				else if (pTrigger->xState == FTNM_TRIGGER_STATE_PRERESET)
 				{
-					if (FTM_TIMER_isExpired(&pEvent->xHoldingTimer))
+					if (FTM_TIMER_isExpired(&pTrigger->xHoldingTimer))
 					{
-						FTM_LOG(FTM_LOG_TYPE_EVENT, "EVENT[%d] clrean!\n", pEvent->xInfo.xID);
-						pEvent->xState = FTNM_EVENT_STATE_RESET;
-						FTM_TIME_getCurrent(&pEvent->xReleaseTime);
+						FTM_LOG(FTM_LOG_TYPE_TRIGGER, "EVENT[%d] clrean!\n", pTrigger->xInfo.xID);
+						pTrigger->xState = FTNM_TRIGGER_STATE_RESET;
+						FTM_TIME_getCurrent(&pTrigger->xReleaseTime);
 					}
 				}
 
-				FTM_LOCK_reset(&pEvent->xLock);
+				FTM_LOCK_reset(&pTrigger->xLock);
 			}
 		}
 		
@@ -210,144 +210,144 @@ FTM_VOID_PTR FTNM_EVENTM_process(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET FTNM_EVENTM_count(FTNM_EVENTM_PTR pCTX, FTM_ULONG_PTR pulCount)
+FTM_RET FTNM_TRIGGERM_count(FTNM_TRIGGERM_PTR pCTX, FTM_ULONG_PTR pulCount)
 {
 	ASSERT(pCTX != NULL);
 
 	return	FTM_LIST_count(&pCTX->xEventList, pulCount);
 }
 
-FTM_RET	FTNM_EVENTM_create(FTNM_EVENTM_PTR pCTX, FTM_EVENT_PTR pInfo)
+FTM_RET	FTNM_TRIGGERM_create(FTNM_TRIGGERM_PTR pCTX, FTM_TRIGGER_PTR pInfo)
 {
 	ASSERT(pCTX != NULL);
 	ASSERT(pInfo != NULL);
 
 	FTM_RET			xRet;
-	FTNM_EVENT_PTR	pEvent;
+	FTNM_TRIGGER_PTR	pTrigger;
 
-	pEvent = (FTNM_EVENT_PTR)FTM_MEM_malloc(sizeof(FTNM_EVENT));
-	if (pEvent == NULL)
+	pTrigger = (FTNM_TRIGGER_PTR)FTM_MEM_malloc(sizeof(FTNM_TRIGGER));
+	if (pTrigger == NULL)
 	{
 		ERROR("Not enough memory\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	memset(pEvent, 0, sizeof(FTNM_EVENT));
-	memcpy(&pEvent->xInfo, pInfo, sizeof(FTM_EVENT));
+	memset(pTrigger, 0, sizeof(FTNM_TRIGGER));
+	memcpy(&pTrigger->xInfo, pInfo, sizeof(FTM_TRIGGER));
 	
-	FTM_LOCK_init(&pEvent->xLock);
+	FTM_LOCK_init(&pTrigger->xLock);
 
-	xRet = FTM_LIST_append(&pCTX->xEventList, pEvent);
+	xRet = FTM_LIST_append(&pCTX->xEventList, pTrigger);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pEvent);	
+		FTM_MEM_free(pTrigger);	
 	}
 
 	return	xRet;
 }
 
-FTM_RET	FTNM_EVENTM_del(FTNM_EVENTM_PTR pCTX, FTNM_EVENT_ID  xEventID)
+FTM_RET	FTNM_TRIGGERM_del(FTNM_TRIGGERM_PTR pCTX, FTNM_TRIGGER_ID  xEventID)
 {
 	ASSERT(pCTX != NULL);
 
 	FTM_RET			xRet;
-	FTNM_EVENT_PTR	pEvent;
+	FTNM_TRIGGER_PTR	pTrigger;
 
-	xRet = FTM_LIST_get(&pCTX->xEventList, (FTM_VOID_PTR)&xEventID, (FTM_VOID_PTR _PTR_)&pEvent);
+	xRet = FTM_LIST_get(&pCTX->xEventList, (FTM_VOID_PTR)&xEventID, (FTM_VOID_PTR _PTR_)&pTrigger);
 	if (xRet == FTM_RET_OK)
 	{
-		FTM_LIST_remove(&pCTX->xEventList, pEvent);
+		FTM_LIST_remove(&pCTX->xEventList, pTrigger);
 
-		FTM_LOCK_final(&pEvent->xLock);
-		FTM_MEM_free(pEvent);
+		FTM_LOCK_final(&pTrigger->xLock);
+		FTM_MEM_free(pTrigger);
 	}
 
 	return	xRet;	
 }
 
-FTM_RET	FTNM_EVENTM_get(FTNM_EVENTM_PTR pCTX, FTNM_EVENT_ID xEventID, FTNM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTNM_TRIGGERM_get(FTNM_TRIGGERM_PTR pCTX, FTNM_TRIGGER_ID xEventID, FTNM_TRIGGER_PTR _PTR_ ppTrigger)
 {
 	ASSERT(pCTX != NULL);
 
-	return	FTM_LIST_get(&pCTX->xEventList, (FTM_VOID_PTR)&xEventID, (FTM_VOID_PTR _PTR_)ppEvent);
+	return	FTM_LIST_get(&pCTX->xEventList, (FTM_VOID_PTR)&xEventID, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
-FTM_RET	FTNM_EVENTM_getAt(FTNM_EVENTM_PTR pCTX, FTM_ULONG ulIndex, FTNM_EVENT_PTR _PTR_ ppEvent)
+FTM_RET	FTNM_TRIGGERM_getAt(FTNM_TRIGGERM_PTR pCTX, FTM_ULONG ulIndex, FTNM_TRIGGER_PTR _PTR_ ppTrigger)
 {
 	ASSERT(pCTX != NULL);
 
-	return	FTM_LIST_getAt(&pCTX->xEventList, ulIndex, (FTM_VOID_PTR _PTR_)ppEvent);
+	return	FTM_LIST_getAt(&pCTX->xEventList, ulIndex, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
 
-FTM_RET	FTNM_EVENTM_updateEP(FTNM_EVENTM_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET	FTNM_TRIGGERM_updateEP(FTNM_TRIGGERM_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pCTX != NULL);
 
 	FTM_RET				xRet;
-	FTNM_EVENT_PTR		pEvent;
+	FTNM_TRIGGER_PTR		pTrigger;
 	FTM_ULONG			i, ulCount;
 
 	FTM_LIST_count(&pCTX->xEventList, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		xRet = FTNM_EVENTM_getAt(pCTX, i, &pEvent);
+		xRet = FTNM_TRIGGERM_getAt(pCTX, i, &pTrigger);
 		if (xRet != FTM_RET_OK)
 		{
 			return	xRet;	
 		}
 		
-		if (pEvent->xInfo.xEPID == xEPID)
+		if (pTrigger->xInfo.xEPID == xEPID)
 		{
 			FTM_BOOL	bOccurrence = FTM_FALSE;
 
-			xRet = FTM_EVENT_occurred(&pEvent->xInfo, pData, &bOccurrence);
+			xRet = FTM_TRIGGER_occurred(&pTrigger->xInfo, pData, &bOccurrence);
 			if (xRet == FTM_RET_OK)
 			{
-				FTM_LOCK_set(&pEvent->xLock);
+				FTM_LOCK_set(&pTrigger->xLock);
 		
-				switch(pEvent->xState)
+				switch(pTrigger->xState)
 				{
-				case	FTNM_EVENT_STATE_RESET:
+				case	FTNM_TRIGGER_STATE_RESET:
 					{
 						if (bOccurrence)
 						{
-							FTM_TIMER_initTime(&pEvent->xDetectionTimer, &pEvent->xInfo.xDetectionTime);
-							pEvent->xState = FTNM_EVENT_STATE_PRESET;
+							FTM_TIMER_initTime(&pTrigger->xDetectionTimer, &pTrigger->xInfo.xDetectionTime);
+							pTrigger->xState = FTNM_TRIGGER_STATE_PRESET;
 						}
 					}
 					break;
 
-				case	FTNM_EVENT_STATE_PRESET:
+				case	FTNM_TRIGGER_STATE_PRESET:
 					{
 						if (!bOccurrence)
 						{
-							FTM_TIMER_init(&pEvent->xDetectionTimer, 0);
-							pEvent->xState = FTNM_EVENT_STATE_RESET;
+							FTM_TIMER_init(&pTrigger->xDetectionTimer, 0);
+							pTrigger->xState = FTNM_TRIGGER_STATE_RESET;
 						}
 					}
 					break;
 
-				case	FTNM_EVENT_STATE_SET:
+				case	FTNM_TRIGGER_STATE_SET:
 					{
 						if (!bOccurrence)
 						{
-							pEvent->xState = FTNM_EVENT_STATE_PRERESET;
+							pTrigger->xState = FTNM_TRIGGER_STATE_PRERESET;
 						}
 					}
 					break;
 
-				case	FTNM_EVENT_STATE_PRERESET:
+				case	FTNM_TRIGGER_STATE_PRERESET:
 					{
 						if (bOccurrence)
 						{
-							pEvent->xState = FTNM_EVENT_STATE_SET;
+							pTrigger->xState = FTNM_TRIGGER_STATE_SET;
 						}
 					}
 					break;
 				}
 
-				FTM_LOCK_reset(&pEvent->xLock);
+				FTM_LOCK_reset(&pTrigger->xLock);
 			}
 		}
 	}
@@ -355,11 +355,11 @@ FTM_RET	FTNM_EVENTM_updateEP(FTNM_EVENTM_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_
 	return	FTM_RET_OK;
 }
 
-FTM_BOOL	FTNM_EVENTM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+FTM_BOOL	FTNM_TRIGGERM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
 {
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
 
-	return	((FTNM_EVENT_PTR)pElement)->xInfo.xID == *((FTM_EVENT_ID_PTR)pIndicator);
+	return	((FTNM_TRIGGER_PTR)pElement)->xInfo.xID == *((FTM_TRIGGER_ID_PTR)pIndicator);
 }
 

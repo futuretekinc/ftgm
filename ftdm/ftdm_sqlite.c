@@ -84,14 +84,14 @@ FTM_RET	FTDM_DBIF_loadConfig
 		return	nRet;	
 	}
 
-	nRet = FTDM_DBIF_EVENT_initTable();
+	nRet = FTDM_DBIF_TRIGGER_initTable();
 	if (nRet != FTM_RET_OK)
 	{
 		sqlite3_close(_pSQLiteDB);
 		return	nRet;	
 	}
 
-	nRet = FTDM_DBIF_ACT_initTable();
+	nRet = FTDM_DBIF_ACTION_initTable();
 	if (nRet != FTM_RET_OK)
 	{
 		sqlite3_close(_pSQLiteDB);
@@ -1643,7 +1643,7 @@ FTM_RET FTDM_DBIF_getTrace
 /***************************************************************
  *
  ***************************************************************/
-FTM_RET	FTDM_DBIF_EVENT_initTable
+FTM_RET	FTDM_DBIF_TRIGGER_initTable
 (
 	FTM_VOID
 )
@@ -1682,18 +1682,18 @@ FTM_RET	FTDM_DBIF_EVENT_initTable
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_EVENT_append
+FTM_RET	FTDM_DBIF_TRIGGER_append
 (
- 	FTM_EVENT_PTR	pEvent
+ 	FTM_TRIGGER_PTR	pTrigger
 )
 {
-	ASSERT(pEvent != NULL);
+	ASSERT(pTrigger != NULL);
 
 	FTM_INT			nRC;
 	sqlite3_stmt 	*pStmt;
 	FTM_CHAR		pSQL[1024];
 	
-	sprintf(pSQL, "INSERT INTO event (ID,TYPE,EPID,VALUE) VALUES (%08lx,%u,%lu,?)", pEvent->xID, pEvent->xType, pEvent->xEPID);
+	sprintf(pSQL, "INSERT INTO event (ID,TYPE,EPID,VALUE) VALUES (%08lx,%u,%lu,?)", pTrigger->xID, pTrigger->xType, pTrigger->xEPID);
 
 	do 
 	{
@@ -1703,7 +1703,7 @@ FTM_RET	FTDM_DBIF_EVENT_append
 			return FTM_RET_ERROR;
 		}
 
-		sqlite3_bind_blob(pStmt, 2, pEvent, sizeof(FTM_EVENT), SQLITE_STATIC);
+		sqlite3_bind_blob(pStmt, 2, pTrigger, sizeof(FTM_TRIGGER), SQLITE_STATIC);
 
 		nRC = sqlite3_step(pStmt);
 		ASSERT( nRC != SQLITE_ROW);
@@ -1717,9 +1717,9 @@ FTM_RET	FTDM_DBIF_EVENT_append
 /***************************************************************
  *
  ***************************************************************/
-static int _FTDM_DBIF_EVENT_getCB(void *pData, int nArgc, char **pArgv, char **pColName)
+static int _FTDM_DBIF_TRIGGER_getCB(void *pData, int nArgc, char **pArgv, char **pColName)
 {
-	FTM_EVENT_PTR	pEvent = (FTM_EVENT_PTR)pData;
+	FTM_TRIGGER_PTR	pTrigger = (FTM_TRIGGER_PTR)pData;
 
 	TRACE("%s : %s\n", pColName, pArgv[0]);
 	
@@ -1727,29 +1727,29 @@ static int _FTDM_DBIF_EVENT_getCB(void *pData, int nArgc, char **pArgv, char **p
 	{
 		if (strcmp(pColName[0], "ID") == 0)
 		{
-			pEvent->xID = strtoul(pArgv[0], 0, 16);
+			pTrigger->xID = strtoul(pArgv[0], 0, 16);
 		}
 		else if (strcmp(pColName[0], "TYPE") == 0)
 		{
-			pEvent->xType = strtoul(pArgv[0], 0, 10);
+			pTrigger->xType = strtoul(pArgv[0], 0, 10);
 		}
 		else if (strcmp(pColName[0], "EPID") == 0)
 		{
-			pEvent->xEPID = strtoul(pArgv[0], 0, 16);
+			pTrigger->xEPID = strtoul(pArgv[0], 0, 16);
 		}
 		else if (strcmp(pColName[0], "VALUE") == 0)
 		{
-			memcpy(&pEvent->xParams, pArgv[0], sizeof(pEvent->xParams));
+			memcpy(&pTrigger->xParams, pArgv[0], sizeof(pTrigger->xParams));
 		}
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_EVENT_get
+FTM_RET	FTDM_DBIF_TRIGGER_get
 (
-	FTM_EVENT_ID	xID,
- 	FTM_EVENT_PTR	pEvent
+	FTM_TRIGGER_ID	xID,
+ 	FTM_TRIGGER_PTR	pTrigger
 )
 {
     FTM_INT			nRet;
@@ -1757,7 +1757,7 @@ FTM_RET	FTDM_DBIF_EVENT_get
     FTM_CHAR_PTR	strErrMsg = NULL;
 
     sprintf(strSQL, "SELECT * FROM event WHERE ID = '%08lx'", xID);
-    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_EVENT_getCB, pEvent, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_TRIGGER_getCB, pTrigger, &strErrMsg);
     if (nRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);
@@ -1773,44 +1773,44 @@ typedef struct
 {
 	FTM_ULONG		ulMaxCount;
 	FTM_ULONG		ulCount;
-	FTM_EVENT_PTR	pEvents;
-}	FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS_PTR;
+	FTM_TRIGGER_PTR	pTriggers;
+}	FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS_PTR;
 
-static int _FTDM_DBIF_EVENT_getListCB(void *pData, int nArgc, char **pArgv, char **pColName)
+static int _FTDM_DBIF_TRIGGER_getListCB(void *pData, int nArgc, char **pArgv, char **pColName)
 {
-	FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS_PTR)pData;
+	FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS_PTR)pData;
 
 	if (nArgc != 0)
 	{
 		FTM_INT	i;
-		FTM_EVENT_PTR	pEvent = &pParams->pEvents[pParams->ulCount++];
+		FTM_TRIGGER_PTR	pTrigger = &pParams->pTriggers[pParams->ulCount++];
 
 		for(i = 0 ; i < nArgc ; i++)
 		{
 			if (strcasecmp(pColName[i], "ID") == 0)
 			{
-				pEvent->xID = strtoul(pArgv[i], 0, 16);
+				pTrigger->xID = strtoul(pArgv[i], 0, 16);
 			}
 			else if (strcasecmp(pColName[i], "TYPE") == 0)
 			{
-				pEvent->xType = strtoul(pArgv[i], 0, 10);
+				pTrigger->xType = strtoul(pArgv[i], 0, 10);
 			}
 			else if (strcasecmp(pColName[i], "EPID") == 0)
 			{
-				pEvent->xEPID = strtoul(pArgv[i], 0, 16);
+				pTrigger->xEPID = strtoul(pArgv[i], 0, 16);
 			}
 			else if (strcasecmp(pColName[i], "VALUE") == 0)
 			{
-				memcpy(&pEvent->xParams, pArgv[i], sizeof(pEvent->xParams));
+				memcpy(&pTrigger->xParams, pArgv[i], sizeof(pTrigger->xParams));
 			}
 		}
 	}
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_EVENT_getList
+FTM_RET	FTDM_DBIF_TRIGGER_getList
 (
-	FTM_EVENT_PTR		pEvents, 
+	FTM_TRIGGER_PTR		pTriggers, 
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pulCount
 )
@@ -1818,15 +1818,15 @@ FTM_RET	FTDM_DBIF_EVENT_getList
     int     nRet;
     char    strSQL[1024];
     char    *strErrMsg = NULL;
-	FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS xParams= 
+	FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS xParams= 
 	{
 		.ulMaxCount = nMaxCount,
 		.ulCount	= 0,
-		.pEvents	= pEvents
+		.pTriggers	= pTriggers
 	};
 
     sprintf(strSQL, "SELECT * FROM event");
-    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_EVENT_getListCB, &xParams, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_TRIGGER_getListCB, &xParams, &strErrMsg);
     if (nRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);
@@ -1843,7 +1843,7 @@ FTM_RET	FTDM_DBIF_EVENT_getList
 /***************************************************************
  *
  ***************************************************************/
-FTM_RET	FTDM_DBIF_ACT_initTable
+FTM_RET	FTDM_DBIF_ACTION_initTable
 (
 	FTM_VOID
 )
@@ -1881,18 +1881,25 @@ FTM_RET	FTDM_DBIF_ACT_initTable
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_ACT_append
+FTM_RET	FTDM_DBIF_ACTION_append
 (
- 	FTM_ACT_PTR	pAct
+ 	FTM_ACTION_PTR	pAction
 )
 {
-	ASSERT(pAct != NULL);
+	ASSERT(pAction != NULL);
 
 	FTM_INT			nRet;
 	FTM_CHAR		pSQL[1024];
 	FTM_CHAR_PTR	pErrMsg = NULL;
-	
-	sprintf(pSQL, "INSERT INTO event (ID,TYPE,EPID) VALUES (%08lx,%u,%08lx)", pAct->xID, pAct->xType, pAct->xTargetID);
+
+	switch(pAction->xType)
+	{
+	case	FTM_ACTION_TYPE_SET:
+		{
+			sprintf(pSQL, "INSERT INTO event (ID,TYPE,EPID) VALUES (%08lx,%u,%08lx)", pAction->xID, pAction->xType, pAction->xParams.xSet.xEPID);
+		}
+		break;
+	}
 
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
@@ -1909,9 +1916,9 @@ FTM_RET	FTDM_DBIF_ACT_append
 /***************************************************************
  *
  ***************************************************************/
-static int _FTDM_DBIF_ACT_getCB(void *pData, int nArgc, char **pArgv, char **pColName)
+static int _FTDM_DBIF_ACTION_getCB(void *pData, int nArgc, char **pArgv, char **pColName)
 {
-	FTM_ACT_PTR	pAct = (FTM_ACT_PTR)pData;
+	FTM_ACTION_PTR	pAction = (FTM_ACTION_PTR)pData;
 
 	TRACE("%s : %s\n", pColName, pArgv[0]);
 	
@@ -1919,25 +1926,21 @@ static int _FTDM_DBIF_ACT_getCB(void *pData, int nArgc, char **pArgv, char **pCo
 	{
 		if (strcmp(pColName[0], "ID") == 0)
 		{
-			pAct->xID = strtoul(pArgv[0], 0, 16);
+			pAction->xID = strtoul(pArgv[0], 0, 16);
 		}
 		else if (strcmp(pColName[0], "TYPE") == 0)
 		{
-			pAct->xType = strtoul(pArgv[0], 0, 10);
-		}
-		else if (strcmp(pColName[0], "EPID") == 0)
-		{
-			pAct->xTargetID = strtoul(pArgv[0], 0, 16);
+			pAction->xType = strtoul(pArgv[0], 0, 10);
 		}
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_ACT_get
+FTM_RET	FTDM_DBIF_ACTION_get
 (
-	FTM_ACT_ID	xID,
- 	FTM_ACT_PTR	pAct
+	FTM_ACTION_ID	xID,
+ 	FTM_ACTION_PTR	pAction
 )
 {
     FTM_INT			nRet;
@@ -1945,7 +1948,7 @@ FTM_RET	FTDM_DBIF_ACT_get
     FTM_CHAR_PTR	strErrMsg = NULL;
 
     sprintf(strSQL, "SELECT * FROM event WHERE ID = '%08lx'", xID);
-    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_ACT_getCB, pAct, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_ACTION_getCB, pAction, &strErrMsg);
     if (nRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);
@@ -1961,40 +1964,36 @@ typedef struct
 {
 	FTM_ULONG		ulMaxCount;
 	FTM_ULONG		ulCount;
-	FTM_ACT_PTR	pActs;
-}	FTDM_DBIF_CB_GET_ACT_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_ACT_LIST_PARAMS_PTR;
+	FTM_ACTION_PTR	pActions;
+}	FTDM_DBIF_CB_GET_ACTION_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_ACTION_LIST_PARAMS_PTR;
 
-static int _FTDM_DBIF_ACT_getListCB(void *pData, int nArgc, char **pArgv, char **pColName)
+static int _FTDM_DBIF_ACTION_getListCB(void *pData, int nArgc, char **pArgv, char **pColName)
 {
-	FTDM_DBIF_CB_GET_ACT_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_ACT_LIST_PARAMS_PTR)pData;
+	FTDM_DBIF_CB_GET_ACTION_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_ACTION_LIST_PARAMS_PTR)pData;
 
 	if (nArgc != 0)
 	{
 		FTM_INT	i;
-		FTM_ACT_PTR	pAct = &pParams->pActs[pParams->ulCount++];
+		FTM_ACTION_PTR	pAction = &pParams->pActions[pParams->ulCount++];
 
 		for(i = 0 ; i < nArgc ; i++)
 		{
 			if (strcasecmp(pColName[i], "ID") == 0)
 			{
-				pAct->xID = strtoul(pArgv[i], 0, 16);
+				pAction->xID = strtoul(pArgv[i], 0, 16);
 			}
 			else if (strcasecmp(pColName[i], "TYPE") == 0)
 			{
-				pAct->xType = strtoul(pArgv[i], 0, 10);
-			}
-			else if (strcasecmp(pColName[i], "EPID") == 0)
-			{
-				pAct->xTargetID = strtoul(pArgv[i], 0, 16);
+				pAction->xType = strtoul(pArgv[i], 0, 10);
 			}
 		}
 	}
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_ACT_getList
+FTM_RET	FTDM_DBIF_ACTION_getList
 (
-	FTM_ACT_PTR		pActs, 
+	FTM_ACTION_PTR		pActions, 
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pulCount
 )
@@ -2002,15 +2001,15 @@ FTM_RET	FTDM_DBIF_ACT_getList
     int     nRet;
     char    strSQL[1024];
     char    *strErrMsg = NULL;
-	FTDM_DBIF_CB_GET_ACT_LIST_PARAMS xParams= 
+	FTDM_DBIF_CB_GET_ACTION_LIST_PARAMS xParams= 
 	{
 		.ulMaxCount = nMaxCount,
 		.ulCount	= 0,
-		.pActs	= pActs
+		.pActions	= pActions
 	};
 
     sprintf(strSQL, "SELECT * FROM event");
-    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_ACT_getListCB, &xParams, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_ACTION_getListCB, &xParams, &strErrMsg);
     if (nRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);
