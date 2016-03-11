@@ -144,6 +144,22 @@ FTM_RET	FTDM_DBIF_NODE_initTable
 	return	FTM_RET_OK;
 }
 
+FTM_BOOL	FTDM_DBIF_NODE_isTableExist
+(
+	FTM_VOID
+)
+{
+	FTM_CHAR_PTR	pTableName = "node_info";
+	FTM_BOOL		bExist = FTM_FALSE;
+
+	if (_FTDM_DBIF_isExistTable(pTableName, &bExist) != FTM_RET_OK)
+	{
+		ERROR("_FTDM_DBIF_isExistTable(%s,bExist)\n", pTableName);  
+		return	FTM_FALSE;	
+	}
+
+	return	bExist;
+}
 /***************************************************************
  *
  ***************************************************************/
@@ -505,7 +521,7 @@ FTM_RET	FTDM_DBIF_NODE_getLocation
 
 FTM_RET	FTDM_DBIF_EP_initTable
 (
-	void
+	FTM_VOID
 )
 {
 	FTM_CHAR_PTR	pTableName = "ep_info";
@@ -528,6 +544,23 @@ FTM_RET	FTDM_DBIF_EP_initTable
 	return	FTM_RET_OK;
 }
 
+FTM_BOOL FTDM_DBIF_EP_isTableExist
+(
+	FTM_VOID
+)
+{
+	FTM_CHAR_PTR	pTableName = "ep_info";
+	FTM_BOOL		bExist = FTM_FALSE;
+
+	if (_FTDM_DBIF_isExistTable(pTableName, &bExist) != FTM_RET_OK)
+	{
+		ERROR("_FTDM_DBIF_isExistTable(%s,bExist)\n", pTableName);  
+		return	FTM_FALSE;	
+	}
+
+	return	bExist;
+}
+
 FTM_RET	FTDM_DBIF_EP_append
 (
  	FTM_EP_PTR		pEPInfo
@@ -537,6 +570,7 @@ FTM_RET	FTDM_DBIF_EP_append
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
 
+	TRACE("EP[%08x] appended\n", pEPInfo->xEPID);
 	sprintf(pSQL, 
 			"INSERT INTO ep_info (EPID,DID,DEPID,TYPE,NAME,STATE,INTERVAL,TIMEOUT,UNIT,PID,PEPID) "\
 			"VALUES (%lu, \"%s\", %lu, %lu, \"%s\", %d, %lu, %lu, \"%s\", \"%s\", %lu)",

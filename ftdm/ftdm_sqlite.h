@@ -24,6 +24,11 @@ FTM_RET	FTDM_DBIF_NODE_initTable
 	void
 );
 
+FTM_BOOL	FTDM_DBIF_NODE_isTableExist
+(
+	FTM_VOID
+);
+
 FTM_RET	FTDM_DBIF_NODE_count
 (
 	FTM_ULONG_PTR		pCount
@@ -80,7 +85,12 @@ FTM_RET	FTDM_DBIF_NODE_getLocation
 
 FTM_RET	FTDM_DBIF_EP_initTable
 (
-	void
+	FTM_VOID
+);
+
+FTM_BOOL	FTDM_DBIF_EP_isTableExist
+(
+	FTM_VOID
 );
 
 FTM_RET	FTDM_DBIF_EP_append
