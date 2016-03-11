@@ -241,7 +241,7 @@ FTM_RET	FTDM_TRIGGER_showList
 {
 	FTM_TRIGGER_PTR	pTrigger;
 	FTM_ULONG		i, ulCount;
-	MESSAGE("\n# TRIGGER INFORMATION\n");
+	MESSAGE("\n# Trigger Information\n");
 	MESSAGE("\t%4s %8s %8s %8s %s\n", "ID", "EPID", "DETECT", "HOLD", "CONDITION");
 
 	FTM_TRIGGER_count(&ulCount);

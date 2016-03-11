@@ -4,36 +4,31 @@
 #include "ftm.h"
 #include "ftnm_client_config.h"
 
-FTM_RET	FTNMC_initConfig(FTNM_CFG_CLIENT_PTR pConfig)
+static FTNM_CFG_CLIENT _defaultConfig =
 {
-	if (pConfig == NULL)
+	.xNetwork =
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		.pServerIP  = FTNM_DEFAULT_SERVER_IP,
+		.usPort		= FTNM_DEFAULT_SERVER_PORT
 	}
-
-	strcpy(pConfig->xNetwork.pServerIP, "127.0.0.1");
-	pConfig->xNetwork.usPort = 8888;
-
-	return	FTM_RET_OK;
-}
+};
 
 FTM_RET	FTNMC_loadConfig(FTNM_CFG_CLIENT_PTR pConfig, FTM_CHAR_PTR pFileName)
 {
+	ASSERT(pConfig != NULL);
+	ASSERT(pFileName != NULL);
+
 	config_t			xConfig;
 	config_setting_t	*pSection;
 
-	if ((pConfig == NULL) || (pFileName == NULL))
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
-	}
-
+	memcpy(pConfig, &_defaultConfig, sizeof(FTNM_CFG_CLIENT));
 
 	config_init(&xConfig);
 
 	if (CONFIG_TRUE != config_read_file(&xConfig, pFileName))
 	{
 		ERROR("Configuration loading failed.[FILE = %s]\n", pFileName);
-			return	FTM_RET_CONFIG_LOAD_FAILED;
+		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
 	pSection = config_lookup(&xConfig, "default");
@@ -68,12 +63,3 @@ FTM_RET	FTNMC_loadConfig(FTNM_CFG_CLIENT_PTR pConfig, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNMC_finalConfig(FTNM_CFG_CLIENT_PTR pConfig)
-{
-	if (pConfig == NULL)
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
-	}
-
-	return	FTM_RET_OK;
-}

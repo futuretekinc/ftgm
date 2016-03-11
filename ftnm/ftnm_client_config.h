@@ -16,7 +16,6 @@ typedef	struct
 		FTM_CHAR	pServerIP[FTNMC_SERVER_IP_LEN];
 		FTM_USHORT	usPort;
 	}	xNetwork;
-
 }	FTNM_CFG_CLIENT, _PTR_ FTNM_CFG_CLIENT_PTR;
 
 FTM_RET	FTNMC_initConfig(FTNM_CFG_CLIENT_PTR pConfig);

@@ -270,7 +270,7 @@ FTM_RET FTDM_EP_showList(FTM_VOID)
 {
 	FTM_ULONG	i, ulCount;
 
-	MESSAGE("\n[ EP ]\n");
+	MESSAGE("\n# EP Information\n");
 	MESSAGE("\t%8s %16s %16s %8s %8s %8s %8s %16s %8s %16s %8s\n",
 			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID");
 	if (FTM_EP_count(&ulCount) == FTM_RET_OK)

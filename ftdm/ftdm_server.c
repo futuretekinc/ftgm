@@ -134,7 +134,7 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 
 			TRACE("Accept new connection.[ %s:%d ]\n", inet_ntoa(xClient.sin_addr), ntohs(xClient.sin_port));
 
-			FTDM_SESSION_PTR pSession = (FTDM_SESSION_PTR)malloc(sizeof(FTDM_SESSION));
+			FTDM_SESSION_PTR pSession = (FTDM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTDM_SESSION));
 			if (pSession == NULL)
 			{
 				ERROR("System memory is not enough!\n");

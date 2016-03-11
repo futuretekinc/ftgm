@@ -186,8 +186,8 @@ int main(int argc , char *argv[])
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
 	FTM_MEM_init();
+
 	/* load configuraton */
-	FTNMC_initConfig(&xClientConfig);
 	FTNMC_loadConfig(&xClientConfig, pConfigFileName);
 
 	/* apply configuraton */
@@ -223,7 +223,6 @@ int main(int argc , char *argv[])
 
 	FTNMC_final();
 
-	FTNMC_finalConfig(&xClientConfig);
 	FTM_MEM_final();
 
 	return	0;

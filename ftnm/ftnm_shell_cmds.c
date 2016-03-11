@@ -76,18 +76,18 @@ FTM_RET	FTNM_SHELL_CMD_list
 	FTNM_EP_PTR		pEP;
 	FTM_ULONG		i,j, ulCount;
 
-	MESSAGE("\n< NODE LIST >\n");
-	MESSAGE("%-16s %-16s %-8s %-8s %-8s \n", "DID", "STATE", "INTERVAL", "TIMEOUT", "EPs");
+	MESSAGE("\n# Node Information\n");
+	MESSAGE("%16s %16s %8s %8s %s\n", "DID", "STATE", "INTERVAL", "TIMEOUT", "EPs");
 	FTNM_NODE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTM_ULONG	ulEPCount;
 
 		FTNM_NODE_getAt(i, &pNode);
-		MESSAGE("%-16s ", pNode->xInfo.pDID);
-		MESSAGE("%-16s ", FTNM_NODE_stateToStr(pNode->xState));
-		MESSAGE("%-8d ", pNode->xInfo.ulInterval);
-		MESSAGE("%-8d ", pNode->xInfo.ulTimeout);
+		MESSAGE("%16s ", pNode->xInfo.pDID);
+		MESSAGE("%16s ", FTNM_NODE_stateToStr(pNode->xState));
+		MESSAGE("%8d ", pNode->xInfo.ulInterval);
+		MESSAGE("%8d ", pNode->xInfo.ulTimeout);
 
 		FTNM_NODE_getEPCount(pNode, &ulEPCount);
 		MESSAGE("%-3d [ ", ulCount);
@@ -101,8 +101,8 @@ FTM_RET	FTNM_SHELL_CMD_list
 		MESSAGE("]\n");
 	}
 
-	MESSAGE("\n< EP LIST >\n");
-	MESSAGE("%-16s %-16s %-16s %-16s %-8s %-24s\n", "EPID", "TYPE", "DID", "STATE", "VALUE", "TIME");
+	MESSAGE("\n# EP Information\n");
+	MESSAGE("%16s %16s %16s %16s %8s %24s\n", "EPID", "TYPE", "DID", "STATE", "VALUE", "TIME");
 	FTNM_EP_count(0, &ulCount);
 	for(i = 0; i < ulCount ; i++)
 	{
@@ -119,36 +119,36 @@ FTM_RET	FTNM_SHELL_CMD_list
 				pTimeString[strlen(pTimeString) - 1] = '\0';
 			}
 			
-			MESSAGE("%08lx         ", pEP->xInfo.xEPID);
-			MESSAGE("%-16s ", FTM_EP_typeString(pEP->xInfo.xType));
+			MESSAGE("%08lx ", pEP->xInfo.xEPID);
+			MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
 			if (pEP->pNode != NULL)
 			{
-				MESSAGE("%-16s ", pEP->pNode->xInfo.pDID);
+				MESSAGE("%16s ", pEP->pNode->xInfo.pDID);
 			}
 	
 			switch(pEP->xState)
 			{
-			case	FTM_EP_STATE_DISABLE: MESSAGE("%-16s ", "DISABLE"); break;
-			case	FTM_EP_STATE_RUN: 	MESSAGE("%-16s ", "RUN");		break;
-			case	FTM_EP_STATE_STOP: 	MESSAGE("%-16s ", "STOP");		break;
-			case	FTM_EP_STATE_ERROR: MESSAGE("%-16s ", "ERROR");		break;
-			default:					MESSAGE("%-16s ", "UNKNOWN");		break;
+			case	FTM_EP_STATE_DISABLE: MESSAGE("%16s ", "DISABLE"); break;
+			case	FTM_EP_STATE_RUN: 	MESSAGE("%16s ", "RUN");		break;
+			case	FTM_EP_STATE_STOP: 	MESSAGE("%16s ", "STOP");		break;
+			case	FTM_EP_STATE_ERROR: MESSAGE("%16s ", "ERROR");		break;
+			default:					MESSAGE("%16s ", "UNKNOWN");		break;
 			}
 
 			switch(xData.xType)
 			{
-			case	FTM_EP_DATA_TYPE_INT: 	MESSAGE("%-8d ", xData.xValue.nValue); break;
-			case	FTM_EP_DATA_TYPE_ULONG:	MESSAGE("%-8lu ", xData.xValue.ulValue); break;
-			case	FTM_EP_DATA_TYPE_FLOAT:	MESSAGE("%-8.2lf ", xData.xValue.fValue); break;
-			default: 						MESSAGE("%-8s ", "UNKNOWN"); break;
+			case	FTM_EP_DATA_TYPE_INT: 	MESSAGE("%8d ", xData.xValue.nValue); break;
+			case	FTM_EP_DATA_TYPE_ULONG:	MESSAGE("%8lu ", xData.xValue.ulValue); break;
+			case	FTM_EP_DATA_TYPE_FLOAT:	MESSAGE("%8.2lf ", xData.xValue.fValue); break;
+			default: 						MESSAGE("%8s ", "UNKNOWN"); break;
 			}
 			MESSAGE("%24s\n", pTimeString);
 		}
 	}
 
-	MESSAGE("\n< EVENT >\n");
+	MESSAGE("\n# Event Information\n");
 	FTNM_TRIGGERM_count(&xEventM, &ulCount);
-	MESSAGE("\t%-8s %-8s %-16s %-8s %-8s %s\n", "ID", "EPID", "TYPE", "DETECT", "HOLD", "CONDITION");
+	MESSAGE("\t%8s %8s %16s %8s %8s %s\n", "ID", "EPID", "TYPE", "DETECT", "HOLD", "CONDITION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTNM_TRIGGER_PTR	pEvent;
@@ -160,7 +160,7 @@ FTM_RET	FTNM_SHELL_CMD_list
 
 			FTM_TRIGGER_conditionToString(&pEvent->xInfo, pCondition, sizeof(pCondition));
 
-			MESSAGE("\t%08x %08x %-16s %8.3f %8.3f %s\n", 
+			MESSAGE("\t%08x %08x %16s %8.3f %8.3f %s\n", 
 				pEvent->xInfo.xID, 
 				pEvent->xInfo.xEPID, 
 				FTM_TRIGGER_typeString(pEvent->xInfo.xType),

@@ -239,7 +239,7 @@ FTM_RET	FTDM_NODE_showList
 {
 	FTM_ULONG	i, ulCount;
 
-	MESSAGE("\n[ NODE ]\n");
+	MESSAGE("\n# Node Information\n");
 	MESSAGE("\t%16s %16s %16s %8s %8s %16s %16s %16s %16s\n",
 			"DID", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT", "OPT0", "OPT1", "OPT2", "OPT3");
 	if (FTM_NODE_count(&ulCount) == FTM_RET_OK)

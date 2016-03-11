@@ -224,7 +224,7 @@ FTM_RET	FTDM_RULE_showList
 {
 	FTM_RULE_PTR	pRule;
 	FTM_ULONG		i, ulCount;
-	MESSAGE("\n# RULE INFORMATION\n");
+	MESSAGE("\n# Rule Information\n");
 	MESSAGE("\t%4s %8s %8s\n", "ID", "TRIGGER", "ACTION");
 
 	FTM_RULE_count(&ulCount);
