@@ -3,23 +3,17 @@
 #include "ftnm_node.h"
 #include "ftnm_ep.h"
 #include "ftnm_ep_class.h"
+#include "ftnm_msg.h"
 
 extern	FTNM_CONTEXT	xFTNM;
 extern	FTNM_TRIGGERM		xEventM;
 
-FTM_RET	FTNM_SHELL_CMD_config
-(
-	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
-);
+FTM_RET	FTNM_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTNM_SHELL_CMD_list(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTNM_SHELL_CMD_task(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTNM_SHELL_CMD_quit(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[]);
 
-FTM_RET	FTNM_SHELL_CMD_list
-(
-	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
-);
-
-FTM_SHELL_CMD	FTNM_xCmds[] = 
+FTM_SHELL_CMD	FTNM_shellCmds[] = 
 {
 	{
 		.pString	= "config",
@@ -34,10 +28,26 @@ FTM_SHELL_CMD	FTNM_xCmds[] =
 		.pShortHelp	= "show object list.",
 		.pHelp		= "\n"\
 					  "\tShow object list.\n"
+	},
+	{
+		.pString	= "exit",
+		.function	= FTNM_SHELL_CMD_quit,
+		.pShortHelp	= "exit.",
+		.pHelp		= "\n"\
+					  "\texit.\n"
+	},
+	{
+		.pString	= "task",
+		.function	= FTNM_SHELL_CMD_task,
+		.pShortHelp	= "task management",
+		.pHelp		= "\n"\
+					  "\ttask management.\n"
 	}
+
 };
 
-FTM_ULONG		FTNM_ulCmds = sizeof(FTNM_xCmds) / sizeof(FTM_SHELL_CMD);
+FTM_ULONG		FTNM_shellCmdCount = sizeof(FTNM_shellCmds) / sizeof(FTM_SHELL_CMD);
+
 
 FTM_RET	FTNM_SHELL_CMD_config
 (
@@ -162,3 +172,24 @@ FTM_RET	FTNM_SHELL_CMD_list
 	}
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTNM_SHELL_CMD_quit
+(
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[]
+)
+{
+	return	FTNM_NOTIFY_quit();
+
+}
+
+FTM_RET	FTNM_SHELL_CMD_task
+(
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[]
+)
+{
+	return	FTM_RET_OK;
+
+}
+

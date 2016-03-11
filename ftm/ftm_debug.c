@@ -11,14 +11,14 @@
 #include "ftm_trace.h"
 #include "libconfig.h"
 
-FTM_RET	FTM_PRINT_printToTerm(FTM_CHAR_PTR szmsg);
-FTM_RET	FTM_PRINT_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
+FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szmsg);
+FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
 
 extern char *program_invocation_short_name;
 
-static FTM_PRINT_CFG	_xConfig = 
+static FTM_TRACE_CFG	_xConfig = 
 {
-	.ulLevel = FTM_PRINT_LEVEL_ALL,
+	.ulLevel = FTM_TRACE_LEVEL_ALL,
 	.xTrace = 
 	{
 		.bToFile = FTM_FALSE,
@@ -32,12 +32,12 @@ static FTM_PRINT_CFG	_xConfig =
 		.bToFile = FTM_FALSE,
 		.pPath = "./",
 		.pPrefix = "ftm_error",
-		.bLine	= FTM_FALSE
+		.bLine	= FTM_TRUE
 	},
 };
 
 
-FTM_RET	FTM_PRINT_configLoad(FTM_PRINT_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
+FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
 {
 	config_t		xLibConfig;
 	config_setting_t	*pSection;
@@ -131,19 +131,19 @@ FTM_RET	FTM_PRINT_configLoad(FTM_PRINT_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_PRINT_configSet(FTM_PRINT_CFG_PTR pCfg)
+FTM_RET	FTM_TRACE_configSet(FTM_TRACE_CFG_PTR pCfg)
 {
 	if (pCfg != NULL)
 	{
-		memcpy(&_xConfig, pCfg, sizeof(FTM_PRINT_CFG));	
+		memcpy(&_xConfig, pCfg, sizeof(FTM_TRACE_CFG));	
 	}
 
-	FTM_PRINT_setLevel(_xConfig.ulLevel);
+	FTM_TRACE_setLevel(_xConfig.ulLevel);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_PRINT_dumpPacket
+FTM_RET	FTM_TRACE_dumpPacket
 (
 	FTM_CHAR_PTR	pName,
 	FTM_BYTE_PTR	pPacket,
@@ -170,7 +170,7 @@ FTM_RET	FTM_PRINT_dumpPacket
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_PRINT_setLevel
+FTM_RET FTM_TRACE_setLevel
 (
 	FTM_ULONG ulLevel
 )
@@ -179,7 +179,7 @@ FTM_RET FTM_PRINT_setLevel
 
 	return	FTM_RET_OK;
 }
-FTM_RET	FTM_PRINT_getLevel
+FTM_RET	FTM_TRACE_getLevel
 (
 	FTM_ULONG_PTR pulLevel
 )
@@ -190,7 +190,7 @@ FTM_RET	FTM_PRINT_getLevel
 }
 
 
-FTM_RET	FTM_PRINT_out
+FTM_RET	FTM_TRACE_out
 (
 	unsigned long	ulLevel,
 	const char *	pFunction,
@@ -218,7 +218,7 @@ FTM_RET	FTM_PRINT_out
 
 	switch(ulLevel)
 	{
-	case	FTM_PRINT_LEVEL_TRACE:
+	case	FTM_TRACE_LEVEL_TRACE:
 		if (_xConfig.xTrace.bToFile)
 		{
 			bFile 	= FTM_TRUE;
@@ -228,7 +228,7 @@ FTM_RET	FTM_PRINT_out
 		bLine	= _xConfig.xTrace.bLine;
 		break;
 
-	case	FTM_PRINT_LEVEL_ERROR:
+	case	FTM_TRACE_LEVEL_ERROR:
 		if (_xConfig.xError.bToFile)
 		{
 			bFile = FTM_TRUE;
@@ -259,25 +259,25 @@ FTM_RET	FTM_PRINT_out
 
 	if (bFile)
 	{
-		FTM_PRINT_printToFile(szBuff, pPath, pPrefix);
+		FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
 
 	}
 	else
 	{
-		FTM_PRINT_printToTerm(szBuff);
+		FTM_TRACE_printToTerm(szBuff);
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_PRINT_printToTerm(FTM_CHAR_PTR szMsg)
+FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szMsg)
 {
 	fprintf(stdout, "%s", szMsg);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_PRINT_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix)
+FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix)
 {
 	FILE 		*pFile;
 	time_t		rawTime;
@@ -291,7 +291,7 @@ FTM_RET	FTM_PRINT_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_P
 
 	if(sprintf(szFileName, "%s%s-%s.log", pPath, pPrefix, szTime) <= 0)
 	{
-		return FTM_PRINT_printToTerm(szMsg);	
+		return FTM_TRACE_printToTerm(szMsg);	
 	}
 
 	pFile = fopen(szFileName, "a");
@@ -310,7 +310,7 @@ FTM_RET	FTM_PRINT_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_P
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_PRINT_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTM_TRACE_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 
 	return	FTM_RET_OK;
@@ -322,16 +322,16 @@ struct
 	FTM_CHAR_PTR	pName;
 } FTM_levelStrings[] =
 {
-	{ FTM_PRINT_LEVEL_ALL, "ALL" },
-	{ FTM_PRINT_LEVEL_TRACE, "TRACE"},
-	{ FTM_PRINT_LEVEL_DEBUG, "DEBUG"},
-	{ FTM_PRINT_LEVEL_INFO, "INFO"},
-	{ FTM_PRINT_LEVEL_WARN, "WARN"}, 
-	{ FTM_PRINT_LEVEL_ERROR, "ERROR"},
-	{ FTM_PRINT_LEVEL_FATAL, "FATAL"},
+	{ FTM_TRACE_LEVEL_ALL, "ALL" },
+	{ FTM_TRACE_LEVEL_TRACE, "TRACE"},
+	{ FTM_TRACE_LEVEL_DEBUG, "DEBUG"},
+	{ FTM_TRACE_LEVEL_INFO, "INFO"},
+	{ FTM_TRACE_LEVEL_WARN, "WARN"}, 
+	{ FTM_TRACE_LEVEL_ERROR, "ERROR"},
+	{ FTM_TRACE_LEVEL_FATAL, "FATAL"},
 };
 
-FTM_CHAR_PTR	FTM_PRINT_levelString(FTM_ULONG ulLevel)
+FTM_CHAR_PTR	FTM_TRACE_levelString(FTM_ULONG ulLevel)
 {
 	FTM_ULONG	i;
 

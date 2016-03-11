@@ -242,7 +242,7 @@ FTM_RET	FTDM_TRIGGER_showList
 	FTM_TRIGGER_PTR	pTrigger;
 	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# TRIGGER INFORMATION\n");
-	MESSAGE("\t%-8s %-8s %-8s %-8s %s\n", "ID", "EPID", "DETECT", "HOLD", "CONDITION");
+	MESSAGE("\t%4s %8s %8s %8s %s\n", "ID", "EPID", "DETECT", "HOLD", "CONDITION");
 
 	FTM_TRIGGER_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -251,9 +251,9 @@ FTM_RET	FTDM_TRIGGER_showList
 		{
 			FTM_CHAR	pBuff[1024];
 
-			MESSAGE("\t%08x %08x ", pTrigger->xID, pTrigger->xEPID);
-			MESSAGE("%8.3f ", (pTrigger->xDetectionTime.xTimeval.tv_sec * 1000000 +  pTrigger->xDetectionTime.xTimeval.tv_usec) / 1000000.0);
-			MESSAGE("%8.3f ", (pTrigger->xHoldingTime.xTimeval.tv_sec * 1000000 +  pTrigger->xHoldingTime.xTimeval.tv_usec) / 1000000.0); 
+			MESSAGE("\t%4d %08x ", pTrigger->xID, pTrigger->xEPID);
+			MESSAGE("%8.1f ", (pTrigger->xDetectionTime.xTimeval.tv_sec * 1000000 +  pTrigger->xDetectionTime.xTimeval.tv_usec) / 1000000.0);
+			MESSAGE("%8.1f ", (pTrigger->xHoldingTime.xTimeval.tv_sec * 1000000 +  pTrigger->xHoldingTime.xTimeval.tv_usec) / 1000000.0); 
 
 			switch(pTrigger->xType)
 			{

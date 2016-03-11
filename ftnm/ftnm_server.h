@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "ftnm_params.h"
+#include "ftnm_service.h"
 
 #define	FTNM_PACKET_LEN					2048
 
@@ -38,11 +39,13 @@ typedef	struct
 
 typedef	struct FTNM_SERVER_STRUCT
 {
-	FTNM_SERVER_CONFIG	xConfig;
-	pthread_t 			xPThread;
-	sem_t				xLock;
+	FTNM_SERVER_CONFIG		xConfig;
+	pthread_t 				xPThread;
+	sem_t					xLock;
 
-	FTM_LIST			xSessionList;
+	FTM_LIST				xSessionList;
+	FTNM_SERVICE_ID			xServiceID;
+	FTNM_SERVICE_CALLBACK	fServiceCB;
 }	FTNM_SERVER;
 
 FTM_RET	FTNM_SERVER_init(FTNM_SERVER_PTR 	pServer);
@@ -55,4 +58,6 @@ FTM_RET	FTNM_SERVER_loadFromFile(FTNM_SERVER_PTR pServer, FTM_CHAR_PTR	pFileName
 FTM_RET	FTNM_SERVER_showConfig(FTNM_SERVER_PTR pServer);
 
 FTM_RET	FTNM_SERVER_notify(FTNM_SERVER_PTR pServer, FTNM_MSG_PTR pMsg);
+
+FTM_RET	FTNM_SERVER_setServiceCallback(FTNM_SERVER_PTR pServer, FTNM_SERVICE_ID xID, FTNM_SERVICE_CALLBACK fServiceCB);
 #endif

@@ -3,8 +3,8 @@
 #include <string.h>
 #include "ftm.h"
 #include "ftnm_ep.h"
-#include "ftnm_event.h"
-#include "ftnm_actor.h"
+#include "ftnm_trigger.h"
+#include "ftnm_action.h"
 #include "ftnm_msg.h"
 #include "libconfig.h"
 
@@ -19,8 +19,9 @@ FTM_RET	FTNM_TRIGGERM_init(FTNM_TRIGGERM_PTR pCTX)
 
 	FTM_RET	xRet;
 
-	memset(pCTX, 0, sizeof(FTNM_TRIGGERM));
+	FTM_TRIGGER_init();
 
+	memset(pCTX, 0, sizeof(FTNM_TRIGGERM));
 	xRet = FTM_MSGQ_create(&pCTX->pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
@@ -38,6 +39,8 @@ FTM_RET	FTNM_TRIGGERM_init(FTNM_TRIGGERM_PTR pCTX)
 
 	FTM_LIST_setSeeker(&pCTX->xEventList, FTNM_TRIGGERM_seeker);
 
+
+	TRACE("Trigger management initialized.\n");
 	return	FTM_RET_OK;
 }
 
@@ -64,6 +67,9 @@ FTM_RET	FTNM_TRIGGERM_final(FTNM_TRIGGERM_PTR pCTX)
 
 	FTM_LIST_final(&pCTX->xEventList);
 
+	FTM_TRIGGER_final();
+
+	TRACE("Trigger management finalized.\n");
 	return	FTM_RET_OK;
 }
 
@@ -159,6 +165,7 @@ FTM_VOID_PTR FTNM_TRIGGERM_process(FTM_VOID_PTR pData)
 	
 	FTM_TIMER_init(&xTimer, 0);
 
+	TRACE("Trigger management process started.\n");
 	while(!pCTX->bStop)
 	{
 		FTM_RET				xRet;
@@ -207,6 +214,9 @@ FTM_VOID_PTR FTNM_TRIGGERM_process(FTM_VOID_PTR pData)
 			usleep(ulRemain);
 		}
 	}
+
+	TRACE("Trigger management process finished.\n");
+
 	return	0;
 }
 

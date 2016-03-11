@@ -96,6 +96,28 @@ FTM_RET FTNM_MSGQ_sendEPChanged(FTNM_MSG_QUEUE_PTR pMsgQ, FTM_EP_ID xEPID, FTM_E
 	return	xRet;
 }
 
+FTM_RET	FTNM_MSGQ_sendQuit(FTNM_MSG_QUEUE_PTR pMsgQ)
+{
+	ASSERT(pMsgQ != NULL);
+	FTM_RET		xRet;
+	FTNM_MSG_PTR pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+	
+	pMsg->xType = FTNM_MSG_TYPE_QUIT;
+	xRet = FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTNM_MSG_destroy(pMsg);
+	}
+
+	return	xRet;
+}
+
 FTM_RET	FTNM_MSGQ_push(FTNM_MSG_QUEUE_PTR pMsgQ, FTNM_MSG_PTR pMsg)
 {
 	ASSERT(pMsgQ != NULL);

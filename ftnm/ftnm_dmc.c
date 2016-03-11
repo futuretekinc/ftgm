@@ -78,6 +78,13 @@ FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData)
 				TRACE("DB connection failed.\n");	
 				usleep(1000000);
 			}
+			else
+			{
+				if (pCTX->fServiceCB != NULL)
+				{
+					pCTX->fServiceCB(pCTX->xServiceID, FTNM_MSG_TYPE_DMC_CONNECTED, NULL);	
+				}
+			}
 		}
 		else
 		{
@@ -106,6 +113,17 @@ FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData)
 	}
 
 	return	0;
+}
+
+FTM_RET	FTNM_DMC_setServiceCallback(FTNM_DMC_PTR pCTX, FTNM_SERVICE_ID xServiceID, FTNM_SERVICE_CALLBACK pServiceCB)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pServiceCB != NULL);
+
+	pCTX->xServiceID = xServiceID;
+	pCTX->fServiceCB = pServiceCB;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)

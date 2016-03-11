@@ -8,17 +8,20 @@
 #include "ftnm_shell_cmds.h"
 
 extern char *program_invocation_short_name;
+extern	FTM_SHELL_CMD	FTNM_shellCmds[];
+extern	FTM_ULONG		FTNM_shellCmdCount;
+
 
 int main(int nArgc, char *pArgv[])
 {
 	FTM_INT				nOpt;
 	FTM_BOOL			bDaemon = FTM_FALSE;
-	FTM_SHELL_CONFIG	xShellConfig;
+	FTM_ULONG			ulDebugLevel = FTM_TRACE_LEVEL_ERROR;
 	FTM_CHAR			pConfigFileName[1024];
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
-	while((nOpt = getopt(nArgc, pArgv, "c:d?")) != -1)
+	while((nOpt = getopt(nArgc, pArgv, "c:Dd:?")) != -1)
 	{
 		switch(nOpt)
 		{
@@ -28,45 +31,59 @@ int main(int nArgc, char *pArgv[])
 			}
 			break;
 		
-		case	'd':
+		case	'D':
 			{
 				bDaemon = FTM_TRUE;	
 			}
 			break;
+
+		case	'd':
+			{
+				ulDebugLevel = strtoul(optarg, 0, 10);
+			}
+			break;
+		
 		}
 	}
 
 //	FTM_DEBUG_initSignals();
 
-	FTM_MEM_init();
-	FTM_PRINT_setLevel(FTM_PRINT_LEVEL_ERROR);
-
-	xShellConfig.pPrompt 		= "FTNMS>";
-	xShellConfig.pCmdList 	= FTNM_xCmds;
-	xShellConfig.ulCmdCount 	= FTNM_ulCmds;
-
-	FTM_SHELL_init(&xShellConfig);
-	FTNM_init();
-
-	FTNM_loadConfig(pConfigFileName);
-
 	if (bDaemon)
 	{
 		if (fork() == 0)
 		{
+			FTM_MEM_init();
+			FTM_TRACE_setLevel(ulDebugLevel);
+			FTNM_init();
+
+			FTNM_loadFromFile(pConfigFileName);
+
 			FTNM_start();
 			FTNM_waitingForFinished();
+
+			FTNM_final();
+			FTM_MEM_final();
+
 		}
 	}
 	else
 	{
+		FTM_MEM_init();
+		FTM_TRACE_setLevel(ulDebugLevel);
+		FTNM_init();
+
+		FTNM_loadFromFile(pConfigFileName);
+
 		FTNM_start();
+
+		FTM_SHELL_init();
+		FTM_SHELL_setPrompt("FTNM> ");
+		FTM_SHELL_addCmds(FTNM_shellCmds,FTNM_shellCmdCount);
 		FTM_SHELL_run();
+
+		FTNM_final();
+		FTM_MEM_final();
 	}
-
-	FTNM_final();
-
-	FTM_MEM_final();
 
 	return	0;
 }

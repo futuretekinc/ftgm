@@ -29,38 +29,41 @@ static FTM_BOOL			FTNM_SNMPTRAPD_seekTrapCB(const FTM_VOID_PTR pElement, const F
 static FTM_RET			FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg);
 //static FTM_RET		FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) ;
 
-static FTM_LIST	xTrapCallbackList;
-
 FTM_RET	FTNM_SNMPTRAPD_init(FTNM_SNMPTRAPD_PTR pCTX)
 {
 	FTM_RET	xRet;
 
-	xRet = FTM_LIST_init(&xTrapCallbackList);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
-
-	FTM_LIST_setSeeker(&xTrapCallbackList, FTNM_SNMPTRAPD_seekTrapCB);
-
 	memset(pCTX, 0, sizeof(FTNM_SNMPTRAPD));
 	strcpy(pCTX->xConfig.pName, FTNM_SNMPTRAPD_NAME);
 	pCTX->xConfig.usPort= FTNM_SNMPTRAPD_PORT;
-	pCTX->bRunning		= FTM_FALSE;
 
-	return	FTM_RET_OK;
+	xRet = FTM_LIST_init(&pCTX->xTrapCBList);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_LIST_setSeeker(&pCTX->xTrapCBList, FTNM_SNMPTRAPD_seekTrapCB);
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTNM_SNMPTRAPD_final(FTNM_SNMPTRAPD_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
+	FTNM_CALLBACK_PTR	pCB;
 
-	if (pCTX->bRunning)
+	if (pCTX->bStop)
 	{
 		FTNM_SNMPTRAPD_stop(pCTX);	
 	}
 
-	FTM_LIST_final(&xTrapCallbackList);
+	FTM_LIST_iteratorStart(&pCTX->xTrapCBList);
+	while(FTM_LIST_iteratorNext(&pCTX->xTrapCBList, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
+	{
+		FTM_LIST_remove(&pCTX->xTrapCBList, pCB);
+		FTM_MEM_free(pCB);
+	}
+
+	FTM_LIST_final(&pCTX->xTrapCBList);
 
 	return	FTM_RET_OK;
 }
@@ -112,7 +115,7 @@ FTM_RET FTNM_SNMPTRAPD_stop(FTNM_SNMPTRAPD_PTR pCTX)
 	FTM_INT	nRet;
 	void*	pRet;
 
-	pCTX->bRunning = FTM_FALSE;
+	pCTX->bStop = FTM_TRUE;
 	nRet = pthread_join(pCTX->xPThread, &pRet);
 	if (nRet != 0)
 	{
@@ -226,12 +229,13 @@ FTM_RET FTNM_SNMPTRAPD_showConfig(FTNM_SNMPTRAPD_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SNMPTRAPD_setCallback(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SNMPTRAPD_CALLBACK fTrapCB)
+FTM_RET	FTNM_SNMPTRAPD_setServiceCallback(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SERVICE_ID xServiceID,  FTNM_SERVICE_CALLBACK fServiceCB)
 {
 	ASSERT(pCTX != NULL);
-	ASSERT(fTrapCB != NULL);
+	ASSERT(fServiceCB != NULL);
 
-	pCTX->fTrapCB = fTrapCB;
+	pCTX->xServiceID = xServiceID;
+	pCTX->fServiceCB = fServiceCB;
 
 	return	FTM_RET_OK;
 }
@@ -252,7 +256,7 @@ FTM_RET	FTNM_SNMPTRAPD_addTrapOID(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SNMP_OID_PTR pOI
 
 	memcpy(&pCB->xOID, pOID, sizeof(FTNM_SNMP_OID));
 
-	xRet = FTM_LIST_append(&xTrapCallbackList, pCB);
+	xRet = FTM_LIST_append(&pCTX->xTrapCBList, pCB);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pCB);	
@@ -398,7 +402,7 @@ FTNM_SNMPTRAPD_inputCB
 						FTNM_SNMP_OID		xOID;
 						memcpy(xOID.pOID, vars->name, sizeof(oid) * vars->name_length);
 						xOID.ulOIDLen  = vars->name_length;
-						if (FTM_LIST_get(&xTrapCallbackList, &xOID, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
+						if (FTM_LIST_get(&pCTX->xTrapCBList, &xOID, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
 						{
 							if (vars->type == ASN_OCTET_STR)
 							{
@@ -528,9 +532,9 @@ FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pCTX)
 	fd_set          readfds,writefds,exceptfds;
 	struct timeval  timeout, *tvp;
 	
-	pCTX->bRunning = FTM_TRUE;
+	pCTX->bStop = FTM_FALSE;
 
-	while (pCTX->bRunning) 
+	while (!pCTX->bStop) 
 	{
 #if 0
 		if (reconfig) {
@@ -557,7 +561,7 @@ FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pCTX)
 		block = 0;
 		tvp = &timeout;
 		timerclear(tvp);
-		tvp->tv_sec = 5;
+		tvp->tv_sec = 1;
 		snmp_select_info(&numfds, &readfds, tvp, &block);
 		if (block == 1)
 		{
@@ -597,14 +601,14 @@ FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pCTX)
 						continue;
 					}
 					ERROR("select - %s\n", strerror(errno));
-					pCTX->bRunning = FTM_FALSE;
+					pCTX->bStop = FTM_TRUE;
 				}
 				break;
 
 			default:
 				{
 					ERROR("select returned %d\n", count);
-					pCTX->bRunning = FTM_FALSE;
+					pCTX->bStop = FTM_TRUE;
 				}
 			}
 		}
@@ -811,7 +815,15 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 							}
 						}
 
-						xRet = FTNM_NOTIFY_EPChanged(xEPID, &xData);
+						if (pCTX->fServiceCB != NULL)
+						{
+							FTNM_MSG_EP_CHANGED_PARAMS xParam;
+							
+							xParam.xEPID = xEPID;
+							memcpy(&xParam.xData, &xData, sizeof(xData));
+
+							pCTX->fServiceCB(pCTX->xServiceID, FTNM_MSG_TYPE_EP_CHANGED, &xParam);
+						}
 					}
 					else
 					{

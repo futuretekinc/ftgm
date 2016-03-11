@@ -3,7 +3,5 @@
 
 #include "ftm.h"
 
-extern FTM_SHELL_CMD	FTNM_xCmds[];
-extern FTM_ULONG		FTNM_ulCmds;
 
 #endif

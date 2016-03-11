@@ -1198,8 +1198,8 @@ FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		{
 			FTM_ULONG	ulLevel;
 
-			FTM_PRINT_getLevel(&ulLevel);
-			MESSAGE("DEBUG OUT MODE : %s\n", FTM_PRINT_levelString(ulLevel));
+			FTM_TRACE_getLevel(&ulLevel);
+			MESSAGE("DEBUG OUT MODE : %s\n", FTM_TRACE_levelString(ulLevel));
 		}
 		else if (nArgc == 3)
 		{
@@ -1207,12 +1207,12 @@ FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 			ulNewLevel = strtoul(pArgv[2], NULL, 10);
 		
-			FTM_PRINT_getLevel(&ulLevel);
-			FTM_PRINT_setLevel(ulLevel);
+			FTM_TRACE_getLevel(&ulLevel);
+			FTM_TRACE_setLevel(ulLevel);
 
 			MESSAGE("DEBUG OUT MODE : %s to %s\n",
-				FTM_PRINT_levelString(ulLevel),
-				FTM_PRINT_levelString(ulNewLevel));
+				FTM_TRACE_levelString(ulLevel),
+				FTM_TRACE_levelString(ulNewLevel));
 		}
 		else
 		{

@@ -35,7 +35,7 @@ typedef	struct
 	FTDM_CFG_SERVER			xServer;
 	FTDM_CFG_DB				xDB;
 	FTDM_CFG_EP				xEP;
-	FTM_PRINT_CFG			xPrint;
+	FTM_TRACE_CFG			xPrint;
 }	FTDM_CFG, _PTR_ FTDM_CFG_PTR;
 
 FTM_RET	FTDM_CFG_init(FTDM_CFG_PTR pConfig);

@@ -37,7 +37,7 @@ FTM_RET	FTNM_SERVICE_init(FTNM_SERVICE_PTR pServices, FTM_ULONG ulServices)
 
 		if ((pService->fSetCallback != NULL) && (pService->fCallback != NULL))
 		{
-			pService->fSetCallback(pService->pData, pService->fCallback);	
+			pService->fSetCallback(pService->pData, pService->xID, pService->fCallback);	
 		}
 	}
 
@@ -270,7 +270,9 @@ FTM_RET	FTNM_SERVICE_stop(FTNM_SERVICE_TYPE xType)
 		{
 			if (pService->fStop != NULL)
 			{
+				TRACE("Service[%s] stop request.\n", pService->pName);
 				pService->xRet = pService->fStop(pService->pData);
+				TRACE("Service[%s] stopped.\n", pService->pName);
 			}
 		}
 

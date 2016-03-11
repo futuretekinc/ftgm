@@ -225,7 +225,7 @@ FTM_RET	FTDM_RULE_showList
 	FTM_RULE_PTR	pRule;
 	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# RULE INFORMATION\n");
-	MESSAGE("\t%-8s %-16s %-16s\n", "ID", "TRIGGER", "ACTION");
+	MESSAGE("\t%4s %8s %8s\n", "ID", "TRIGGER", "ACTION");
 
 	FTM_RULE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -236,7 +236,7 @@ FTM_RET	FTDM_RULE_showList
 			FTM_ULONG	ulLen = 0;
 			FTM_ULONG	j;
 
-			MESSAGE("\t%08x ", pRule->xID);
+			MESSAGE("\t%4d ", pRule->xID);
 			for(j = 0 ; j < pRule->ulTriggers ; j++)
 			{
 				if (pRule->pTriggers[j] == 0)
@@ -252,7 +252,7 @@ FTM_RET	FTDM_RULE_showList
 					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%lu", pRule->pTriggers[j]);
 				}
 			}
-			MESSAGE("%-16s ", pBuff);
+			MESSAGE("%8s ", pBuff);
 			
 			ulLen = 0;
 			for(j = 0 ; j < pRule->ulActions ; j++)
@@ -270,7 +270,7 @@ FTM_RET	FTDM_RULE_showList
 					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%lu", pRule->pActions[j]);
 				}
 			}
-			MESSAGE("%-16s\n", pBuff);
+			MESSAGE("%8s\n", pBuff);
 
 		}
 	}

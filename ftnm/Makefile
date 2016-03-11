@@ -26,8 +26,8 @@ LIB_FTNM_SRCS= ftnm.c \
 			   ftnm_snmptrapd.c\
 			   ftnm_shell_cmds.c\
 			   ftnm_dmc.c\
-			   ftnm_event.c\
-			   ftnm_actor.c\
+			   ftnm_trigger.c\
+			   ftnm_action.c\
 			   ftnm_service.c
 
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)

@@ -124,10 +124,9 @@ FTM_RET FTM_SHELL_run(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_SHELL_init(FTM_SHELL_CONFIG_PTR pConfig)
+FTM_RET FTM_SHELL_init(FTM_VOID)
 {
 	FTM_SHELL_CMD_PTR	pCmd;
-	FTM_ULONG			i;
 
 	FTM_LIST_create(&pCmdList);
 	FTM_LIST_setSeeker(pCmdList, FTM_SHELL_compCmd);
@@ -139,21 +138,8 @@ FTM_RET FTM_SHELL_init(FTM_SHELL_CONFIG_PTR pConfig)
 		pCmd++;	
 	}
 
-	if (pConfig != NULL)
-	{
-		if (pConfig->pPrompt != NULL)
-		{
-			strncpy(pConsolePrompt, pConfig->pPrompt, sizeof(pConsolePrompt));
-		}
-	
-		for(i = 0 ; i < pConfig->ulCmdCount ; i++)
-		{
-			FTM_LIST_append(pCmdList, &pConfig->pCmdList[i]);
-		}
-	}
-
 	return	FTM_RET_OK;
-}
+}	
 
 FTM_RET	FTM_SHELL_final(FTM_VOID)
 {
@@ -172,11 +158,26 @@ FTM_RET	FTM_SHELL_setPrompt
 	return	FTM_RET_OK;
 }
 
+
+FTM_RET	FTM_SHELL_addCmds(FTM_SHELL_CMD_PTR pCmds, FTM_ULONG ulCmds)
+{
+	FTM_ULONG	i;
+
+	for(i = 0 ; i < ulCmds; i++)
+	{
+		FTM_LIST_append(pCmdList, &pCmds[i]);
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_SHELL_appendCmd(FTM_SHELL_CMD_PTR pCmd)
 {
-	if (FTM_LIST_seek(pCmdList, pCmd->pString) == FTM_RET_OK)
+	FTM_SHELL_CMD_PTR	pExistCmd;
+
+	if (FTM_LIST_get(pCmdList, pCmd->pString, (FTM_VOID_PTR _PTR_)&pExistCmd) == FTM_RET_OK)
 	{
-		return	FTM_RET_ALREADY_EXISTS;	
+		FTM_LIST_remove(pCmdList, pExistCmd);
 	}
 
 	FTM_LIST_append(pCmdList, pCmd);

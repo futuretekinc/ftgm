@@ -12,8 +12,7 @@
 #include "ftnm_ep_class.h"
 #include "ftnm_snmptrapd.h"
 
-FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData);
-FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
+FTM_VOID_PTR	FTNM_SNMPC_process(FTM_VOID_PTR pData);
 
 extern int	active_hosts;
 
@@ -61,7 +60,7 @@ FTM_RET FTNM_SNMPC_start(FTNM_SNMPC_PTR pCTX)
 
 	FTM_INT	nRet;
 
-	nRet = pthread_create(&pCTX->xPThread, NULL, FTNM_SNMPC_asyncResponseManager, 0);
+	nRet = pthread_create(&pCTX->xPThread, NULL, FTNM_SNMPC_process, pCTX);
 	if (nRet != 0)
 	{
 		switch(nRet)
@@ -99,6 +98,7 @@ FTM_RET	FTNM_SNMPC_stop(FTNM_SNMPC_PTR pCTX)
 	FTM_INT			nRet;
 	FTM_VOID_PTR 	pRet = NULL;
 
+	pCTX->bStop = FTM_TRUE;
 	nRet = pthread_join(pCTX->xPThread, &pRet);
 	if (nRet != 0)
 	{
@@ -132,13 +132,19 @@ FTM_RET	FTNM_SNMPC_stop(FTNM_SNMPC_PTR pCTX)
 		return	FTM_RET_THREAD_JOIN_ERROR;
 	}
 
+	TRACE("SNMP client finished.\n");
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR	FTNM_SNMPC_asyncResponseManager(FTM_VOID_PTR pData)
+FTM_VOID_PTR	FTNM_SNMPC_process(FTM_VOID_PTR pData)
 {
-	while (FTM_TRUE)
+	ASSERT(pData != NULL);
+
+	FTNM_SNMPC_PTR	pCTX = (FTNM_SNMPC_PTR)pData;
+	pCTX->bStop = FTM_FALSE;
+
+	while (!pCTX->bStop)
 	{	
 		if (active_hosts) 
 		{
@@ -251,6 +257,18 @@ FTM_RET FTNM_SNMPC_showConfig(FTNM_SNMPC_PTR pCTX)
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTNM_SNMPC_setServiceCallback(FTNM_SNMPC_PTR pCTX, FTNM_SERVICE_ID xServiceID, FTNM_SERVICE_CALLBACK fServiceCB)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(fServiceCB != NULL);
+
+	pCTX->xServiceID = xServiceID;
+	pCTX->fServiceCB = fServiceCB;
+
+	return	FTM_RET_OK;
+}
+
 
 FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 {

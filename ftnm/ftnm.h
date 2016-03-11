@@ -7,7 +7,7 @@
 #include "ftnm_server.h"
 #include "ftnm_snmpc.h"
 #include "ftnm_snmptrapd.h"
-#include "ftnm_event.h"
+#include "ftnm_trigger.h"
 
 #define	FTNM_DEFAULT_SERVER_PORT			8889
 #define	FTNM_DEFAULT_SERVER_SESSION_COUNT	10
@@ -24,11 +24,12 @@ typedef	FTM_ULONG	FTNM_STATE;
 #define	FTNM_STATE_WAITING				0x00000008
 #define	FTNM_STATE_CALL_FOR_PROCESSING	0x00000009
 #define	FTNM_STATE_PROCESSING			0x0000000A
-#define	FTNM_STATE_PROCESS_FINISHED		0x0000000B
-#define	FTNM_STATE_PAUSED				0x0000000C
-#define	FTNM_STATE_INACTIVATED			0x0000000D
-#define	FTNM_STATE_FINISHING			0x0000000E
-#define	FTNM_STATE_FINISHED				0x0000000F
+#define	FTNM_STATE_STOPED				0x0000000B
+#define	FTNM_STATE_PROCESS_FINISHED		0x0000000C
+#define	FTNM_STATE_PAUSED				0x0000000D
+#define	FTNM_STATE_INACTIVATED			0x0000000E
+#define	FTNM_STATE_FINISHING			0x0000000F
+#define	FTNM_STATE_FINISHED				0x00000012
 #define	FTNM_STATE_CONNECTED			0x00000010
 #define	FTNM_STATE_INITIALIZE			0x00000011
 
@@ -36,24 +37,26 @@ typedef	struct
 {
 	FTNM_STATE		xState;
 	FTM_LIST		xEPList;
-	pthread_t		xPThread;
+	pthread_t		xThread;
 
-	FTNM_TRIGGERM_PTR	pEventM;
+	FTM_BOOL		bStop;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
 
-FTM_RET	FTNM_init(void);
-FTM_RET	FTNM_final(void);
-FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pConfigFileName);
+FTM_RET	FTNM_init(FTM_VOID);
+FTM_RET	FTNM_final(FTM_VOID);
+FTM_RET	FTNM_loadFromFile(FTM_CHAR_PTR pConfigFileName);
 
-FTM_RET	FTNM_showConfig(void);
-FTM_RET FTNM_start(void);
-FTM_RET FTNM_waitingForFinished(void);
+FTM_RET	FTNM_showConfig(FTM_VOID);
+FTM_RET FTNM_start(FTM_VOID);
+FTM_RET FTNM_stop(FTM_VOID);
+FTM_RET FTNM_waitingForFinished(FTM_VOID);
 
 FTM_RET	FTNM_setEPData(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
 FTM_RET	FTNM_getEPDataInfo(FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount);
 FTM_RET	FTNM_getEPDataCount(FTM_EP_ID xEPID, FTM_ULONG_PTR ulCount);
-FTM_RET	FTNM_NOTIFY_EPChanged(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
+
+FTM_RET	FTNM_NOTIFY_quit(FTM_VOID);
 
 #endif
 

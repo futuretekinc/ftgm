@@ -49,7 +49,7 @@ FTM_RET	FTM_LOG_out
 
 	szBuff[nLen] = '\0';
 
-	FTM_PRINT_printToTerm(szBuff);
+	FTM_TRACE_printToTerm(szBuff);
 
 	return	FTM_RET_OK;
 }

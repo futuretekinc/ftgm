@@ -165,7 +165,7 @@ FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig)
 
 
 	MESSAGE("\n#CLASS INFORMATION\n");
-	MESSAGE("\t%-08s %-16s %-16s %-16s %-16s %-16s %-16s %-16s\n",
+	MESSAGE("\t%08s %16s %16s %16s %16s %16s %16s %16s\n",
 			"CLASS", "ID", "NAME", "S/N", "STATE", "VALUE", "TIME");
 	if (FTDM_CFG_EP_CLASS_count(&pConfig->xEP, &ulCount) == FTM_RET_OK)
 	{

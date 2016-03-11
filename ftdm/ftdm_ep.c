@@ -259,7 +259,7 @@ FTM_RET FTDM_EP_showList(FTM_VOID)
 	FTM_ULONG	i, ulCount;
 
 	MESSAGE("\n[ EP ]\n");
-	MESSAGE("\t%-08s %-16s %-16s %-8s %-8s %-8s %-16s %-08s %-16s %-08s\n",
+	MESSAGE("\t%8s %16s %16s %8s %8s %8s %8s %16s %8s %16s %8s\n",
 			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID");
 	if (FTM_EP_count(&ulCount) == FTM_RET_OK)
 	{
@@ -268,7 +268,7 @@ FTM_RET FTDM_EP_showList(FTM_VOID)
 			FTM_EP_PTR	pEP;
 
 			FTM_EP_getAt(i, &pEP);
-			MESSAGE("\t%08lx %-16s %-16s %-8s ",
+			MESSAGE("\t%08lx %16s %16s %8s ",
 				pEP->xEPID,
 				FTM_EP_typeString(pEP->xType),
 				pEP->pName,
@@ -276,14 +276,14 @@ FTM_RET FTDM_EP_showList(FTM_VOID)
 
 			if (pEP->bEnable)
 			{
-				MESSAGE("%-8s ", "ENABLE");
+				MESSAGE("%8s ", "ENABLE");
 			}
 			else
 			{
-				MESSAGE("%-8s ", "DISABLE");
+				MESSAGE("%8s ", "DISABLE");
 			}
 
-			MESSAGE("%-8lu %-8lu %-16s %08lx %-16s %08lx\n",
+			MESSAGE("%8lu %8lu %16s %08lx %16s %08lx\n",
 				pEP->ulInterval,
 				pEP->ulTimeout,
 				pEP->pDID,

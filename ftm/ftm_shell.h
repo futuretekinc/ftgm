@@ -22,7 +22,7 @@ typedef	struct
 
 FTM_RET	FTM_SHELL_init
 (
-	FTM_SHELL_CONFIG_PTR pConfig
+	FTM_VOID
 );
 
 FTM_RET	FTM_SHELL_final
@@ -40,9 +40,15 @@ FTM_RET	FTM_SHELL_setPrompt
 	FTM_CHAR_PTR	pPrompt
 );
 
+FTM_RET	FTM_SHELL_addCmds
+(
+	FTM_SHELL_CMD_PTR 	pCmds, 
+	FTM_ULONG 			ulCmds
+);
+
 FTM_RET	FTM_SHELL_appendCmd
 (
-	FTM_SHELL_CMD_PTR pCmd
+	FTM_SHELL_CMD_PTR 	pCmd
 );
 
 #endif

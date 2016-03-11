@@ -7,14 +7,14 @@
 #define		FTM_PATH_LEN		1024
 #define		FTM_FILENAME_LEN	256
 
-#define	FTM_PRINT_LEVEL_ALL			0
-#define	FTM_PRINT_LEVEL_TRACE		2
-#define	FTM_PRINT_LEVEL_DEBUG		4
-#define	FTM_PRINT_LEVEL_INFO		6
-#define	FTM_PRINT_LEVEL_WARN		8
-#define	FTM_PRINT_LEVEL_ERROR		10
-#define	FTM_PRINT_LEVEL_FATAL		12
-#define	FTM_PRINT_LEVEL_MESSAGE		100
+#define	FTM_TRACE_LEVEL_ALL			0
+#define	FTM_TRACE_LEVEL_TRACE		1
+#define	FTM_TRACE_LEVEL_DEBUG		2
+#define	FTM_TRACE_LEVEL_INFO		3
+#define	FTM_TRACE_LEVEL_WARN		4
+#define	FTM_TRACE_LEVEL_ERROR		5
+#define	FTM_TRACE_LEVEL_FATAL		6
+#define	FTM_TRACE_LEVEL_MESSAGE		100
 
 typedef	struct
 {
@@ -34,14 +34,14 @@ typedef	struct
 		FTM_CHAR		pPrefix[FTM_FILENAME_LEN + 1];
 		FTM_BOOL		bLine;
 	}	xError;
-}	FTM_PRINT_CFG, _PTR_ FTM_PRINT_CFG_PTR;
+}	FTM_TRACE_CFG, _PTR_ FTM_TRACE_CFG_PTR;
 
-FTM_RET	FTM_PRINT_configSet(FTM_PRINT_CFG_PTR pCfg);
-FTM_RET	FTM_PRINT_configLoad(FTM_PRINT_CFG_PTR pCfg, FTM_CHAR_PTR pFileName);
+FTM_RET	FTM_TRACE_configSet(FTM_TRACE_CFG_PTR pCfg);
+FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pCfg, FTM_CHAR_PTR pFileName);
 
-FTM_RET	FTM_PRINT_setLevel(FTM_ULONG		ulLevel);
-FTM_RET	FTM_PRINT_getLevel(FTM_ULONG_PTR	pulLevel);
-FTM_RET	FTM_PRINT_out
+FTM_RET	FTM_TRACE_setLevel(FTM_ULONG		ulLevel);
+FTM_RET	FTM_TRACE_getLevel(FTM_ULONG_PTR	pulLevel);
+FTM_RET	FTM_TRACE_out
 (
 	unsigned long	ulLevel,
 	const char *	pFunction,
@@ -50,28 +50,28 @@ FTM_RET	FTM_PRINT_out
 	const char *	pFormat,
 	...
 );
-FTM_CHAR_PTR	FTM_PRINT_levelString(FTM_ULONG ulLevel);
+FTM_CHAR_PTR	FTM_TRACE_levelString(FTM_ULONG ulLevel);
 
-FTM_RET	FTM_PRINT_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+FTM_RET	FTM_TRACE_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 
 
-#define	ASSERT(x)	{ if (!(x)) FTM_PRINT_out(FTM_PRINT_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, "%s", #x); }
+#define	ASSERT(x)	{ if (!(x)) FTM_TRACE_out(FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, "%s", #x); }
 
-FTM_VOID	FTM_PRINT_packetDump
+FTM_VOID	FTM_TRACE_packetDump
 (
 	FTM_CHAR_PTR	pName,
 	FTM_BYTE_PTR	pPacket,
 	FTM_INT			nLen
 );
 
-#define MESSAGE(format, ...) FTM_PRINT_out(FTM_PRINT_LEVEL_MESSAGE, NULL, 0, FTM_FALSE, format, ## __VA_ARGS__)
+#define MESSAGE(format, ...) FTM_TRACE_out(FTM_TRACE_LEVEL_MESSAGE, NULL, 0, FTM_FALSE, format, ## __VA_ARGS__)
 
 #ifdef	TRACE_OFF
 #define	TRACE(format, ...) 
 #else
-#define	TRACE(format, ...) FTM_PRINT_out(FTM_PRINT_LEVEL_TRACE, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
+#define	TRACE(format, ...) FTM_TRACE_out(FTM_TRACE_LEVEL_TRACE, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
 #endif
-#define	ERROR(format, ...) FTM_PRINT_out(FTM_PRINT_LEVEL_ERROR, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
+#define	ERROR(format, ...) FTM_TRACE_out(FTM_TRACE_LEVEL_ERROR, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
 #endif
 
 #define	TRACE_ENTRY()	TRACE("ENTRY - %s\n", __func__)

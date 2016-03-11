@@ -4,14 +4,17 @@
 #include "ftm.h"
 #include "ftdm_client.h"
 #include "ftnm_msg.h"
+#include "ftnm_service.h"
 
 typedef	struct
 {
-	FTDMC_SESSION	xSession;
-	pthread_t		xThread;
-	FTDMC_CFG		xConfig;
-	FTM_BOOL		bStop;
-	FTNM_MSG_QUEUE	xMsgQ;
+	FTDMC_SESSION			xSession;
+	FTDMC_CFG				xConfig;
+	pthread_t				xThread;
+	FTM_BOOL				bStop;
+	FTNM_MSG_QUEUE			xMsgQ;
+	FTNM_SERVICE_ID			xServiceID;
+	FTNM_SERVICE_CALLBACK	fServiceCB;
 }	FTNM_DMC, _PTR_	FTNM_DMC_PTR;
 
 FTM_RET FTNM_DMC_init(FTNM_DMC_PTR pCTX);
@@ -23,11 +26,14 @@ FTM_RET	FTNM_DMC_showConfig(FTNM_DMC_PTR pCTX);
 FTM_RET	FTNM_DMC_start(FTNM_DMC_PTR pCTX);
 FTM_RET	FTNM_DMC_stop(FTNM_DMC_PTR pCTX);
 
+FTM_RET	FTNM_DMC_setServiceCallback(FTNM_DMC_PTR pCTX, FTNM_SERVICE_ID xID, FTNM_SERVICE_CALLBACK pServiceCB);
+
 FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
 FTM_RET FTNM_DMC_EP_DATA_setINT(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue);
 FTM_RET FTNM_DMC_EP_DATA_setULONG(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue);
 FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue);
 FTM_RET	FTNM_DMC_EP_DATA_count(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount);
 FTM_RET	FTNM_DMC_EP_DATA_info(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount);
+
 #endif
 

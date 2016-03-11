@@ -42,6 +42,7 @@ FTM_RET	FTNM_EP_init(void)
 	FTM_LIST_setSeeker(pEPList, FTNM_EP_seeker);
 	FTM_LIST_setComparator(pEPList, FTNM_EP_comparator);
 
+	TRACE("EP management initialized.\n");
 	return	FTM_RET_OK;
 }
 
@@ -60,6 +61,7 @@ FTM_RET	FTNM_EP_final(void)
 	FTM_MEM_free(pEPList);
 	pEPList = NULL;
 
+	TRACE("EP management finished.\n");
 	return	FTM_RET_OK;
 }
 
@@ -482,7 +484,7 @@ FTM_RET	FTNM_EP_getEventCount(FTNM_EP_PTR pEP, FTM_ULONG_PTR pulCount)
 
 	return	FTM_LIST_count(&pEP->xTriggerList, pulCount);
 }
-
+#if 0
 FTM_RET	FTNM_EP_getEventAt(FTNM_EP_PTR pEP, FTM_ULONG ulIndex, FTM_TRIGGER_ID_PTR pTriggerID)
 {
 	ASSERT(pEP != NULL);
@@ -490,7 +492,7 @@ FTM_RET	FTNM_EP_getEventAt(FTNM_EP_PTR pEP, FTM_ULONG ulIndex, FTM_TRIGGER_ID_PT
 	
 	return	FTM_LIST_getAt(&pEP->xTriggerList, ulIndex, (FTM_VOID_PTR _PTR_)&pTriggerID);
 }
-
+#endif
 FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pEP != NULL);

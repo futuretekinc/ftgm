@@ -12,20 +12,21 @@ static	FTM_LIST_PTR	pTriggerList = NULL;
 
 FTM_RET	FTM_TRIGGER_init(FTM_VOID)
 {
+	FTM_RET	xRet;
+
 	if (pTriggerList != NULL)
 	{
 		ERROR("Trigger list is already initialized.\n");
 		return	FTM_RET_ALREADY_INITIALIZED;	
 	}
 
-	pTriggerList = (FTM_LIST_PTR)FTM_MEM_malloc(sizeof(FTM_LIST));
-	if (pTriggerList == NULL)
+	xRet = FTM_LIST_create(&pTriggerList);	
+	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger list is not allocated.\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
+		return	xRet;
 	}
 
-	FTM_LIST_init(pTriggerList);
 	FTM_LIST_setSeeker(pTriggerList, FTM_TRIGGER_seeker);
 
 	TRACE("Trigger list is initialized.\n");
@@ -47,7 +48,8 @@ FTM_RET	FTM_TRIGGER_final(FTM_VOID)
     	FTM_TRIGGER_destroy(pTrigger);
 	}
 
-	FTM_LIST_final(pTriggerList);
+	FTM_LIST_destroy(pTriggerList);
+	pTriggerList = NULL;
 
 	return	FTM_RET_OK;
 }

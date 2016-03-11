@@ -199,14 +199,14 @@ FTM_RET	FTDM_ACTION_showList
 	FTM_ACTION_PTR	pAction;
 	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# ACTION INFORMATION\n");
-	MESSAGE("\t%-8s %-8s %-8s\n", "ID", "TYPE", "TARGET");
+	MESSAGE("\t%4s %8s %8s %s\n", "ID", "TYPE", "TARGET", "VALUE");
 
 	FTM_ACTION_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		if (FTM_ACTION_getAt(i, &pAction) == FTM_RET_OK)
 		{
-			MESSAGE("\t%08x ", pAction->xID);
+			MESSAGE("\t%4d ", pAction->xID);
 			switch(pAction->xType)
 			{
 			case	FTM_ACTION_TYPE_SET:
@@ -214,7 +214,7 @@ FTM_RET	FTDM_ACTION_showList
 					FTM_CHAR	pBuff[1024];
 
 					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pAction->xParams.xSet.xValue);
-					MESSAGE("%08x %-8s\n", pAction->xParams.xSet.xEPID, pBuff);
+					MESSAGE("%8s %08x %-8s\n", "Set", pAction->xParams.xSet.xEPID, pBuff);
 				}
 				break;
 

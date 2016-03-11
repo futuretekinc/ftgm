@@ -178,7 +178,7 @@ FTM_RET	FTNM_SERVER_init
 
 FTM_RET	FTNM_SERVER_final
 (
-	FTNM_SERVER_PTR pServer
+	FTNM_SERVER_PTR	pServer
 )
 {
 	ASSERT(pServer != NULL);
@@ -190,11 +190,14 @@ FTM_RET	FTNM_SERVER_final
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SERVER_start(FTNM_SERVER_PTR pServer)
+FTM_RET	FTNM_SERVER_start
+(
+	FTNM_SERVER_PTR	pServer
+)
 {
 	ASSERT(pServer != NULL);
 
-	int	nRet;
+	FTM_INT	nRet;
 
 	nRet = pthread_create(&pServer->xPThread, NULL, FTNM_SERVER_process, (FTM_VOID_PTR)pServer);
 	if (nRet != 0)
@@ -206,10 +209,13 @@ FTM_RET	FTNM_SERVER_start(FTNM_SERVER_PTR pServer)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SERVER_stop(FTNM_SERVER_PTR pServer)
+FTM_RET	FTNM_SERVER_stop
+(
+	FTNM_SERVER_PTR	pServer
+)
 {
-
 	ASSERT(pServer != NULL);
+
 	FTM_VOID_PTR	pRes;
 
 	FTNM_SESSION_PTR	pSession = NULL;
@@ -226,10 +232,15 @@ FTM_RET	FTNM_SERVER_stop(FTNM_SERVER_PTR pServer)
 	pthread_cancel(pServer->xPThread);
 	pthread_join(pServer->xPThread, &pRes);
 
+	TRACE("Server finished.\n");
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SERVER_notify(FTNM_SERVER_PTR pServer, FTNM_MSG_PTR pMsg)
+FTM_RET	FTNM_SERVER_notify
+(
+	FTNM_SERVER_PTR	pServer,
+	FTNM_MSG_PTR 		pMsg
+)
 {
 	ASSERT(pServer != NULL);
 	ASSERT(pMsg != NULL);
@@ -254,7 +265,21 @@ FTM_RET	FTNM_SERVER_notify(FTNM_SERVER_PTR pServer, FTNM_MSG_PTR pMsg)
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTNM_SERVER_process(FTM_VOID_PTR pData)
+FTM_RET	FTNM_SERVER_setServiceCallback(FTNM_SERVER_PTR pServer, FTNM_SERVICE_ID xServiceID, FTNM_SERVICE_CALLBACK fServiceCB)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(fServiceCB != NULL);
+
+	pServer->xServiceID = xServiceID;
+	pServer->fServiceCB = fServiceCB;
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR FTNM_SERVER_process
+(
+	FTM_VOID_PTR pData
+)
 {
 	ASSERT(pData != NULL);
 
@@ -714,9 +739,13 @@ FTM_RET	FTNM_SERVER_EP_DATA_count
 	return	pResp->nRet;
 }
 
-FTM_RET FTNM_SERVER_loadFromFile(FTNM_SERVER_PTR pSERVER, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_SERVER_loadFromFile
+(
+	FTNM_SERVER_PTR	pServer,
+	FTM_CHAR_PTR 	pFileName
+)
 {
-	ASSERT(pSERVER != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pFileName != NULL);
 
 	config_t			xConfig;
@@ -737,13 +766,13 @@ FTM_RET FTNM_SERVER_loadFromFile(FTNM_SERVER_PTR pSERVER, FTM_CHAR_PTR pFileName
 		pField = config_setting_get_member(pSection, "max_session");
 		if (pField != NULL)
 		{
-			pSERVER->xConfig.ulMaxSession = (FTM_ULONG)config_setting_get_int(pField);
+			pServer->xConfig.ulMaxSession = (FTM_ULONG)config_setting_get_int(pField);
 		}
 	
 		pField = config_setting_get_member(pSection, "port");
 		if (pField != NULL)
 		{
-			pSERVER->xConfig.usPort = (FTM_ULONG)config_setting_get_int(pField);
+			pServer->xConfig.usPort = (FTM_ULONG)config_setting_get_int(pField);
 		}
 	}
 
@@ -752,13 +781,16 @@ FTM_RET FTNM_SERVER_loadFromFile(FTNM_SERVER_PTR pSERVER, FTM_CHAR_PTR pFileName
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SERVER_showConfig(FTNM_SERVER_PTR pSERVER)
+FTM_RET FTNM_SERVER_showConfig
+(
+	FTNM_SERVER_PTR	pServer
+)
 {
-	ASSERT(pSERVER != NULL);
+	ASSERT(pServer != NULL);
 
 	MESSAGE("\n[ SERVER CONFIGURATION ]\n");
-	MESSAGE("%16s : %d\n", "PORT", pSERVER->xConfig.usPort);
-	MESSAGE("%16s : %lu\n", "MAX SESSION", pSERVER->xConfig.ulMaxSession);
+	MESSAGE("%16s : %d\n", "PORT", pServer->xConfig.usPort);
+	MESSAGE("%16s : %lu\n", "MAX SESSION", pServer->xConfig.ulMaxSession);
 
 	return	FTM_RET_OK;
 }

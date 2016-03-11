@@ -96,7 +96,7 @@ FTM_RET 	FTDM_loadConfig(FTDM_CFG_PTR pConfig)
 		ERROR("FTDM_initEPClassInfo failed\n");	
 	}
 
-	FTM_PRINT_configSet(&pConfig->xPrint);
+	FTM_TRACE_configSet(&pConfig->xPrint);
 
 
 	TRACE("FTDM initialization completed successfully.\n");

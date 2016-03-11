@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "ftm.h"
-#include "ftnm_actor.h"
+#include "ftnm_action.h"
 #include "ftnm_msg.h"
 #include "libconfig.h"
 

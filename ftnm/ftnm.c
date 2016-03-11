@@ -15,13 +15,14 @@
 #include "ftnm_msg.h"
 #include "nxjson.h"
 
-FTM_VOID_PTR	FTNM_task(FTM_VOID_PTR pData);
-FTM_RET			FTNM_taskInit(FTNM_CONTEXT_PTR pCTX);
-FTM_RET			FTNM_taskConnect(FTNM_CONTEXT_PTR pCTX);
-FTM_RET			FTNM_taskSync(FTNM_CONTEXT_PTR pCTX);
-FTM_RET			FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX);
-FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX);
+FTM_VOID_PTR	FTNM_process(FTM_VOID_PTR pData);
+FTM_RET			FTNM_TASK_startService(FTNM_CONTEXT_PTR pCTX);
+FTM_RET			FTNM_TASK_sync(FTNM_CONTEXT_PTR pCTX);
+FTM_RET			FTNM_TASK_startEP(FTNM_CONTEXT_PTR pCTX);
+FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX);
+FTM_RET			FTNM_TASK_stopService(FTNM_CONTEXT_PTR pCTX);
 
+static 	FTM_RET	FTNM_callback(FTNM_SERVICE_ID xID, FTNM_MSG_TYPE xMsg, FTM_VOID_PTR pData);
 static	FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg);
 static	FTNM_SERVER		xServer;
 static	FTNM_SNMPC		xSNMPC;
@@ -36,12 +37,14 @@ static 	FTNM_SERVICE	pServices[] =
 {
 	{
 		.xType		=	FTNM_SERVICE_SERVER,
+		.xID		=	FTNM_SERVICE_SERVER,
+		.pName		=	"Server",
 		.fInit		=	(FTNM_SERVICE_INIT)FTNM_SERVER_init,
 		.fFinal		=	(FTNM_SERVICE_FINAL)FTNM_SERVER_final,
 		.fStart 	=	(FTNM_SERVICE_START)FTNM_SERVER_start,
 		.fStop		=	(FTNM_SERVICE_STOP)FTNM_SERVER_stop,
-		.fSetCallback=	NULL,
-		.fCallback	=	NULL,
+		.fSetCallback=	(FTNM_SERVICE_SET_CALLBACK)FTNM_SERVER_setServiceCallback,
+		.fCallback	=	FTNM_callback,
 		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTNM_SERVER_loadFromFile,
 		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTNM_SERVER_showConfig,
 		.fNotify	=	(FTNM_SERVICE_NOTIFY)FTNM_SERVER_notify,
@@ -49,43 +52,49 @@ static 	FTNM_SERVICE	pServices[] =
 	},
 	{
 		.xType		=	FTNM_SERVICE_SNMP_CLIENT,
+		.xID		=	FTNM_SERVICE_SNMP_CLIENT,
+		.pName		=	"SNMP Client",
 		.fInit		=	(FTNM_SERVICE_INIT)FTNM_SNMPC_init,
 		.fFinal		=	(FTNM_SERVICE_FINAL)FTNM_SNMPC_final,
 		.fStart 	=	(FTNM_SERVICE_START)FTNM_SNMPC_start,
 		.fStop		=	(FTNM_SERVICE_STOP)FTNM_SNMPC_stop,
-		.fSetCallback=	NULL,
-		.fCallback	=	NULL,
+		.fSetCallback=	(FTNM_SERVICE_SET_CALLBACK)FTNM_SNMPC_setServiceCallback,
+		.fCallback	=	FTNM_callback,
 		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTNM_SNMPC_loadFromFile,
 		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTNM_SNMPC_showConfig,
 		.pData		=	(FTM_VOID_PTR)&xSNMPC
 	},
 	{
 		.xType		=	FTNM_SERVICE_SNMPTRAPD,
+		.xID		=	FTNM_SERVICE_SNMPTRAPD,
+		.pName		=	"SNMP TrapD",
 		.fInit		=	(FTNM_SERVICE_INIT)FTNM_SNMPTRAPD_init,
 		.fFinal		=	(FTNM_SERVICE_FINAL)FTNM_SNMPTRAPD_final,
 		.fStart 	=	(FTNM_SERVICE_START)FTNM_SNMPTRAPD_start,
 		.fStop		=	(FTNM_SERVICE_STOP)FTNM_SNMPTRAPD_stop,
-		.fSetCallback=	(FTNM_SERVICE_SET_CALLBACK)FTNM_SNMPTRAPD_setCallback,
-		.fCallback	=	(FTNM_SERVICE_CALLBACK)FTNM_SNMPTrapCB,
+		.fSetCallback=	(FTNM_SERVICE_SET_CALLBACK)FTNM_SNMPTRAPD_setServiceCallback,
+		.fCallback	=	FTNM_callback,
 		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTNM_SNMPTRAPD_loadFromFile,
 		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTNM_SNMPTRAPD_showConfig,
 		.pData		=	(FTM_VOID_PTR)&xSNMPTRAPD
 	},
 	{
 		.xType		=	FTNM_SERVICE_DBM,
+		.xID		=	FTNM_SERVICE_DBM,
+		.pName		=	"DB Client",
 		.fInit		=	(FTNM_SERVICE_INIT)FTNM_DMC_init,
 		.fFinal		=	(FTNM_SERVICE_FINAL)FTNM_DMC_final,
 		.fStart 	=	(FTNM_SERVICE_START)FTNM_DMC_start,
 		.fStop		=	(FTNM_SERVICE_STOP)FTNM_DMC_stop,
-		.fSetCallback=	NULL,
-		.fCallback	=	NULL,
+		.fSetCallback=	(FTNM_SERVICE_SET_CALLBACK)FTNM_DMC_setServiceCallback,
+		.fCallback	=	FTNM_callback,
 		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTNM_DMC_loadFromFile,
 		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTNM_DMC_showConfig,
 		.pData		=	(FTM_VOID_PTR)&xDMC
 	}
 };
 
-FTM_RET	FTNM_init(void)
+FTM_RET	FTNM_init(FTM_VOID)
 {
 	FTNM_EP_init();
 	FTNM_NODE_init();
@@ -100,7 +109,7 @@ FTM_RET	FTNM_init(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_final(void)
+FTM_RET	FTNM_final(FTM_VOID)
 {
 	FTNM_TRIGGERM_final(&xEventM);
 
@@ -116,7 +125,7 @@ FTM_RET	FTNM_final(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pFileName)
+FTM_RET	FTNM_loadFromFile(FTM_CHAR_PTR pFileName)
 {
 	ASSERT(pFileName != NULL);
 
@@ -126,16 +135,16 @@ FTM_RET	FTNM_loadConfig(FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_showConfig(void)
+FTM_RET	FTNM_showConfig(FTM_VOID)
 {
 	FTNM_SERVICE_showConfig(FTNM_SERVICE_ALL);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_start(void)
+FTM_RET FTNM_start(FTM_VOID)
 {
-	if (pthread_create(&xCTX.xPThread, NULL, FTNM_task, (FTM_VOID_PTR)&xCTX) < 0)
+	if (pthread_create(&xCTX.xThread, NULL, FTNM_process, (FTM_VOID_PTR)&xCTX) < 0)
 	{
 		return	FTM_RET_ERROR;	
 	}
@@ -143,70 +152,79 @@ FTM_RET FTNM_start(void)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_waitingForFinished(void)
+FTM_RET FTNM_stop(FTM_VOID)
 {
-	pthread_join(xCTX.xPThread, NULL);
+	FTNM_MSGQ_sendQuit(&xMsgQ);
+	TRACE("hello1!\n");
+	pthread_join(xCTX.xThread, NULL);
+	TRACE("hello2!\n");
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR	FTNM_task(FTM_VOID_PTR pData)
+FTM_RET FTNM_waitingForFinished(FTM_VOID)
+{
+	pthread_join(xCTX.xThread, NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR	FTNM_process(FTM_VOID_PTR pData)
 {
 	ASSERT (pData != NULL);
 	
 	FTNM_CONTEXT_PTR	pCTX = (FTNM_CONTEXT_PTR)pData;
 
-	pCTX->xState = FTNM_STATE_CREATED;
+	TRACE("FTNM started.\n");
+	pCTX->xState = FTNM_STATE_INITIALIZED;
+	pCTX->bStop	= FTM_FALSE;
 
-	while(FTM_TRUE)
+	while(!pCTX->bStop)
 	{
 		switch(pCTX->xState)
 		{
-		case	FTNM_STATE_CREATED:
-			{
-				FTNM_taskInit(pCTX);
-			}
-			break;
-
 		case	FTNM_STATE_INITIALIZED:
 			{
-				FTNM_taskConnect(pCTX);
+				FTNM_TASK_startService(pCTX);
 			}
 			break;
 
 		case	FTNM_STATE_CONNECTED:
 			{
-				FTNM_taskSync(pCTX);
+				FTNM_TASK_sync(pCTX);
 			}
 			break;
 
 		case	FTNM_STATE_SYNCHRONIZED:
 			{
-				FTNM_taskRunChild(pCTX);	
+				FTNM_TASK_startEP(pCTX);	
 			}
 			break;
 
-		case	FTNM_STATE_PROCESS_FINISHED:
+		case	FTNM_STATE_PROCESSING:
 			{
-				FTNM_taskWait(pCTX);	
+				FTNM_TASK_processing(pCTX);	
 			}
 			break;
+
+		case	FTNM_STATE_STOPED:
+			{
+				FTNM_TASK_stopService(pCTX);	
+			}
+			break;
+
+		case	FTNM_STATE_FINISHED:
+			{
+				pCTX->bStop = FTM_TRUE;
+			}
 		}
 	}
 
+	TRACE("FTNM finished.\n");
 	return	0;
 }
 
-FTM_RET	FTNM_taskInit(FTNM_CONTEXT_PTR pCTX)
-{
-	ASSERT(pCTX != NULL);
-
-	xCTX.xState = FTNM_STATE_INITIALIZED;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTNM_taskConnect(FTNM_CONTEXT_PTR pCTX)
+FTM_RET	FTNM_TASK_startService(FTNM_CONTEXT_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
@@ -217,7 +235,7 @@ FTM_RET	FTNM_taskConnect(FTNM_CONTEXT_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
+FTM_RET	FTNM_TASK_sync(FTNM_CONTEXT_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
@@ -343,7 +361,7 @@ FTM_RET	FTNM_taskSync(FTNM_CONTEXT_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX)
+FTM_RET	FTNM_TASK_startEP(FTNM_CONTEXT_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
@@ -364,24 +382,33 @@ FTM_RET	FTNM_taskRunChild(FTNM_CONTEXT_PTR pCTX)
 		}
 	}
 	
-	xCTX.xState = FTNM_STATE_PROCESS_FINISHED;
+	pCTX->xState = FTNM_STATE_PROCESSING;
 	return	FTM_RET_OK;
 }
 
-FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
+FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
 	FTM_RET			xRet;
+	FTM_BOOL		bStop =  FTM_FALSE;
 	FTNM_MSG_PTR	pMsg = NULL;
 
-	while(1)
+	while(!bStop)
 	{
-		xRet = FTNM_MSGQ_pop(&xMsgQ, &pMsg);
+		xRet = FTNM_MSGQ_timedPop(&xMsgQ, 1000000, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			switch(pMsg->xType)
 			{
+			case	FTNM_MSG_TYPE_QUIT:
+				{
+					TRACE("Task stop received.\n");
+					bStop = FTM_TRUE;
+					pCTX->xState = FTNM_STATE_STOPED;
+				}
+				break;
+
 			case	FTNM_MSG_TYPE_SNMPTRAP:
 				{
 					FTM_EP_ID		xEPID = 0;
@@ -545,8 +572,37 @@ FTM_RET			FTNM_taskWait(FTNM_CONTEXT_PTR pCTX)
 
 			FTM_MEM_free(pMsg);
 		}
-		usleep(1000);
 	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_TASK_stopService(FTNM_CONTEXT_PTR pCTX)
+{
+	ASSERT(pCTX != NULL);
+
+	FTNM_EP_PTR	pEP;
+	FTM_ULONG	i, ulCount;
+	
+	FTNM_TRIGGERM_stop(&xEventM);
+	FTNM_EP_count(0, &ulCount);
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
+		{
+			TRACE("EP[%08x] stop request.\n", pEP->xInfo.xEPID);
+			FTNM_EP_stop(pEP, FTM_TRUE);
+			TRACE("EP[%08x] stop finished.\n", pEP->xInfo.xEPID);
+		}
+		else
+		{
+			ERROR("EP not found at %d\n", i);
+		}
+	}
+	
+	FTNM_SERVICE_stop(FTNM_SERVICE_ALL);
+	
+	pCTX->xState = FTNM_STATE_FINISHED;
 
 	return	FTM_RET_OK;
 }
@@ -575,10 +631,83 @@ FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg)
 	return	FTNM_MSGQ_sendSNMPTrap(&xMsgQ, pTrapMsg);
 }
 
-FTM_RET FTNM_NOTIFY_EPChanged(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET	FTNM_NOTIFY_quit(FTM_VOID)
 {
-	FTNM_TRIGGERM_updateEP(&xEventM, xEPID, pData);
-	FTNM_DMC_EP_DATA_set(&xDMC, xEPID, pData);
+	FTNM_stop();
 
-	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+	return	FTM_RET_SHELL_QUIT;
+}
+
+FTM_RET	FTNM_callback(FTNM_SERVICE_ID xID, FTNM_MSG_TYPE xMsg, FTM_VOID_PTR pData)
+{
+	switch(xID)
+	{
+	case	FTNM_SERVICE_SERVER:
+		{
+		}
+		break;
+
+	case	FTNM_SERVICE_SNMP_CLIENT:
+		{
+		}
+		break;
+
+	case	FTNM_SERVICE_SNMPTRAPD:
+		{
+			switch(xMsg)
+			{
+			case	FTNM_MSG_TYPE_EP_CHANGED:
+				{
+					if (pData != NULL)
+					{
+						FTNM_MSG_EP_CHANGED_PARAMS_PTR pParam = (FTNM_MSG_EP_CHANGED_PARAMS_PTR)pData;
+
+						FTNM_TRIGGERM_updateEP(&xEventM, pParam->xEPID, &pParam->xData);
+						FTNM_DMC_EP_DATA_set(&xDMC, pParam->xEPID, &pParam->xData);
+					}
+					else
+					{
+						ERROR("Invalid service callback parameter!\n");	
+					}
+				}
+				break;
+
+			default:
+				{
+					ERROR("Invalid service callback parameter!\n");	
+				}
+			}
+		}
+		break;
+
+	case	FTNM_SERVICE_DBM:
+		{
+			switch(xMsg)
+			{
+			case	FTNM_MSG_TYPE_DMC_CONNECTED:
+				{
+					TRACE("DMC connected!\n");
+				}
+				break;
+
+			case	FTNM_MSG_TYPE_DMC_DISCONNECTED:
+				{
+				}
+				break;
+
+			default:
+				{
+					ERROR("Invalid service callback parameter!\n");	
+				}
+			}
+		}
+		break;
+
+	default:
+		{
+			ERROR("Invalid service ID[%08x] received.\n");
+		}
+	}
+
+	return	FTM_RET_OK;
 }

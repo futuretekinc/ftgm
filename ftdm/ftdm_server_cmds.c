@@ -124,8 +124,8 @@ FTM_RET FTDMS_SHELL_CMD_debug
 		{
 			FTM_ULONG	ulLevel;
 
-			FTM_PRINT_getLevel(&ulLevel);
-			MESSAGE("LEVEL : %s\n", FTM_PRINT_levelString(ulLevel));
+			FTM_TRACE_getLevel(&ulLevel);
+			MESSAGE("LEVEL : %s\n", FTM_TRACE_levelString(ulLevel));
 		}
 		break;
 
@@ -150,7 +150,7 @@ FTM_RET FTDMS_SHELL_CMD_debug
 				FTM_ULONG	ulLevel;
 
 				ulLevel = strtoul(pArgv[2], NULL, 10);
-				FTM_PRINT_setLevel(ulLevel);
+				FTM_TRACE_setLevel(ulLevel);
 			}
 		}
 		break;
