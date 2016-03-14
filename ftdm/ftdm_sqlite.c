@@ -8,7 +8,7 @@
 #include "ftm_trigger.h"
 #include "ftdm_sqlite.h"
 
-static FTM_BOOL FTDM_DBIF_EP_DATA_bIOTrace = FTM_TRUE;
+static FTM_BOOL FTDM_DBIF_EP_DATA_bIOTrace = FTM_FALSE;
 
 FTM_RET _FTDM_DBIF_isExistTable
 (

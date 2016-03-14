@@ -102,7 +102,7 @@ FTNMC_CMD			_cmds[] =
 		.pHelp      = "<COMMAND> ...\n"\
 					  "\tEndPoint management.\n"\
 					  "COMMANDS:\n"\
-					  "\tadd    <EPID> <Type> [Name] [Unit] [Interval] [DID] [PID]\n"\
+					  "\tadd    <EPID> <Type> <DID> [ -n <Name>] [ -u <Unit>] [ -i <Interval>] [ -t <timeout>]\n"\
 					  "\tdel    <EPID>\n"\
 					  "\tlist\n"\
 					  "PARAMETERS:\n"\
@@ -350,7 +350,7 @@ FTM_RET	FTNMC_CMD_disconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
-	FTM_RET	nRet;
+	FTM_RET	xRet;
 	FTM_INT	i;
 	FTM_NODE	xNodeInfo;
 	FTM_CHAR	pDID[FTM_DID_LEN + 1];
@@ -417,10 +417,10 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				xNodeInfo.pDID[i] = toupper(pArgv[2][i]);	
 			}
 
-			nRet = FTNMC_NODE_create(pCurrentSession, &xNodeInfo);
-			if (nRet != FTM_RET_OK)
+			xRet = FTNMC_NODE_create(pCurrentSession, &xNodeInfo);
+			if (xRet != FTM_RET_OK)
 			{
-				ERROR("%s : ERROR - %lx\n", pArgv[0], nRet);
+				ERROR("%s : ERROR - %lx\n", pArgv[0], xRet);
 			}
 			else
 			{
@@ -448,10 +448,10 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			pDID[i] = toupper(pArgv[2][i]);	
 		}
 
-		nRet = FTNMC_NODE_destroy(pCurrentSession, pDID);
-		if (nRet != FTM_RET_OK)
+		xRet = FTNMC_NODE_destroy(pCurrentSession, pDID);
+		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
 		}
 		else
 		{
@@ -474,10 +474,10 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			pDID[i] = toupper(pArgv[2][i]);	
 		}
 
-		nRet = FTNMC_NODE_get(pCurrentSession, pDID, &xInfo);
-		if (nRet != FTM_RET_OK)
+		xRet = FTNMC_NODE_get(pCurrentSession, pDID, &xInfo);
+		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
 		}
 		else
 		{
@@ -494,10 +494,10 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	{
 		FTM_ULONG	i, nNodeCount = 0;
 
-		nRet = FTNMC_NODE_count(pCurrentSession, &nNodeCount);
-		if (nRet != FTM_RET_OK)
+		xRet = FTNMC_NODE_count(pCurrentSession, &nNodeCount);
+		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
 		}
 
 		MESSAGE("NODE COUNT : %d\n", nNodeCount);
@@ -509,8 +509,8 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		{
 			FTM_NODE	xInfo;
 
-			nRet = FTNMC_NODE_getAt(pCurrentSession, i, &xInfo);
-			if (nRet == FTM_RET_OK)
+			xRet = FTNMC_NODE_getAt(pCurrentSession, i, &xInfo);
+			if (xRet == FTM_RET_OK)
 			{
 				MESSAGE("%-16s %-16s %-16s %8d ", 
 					xInfo.pDID, 
@@ -546,13 +546,12 @@ FTM_RET	FTNMC_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
-	FTM_RET		nRet;
+	FTM_RET		xRet;
 	FTM_INT		i;
-	FTM_CHAR		pPID[FTM_DID_LEN + 1];
-	FTM_CHAR		pDID[FTM_DID_LEN + 1];
-	FTM_CHAR		pName[FTM_NAME_LEN + 1];
-	FTM_CHAR		pUnit[FTM_UNIT_LEN + 1];
-	FTM_EP_ID		xEPID = 0;
+	FTM_CHAR	pPID[FTM_DID_LEN + 1];
+	FTM_CHAR	pDID[FTM_DID_LEN + 1];
+	FTM_CHAR	pName[FTM_NAME_LEN + 1];
+	FTM_CHAR	pUnit[FTM_UNIT_LEN + 1];
 	FTM_EP		xInfo;
 
 	memset(pPID, 0, sizeof(pPID));
@@ -567,96 +566,93 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	
 	if (strcmp(pArgv[1], "add") == 0)
 	{
-		memset(&xInfo, 0, sizeof(xInfo));
-		switch(nArgc)
+		FTM_INT	i, nOpt;
+
+
+		FTM_EP_setDefault(&xInfo);
+
+		optind = 2;
+		if ((nOpt = getopt(nArgc, pArgv, "n:u:i:t:")) != -1)
 		{
-		case	8:
-			if (strlen(pArgv[7]) > FTM_DID_LEN)
+			switch(toupper(nOpt))
 			{
-				ERROR("Invalid DID - tool long.\n");
-				return	FTM_RET_INVALID_ARGUMENTS;
-			}
+			case	'N':	
+				{
+					strncpy(xInfo.pName, optarg, sizeof(xInfo.pName) - 1);
+				}
+				break;
 
-			for(i = 0 ; i < strlen(pArgv[7]) ; i++)
-			{
-				xInfo.pPID[i] = toupper(pArgv[7][i]);	
-			}
+			case	'U':
+				{
+					strncpy(xInfo.pUnit, optarg, sizeof(xInfo.pUnit) - 1);
+				}
+				break;
 
-		case	7:
-			if (strlen(pArgv[6]) > FTM_DID_LEN)
-			{
-				ERROR("Invalid DID - tool long.\n");
-				return	FTM_RET_INVALID_ARGUMENTS;
-			}
+			case	'I':
+				{
+					xInfo.ulInterval = strtoul(optarg, NULL, 10);
+				}
+				break;
 
-			for(i = 0 ; i < strlen(pArgv[6]) ; i++)
-			{
-				xInfo.pDID[i] = toupper(pArgv[6][i]);	
-			}
+			case	'T':
+				{
+					xInfo.ulTimeout = strtoul(optarg, NULL, 10);
+				}
+				break;
 
-		case	6:
-			xInfo.ulInterval = (FTM_ULONG)strtoul(pArgv[5], 0, 10);
-			if (xInfo.ulInterval < 0)
-			{
-				ERROR("Invalid interval.\n");
-				return	FTM_RET_INVALID_ARGUMENTS;
-			}
+			default:
+				{
+					return	FTM_RET_INVALID_ARGUMENTS;
+				}
 
-		case	5:
-			if (strlen(pArgv[4]) > FTM_UNIT_LEN)
-			{
-				ERROR("Invalid unit.\n");
-				return	FTM_RET_INVALID_ARGUMENTS;
 			}
+		}
 
-			for(i = 0 ; i < strlen(pArgv[4]) ; i++)
-			{
-				xInfo.pUnit[i] = toupper(pArgv[4][i]);	
-			}
+		if (nArgc < 4)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
 
-		case	4:
-			if (strlen(pArgv[3]) > FTM_NAME_LEN)
-			{
-				ERROR("Invalid name.\n");
-				return	FTM_RET_INVALID_ARGUMENTS;
-			}
+		xInfo.xEPID = strtoul(pArgv[2], NULL, 16);
+		if (xInfo.xEPID < 0)
+		{
+			ERROR("Invalid EPID.\n");
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
 
-			for(i = 0 ; i < strlen(pArgv[3]) ; i++)
-			{
-				xInfo.pName[i] = toupper(pArgv[3][i]);	
-			}
+		xInfo.xType = (xInfo.xEPID & FTM_EP_TYPE_MASK);
 
-		case	3:
-			xInfo.xEPID = strtoul(pArgv[2], NULL, 16);
-			if (xEPID < 0)
-			{
-				ERROR("Invalid EPID.\n");
-				return	FTM_RET_INVALID_ARGUMENTS;
-			}
+		for(i = 0 ; i < sizeof(xInfo.pDID) - 1 && i < strlen(pArgv[3]); i ++)
+		{
+			xInfo.pDID[i] = toupper(pArgv[3][i]);
+		}
 
-			xInfo.xType = (xEPID & FTM_EP_TYPE_MASK);
+		if (xInfo.pPID[0] == 0)
+		{
+			memcpy(xInfo.pPID, xInfo.pDID, sizeof(xInfo.pPID));	
+		}
 
-			nRet = FTNMC_EP_create(pCurrentSession, &xInfo);
-			if (nRet != FTM_RET_OK)
-			{
-				ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
-			}
-			break;
+		xRet = FTNMC_EP_create(pCurrentSession, &xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
 		}
 
 	}
 	else if (strcmp(pArgv[1], "del") == 0)
 	{
+		FTM_EP_ID	xEPID;
+
 		if (nArgc != 3)
 		{
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
 		xEPID = strtoul(pArgv[2], 0, 16);
-		nRet = FTNMC_EP_destroy(pCurrentSession, xEPID);	
-		if (nRet != FTM_RET_OK)
+		xRet = FTNMC_EP_destroy(pCurrentSession, xEPID);	
+		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
 		}
 	}
 	else if (strcmp(pArgv[1], "list") == 0)
@@ -665,8 +661,8 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 		if (nArgc == 2)
 		{
-			nRet = FTNMC_EP_count(pCurrentSession, 0, &nCount);
-			if (nRet == FTM_RET_OK)
+			xRet = FTNMC_EP_count(pCurrentSession, 0, &nCount);
+			if (xRet == FTM_RET_OK)
 			{
 				FTM_EP_ID_PTR	pEPIDs;
 				FTM_EP_DATA		xData;
@@ -679,19 +675,19 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				}
 				else
 				{
-					MESSAGE("%-8s %-8s %-16s %-8s %-8s %-16s %-16s %-8s\n",
+					MESSAGE("%-8s %-16s %-16s %-8s %-8s %-16s %-16s %-8s\n",
 						"EPID", "CLASS", "NAME", "UNIT", "INTERNAL", "DID", "PID", "VALUE");
 					FTNMC_EP_getList(pCurrentSession, 0x00000000, pEPIDs, nCount, &nCount);
 					for(i = 0 ; i< nCount ; i++)
 					{
 						FTM_EP	xInfo;
 
-						nRet = FTNMC_EP_get(pCurrentSession, pEPIDs[i], &xInfo);
-						if (nRet == FTM_RET_OK)
+						xRet = FTNMC_EP_get(pCurrentSession, pEPIDs[i], &xInfo);
+						if (xRet == FTM_RET_OK)
 						{
-							MESSAGE("%08lx %08x %-16s %-8s %8lu %-16s %-16s ",
+							MESSAGE("%08lx %-16s %-16s %-8s %8lu %-16s %-16s ",
 									xInfo.xEPID,
-									xInfo.xType,//"UNKNOWN",//FTM_getEPTypeString(xInfo.xType),
+									FTM_EP_typeString(xInfo.xType),
 									xInfo.pName,
 									xInfo.pUnit,
 									xInfo.ulInterval,
@@ -699,8 +695,8 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 									xInfo.pPID);
 						}
 
-						nRet = FTNMC_EP_DATA_getLast(pCurrentSession, pEPIDs[i], &xData);
-						if (nRet == FTM_RET_OK)
+						xRet = FTNMC_EP_DATA_getLast(pCurrentSession, pEPIDs[i], &xData);
+						if (xRet == FTM_RET_OK)
 						{
 							switch(xData.xType)
 							{
@@ -739,8 +735,8 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			FTM_EP_ID		pEPID[100];
 
 			xEPClass = strtoul(pArgv[2], 0, 16);
-			nRet = FTNMC_EP_getList(pCurrentSession, xEPClass, pEPID, 100, &nCount);
-			if (nRet == FTM_RET_OK)
+			xRet = FTNMC_EP_getList(pCurrentSession, xEPClass, pEPID, 100, &nCount);
+			if (xRet == FTM_RET_OK)
 			{
 				MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
 						"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
@@ -749,8 +745,8 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				{
 					FTM_EP	xInfo;
 
-					nRet = FTNMC_EP_get(pCurrentSession, pEPID[i], &xInfo);
-					if (nRet == FTM_RET_OK)
+					xRet = FTNMC_EP_get(pCurrentSession, pEPID[i], &xInfo);
+					if (xRet == FTM_RET_OK)
 					{
 						MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
 								xInfo.xEPID,
@@ -763,7 +759,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					}
 					else
 					{
-							ERROR("%s : ERROR - %lu\n", pArgv[0], nRet);
+						ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
 					}
 				}
 			}
@@ -771,11 +767,126 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	}
 	else if (strcmp(pArgv[1], "count") == 0)
 	{
+		FTM_ULONG	ulCount;
+
+		xRet = FTNMC_EP_count(pCurrentSession, 0, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			MESSAGE("%s : ERROR - %lu\n", pArgv[0], xRet);
+		}
+		else
+		{
+			MESSAGE("EP Count : %lu\n", ulCount);	
+		}
 	
 	}
-	else
+	else 
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;
+		FTM_EP_ID		xEPID;
+		FTM_EP			xInfo;
+
+		xEPID = strtoul(pArgv[1], 0, 16);
+		xRet = FTNMC_EP_get(pCurrentSession, xEPID, &xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			MESSAGE("EP[%08x] not exists.\n", xEPID);
+		}
+		else	
+		{
+			switch(nArgc)
+			{
+			case	2:
+				{
+					FTM_EP_DATA	xData;
+					FTM_ULONG	ulCount;
+					FTM_CHAR	pValue[32];
+			
+					MESSAGE("%-8s : %08lx\n", 	"EPID", 	xInfo.xEPID);
+					MESSAGE("%-8s : %s\n",		"TYPE",		FTM_EP_typeString(xInfo.xType));
+					MESSAGE("%-8s : %s\n",		"NAME", 	xInfo.pName);
+					MESSAGE("%-8s : %s\n",		"UNIT", 	xInfo.pUnit);
+					MESSAGE("%-8s : %d\n",		"INTERVAL", xInfo.ulInterval);
+					MESSAGE("%-8s : %s\n",		"DID", 		xInfo.pDID);
+					MESSAGE("%-8s : %s\n",		"PID", 		xInfo.pPID);
+			
+					xRet = FTNMC_EP_DATA_count(pCurrentSession, xEPID, &ulCount);
+					if (xRet == FTM_RET_OK)
+					{
+						MESSAGE("%-8s : %d\n", "COUNT", ulCount);
+					}
+		
+					xRet = FTNMC_EP_DATA_getLast(pCurrentSession, xEPID, &xData);
+					if (xRet == FTM_RET_OK)
+					{
+						xRet = FTM_EP_DATA_snprint(pValue, sizeof(pValue), &xData);	
+						if (xRet == FTM_RET_OK)
+						{
+							MESSAGE("%-8s : %s\n", "VALUE", pValue);
+						}
+						else
+						{
+							MESSAGE("%-8s : INVALID\n", "VALUE");
+						}
+					}
+					else
+					{
+						MESSAGE("%-8s : NOT EXISTS\n", "VALUE");
+					}
+				}
+				break;
+
+			case	4:
+			case	5:
+				{
+					if (strcmp(pArgv[2], "data") == 0)
+					{
+						FTM_ULONG		ulStartIndex;
+						FTM_ULONG		ulCount;
+						FTM_EP_DATA_PTR	pData;
+				
+						ulStartIndex = strtoul(pArgv[3], 0, 10);
+						if (nArgc == 5)
+						{
+							ulCount = strtoul(pArgv[4], 0, 10);
+						}
+						else
+						{
+							ulCount = 10;
+						}
+				
+						pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulCount);
+						if (pData == NULL)
+						{
+							MESSAGE("Not enough memory.\n");	
+						}
+						else
+						{
+							xRet = FTNMC_EP_DATA_getList(pCurrentSession, xEPID, ulStartIndex, pData, ulCount, &ulCount);
+							if (xRet != FTM_RET_OK)
+							{
+								MESSAGE("%s : ERROR - %lu\n", pArgv[0], xRet);
+							}
+							else
+							{
+								FTM_CHAR	pBuff[64];
+				
+								for(i = 0 ; i < ulCount ; i++)
+								{
+									FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pData[i]);		
+									MESSAGE("%3d : %s\n", ulStartIndex + i, pBuff);
+								}
+							}
+						}
+				
+						FTM_MEM_free(pData);
+					}
+				}
+				break;
+
+			default:
+				MESSAGE("Invalid arguemtns.\n");
+			}
+		}
 	}
 
 	return	FTM_RET_OK;
@@ -783,7 +894,7 @@ FTM_RET	FTNMC_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
-	FTM_RET			nRet;
+	FTM_RET			xRet;
 	FTM_INT			nOpt = 0;
 	FTM_ULONG		nBeginTime = 0;
 	FTM_ULONG		nEndTime = 0;
@@ -858,14 +969,14 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			}
 		}
 
-		nRet = FTNMC_EP_DATA_add(pCurrentSession, xEPID, &xData);
-		if (nRet == FTM_RET_OK)
+		xRet = FTNMC_EP_DATA_add(pCurrentSession, xEPID, &xData);
+		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("EndPoint data appending done successfully!\n");	
 		}
 		else
 		{
-			ERROR("EndPoint data appending failed [ ERROR = %08lx ]\n", nRet);	
+			ERROR("EndPoint data appending failed [ ERROR = %08lx ]\n", xRet);	
 		}
 	}
 	else if (strcmp(pArgv[1], "del") == 0)
@@ -955,14 +1066,14 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					return	FTM_RET_INVALID_ARGUMENTS;
 				}
 /*
-				nRet = FTNMC_EP_DATA_delWithTime(pCurrentSession, xEPID, nBeginTime, nEndTime);
-				if (nRet == FTM_RET_OK)
+				xRet = FTNMC_EP_DATA_delWithTime(pCurrentSession, xEPID, nBeginTime, nEndTime);
+				if (xRet == FTM_RET_OK)
 				{
 					MESSAGE("EndPoint data deleted successfully!\n");	
 				}
 				else
 				{
-					ERROR("EndPoint data deleting failed [ ERROR = %08lx ]\n", nRet);	
+					ERROR("EndPoint data deleting failed [ ERROR = %08lx ]\n", xRet);	
 				}
 */
 			}
@@ -1002,8 +1113,8 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 				xEPID	= strtoul(pArgv[3], NULL, 16);
 
-				nRet = FTNMC_EP_DATA_info(pCurrentSession, xEPID, &ulBeginTime, &ulEndTime, &ulCount);
-				if (nRet == FTM_RET_OK)
+				xRet = FTNMC_EP_DATA_info(pCurrentSession, xEPID, &ulBeginTime, &ulEndTime, &ulCount);
+				if (xRet == FTM_RET_OK)
 				{
 					MESSAGE("      EPID : %08lx\n", xEPID);
 					MESSAGE("DATA COUNT : %lu\n", ulCount);
@@ -1012,7 +1123,7 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				}
 				else
 				{
-					TRACE("FTNMC_EP_DATA_count error [%08lx]\n", nRet);	
+					TRACE("FTNMC_EP_DATA_count error [%08lx]\n", xRet);	
 				}
 #endif
 
@@ -1073,15 +1184,15 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					return	FTM_RET_NOT_ENOUGH_MEMORY;		
 				}
 
-				nRet = FTNMC_EP_DATA_getList(pCurrentSession, 
+				xRet = FTNMC_EP_DATA_getList(pCurrentSession, 
 						xEPID, 
 						nStartIndex,
 						pEPData, 
 						nMaxCount, 
 						&nCount);
 				TRACE("FTNMC_getEPData(hClient, %08lx, %d, %d, pEPData, %d, %d) = %08lx\n",
-						xEPID, nBeginTime, nEndTime, nMaxCount, nCount, nRet);
-				if (nRet == FTM_RET_OK)
+						xEPID, nBeginTime, nEndTime, nMaxCount, nCount, xRet);
+				if (xRet == FTM_RET_OK)
 				{
 					FTM_INT	i;
 
@@ -1119,7 +1230,7 @@ FTM_RET	FTNMC_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 				}
 				else
 				{
-					MESSAGE("EndPoint data loading failed [ ERROR = %08lx ]\n", nRet);	
+					MESSAGE("EndPoint data loading failed [ ERROR = %08lx ]\n", xRet);	
 				}
 
 				FTM_MEM_free(pEPData);

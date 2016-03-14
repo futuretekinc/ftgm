@@ -59,6 +59,23 @@ FTM_RET	FTM_EP_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_EP_setDefault(FTM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+
+	memset(pEP, 0, sizeof(FTM_EP));
+	pEP->xEPID		=	0;
+	pEP->xType		=	0;
+	strcpy(pEP->pName, "Unknown");
+	pEP->bEnable	=	FTM_FALSE;
+	pEP->ulTimeout	=	30;
+	pEP->ulInterval	=	10;
+	pEP->ulInterval	=	60;
+
+	return	0;
+}
+
+
 FTM_RET	FTM_EP_createCopy(FTM_EP_PTR pSrc, FTM_EP_PTR _PTR_ ppEP)
 {
 	ASSERT(pSrc != NULL);

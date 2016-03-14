@@ -136,9 +136,9 @@ FTM_RET	FTNM_DMC_EP_create(FTNM_DMC_PTR pCTX, FTM_EP_PTR pInfo)
 
 FTM_RET	FTNM_DMC_EP_destroy(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID)
 {
-	ASSERT(pCTX != NULL)l
+	ASSERT(pCTX != NULL);
 
-	return	FTDMC_EP_remove(pCTX->xSesion, xEPID);
+	return	FTDMC_EP_remove(&pCTX->xSession, xEPID);
 }
 
 FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
@@ -194,6 +194,23 @@ FTM_RET	FTNM_DMC_EP_DATA_count(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG_PTR
 	ASSERT(pulCount != NULL);
 
 	return	FTDMC_EP_DATA_count(&pCTX->xSession, xEPID, pulCount);
+}
+
+FTM_RET FTNM_DMC_EP_DATA_get
+(
+	FTNM_DMC_PTR	pCTX,
+	FTM_EP_ID 		xEPID, 
+	FTM_ULONG		ulStartIndex,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR 	pulCount
+)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pData != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTDMC_EP_DATA_get(&pCTX->xSession, xEPID, ulStartIndex, pData, ulMaxCount, pulCount);
 }
 
 FTM_RET FTNM_DMC_EP_DATA_info

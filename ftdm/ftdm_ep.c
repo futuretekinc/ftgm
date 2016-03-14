@@ -186,16 +186,28 @@ FTM_RET	FTDM_EP_del
 	xRet = FTM_EP_get(xEPID, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("EP[%08x] not found.\n", xEPID);
 		return	xRet;
 	}
 
 	xRet = FTM_EP_destroy(pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		FTDM_DBIF_EP_del(xEPID);
+		xRet = FTDM_DBIF_EP_del(xEPID);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("The EP[%08x] removed from database failed.\n", xEPID);
+		
+		}
+	}
+	else
+	{
+		ERROR("EP[%08x] destroy failed.\n", xEPID);
+	
 	}
 
-	return	FTM_RET_OK;
+	TRACE("FTDM_EP_del(%08x) = %d\n", xEPID, xRet);
+	return	xRet;
 }
 
 FTM_RET	FTDM_EP_count

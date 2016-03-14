@@ -907,59 +907,84 @@ FTM_RET	FTNMC_EP_DATA_getList
 	FTM_ULONG_PTR		pnCount
 )
 {
-	FTM_RET								nRet;
-	FTNM_REQ_EP_DATA_GET_LIST_PARAMS			xReq;
-	FTM_ULONG							nRespSize = 0;
+	FTM_RET									nRet;
+	FTNM_REQ_EP_DATA_GET_LIST_PARAMS		xReq;
+	FTM_ULONG								nRespSize = 0;
 	FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp = NULL;
-	FTM_ULONG						ulRespLen;
+	FTM_ULONG								ulRespLen;
+	FTM_ULONG								ulRespCount = 0;
+	FTM_BOOL								bStop = FTM_FALSE;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-	nRespSize = sizeof(FTNM_RESP_EP_DATA_GET_LIST_PARAMS) + sizeof(FTM_EP_DATA) * nMaxCount;
-	pResp = (FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
-	if (pResp == NULL)
+	while(!bStop)
 	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
+		FTM_ULONG	ulReqCount;
 
-	xReq.xCmd		=	FTNM_CMD_EP_DATA_GET_LIST;
-	xReq.ulLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
-	xReq.nStartIndex=	nStartIndex;
-	xReq.nCount		=	nMaxCount;
-
-	nRet = FTNMC_request(
-				pSession, 
-				(FTM_VOID_PTR)&xReq, 
-				sizeof(xReq), 
-				(FTM_VOID_PTR)pResp, 
-				nRespSize,
-				&ulRespLen);
-	if (nRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pResp);
-		return	FTM_RET_ERROR;	
-	}
-
-	nRet = pResp->nRet;
-
-	if (pResp->nRet == FTM_RET_OK)
-	{
-		FTM_INT	i;
-
-		TRACE("pResp->nCount = %d\n", pResp->nCount);
-		for( i = 0 ; i < pResp->nCount && i < nMaxCount ; i++)
+		if (nMaxCount > 100)
 		{
-			memcpy(&pData[i], &pResp->pData[i], sizeof(FTM_EP_DATA));
+			ulReqCount = 100;	
+		}
+		else
+		{
+			ulReqCount = nMaxCount;	
 		}
 
-		*pnCount = pResp->nCount;
+		nRespSize = sizeof(FTNM_RESP_EP_DATA_GET_LIST_PARAMS) + sizeof(FTM_EP_DATA) * ulReqCount;
+		pResp = (FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
+		if (pResp == NULL)
+		{
+			return	FTM_RET_NOT_ENOUGH_MEMORY;
+		}
+	
+		xReq.xCmd		=	FTNM_CMD_EP_DATA_GET_LIST;
+		xReq.ulLen		=	sizeof(xReq);
+		xReq.xEPID		=	xEPID;
+		xReq.nStartIndex=	nStartIndex;
+		xReq.nCount		=	ulReqCount;
+	
+		nRet = FTNMC_request(
+					pSession, 
+					(FTM_VOID_PTR)&xReq, 
+					sizeof(xReq), 
+					(FTM_VOID_PTR)pResp, 
+					nRespSize,
+					&ulRespLen);
+		if (nRet != FTM_RET_OK)
+		{
+			FTM_MEM_free(pResp);
+			return	FTM_RET_ERROR;	
+		}
+	
+		nRet = pResp->nRet;
+	
+		if (pResp->nRet == FTM_RET_OK)
+		{
+			FTM_INT	i;
+	
+			TRACE("pResp->nCount = %d\n", pResp->nCount);
+			for( i = 0 ; i < pResp->nCount && i < ulReqCount ; i++)
+			{
+				memcpy(&pData[ulRespCount + i], &pResp->pData[i], sizeof(FTM_EP_DATA));
+			}
+
+			ulRespCount += pResp->nCount;
+			nMaxCount -= pResp->nCount;
+			nStartIndex += pResp->nCount;
+
+			if ((pResp->nCount != ulReqCount) || (nMaxCount == 0))
+			{
+				bStop = FTM_TRUE;	
+			}
+		}
+	
+		FTM_MEM_free(pResp);
 	}
 
-	FTM_MEM_free(pResp);
+	*pnCount = ulRespCount;
 
 	return	nRet;
 }

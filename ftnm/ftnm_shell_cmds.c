@@ -120,7 +120,7 @@ FTM_RET	FTNM_SHELL_CMD_list
 			}
 			
 			MESSAGE("%08lx         ", pEP->xInfo.xEPID);
-			MESSAGE("%-16s ", FTM_getEPTypeString(pEP->xInfo.xType));
+			MESSAGE("%-16s ", FTM_EP_typeString(pEP->xInfo.xType));
 			if (pEP->pNode != NULL)
 			{
 				MESSAGE("%-16s ", pEP->pNode->xInfo.pDID);

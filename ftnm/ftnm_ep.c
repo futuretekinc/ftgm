@@ -75,6 +75,7 @@ FTM_RET	FTNM_EP_create(FTM_EP_PTR pInfo, FTNM_EP_PTR _PTR_ ppEP)
 	FTNM_EP_PTR		pEP = NULL;
 	FTM_EP_DATA_PTR	pData;
 
+	TRACE("TYPE = %08x\n", pInfo->xType);
 	pEP = (FTNM_EP_PTR)FTM_MEM_malloc(sizeof(FTNM_EP) + sizeof(FTM_EP_DATA) * FTNM_EP_DATA_COUNT);
 	if (pEP == NULL)
 	{
@@ -355,7 +356,7 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 		xData.ulTime = time(NULL);
 		if (FTNM_NODE_getEPData(pEP->pNode, pEP, &xReadData) == FTM_RET_OK)
 		{
-			TRACE("EP(%08x:%s) - The data import was successful.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
+			//TRACE("EP(%08x:%s) - The data import was successful.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
 			xData.xState = FTM_EP_DATA_STATE_VALID;
 			xData.xType = xReadData.xType;
 			memcpy(&xData.xValue, &xReadData.xValue, sizeof(xData.xValue));
@@ -364,7 +365,7 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 		}
 		else
 		{
-			TRACE("EP(%08x:%s) - The data import was failed.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
+			//TRACE("EP(%08x:%s) - The data import was failed.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
 		}
 
 		

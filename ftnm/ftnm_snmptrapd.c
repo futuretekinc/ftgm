@@ -16,6 +16,10 @@
 #include "ftnm_ep.h"
 #include "ftnm_ep_class.h"
 
+#ifndef	FTNM_TRACE_SNMPTRAPD_IO	
+#define	FTNM_TRACE_SNMPTRAPD_IO	0
+#endif
+
 typedef	struct
 {
 	FTNM_SNMP_OID				xOID;
@@ -682,7 +686,10 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 	FTNM_SNMPTRAPD_MSG_TYPE	xMsgType = FTNM_SNMPTRAPD_MSG_TYPE_UNKNOWN;	
 	const nx_json 	*pRoot, *pItem;
 
+#if	FTNM_TRACE_SNMPTRAPD_IO
 	TRACE("SNMPTRAPD : %s\n", pMsg);
+#endif
+
 	pRoot = nx_json_parse_utf8(pMsg);
 	if (pRoot == NULL)
 	{

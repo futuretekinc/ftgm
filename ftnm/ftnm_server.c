@@ -12,6 +12,10 @@
 #include "ftnm_server_cmd.h"
 
 
+#ifndef	FTNM_TRACE_IO
+#define	FTNM_TRACE_IO		0
+#endif
+
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTNM_SERVER_CALLBACK)FUN }
 
 static FTM_VOID_PTR FTNM_SERVER_process(FTM_VOID_PTR pData);
@@ -258,7 +262,7 @@ FTM_RET	FTNM_SERVER_notify
 		xNotify.nRet	= FTM_RET_OK;
 		memcpy(&xNotify.xMsg, pMsg, sizeof(FTNM_MSG));
 
-		TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, xNotify.ulReqID, xNotify.ulLen);
+		//TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, xNotify.ulReqID, xNotify.ulLen);
 		send(pSession->hSocket, &xNotify, sizeof(xNotify), MSG_DONTWAIT);
 	}
 	
@@ -386,8 +390,10 @@ FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 			ERROR("recv failed[%d]\n", -ulLen);
 			break;	
 		}
-		TRACE("RECV[%08lx:%08x] : Len = %lu\n", pSession->hSocket, pReq->ulReqID, ulLen);
 
+#if	FTNM_TRACE_IO
+		//TRACE("RECV[%08lx:%08x] : Len = %lu\n", pSession->hSocket, pReq->ulReqID, ulLen);
+#endif
 		pResp->ulReqID = pReq->ulReqID;
 
 		if (FTM_RET_OK != FTNM_SERVER_serviceCall(pSession, pReq, pResp))
@@ -397,7 +403,9 @@ FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 			pResp->ulLen = sizeof(FTNM_RESP_PARAMS);
 		}
 
-		TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->ulReqID, pResp->ulLen);
+#if	FTNM_TRACE_IO
+		//TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->ulReqID, pResp->ulLen);
+#endif
 		ulLen = send(pSession->hSocket, pResp, pResp->ulLen, MSG_DONTWAIT);
 		if (ulLen < 0)
 		{
@@ -426,9 +434,13 @@ FTM_RET	FTNM_SERVER_serviceCall
 	{
 		if (pSet->xCmd == pReq->xCmd)
 		{
+#if	FTNM_TRACE_IO
 			TRACE("CMD : %s\n", pSet->pCmdString);
+#endif
 			nRet = pSet->fService(pSession, pReq, pResp);
+#if	FTNM_TRACE_IO
 			TRACE("RET : %08lx\n", nRet);
+#endif
 			return	nRet;
 		}
 
@@ -539,11 +551,32 @@ FTM_RET	FTNM_SERVER_EP_create
 	FTNM_RESP_EP_CREATE_PARAMS_PTR	pResp
 )
 {
+	FTM_RET		xRet;
 	FTNM_EP_PTR	pEP;
 
-	pResp->xCmd = pReq->xCmd;
-	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_create(&pReq->xInfo, &pEP);
+	xRet = FTNM_EP_get(pReq->xInfo.xEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_RET_ALREADY_EXISTS;
+	}
+	else
+	{
+		xRet = FTNM_EP_create(&pReq->xInfo, &pEP);
+		if (xRet == FTM_RET_OK)
+		{
+			FTNM_DMC_PTR	pDMC;
+
+			xRet = FTNM_getDMC(&pDMC);
+			if (xRet == FTM_RET_OK)
+			{
+				xRet = FTDMC_EP_append(&pDMC->xSession, &pReq->xInfo);
+			}
+		}
+	}
+
+	pResp->xCmd 	= pReq->xCmd;
+	pResp->ulLen 	= sizeof(*pResp);
+	pResp->nRet 	= xRet;
 
 	return	pResp->nRet;
 }
@@ -555,16 +588,29 @@ FTM_RET	FTNM_SERVER_EP_destroy
 	FTNM_RESP_EP_DESTROY_PARAMS_PTR	pResp
 )
 {
+	FTM_RET		xRet;
 	FTNM_EP_PTR	pEP;
+
+	xRet = FTNM_EP_get(pReq->xEPID, &pEP);
+	
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTNM_EP_destroy(pEP);
+		if (xRet == FTM_RET_OK)
+		{
+			FTNM_DMC_PTR	pDMC;
+
+			xRet = FTNM_getDMC(&pDMC);
+			if (xRet == FTM_RET_OK)
+			{
+				xRet = FTDMC_EP_remove(&pDMC->xSession, pReq->xEPID);
+			}
+		}
+	}
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
-	
-	if (pResp->nRet == FTM_RET_OK)
-	{
-		pResp->nRet = FTNM_EP_destroy(pEP);
-	}
+	pResp->nRet = xRet;
 
 	return	pResp->nRet;
 }
@@ -579,7 +625,7 @@ FTM_RET	FTNM_SERVER_EP_count
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->nRet = FTNM_EP_count(pReq->xType, &pResp->nCount);
-	TRACE("EP COUNT : %d\n", pResp->nCount);
+
 	return	pResp->nRet;
 }
 
@@ -701,20 +747,23 @@ FTM_RET	FTNM_SERVER_EP_DATA_getList
 )
 {
 	FTM_RET		xRet;
-	FTNM_EP_PTR	pEP;
+	FTNM_DMC_PTR	pDMC;
+
+	xRet = FTNM_getDMC(&pDMC);
+	if (xRet == FTM_RET_OK)
+	{
+		
+		xRet = FTNM_DMC_EP_DATA_get(pDMC, pReq->xEPID, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
+		if (xRet != FTM_RET_OK)
+		{
+			pResp->nCount = 0;
+		}
+
+		pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_DATA) * pResp->nCount;
+	}
 
 	pResp->xCmd = pReq->xCmd;
-	pResp->ulLen = sizeof(*pResp);
-
-	xRet = FTNM_EP_get(pReq->xEPID, &pEP);
-	if (xRet != FTM_RET_OK)
-	{
-		pResp->nRet = xRet;
-	}
-	else
-	{
-	
-	}
+	pResp->nRet = xRet;
 
 	return	pResp->nRet;
 }

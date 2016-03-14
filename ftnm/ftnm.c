@@ -607,6 +607,15 @@ FTM_RET	FTNM_TASK_stopService(FTNM_CONTEXT_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_getDMC(FTNM_DMC_PTR _PTR_ ppDMC)
+{
+	ASSERT(ppDMC != NULL);
+
+	*ppDMC = &xDMC;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTNM_setEPData(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
 	FTNM_TRIGGERM_updateEP(&xEventM, xEPID, pData);
