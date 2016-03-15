@@ -18,22 +18,61 @@
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
 
+static FTDM_SERVER	xServer;
+
 FTM_RET 	FTDM_init(FTM_VOID)
 {
 	FTM_RET	xRet;
 
-#if 0
-	xRet = FTDM_EP_init();
+	xRet = FTDM_DBIF_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP management initialization failed.\n");	
+		ERROR("FTDM initialization failed. [ %08lx ]\n", xRet);
+		return	FTM_RET_OK;
 	}
-#endif	
+
+	xRet = FTDM_NODE_init();
+	if (xRet == FTM_RET_OK)
+	{
+		ERROR("Node management initialization fialed.[%08x]\n", xRet);
+	}
+
+	xRet = FTDM_EP_init();
+	if (xRet == FTM_RET_OK)
+	{
+		ERROR("EP management initialization fialed.[%08x]\n", xRet);
+	}
+
+	xRet = FTDM_TRIGGER_init();
+	if (xRet == FTM_RET_OK)
+	{
+		ERROR("Trigger management initialization fialed.[%08x]\n", xRet);
+	}
+
+	xRet = FTDM_ACTION_init();
+	if (xRet == FTM_RET_OK)
+	{
+		ERROR("Action management initialization fialed.[%08x]\n", xRet);
+	}
+
+	xRet = FTDM_RULE_init();
+	if (xRet == FTM_RET_OK)
+	{
+		ERROR("Rule management initialization fialed.[%08x]\n", xRet);
+	}
+
 	xRet = FTDM_EP_CLASS_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP type management initialization failed.\n");	
+		ERROR("EP type management initialization failed.[%08x]\n", xRet);	
 	}
+
+	xRet = FTDMS_init(&xServer);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Server initialization failed.[%08x]\n", xRet);	
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -41,30 +80,53 @@ FTM_RET	FTDM_final(FTM_VOID)
 {
 	FTM_RET	xRet;
 
+	xRet = FTDMS_final(&xServer);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Server finalization failed.[%08x]\n", xRet);	
+	}
+
 	xRet = FTDM_EP_CLASS_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("FTDM_finalNodeInfo failed\n");	
+		ERROR("EP Class management finalization failed.[%08x]\n", xRet);	
 	}
-#if 0
+
+	xRet = FTDM_RULE_final();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Rule management finalize failed.[%08x]\n", xRet);	
+	}
+
+	xRet = FTDM_ACTION_final();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Action management finalize failed.[%08x]\n", xRet);	
+	}
+
+	xRet = FTDM_TRIGGER_final();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Trigger management finalize failed.[%08x]\n", xRet);	
+	}
+
 	xRet = FTDM_EP_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("FTDM_finalNodeInfo failed\n");	
+		ERROR("EP management finalize failed.[%08x]\n", xRet);	
 	}
 
 	xRet = FTDM_NODE_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("FTDM_finalNodeInfo failed\n");	
+		ERROR("Node management finalize failed.[%08x]\n", xRet);	
 	}
-#endif
+
 
 	xRet = FTDM_DBIF_final();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("FTDM finalization failed. [ %08lx ]\n", xRet);
-
 		return	FTM_RET_OK;
 	}
 
@@ -83,13 +145,7 @@ FTM_RET 	FTDM_loadConfig(FTDM_CFG_PTR pConfig)
 		ERROR("FTDM initialization failed. [ %08lx ]\n", xRet);
 		return	xRet;
 	}
-/*
-	xRet = FTDM_EP_loadConfig(&pConfig->xEP);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("FTDM_initEPInfo failed\n");	
-	}
-*/	
+
 	xRet = FTDM_EP_CLASS_loadConfig(&pConfig->xEP);
 	if (xRet != FTM_RET_OK)
 	{
@@ -99,27 +155,62 @@ FTM_RET 	FTDM_loadConfig(FTDM_CFG_PTR pConfig)
 	FTM_TRACE_configSet(&pConfig->xPrint);
 
 
+	FTDMS_loadConfig(&xServer, &pConfig->xServer);
+
 	TRACE("FTDM initialization completed successfully.\n");
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_loadFromFile(FTM_CHAR_PTR pFileName)
+{
+	FTDM_CFG	xConfig;
+
+	/* load configuration  */
+	FTDM_CFG_init(&xConfig);
+	FTDM_CFG_readFromFile(&xConfig, pFileName);
+
+	FTDM_loadConfig(&xConfig);
+
+	FTDM_CFG_final(&xConfig);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_start(FTM_VOID)
+{
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_setDebugLevel
+(
+	FTM_ULONG		ulLevel
+)
+{
+	
+	FTM_TRACE_levelString(ulLevel);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_getServer(FTDM_SERVER_PTR _PTR_ ppServer)
+{
+	*ppServer = &xserver;
 }
 
 static FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName);
 
 
 extern char *program_invocation_short_name;
-FTDM_CFG	xConfig;
 
 
 int main(int nArgc, char *pArgv[])
 {
-	FTM_RET		xRet;
 	FTM_INT		nOpt;
 	FTM_INT		nDebugLevel = -1;
 	FTM_BOOL	bDaemon = FTM_FALSE;
 	FTM_BOOL	bShowUsage = FTM_FALSE;
 	FTM_CHAR	pConfigFileName[1024];
-	pthread_t 	xPThread;	
 	
 	
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
@@ -164,10 +255,7 @@ int main(int nArgc, char *pArgv[])
 	}
 
 
-	/* load configuration  */
-	FTDM_CFG_init(&xConfig);
-	FTDM_CFG_readFromFile(&xConfig, pConfigFileName);
-
+#if 0
 	xRet = FTDM_NODE_init();
 	if (xRet == FTM_RET_OK)
 	{
@@ -222,24 +310,24 @@ int main(int nArgc, char *pArgv[])
 			return	0;
 		}
 	}
-
-	if (nDebugLevel >= 0)
-	{
-		xConfig.xPrint.ulLevel = nDebugLevel;	
-	}
+#endif
 
 	/* apply configuration */
 		
 	FTDM_init();
-	FTDM_loadConfig(&xConfig);
+	FTDM_loadFromFile(pConfigFileName);
 
+	if (nDebugLevel >= 0)
+	{
+		FTDM_setDebugLevel(nDebugLevel);	
+	}
 
 	if (bDaemon)
 	{ 
 		if (fork() == 0)
 		{
-			FTDMS_run(&xConfig.xServer, &xPThread);
-			pthread_join(xPThread, NULL);
+			FTDMS_start(&xServer);
+			FTDMS_waitingForFinished(&xServer);
 		}
 		else
 		{
@@ -248,7 +336,7 @@ int main(int nArgc, char *pArgv[])
 	}
 	else
 	{
-		FTDMS_run(&xConfig.xServer, &xPThread);
+		FTDMS_start(&xServer);
 		FTM_SHELL_init();
 		FTM_SHELL_setPrompt(FTDMS_pPrompt);
 		FTM_SHELL_addCmds(FTDMS_pCmdList,FTDMS_ulCmdCount);
@@ -256,12 +344,7 @@ int main(int nArgc, char *pArgv[])
 
 	}
 
-	FTDM_RULE_final();
-	FTDM_ACTION_final();
-	FTDM_TRIGGER_final();
-	FTDM_EP_final();
-	FTDM_NODE_final();
-	FTDM_CFG_final(&xConfig);
+	FTDM_final();
 
 	return	0;
 }

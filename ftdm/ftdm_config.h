@@ -32,6 +32,7 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_CHAR				pConfigFileName;
 	FTDM_CFG_SERVER			xServer;
 	FTDM_CFG_DB				xDB;
 	FTDM_CFG_EP				xEP;

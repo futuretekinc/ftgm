@@ -21,7 +21,7 @@ FTM_RET	FTDMS_SHELL_CMD_node(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_ep(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
 
-extern FTDM_CFG	xConfig;
+static FTDM_CFG	xConfig;
 FTM_SHELL_CMD	FTDMS_pCmdList[] =
 {
 	{

@@ -11,7 +11,17 @@ FTM_RET	FTDM_DBIF_init
 
 FTM_RET	FTDM_DBIF_final
 (
-	void
+	FTM_VOID
+);
+
+FTM_RET	FTDM_DBIF_open
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_DBIF_close
+(
+	FTM_VOID
 );
 
 FTM_RET	FTDM_DBIF_loadConfig
@@ -19,9 +29,14 @@ FTM_RET	FTDM_DBIF_loadConfig
 	FTDM_CFG_DB_PTR	pConfig
 );
 
+FTM_RET	FTDM_DBIF_loadFromFile
+(
+	FTM_CHAR_PTR	pFileName
+);
+
 FTM_RET	FTDM_DBIF_NODE_initTable
 (
-	void
+	FTM_VOID
 );
 
 FTM_BOOL	FTDM_DBIF_NODE_isTableExist

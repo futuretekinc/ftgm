@@ -11,7 +11,18 @@ typedef	FTM_RET	(*FTDM_SERVICE_CALLBACK)(FTDM_REQ_PARAMS_PTR, FTDM_RESP_PARAMS_P
 
 typedef	struct
 {
-	pthread_t 			xPthread;	
+	FTDM_CFG_SERVER		xConfig;
+	pthread_t 			*pThread ;
+	FTM_BOOL			bStop;
+	sem_t				xSemaphore;
+	pthread_t			xThread;
+	FTM_LIST			xSessionList;
+}	FTDM_SERVER, _PTR_ FTDM_SERVER_PTR;
+
+typedef	struct
+{
+	FTDM_SERVER_PTR		pServer;
+	pthread_t 			xThread;	
 	FTM_INT				hSocket;
 	sem_t				xSemaphore;
 	struct sockaddr_in	xPeer;
@@ -19,12 +30,41 @@ typedef	struct
 	FTM_BYTE			pRespBuff[FTDM_PACKET_LEN];
 }	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
 
-
-
-FTM_RET	FTDMS_run
+FTM_RET	FTDMS_init
 (
-	FTDM_CFG_SERVER_PTR 	pConfig,
-	pthread_t 				*pPThread 
+	FTDM_SERVER_PTR			pCTX
+);
+
+FTM_RET	FTDMS_final
+(
+	FTDM_SERVER_PTR			pCTX
+);
+
+FTM_RET	FTDMS_loadConfig
+(
+	FTDM_SERVER_PTR			pCTX,
+	FTDM_CFG_SERVER_PTR		pConfig
+);
+
+FTM_RET	FTDMS_loadFromFile
+(
+	FTDM_SERVER_PTR			pCTX,
+	FTM_CHAR_PTR			pFileName
+);
+
+FTM_RET	FTDMS_start
+(
+	FTDM_SERVER_PTR			pCTX
+);
+
+FTM_RET	FTDMS_stop
+(
+	FTDM_SERVER_PTR			pCTX
+);
+
+FTM_RET	FTDMS_waitingForFinished
+(
+	FTDM_SERVER_PTR			pCTX
 );
 
 FTM_RET	FTDMS_serviceCall
@@ -34,12 +74,14 @@ FTM_RET	FTDMS_serviceCall
 );
 
 FTM_RET	FTDMS_getSessionCount
-(	
-	FTM_ULONG_PTR pulCount
+(
+	FTDM_SERVER_PTR pCTX, 
+	FTM_ULONG_PTR 	pulCount
 );
 
 FTM_RET	FTDMS_getSessionInfo
 (
+	FTDM_SERVER_PTR pCTX, 
 	FTM_ULONG 			ulIndex, 
 	FTDM_SESSION_PTR 	pSession
 );

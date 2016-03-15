@@ -24,5 +24,15 @@ FTM_RET FTDM_loadConfig
 (
 	FTDM_CFG_PTR pConfig
 );
+
+FTM_RET	FTDM_loadFromFile
+(
+	FTM_CHAR_PTR	pFileName
+);
+
+FTM_RET	FTDM_setDebugLevel
+(
+	FTM_ULONG		ulLevel
+);
 #endif
 
