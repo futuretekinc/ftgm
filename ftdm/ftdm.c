@@ -177,6 +177,85 @@ FTM_RET	FTDM_loadFromFile(FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_loadObject(FTM_CHAR_PTR	pFileName)
+{
+	FTM_RET	xRet;
+
+	xRet = FTDM_NODE_loadFromFile(pFileName);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node configuration load failed.\n");
+		return	FTM_RET_ERROR;
+	}
+
+	xRet = FTDM_EP_loadFromFile(pFileName);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node configuration load failed.\n");
+		return	FTM_RET_ERROR;
+	}
+
+	xRet = FTDM_TRIGGER_loadFromFile(pFileName);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Event configuration load failed.\n");	
+		return	FTM_RET_ERROR;
+	}
+
+	xRet = FTDM_ACTION_loadFromFile(pFileName);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Actor configuration load failed.\n");	
+		return	FTM_RET_ERROR;
+	}
+
+	xRet = FTDM_RULE_loadFromFile(pFileName);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Actor configuration load failed.\n");	
+		return	FTM_RET_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_saveToDB(FTM_VOID)
+{
+	FTM_RET	xRet;
+
+	xRet = FTDM_NODE_saveToDB();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to save the node.[%08x]\n");
+	}
+
+	xRet = FTDM_EP_saveToDB();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to save the EP.[%08x]\n");
+	}
+
+	xRet = FTDM_TRIGGER_saveToDB();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to save the trigger.[%08x]\n");
+	}
+
+	xRet = FTDM_ACTION_saveToDB();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to save the action.[%08x]\n");
+	}
+
+	xRet = FTDM_RULE_saveToDB();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to save the rule.[%08x]\n");
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTDM_start(FTM_VOID)
 {
 	return	FTM_RET_OK;
@@ -195,7 +274,9 @@ FTM_RET	FTDM_setDebugLevel
 
 FTM_RET	FTDM_getServer(FTDM_SERVER_PTR _PTR_ ppServer)
 {
-	*ppServer = &xserver;
+	*ppServer = &xServer;
+
+	return	FTM_RET_OK;
 }
 
 static FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName);

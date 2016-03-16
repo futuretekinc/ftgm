@@ -4,6 +4,7 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h>
 #include "ftm_types.h"
+#include "ftdm_params.h"
 
 typedef	FTM_RET	(*FTDM_SERVICE_CALLBACK)(FTDM_REQ_PARAMS_PTR, FTDM_RESP_PARAMS_PTR);
 

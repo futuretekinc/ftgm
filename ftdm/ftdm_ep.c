@@ -152,6 +152,47 @@ FTM_RET	FTDM_EP_loadConfig
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_EP_saveToDB
+(
+	FTM_VOID
+)
+{
+	FTM_RET		xRet;
+	FTM_ULONG	i, ulCount;
+	FTM_EP_PTR	pEP;
+
+	xRet = FTM_EP_count(&ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		xRet = FTM_EP_getAt(i, &pEP);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_EP	xInfo;
+
+			xRet = FTDM_DBIF_EP_get(pEP->xEPID, &xInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				xRet = FTDM_DBIF_EP_append(pEP);	
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR("Failed to save the new EP.[%08x]\n", xRet);
+				}
+			}
+		}
+		else
+		{
+			ERROR("Failed to get EP information[%08x]\n", xRet);
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTDM_EP_add
 (
 	FTM_EP_PTR 	pEP

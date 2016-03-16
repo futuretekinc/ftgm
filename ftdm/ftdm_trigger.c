@@ -5,6 +5,7 @@
 #include "ftm_msg_queue.h"
 #include "ftdm_config.h"
 #include "ftdm_trigger.h"
+#include "ftdm_sqlite.h"
 
 FTM_RET	FTDM_TRIGGER_init
 (
@@ -178,6 +179,47 @@ FTM_RET	FTDM_TRIGGER_loadFromDB
 	FTM_VOID
 )
 {
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_TRIGGER_saveToDB
+(
+	FTM_VOID
+)
+{
+	FTM_RET			i, xRet;
+	FTM_ULONG		ulCount;
+	FTM_TRIGGER_PTR	pTrigger;
+	
+	xRet = FTM_TRIGGER_count(&ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		xRet = FTM_TRIGGER_getAt(i, &pTrigger);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_TRIGGER	xInfo;
+
+			xRet = FTDM_DBIF_TRIGGER_get(pTrigger->xID, &xInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				xRet = FTDM_DBIF_TRIGGER_append(pTrigger);	
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR("Failed to save the new trigger.[%08x]\n", xRet);
+				}
+			}
+		}
+		else
+		{
+			ERROR("Failed to get trigger information[%08x]\n", xRet);
+		}
+	}
+
 	return	FTM_RET_OK;
 }
 

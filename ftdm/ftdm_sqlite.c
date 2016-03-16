@@ -1827,7 +1827,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_initTable
 	FTM_INT			xRet;
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
-	FTM_CHAR_PTR	pTableName = "event";
+	FTM_CHAR_PTR	pTableName = "trigger";
 	FTM_BOOL		bExist = FTM_FALSE;
 
 	if (_pSQLiteDB == NULL)
@@ -1879,7 +1879,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_append
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	sprintf(pSQL, "INSERT INTO event (ID,TYPE,EPID,VALUE) VALUES (%08lx,%u,%lu,?)", pTrigger->xID, pTrigger->xType, pTrigger->xEPID);
+	sprintf(pSQL, "INSERT INTO trigger (ID,TYPE,EPID,VALUE) VALUES (%08lx,%u,%lu,?)", pTrigger->xID, pTrigger->xType, pTrigger->xEPID);
 
 	do 
 	{
@@ -1947,7 +1947,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_get
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(strSQL, "SELECT * FROM event WHERE ID = '%08lx'", xID);
+    sprintf(strSQL, "SELECT * FROM trigger WHERE ID = '%08lx'", xID);
     xRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_TRIGGER_getCB, pTrigger, &strErrMsg);
     if (xRet != SQLITE_OK)
     {
@@ -2021,7 +2021,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_getList
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(strSQL, "SELECT * FROM event");
+    sprintf(strSQL, "SELECT * FROM trigger");
     xRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_TRIGGER_getListCB, &xParams, &strErrMsg);
     if (xRet != SQLITE_OK)
     {
@@ -2047,7 +2047,7 @@ FTM_RET	FTDM_DBIF_ACTION_initTable
 	FTM_INT			xRet;
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
-	FTM_CHAR_PTR	pTableName = "event";
+	FTM_CHAR_PTR	pTableName = "action";
 	FTM_BOOL		bExist = FTM_FALSE;
 
 	if (_pSQLiteDB == NULL)
@@ -2102,7 +2102,7 @@ FTM_RET	FTDM_DBIF_ACTION_append
 	{
 	case	FTM_ACTION_TYPE_SET:
 		{
-			sprintf(pSQL, "INSERT INTO event (ID,TYPE,EPID) VALUES (%08lx,%u,%08lx)", pAction->xID, pAction->xType, pAction->xParams.xSet.xEPID);
+			sprintf(pSQL, "INSERT INTO action (ID,TYPE,EPID) VALUES (%08lx,%u,%08lx)", pAction->xID, pAction->xType, pAction->xParams.xSet.xEPID);
 		}
 		break;
 	}
@@ -2158,7 +2158,7 @@ FTM_RET	FTDM_DBIF_ACTION_get
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(strSQL, "SELECT * FROM event WHERE ID = '%08lx'", xID);
+    sprintf(strSQL, "SELECT * FROM action WHERE ID = '%08lx'", xID);
     xRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_ACTION_getCB, pAction, &strErrMsg);
     if (xRet != SQLITE_OK)
     {
@@ -2224,8 +2224,216 @@ FTM_RET	FTDM_DBIF_ACTION_getList
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(strSQL, "SELECT * FROM event");
+    sprintf(strSQL, "SELECT * FROM action");
     xRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_ACTION_getListCB, &xParams, &strErrMsg);
+    if (xRet != SQLITE_OK)
+    {
+        ERROR("SQL error : %s\n", strErrMsg);
+        sqlite3_free(strErrMsg);
+
+    	return  FTM_RET_ERROR;
+    }
+
+	*pulCount = xParams.ulCount;
+
+	return	FTM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+FTM_RET	FTDM_DBIF_RULE_initTable
+(
+	FTM_VOID
+)
+{
+	FTM_INT			xRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+	FTM_CHAR_PTR	pTableName = "rule";
+	FTM_BOOL		bExist = FTM_FALSE;
+
+	if (_pSQLiteDB == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	if (_FTDM_DBIF_isExistTable(pTableName, &bExist) != FTM_RET_OK)
+	{
+		ERROR("%s table check error.\n", pTableName);  
+		return	FTM_RET_DBIF_ERROR;	
+	}
+
+	if (bExist != FTM_TRUE)
+	{
+		ERROR("%s is not exist\n", pTableName);
+		sprintf(pSQL, "CREATE TABLE %s ("\
+						"ID		INT PRIMARY KEY,"\
+						"TRIGGER INT ARRAY DEFAULT ARRAY[8],"\
+						"ACTION	 INT ARRAY DEFAULT ARRAY[8])", pTableName);
+
+		xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+		if (xRet != SQLITE_OK)
+		{
+			ERROR("SQL error : %s\n", pErrMsg);	
+			sqlite3_free(pErrMsg);
+
+			return	FTM_RET_DBIF_ERROR;	
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_RULE_append
+(
+ 	FTM_RULE_PTR	pRule
+)
+{
+	ASSERT(pRule != NULL);
+
+	FTM_INT			nRet, i;
+	FTM_CHAR		pSQL[1024];
+	FTM_INT			nSQL = 0;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+
+	if (_pSQLiteDB == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	nSQL = sprintf(pSQL, "INSERT INTO rule (ID,TRIGGER,ACTION)");
+	nSQL += sprintf(&pSQL[nSQL], "VALUES(%08lx,ARRAY[", pRule->xID);
+	for(i = 0 ; i < sizeof(pRule->pTriggers) / sizeof(pRule->pTriggers[0]) ; i++)
+	{
+		if (i != 0)
+		{
+			nSQL += sprintf(&pSQL[nSQL], ",");
+		}
+		nSQL += sprintf(&pSQL[nSQL], "%lu", pRule->pTriggers[i]);
+	}
+	nSQL += sprintf(&pSQL[nSQL], "],ARRAY[");
+	for(i = 0 ; i < sizeof(pRule->pActions) / sizeof(pRule->pActions[0]) ; i++)
+	{
+		if (i != 0)
+		{
+			nSQL += sprintf(&pSQL[nSQL], ",");
+		}
+		nSQL += sprintf(&pSQL[nSQL], "%lu", pRule->pActions[i]);
+	}
+	nSQL += sprintf(&pSQL[nSQL], "])");
+
+	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+	if (nRet != SQLITE_OK)
+	{
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+static int _FTDM_DBIF_RULE_getCB(void *pData, int nArgc, char **pArgv, char **pColName)
+{
+	FTM_RULE_PTR	pRule = (FTM_RULE_PTR)pData;
+
+	TRACE("%s : %s\n", pColName, pArgv[0]);
+	
+	if (nArgc != 0)
+	{
+		if (strcmp(pColName[0], "ID") == 0)
+		{
+			pRule->xID = strtoul(pArgv[0], 0, 16);
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_RULE_get
+(
+	FTM_RULE_ID	xID,
+ 	FTM_RULE_PTR	pRule
+)
+{
+    FTM_INT			xRet;
+    FTM_CHAR		strSQL[1024];
+    FTM_CHAR_PTR	strErrMsg = NULL;
+
+	if (_pSQLiteDB == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+    sprintf(strSQL, "SELECT * FROM rule WHERE ID = '%08lx'", xID);
+    xRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_RULE_getCB, pRule, &strErrMsg);
+    if (xRet != SQLITE_OK)
+    {
+        ERROR("SQL error : %s\n", strErrMsg);
+        sqlite3_free(strErrMsg);
+
+    	return  FTM_RET_ERROR;
+    }
+
+	return	FTM_RET_OK;
+}
+
+typedef struct
+{
+	FTM_ULONG		ulMaxCount;
+	FTM_ULONG		ulCount;
+	FTM_RULE_PTR	pRules;
+}	FTDM_DBIF_CB_GET_RULE_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_RULE_LIST_PARAMS_PTR;
+
+static int _FTDM_DBIF_RULE_getListCB(void *pData, int nArgc, char **pArgv, char **pColName)
+{
+	FTDM_DBIF_CB_GET_RULE_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_RULE_LIST_PARAMS_PTR)pData;
+
+	if (nArgc != 0)
+	{
+		FTM_INT	i;
+		FTM_RULE_PTR	pRule = &pParams->pRules[pParams->ulCount++];
+
+		for(i = 0 ; i < nArgc ; i++)
+		{
+			if (strcasecmp(pColName[i], "ID") == 0)
+			{
+				pRule->xID = strtoul(pArgv[i], 0, 16);
+			}
+		}
+	}
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_RULE_getList
+(
+	FTM_RULE_PTR		pRules, 
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pulCount
+)
+{
+    int     xRet;
+    char    strSQL[1024];
+    char    *strErrMsg = NULL;
+	FTDM_DBIF_CB_GET_RULE_LIST_PARAMS xParams= 
+	{
+		.ulMaxCount = nMaxCount,
+		.ulCount	= 0,
+		.pRules	= pRules
+	};
+
+	if (_pSQLiteDB == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+    sprintf(strSQL, "SELECT * FROM rule");
+    xRet = sqlite3_exec(_pSQLiteDB, strSQL, _FTDM_DBIF_RULE_getListCB, &xParams, &strErrMsg);
     if (xRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);

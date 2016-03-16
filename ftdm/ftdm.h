@@ -9,6 +9,7 @@
 #include "ftdm_ep.h"
 #include "ftdm_ep_data.h"
 #include "ftdm_ep_class.h"
+#include "ftdm_server.h"
 
 FTM_RET	FTDM_init
 (
@@ -30,9 +31,19 @@ FTM_RET	FTDM_loadFromFile
 	FTM_CHAR_PTR	pFileName
 );
 
+FTM_RET	FTDM_loadObject
+(
+	FTM_CHAR_PTR	pFileName
+);
+
 FTM_RET	FTDM_setDebugLevel
 (
 	FTM_ULONG		ulLevel
+);
+
+FTM_RET	FTDM_getServer
+(
+	FTDM_SERVER_PTR _PTR_ ppServer
 );
 #endif
 

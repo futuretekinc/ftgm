@@ -168,7 +168,7 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("DB open failed[%08x].\n", xRet);
-		return	xRet;	
+		return	0;	
 	}
 
 	if (sem_init(&pCTX->xSemaphore, 0, pCTX->xConfig.ulMaxSession) < 0)

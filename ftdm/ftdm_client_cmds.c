@@ -13,6 +13,7 @@
 #include "ftdm_client_cmds.h"
 #include "ftdm_client_config.h"
 
+static FTM_RET  FTDMC_cmdConfig(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 static FTM_RET	FTDMC_NODE_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
@@ -28,6 +29,13 @@ extern FTM_BOOL			_bQuit;
 
 FTM_SHELL_CMD			FTDMC_pCmdList[] = 
 {
+	{
+		.pString	= "config",
+		.function	= FTDMC_cmdConfig,
+		.pShortHelp	= "Configuration",
+		.pHelp		= "\n"\
+					  "\tConfiguration.\n"
+	},
 	{	
 		.pString	= "connect",
 		.function	= FTDMC_cmdConnect,
@@ -136,6 +144,25 @@ FTM_SHELL_CMD			FTDMC_pCmdList[] =
 
 FTM_ULONG		FTDMC_ulCmdCount = sizeof(FTDMC_pCmdList) / sizeof(FTM_SHELL_CMD);
 FTM_CHAR_PTR	FTDMC_pPrompt = "FTDMC> ";
+
+FTM_RET  FTDMC_cmdConfig(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+{
+	switch(nArgc)
+	{
+	case	3:
+		{
+			
+		}
+		break;
+
+	default:
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
+	}
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {

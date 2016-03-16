@@ -130,6 +130,47 @@ FTM_RET	FTDM_NODE_loadFromFile
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_NODE_saveToDB
+(
+	FTM_VOID
+)
+{
+	FTM_RET			i, xRet;
+	FTM_ULONG		ulCount;
+	FTM_NODE_PTR	pNode;
+	
+	xRet = FTM_NODE_count(&ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		xRet = FTM_NODE_getAt(i, &pNode);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_NODE	xInfo;
+
+			xRet = FTDM_DBIF_NODE_get(pNode->pDID, &xInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				xRet = FTDM_DBIF_NODE_append(pNode);	
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR("Failed to save the new node.[%08x]\n", xRet);
+				}
+			}
+		}
+		else
+		{
+			ERROR("Failed to get node information[%08x]\n", xRet);
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET    FTDM_NODE_add
 (   
 	FTM_NODE_PTR	pNode

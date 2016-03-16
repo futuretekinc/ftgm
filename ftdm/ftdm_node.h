@@ -31,6 +31,11 @@ FTM_RET	FTDM_NODE_loadFromFile
 	FTM_CHAR_PTR	pFileName
 );
 
+FTM_RET	FTDM_NODE_saveToDB
+(
+	FTM_VOID
+);
+
 FTM_RET	FTDM_NODE_add
 (
 	FTM_NODE_PTR	pInfo

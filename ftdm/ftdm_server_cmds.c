@@ -15,6 +15,7 @@
 #include "ftdm_rule.h"
 
 FTM_RET	FTDMS_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTDMS_SHELL_CMD_object(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_session(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_debug(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_node(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
@@ -30,6 +31,13 @@ FTM_SHELL_CMD	FTDMS_pCmdList[] =
 		.pShortHelp	= "Configuration Data Manager.",
 		.pHelp		= "\n"\
 					  "\tConfiguration Data Manager.\n"
+	},
+	{
+		.pString	= "object",
+		.function	= FTDMS_SHELL_CMD_object,
+		.pShortHelp	= "Object management.",
+		.pHelp		= "\n"\
+					  "\tObject management.\n"
 	},
 	{
 		.pString	= "debug",
@@ -70,18 +78,66 @@ FTM_RET	FTDMS_SHELL_CMD_config
 	FTM_CHAR_PTR	pArgv[]
 )
 {
-	if (nArgc == 1)
+	switch (nArgc)
 	{
-		FTDM_CFG_show(&xConfig);
-		FTDM_NODE_showList();
-		FTDM_EP_showList();
-		FTDM_TRIGGER_showList();
-		FTDM_ACTION_showList();
-		FTDM_RULE_showList();
-		return	FTM_RET_OK;
+	case	1:
+		{
+			FTDM_CFG_show(&xConfig);
+		}
+		break;
+
+	default:
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
 	}
 
-	return	FTM_RET_INVALID_ARGUMENTS;
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDMS_SHELL_CMD_object
+(
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[]
+)
+{
+	FTM_RET	xRet;
+	
+	switch (nArgc)
+	{
+	case	1:
+		{
+			FTDM_NODE_showList();
+			FTDM_EP_showList();
+			FTDM_TRIGGER_showList();
+			FTDM_ACTION_showList();
+			FTDM_RULE_showList();
+		}	
+		break;
+
+	case	3:
+		{
+			if (strcasecmp(pArgv[1], "load") == 0)
+			{
+				xRet = FTDM_loadObject(pArgv[2]);	
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR("Objects loading failed.[%08x]\n", xRet);
+					return	xRet;
+				}
+
+				MESSAGE("Objects loading completed.\n");
+			}
+		}
+		break;
+
+	default:
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDMS_SHELL_CMD_session
@@ -90,15 +146,24 @@ FTM_RET	FTDMS_SHELL_CMD_session
 	FTM_CHAR_PTR	pArgv[]
 )
 {
-	FTM_ULONG	i, ulCount;
+	FTM_RET			xRet;
+	FTM_ULONG		i, ulCount;
 	FTDM_SESSION	xSession;
+	FTDM_SERVER_PTR	pServer;
 
-	FTDMS_getSessionCount(&ulCount);
+	xRet = FTDM_getServer(&pServer);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't found server!\n");
+		return	xRet;
+	}
+
+	FTDMS_getSessionCount(pServer, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTM_CHAR	pIPAddr[32];
 
-		FTDMS_getSessionInfo(i, &xSession);
+		FTDMS_getSessionInfo(pServer, i, &xSession);
 
 		sprintf(pIPAddr,"%d.%d.%d.%d", 
 				((xSession.xPeer.sin_addr.s_addr      ) & 0xFF),

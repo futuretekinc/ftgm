@@ -3,6 +3,7 @@
 #include "ftm.h"
 #include "ftdm_config.h"
 #include "ftdm_action.h"
+#include "ftdm_sqlite.h"
 
 FTM_RET	FTDM_ACTION_init
 (
@@ -135,6 +136,47 @@ FTM_RET	FTDM_ACTION_loadFromDB
 	FTM_VOID
 )
 {
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_ACTION_saveToDB
+(
+	FTM_VOID
+)
+{
+	FTM_RET			i, xRet;
+	FTM_ULONG		ulCount;
+	FTM_ACTION_PTR	pAction;
+	
+	xRet = FTM_ACTION_count(&ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		xRet = FTM_ACTION_getAt(i, &pAction);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_ACTION	xInfo;
+
+			xRet = FTDM_DBIF_ACTION_get(pAction->xID, &xInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				xRet = FTDM_DBIF_ACTION_append(pAction);	
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR("Failed to save the new trigger.[%08x]\n", xRet);
+				}
+			}
+		}
+		else
+		{
+			ERROR("Failed to get trigger information[%08x]\n", xRet);
+		}
+	}
+
 	return	FTM_RET_OK;
 }
 

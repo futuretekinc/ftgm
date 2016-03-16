@@ -3,6 +3,7 @@
 
 #include "ftm_types.h"
 #include "ftm_trigger.h"
+#include "ftdm_config.h"
 
 FTM_RET	FTDM_DBIF_init
 (
@@ -293,7 +294,30 @@ FTM_RET	FTDM_DBIF_ACTION_get
 
 FTM_RET	FTDM_DBIF_ACTION_getList
 (
-	FTM_ACTION_PTR			pActions, 
+	FTM_ACTION_PTR		pActions, 
+	FTM_ULONG			nMaxCount,
+	FTM_ULONG_PTR		pulCount
+);
+
+FTM_RET	FTDM_DBIF_RULE_initTable
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_DBIF_RULE_append
+(
+ 	FTM_RULE_PTR		pAction
+);
+
+FTM_RET	FTDM_DBIF_RULE_get
+(
+	FTM_RULE_ID			xID,
+ 	FTM_RULE_PTR		pAction
+);
+
+FTM_RET	FTDM_DBIF_RULE_getList
+(
+	FTM_RULE_PTR		pActions, 
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pulCount
 );
