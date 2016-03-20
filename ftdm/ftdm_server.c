@@ -533,7 +533,7 @@ FTM_RET	FTDMS_EP_add
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_add(&pReq->xInfo);
+	pResp->nRet = FTDM_EP_create(&pReq->xInfo);
 
 	return	pResp->nRet;
 }
@@ -546,7 +546,7 @@ FTM_RET	FTDMS_EP_del
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_del(pReq->xEPID);
+	pResp->nRet = FTDM_EP_destroy(pReq->xEPID);
 
 	return	pResp->nRet;
 }
@@ -565,20 +565,18 @@ FTM_RET	FTDMS_EP_count
 
 FTM_RET	FTDMS_EP_get
 (
- 	FTDM_REQ_EP_GET_PARAMS_PTR		pReq,
+ 	FTDM_REQ_EP_GET_PARAMS_PTR	pReq,
 	FTDM_RESP_EP_GET_PARAMS_PTR	pResp
 )
 {
-	FTM_EP_PTR	pEPInfo;
+	FTDM_EP_PTR	pEP;
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_get(
-					pReq->xEPID, 
-					&pEPInfo);
+	pResp->nRet = FTDM_EP_get(pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xInfo, pEPInfo, sizeof(FTM_EP));
+		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
 	}
 
 	return	pResp->nRet;
@@ -590,16 +588,14 @@ FTM_RET	FTDMS_EP_getAt
 	FTDM_RESP_EP_GET_AT_PARAMS_PTR	pResp
 )
 {
-	FTM_EP_PTR	pEPInfo;
+	FTDM_EP_PTR	pEP;
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_getAt(
-					pReq->nIndex, 
-					&pEPInfo);
+	pResp->nRet = FTDM_EP_getAt(pReq->nIndex, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xInfo, pEPInfo, sizeof(FTM_EP));
+		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
 	}
 	return	pResp->nRet;
 }

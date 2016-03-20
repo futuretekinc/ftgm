@@ -8,7 +8,7 @@ typedef	struct
 	FTM_EP		xInfo;
 	FTM_ULONG	ulCount;
 	FTM_ULONG	ulFirstTime;
-	FTM_ULONG	ulLastTime;:w
+	FTM_ULONG	ulLastTime;
 }	FTDM_EP, _PTR_ FTDM_EP_PTR;
 	
 FTM_RET	FTDM_EP_init
@@ -41,12 +41,12 @@ FTM_RET	FTDM_EP_saveToDB
 	FTM_VOID
 );
 
-FTM_RET	FTDM_EP_add
+FTM_RET	FTDM_EP_create
 (
-	FTM_EP_PTR 		pEP
+	FTM_EP_PTR 		pInfo
 );
 
-FTM_RET	FTDM_EP_del
+FTM_RET	FTDM_EP_destroy
 (
 	FTM_EP_ID 		xEPID
 );
@@ -60,13 +60,13 @@ FTM_RET	FTDM_EP_count
 FTM_RET	FTDM_EP_get
 (
 	FTM_EP_ID			xEPID,
-	FTM_EP_PTR	_PTR_ 	ppEP
+	FTDM_EP_PTR	_PTR_ 	ppEP
 );
 
 FTM_RET	FTDM_EP_getAt
 (
 	FTM_ULONG			ulIndex,
-	FTM_EP_PTR	_PTR_ 	ppEP
+	FTDM_EP_PTR	_PTR_ 	ppEP
 );
 
 FTM_RET	FTDM_EP_showList

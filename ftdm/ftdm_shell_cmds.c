@@ -84,12 +84,12 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 
 			for(i = 0 ; i < ulCount ; i++)
 			{
-				FTM_EP_PTR	pEPInfo;
+				FTDM_EP_PTR	pEP;
 		
-				xRet = FTDM_EP_getAt(i, &pEPInfo);
+				xRet = FTDM_EP_getAt(i, &pEP);
 				if (xRet == FTM_RET_OK)
 				{
-					if (strcasecmp(pEPInfo->pDID, pDID) == 0)
+					if (strcasecmp(pEP->xInfo.pDID, pDID) == 0)
 					{
 						ulEPCount++;	
 					}
@@ -104,22 +104,22 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 					"", "INDEX", "EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID");
 				for(i = 0 ; i < ulCount ; i++)
 				{
-					FTM_EP_PTR	pEPInfo;
+					FTDM_EP_PTR	pEP;
 			
-					xRet = FTDM_EP_getAt(i, &pEPInfo);
+					xRet = FTDM_EP_getAt(i, &pEP);
 					if (xRet == FTM_RET_OK)
 					{
-						if (strcasecmp(pEPInfo->pDID, pDID) == 0)
+						if (strcasecmp(pEP->xInfo.pDID, pDID) == 0)
 						{
 							MESSAGE("%16s   %-5d %08lx %-16s %-16s %-8s ",
 								"",
 								++ulIndex,
-								pEPInfo->xEPID,
-								FTM_EP_typeString(pEPInfo->xType),
-								pEPInfo->pName,
-								pEPInfo->pUnit);
+								pEP->xInfo.xEPID,
+								FTM_EP_typeString(pEP->xInfo.xType),
+								pEP->xInfo.pName,
+								pEP->xInfo.pUnit);
 		
-							if(pEPInfo->bEnable)
+							if(pEP->xInfo.bEnable)
 							{
 								MESSAGE("%-8s ", "ENABLE");
 							}
@@ -129,10 +129,10 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 							}
 		
 							MESSAGE("%-8lu %-8lu %-16s %08lx\n",
-								pEPInfo->ulInterval,
-								pEPInfo->ulTimeout,
-								pEPInfo->pDID,
-								pEPInfo->xDEPID);
+								pEP->xInfo.ulInterval,
+								pEP->xInfo.ulTimeout,
+								pEP->xInfo.pDID,
+								pEP->xInfo.xDEPID);
 						}
 					}
 				}
@@ -156,17 +156,17 @@ FTM_RET	FTDM_SHELL_showEPList(void)
 
 		for(i = 0 ; i < ulCount ; i++)
 		{
-			FTM_EP_PTR	pEPInfo;
+			FTDM_EP_PTR	pEP;
 		
-			FTDM_EP_getAt(i, &pEPInfo);
+			FTDM_EP_getAt(i, &pEP);
 			MESSAGE("%5d %08lx %-16s %-16s %-8s ",
 				i+1,
-				pEPInfo->xEPID,
-				FTM_EP_typeString(pEPInfo->xType),
-				pEPInfo->pName,
-				pEPInfo->pUnit);
+				pEP->xInfo.xEPID,
+				FTM_EP_typeString(pEP->xInfo.xType),
+				pEP->xInfo.pName,
+				pEP->xInfo.pUnit);
 
-			if (pEPInfo->bEnable)
+			if (pEP->xInfo.bEnable)
 			{
 				MESSAGE("%-8s ", "ENABLE");
 			}
@@ -176,10 +176,10 @@ FTM_RET	FTDM_SHELL_showEPList(void)
 			}
 	
 			MESSAGE("%-8lu %-8lu %-16s %08lx\n",
-				pEPInfo->ulInterval,
-				pEPInfo->ulTimeout,
-				pEPInfo->pDID,
-				pEPInfo->xDEPID);
+				pEP->xInfo.ulInterval,
+				pEP->xInfo.ulTimeout,
+				pEP->xInfo.pDID,
+				pEP->xInfo.xDEPID);
 		}
 	}
 
@@ -188,23 +188,23 @@ FTM_RET	FTDM_SHELL_showEPList(void)
 
 FTM_RET	FTDM_SHELL_showEPInfo(FTM_EP_ID xEPID)
 {
-	FTM_RET			xRet;
-	FTM_EP_PTR	pEPInfo = NULL;
-	FTM_ULONG		ulDataCount = 0;
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP = NULL;
+	FTM_ULONG	ulDataCount = 0;
 
-	if (FTDM_EP_get(xEPID, &pEPInfo) != FTM_RET_OK)
+	if (FTDM_EP_get(xEPID, &pEP) != FTM_RET_OK)
 	{
 		MESSAGE("Invalid EPID [%08x]\n", xEPID);
 		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
 
-	MESSAGE("%-16s : %08x\n", 	"EPID", pEPInfo->xEPID);
-	MESSAGE("%-16s : %s\n", 	"TYPE", FTM_EP_typeString(pEPInfo->xType));
-	MESSAGE("%-16s : %s\n", 	"NAME", pEPInfo->pName);
-	MESSAGE("%-16s : %s\n", 	"UNIT", pEPInfo->pUnit);
+	MESSAGE("%-16s : %08x\n", 	"EPID", pEP->xInfo.xEPID);
+	MESSAGE("%-16s : %s\n", 	"TYPE", FTM_EP_typeString(pEP->xInfo.xType));
+	MESSAGE("%-16s : %s\n", 	"NAME", pEP->xInfo.pName);
+	MESSAGE("%-16s : %s\n", 	"UNIT", pEP->xInfo.pUnit);
 	MESSAGE("%-16s : ", 		"STATE");
 
-	if (pEPInfo->bEnable)
+	if (pEP->xInfo.bEnable)
 	{
 		MESSAGE("%-8s\n", "ENABLE");
 	}
@@ -213,12 +213,12 @@ FTM_RET	FTDM_SHELL_showEPInfo(FTM_EP_ID xEPID)
 		MESSAGE("%-8s\n", "DISABLE");
 	}
 
-	MESSAGE("%-16s : %lu\n", 	"INTERVAL", pEPInfo->ulInterval);
-	MESSAGE("%-16s : %lu\n", 	"TIMEOUT", 	pEPInfo->ulTimeout);
-	MESSAGE("%-16s : %s\n", 	"DID", 		pEPInfo->pDID);
-	MESSAGE("%-16s : %08x\n", 	"DEPID", 	pEPInfo->xDEPID);
-	MESSAGE("%-16s : %s\n", 	"PID", 		pEPInfo->pPID);
-	MESSAGE("%-16s : %08x\n", 	"PEPID", 	pEPInfo->xPEPID);
+	MESSAGE("%-16s : %lu\n", 	"INTERVAL", pEP->xInfo.ulInterval);
+	MESSAGE("%-16s : %lu\n", 	"TIMEOUT", 	pEP->xInfo.ulTimeout);
+	MESSAGE("%-16s : %s\n", 	"DID", 		pEP->xInfo.pDID);
+	MESSAGE("%-16s : %08x\n", 	"DEPID", 	pEP->xInfo.xDEPID);
+	MESSAGE("%-16s : %s\n", 	"PID", 		pEP->xInfo.pPID);
+	MESSAGE("%-16s : %08x\n", 	"PEPID", 	pEP->xInfo.xPEPID);
 
 	xRet = FTDM_EP_DATA_count(xEPID, &ulDataCount);
 	if (xRet == FTM_RET_OK)
