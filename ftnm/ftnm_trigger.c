@@ -189,7 +189,7 @@ FTM_VOID_PTR FTNM_TRIGGERM_process(FTM_VOID_PTR pData)
 						FTM_LOG(FTM_LOG_TYPE_TRIGGER, "EVENT[%d] occurred!\n", pTrigger->xInfo.xID);
 						pTrigger->xState = FTNM_TRIGGER_STATE_SET;
 						FTM_TIME_getCurrent(&pTrigger->xOccurrenceTime);
-						FTM_TIMER_initTime(&pTrigger->xHoldingTimer, &pTrigger->xInfo.xHoldingTime);
+						FTM_TIMER_initTime(&pTrigger->xHoldingTimer, &pTrigger->xInfo.xParams.xCommon.xHoldingTime);
 					}
 				}
 				else if (pTrigger->xState == FTNM_TRIGGER_STATE_PRERESET)
@@ -322,7 +322,7 @@ FTM_RET	FTNM_TRIGGERM_updateEP(FTNM_TRIGGERM_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_D
 					{
 						if (bOccurrence)
 						{
-							FTM_TIMER_initTime(&pTrigger->xDetectionTimer, &pTrigger->xInfo.xDetectionTime);
+							FTM_TIMER_initTime(&pTrigger->xDetectionTimer, &pTrigger->xInfo.xParams.xCommon.xDetectionTime);
 							pTrigger->xState = FTNM_TRIGGER_STATE_PRESET;
 						}
 					}

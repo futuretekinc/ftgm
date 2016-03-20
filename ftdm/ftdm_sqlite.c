@@ -894,13 +894,14 @@ static int _FTDM_DBIF_EP_getCB(void *pData, int nArgc, char **pArgv, char **pCol
 
 FTM_RET	FTDM_DBIF_EP_get
 (
-	FTM_EP_ID 				xEPID, 
- 	FTM_EP_PTR		pInfo
+	FTM_EP_ID 		xEPID, 
+ 	FTM_EP_PTR		pEP
 )
 {
     int     xRet;
     char    pSQL[1024];
     char    *strErrMsg = NULL;
+	FTM_EP	xEP;
 
 	if (_pSQLiteDB == NULL)
 	{
@@ -908,8 +909,8 @@ FTM_RET	FTDM_DBIF_EP_get
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(pSQL, "SELECT * FROM ep_info WHERE DID = %lu", xEPID);
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getCB, pInfo, &strErrMsg);
+    sprintf(pSQL, "SELECT * FROM ep_info WHERE EPID = %lu", xEPID);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getCB, &xEP, &strErrMsg);
     if (xRet != SQLITE_OK)
     {
         ERROR("SQL error : %s\n", strErrMsg);
@@ -918,11 +919,12 @@ FTM_RET	FTDM_DBIF_EP_get
     	return  FTM_RET_ERROR;
     }
 	
-	if (pInfo->xEPID != xEPID)
+	if (xEP.xEPID != xEPID)
 	{
 		return	FTM_RET_OBJECT_NOT_FOUND;	
 	}
 
+	memcpy(&xEP, pEP, sizeof(FTM_EP));
 
 	return	FTM_RET_OK;
 }
@@ -1961,8 +1963,6 @@ static int _FTDM_DBIF_TRIGGER_getCB(void *pData, int nArgc, char **pArgv, char *
 {
 	FTM_TRIGGER_PTR	pTrigger = (FTM_TRIGGER_PTR)pData;
 
-	TRACE("%s : %s\n", pColName, pArgv[0]);
-	
 	if (nArgc != 0)
 	{
 		if (strcmp(pColName[0], "ID") == 0)
@@ -2226,8 +2226,6 @@ static int _FTDM_DBIF_ACTION_getCB(void *pData, int nArgc, char **pArgv, char **
 {
 	FTM_ACTION_PTR	pAction = (FTM_ACTION_PTR)pData;
 
-	TRACE("%s : %s\n", pColName, pArgv[0]);
-	
 	if (nArgc != 0)
 	{
 		if (strcmp(pColName[0], "ID") == 0)
@@ -2480,8 +2478,6 @@ static int _FTDM_DBIF_RULE_getCB(void *pData, int nArgc, char **pArgv, char **pC
 {
 	FTM_RULE_PTR	pRule = (FTM_RULE_PTR)pData;
 
-	TRACE("%s : %s\n", pColName, pArgv[0]);
-	
 	if (nArgc != 0)
 	{
 		if (strcmp(pColName[0], "ID") == 0)

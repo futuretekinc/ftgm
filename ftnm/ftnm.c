@@ -30,7 +30,7 @@ static	FTNM_SNMPTRAPD	xSNMPTRAPD;
 static	FTNM_DMC		xDMC;
 static  FTNM_MSG_QUEUE	xMsgQ;
 
-		FTNM_TRIGGERM		xEventM;
+		FTNM_TRIGGERM		xTriggerM;
 static 	FTNM_CONTEXT	xCTX;
 
 static 	FTNM_SERVICE	pServices[] =
@@ -103,7 +103,7 @@ FTM_RET	FTNM_init(FTM_VOID)
 
 	FTNM_SERVICE_init(pServices, sizeof(pServices) / sizeof(FTNM_SERVICE));
 
-	FTNM_TRIGGERM_init(&xEventM);
+	FTNM_TRIGGERM_init(&xTriggerM);
 
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
@@ -111,7 +111,7 @@ FTM_RET	FTNM_init(FTM_VOID)
 
 FTM_RET	FTNM_final(FTM_VOID)
 {
-	FTNM_TRIGGERM_final(&xEventM);
+	FTNM_TRIGGERM_final(&xTriggerM);
 
 	FTNM_SERVICE_final();
 
@@ -155,9 +155,7 @@ FTM_RET FTNM_start(FTM_VOID)
 FTM_RET FTNM_stop(FTM_VOID)
 {
 	FTNM_MSGQ_sendQuit(&xMsgQ);
-	TRACE("hello1!\n");
 	pthread_join(xCTX.xThread, NULL);
-	TRACE("hello2!\n");
 
 	return	FTM_RET_OK;
 }
@@ -349,7 +347,7 @@ FTM_RET	FTNM_TASK_sync(FTNM_CONTEXT_PTR pCTX)
 			continue;
 		}
 
-		xRet = FTNM_TRIGGERM_create(&xEventM, &xEvent);
+		xRet = FTNM_TRIGGERM_create(&xTriggerM, &xEvent);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new event can not registration!\n") ;
@@ -368,7 +366,7 @@ FTM_RET	FTNM_TASK_startEP(FTNM_CONTEXT_PTR pCTX)
 	FTNM_EP_PTR	pEP;
 	FTM_ULONG	i, ulCount;
 	
-	FTNM_TRIGGERM_start(&xEventM);
+	FTNM_TRIGGERM_start(&xTriggerM);
 	FTNM_EP_count(0, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
@@ -559,7 +557,7 @@ FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX)
 						ERROR("EP[%08x] data save failed.\n", pMsg->xParams.xEPChanged.xEPID);
 					}
 		
-					FTNM_TRIGGERM_updateEP(&xEventM, pMsg->xParams.xEPChanged.xEPID, &pMsg->xParams.xEPChanged.xData);
+					FTNM_TRIGGERM_updateEP(&xTriggerM, pMsg->xParams.xEPChanged.xEPID, &pMsg->xParams.xEPChanged.xData);
 					FTNM_SERVICE_notify(FTNM_SERVICE_SERVER, pMsg);
 
 				}
@@ -584,7 +582,7 @@ FTM_RET	FTNM_TASK_stopService(FTNM_CONTEXT_PTR pCTX)
 	FTNM_EP_PTR	pEP;
 	FTM_ULONG	i, ulCount;
 	
-	FTNM_TRIGGERM_stop(&xEventM);
+	FTNM_TRIGGERM_stop(&xTriggerM);
 	FTNM_EP_count(0, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
@@ -618,7 +616,7 @@ FTM_RET	FTNM_getDMC(FTNM_DMC_PTR _PTR_ ppDMC)
 
 FTM_RET	FTNM_setEPData(FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
-	FTNM_TRIGGERM_updateEP(&xEventM, xEPID, pData);
+	FTNM_TRIGGERM_updateEP(&xTriggerM, xEPID, pData);
 	FTNM_DMC_EP_DATA_set(&xDMC, xEPID, pData);
 
 	return	FTM_RET_OK;
@@ -670,7 +668,7 @@ FTM_RET	FTNM_callback(FTNM_SERVICE_ID xID, FTNM_MSG_TYPE xMsg, FTM_VOID_PTR pDat
 					{
 						FTNM_MSG_EP_CHANGED_PARAMS_PTR pParam = (FTNM_MSG_EP_CHANGED_PARAMS_PTR)pData;
 
-						FTNM_TRIGGERM_updateEP(&xEventM, pParam->xEPID, &pParam->xData);
+						FTNM_TRIGGERM_updateEP(&xTriggerM, pParam->xEPID, &pParam->xData);
 						FTNM_DMC_EP_DATA_set(&xDMC, pParam->xEPID, &pParam->xData);
 					}
 					else

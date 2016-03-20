@@ -6,7 +6,7 @@
 #include "ftnm_msg.h"
 
 extern	FTNM_CONTEXT	xFTNM;
-extern	FTNM_TRIGGERM		xEventM;
+extern	FTNM_TRIGGERM		xTriggerM;
 
 FTM_RET	FTNM_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTNM_SHELL_CMD_list(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[]);
@@ -146,26 +146,26 @@ FTM_RET	FTNM_SHELL_CMD_list
 		}
 	}
 
-	MESSAGE("\n# Event Information\n");
-	FTNM_TRIGGERM_count(&xEventM, &ulCount);
+	MESSAGE("\n# Trigger Information\n");
+	FTNM_TRIGGERM_count(&xTriggerM, &ulCount);
 	MESSAGE("\t%8s %8s %16s %8s %8s %s\n", "ID", "EPID", "TYPE", "DETECT", "HOLD", "CONDITION");
 	for(i = 0; i< ulCount ; i++)
 	{
-		FTNM_TRIGGER_PTR	pEvent;
+		FTNM_TRIGGER_PTR	pTrigger;
 
-		xRet = FTNM_TRIGGERM_getAt(&xEventM, i, &pEvent);
+		xRet = FTNM_TRIGGERM_getAt(&xTriggerM, i, &pTrigger);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_CHAR	pCondition[1024];
 
-			FTM_TRIGGER_conditionToString(&pEvent->xInfo, pCondition, sizeof(pCondition));
+			FTM_TRIGGER_conditionToString(&pTrigger->xInfo, pCondition, sizeof(pCondition));
 
 			MESSAGE("\t%08x %08x %16s %8.3f %8.3f %s\n", 
-				pEvent->xInfo.xID, 
-				pEvent->xInfo.xEPID, 
-				FTM_TRIGGER_typeString(pEvent->xInfo.xType),
-            	(pEvent->xInfo.xDetectionTime.xTimeval.tv_sec * 1000000 +  pEvent->xInfo.xDetectionTime.xTimeval.tv_usec) / 1000000.0,
-				(pEvent->xInfo.xHoldingTime.xTimeval.tv_sec * 1000000 +  pEvent->xInfo.xHoldingTime.xTimeval.tv_usec) / 1000000.0,
+				pTrigger->xInfo.xID, 
+				pTrigger->xInfo.xEPID, 
+				FTM_TRIGGER_typeString(pTrigger->xInfo.xType),
+            	(pTrigger->xInfo.xParams.xCommon.xDetectionTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xCommon.xDetectionTime.xTimeval.tv_usec) / 1000000.0,
+				(pTrigger->xInfo.xParams.xCommon.xHoldingTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xCommon.xHoldingTime.xTimeval.tv_usec) / 1000000.0,
 				pCondition);
 		}
 

@@ -39,14 +39,16 @@ FTM_RET	FTM_NODE_final(FTM_VOID)
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
+	FTM_ULONG	ulCount;
+	FTM_LIST_count(pNodeList, &ulCount);
+
  	FTM_LIST_iteratorStart(pNodeList);
   	while(FTM_LIST_iteratorNext(pNodeList, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
    	{   
     	FTM_NODE_destroy(pNode);
 	}
 
-	FTM_LIST_final(pNodeList);
-
+	FTM_LIST_final(pNodeList); 
 	return	FTM_RET_OK;
 }
 

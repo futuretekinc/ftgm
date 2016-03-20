@@ -138,6 +138,7 @@ FTM_RET	FTDMS_stop
 	ASSERT(pCTX != NULL);
 
 	pCTX->bStop = FTM_TRUE;
+	close(pCTX->hSocket);
 
 	return	FTDMS_waitingForFinished(pCTX);
 }
@@ -157,7 +158,6 @@ FTM_RET	FTDMS_waitingForFinished
 FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 {
 	FTM_INT				nRet;
-	FTM_INT				hSocket;
 	struct sockaddr_in	xServer, xClient;
 	FTDM_SERVER_PTR		pCTX =(FTDM_SERVER_PTR)pData;
 
@@ -169,8 +169,8 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 		goto error;
 	}
 
-	hSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (hSocket == -1)
+	pCTX->hSocket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+	if (pCTX->hSocket == -1)
 	{
 		ERROR("Could not create socket\n");
 		goto error;
@@ -180,26 +180,23 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 	xServer.sin_addr.s_addr = INADDR_ANY;
 	xServer.sin_port 		= htons( pCTX->xConfig.usPort );
 
-	nRet = bind( hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
+	nRet = bind( pCTX->hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
 	if (nRet < 0)
 	{
 		ERROR("bind failed.[nRet = %d]\n", nRet);
 		goto error;
 	}
 
-	listen(hSocket, 3);
+	listen(pCTX->hSocket, 3);
 
 
-	while(FTM_TRUE)
+	while(!pCTX->bStop)
 	{
 		FTM_INT	hClient;
-		FTM_INT	nValue;
 		FTM_INT	nSockAddrInLen = sizeof(struct sockaddr_in);	
 
-		sem_getvalue(&pCTX->xSemaphore, &nValue);
-		TRACE("Waiting for connections ...[%d]\n", nValue);
-		hClient = accept(hSocket, (struct sockaddr *)&xClient, (socklen_t *)&nSockAddrInLen);
-		if (hClient != 0)
+		hClient = accept(pCTX->hSocket, (struct sockaddr *)&xClient, (socklen_t *)&nSockAddrInLen);
+		if (hClient > 0)
 		{
 
 			TRACE("Accept new connection.[ %s:%d ]\n", inet_ntoa(xClient.sin_addr), ntohs(xClient.sin_port));
@@ -221,6 +218,17 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 				pthread_create(&pSession->xThread, NULL, FTDMS_service, pSession);
 			}
 		}
+		usleep(10000);
+	}
+
+	FTDM_SESSION_PTR pSession;
+
+	FTM_LIST_iteratorStart(&pCTX->xSessionList);
+	while(FTM_LIST_iteratorNext(&pCTX->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
+	{
+		pSession->bStop = FTM_TRUE;
+		shutdown(pSession->hSocket, SHUT_RD);
+		pthread_join(pSession->xThread, 0);
 	}
 
 error:
@@ -250,7 +258,7 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 
 	FTM_LIST_append(&pSession->pServer->xSessionList, pSession);	
 
-	while(FTM_TRUE)
+	while(!pSession->bStop)
 	{
 		int	nLen;
 

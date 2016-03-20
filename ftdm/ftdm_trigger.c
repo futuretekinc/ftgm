@@ -301,7 +301,6 @@ FTM_RET	FTDM_TRIGGER_saveToDB
 			xRet = FTDM_DBIF_TRIGGER_get(pTrigger->xID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
-				TRACE("Can't found trigger[%d]\n", pTrigger->xID);
 				xRet = FTDM_DBIF_TRIGGER_append(pTrigger);	
 				if (xRet != FTM_RET_OK)
 				{
@@ -312,10 +311,6 @@ FTM_RET	FTDM_TRIGGER_saveToDB
 					ERROR("The trigger[%d] has been saved.\n", pTrigger->xID);
 				
 				}
-			}
-			else
-			{
-				TRACE("The trigger[%d] is exist.\n", pTrigger->xID);
 			}
 		}
 		else

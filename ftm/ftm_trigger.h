@@ -29,6 +29,11 @@ typedef	struct
 		{
 			FTM_TIME		xDetectionTime;
 			FTM_TIME		xHoldingTime;
+		} xCommon;
+		struct
+		{
+			FTM_TIME		xDetectionTime;
+			FTM_TIME		xHoldingTime;
 			FTM_EP_DATA		xValue;		
 		} xAbove, xBelow;
 		struct

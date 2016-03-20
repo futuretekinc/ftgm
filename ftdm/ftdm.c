@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -121,7 +120,6 @@ FTM_RET	FTDM_final(FTM_VOID)
 	{
 		ERROR("Node management finalize failed.[%08x]\n", xRet);	
 	}
-
 
 	xRet = FTDM_DBIF_final();
 	if (xRet != FTM_RET_OK)
@@ -451,7 +449,7 @@ int main(int nArgc, char *pArgv[])
 		FTM_SHELL_setPrompt(FTDMS_pPrompt);
 		FTM_SHELL_addCmds(FTDMS_pCmdList,FTDMS_ulCmdCount);
 		FTM_SHELL_run();
-
+		FTDMS_stop(&xServer);
 	}
 
 	FTDM_DBIF_close();

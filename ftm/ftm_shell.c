@@ -30,10 +30,16 @@ static FTM_RET	FTM_SHELL_cmdQuit
 	FTM_INT nArgc, FTM_CHAR_PTR pArgv[]
 );
 
-static int FTM_SHELL_compCmd
+static int FTM_SHELL_seeker
 (
 	const void *pItem, 
 	const void *pKey
+);
+
+static int FTM_SHELL_comparator
+(
+	const void *pItem1, 
+	const void *pItem2
 );
 
 FTM_SHELL_CMD	xDefaultCmds[] = 
@@ -129,12 +135,13 @@ FTM_RET FTM_SHELL_init(FTM_VOID)
 	FTM_SHELL_CMD_PTR	pCmd;
 
 	FTM_LIST_create(&pCmdList);
-	FTM_LIST_setSeeker(pCmdList, FTM_SHELL_compCmd);
+	FTM_LIST_setSeeker(pCmdList, FTM_SHELL_seeker);
+	FTM_LIST_setComparator(pCmdList, FTM_SHELL_comparator);
 
 	pCmd = xDefaultCmds;
 	while(pCmd->pString != NULL)
 	{
-		FTM_LIST_append(pCmdList, pCmd);
+		FTM_LIST_insert(pCmdList, pCmd, FTM_LIST_POS_ASSENDING);
 		pCmd++;	
 	}
 
@@ -165,7 +172,7 @@ FTM_RET	FTM_SHELL_addCmds(FTM_SHELL_CMD_PTR pCmds, FTM_ULONG ulCmds)
 
 	for(i = 0 ; i < ulCmds; i++)
 	{
-		FTM_LIST_append(pCmdList, &pCmds[i]);
+		FTM_LIST_insert(pCmdList, &pCmds[i], FTM_LIST_POS_ASSENDING);
 	}
 
 	return	FTM_RET_OK;
@@ -180,7 +187,7 @@ FTM_RET	FTM_SHELL_appendCmd(FTM_SHELL_CMD_PTR pCmd)
 		FTM_LIST_remove(pCmdList, pExistCmd);
 	}
 
-	FTM_LIST_append(pCmdList, pCmd);
+	FTM_LIST_insert(pCmdList, pCmd, FTM_LIST_POS_ASSENDING);
 
 	return	FTM_RET_OK;
 }
@@ -256,10 +263,18 @@ FTM_RET	FTM_SHELL_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_SHELL_QUIT;
 }
 
-int FTM_SHELL_compCmd(const void *pItem, const void *pKey)
+int FTM_SHELL_seeker(const void *pItem, const void *pKey)
 {
 	FTM_SHELL_CMD_PTR	pCmd = (FTM_SHELL_CMD_PTR)pItem;
 	FTM_CHAR_PTR			pCmdString = (FTM_CHAR_PTR)pKey;
 
 	return	(strcmp(pCmd->pString, pCmdString) == 0);
+}
+
+int FTM_SHELL_comparator(const void *pItem1, const void *pItem2)
+{
+	FTM_SHELL_CMD_PTR	pCmd1 = (FTM_SHELL_CMD_PTR)pItem1;
+	FTM_SHELL_CMD_PTR	pCmd2 = (FTM_SHELL_CMD_PTR)pItem2;
+
+	return	strcmp(pCmd1->pString, pCmd2->pString);
 }

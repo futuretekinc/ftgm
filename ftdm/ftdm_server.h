@@ -17,6 +17,7 @@ typedef	struct
 	FTM_BOOL			bStop;
 	sem_t				xSemaphore;
 	pthread_t			xThread;
+	FTM_INT				hSocket;
 	FTM_LIST			xSessionList;
 }	FTDM_SERVER, _PTR_ FTDM_SERVER_PTR;
 
@@ -25,6 +26,7 @@ typedef	struct
 	FTDM_SERVER_PTR		pServer;
 	pthread_t 			xThread;	
 	FTM_INT				hSocket;
+	FTM_BOOL			bStop;
 	sem_t				xSemaphore;
 	struct sockaddr_in	xPeer;
 	FTM_BYTE			pReqBuff[FTDM_PACKET_LEN];

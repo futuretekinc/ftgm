@@ -145,6 +145,105 @@ FTM_RET	FTM_LIST_append(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 	return	xRet;
 }
 
+FTM_RET	FTM_LIST_insert(FTM_LIST_PTR pList, FTM_VOID_PTR pItem, FTM_LIST_POS xPos)
+{
+	ASSERT(pList != NULL);
+	ASSERT(pItem != NULL);
+
+	sem_wait(&pList->xLock);
+
+	FTM_RET			xRet = FTM_RET_OK;
+	FTM_ENTRY_PTR	pPrev = NULL;
+	FTM_ENTRY_PTR	pNext = NULL;
+
+	switch(xPos)
+	{
+	case	FTM_LIST_POS_FRONT:
+		{
+			pPrev = &pList->xHead;
+		}
+		break;
+
+	case	FTM_LIST_POS_REAR:
+		{
+			pPrev = pList->xHead.pPrev;
+		}
+		break;
+
+	case	FTM_LIST_POS_ASSENDING:
+		{
+			if (pList->fComparator == NULL)
+			{
+				return	FTM_RET_LIST_NOT_INSERTABLE;
+			}
+
+			pNext = pList->xHead.pNext;
+			while(pNext != &pList->xHead)
+			{
+				FTM_INT	nRes = pList->fComparator(pNext->pData, pItem);
+				if (nRes > 0)
+				{
+					break;
+				}
+
+				pNext = pNext->pNext;
+			}
+			pPrev = pNext->pPrev;
+		}
+		break;
+
+	case	FTM_LIST_POS_DESENDING:
+		{
+			if (pList->fComparator == NULL)
+			{
+				return	FTM_RET_LIST_NOT_INSERTABLE;
+			}
+
+			pNext = pList->xHead.pNext;
+			while(pNext != &pList->xHead)
+			{
+				FTM_INT	nRes = pList->fComparator(pNext->pData, pItem);
+				if (nRes < 0)
+				{
+					break;
+				}
+
+				pNext = pNext->pNext;
+			}
+			pPrev = pNext->pPrev;
+		}
+		break;
+
+	default:
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+
+	FTM_ENTRY_PTR pEntry;
+	pEntry = (FTM_ENTRY_PTR)malloc(sizeof(FTM_ENTRY));
+	if (pEntry == NULL)
+	{
+		ERROR("Not enough memory[size = %d]\n", sizeof(FTM_ENTRY));
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+	else
+	{
+		pEntry->pNext = pPrev->pNext;
+		pEntry->pPrev = pPrev;
+		pEntry->pData = pItem;
+
+		pPrev->pNext->pPrev = pEntry;
+		pPrev->pNext = pEntry;
+
+		pList->ulCount++;
+	}
+
+	sem_post(&pList->xLock);
+
+	return	xRet;
+}
+
 FTM_RET	FTM_LIST_remove(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 {
 	ASSERT(pList != NULL);
@@ -164,6 +263,11 @@ FTM_RET	FTM_LIST_remove(FTM_LIST_PTR pList, FTM_VOID_PTR pItem)
 		{
 			pEntry->pPrev->pNext = pNext;
 			pNext->pPrev = pEntry->pPrev;
+
+			if (pList->pIter == pEntry)
+			{
+				pList->pIter = pEntry->pPrev;	
+			}
 			free(pEntry);
 
 			pList->ulCount--;

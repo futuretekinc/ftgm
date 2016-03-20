@@ -3,6 +3,14 @@
 
 #include "ftdm_config.h"
 
+typedef	struct
+{
+	FTM_EP		xInfo;
+	FTM_ULONG	ulCount;
+	FTM_ULONG	ulFirstTime;
+	FTM_ULONG	ulLastTime;:w
+}	FTDM_EP, _PTR_ FTDM_EP_PTR;
+	
 FTM_RET	FTDM_EP_init
 (
 	FTM_VOID
