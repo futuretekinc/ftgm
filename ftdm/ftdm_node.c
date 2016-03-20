@@ -153,7 +153,7 @@ FTM_RET	FTDM_NODE_saveToDB
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_NODE	xInfo;
-
+			
 			xRet = FTDM_DBIF_NODE_get(pNode->pDID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{

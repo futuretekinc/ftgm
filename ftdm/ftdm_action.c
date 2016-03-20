@@ -195,13 +195,13 @@ FTM_RET	FTDM_ACTION_saveToDB
 				xRet = FTDM_DBIF_ACTION_append(pAction);	
 				if (xRet != FTM_RET_OK)
 				{
-					ERROR("Failed to save the new trigger.[%08x]\n", xRet);
+					ERROR("Failed to save the new action.[%08x]\n", xRet);
 				}
 			}
 		}
 		else
 		{
-			ERROR("Failed to get trigger information[%08x]\n", xRet);
+			ERROR("Failed to get action information[%08x]\n", xRet);
 		}
 	}
 

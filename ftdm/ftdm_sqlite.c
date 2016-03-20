@@ -477,8 +477,6 @@ static int _FTDM_DBIF_NODE_getCB(void *pData, int nArgc, char **pArgv, char **pC
 {
 	FTM_NODE_PTR pInfo = (FTM_NODE_PTR)pData;
 
-	TRACE("%s : %s\n", pColName, pArgv[0]);
-	
 	if (nArgc != 0)
 	{
 		if (strcmp(pColName[0], "DID") == 0)
@@ -729,43 +727,12 @@ FTM_RET	FTDM_DBIF_EP_del
 /***************************************************************
  *
  ***************************************************************/
-static int _FTDM_DBIF_EP_countCB(void *pData, int nArgc, char **pArgv, char **pColName)
-{
-	FTM_ULONG_PTR pnCount = (FTM_ULONG_PTR)pData;
-
-	if (nArgc != 0)
-	{
-		*pnCount = atoi(pArgv[0]);
-	}
-	return	FTM_RET_OK;
-}
-
 FTM_RET	FTDM_DBIF_EP_count
 (
 	FTM_ULONG_PTR		pulCount
 )
 {
-    int     xRet;
-    char    pSQL[1024];
-    char    *strErrMsg = NULL;
-
-	if (_pSQLiteDB == NULL)
-	{
-		ERROR("DB not initialized.\n");
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
-
-    sprintf(pSQL, "SELECT COUNT(*) FROM ep_info");
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_countCB, pulCount, &strErrMsg);
-    if (xRet != SQLITE_OK)
-    {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
-
-    	return  FTM_RET_ERROR;
-    }
-
-	return	FTM_RET_OK;
+	return	FTDM_DBIF_count("ep_info", pulCount);
 }
 
 /***************************************************************
@@ -1230,9 +1197,10 @@ FTM_RET	FTDM_DBIF_EP_DATA_info
 /********************************************************
  *
  ********************************************************/
+
 static int _FTDM_DBIF_EP_DATA_countCB(void *pData, int nArgc, char **pArgv, char **pColName)
 {
-	*((FTM_ULONG_PTR)pData) = strtoul(pArgv[0], 0, 10);
+       *((FTM_ULONG_PTR)pData) = strtoul(pArgv[0], 0, 10);
 
     return  FTM_RET_OK;
 }
@@ -1243,27 +1211,10 @@ FTM_RET	FTDM_DBIF_EP_DATA_count
 	FTM_ULONG_PTR			pulCount
 )
 {
-	FTM_RET		xRet;
-	FTM_CHAR_PTR	pErrMsg = NULL;
-	FTM_CHAR		pSQL[1024];
+	FTM_CHAR	pTableName[64];
 
-	if (_pSQLiteDB == NULL)
-	{
-		ERROR("DB not initialized.\n");
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
-
-	sprintf(pSQL, "SELECT COUNT(*) from ep_%08lx ", xEPID);
-	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_countCB, pulCount, &pErrMsg);
-	if (xRet != SQLITE_OK)
-	{
-		ERROR("SQL error : %s\n", pErrMsg);	
-		sqlite3_free(pErrMsg);
-
-		return	FTM_RET_ERROR;
-	}
-
-	return	FTM_RET_OK;
+	sprintf(pTableName, "ep_%08lx", xEPID);
+	return	FTDM_DBIF_count(pTableName, pulCount);
 }
 
 
