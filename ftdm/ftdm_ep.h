@@ -28,6 +28,11 @@ FTM_RET	FTDM_EP_loadFromDB
 	FTM_VOID
 );
 
+FTM_RET	FTDM_EP_saveToDB
+(
+	FTM_VOID
+);
+
 FTM_RET	FTDM_EP_add
 (
 	FTM_EP_PTR 		pEP

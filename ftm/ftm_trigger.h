@@ -27,16 +27,18 @@ typedef	struct
 	{
 		struct
 		{
+			FTM_TIME		xDetectionTime;
+			FTM_TIME		xHoldingTime;
 			FTM_EP_DATA		xValue;		
 		} xAbove, xBelow;
 		struct
 		{
+			FTM_TIME		xDetectionTime;
+			FTM_TIME		xHoldingTime;
 			FTM_EP_DATA		xUpper;		
 			FTM_EP_DATA		xLower;		
 		} xInclude, xExcept;
 	}	xParams;
-	FTM_TIME		xDetectionTime;
-	FTM_TIME		xHoldingTime;
 }	FTM_TRIGGER, _PTR_ FTM_TRIGGER_PTR;
 
 FTM_RET	FTM_TRIGGER_init(FTM_VOID); 

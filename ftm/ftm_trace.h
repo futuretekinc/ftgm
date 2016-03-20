@@ -39,6 +39,9 @@ typedef	struct
 FTM_RET	FTM_TRACE_configSet(FTM_TRACE_CFG_PTR pCfg);
 FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pCfg, FTM_CHAR_PTR pFileName);
 
+FTM_RET	FTM_TRACE_printConfig(FTM_TRACE_CFG_PTR pCfg);
+
+FTM_RET	FTM_TRACE_strToLevel(FTM_CHAR_PTR	pString, FTM_ULONG_PTR pulLevel);
 FTM_RET	FTM_TRACE_setLevel(FTM_ULONG		ulLevel);
 FTM_RET	FTM_TRACE_getLevel(FTM_ULONG_PTR	pulLevel);
 FTM_RET	FTM_TRACE_out

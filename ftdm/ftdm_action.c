@@ -136,6 +136,34 @@ FTM_RET	FTDM_ACTION_loadFromDB
 	FTM_VOID
 )
 {
+	FTM_ULONG	nMaxCount = 0;
+
+	if ((FTDM_DBIF_ACTION_count(&nMaxCount) == FTM_RET_OK) &&
+		(nMaxCount > 0))
+	{
+
+		FTM_ACTION_PTR	pActions;
+		FTM_ULONG		nActionCount = 0;
+		
+		pActions = (FTM_ACTION_PTR)FTM_MEM_malloc(nMaxCount * sizeof(FTM_ACTION));
+		if (pActions == NULL)
+		{
+			return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		}
+	
+		if (FTDM_DBIF_ACTION_getList(pActions, nMaxCount, &nActionCount) == FTM_RET_OK)
+		{
+			FTM_INT	i;
+
+			for(i = 0 ; i < nActionCount ; i++)
+			{
+				FTM_ACTION_createCopy(&pActions[i], NULL);
+			}
+		}
+
+		FTM_MEM_free(pActions);
+	}
+
 	return	FTM_RET_OK;
 }
 

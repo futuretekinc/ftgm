@@ -142,9 +142,11 @@ FTM_RET	FTDM_NODE_saveToDB
 	xRet = FTM_NODE_count(&ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Can't get NODE count.\n");
 		return	xRet;
 	}
 
+	ERROR("NODE is %d.\n", ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		xRet = FTM_NODE_getAt(i, &pNode);
@@ -155,11 +157,16 @@ FTM_RET	FTDM_NODE_saveToDB
 			xRet = FTDM_DBIF_NODE_get(pNode->pDID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
+				TRACE("NODE[%s]	save to DB.\n", pNode->pDID);
 				xRet = FTDM_DBIF_NODE_append(pNode);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR("Failed to save the new node.[%08x]\n", xRet);
 				}
+			}
+			else
+			{
+				TRACE("NODE[%s]	is exist.\n", pNode->pDID);
 			}
 		}
 		else

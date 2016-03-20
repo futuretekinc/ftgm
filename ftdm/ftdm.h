@@ -31,9 +31,14 @@ FTM_RET	FTDM_loadFromFile
 	FTM_CHAR_PTR	pFileName
 );
 
-FTM_RET	FTDM_loadObject
+FTM_RET	FTDM_loadObjectFromFile
 (
 	FTM_CHAR_PTR	pFileName
+);
+
+FTM_RET	FTDM_saveObjectToDB
+(
+	FTM_VOID
 );
 
 FTM_RET	FTDM_setDebugLevel

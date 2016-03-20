@@ -69,7 +69,7 @@ FTM_RET	FTDM_RULE_loadFromFile
 							continue;
 						}
 			
-						xRule.ulTriggers = 0;
+						xRule.xParams.ulTriggers = 0;
 						xRet = FTM_CONFIG_ITEM_getChildItem(&xRuleItem, "triggers", &xTriggersItem);
 						if (xRet != FTM_RET_OK)
 						{
@@ -100,12 +100,12 @@ FTM_RET	FTDM_RULE_loadFromFile
 									ERROR("Get trigger index error!\n");
 									continue;	
 								}
-								xRule.pTriggers[xRule.ulTriggers++] = nTriggerIndex;
+								xRule.xParams.pTriggers[xRule.xParams.ulTriggers++] = nTriggerIndex;
 							}
 						
 						}
 
-						xRule.ulActions = 0;
+						xRule.xParams.ulActions = 0;
 						xRet = FTM_CONFIG_ITEM_getChildItem(&xRuleItem, "actions", &xActionsItem);
 						if (xRet != FTM_RET_OK)
 						{
@@ -134,7 +134,7 @@ FTM_RET	FTDM_RULE_loadFromFile
 									continue;	
 								}
 
-								xRule.pActions[xRule.ulActions++] = nActionIndex;
+								xRule.xParams.pActions[xRule.xParams.ulActions++] = nActionIndex;
 							}
 						
 						}
@@ -162,6 +162,33 @@ FTM_RET	FTDM_RULE_loadFromDB
 	FTM_VOID
 )
 {
+	FTM_ULONG	nMaxCount = 0;
+
+	if ((FTDM_DBIF_RULE_count(&nMaxCount) == FTM_RET_OK) &&
+		(nMaxCount > 0))
+	{
+
+		FTM_RULE_PTR	pRules;
+		FTM_ULONG		nRuleCount = 0;
+		
+		pRules = (FTM_RULE_PTR)FTM_MEM_malloc(nMaxCount * sizeof(FTM_RULE));
+		if (pRules == NULL)
+		{
+			return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		}
+	
+		if (FTDM_DBIF_RULE_getList(pRules, nMaxCount, &nRuleCount) == FTM_RET_OK)
+		{
+			FTM_INT	i;
+
+			for(i = 0 ; i < nRuleCount ; i++)
+			{
+				FTM_RULE_createCopy(&pRules[i], NULL);
+			}
+		}
+
+		FTM_MEM_free(pRules);
+	}
 	return	FTM_RET_OK;
 }
 
@@ -279,37 +306,37 @@ FTM_RET	FTDM_RULE_showList
 			FTM_ULONG	j;
 
 			MESSAGE("\t%4d ", pRule->xID);
-			for(j = 0 ; j < pRule->ulTriggers ; j++)
+			for(j = 0 ; j < pRule->xParams.ulTriggers ; j++)
 			{
-				if (pRule->pTriggers[j] == 0)
+				if (pRule->xParams.pTriggers[j] == 0)
 				{
 					break;
 				}
 				if (ulLen != 0)
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %lu", pRule->pTriggers[j]);
+					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %lu", pRule->xParams.pTriggers[j]);
 				}
 				else
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%lu", pRule->pTriggers[j]);
+					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%lu", pRule->xParams.pTriggers[j]);
 				}
 			}
 			MESSAGE("%8s ", pBuff);
 			
 			ulLen = 0;
-			for(j = 0 ; j < pRule->ulActions ; j++)
+			for(j = 0 ; j < pRule->xParams.ulActions ; j++)
 			{
-				if (pRule->pActions[j] == 0)
+				if (pRule->xParams.pActions[j] == 0)
 				{
 					break;
 				}
 				if (ulLen != 0)
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %lu", pRule->pActions[j]);
+					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %lu", pRule->xParams.pActions[j]);
 				}
 				else
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%lu", pRule->pActions[j]);
+					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%lu", pRule->xParams.pActions[j]);
 				}
 			}
 			MESSAGE("%8s\n", pBuff);

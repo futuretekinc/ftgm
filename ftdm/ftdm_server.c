@@ -156,20 +156,12 @@ FTM_RET	FTDMS_waitingForFinished
 
 FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 {
-	FTM_RET				xRet;
 	FTM_INT				nRet;
 	FTM_INT				hSocket;
 	struct sockaddr_in	xServer, xClient;
 	FTDM_SERVER_PTR		pCTX =(FTDM_SERVER_PTR)pData;
 
 	ASSERT(pData != NULL);
-
-	xRet = FTDM_DBIF_open();
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("DB open failed[%08x].\n", xRet);
-		return	0;	
-	}
 
 	if (sem_init(&pCTX->xSemaphore, 0, pCTX->xConfig.ulMaxSession) < 0)
 	{
@@ -232,7 +224,6 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 	}
 
 error:
-	FTDM_DBIF_close();
 
 	return	0;
 }

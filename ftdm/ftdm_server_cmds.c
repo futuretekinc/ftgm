@@ -17,7 +17,7 @@
 FTM_RET	FTDMS_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_object(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_session(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTDMS_SHELL_CMD_debug(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTDMS_SHELL_CMD_trace(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_node(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_ep(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
 FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
@@ -40,11 +40,11 @@ FTM_SHELL_CMD	FTDMS_pCmdList[] =
 					  "\tObject management.\n"
 	},
 	{
-		.pString	= "debug",
-		.function	= FTDMS_SHELL_CMD_debug,
-		.pShortHelp	= "Debug Manager.",
+		.pString	= "trace",
+		.function	= FTDMS_SHELL_CMD_trace,
+		.pShortHelp	= "Trace configuration.",
 		.pHelp		= "\n"\
-					  "\tDebug Manager.\n"
+					  "\tTrace configuration.\n"
 	},
 	{
 		.pString	= "session",
@@ -119,7 +119,7 @@ FTM_RET	FTDMS_SHELL_CMD_object
 		{
 			if (strcasecmp(pArgv[1], "load") == 0)
 			{
-				xRet = FTDM_loadObject(pArgv[2]);	
+				xRet = FTDM_loadObjectFromFile(pArgv[2]);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR("Objects loading failed.[%08x]\n", xRet);
@@ -177,7 +177,7 @@ FTM_RET	FTDMS_SHELL_CMD_session
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDMS_SHELL_CMD_debug
+FTM_RET FTDMS_SHELL_CMD_trace
 (
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[]
@@ -187,10 +187,8 @@ FTM_RET FTDMS_SHELL_CMD_debug
 	{
 	case	1:
 		{
-			FTM_ULONG	ulLevel;
-
-			FTM_TRACE_getLevel(&ulLevel);
-			MESSAGE("LEVEL : %s\n", FTM_TRACE_levelString(ulLevel));
+			MESSAGE("# Trace Configuration\n");
+			FTM_TRACE_printConfig(&xConfig.xPrint);
 		}
 		break;
 
@@ -199,11 +197,11 @@ FTM_RET FTDMS_SHELL_CMD_debug
 			if (strcasecmp(pArgv[1], "help") == 0)
 			{
 				MESSAGE("Usage : %s [<cmd> <level>]\n",	pArgv[0]);
-				MESSAGE("    Debugging configuration\n");
+				MESSAGE("    Trace configuration\n");
 				MESSAGE("  Commands:\n");
-				MESSAGE("    %8s   Set debugging level\n", "level");
+				MESSAGE("    %8s   Set trace level\n", "level");
 				MESSAGE("  Parameters:\n");
-				MESSAGE("    %8s   Debugging level (0 ~ 10)\n");
+				MESSAGE("    %8s   trace level (0 ~ 6)\n");
 			}
 		}
 		break;

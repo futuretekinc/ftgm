@@ -13,10 +13,13 @@ typedef	FTM_ULONG	FTM_RULE_ID, _PTR_ FTM_RULE_ID_PTR;
 typedef	struct
 {
 	FTM_RULE_ID		xID;
-	FTM_ULONG		ulTriggers;
-	FTM_TRIGGER_ID	pTriggers[8];
-	FTM_ULONG		ulActions;
-	FTM_ACTION_ID	pActions[8];
+	struct 
+	{
+		FTM_ULONG		ulTriggers;
+		FTM_TRIGGER_ID	pTriggers[8];
+		FTM_ULONG		ulActions;
+		FTM_ACTION_ID	pActions[8];
+	}	xParams;
 }	FTM_RULE, _PTR_ FTM_RULE_PTR;
 
 

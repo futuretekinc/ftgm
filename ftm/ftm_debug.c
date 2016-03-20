@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <signal.h>
@@ -32,12 +33,12 @@ static FTM_TRACE_CFG	_xConfig =
 		.bToFile = FTM_FALSE,
 		.pPath = "./",
 		.pPrefix = "ftm_error",
-		.bLine	= FTM_TRUE
+		.bLine	= FTM_FALSE
 	},
 };
 
 
-FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
+FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 {
 	config_t		xLibConfig;
 	config_setting_t	*pSection;
@@ -57,7 +58,7 @@ FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
 		pField = config_setting_get_member(pSection, "mode");
 		if (pField != NULL)
 		{
-			pCfg->ulLevel = (FTM_ULONG)config_setting_get_int(pField);
+			pConfig->ulLevel = (FTM_ULONG)config_setting_get_int(pField);
 		}
 
 		pSubSection = config_setting_get_member(pSection, "trace");
@@ -66,29 +67,29 @@ FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
 			pField = config_setting_get_member(pSubSection, "path");
 			if (pField != NULL)
 			{
-				strncpy(pCfg->xTrace.pPath, 
+				strncpy(pConfig->xTrace.pPath, 
 						config_setting_get_string(pField),
-						sizeof(pCfg->xTrace.pPath) - 1);
+						sizeof(pConfig->xTrace.pPath) - 1);
 			}
 	
 			pField = config_setting_get_member(pSubSection, "prefix");
 			if (pField != NULL)
 			{
-				strncpy(pCfg->xTrace.pPrefix, 
+				strncpy(pConfig->xTrace.pPrefix, 
 						config_setting_get_string(pField),
-						sizeof(pCfg->xTrace.pPath) - 1);
+						sizeof(pConfig->xTrace.pPath) - 1);
 			}
 	
 			pField = config_setting_get_member(pSubSection, "to_file");
 			if (pField != NULL)
 			{
-				pCfg->xTrace.bToFile = (FTM_BOOL)config_setting_get_int(pField);
+				pConfig->xTrace.bToFile = (FTM_BOOL)config_setting_get_int(pField);
 			}
 	
 			pField = config_setting_get_member(pSubSection, "print_line");
 			if (pField != NULL)
 			{
-				pCfg->xTrace.bLine = (FTM_BOOL)config_setting_get_int(pField);
+				pConfig->xTrace.bLine = (FTM_BOOL)config_setting_get_int(pField);
 			}
 		}
 
@@ -98,29 +99,29 @@ FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
 			pField = config_setting_get_member(pSubSection, "path");
 			if (pField != NULL)
 			{
-				strncpy(pCfg->xError.pPath, 
+				strncpy(pConfig->xError.pPath, 
 						config_setting_get_string(pField),
-						sizeof(pCfg->xError.pPath) - 1);
+						sizeof(pConfig->xError.pPath) - 1);
 			}
 	
 			pField = config_setting_get_member(pSubSection, "prefix");
 			if (pField != NULL)
 			{
-				strncpy(pCfg->xError.pPrefix, 
+				strncpy(pConfig->xError.pPrefix, 
 						config_setting_get_string(pField),
-						sizeof(pCfg->xError.pPath) - 1);
+						sizeof(pConfig->xError.pPath) - 1);
 			}
 	
 			pField = config_setting_get_member(pSubSection, "to_file");
 			if (pField != NULL)
 			{
-				pCfg->xError.bToFile = (FTM_BOOL)config_setting_get_int(pField);
+				pConfig->xError.bToFile = (FTM_BOOL)config_setting_get_int(pField);
 			}
 	
 			pField = config_setting_get_member(pSubSection, "print_line");
 			if (pField != NULL)
 			{
-				pCfg->xError.bLine = (FTM_BOOL)config_setting_get_int(pField);
+				pConfig->xError.bLine = (FTM_BOOL)config_setting_get_int(pField);
 			}
 		}
 
@@ -131,14 +132,53 @@ FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pCfg, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRACE_configSet(FTM_TRACE_CFG_PTR pCfg)
+FTM_RET	FTM_TRACE_configSet(FTM_TRACE_CFG_PTR pConfig)
 {
-	if (pCfg != NULL)
+	if (pConfig != NULL)
 	{
-		memcpy(&_xConfig, pCfg, sizeof(FTM_TRACE_CFG));	
+		memcpy(&_xConfig, pConfig, sizeof(FTM_TRACE_CFG));	
 	}
 
 	FTM_TRACE_setLevel(_xConfig.ulLevel);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_TRACE_printConfig(FTM_TRACE_CFG_PTR pConfig)
+{
+	ASSERT(pConfig != NULL);
+	FTM_CHAR	pOptions[1024];
+	FTM_INT		nOptions = 0;
+
+	memset(pOptions, 0, sizeof(pOptions));
+
+	fprintf(stdout, "%16s : %s\n", "Level", FTM_TRACE_levelString(pConfig->ulLevel));
+	fprintf(stdout, " - %s -\n", "Trace");
+	fprintf(stdout, "%16s : %s\n", "Output",	(pConfig->xTrace.bToFile)?"File":"Terminal");
+	if (pConfig->xTrace.bToFile)
+	{
+		fprintf(stdout, "%16s : %s\n", "Path",	pConfig->xTrace.pPath);
+		fprintf(stdout, "%16s : %s\n", "Prefix",pConfig->xTrace.pPrefix);
+	}
+
+	if (pConfig->xTrace.bLine)
+	{
+		nOptions += sprintf(&pOptions[nOptions], "line");
+	}
+	fprintf(stdout, "%16s : %s\n", "Options", pOptions);
+
+	fprintf(stdout, " - %s -\n", "Error");
+	fprintf(stdout, "%16s : %s\n", "Output",	(pConfig->xError.bToFile)?"File":"Terminal");
+	if (pConfig->xError.bToFile)
+	{
+		fprintf(stdout, "%16s : %s\n", "Path",	pConfig->xError.pPath);
+		fprintf(stdout, "%16s : %s\n", "Prefix",pConfig->xError.pPrefix);
+	}
+	if (pConfig->xError.bLine)
+	{
+		nOptions += sprintf(&pOptions[nOptions], "line");
+	}
+	fprintf(stdout, "%16s : %s\n", "Options", pOptions);
 
 	return	FTM_RET_OK;
 }
@@ -165,6 +205,61 @@ FTM_RET	FTM_TRACE_dumpPacket
 	if (i % 8 != 0)
 	{
 		printf("\n");	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_TRACE_strToLevel
+(
+	FTM_CHAR_PTR	pString, 
+	FTM_ULONG_PTR 	pulLevel
+)
+{
+	ASSERT(pString != NULL);
+	ASSERT(pulLevel != NULL);
+
+	if (strcasecmp(pString, "all") == 0)
+	{
+		*pulLevel = FTM_TRACE_LEVEL_ALL;	
+	}
+	else if (strcasecmp(pString, "trace") == 0)
+	{
+		*pulLevel = FTM_TRACE_LEVEL_ALL;	
+	}
+	else if (strcasecmp(pString, "debug") == 0)
+	{
+		*pulLevel = FTM_TRACE_LEVEL_DEBUG;	
+	}
+	else if (strcasecmp(pString, "INFO") == 0)
+	{
+		*pulLevel = FTM_TRACE_LEVEL_INFO;	
+	}
+	else if (strcasecmp(pString, "WARN") == 0)
+	{
+		*pulLevel = FTM_TRACE_LEVEL_WARN;	
+	}
+	else if (strcasecmp(pString, "ERROR") == 0)
+	{
+		*pulLevel = FTM_TRACE_LEVEL_ERROR;	
+	}
+	else if (strcasecmp(pString, "FATAL") == 0)
+	{
+		*pulLevel = FTM_TRACE_LEVEL_FATAL;	
+	}
+	else if ((strlen(pString) == 1) && (isdigit(pString[0]) != 0))
+	{
+		FTM_ULONG	ulLevel = pString[0] - '0';
+		if (ulLevel > FTM_TRACE_LEVEL_FATAL)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
+
+		*pulLevel = ulLevel;
+	}
+	else 
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
 	return	FTM_RET_OK;
