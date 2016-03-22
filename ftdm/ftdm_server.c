@@ -370,7 +370,7 @@ FTM_RET	FTDMS_NODE_add
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_add(&pReq->xNodeInfo);
+	pResp->nRet = FTDM_NODE_create(&pReq->xNodeInfo);
 
 	return	pResp->nRet;
 }
@@ -384,7 +384,7 @@ FTM_RET	FTDMS_NODE_del
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_del(pReq->pDID);
+	pResp->nRet = FTDM_NODE_destroy(pReq->pDID);
 
 	return	pResp->nRet;
 }

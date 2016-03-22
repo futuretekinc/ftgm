@@ -41,26 +41,37 @@ FTM_RET	FTDM_NODE_loadFromDB
 		(nMaxNodeCount > 0))
 	{
 
-		FTM_NODE_PTR	pNodes;
+		FTM_NODE_PTR	pInfos;
 		FTM_ULONG		nNodeCount = 0;
 		
-		pNodes = (FTM_NODE_PTR)FTM_MEM_malloc(nMaxNodeCount * sizeof(FTM_NODE));
-		if (pNodes == NULL)
+		pInfos = (FTM_NODE_PTR)FTM_MEM_malloc(nMaxNodeCount * sizeof(FTM_NODE));
+		if (pInfos == NULL)
 		{
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 	
-		if (FTDM_DBIF_NODE_getList(pNodes, nMaxNodeCount, &nNodeCount) == FTM_RET_OK)
+		if (FTDM_DBIF_NODE_getList(pInfos, nMaxNodeCount, &nNodeCount) == FTM_RET_OK)
 		{
 			FTM_INT	i;
 
 			for(i = 0 ; i < nNodeCount ; i++)
 			{
-				FTM_NODE_create(&pNodes[i]);
+				FTDM_NODE_PTR	pNode;
+
+				pNode = (FTDM_NODE_PTR)FTM_MEM_malloc(sizeof(FTDM_NODE));
+				if (pNode == NULL)
+				{
+					ERROR("Not enough memory!\n");
+					break;	
+				}
+
+				memcpy(&pNode->xInfo, &pInfos[i], sizeof(FTM_NODE));
+
+				FTM_NODE_append((FTM_NODE_PTR)pNode);
 			}
 		}
 
-		free(pNodes);
+		free(pInfos);
 	}
 
 	return	FTM_RET_OK;
@@ -103,17 +114,17 @@ FTM_RET	FTDM_NODE_loadFromFile
 					xRet = FTM_CONFIG_LIST_getItemAt(&xNodeItemList, i, &xNodeItem);
 					if (xRet == FTM_RET_OK)
 					{
-						FTM_NODE	xNode;
-						xRet = FTM_CONFIG_ITEM_getNode(&xNodeItem, &xNode);
+						FTM_NODE	xInfo;
+						xRet = FTM_CONFIG_ITEM_getNode(&xNodeItem, &xInfo);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 				
-						xRet = FTM_NODE_create(&xNode);
+						xRet = FTDM_NODE_create(&xInfo);
 						if (xRet != FTM_RET_OK)
 						{
-							ERROR("Cant not append NODE[%s]\n", xNode.pDID);
+							ERROR("Cant not append NODE[%s]\n", xInfo.pDID);
 						}
 					}
 				}
@@ -173,37 +184,45 @@ FTM_RET	FTDM_NODE_saveToDB
 	return	FTM_RET_OK;
 }
 
-FTM_RET    FTDM_NODE_add
+FTM_RET    FTDM_NODE_create
 (   
-	FTM_NODE_PTR	pNode
+	FTM_NODE_PTR	pInfo
 )   
 {
-	ASSERT(pNode != NULL);
+	ASSERT(pInfo != NULL);
 
 	FTM_RET    		nRet;
-	FTM_NODE_PTR	pTempNode;
+	FTDM_NODE_PTR	pNode;
 	
-	if (FTM_NODE_get(pNode->pDID, &pTempNode) == FTM_RET_OK)
+	if (FTM_NODE_get(pInfo->pDID, (FTM_NODE_PTR _PTR_)&pNode) == FTM_RET_OK)
 	{
 		return	FTM_RET_ALREADY_EXIST_OBJECT;
 	}
 
-	nRet = FTDM_DBIF_NODE_append(pNode);
+	nRet = FTDM_DBIF_NODE_append(pInfo);
 	if (nRet == FTM_RET_OK)
 	{
-		nRet = FTM_NODE_create(pNode);
+		pNode = (FTDM_NODE_PTR)FTM_MEM_malloc(sizeof(FTDM_NODE));
+		if (pNode == NULL)
+		{
+			ERROR("Not enough memory!\n");
+			return	FTM_RET_NOT_ENOUGH_MEMORY;
+		}
+
+		memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
+		nRet = FTM_NODE_append((FTM_NODE_PTR)pNode);
 	}
 
 	return  nRet;
 }	  
 
-FTM_RET 	FTDM_NODE_del
+FTM_RET 	FTDM_NODE_destroy
 (
 	FTM_CHAR_PTR	pDID
 )
 {
 	FTM_RET			nRet;
-	FTM_NODE_PTR	pNode;
+	FTDM_NODE_PTR	pNode;
 
 	if (pDID == NULL)
 	{
@@ -217,7 +236,9 @@ FTM_RET 	FTDM_NODE_del
 	}
 
 	FTDM_DBIF_NODE_del(pDID);
-	FTM_NODE_destroy(pNode);
+	FTM_NODE_remove((FTM_NODE_PTR)pNode);
+
+	FTM_MEM_free(pNode);
 
 	return	FTM_RET_OK;
 }
@@ -233,24 +254,24 @@ FTM_RET	FTDM_NODE_count
 FTM_RET	FTDM_NODE_get
 (
 	FTM_CHAR_PTR		pDID,
-	FTM_NODE_PTR _PTR_	ppNode
+	FTDM_NODE_PTR _PTR_	ppNode
 )
 {
 	ASSERT(pDID != NULL);
 	ASSERT(ppNode != NULL);
 
-	return FTM_NODE_get(pDID, ppNode);
+	return FTM_NODE_get(pDID, (FTM_NODE_PTR _PTR_)ppNode);
 }
 
 FTM_RET	FTDM_NODE_getAt
 (
 	FTM_ULONG			nIndex,
-	FTM_NODE_PTR _PTR_	ppNode
+	FTDM_NODE_PTR _PTR_	ppNode
 )
 {
 	ASSERT(ppNode != NULL);
 
-	return	FTM_NODE_getAt(nIndex, ppNode);
+	return	FTM_NODE_getAt(nIndex, (FTM_NODE_PTR _PTR_)ppNode);
 }
 
 FTM_RET FTDM_NODE_isExist
