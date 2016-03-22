@@ -61,8 +61,11 @@ FTM_RET	FTM_EP_final(FTM_VOID);
 
 FTM_RET	FTM_EP_setDefault(FTM_EP_PTR pEP);
 
-FTM_RET	FTM_EP_createCopy(FTM_EP_PTR pSrc, FTM_EP_PTR _PTR_ ppEP);
+FTM_RET	FTM_EP_create(FTM_EP_PTR pSrc, FTM_EP_PTR _PTR_ ppEP);
 FTM_RET	FTM_EP_destroy(FTM_EP_PTR pNode);
+FTM_RET	FTM_EP_append(FTM_EP_PTR pEP);
+FTM_RET	FTM_EP_remove(FTM_EP_PTR pEP);
+
 FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount);
 FTM_RET	FTM_EP_get(FTM_EP_ID xEPID, FTM_EP_PTR _PTR_ ppNode);
 FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppNode);
@@ -99,7 +102,7 @@ typedef	struct
 	}	xValue;
 }	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
 
-FTM_RET	FTM_EP_DATA_createCopy(FTM_EP_DATA_PTR pSrcData, FTM_EP_DATA_PTR _PTR_ ppData);
+FTM_RET	FTM_EP_DATA_create(FTM_EP_DATA_PTR pSrcData, FTM_EP_DATA_PTR _PTR_ ppData);
 FTM_RET	FTM_EP_DATA_createInt(FTM_INT nValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
 FTM_RET	FTM_EP_DATA_createUlong(FTM_ULONG ulValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
 FTM_RET	FTM_EP_DATA_createFloat(FTM_DOUBLE fValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);

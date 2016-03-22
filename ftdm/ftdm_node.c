@@ -56,7 +56,7 @@ FTM_RET	FTDM_NODE_loadFromDB
 
 			for(i = 0 ; i < nNodeCount ; i++)
 			{
-				FTM_NODE_createCopy(&pNodes[i], NULL);
+				FTM_NODE_create(&pNodes[i]);
 			}
 		}
 
@@ -110,7 +110,7 @@ FTM_RET	FTDM_NODE_loadFromFile
 							continue;
 						}
 				
-						xRet = FTM_NODE_createCopy(&xNode, NULL);
+						xRet = FTM_NODE_create(&xNode);
 						if (xRet != FTM_RET_OK)
 						{
 							ERROR("Cant not append NODE[%s]\n", xNode.pDID);
@@ -191,7 +191,7 @@ FTM_RET    FTDM_NODE_add
 	nRet = FTDM_DBIF_NODE_append(pNode);
 	if (nRet == FTM_RET_OK)
 	{
-		nRet = FTM_NODE_createCopy(pNode, NULL);
+		nRet = FTM_NODE_create(pNode);
 	}
 
 	return  nRet;

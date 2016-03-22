@@ -59,7 +59,7 @@ typedef	struct
 
 FTM_RET	FTM_NODE_init(FTM_VOID);
 FTM_RET	FTM_NODE_final(FTM_VOID);
-FTM_RET	FTM_NODE_createCopy(FTM_NODE_PTR pSrc, FTM_NODE_PTR _PTR_ ppNode);
+FTM_RET	FTM_NODE_create(FTM_NODE_PTR pBase);
 FTM_RET	FTM_NODE_destroy(FTM_NODE_PTR pNode);
 
 FTM_RET	FTM_NODE_count(FTM_ULONG_PTR pulCount);

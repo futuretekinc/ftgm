@@ -331,6 +331,7 @@ int main(int nArgc, char *pArgv[])
 	FTM_BOOL	bShowUsage = FTM_FALSE;
 	FTM_BOOL	bLoadObjectFromFile = FTM_FALSE;
 	FTM_BOOL	bDBFirst = FTM_TRUE;
+	FTM_BOOL	bDBErase = FTM_FALSE;
 	FTM_CHAR	pConfigFileName[1024];
 	FTM_CHAR	pObjectFileName[1024];
 	
@@ -338,7 +339,7 @@ int main(int nArgc, char *pArgv[])
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
 	/* set command line options */
-	while((nOpt = getopt(nArgc, pArgv, "c:dm:o:O:?")) != -1)
+	while((nOpt = getopt(nArgc, pArgv, "c:dm:o:O:E?")) != -1)
 	{
 		switch(nOpt)
 		{
@@ -378,6 +379,12 @@ int main(int nArgc, char *pArgv[])
 			}
 			break;
 
+		case	'E':
+			{
+				bDBErase = FTM_TRUE;	
+			}	
+			break;
+
 		case	'?':
 		default:
 			bShowUsage = FTM_TRUE;
@@ -406,6 +413,11 @@ int main(int nArgc, char *pArgv[])
 	{
 		ERROR("DB open failed[%08x].\n", xRet);
 		return	0;	
+	}
+
+	if (bDBErase)
+	{
+		MESSAGE("Erase all data!\n");	
 	}
 
 	if (bDBFirst)

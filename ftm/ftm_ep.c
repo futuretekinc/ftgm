@@ -76,7 +76,7 @@ FTM_RET	FTM_EP_setDefault(FTM_EP_PTR pEP)
 }
 
 
-FTM_RET	FTM_EP_createCopy(FTM_EP_PTR pSrc, FTM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTM_EP_create(FTM_EP_PTR pSrc, FTM_EP_PTR _PTR_ ppEP)
 {
 	ASSERT(pSrc != NULL);
 
@@ -127,6 +127,34 @@ FTM_RET	FTM_EP_destroy(FTM_EP_PTR pEP)
 	}
 
 	return	xRet;
+}
+
+FTM_RET	FTM_EP_append(FTM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET		xRet;
+
+	if (pEPList == NULL)
+	{
+		ERROR("EP list is not initialized.\n");
+		FTM_EP_init();
+	}
+
+	xRet = FTM_LIST_append(pEPList, pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_remove(FTM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+
+	return	FTM_LIST_remove(pEPList, pEP);
 }
 
 FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount)
@@ -258,7 +286,7 @@ int	_FTM_EPTypeSeeker(const void *pElement, const void *pKey)
 }
 
 
-FTM_RET	FTM_EP_DATA_createCopy(FTM_EP_DATA_PTR pSrcData, FTM_EP_DATA_PTR _PTR_ ppData)
+FTM_RET	FTM_EP_DATA_create(FTM_EP_DATA_PTR pSrcData, FTM_EP_DATA_PTR _PTR_ ppData)
 {
 	ASSERT(pSrcData != NULL);
 	ASSERT(ppData != NULL);

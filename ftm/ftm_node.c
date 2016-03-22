@@ -52,9 +52,9 @@ FTM_RET	FTM_NODE_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_NODE_createCopy(FTM_NODE_PTR pSrc, FTM_NODE_PTR _PTR_ ppNode)
+FTM_RET	FTM_NODE_create(FTM_NODE_PTR pBase)
 {
-	ASSERT(pSrc != NULL);
+	ASSERT(pBase != NULL);
 
 	FTM_RET			xRet;
 	FTM_NODE_PTR	pNode;
@@ -72,18 +72,13 @@ FTM_RET	FTM_NODE_createCopy(FTM_NODE_PTR pSrc, FTM_NODE_PTR _PTR_ ppNode)
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	memcpy(pNode, pSrc, sizeof(FTM_NODE));
+	memcpy(pNode, pBase, sizeof(FTM_NODE));
 
 	xRet = FTM_LIST_append(pNodeList, pNode);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pNode);
 		return	xRet;
-	}
-
-	if (ppNode != NULL)
-	{
-		*ppNode = pNode;
 	}
 
 	return	FTM_RET_OK;

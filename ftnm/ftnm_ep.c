@@ -441,7 +441,7 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	strcpy(pTimeString, ctime((time_t *)&pData->ulTime));
 	pTimeString[strlen(pTimeString) - 1] = 0;
 
-	xRet = FTM_EP_DATA_createCopy(pData, &pNewData);
+	xRet = FTM_EP_DATA_create(pData, &pNewData);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
