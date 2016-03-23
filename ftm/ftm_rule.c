@@ -122,6 +122,22 @@ FTM_RET	FTM_RULE_destroy(FTM_RULE_PTR pRule)
 	return	xRet;
 }
 
+FTM_RET	FTM_RULE_append(FTM_RULE_PTR pRule)
+{
+	ASSERT(pRuleList != NULL);
+	ASSERT(pRule != NULL);
+
+	return	FTM_LIST_append(pRuleList, pRule);
+}
+
+FTM_RET	FTM_RULE_remove(FTM_RULE_PTR pRule)
+{
+	ASSERT(pRuleList != NULL);
+	ASSERT(pRule != NULL);
+
+	return	FTM_LIST_remove(pRuleList, pRule);
+}
+
 FTM_RET FTM_RULE_count(FTM_ULONG_PTR pulCount)
 {
 	ASSERT(pRuleList != NULL);

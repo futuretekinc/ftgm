@@ -67,7 +67,7 @@ FTM_RET	FTDM_EP_loadFromFile
 						xRet = FTM_CONFIG_ITEM_getEP(&xItem, &xInfo);
 						if (xRet == FTM_RET_OK)
 						{
-							xRet = FTDM_EP_createInternal(&xInfo, FTM_TRUE);
+							xRet = FTDM_EP_create(&xInfo);
 							if (xRet != FTM_RET_OK)
 							{
 								ERROR("Can't not append EP[%08x]\n", xInfo.xEPID);

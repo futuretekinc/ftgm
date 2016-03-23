@@ -48,12 +48,12 @@ FTM_RET	FTDM_NODE_create
 
 FTM_RET FTDM_NODE_destroy
 (
-	FTM_CHAR_PTR		pDID
+	FTM_CHAR_PTR	pDID
 );
 
 FTM_RET	FTDM_NODE_count
 (
-	FTM_ULONG_PTR		pnCount
+	FTM_ULONG_PTR	pnCount
 );
 
 FTM_RET	FTDM_NODE_get

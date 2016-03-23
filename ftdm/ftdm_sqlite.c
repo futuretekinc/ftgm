@@ -377,7 +377,7 @@ FTM_RET	FTDM_DBIF_NODE_getList
 /***************************************************************
  *
  ***************************************************************/
-FTM_RET	FTDM_DBIF_NODE_append
+FTM_RET	FTDM_DBIF_NODE_create
 (
  	FTM_NODE_PTR	pNodeInfo
 )
@@ -437,7 +437,7 @@ FTM_RET	FTDM_DBIF_NODE_append
 /***************************************************************
  *
  ***************************************************************/
-FTM_RET	FTDM_DBIF_NODE_del
+FTM_RET	FTDM_DBIF_NODE_destroy
 (
 	FTM_CHAR_PTR		pDID
 )
@@ -1884,7 +1884,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_count
 	return	FTDM_DBIF_count("trigger", pulCount);
 }
 
-FTM_RET	FTDM_DBIF_TRIGGER_append
+FTM_RET	FTDM_DBIF_TRIGGER_create
 (
  	FTM_TRIGGER_PTR	pTrigger
 )
@@ -1901,9 +1901,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_append
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	//sprintf(pSQL, "INSERT INTO trigger (ID,TYPE,EPID,VALUE) VALUES (%lu,%u,%lu,?)", pTrigger->xID, pTrigger->xType, pTrigger->xEPID);
 	sprintf(pSQL, "INSERT INTO trigger (ID,TYPE,EPID,VALUE) VALUES (?,?,?,?)");
-
 	do 
 	{
 		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
@@ -1926,6 +1924,36 @@ FTM_RET	FTDM_DBIF_TRIGGER_append
 	return FTM_RET_OK;
 }
 
+/***************************************************************
+ *
+ ***************************************************************/
+FTM_RET	FTDM_DBIF_TRIGGER_destroy
+(
+	FTM_TRIGGER_ID	xID
+)
+{
+	FTM_RET		xRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+
+	if (_pSQLiteDB == NULL)
+	{
+		ERROR("DB not initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "DELETE FROM trigger WHERE ID == %lu", xID);
+	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+	if (xRet != SQLITE_OK)
+	{
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
 /***************************************************************
  *
  ***************************************************************/
@@ -2148,12 +2176,12 @@ FTM_RET	FTDM_DBIF_ACTION_count
 	return	FTDM_DBIF_count("action", pulCount);
 }
 
-FTM_RET	FTDM_DBIF_ACTION_append
+FTM_RET	FTDM_DBIF_ACTION_create
 (
- 	FTM_ACTION_PTR	pAction
+ 	FTM_ACTION_PTR	pInfo
 )
 {
-	ASSERT(pAction != NULL);
+	ASSERT(pInfo != NULL);
 
 	FTM_INT			nRet;
 	FTM_CHAR		pSQL[1024];
@@ -2174,9 +2202,9 @@ FTM_RET	FTDM_DBIF_ACTION_append
 			return FTM_RET_ERROR;
 		}
 
-		sqlite3_bind_int(pStmt, 1, pAction->xID);
-		sqlite3_bind_int(pStmt, 2, pAction->xType);
-		sqlite3_bind_blob(pStmt, 3, &pAction->xParams, sizeof(pAction->xParams), SQLITE_STATIC);
+		sqlite3_bind_int(pStmt, 1, pInfo->xID);
+		sqlite3_bind_int(pStmt, 2, pInfo->xType);
+		sqlite3_bind_blob(pStmt, 3, &pInfo->xParams, sizeof(pInfo->xParams), SQLITE_STATIC);
 
 		nRet = sqlite3_step(pStmt);
 		ASSERT( nRet != SQLITE_ROW);
@@ -2187,6 +2215,36 @@ FTM_RET	FTDM_DBIF_ACTION_append
 	return FTM_RET_OK;
 }
 
+/***************************************************************
+ *
+ ***************************************************************/
+FTM_RET	FTDM_DBIF_ACTION_destroy
+(
+	FTM_ACTION_ID	xID
+)
+{
+	FTM_RET		xRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+
+	if (_pSQLiteDB == NULL)
+	{
+		ERROR("DB not initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "DELETE FROM action WHERE ID == %lu", xID);
+	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+	if (xRet != SQLITE_OK)
+	{
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
 /***************************************************************
  *
  ***************************************************************/
@@ -2493,6 +2551,75 @@ static int _FTDM_DBIF_RULE_getCB(void *pData, int nArgc, char **pArgv, char **pC
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_DBIF_RULE_create
+(
+ 	FTM_RULE_PTR	pRule
+)
+{
+	ASSERT(pRule != NULL);
+
+	FTM_INT			nRC;
+	sqlite3_stmt 	*pStmt;
+	FTM_CHAR		pSQL[1024];
+
+	if (_pSQLiteDB == NULL)
+	{
+		TRACE("DB is not initialize.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "INSERT INTO rule (ID,VALUE) VALUES (?,?)");
+
+	do 
+	{
+		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRC!=SQLITE_OK )
+		{
+			return FTM_RET_ERROR;
+		}
+
+		sqlite3_bind_int(pStmt, 1, pRule->xID);
+		sqlite3_bind_blob(pStmt, 2, &pRule->xParams, sizeof(pRule->xParams), SQLITE_STATIC);
+
+		nRC = sqlite3_step(pStmt);
+		ASSERT( nRC != SQLITE_ROW);
+
+		nRC = sqlite3_finalize(pStmt);
+	}  while (nRC == SQLITE_SCHEMA);
+
+	return FTM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+FTM_RET	FTDM_DBIF_RULE_destroy
+(
+	FTM_RULE_ID	xID
+)
+{
+	FTM_RET		xRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+
+	if (_pSQLiteDB == NULL)
+	{
+		ERROR("DB not initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "DELETE FROM rule WHERE ID == %lu", xID);
+	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+	if (xRet != SQLITE_OK)
+	{
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
 FTM_RET	FTDM_DBIF_RULE_get
 (
 	FTM_RULE_ID	xID,

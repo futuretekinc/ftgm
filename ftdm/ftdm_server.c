@@ -408,14 +408,14 @@ FTM_RET	FTDMS_NODE_get
 	FTDM_RESP_NODE_GET_PARAMS_PTR	pResp
 )
 {
-	FTM_NODE_PTR	pNodeInfo;
+	FTDM_NODE_PTR	pNode;
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_get(pReq->pDID, &pNodeInfo);
+	pResp->nRet = FTDM_NODE_get(pReq->pDID, &pNode);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xNodeInfo, pNodeInfo, sizeof(FTM_NODE));
+		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
 	}
 
 	return	pResp->nRet;
@@ -427,15 +427,15 @@ FTM_RET	FTDMS_NODE_getAt
 	FTDM_RESP_NODE_GET_AT_PARAMS_PTR	pResp
 )
 {
-	FTM_NODE_PTR	pNodeInfo;
+	FTDM_NODE_PTR	pNode;
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_getAt(pReq->nIndex, &pNodeInfo);
+	pResp->nRet = FTDM_NODE_getAt(pReq->nIndex, &pNode);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xNodeInfo, pNodeInfo, sizeof(FTM_NODE));
+		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
 	}
 
 	return	pResp->nRet;
@@ -447,14 +447,14 @@ FTM_RET	FTDMS_getNodeType
 	FTDM_RESP_GET_NODE_TYPE_PARAMS_PTR	pResp
 )
 {
-	FTM_NODE_PTR	pNodeInfo = NULL;
+	FTDM_NODE_PTR	pNode = NULL;
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_NODE_get(pReq->pDID, &pNodeInfo);
+	pResp->nRet = FTDM_NODE_get(pReq->pDID, &pNode);
 
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		pResp->xType = pNodeInfo->xType;
+		pResp->xType = pNode->xInfo.xType;
 	}
 
 	return	pResp->nRet;
@@ -466,12 +466,12 @@ FTM_RET	FTDMS_getNodeURL
 	FTDM_RESP_GET_NODE_URL_PARAMS_PTR	pResp
 )
 {
-	FTM_NODE_PTR	pNodeInfo = NULL;
+	FTDM_NODE_PTR	pNode = NULL;
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nURLLen = FTM_URL_LEN;
-	pResp->nRet = FTDM_NODE_get(pReq->pDID, &pNodeInfo);
+	pResp->nRet = FTDM_NODE_get(pReq->pDID, &pNode);
 
 	if (pResp->nRet == FTM_RET_OK)
 	{
@@ -829,7 +829,7 @@ FTM_RET	FTDMS_TRIGGER_add
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_TRIGGER_add(&pReq->xTrigger);
+	pResp->nRet = FTDM_TRIGGER_create(&pReq->xTrigger);
 
 	return	pResp->nRet;
 }
@@ -843,7 +843,7 @@ FTM_RET	FTDMS_TRIGGER_del
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_TRIGGER_del(pReq->xID);
+	pResp->nRet = FTDM_TRIGGER_destroy(pReq->xID);
 
 	return	pResp->nRet;
 }
@@ -867,14 +867,14 @@ FTM_RET	FTDMS_TRIGGER_get
 	FTDM_RESP_TRIGGER_GET_PARAMS_PTR	pResp
 )
 {
-	FTM_TRIGGER_PTR	pNodeInfo;
+	FTDM_TRIGGER_PTR	pTrigger;
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_TRIGGER_get(pReq->xID, &pNodeInfo);
+	pResp->nRet = FTDM_TRIGGER_get(pReq->xID, &pTrigger);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xTrigger, pNodeInfo, sizeof(FTM_TRIGGER));
+		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
 	}
 
 	return	pResp->nRet;
@@ -886,15 +886,15 @@ FTM_RET	FTDMS_TRIGGER_getAt
 	FTDM_RESP_TRIGGER_GET_AT_PARAMS_PTR	pResp
 )
 {
-	FTM_TRIGGER_PTR	pNodeInfo;
+	FTDM_TRIGGER_PTR	pTrigger;
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_TRIGGER_getAt(pReq->nIndex, &pNodeInfo);
+	pResp->nRet = FTDM_TRIGGER_getAt(pReq->nIndex, &pTrigger);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xTrigger, pNodeInfo, sizeof(FTM_TRIGGER));
+		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
 	}
 
 	return	pResp->nRet;
@@ -908,7 +908,7 @@ FTM_RET	FTDMS_ACTION_add
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACTION_add(&pReq->xAction);
+	pResp->nRet = FTDM_ACTION_create(&pReq->xAction);
 
 	return	pResp->nRet;
 }
@@ -922,7 +922,7 @@ FTM_RET	FTDMS_ACTION_del
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACTION_del(pReq->xID);
+	pResp->nRet = FTDM_ACTION_destroy(pReq->xID);
 
 	return	pResp->nRet;
 }
@@ -946,14 +946,14 @@ FTM_RET	FTDMS_ACTION_get
 	FTDM_RESP_ACTION_GET_PARAMS_PTR	pResp
 )
 {
-	FTM_ACTION_PTR	pAct;
+	FTDM_ACTION_PTR	pAction;
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACTION_get(pReq->xID, &pAct);
+	pResp->nRet = FTDM_ACTION_get(pReq->xID, &pAction);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xAction, pAct, sizeof(FTM_ACTION));
+		memcpy(&pResp->xAction, &pAction->xInfo, sizeof(FTM_ACTION));
 	}
 
 	return	pResp->nRet;
@@ -965,15 +965,15 @@ FTM_RET	FTDMS_ACTION_getAt
 	FTDM_RESP_ACTION_GET_AT_PARAMS_PTR	pResp
 )
 {
-	FTM_ACTION_PTR	pAct;
+	FTDM_ACTION_PTR	pAction;
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACTION_getAt(pReq->nIndex, &pAct);
+	pResp->nRet = FTDM_ACTION_getAt(pReq->nIndex, &pAction);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xAction, pAct, sizeof(FTM_ACTION));
+		memcpy(&pResp->xAction, &pAction->xInfo, sizeof(FTM_ACTION));
 	}
 
 	return	pResp->nRet;

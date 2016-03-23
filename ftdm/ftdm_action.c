@@ -59,48 +59,43 @@ FTM_RET	FTDM_ACTION_loadFromFile
 					xRet = FTM_CONFIG_LIST_getItemAt(&xActions, i, &xActionItem);	
 					if (xRet == FTM_RET_OK)
 					{
-						FTM_ACTION_ID	xID;
-						FTM_ACTION_TYPE	xType;
+						FTM_ACTION		xInfo;
 
-						xRet = FTM_CONFIG_ITEM_getItemINT(&xActionItem, "id", (FTM_INT_PTR)&xID);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xActionItem, "id", (FTM_INT_PTR)&xInfo.xID);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 						
-						xRet = FTM_CONFIG_ITEM_getItemINT(&xActionItem, "type", (FTM_INT_PTR)&xType);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xActionItem, "type", (FTM_INT_PTR)&xInfo.xType);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
 
-						switch(xType)
+						switch(xInfo.xType)
 						{
 						case	FTM_ACTION_TYPE_SET:
 							{
-								FTM_EP_ID	xEPID;
-								FTM_EP_DATA	xValue;
-
 								xRet = FTM_CONFIG_ITEM_getChildItem(&xActionItem, "params", &xParamsItem);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
-
 	
-								xRet = FTM_CONFIG_ITEM_getItemINT(&xParamsItem, "epid", (FTM_INT_PTR)&xEPID);
+								xRet = FTM_CONFIG_ITEM_getItemINT(&xParamsItem, "epid", (FTM_INT_PTR)&xInfo.xParams.xSet.xEPID);
 								if (xRet != FTM_RET_OK)
 								{
 										continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xParamsItem, "value", &xValue);
+								xRet = FTM_CONFIG_ITEM_getItemEPData(&xParamsItem, "value", &xInfo.xParams.xSet.xValue);
 								if (xRet != FTM_RET_OK)
 								{
 										continue;
 								}
 
-								xRet = FTM_ACTION_createSet(xID, xType, xEPID, &xValue, NULL);
+								xRet = FTDM_ACTION_create(&xInfo);
 								if (xRet != FTM_RET_OK)
 								{
 										ERROR("The new event can not creation.\n");
@@ -110,7 +105,7 @@ FTM_RET	FTDM_ACTION_loadFromFile
 
 						default:
 							{
-								ERROR("ACtion type[%08x] is not supported.\n", xType);
+								ERROR("ACtion type[%08x] is not supported.\n", xInfo.xType);
 								continue;
 							}
 						}
@@ -192,7 +187,7 @@ FTM_RET	FTDM_ACTION_saveToDB
 			xRet = FTDM_DBIF_ACTION_get(pAction->xID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
-				xRet = FTDM_DBIF_ACTION_append(pAction);	
+				xRet = FTDM_DBIF_ACTION_create(&xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR("Failed to save the new action.[%08x]\n", xRet);
@@ -208,29 +203,64 @@ FTM_RET	FTDM_ACTION_saveToDB
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_ACTION_add
+FTM_RET	FTDM_ACTION_create
 (
-	FTM_ACTION_PTR 	pAction
+	FTM_ACTION_PTR 	pInfo
 )
 {
-	return	FTM_ACTION_createCopy(pAction, NULL);
+	ASSERT(pInfo != NULL);
+	FTM_RET				xRet;
+	FTDM_ACTION_PTR	pAction;
+
+	if (FTDM_ACTION_get(pInfo->xID, &pAction) == FTM_RET_OK)
+	{
+		return	FTM_RET_ALREADY_EXIST_OBJECT;
+	}
+
+	xRet = FTDM_DBIF_ACTION_create(pInfo);
+	if (xRet == FTM_RET_OK)
+	{
+		pAction = (FTDM_ACTION_PTR)FTM_MEM_malloc(sizeof(FTDM_ACTION));
+		if (pAction == NULL)
+		{
+			ERROR("Not enough memory!\n");
+			FTDM_DBIF_ACTION_destroy(pInfo->xID);
+			return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		}
+
+		memset(pAction, 0, sizeof(FTDM_ACTION));
+		memcpy(&pAction->xInfo, pInfo, sizeof(FTM_ACTION));
+		xRet = FTM_ACTION_append((FTM_ACTION_PTR)pAction);
+		if (xRet != FTM_RET_OK)
+		{
+			FTDM_DBIF_ACTION_destroy(pInfo->xID);
+			FTM_MEM_free(pAction);
+		}
+	}
+
+	return	xRet;
 }
 
-FTM_RET	FTDM_ACTION_del
+FTM_RET	FTDM_ACTION_destroy
 (
 	FTM_ACTION_ID	xID
 )
 {
-	FTM_RET			xRet;
-	FTM_ACTION_PTR	pAct = NULL;
+	FTM_RET				xRet;
+	FTDM_ACTION_PTR	pAction = NULL;
 
-	xRet = FTM_ACTION_get(xID, &pAct);
+	xRet = FTDM_ACTION_get(xID, &pAction);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	return	FTM_ACTION_destroy(pAct);
+	FTDM_DBIF_ACTION_destroy(xID);
+	FTM_ACTION_remove((FTM_ACTION_PTR)pAction);
+
+	FTM_MEM_free(pAction);
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDM_ACTION_count
@@ -246,19 +276,19 @@ FTM_RET	FTDM_ACTION_count
 FTM_RET	FTDM_ACTION_get
 (
 	FTM_ACTION_ID	xID,
-	FTM_ACTION_PTR	_PTR_ 	ppAct
+	FTDM_ACTION_PTR	_PTR_ 	ppAction
 )
 {
-	return	FTM_ACTION_get(xID, ppAct);
+	return	FTM_ACTION_get(xID, (FTM_ACTION_PTR _PTR_)ppAction);
 }
 
 FTM_RET	FTDM_ACTION_getAt
 (
 	FTM_ULONG				nIndex,
-	FTM_ACTION_PTR	_PTR_ 	ppAct
+	FTDM_ACTION_PTR	_PTR_ 	ppAction
 )
 {
-	return	FTM_ACTION_getAt(nIndex, ppAct);
+	return	FTM_ACTION_getAt(nIndex, (FTM_ACTION_PTR _PTR_)ppAction);
 }
 
 FTM_RET	FTDM_ACTION_showList

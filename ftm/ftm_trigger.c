@@ -233,6 +233,35 @@ FTM_RET	FTM_TRIGGER_destroy(FTM_TRIGGER_PTR pTrigger)
 	return	xRet;
 }
 
+FTM_RET	FTM_TRIGGER_append(FTM_TRIGGER_PTR pTrigger)
+{
+	ASSERT(pTrigger != NULL);
+
+	FTM_RET			xRet;
+
+	if (pTriggerList == NULL)
+	{
+		ERROR("Trigger list is not initialized.\n");
+		FTM_TRIGGER_init();
+	}
+
+	xRet = FTM_LIST_append(pTriggerList, pTrigger);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_TRIGGER_remove(FTM_TRIGGER_PTR pTrigger)
+{
+	ASSERT(pTriggerList != NULL);
+	ASSERT(pTrigger != NULL);
+
+	return	FTM_LIST_remove(pTriggerList, pTrigger);
+}
+
 FTM_RET	FTM_TRIGGER_occurred(FTM_TRIGGER_PTR pTrigger, FTM_EP_DATA_PTR pCurrData, FTM_BOOL_PTR pResult)
 {
 	ASSERT(pTrigger != NULL);

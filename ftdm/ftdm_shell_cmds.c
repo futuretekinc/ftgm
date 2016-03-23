@@ -21,26 +21,26 @@ FTM_RET	FTDM_SHELL_showNodeList(void)
 
 		for(i = 0 ; i < ulCount; i++)
 		{
-			FTM_NODE_PTR	pInfo = NULL;
+			FTDM_NODE_PTR	pNode = NULL;
 
-			xRet = FTDM_NODE_getAt(i, &pInfo);
+			xRet = FTDM_NODE_getAt(i, &pNode);
 			if (xRet == FTM_RET_OK)
 			{
 				MESSAGE("%-16s %-16s %-16s %8d %8d ", 
-					pInfo->pDID, 
-					FTM_NODE_typeString(pInfo->xType), 
-				pInfo->pLocation,
-				pInfo->ulInterval,
-				pInfo->ulTimeout);
+					pNode->xInfo.pDID, 
+					FTM_NODE_typeString(pNode->xInfo.xType), 
+				pNode->xInfo.pLocation,
+				pNode->xInfo.ulInterval,
+				pNode->xInfo.ulTimeout);
 
-				switch(pInfo->xType)
+				switch(pNode->xInfo.xType)
 				{
 				case	FTM_NODE_TYPE_SNMP:
 					{
 						MESSAGE("%-16s %-16s %-16s", 
-							FTDM_CFG_SNMP_getVersionString(pInfo->xOption.xSNMP.ulVersion),
-							pInfo->xOption.xSNMP.pURL,
-							pInfo->xOption.xSNMP.pCommunity);
+							FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion),
+							pNode->xInfo.xOption.xSNMP.pURL,
+							pNode->xInfo.xOption.xSNMP.pCommunity);
 					
 					}
 					break;
@@ -58,9 +58,9 @@ FTM_RET	FTDM_SHELL_showNodeList(void)
 FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 {
 	FTM_RET	xRet;
-	FTM_NODE_PTR	pNodeInfo = NULL;
+	FTDM_NODE_PTR	pNode = NULL;
 
-	xRet = FTDM_NODE_get(pDID, &pNodeInfo);
+	xRet = FTDM_NODE_get(pDID, &pNode);
 	if (xRet != FTM_RET_OK)
 	{
 		MESSAGE("Node[%s] not found.\n", pDID);
@@ -70,13 +70,13 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID)
 		FTM_ULONG	ulCount = 0;
 
 		MESSAGE("%-16s : %s\n", "DID", 		pDID);	
-		MESSAGE("%-16s : %s\n", "TYPE", 	FTM_NODE_typeString(pNodeInfo->xType)); 
-		MESSAGE("%-16s : %s\n", "LOCATION", pNodeInfo->pLocation);
-		MESSAGE("%-16s : %lu\n", "INTERVAL",pNodeInfo->ulInterval);
-		MESSAGE("%-16s : %lu\n", "TIMEOUT", pNodeInfo->ulTimeout);
-		MESSAGE("%-16s : %s\n", "OPT 0", 	FTDM_CFG_SNMP_getVersionString(pNodeInfo->xOption.xSNMP.ulVersion));	
-		MESSAGE("%-16s : %s\n", "OPT 1", 	pNodeInfo->xOption.xSNMP.pURL);	
-		MESSAGE("%-16s : %s\n", "OPT 2", 	pNodeInfo->xOption.xSNMP.pCommunity);	
+		MESSAGE("%-16s : %s\n", "TYPE", 	FTM_NODE_typeString(pNode->xInfo.xType)); 
+		MESSAGE("%-16s : %s\n", "LOCATION", pNode->xInfo.pLocation);
+		MESSAGE("%-16s : %lu\n", "INTERVAL",pNode->xInfo.ulInterval);
+		MESSAGE("%-16s : %lu\n", "TIMEOUT", pNode->xInfo.ulTimeout);
+		MESSAGE("%-16s : %s\n", "OPT 0", 	FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion));	
+		MESSAGE("%-16s : %s\n", "OPT 1", 	pNode->xInfo.xOption.xSNMP.pURL);	
+		MESSAGE("%-16s : %s\n", "OPT 2", 	pNode->xInfo.xOption.xSNMP.pCommunity);	
 
 		if (FTDM_EP_count(0, &ulCount) == FTM_RET_OK)
 		{

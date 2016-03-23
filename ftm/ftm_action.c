@@ -122,6 +122,22 @@ FTM_RET	FTM_ACTION_destroy(FTM_ACTION_PTR pAction)
 	return	xRet;
 }
 
+FTM_RET	FTM_ACTION_append(FTM_ACTION_PTR pAction)
+{
+	ASSERT(pActionList != NULL);
+	ASSERT(pAction != NULL);
+
+	return	FTM_LIST_append(pActionList, pAction);
+}
+
+FTM_RET	FTM_ACTION_remove(FTM_ACTION_PTR pAction)
+{
+	ASSERT(pActionList != NULL);
+	ASSERT(pAction != NULL);
+
+	return	FTM_LIST_remove(pActionList, pAction);
+}
+
 FTM_RET FTM_ACTION_count(FTM_ULONG_PTR pulCount)
 {
 	ASSERT(pActionList != NULL);

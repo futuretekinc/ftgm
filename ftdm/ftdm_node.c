@@ -35,6 +35,7 @@ FTM_RET	FTDM_NODE_loadFromDB
 	FTM_VOID
 )
 {
+	FTM_RET		xRet;
 	FTM_ULONG	nMaxNodeCount = 0;
 
 	if ((FTDM_DBIF_NODE_count(&nMaxNodeCount) == FTM_RET_OK) &&
@@ -67,11 +68,15 @@ FTM_RET	FTDM_NODE_loadFromDB
 
 				memcpy(&pNode->xInfo, &pInfos[i], sizeof(FTM_NODE));
 
-				FTM_NODE_append((FTM_NODE_PTR)pNode);
+				xRet = FTM_NODE_append((FTM_NODE_PTR)pNode);
+				if (xRet != FTM_RET_OK)
+				{
+					FTM_MEM_free(pNode);	
+				}
 			}
 		}
 
-		free(pInfos);
+		FTM_MEM_free(pInfos);
 	}
 
 	return	FTM_RET_OK;
@@ -148,7 +153,7 @@ FTM_RET	FTDM_NODE_saveToDB
 {
 	FTM_RET			i, xRet;
 	FTM_ULONG		ulCount;
-	FTM_NODE_PTR	pNode;
+	FTDM_NODE_PTR	pNode;
 	
 	xRet = FTM_NODE_count(&ulCount);
 	if (xRet != FTM_RET_OK)
@@ -159,16 +164,16 @@ FTM_RET	FTDM_NODE_saveToDB
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		xRet = FTM_NODE_getAt(i, &pNode);
+		xRet = FTDM_NODE_getAt(i, &pNode);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_NODE	xInfo;
 			
-			xRet = FTDM_DBIF_NODE_get(pNode->pDID, &xInfo);
+			xRet = FTDM_DBIF_NODE_get(pNode->xInfo.pDID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
-				TRACE("NODE[%s]	save to DB.\n", pNode->pDID);
-				xRet = FTDM_DBIF_NODE_append(pNode);	
+				TRACE("NODE[%s]	save to DB.\n", pNode->xInfo.pDID);
+				xRet = FTDM_DBIF_NODE_create(&pNode->xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR("Failed to save the new node.[%08x]\n", xRet);
@@ -191,29 +196,35 @@ FTM_RET    FTDM_NODE_create
 {
 	ASSERT(pInfo != NULL);
 
-	FTM_RET    		nRet;
+	FTM_RET    		xRet;
 	FTDM_NODE_PTR	pNode;
 	
-	if (FTM_NODE_get(pInfo->pDID, (FTM_NODE_PTR _PTR_)&pNode) == FTM_RET_OK)
+	if (FTDM_NODE_get(pInfo->pDID, &pNode) == FTM_RET_OK)
 	{
 		return	FTM_RET_ALREADY_EXIST_OBJECT;
 	}
 
-	nRet = FTDM_DBIF_NODE_append(pInfo);
-	if (nRet == FTM_RET_OK)
+	xRet = FTDM_DBIF_NODE_create(pInfo);
+	if (xRet == FTM_RET_OK)
 	{
 		pNode = (FTDM_NODE_PTR)FTM_MEM_malloc(sizeof(FTDM_NODE));
 		if (pNode == NULL)
 		{
 			ERROR("Not enough memory!\n");
+			FTDM_DBIF_NODE_destroy(pInfo->pDID);
 			return	FTM_RET_NOT_ENOUGH_MEMORY;
 		}
-
+		memset(pNode, 0, sizeof(FTDM_NODE));
 		memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
-		nRet = FTM_NODE_append((FTM_NODE_PTR)pNode);
+		xRet = FTM_NODE_append((FTM_NODE_PTR)pNode);
+		if (xRet != FTM_RET_OK)
+		{
+			FTDM_DBIF_NODE_destroy(pInfo->pDID);
+			FTM_MEM_free(pNode);
+		}
 	}
 
-	return  nRet;
+	return  xRet;
 }	  
 
 FTM_RET 	FTDM_NODE_destroy
@@ -221,7 +232,7 @@ FTM_RET 	FTDM_NODE_destroy
 	FTM_CHAR_PTR	pDID
 )
 {
-	FTM_RET			nRet;
+	FTM_RET			xRet;
 	FTDM_NODE_PTR	pNode;
 
 	if (pDID == NULL)
@@ -229,13 +240,13 @@ FTM_RET 	FTDM_NODE_destroy
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	nRet = FTDM_NODE_get(pDID, &pNode);
-	if (nRet != FTM_RET_OK)
+	xRet = FTDM_NODE_get(pDID, &pNode);
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	FTDM_DBIF_NODE_del(pDID);
+	FTDM_DBIF_NODE_destroy(pDID);
 	FTM_NODE_remove((FTM_NODE_PTR)pNode);
 
 	FTM_MEM_free(pNode);
@@ -284,7 +295,7 @@ FTM_RET FTDM_NODE_isExist
 	ASSERT(pExist != NULL);
 
 	FTM_RET			xRet;
-	FTM_NODE_PTR	pNode;
+	FTDM_NODE_PTR	pNode;
 
 	xRet = FTDM_NODE_get(pDID, &pNode);
 	*pExist = (xRet == FTM_RET_OK);
@@ -310,19 +321,19 @@ FTM_RET	FTDM_NODE_showList
 	{
 		for(i = 0 ; i < ulCount ; i++)
 		{
-			FTM_NODE_PTR	pNode;
+			FTDM_NODE_PTR	pNode;
 
-			FTM_NODE_getAt(i, &pNode);
+			FTDM_NODE_getAt(i, &pNode);
 			MESSAGE("\t%16s %16s %16s %8d %8d %16s %16s %16s %16s\n",
-				pNode->pDID,
-				FTM_NODE_typeString(pNode->xType),
-				pNode->pLocation,
-				pNode->ulInterval,
-				pNode->ulTimeout,
-				FTDM_CFG_SNMP_getVersionString(pNode->xOption.xSNMP.ulVersion),
-				pNode->xOption.xSNMP.pURL,
-				pNode->xOption.xSNMP.pCommunity,
-				pNode->xOption.xSNMP.pMIB);
+				pNode->xInfo.pDID,
+				FTM_NODE_typeString(pNode->xInfo.xType),
+				pNode->xInfo.pLocation,
+				pNode->xInfo.ulInterval,
+				pNode->xInfo.ulTimeout,
+				FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion),
+				pNode->xInfo.xOption.xSNMP.pURL,
+				pNode->xInfo.xOption.xSNMP.pCommunity,
+				pNode->xInfo.xOption.xSNMP.pMIB);
 		}
 	}
 

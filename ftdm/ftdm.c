@@ -334,7 +334,8 @@ int main(int nArgc, char *pArgv[])
 	FTM_BOOL	bDBErase = FTM_FALSE;
 	FTM_CHAR	pConfigFileName[1024];
 	FTM_CHAR	pObjectFileName[1024];
-	
+
+	FTM_MEM_init();
 	
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
@@ -467,6 +468,8 @@ int main(int nArgc, char *pArgv[])
 	FTDM_DBIF_close();
 	
 	FTDM_final();
+
+	FTM_MEM_final();
 
 	return	0;
 }

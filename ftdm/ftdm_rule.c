@@ -58,60 +58,60 @@ FTM_RET	FTDM_RULE_loadFromFile
 					xRet = FTM_CONFIG_LIST_getItemAt(&xRules, i, &xRuleItem);	
 					if (xRet == FTM_RET_OK)
 					{
-						FTM_RULE	xRule;
-						FTM_CONFIG_ITEM	xTriggersItem;
+						FTM_RULE		xInfo;
+						FTM_CONFIG_ITEM	xRulesItem;
 						FTM_CONFIG_ITEM	xActionsItem;
 
-						xRet = FTM_CONFIG_ITEM_getItemINT(&xRuleItem, "id", (FTM_INT_PTR)&xRule.xID);
+						xRet = FTM_CONFIG_ITEM_getItemINT(&xRuleItem, "id", (FTM_INT_PTR)&xInfo.xID);
 						if (xRet != FTM_RET_OK)
 						{
 							ERROR("Get trigger id error!\n");
 							continue;
 						}
 			
-						xRule.xParams.ulTriggers = 0;
-						xRet = FTM_CONFIG_ITEM_getChildItem(&xRuleItem, "triggers", &xTriggersItem);
+						xInfo.xParams.ulTriggers = 0;
+
+						xRet = FTM_CONFIG_ITEM_getChildItem(&xRuleItem, "triggers", &xRulesItem);
 						if (xRet != FTM_RET_OK)
 						{
 							ERROR("Get triggers error!\n");
 							continue;
 						}
 				
-						FTM_INT		nTriggerIndex;
-						FTM_ULONG	j, ulTriggerCount;
+						FTM_INT		nRuleIndex;
+						FTM_ULONG	j, ulRuleCount;
 
-						xRet = FTM_CONFIG_LIST_getItemCount(&xTriggersItem, &ulTriggerCount);
+						xRet = FTM_CONFIG_LIST_getItemCount(&xRulesItem, &ulRuleCount);
 						if (xRet != FTM_RET_OK)
 						{
 							ERROR("Get trigger count error!\n");
 							continue;
 						}
 				
-						for(j = 0 ; j < ulTriggerCount ; j++)
+						for(j = 0 ; j < ulRuleCount ; j++)
 						{
-							FTM_CONFIG_ITEM	xTriggerItem;
+							FTM_CONFIG_ITEM	xRuleItem;
 
-							xRet = FTM_CONFIG_LIST_getItemAt(&xTriggersItem, j, &xTriggerItem);	
+							xRet = FTM_CONFIG_LIST_getItemAt(&xRulesItem, j, &xRuleItem);	
 							if (xRet == FTM_RET_OK)
 							{
-								xRet = FTM_CONFIG_ITEM_getINT(&xTriggerItem, (FTM_INT_PTR)&nTriggerIndex);
+								xRet = FTM_CONFIG_ITEM_getINT(&xRuleItem, (FTM_INT_PTR)&nRuleIndex);
 								if (xRet != FTM_RET_OK)
 								{
 									ERROR("Get trigger index error!\n");
 									continue;	
 								}
-								xRule.xParams.pTriggers[xRule.xParams.ulTriggers++] = nTriggerIndex;
+								xInfo.xParams.pTriggers[xInfo.xParams.ulTriggers++] = nRuleIndex;
 							}
 						
 						}
 
-						xRule.xParams.ulActions = 0;
+						xInfo.xParams.ulActions = 0;
 						xRet = FTM_CONFIG_ITEM_getChildItem(&xRuleItem, "actions", &xActionsItem);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
 						}
-				
 						FTM_INT		nActionIndex;
 						FTM_ULONG	ulActionCount;
 
@@ -120,7 +120,7 @@ FTM_RET	FTDM_RULE_loadFromFile
 						{
 							continue;
 						}
-				
+			
 						for(j = 0 ; j < ulActionCount ; j++)
 						{
 							FTM_CONFIG_ITEM	xActionItem;
@@ -134,12 +134,12 @@ FTM_RET	FTDM_RULE_loadFromFile
 									continue;	
 								}
 
-								xRule.xParams.pActions[xRule.xParams.ulActions++] = nActionIndex;
+								xInfo.xParams.pActions[xInfo.xParams.ulActions++] = nActionIndex;
 							}
 						
 						}
 
-						FTM_RULE_createCopy(&xRule, NULL);
+						FTDM_RULE_create(&xInfo);
 					
 					}
 				}
@@ -217,7 +217,7 @@ FTM_RET	FTDM_RULE_saveToDB
 			xRet = FTDM_DBIF_RULE_get(pRule->xID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
-				xRet = FTDM_DBIF_RULE_append(pRule);	
+				xRet = FTDM_DBIF_RULE_create(&xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR("Failed to save the new trigger.[%08x]\n", xRet);
@@ -233,29 +233,64 @@ FTM_RET	FTDM_RULE_saveToDB
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_RULE_add
+FTM_RET	FTDM_RULE_create
 (
-	FTM_RULE_PTR 	pRule
+	FTM_RULE_PTR 	pInfo
 )
 {
-	return	FTM_RULE_createCopy(pRule, NULL);
+	ASSERT(pInfo != NULL);
+	FTM_RET				xRet;
+	FTDM_RULE_PTR	pRule;
+
+	if (FTDM_RULE_get(pInfo->xID, &pRule) == FTM_RET_OK)
+	{
+		return	FTM_RET_ALREADY_EXIST_OBJECT;
+	}
+
+	xRet = FTDM_DBIF_RULE_create(pInfo);
+	if (xRet == FTM_RET_OK)
+	{
+		pRule = (FTDM_RULE_PTR)FTM_MEM_malloc(sizeof(FTDM_RULE));
+		if (pRule == NULL)
+		{
+			ERROR("Not enough memory!\n");
+			FTDM_DBIF_RULE_destroy(pInfo->xID);
+			return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		}
+
+		memset(pRule, 0, sizeof(FTDM_RULE));
+		memcpy(&pRule->xInfo, pInfo, sizeof(FTM_RULE));
+		xRet = FTM_RULE_append((FTM_RULE_PTR)pRule);
+		if (xRet != FTM_RET_OK)
+		{
+			FTDM_DBIF_RULE_destroy(pInfo->xID);
+			FTM_MEM_free(pRule);
+		}
+	}
+
+	return	xRet;
 }
 
-FTM_RET	FTDM_RULE_del
+FTM_RET	FTDM_RULE_destroy
 (
 	FTM_RULE_ID	xID
 )
 {
-	FTM_RET			xRet;
-	FTM_RULE_PTR	pAct = NULL;
+	FTM_RET				xRet;
+	FTDM_RULE_PTR	pRule = NULL;
 
-	xRet = FTM_RULE_get(xID, &pAct);
+	xRet = FTDM_RULE_get(xID, &pRule);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	return	FTM_RULE_destroy(pAct);
+	FTDM_DBIF_RULE_destroy(xID);
+	FTM_RULE_remove((FTM_RULE_PTR)pRule);
+
+	FTM_MEM_free(pRule);
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDM_RULE_count
@@ -271,19 +306,19 @@ FTM_RET	FTDM_RULE_count
 FTM_RET	FTDM_RULE_get
 (
 	FTM_RULE_ID	xID,
-	FTM_RULE_PTR	_PTR_ 	ppAct
+	FTDM_RULE_PTR	_PTR_ 	ppRule
 )
 {
-	return	FTM_RULE_get(xID, ppAct);
+	return	FTM_RULE_get(xID, (FTM_RULE_PTR _PTR_)ppRule);
 }
 
 FTM_RET	FTDM_RULE_getAt
 (
 	FTM_ULONG				nIndex,
-	FTM_RULE_PTR	_PTR_ 	ppAct
+	FTDM_RULE_PTR	_PTR_ 	ppRule
 )
 {
-	return	FTM_RULE_getAt(nIndex, ppAct);
+	return	FTM_RULE_getAt(nIndex, (FTM_RULE_PTR _PTR_)ppRule);
 }
 
 FTM_RET	FTDM_RULE_showList
@@ -294,7 +329,7 @@ FTM_RET	FTDM_RULE_showList
 	FTM_RULE_PTR	pRule;
 	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# Rule Information\n");
-	MESSAGE("\t%4s %8s %8s\n", "ID", "TRIGGER", "ACTION");
+	MESSAGE("\t%4s %8s %8s\n", "ID", "RULE", "ACTION");
 
 	FTM_RULE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -306,7 +341,7 @@ FTM_RET	FTDM_RULE_showList
 			FTM_ULONG	j;
 
 			MESSAGE("\t%4d ", pRule->xID);
-			for(j = 0 ; j < pRule->xParams.ulTriggers ; j++)
+			for(j = 0 ; j < pRule->xParams.ulTriggers; j++)
 			{
 				if (pRule->xParams.pTriggers[j] == 0)
 				{

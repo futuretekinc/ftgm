@@ -100,6 +100,34 @@ FTM_RET	FTM_NODE_destroy(FTM_NODE_PTR pNode)
 	return	xRet;
 }
 
+FTM_RET	FTM_NODE_append(FTM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	FTM_RET		xRet;
+
+	if (pNodeList == NULL)
+	{
+		ERROR("Node list is not initialized.\n");
+		FTM_NODE_init();
+	}
+
+	xRet = FTM_LIST_append(pNodeList, pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_NODE_remove(FTM_NODE_PTR pNODE)
+{
+	ASSERT(pNODE != NULL);
+
+	return	FTM_LIST_remove(pNodeList, pNODE);
+}
+
 FTM_RET	FTM_NODE_count(FTM_ULONG_PTR pulCount)
 {
 	ASSERT(pNodeList != NULL);
