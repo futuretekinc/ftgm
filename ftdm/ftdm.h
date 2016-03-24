@@ -7,7 +7,6 @@
 #include "ftdm_config.h"
 #include "ftdm_node.h"
 #include "ftdm_ep.h"
-#include "ftdm_ep_data.h"
 #include "ftdm_ep_class.h"
 #include "ftdm_server.h"
 

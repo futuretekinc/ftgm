@@ -844,7 +844,7 @@ FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 				xEPID 		= strtol(pArgv[3], NULL, 16);
 
-				pEPData = (FTM_EP_DATA_PTR)malloc(sizeof(FTM_EP_DATA) * nMaxCount);
+				pEPData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * nMaxCount);
 				if (pEPData == NULL)
 				{
 					MESSAGE("System not enough memory!\n");
@@ -896,7 +896,7 @@ FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 					MESSAGE("EndPoint data loading failed [ ERROR = %08lx ]\n", nRet);	
 				}
 
-				free(pEPData);
+				FTM_MEM_free(pEPData);
 			}
 			break;
 

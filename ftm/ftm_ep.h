@@ -28,6 +28,12 @@ typedef	unsigned long	FTM_EP_STATE, 	_PTR_ FTM_EP_STATE_PTR;
 #define	FTM_EP_TYPE_COUNT			0x0B000000
 #define	FTM_EP_TYPE_MULTI			0x7F000000
 
+typedef	enum
+{
+	FTM_EP_LIMIT_TYPE_COUNT = 0,
+	FTM_EP_LIMIT_TYPE_TIME
+}	FTM_EP_LIMIT_TYPE, _PTR_ FTM_EP_LIMIT_TYPE_PTR;
+
 typedef	struct
 {
 	FTM_EP_TYPE		xType;	
@@ -41,6 +47,23 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_ULONG		ulStart;
+	FTM_ULONG		ulEnd;
+}	FTM_EP_LIMIT_TIME, _PTR_ FTM_EP_LIMIT_TIME_PTR;
+
+typedef	struct
+{
+	FTM_EP_LIMIT_TYPE	xType;
+	struct
+	{
+		FTM_ULONG			ulCount;
+		FTM_EP_LIMIT_TIME	xTime;
+	
+	}	xParams;
+}	FTM_EP_LIMIT, _PTR_ FTM_EP_LIMIT_PTR;
+
+typedef	struct
+{
 	FTM_EP_ID		xEPID;
 	FTM_EP_TYPE		xType;
 	FTM_CHAR		pName[FTM_EP_NAME_LEN+1];
@@ -49,11 +72,11 @@ typedef	struct
 	FTM_ULONG		ulTimeout;
 	FTM_ULONG		ulInterval;	
 	FTM_ULONG		ulPeriod;
-	FTM_ULONG		ulLimit;
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
 	FTM_EP_ID		xDEPID;
 	FTM_CHAR		pPID[FTM_DID_LEN+1];
 	FTM_EP_ID		xPEPID;
+	FTM_EP_LIMIT	xLimit;
 }	FTM_EP, _PTR_ FTM_EP_PTR;
 
 FTM_RET	FTM_EP_init(FTM_VOID);

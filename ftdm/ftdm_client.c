@@ -802,7 +802,7 @@ FTM_RET	FTDMC_EP_DATA_get
 	}
 
 	nRespSize = sizeof(FTDM_RESP_EP_DATA_GET_PARAMS) + sizeof(FTM_EP_DATA) * nMaxCount;
-	pResp = (FTDM_RESP_EP_DATA_GET_PARAMS_PTR)malloc(nRespSize);
+	pResp = (FTDM_RESP_EP_DATA_GET_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
 	if (pResp == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
@@ -822,7 +822,7 @@ FTM_RET	FTDMC_EP_DATA_get
 				nRespSize);
 	if (nRet != FTM_RET_OK)
 	{
-		free(pResp);
+		FTM_MEM_free(pResp);
 		return	FTM_RET_ERROR;	
 	}
 
@@ -840,7 +840,7 @@ FTM_RET	FTDMC_EP_DATA_get
 		*pnCount = pResp->nCount;
 	}
 
-	free(pResp);
+	FTM_MEM_free(pResp);
 
 	return	nRet;
 }
@@ -870,7 +870,7 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 	}
 
 	nRespSize = sizeof(FTDM_RESP_EP_DATA_GET_WITH_TIME_PARAMS) + sizeof(FTM_EP_DATA) * nMaxCount;
-	pResp = (FTDM_RESP_EP_DATA_GET_WITH_TIME_PARAMS_PTR)malloc(nRespSize);
+	pResp = (FTDM_RESP_EP_DATA_GET_WITH_TIME_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
 	if (pResp == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
@@ -891,7 +891,7 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 				nRespSize);
 	if (nRet != FTM_RET_OK)
 	{
-		free(pResp);
+		FTM_MEM_free(pResp);
 		return	FTM_RET_ERROR;	
 	}
 
@@ -909,7 +909,7 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 		*pnCount = pResp->nCount;
 	}
 
-	free(pResp);
+	FTM_MEM_free(pResp);
 
 	return	nRet;
 }

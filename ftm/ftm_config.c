@@ -6,6 +6,7 @@
 #include "ftm_trace.h"
 #include "ftm_mem.h"
 
+
 FTM_RET	FTM_CONFIG_create(FTM_CHAR_PTR pFileName, FTM_CONFIG_PTR _PTR_ ppConfig)
 {
 	ASSERT(pFileName != NULL);
@@ -790,6 +791,9 @@ FTM_RET	FTM_CONFIG_ITEM_getEP(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_PTR pEP)
 	ASSERT(pItem != NULL);
 	ASSERT(pEP != NULL);
 
+	FTM_RET			xRet;
+	FTM_CONFIG_ITEM	xLimitItem;
+
 	if (pItem->pSetting == NULL)
 	{
 		return	FTM_RET_CONFIG_INVALID_OBJECT;	
@@ -802,11 +806,115 @@ FTM_RET	FTM_CONFIG_ITEM_getEP(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_PTR pEP)
 	FTM_CONFIG_ITEM_getItemBOOL(pItem, 	"enable",	&pEP->bEnable);
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"interval",	&pEP->ulInterval);
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"timeout",	&pEP->ulTimeout);
+
 	FTM_CONFIG_ITEM_getItemString(pItem,"did",		pEP->pDID, sizeof(pEP->pDID) - 1);
 	FTM_CONFIG_ITEM_getItemULONG(pItem,"depid",		&pEP->xDEPID);
 	FTM_CONFIG_ITEM_getItemString(pItem,"pid",		pEP->pPID, sizeof(pEP->pPID) - 1);
 	FTM_CONFIG_ITEM_getItemULONG(pItem,"pepid",		&pEP->xPEPID);
 
+	xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "limit", &xLimitItem);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_CONFIG_ITEM_getEPLimit(&xLimitItem, &pEP->xLimit);
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_CONFIG_ITEM_getEPLimit(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_LIMIT_PTR pLimit)
+{
+	ASSERT(pItem != NULL);
+	ASSERT(pLimit!= NULL);
+
+	FTM_RET			xRet;
+	FTM_EP_LIMIT	xLimit;
+	FTM_CONFIG_ITEM	xTypeItem;
+
+	xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "type", &xTypeItem);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	switch(config_setting_type(xTypeItem.pSetting))
+	{
+	case	CONFIG_TYPE_INT:
+		{
+			FTM_ULONG	ulValue;
+
+			xRet = FTM_CONFIG_ITEM_getULONG(&xTypeItem, &ulValue);
+			if (xRet != FTM_RET_OK)
+			{
+				return	FTM_RET_CONFIG_INVALID_VALUE;
+			}
+
+			switch(ulValue)
+			{
+			case	FTM_EP_LIMIT_TYPE_COUNT:
+			case	FTM_EP_LIMIT_TYPE_TIME:
+				{
+					xLimit.xType = ulValue;
+				}
+				break;
+
+			default:
+				{
+					return	FTM_RET_CONFIG_INVALID_VALUE;
+				}
+			}
+		}
+		break;
+
+	case	CONFIG_TYPE_STRING:
+		{
+			FTM_CHAR	pType[256];
+
+			memset(pType, 0, sizeof(pType));
+			xRet = FTM_CONFIG_ITEM_getString(&xTypeItem, pType, sizeof(pType) - 1);
+			if (xRet != FTM_RET_OK)
+			{
+				return	FTM_RET_CONFIG_INVALID_VALUE;
+			}
+
+			if (strcasecmp(pType, "count") == 0)
+			{
+				xLimit.xType = 	FTM_EP_LIMIT_TYPE_COUNT;
+			}
+			else if (strcasecmp(pType, "time") == 0)
+			{
+				xLimit.xType = 	FTM_EP_LIMIT_TYPE_TIME;
+			}
+			else
+			{
+				return	FTM_RET_CONFIG_INVALID_VALUE;
+			}
+		}
+		break;
+	
+	default:
+		{
+			return	FTM_RET_CONFIG_INVALID_OBJECT;
+		}
+	}
+
+	switch(xLimit.xType)
+	{
+	case	FTM_EP_LIMIT_TYPE_COUNT:
+		{
+			xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "count", &xLimit.xParams.ulCount);
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_TIME:
+		{
+			xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "start", &xLimit.xParams.xTime.ulStart);
+			xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "end", &xLimit.xParams.xTime.ulEnd);
+		}
+		break;
+	}
+
+	memcpy(pLimit, &xLimit, sizeof(FTM_EP_LIMIT));
+	
 	return	FTM_RET_OK;
 }
 

@@ -335,6 +335,31 @@ FTM_RET FTDMS_SHELL_CMD_ep
 			}
 		}
 		break;
+
+	case	6:
+		{
+			if (strcasecmp(pArgv[2], "data") == 0)
+			{
+				if (strcasecmp(pArgv[3], "del") == 0)
+				{
+					FTM_EP_ID 		xEPID;
+					FTM_INT			nIndex;
+					FTM_ULONG		ulCount = 0;
+
+					xEPID 	= strtoul(pArgv[1], NULL, 16);
+					nIndex	= strtol(pArgv[4], NULL, 10);
+					ulCount = strtoul(pArgv[5], NULL, 10);
+
+					if (nIndex == 0)
+					{
+						MESSAGE("Invalid parameter.\n");	
+						break;
+					}
+
+					FTDM_SHELL_delEPData(xEPID, nIndex, ulCount);
+				}
+			}
+		}
 	}
 
 

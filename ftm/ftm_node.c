@@ -10,17 +10,18 @@ static FTM_LIST_PTR	pNodeList = NULL;
 
 FTM_RET	FTM_NODE_init(FTM_VOID)
 {
+	FTM_RET	xRet;
+
 	if (pNodeList != NULL)
 	{
 		ERROR("Node list is already initialized.\n");
 		return	FTM_RET_ALREADY_INITIALIZED;	
 	}
 
-	pNodeList = (FTM_LIST_PTR)FTM_MEM_malloc(sizeof(FTM_LIST));
-	if (pNodeList == NULL)
+	xRet = FTM_LIST_create(&pNodeList);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Node list is not allocated.\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
+		return	xRet;
 	}
 
 	FTM_LIST_init(pNodeList);
@@ -48,7 +49,9 @@ FTM_RET	FTM_NODE_final(FTM_VOID)
     	FTM_NODE_destroy(pNode);
 	}
 
-	FTM_LIST_final(pNodeList); 
+	FTM_LIST_destroy(pNodeList);
+	pNodeList = NULL;
+
 	return	FTM_RET_OK;
 }
 

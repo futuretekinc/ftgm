@@ -6,7 +6,19 @@
 #include "ftdm_ep.h"
 #include "ftdm_sqlite.h"
 
-static FTM_RET	FTDM_EP_createInternal(FTM_EP_PTR 	pInfo, FTM_BOOL	bNew);
+static FTM_RET	FTDM_EP_createInternal
+(
+	FTM_EP_PTR 		pInfo, 
+	FTM_BOOL		bNew
+);
+
+static FTM_RET FTDM_EP_DATA_infoInternal
+(
+	FTM_EP_ID		xEPID,
+	FTM_ULONG_PTR	pulBeginTime,
+	FTM_ULONG_PTR	pulEndTime,
+	FTM_ULONG_PTR	pulCount
+);
 
 FTM_RET	FTDM_EP_init
 (
@@ -146,7 +158,7 @@ FTM_RET	FTDM_EP_loadConfig
 
 			if (FTDM_CFG_EP_getAt(pConfig, i, &xInfo) == FTM_RET_OK)
 			{
-				FTDM_EP_createInternal(&xInfo, FTM_TRUE);	
+				FTDM_EP_create(&xInfo);	
 			}
 		}
 	}
@@ -235,11 +247,13 @@ FTM_RET	FTDM_EP_createInternal
 		}
 		else
 		{
-			FTM_ULONG	ulCount = 0;
+			FTM_ULONG	ulFirstTime, ulLastTime, ulCount = 0;
 
-			xRet = FTDM_DBIF_EP_DATA_count(pInfo->xEPID, &ulCount);
+			xRet = FTDM_EP_DATA_infoInternal(pInfo->xEPID, &ulFirstTime, &ulLastTime, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
+				pEP->ulFirstTime = ulFirstTime;
+				pEP->ulLastTime = ulLastTime;
 				pEP->ulCount = ulCount;
 			}
 		}
@@ -356,8 +370,8 @@ FTM_RET FTDM_EP_showList(FTM_VOID)
 	FTM_ULONG	i, ulCount;
 
 	MESSAGE("\n# EP Information\n");
-	MESSAGE("\t%8s %16s %16s %8s %8s %8s %8s %16s %8s %16s %8s\n",
-			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID");
+	MESSAGE("\t%8s %16s %16s %8s %8s %8s %8s %16s %8s %16s %8s %8s %8s\n",
+			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID", "COUNT", "TIME");
 	if (FTM_EP_count(&ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -380,13 +394,16 @@ FTM_RET FTDM_EP_showList(FTM_VOID)
 				MESSAGE("%8s ", "DISABLE");
 			}
 
-			MESSAGE("%8lu %8lu %16s %08lx %16s %08lx\n",
+			MESSAGE("%8lu %8lu %16s %08lx %16s %08lx %8d %10d %10d\n",
 				pEP->xInfo.ulInterval,
 				pEP->xInfo.ulTimeout,
 				pEP->xInfo.pDID,
 				pEP->xInfo.xDEPID,
 				pEP->xInfo.pPID,
-				pEP->xInfo.xPEPID);
+				pEP->xInfo.xPEPID,
+				pEP->ulCount,
+				pEP->ulFirstTime,
+				pEP->ulLastTime);
 		}
 	}
 
@@ -401,12 +418,84 @@ FTM_RET	FTDM_EP_DATA_add
 	FTM_EP_DATA_PTR	pData
 )
 {
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP;
+
 	if (pData == NULL)
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
+	
+	xRet = FTDM_EP_get(xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_NOT_EXISTS;
+	}
 
-	return	FTDM_DBIF_EP_DATA_append(xEPID, pData);
+	if (pEP->xInfo.xLimit.xType == FTM_EP_LIMIT_TYPE_COUNT)
+	{
+	
+		if (pEP->ulCount >= pEP->xInfo.xLimit.xParams.ulCount)
+		{
+			FTM_ULONG	ulCount = pEP->ulCount - pEP->xInfo.xLimit.xParams.ulCount + 1;
+
+			xRet = FTDM_DBIF_EP_DATA_del(xEPID, pEP->ulCount - ulCount, ulCount);
+			if (xRet == FTM_RET_OK)
+			{
+				pEP->ulCount -= ulCount;
+
+				FTM_ULONG	ulBeginTime, ulEndTime;
+				xRet = FTDM_DBIF_EP_DATA_info(xEPID,&ulBeginTime, &ulEndTime);
+				if (xRet == FTM_RET_OK)
+				{
+					pEP->ulFirstTime = ulBeginTime;
+					pEP->ulLastTime = ulEndTime;
+				}
+			}
+
+		}
+	}
+
+	xRet = FTDM_DBIF_EP_DATA_append(xEPID, pData);
+	if (xRet == FTM_RET_OK)
+	{
+		pEP->ulCount++;	
+		if ((pEP->ulLastTime == 0) || (pEP->ulLastTime < pData->ulTime))
+		{
+			pEP->ulLastTime = pData->ulTime;
+		}
+
+		if((pEP->ulFirstTime == 0) || (pEP->ulFirstTime > pData->ulTime))
+		{
+			pEP->ulFirstTime = pData->ulTime;
+		}
+	}
+
+	return	xRet;
+}
+
+FTM_RET FTDM_EP_DATA_infoInternal
+(
+	FTM_EP_ID		xEPID,
+	FTM_ULONG_PTR	pulBeginTime,
+	FTM_ULONG_PTR	pulEndTime,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	FTM_RET		xRet;
+
+	if ((pulBeginTime == NULL) || (pulEndTime == NULL) || (pulCount == NULL))
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	xRet = FTDM_DBIF_EP_DATA_info(xEPID, pulBeginTime, pulEndTime);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTDM_DBIF_EP_DATA_count(xEPID, pulCount);
 }
 
 FTM_RET FTDM_EP_DATA_info
@@ -417,20 +506,25 @@ FTM_RET FTDM_EP_DATA_info
 	FTM_ULONG_PTR	pulCount
 )
 {
-	FTM_RET	nRet;
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP;
 
 	if ((pulBeginTime == NULL) || (pulEndTime == NULL) || (pulCount == NULL))
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	nRet = FTDM_DBIF_EP_DATA_info(xEPID, pulBeginTime, pulEndTime);
-	if (nRet != FTM_RET_OK)
+	xRet = FTDM_EP_get(xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	FTM_RET_NOT_EXISTS;
 	}
 
-	return	FTDM_DBIF_EP_DATA_count(xEPID, pulCount);
+	*pulBeginTime = pEP->ulFirstTime;
+	*pulEndTime	= pEP->ulLastTime;
+	*pulCount = pEP->ulCount;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDM_EP_DATA_get
@@ -442,6 +536,15 @@ FTM_RET	FTDM_EP_DATA_get
 	FTM_ULONG_PTR		pCount 
 )
 {
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP;
+
+	xRet = FTDM_EP_get(xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_NOT_EXISTS;
+	}
+
 	return	FTDM_DBIF_EP_DATA_get(
 				xEPID, 
 				nStartIndex,
@@ -460,6 +563,15 @@ FTM_RET	FTDM_EP_DATA_getWithTime
 	FTM_ULONG_PTR		pCount 
 )
 {
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP;
+
+	xRet = FTDM_EP_get(xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_NOT_EXISTS;
+	}
+
 	return	FTDM_DBIF_EP_DATA_getWithTime(
 				xEPID, 
 				nBeginTime, 
@@ -472,11 +584,40 @@ FTM_RET	FTDM_EP_DATA_getWithTime
 FTM_RET	FTDM_EP_DATA_del
 (
 	FTM_EP_ID			xEPID, 
-	FTM_ULONG 			nIndex, 
+	FTM_INT 			nIndex, 
 	FTM_ULONG			nCount
 ) 
 {
-	return	FTDM_DBIF_EP_DATA_del( xEPID, nIndex, nCount);
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP;
+
+	xRet = FTDM_EP_get(xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_NOT_EXISTS;
+	}
+
+	xRet = FTDM_DBIF_EP_DATA_del( xEPID, nIndex, nCount);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_ULONG	ulFirstTime, ulLastTime;
+		FTM_ULONG	ulCount;
+
+		xRet = FTDM_EP_DATA_infoInternal(xEPID, &ulFirstTime, &ulLastTime, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("EP[%08x] information update failed.\n", xEPID);	
+		}
+		else
+		{
+			pEP->ulFirstTime = ulFirstTime;
+			pEP->ulLastTime = ulLastTime;
+			pEP->ulCount = ulCount;
+		}
+	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTDM_EP_DATA_delWithTime
@@ -486,16 +627,58 @@ FTM_RET	FTDM_EP_DATA_delWithTime
 	FTM_ULONG 			nEndTime
 ) 
 {
-	return	FTDM_DBIF_EP_DATA_delWithTime( xEPID, nBeginTime, nEndTime);
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP;
+
+	xRet = FTDM_EP_get(xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_NOT_EXISTS;
+	}
+
+	xRet = FTDM_DBIF_EP_DATA_delWithTime( xEPID, nBeginTime, nEndTime);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_ULONG	ulFirstTime, ulLastTime;
+		FTM_ULONG	ulCount;
+
+		xRet = FTDM_EP_DATA_infoInternal(xEPID, &ulFirstTime, &ulLastTime, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("EP[%08x] information update failed.\n", xEPID);	
+		}
+		else
+		{
+			pEP->ulFirstTime = ulFirstTime;
+			pEP->ulLastTime = ulLastTime;
+			pEP->ulCount = ulCount;
+		}
+	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTDM_EP_DATA_count
 (
 	FTM_EP_ID			xEPID, 
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR		pulCount
 ) 
 {
-	return	FTDM_DBIF_EP_DATA_count(xEPID, pCount);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP;
+
+	xRet = FTDM_EP_get(xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_NOT_EXISTS;
+	}
+
+	*pulCount = pEP->ulCount;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDM_EP_DATA_countWithTime
@@ -503,10 +686,21 @@ FTM_RET	FTDM_EP_DATA_countWithTime
 	FTM_EP_ID			xEPID, 
 	FTM_ULONG 			nBeginTime, 
 	FTM_ULONG 			nEndTime,
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR		pulCount
 ) 
 {
-	return	FTDM_DBIF_EP_DATA_countWithTime( xEPID, nBeginTime, nEndTime, pCount);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP;
+
+	xRet = FTDM_EP_get(xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_NOT_EXISTS;
+	}
+
+	return	FTDM_DBIF_EP_DATA_countWithTime( xEPID, nBeginTime, nEndTime, pulCount);
 }
 
 FTM_INT	FTDM_EPSeeker(const void *pElement, const void *pKey)

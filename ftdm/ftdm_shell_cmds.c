@@ -5,7 +5,6 @@
 #include "ftdm_shell_cmds.h"
 #include "ftdm_node.h"
 #include "ftdm_ep.h"
-#include "ftdm_ep_data.h"
 #include "ftdm_config.h"
 
 FTM_RET	FTDM_SHELL_showNodeList(void)
@@ -219,6 +218,14 @@ FTM_RET	FTDM_SHELL_showEPInfo(FTM_EP_ID xEPID)
 	MESSAGE("%-16s : %08x\n", 	"DEPID", 	pEP->xInfo.xDEPID);
 	MESSAGE("%-16s : %s\n", 	"PID", 		pEP->xInfo.pPID);
 	MESSAGE("%-16s : %08x\n", 	"PEPID", 	pEP->xInfo.xPEPID);
+	if (pEP->xInfo.xLimit.xType == FTM_EP_LIMIT_TYPE_COUNT)
+	{
+		MESSAGE("%-16s : %s(%d)\n", 	"LIMIT", 	"COUNT", pEP->xInfo.xLimit.xParams.ulCount);
+	}
+	else
+	{
+		MESSAGE("%-16s : %s(%d:%d)\n", 	"LIMIT", 	"TIME", pEP->xInfo.xLimit.xParams.xTime.ulStart,pEP->xInfo.xLimit.xParams.xTime.ulEnd);
+	}
 
 	xRet = FTDM_EP_DATA_count(xEPID, &ulDataCount);
 	if (xRet == FTM_RET_OK)
@@ -319,3 +326,40 @@ FTM_RET	FTDM_SHELL_showEPData(FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCo
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_SHELL_delEPData(FTM_EP_ID	xEPID, FTM_INT nIndex, FTM_ULONG ulCount)
+{
+	FTM_RET	xRet;
+	FTM_ULONG	ulTotalCount, ulNewCount;
+
+	xRet = FTDM_EP_DATA_count(xEPID, &ulTotalCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("%08x is not exists.\n", xEPID);
+		return	xRet;
+	}
+
+	if (nIndex > 0)
+	{
+		xRet = FTDM_EP_DATA_del(xEPID, nIndex - 1, ulCount);
+	}
+	else
+	{
+		xRet = FTDM_EP_DATA_del(xEPID, ulTotalCount + nIndex , ulCount);
+	}
+
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTDM_EP_DATA_count(xEPID, &ulNewCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("%08x is not exists.\n", xEPID);
+		return	xRet;
+	}
+
+	MESSAGE("%d data has been deleted.\n", ulTotalCount - ulNewCount);
+
+	return	xRet;
+}

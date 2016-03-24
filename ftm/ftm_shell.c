@@ -196,10 +196,27 @@ FTM_RET FTM_SHELL_getCmd(FTM_CHAR_PTR pCmdString, FTM_SHELL_CMD_PTR _PTR_ ppCmd)
 {
 	FTM_SHELL_CMD_PTR pCmd;
 
-	if (FTM_LIST_get(pCmdList, pCmdString, (FTM_VOID_PTR _PTR_)&pCmd) == FTM_RET_OK)
+	FTM_LIST_iteratorStart(pCmdList);
+	while(FTM_LIST_iteratorNext(pCmdList, &pCmd) == FTM_RET_OK)
 	{
-		*ppCmd = pCmd;
-		return	FTM_RET_OK;
+		if (strcasecmp(pCmdString, pCmd->pString) == 0)
+		{
+			*ppCmd = pCmd;
+			return	FTM_RET_OK;
+		}
+	}
+
+	if (strlen(pCmdString) > 1)
+	{
+		FTM_LIST_iteratorStart(pCmdList);
+		while(FTM_LIST_iteratorNext(pCmdList, &pCmd) == FTM_RET_OK)
+		{
+			if (strncasecmp(pCmdString, pCmd->pString, strlen(pCmdString)) == 0)
+			{
+				*ppCmd = pCmd;
+				return	FTM_RET_OK;
+			}
+		}
 	}
 
 	return	FTM_RET_INVALID_COMMAND;

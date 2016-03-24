@@ -95,7 +95,7 @@ FTM_RET FTDM_EP_CLASS_final
 	FTM_LIST_iteratorStart(&xEPClassInfoList);
 	while(FTM_LIST_iteratorNext(&xEPClassInfoList, (FTM_VOID_PTR _PTR_)&pEPClassInfo) == FTM_RET_OK)
 	{
-		free(pEPClassInfo);	
+		FTM_MEM_free(pEPClassInfo);	
 	}	
 
 	FTM_LIST_final(&xEPClassInfoList);
@@ -123,7 +123,7 @@ FTM_RET	FTDM_EP_CLASS_add
 		return	FTM_RET_ALREADY_EXIST_OBJECT;	
 	}
 
-	pNewInfo = (FTM_EP_CLASS_PTR)malloc(sizeof(FTM_EP_CLASS));
+	pNewInfo = (FTM_EP_CLASS_PTR)FTM_MEM_malloc(sizeof(FTM_EP_CLASS));
 	if (pNewInfo == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -135,7 +135,7 @@ FTM_RET	FTDM_EP_CLASS_add
 	
 	if (nRet != FTM_RET_OK)
 	{
-		free(pNewInfo);
+		FTM_MEM_free(pNewInfo);
 		return	nRet;
 	}
 
@@ -157,7 +157,7 @@ FTM_RET	FTDM_EP_CLASS_del
 	}
 
 	FTDM_EP_CLASS_LIST_del(pEPClassInfo);
-	free(pEPClassInfo);
+	FTM_MEM_free(pEPClassInfo);
 
 	return	FTM_RET_OK;
 }

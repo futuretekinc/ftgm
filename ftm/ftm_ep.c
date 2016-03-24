@@ -19,16 +19,17 @@ static FTM_LIST_PTR	pEPList = NULL;
 
 FTM_RET	FTM_EP_init(FTM_VOID)
 {
+	FTM_RET	xRet;
+
 	if (pEPList != NULL)
 	{
 		ERROR("EP list is already initialized.\n");
 		return	FTM_RET_ALREADY_INITIALIZED;	
 	}
 
-	pEPList = (FTM_LIST_PTR)FTM_MEM_malloc(sizeof(FTM_LIST));
-	if (pEPList == NULL)
+	xRet = FTM_LIST_create(&pEPList);	
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP list is not allocated.\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
@@ -54,7 +55,8 @@ FTM_RET	FTM_EP_final(FTM_VOID)
     	FTM_EP_destroy(pEP);
 	}
 
-	FTM_LIST_final(pEPList);
+	FTM_LIST_destroy(pEPList);
+	pEPList = NULL;
 
 	return	FTM_RET_OK;
 }

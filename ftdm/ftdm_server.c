@@ -119,9 +119,6 @@ FTM_RET	FTDMS_start(FTDM_SERVER_PTR pCTX)
 {
 	ASSERT(pCTX != NULL);
 
-	FTM_LIST_init(&pCTX->xSessionList);
-	FTM_LIST_setSeeker(&pCTX->xSessionList, FTDMS_SESSION_LIST_seeker);
-
 	if (pthread_create(&pCTX->xThread, NULL, FTDMS_process, (void *)pCTX) < 0)
 	{
 		return	FTM_RET_THREAD_CREATION_ERROR;
@@ -210,12 +207,18 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 			}
 			else
 			{
+				FTM_INT	nRet;
 				TRACE("The new session(%08x) has beed connected\n", hClient);
 
 				pSession->pServer = pCTX;
 				pSession->hSocket = hClient;
 				memcpy(&pSession->xPeer, &xClient, sizeof(xClient));
-				pthread_create(&pSession->xThread, NULL, FTDMS_service, pSession);
+				nRet = pthread_create(&pSession->xThread, NULL, FTDMS_service, pSession);
+				if (nRet != 0)
+				{
+					ERROR("Can't create a thread[%d]\n", nRet);
+					FTM_MEM_free(pSession);			
+				}
 			}
 		}
 		usleep(10000);
@@ -229,6 +232,8 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 		pSession->bStop = FTM_TRUE;
 		shutdown(pSession->hSocket, SHUT_RD);
 		pthread_join(pSession->xThread, 0);
+
+		FTM_MEM_free(pSession);
 	}
 
 error:

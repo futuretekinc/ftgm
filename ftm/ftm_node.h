@@ -41,6 +41,7 @@ typedef struct
 	FTM_ULONG	ulVersion;	
 	FTM_CHAR	pDevice[FTM_DEVICE_NAME_LEN + 1];
 } 	FTM_NODE_OPT_LORA, _PTR_ FTM_NODE_OPT_LORA_PTR;
+
 typedef	struct 
 {
 	FTM_CHAR			pDID[FTM_DID_LEN + 1];
