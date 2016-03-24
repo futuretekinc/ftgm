@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "ftm_log.h"
+#include "ftm_trace.h"
 
 FTM_RET	FTM_PRINT_printToTerm(FTM_CHAR_PTR szmsg);
 FTM_RET	FTM_PRINT_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
