@@ -591,4 +591,76 @@ typedef	struct
 	FTM_ACTION			xAction;
 }	FTDM_RESP_ACTION_GET_AT_PARAMS, _PTR_	FTDM_RESP_ACTION_GET_AT_PARAMS_PTR;
 
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RULE     		xRule;
+}	FTDM_REQ_RULE_ADD_PARAMS, _PTR_ FTDM_REQ_RULE_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTDM_RESP_RULE_ADD_PARAMS, _PTR_	FTDM_RESP_RULE_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RULE_ID			xID;
+}	FTDM_REQ_RULE_DEL_PARAMS, _PTR_	FTDM_REQ_RULE_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTDM_RESP_RULE_DEL_PARAMS, _PTR_ 	FTDM_RESP_RULE_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+}	FTDM_REQ_RULE_COUNT_PARAMS, _PTR_ 	FTDM_REQ_RULE_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			nCount;
+}	FTDM_RESP_RULE_COUNT_PARAMS, _PTR_	FTDM_RESP_RULE_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RULE_ID		xID;
+}	FTDM_REQ_RULE_GET_PARAMS, _PTR_ 	FTDM_REQ_RULE_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_RULE			xRule;
+}	FTDM_RESP_RULE_GET_PARAMS, _PTR_	FTDM_RESP_RULE_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ULONG			nIndex;
+}	FTDM_REQ_RULE_GET_AT_PARAMS, _PTR_	FTDM_REQ_RULE_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_RULE			xRule;
+}	FTDM_RESP_RULE_GET_AT_PARAMS, _PTR_	FTDM_RESP_RULE_GET_AT_PARAMS_PTR;
+
 #endif

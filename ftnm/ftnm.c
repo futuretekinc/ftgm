@@ -23,14 +23,16 @@ FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX);
 FTM_RET			FTNM_TASK_stopService(FTNM_CONTEXT_PTR pCTX);
 
 static 	FTM_RET	FTNM_callback(FTNM_SERVICE_ID xID, FTNM_MSG_TYPE xMsg, FTM_VOID_PTR pData);
-static	FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg);
+//static	FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg);
 static	FTNM_SERVER		xServer;
 static	FTNM_SNMPC		xSNMPC;
 static	FTNM_SNMPTRAPD	xSNMPTRAPD;
 static	FTNM_DMC		xDMC;
 static  FTNM_MSG_QUEUE	xMsgQ;
 
-		FTNM_TRIGGERM		xTriggerM;
+		FTNM_TRIGGERM	xTriggerM;
+		FTNM_ACTIONM	xActionM;
+		FTNM_RULEM_PTR	pRuleM = NULL;
 static 	FTNM_CONTEXT	xCTX;
 
 static 	FTNM_SERVICE	pServices[] =
@@ -104,6 +106,10 @@ FTM_RET	FTNM_init(FTM_VOID)
 	FTNM_SERVICE_init(pServices, sizeof(pServices) / sizeof(FTNM_SERVICE));
 
 	FTNM_TRIGGERM_init(&xTriggerM);
+	FTNM_ACTIONM_init(&xActionM);
+	FTNM_RULEM_create(&pRuleM);
+	FTNM_RULEM_setTriggerM(pRuleM, &xTriggerM);
+	FTNM_RULEM_setActionM(pRuleM, &xActionM);
 
 	TRACE("FTNM initialization done.\n");
 	return	FTM_RET_OK;
@@ -111,6 +117,8 @@ FTM_RET	FTNM_init(FTM_VOID)
 
 FTM_RET	FTNM_final(FTM_VOID)
 {
+	FTNM_RULEM_destroy(&pRuleM);
+	FTNM_ACTIONM_final(&xActionM);
 	FTNM_TRIGGERM_final(&xTriggerM);
 
 	FTNM_SERVICE_final();
@@ -347,10 +355,60 @@ FTM_RET	FTNM_TASK_sync(FTNM_CONTEXT_PTR pCTX)
 			continue;
 		}
 
-		xRet = FTNM_TRIGGERM_create(&xTriggerM, &xEvent);
+		xRet = FTNM_TRIGGERM_add(&xTriggerM, &xEvent);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new event can not registration!\n") ;
+			continue;
+		}
+	}
+
+	xRet = FTDMC_ACTION_count(&xDMC.xSession, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTM_ACTION	xAction;
+
+		xRet = FTDMC_ACTION_getAt(&xDMC.xSession, i, &xAction);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Action[%d] data load failed.\n", i);	
+			continue;
+		}
+
+		xRet = FTNM_ACTIONM_add(&xActionM, &xAction);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("The new action event can not registration!\n") ;
+			continue;
+		}
+	}
+
+	xRet = FTDMC_RULE_count(&xDMC.xSession, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTM_RULE	xRule;
+
+		xRet = FTDMC_RULE_getAt(&xDMC.xSession, i, &xRule);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Rule[%d] data load failed.\n", i);	
+			continue;
+		}
+
+		xRet = FTNM_RULEM_append(pRuleM, &xRule);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("The new action event can not registration!\n") ;
 			continue;
 		}
 	}
@@ -366,6 +424,8 @@ FTM_RET	FTNM_TASK_startEP(FTNM_CONTEXT_PTR pCTX)
 	FTNM_EP_PTR	pEP;
 	FTM_ULONG	i, ulCount;
 	
+	FTNM_RULEM_start(pRuleM);
+	FTNM_ACTIONM_start(&xActionM);
 	FTNM_TRIGGERM_start(&xTriggerM);
 	FTNM_EP_count(0, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -583,6 +643,8 @@ FTM_RET	FTNM_TASK_stopService(FTNM_CONTEXT_PTR pCTX)
 	FTM_ULONG	i, ulCount;
 	
 	FTNM_TRIGGERM_stop(&xTriggerM);
+	FTNM_ACTIONM_stop(&xActionM);
+	FTNM_RULEM_stop(pRuleM);
 	FTNM_EP_count(0, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
@@ -632,10 +694,12 @@ FTM_RET	FTNM_getEPDataCount(FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
 	return	FTNM_DMC_EP_DATA_count(&xDMC, xEPID, pulCount);
 }
 
+#if 0
 FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg)
 {
 	return	FTNM_MSGQ_sendSNMPTrap(&xMsgQ, pTrapMsg);
 }
+#endif
 
 FTM_RET	FTNM_NOTIFY_quit(FTM_VOID)
 {

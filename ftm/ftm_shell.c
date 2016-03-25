@@ -22,12 +22,15 @@ static FTM_RET FTM_SHELL_getCmd
 static FTM_RET	FTM_SHELL_cmdHelp
 (
 	FTM_INT 		nArgc, 
-	FTM_CHAR_PTR 	pArgv[]
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
 );
 
 static FTM_RET	FTM_SHELL_cmdQuit
 (
-	FTM_INT nArgc, FTM_CHAR_PTR pArgv[]
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
 );
 
 static int FTM_SHELL_seeker
@@ -76,6 +79,7 @@ FTM_SHELL_CMD	xDefaultCmds[] =
 
 FTM_CHAR		pConsolePrompt[128] = "FTM > ";
 FTM_LIST_PTR	pCmdList = NULL;
+FTM_VOID_PTR	pGlobalData = NULL;
 
 FTM_RET FTM_SHELL_run(void)
 {
@@ -102,7 +106,7 @@ FTM_RET FTM_SHELL_run(void)
 			nRet = FTM_SHELL_getCmd(pArgv[0], &pCmd);
 			if (nRet == FTM_RET_OK)
 			{
-				nRet = pCmd->function(nArgc, pArgv);
+				nRet = pCmd->function(nArgc, pArgv, pGlobalData);
 				switch(nRet)
 				{
 				case	FTM_RET_INVALID_ARGUMENTS:
@@ -121,7 +125,7 @@ FTM_RET FTM_SHELL_run(void)
 			{
 				FTM_CHAR_PTR pNewArgv[] = {"help"};
 				MESSAGE("%s is invalid command.\n", pArgv[0]);
-				FTM_SHELL_cmdHelp(1, pNewArgv);
+				FTM_SHELL_cmdHelp(1, pNewArgv, pGlobalData);
 
 			}
 		}
@@ -151,6 +155,16 @@ FTM_RET FTM_SHELL_init(FTM_VOID)
 FTM_RET	FTM_SHELL_final(FTM_VOID)
 {
 	FTM_LIST_destroy(pCmdList);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_SHELL_setGlobalData
+(
+	FTM_VOID_PTR	pData
+)
+{
+	pGlobalData = pData;	
 
 	return	FTM_RET_OK;
 }
@@ -240,7 +254,7 @@ FTM_RET	FTM_SHELL_parseLine(FTM_CHAR_PTR pLine, FTM_CHAR_PTR pArgv[], FTM_INT nM
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_SHELL_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTM_SHELL_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)
 {
 
 	switch(nArgc)
@@ -275,7 +289,7 @@ FTM_RET	FTM_SHELL_cmdHelp(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_SHELL_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTM_SHELL_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)
 {
 	return	FTM_RET_SHELL_QUIT;
 }

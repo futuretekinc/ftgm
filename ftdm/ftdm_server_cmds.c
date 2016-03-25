@@ -14,12 +14,12 @@
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
 
-FTM_RET	FTDMS_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTDMS_SHELL_CMD_object(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTDMS_SHELL_CMD_session(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTDMS_SHELL_CMD_trace(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTDMS_SHELL_CMD_node(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTDMS_SHELL_CMD_ep(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTDMS_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_object(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_session(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_trace(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_node(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_ep(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR	pData);
 FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
 
 static FTDM_CFG	xConfig;
@@ -75,7 +75,8 @@ FTM_CHAR_PTR	FTDMS_pPrompt = "FTDMS> ";
 FTM_RET	FTDMS_SHELL_CMD_config
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR	pData
 )
 {
 	switch (nArgc)
@@ -98,7 +99,8 @@ FTM_RET	FTDMS_SHELL_CMD_config
 FTM_RET	FTDMS_SHELL_CMD_object
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR	pData
 )
 {
 	FTM_RET	xRet;
@@ -143,7 +145,8 @@ FTM_RET	FTDMS_SHELL_CMD_object
 FTM_RET	FTDMS_SHELL_CMD_session
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR	pData
 )
 {
 	FTM_RET			xRet;
@@ -180,7 +183,8 @@ FTM_RET	FTDMS_SHELL_CMD_session
 FTM_RET FTDMS_SHELL_CMD_trace
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR	pData
 )
 {
 	switch(nArgc)
@@ -225,7 +229,8 @@ FTM_RET FTDMS_SHELL_CMD_trace
 FTM_RET FTDMS_SHELL_CMD_node
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR	pData
 )
 {
 	switch(nArgc)
@@ -263,7 +268,8 @@ FTM_RET FTDMS_SHELL_CMD_node
 FTM_RET FTDMS_SHELL_CMD_ep
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR	pData
 )
 {
 

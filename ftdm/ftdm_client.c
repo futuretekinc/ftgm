@@ -1247,6 +1247,10 @@ FTM_RET	FTDMC_TRIGGER_getAt
 	return	xResp.nRet;
 }
 
+/////////////////////////////////////////////////////////////////////
+//
+//
+/////////////////////////////////////////////////////////////////////
 FTM_RET	FTDMC_ACTION_add
 (
 	FTDMC_SESSION_PTR		pSession,
@@ -1413,6 +1417,181 @@ FTM_RET	FTDMC_ACTION_getAt
 	if (xResp.nRet == FTM_RET_OK)
 	{
 		memcpy(pAct, &xResp.xAction, sizeof(FTM_ACTION));
+	}
+
+	return	xResp.nRet;
+}
+
+/////////////////////////////////////////////////////////////////////
+//
+//
+/////////////////////////////////////////////////////////////////////
+FTM_RET	FTDMC_RULE_add
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_RULE_PTR     		pAct
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pAct != NULL);
+
+	FTM_RET						nRet;
+	FTDM_REQ_RULE_ADD_PARAMS	xReq;
+	FTDM_RESP_RULE_ADD_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_RULE_ADD;
+	xReq.nLen	=	sizeof(xReq);
+	memcpy(&xReq.xRule, pAct, sizeof(FTM_RULE));
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_RULE_del
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_RULE_ID     		xRuleionID
+)
+{
+	ASSERT(pSession != NULL);
+
+	FTM_RET						nRet;
+	FTDM_REQ_RULE_DEL_PARAMS	xReq;
+	FTDM_RESP_RULE_DEL_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_RULE_DEL;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.xID	=	xRuleionID;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_RULE_count
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG_PTR			pulCount
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET							nRet;
+ 	FTDM_REQ_RULE_COUNT_PARAMS		xReq;
+	FTDM_RESP_RULE_COUNT_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_RULE_COUNT;
+	xReq.nLen	=	sizeof(xReq);
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		*pulCount = xResp.nCount;
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_RULE_get
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_RULE_ID     		xRuleionID,
+	FTM_RULE_PTR			pAct
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pAct != NULL);
+
+	FTM_RET						nRet;
+ 	FTDM_REQ_RULE_GET_PARAMS	xReq;
+	FTDM_RESP_RULE_GET_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_RULE_GET;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.xID	=	xRuleionID;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pAct, &xResp.xRule, sizeof(FTM_RULE));
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_RULE_getAt
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				ulIndex,
+	FTM_RULE_PTR			pAct
+
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pAct != NULL);
+
+	FTM_RET							nRet;
+ 	FTDM_REQ_RULE_GET_AT_PARAMS	xReq;
+	FTDM_RESP_RULE_GET_AT_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_RULE_GET_AT;
+	xReq.nLen 	=	sizeof(xReq);
+	xReq.nIndex	=	ulIndex;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pAct, &xResp.xRule, sizeof(FTM_RULE));
 	}
 
 	return	xResp.nRet;

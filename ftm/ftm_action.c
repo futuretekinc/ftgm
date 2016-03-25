@@ -167,3 +167,13 @@ FTM_BOOL	FTM_ACTION_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndi
 
 	return	((FTM_ACTION_PTR)pElement)->xID == *((FTM_ACTION_ID_PTR)pIndicator);
 }
+
+FTM_CHAR_PTR	FTM_ACTION_typeString(FTM_ACTION_TYPE xType)
+{
+	switch(xType)
+	{
+	case	FTM_ACTION_TYPE_SET: 	return	"SET";
+	}
+
+	return	"UNKNOWN";
+}

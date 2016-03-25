@@ -6,160 +6,174 @@
 #include "ftnm_msg.h"
 #include "libconfig.h"
 
-#define	FTNM_ACTION_LOOP_INTERVAL	1000	// 1000 us
+#define	FTNM_ACTIONM_LOOP_INTERVAL	1000	// 1000 us
+
+#if 0
+#define	TRACE_CALL()	TRACE("%s[%d]\n", __func__, __LINE__)
+#else
+#define	TRACE_CALL()
+#endif
 
 typedef enum
 {
-	FTNM_ACTION_MSG_TYPE_RUN = 0
-}	FTNM_ACTION_MSG_TYPE, _PTR_ FTNM_ACTION_MSG_TYPE_PTR;
+	FTNM_ACTIONM_MSG_TYPE_RUN = 0
+}	FTNM_ACTIONM_MSG_TYPE, _PTR_ FTNM_ACTIONM_MSG_TYPE_PTR;
 
 typedef	struct
 {
-	FTNM_ACTION_MSG_TYPE	xType;
+	FTNM_ACTIONM_MSG_TYPE	xType;
 	FTM_ACTION_ID			xActID;
-}	FTNM_ACTION_MSG, _PTR_ FTNM_ACTION_MSG_PTR;
+}	FTNM_ACTIONM_MSG, _PTR_ FTNM_ACTIONM_MSG_PTR;
 
-static FTM_VOID_PTR FTNM_ACTION_process(FTM_VOID_PTR pData);
-static FTM_BOOL		FTNM_ACTION_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+static FTM_VOID_PTR FTNM_ACTIONM_process(FTM_VOID_PTR pData);
+static FTM_BOOL		FTNM_ACTIONM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
-static FTNM_ACTION_MANAGER_PTR	pCTX = NULL;
-static FTM_LIST_PTR				pActionList = NULL;
+static FTM_BOOL	bInit = FTM_FALSE;
+static FTM_LIST	xList;
+static sem_t	xLock;
 
-FTM_RET	FTNM_ACTION_init(FTM_VOID)
+FTM_RET	FTNM_ACTIONM_create(FTNM_ACTIONM_PTR _PTR_ ppActionM)
 {
-	FTM_RET	xRet;
+	ASSERT(ppActionM != NULL);
 
-	if (pCTX != NULL)
+	FTM_RET				xRet;
+	FTNM_ACTIONM_PTR	pActionM;
+
+	if (!bInit)
 	{
-		ERROR("The event manager is  not initialized.\n");
-		return	FTM_RET_ALREADY_INITIALIZED;	
+		xRet = FTM_LIST_init(&xList);
+		if (xRet != FTM_RET_OK)
+		{
+			return	xRet;	
+		}
+		bInit = FTM_TRUE;	
+
+		if (sem_init(&xLock, 0, 1) < 0)
+		{
+			return	FTM_RET_ERROR;	
+		}
 	}
 
-	pCTX = (FTNM_ACTION_MANAGER_PTR)FTM_MEM_malloc(sizeof(FTNM_ACTION_MANAGER));
-	if (pCTX == NULL)
+
+	pActionM = (FTNM_ACTIONM_PTR)FTM_MEM_malloc(sizeof(FTNM_ACTIONM));
+	if (pActionM == NULL)
 	{
-		ERROR("Can't allocated memory[%d].\n", sizeof(FTNM_ACTION_MANAGER));
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	memset(pCTX, 0, sizeof(FTNM_ACTION_MANAGER));
-
-	xRet = FTM_MSGQ_create(&pCTX->pMsgQ);
+	xRet = FTNM_ACTIONM_init(pActionM);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message Queue creation failed[%08x].\n", xRet);
-		FTM_MEM_free(pCTX);
+		FTM_MEM_free(pActionM);	
+	}
+	else
+	{
+		FTM_LIST_append(&xList, pActionM);
+
+		*ppActionM = pActionM;	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTNM_ACTIONM_destroy(FTNM_ACTIONM_PTR _PTR_ ppActionM)
+{
+	ASSERT(ppActionM != NULL);
+	
+	FTM_RET	xRet;
+	
+	if (*ppActionM == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	xRet = FTM_LIST_remove(&xList, *ppActionM);
+	if (xRet != FTM_RET_OK)
+	{
 		return	xRet;	
 	}
 
-	xRet = FTM_LIST_create(&pActionList);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Actor list creation failed[%08x].\n", xRet);
-		FTM_MSGQ_destroy(pCTX->pMsgQ);
-		FTM_MEM_free(pCTX);
-		return	xRet;	
-	}
+	FTNM_ACTIONM_final(*ppActionM);
+	FTM_MEM_free(*ppActionM);
 
-	FTM_LIST_setSeeker(pActionList, FTNM_ACTION_seeker);
+	*ppActionM = NULL;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_ACTION_final(FTM_VOID)
+FTM_RET	FTNM_ACTIONM_init(FTNM_ACTIONM_PTR pActionM)
 {
+	ASSERT(pActionM != NULL);
+	FTM_RET	xRet;
+
+	TRACE_CALL();
+
+	memset(pActionM, 0, sizeof(FTNM_ACTIONM));
+
+	xRet = FTM_MSGQ_create(&pActionM->pMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message Queue creation failed[%08x].\n", xRet);
+		return	xRet;	
+	}
+
+	xRet = FTM_LIST_create(&pActionM->pActionList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Actor list creation failed[%08x].\n", xRet);
+		FTM_MSGQ_destroy(pActionM->pMsgQ);
+		return	xRet;	
+	}
+
+	FTM_LIST_setSeeker(pActionM->pActionList, FTNM_ACTIONM_seeker);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_ACTIONM_final(FTNM_ACTIONM_PTR pActionM)
+{
+	ASSERT(pActionM != NULL);
+
 	FTM_RET			xRet;
 	FTNM_ACTION_PTR	pAction;
 
-	if (pCTX == NULL)
+	TRACE_CALL();
+
+	FTM_MSGQ_destroy(pActionM->pMsgQ);
+	pActionM->pMsgQ = NULL;
+
+
+	FTM_LIST_iteratorStart(pActionM->pActionList);
+	while(FTM_LIST_iteratorNext(pActionM->pActionList, (FTM_VOID_PTR _PTR_)&pAction) == FTM_RET_OK)
 	{
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
-
-	FTM_MSGQ_destroy(pCTX->pMsgQ);
-	pCTX->pMsgQ = NULL;
-
-
-	FTM_LIST_iteratorStart(pActionList);
-	while(FTM_LIST_iteratorNext(pActionList, (FTM_VOID_PTR _PTR_)&pAction) == FTM_RET_OK)
-	{
-		xRet = FTM_LIST_remove(pActionList, pAction);
+		xRet = FTM_LIST_remove(pActionM->pActionList, pAction);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_MEM_free(pAction);	
 		}
 	}
 
-	FTM_MEM_free(pCTX);
-
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_ACTION_loadConfig(FTM_CHAR_PTR pFileName)
+FTM_RET	FTNM_ACTIONM_loadConfig(FTNM_ACTIONM_PTR pActionM, FTM_CHAR_PTR pFileName)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pActionM != NULL);
 	ASSERT(pFileName != NULL);
-#if 0
-	config_t			xConfig;
-	config_setting_t	*pSection;
-	
-	config_init(&xConfig);
-	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
-	{
-		return	FTM_RET_CONFIG_LOAD_FAILED;
-	}
 
-	pSection = config_lookup(&xConfig, "event");
-	if (pSection != NULL)
-	{
-		config_setting_t	*pField;
-		config_setting_t	*pList;
-
-		pField = config_setting_get_member(pSection, "port");
-		if (pField != NULL)
-		{
-			pCTX->xConfig.usPort =  config_setting_get_int(pField);
-		}
-
-		pList = config_setting_get_member(pSection, "traps");
-		if (pList != NULL)
-        {
-			FTM_ULONG	i, ulCount;
-			
-			ulCount = config_setting_length(pList);
-			for(i = 0 ; i < ulCount ; i++)
-			{
-				pField = config_setting_get_elem(pList, i);
-				if (pField != NULL)
-				{
-					FTNM_SNMP_OID	xOID;
-					
-					xOID.ulOIDLen = FTNM_SNMP_OID_LENGTH;
-
-					MESSAGE("pObID = %s\n", config_setting_get_string(pField));
-					if (read_objid(config_setting_get_string(pField), xOID.pOID, (size_t *)&xOID.ulOIDLen) == 1)
-					{
-						MESSAGE("SNMP_PARSE_OID success!\n");
-						FTNM_SNMPTRAPD_addTrapOID(pCTX, &xOID);
-					}
-				
-				}
-			}
-		}
-
-	}
-	config_destroy(&xConfig);
-#endif
+	TRACE_CALL();
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_ACTION_start(FTM_VOID)
+FTM_RET	FTNM_ACTIONM_start(FTNM_ACTIONM_PTR pActionM)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pActionM != NULL);
 	
 	FTM_INT	nRet;
 
-	nRet = pthread_create(&pCTX->xPThread, NULL, FTNM_ACTION_process, pCTX);
+	TRACE_CALL();
+
+	nRet = pthread_create(&pActionM->xThread, NULL, FTNM_ACTIONM_process, pActionM);
 	if (nRet < 0)
 	{
 		ERROR("Can't start Act Manager!\n");
@@ -169,36 +183,42 @@ FTM_RET	FTNM_ACTION_start(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_ACTION_stop(FTM_VOID)
+FTM_RET	FTNM_ACTIONM_stop(FTNM_ACTIONM_PTR pActionM)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pActionM != NULL);
 
-	pCTX->bStop = FTM_TRUE;
-	pthread_join(pCTX->xPThread, NULL);
+	TRACE_CALL();
+
+	pActionM->bStop = FTM_TRUE;
+	pthread_join(pActionM->xThread, NULL);
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTNM_ACTION_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTNM_ACTIONM_process(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
-	FTNM_ACTION_MANAGER_PTR	pCTX = (FTNM_ACTION_MANAGER_PTR)pData;
+	FTNM_ACTIONM_PTR		pActionM = (FTNM_ACTIONM_PTR)pData;
 	FTM_RET					xRet;
-	FTNM_ACTION_MSG_PTR		pMsg;
+	FTNM_ACTIONM_MSG_PTR	pMsg;
 	FTM_TIMER				xTimer;
 	
+	TRACE_CALL();
+
 	FTM_TIMER_init(&xTimer, 0);
 
-	while(!pCTX->bStop)
-	{
-		FTM_TIMER_add(&xTimer, FTNM_ACTION_LOOP_INTERVAL);
+	pActionM->bStop = FTM_FALSE;
 
-		xRet = FTM_MSGQ_timedPop(pCTX->pMsgQ, FTNM_ACTION_LOOP_INTERVAL, (FTM_VOID_PTR _PTR_)&pMsg);
+	while(!pActionM->bStop)
+	{
+		FTM_TIMER_add(&xTimer, FTNM_ACTIONM_LOOP_INTERVAL);
+		
+		xRet = FTM_MSGQ_timedPop(pActionM->pMsgQ, FTNM_ACTIONM_LOOP_INTERVAL, (FTM_VOID_PTR _PTR_)&pMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			switch(pMsg->xType)
 			{
-			case	FTNM_ACTION_MSG_TYPE_RUN:
+			case	FTNM_ACTIONM_MSG_TYPE_RUN:
 				{
 					TRACE("Actor[%08x] is updated.\n",	pMsg->xActID);
 				}
@@ -223,17 +243,21 @@ FTM_VOID_PTR FTNM_ACTION_process(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET FTNM_ACTION_count(FTM_ULONG_PTR pulCount)
+FTM_RET FTNM_ACTIONM_count(FTNM_ACTIONM_PTR pActionM, FTM_ULONG_PTR pulCount)
 {
-	return	FTM_LIST_count(pActionList, pulCount);
+	TRACE_CALL();
+
+	return	FTM_LIST_count(pActionM->pActionList, pulCount);
 }
 
-FTM_RET	FTNM_ACTION_create(FTM_ACTION_PTR pInfo)
+FTM_RET	FTNM_ACTIONM_add(FTNM_ACTIONM_PTR pActionM, FTM_ACTION_PTR pInfo)
 {
 	ASSERT(pInfo != NULL);
 
 	FTM_RET			xRet;
 	FTNM_ACTION_PTR	pAction;
+
+	TRACE_CALL();
 
 	pAction = (FTNM_ACTION_PTR)FTM_MEM_malloc(sizeof(FTNM_ACTION));
 	if (pAction == NULL)
@@ -244,7 +268,7 @@ FTM_RET	FTNM_ACTION_create(FTM_ACTION_PTR pInfo)
 
 	memcpy(&pAction->xInfo, pInfo, sizeof(FTM_ACTION));
 
-	xRet = FTM_LIST_append(pActionList, pAction);
+	xRet = FTM_LIST_append(pActionM->pActionList, pAction);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pAction);	
@@ -253,47 +277,55 @@ FTM_RET	FTNM_ACTION_create(FTM_ACTION_PTR pInfo)
 	return	xRet;
 }
 
-FTM_RET	FTNM_ACTION_del(FTM_ACTION_ID  xActID)
+FTM_RET	FTNM_ACTIONM_del(FTNM_ACTIONM_PTR pActionM, FTM_ACTION_ID  xActID)
 {
 	FTM_RET			xRet;
 	FTNM_ACTION_PTR	pAction;
 
-	xRet = FTM_LIST_get(pActionList, (FTM_VOID_PTR)&xActID, (FTM_VOID_PTR _PTR_)&pAction);
+	TRACE_CALL();
+
+	xRet = FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)&xActID, (FTM_VOID_PTR _PTR_)&pAction);
 	if (xRet == FTM_RET_OK)
 	{
-		FTM_LIST_remove(pActionList, pAction);
+		FTM_LIST_remove(pActionM->pActionList, pAction);
 		FTM_MEM_free(pAction);
 	}
 
 	return	xRet;	
 }
 
-FTM_RET	FTNM_ACTION_get(FTM_ACTION_ID xActID, FTNM_ACTION_PTR _PTR_ ppAction)
+FTM_RET	FTNM_ACTIONM_get(FTNM_ACTIONM_PTR pActionM, FTM_ACTION_ID xActID, FTNM_ACTION_PTR _PTR_ ppAction)
 {
-	return	FTM_LIST_get(pActionList, (FTM_VOID_PTR)&xActID, (FTM_VOID_PTR _PTR_)ppAction);
+	TRACE_CALL();
+
+	return	FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)&xActID, (FTM_VOID_PTR _PTR_)ppAction);
 }
 
-FTM_RET	FTNM_ACTION_getAt(FTM_ULONG ulIndex, FTNM_ACTION_PTR _PTR_ ppAction)
+FTM_RET	FTNM_ACTIONM_getAt(FTNM_ACTIONM_PTR pActionM, FTM_ULONG ulIndex, FTNM_ACTION_PTR _PTR_ ppAction)
 {
-	return	FTM_LIST_getAt(pActionList, ulIndex, (FTM_VOID_PTR _PTR_)ppAction);
+	TRACE_CALL();
+
+	return	FTM_LIST_getAt(pActionM->pActionList, ulIndex, (FTM_VOID_PTR _PTR_)ppAction);
 }
 
-FTM_RET	FTNM_ACTION_run(FTM_ACTION_ID xActID)
+FTM_RET	FTNM_ACTIONM_run(FTNM_ACTIONM_PTR pActionM, FTM_ACTION_ID xActID)
 {
-	FTM_RET				xRet;
-	FTNM_ACTION_MSG_PTR	pMsg;
+	FTM_RET					xRet;
+	FTNM_ACTIONM_MSG_PTR	pMsg;
 
-	pMsg = (FTNM_ACTION_MSG_PTR)FTM_MEM_malloc(sizeof(FTNM_ACTION_MSG));
+	TRACE_CALL();
+
+	pMsg = (FTNM_ACTIONM_MSG_PTR)FTM_MEM_malloc(sizeof(FTNM_ACTIONM_MSG));
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory.\n");	
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	pMsg->xType = FTNM_ACTION_MSG_TYPE_RUN;
+	pMsg->xType = FTNM_ACTIONM_MSG_TYPE_RUN;
 	pMsg->xActID = xActID;
 
-	xRet = FTM_MSGQ_push(pCTX->pMsgQ, (FTM_VOID_PTR)pMsg);
+	xRet = FTM_MSGQ_push(pActionM->pMsgQ, (FTM_VOID_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pMsg);
@@ -302,7 +334,7 @@ FTM_RET	FTNM_ACTION_run(FTM_ACTION_ID xActID)
 	return	xRet;
 }
 
-FTM_BOOL	FTNM_ACTION_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+FTM_BOOL	FTNM_ACTIONM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
 {
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);

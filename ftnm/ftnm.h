@@ -4,12 +4,14 @@
 #include "ftm.h"
 #include "ftnm_types.h"
 #include "ftnm_dmc.h"
+#include "ftnm_client.h"
 #include "ftnm_server.h"
 #include "ftnm_snmpc.h"
 #include "ftnm_snmptrapd.h"
 #include "ftnm_trigger.h"
+#include "ftnm_action.h"
+#include "ftnm_rule.h"
 
-#define	FTNM_DEFAULT_SERVER_PORT			8889
 #define	FTNM_DEFAULT_SERVER_SESSION_COUNT	10
 
 typedef	FTM_ULONG	FTNM_STATE;
@@ -32,6 +34,11 @@ typedef	FTM_ULONG	FTNM_STATE;
 #define	FTNM_STATE_FINISHED				0x00000012
 #define	FTNM_STATE_CONNECTED			0x00000010
 #define	FTNM_STATE_INITIALIZE			0x00000011
+
+typedef	struct
+{
+	FTM_CHAR		pDID[FTM_DID_LEN + 1];
+}	FTNM_INFO, _PTR_ FTNM_INFO_PTR;
 
 typedef	struct
 {

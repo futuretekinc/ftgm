@@ -7,11 +7,13 @@
 
 extern	FTNM_CONTEXT	xFTNM;
 extern	FTNM_TRIGGERM		xTriggerM;
+extern	FTNM_ACTIONM		xActionM;
+extern	FTNM_RULEM_PTR		pRuleM;
 
-FTM_RET	FTNM_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTNM_SHELL_CMD_list(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTNM_SHELL_CMD_task(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[]);
-FTM_RET	FTNM_SHELL_CMD_quit(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTNM_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTNM_SHELL_CMD_list(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTNM_SHELL_CMD_task(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTNM_SHELL_CMD_quit(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
 
 FTM_SHELL_CMD	FTNM_shellCmds[] = 
 {
@@ -52,7 +54,8 @@ FTM_ULONG		FTNM_shellCmdCount = sizeof(FTNM_shellCmds) / sizeof(FTM_SHELL_CMD);
 FTM_RET	FTNM_SHELL_CMD_config
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
 )
 {
 	switch(nArgc)
@@ -68,7 +71,8 @@ FTM_RET	FTNM_SHELL_CMD_config
 FTM_RET	FTNM_SHELL_CMD_list
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
 )
 {
 	FTM_RET			xRet;
@@ -119,7 +123,7 @@ FTM_RET	FTNM_SHELL_CMD_list
 				pTimeString[strlen(pTimeString) - 1] = '\0';
 			}
 			
-			MESSAGE("%08lx ", pEP->xInfo.xEPID);
+			MESSAGE("%16lx ", pEP->xInfo.xEPID);
 			MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
 			if (pEP->pNode != NULL)
 			{
@@ -160,7 +164,7 @@ FTM_RET	FTNM_SHELL_CMD_list
 
 			FTM_TRIGGER_conditionToString(&pTrigger->xInfo, pCondition, sizeof(pCondition));
 
-			MESSAGE("\t%08x %08x %16s %8.3f %8.3f %s\n", 
+			MESSAGE("\t%8d %08x %16s %8.3f %8.3f %s\n", 
 				pTrigger->xInfo.xID, 
 				pTrigger->xInfo.xEPID, 
 				FTM_TRIGGER_typeString(pTrigger->xInfo.xType),
@@ -170,13 +174,71 @@ FTM_RET	FTNM_SHELL_CMD_list
 		}
 
 	}
+
+	MESSAGE("\n# Action Information\n");
+	FTNM_ACTIONM_count(&xActionM, &ulCount);
+	MESSAGE("\t%8s %16s\n", "ID","TYPE");
+	for(i = 0; i< ulCount ; i++)
+	{
+		FTNM_ACTION_PTR	pAction;
+
+		xRet = FTNM_ACTIONM_getAt(&xActionM, i, &pAction);
+		if (xRet == FTM_RET_OK)
+		{
+			MESSAGE("\t%8d %16s\n", 
+				pAction->xInfo.xID, 
+				FTM_ACTION_typeString(pAction->xInfo.xType));
+		}
+
+	}
+	
+	MESSAGE("\n# Rule Information\n");
+	FTNM_RULEM_count(pRuleM, &ulCount);
+	MESSAGE("\t%8s %24s %24s\n", "ID","TRIGGER", "ACTION");
+	for(i = 0; i< ulCount ; i++)
+	{
+		FTNM_RULE_PTR	pRule;
+
+		xRet = FTNM_RULEM_getAt(pRuleM, i, &pRule);
+		if (xRet == FTM_RET_OK)
+		{
+			MESSAGE("\t%8d", pRule->xInfo.xID);
+			
+			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pTriggers) / sizeof(FTM_TRIGGER_ID) ; j++)
+			{
+				if (j < pRule->xInfo.xParams.ulTriggers)
+				{
+					MESSAGE(" %2d", pRule->xInfo.xParams.pTriggers[j]);
+				}
+				else
+				{
+					MESSAGE(" %2d", 0);
+				}
+			}
+
+			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pActions) / sizeof(FTM_ACTION_ID) ; j++)
+			{
+				if (j < pRule->xInfo.xParams.ulActions)
+				{
+					MESSAGE(" %2d", pRule->xInfo.xParams.pActions[j]);
+				}
+				else
+				{
+					MESSAGE(" %2d", 0);
+				}
+			}
+			MESSAGE("\n");
+		}
+
+	}
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_SHELL_CMD_quit
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
 )
 {
 	return	FTNM_NOTIFY_quit();
@@ -186,7 +248,8 @@ FTM_RET	FTNM_SHELL_CMD_quit
 FTM_RET	FTNM_SHELL_CMD_task
 (
 	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[]
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
 )
 {
 	return	FTM_RET_OK;

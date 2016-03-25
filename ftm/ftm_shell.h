@@ -8,7 +8,7 @@
 typedef struct	_FTMC_CMD
 {
 	FTM_CHAR_PTR	pString;
-	FTM_RET			(*function)(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+	FTM_RET			(*function)(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 	FTM_CHAR_PTR	pShortHelp;
 	FTM_CHAR_PTR	pHelp;
 }	FTM_SHELL_CMD, _PTR_ FTM_SHELL_CMD_PTR;
@@ -33,6 +33,11 @@ FTM_RET	FTM_SHELL_final
 FTM_RET FTM_SHELL_run
 (
 	FTM_VOID
+);
+
+FTM_RET	FTM_SHELL_setGlobalData
+(
+	FTM_VOID_PTR	pData
 );
 
 FTM_RET	FTM_SHELL_setPrompt

@@ -63,6 +63,11 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_ACTION_COUNT,			FTDMS_ACTION_count ),
 	MK_CMD_SET(FTDM_CMD_ACTION_GET,				FTDMS_ACTION_get ),
 	MK_CMD_SET(FTDM_CMD_ACTION_GET_AT,			FTDMS_ACTION_getAt ),
+	MK_CMD_SET(FTDM_CMD_RULE_ADD,				FTDMS_RULE_add ),
+	MK_CMD_SET(FTDM_CMD_RULE_DEL,				FTDMS_RULE_del ),
+	MK_CMD_SET(FTDM_CMD_RULE_COUNT,				FTDMS_RULE_count ),
+	MK_CMD_SET(FTDM_CMD_RULE_GET,				FTDMS_RULE_get ),
+	MK_CMD_SET(FTDM_CMD_RULE_GET_AT,			FTDMS_RULE_getAt ),
 	MK_CMD_SET(FTDM_CMD_UNKNOWN, 				NULL)
 };
 
@@ -984,3 +989,81 @@ FTM_RET	FTDMS_ACTION_getAt
 	return	pResp->nRet;
 }
 
+FTM_RET	FTDMS_RULE_add
+(
+	FTDM_REQ_RULE_ADD_PARAMS_PTR	pReq,
+	FTDM_RESP_RULE_ADD_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_RULE_create(&pReq->xRule);
+
+	return	pResp->nRet;
+}
+
+
+FTM_RET	FTDMS_RULE_del
+(
+ 	FTDM_REQ_RULE_DEL_PARAMS_PTR	pReq,
+	FTDM_RESP_RULE_DEL_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_RULE_destroy(pReq->xID);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_RULE_count
+(
+ 	FTDM_REQ_RULE_COUNT_PARAMS_PTR	pReq,
+	FTDM_RESP_RULE_COUNT_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_RULE_count(&pResp->nCount);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_RULE_get
+(
+ 	FTDM_REQ_RULE_GET_PARAMS_PTR		pReq,
+	FTDM_RESP_RULE_GET_PARAMS_PTR	pResp
+)
+{
+	FTDM_RULE_PTR	pRule;
+ 
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_RULE_get(pReq->xID, &pRule);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_RULE));
+	}
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_RULE_getAt
+(
+ 	FTDM_REQ_RULE_GET_AT_PARAMS_PTR	pReq,
+	FTDM_RESP_RULE_GET_AT_PARAMS_PTR	pResp
+)
+{
+	FTDM_RULE_PTR	pRule;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_RULE_getAt(pReq->nIndex, &pRule);
+	
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_RULE));
+	}
+
+	return	pResp->nRet;
+}

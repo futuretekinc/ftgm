@@ -259,5 +259,37 @@ FTM_RET	FTDMC_ACTION_getAt
 	FTM_ACTION_PTR				pAction
 );
 
+FTM_RET	FTDMC_RULE_add
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_RULE_PTR     		pRule
+);
+
+FTM_RET	FTDMC_RULE_del
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_RULE_ID     			xRuleID
+);
+
+FTM_RET	FTDMC_RULE_count
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG_PTR			pulCount
+);
+
+FTM_RET	FTDMC_RULE_get
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_RULE_ID     			xRuleID,
+	FTM_RULE_PTR				pRule
+);
+
+FTM_RET	FTDMC_RULE_getAt
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				ulIndex,
+	FTM_RULE_PTR				pRule
+);
+
 #endif
 
