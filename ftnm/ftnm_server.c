@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/time.h>
 #include "libconfig.h"
 #include "ftnm.h"
 #include "ftnm_params.h"
@@ -370,12 +371,26 @@ FTM_VOID_PTR FTNM_SERVER_process
 
 FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 {
+	ASSERT(pData != NULL);
+
 	FTNM_SESSION_PTR		pSession= (FTNM_SESSION_PTR)pData;
 	FTNM_REQ_PARAMS_PTR		pReq 	= (FTNM_REQ_PARAMS_PTR)pSession->pReqBuff;
 	FTNM_RESP_PARAMS_PTR	pResp 	= (FTNM_RESP_PARAMS_PTR)pSession->pRespBuff;
+	struct timeval			xTimeval;
 
+	xTimeval.tv_sec = 1;
+	xTimeval.tv_usec = 0;
 
-	while(1)
+	pSession->bStop = FTM_FALSE;
+
+	if (setsockopt(pSession->hSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&xTimeval, sizeof(xTimeval)) != 0)
+	{
+		pSession->bStop = FTM_TRUE;
+		ERROR("Timeout set failed.\n");
+   		return 0;
+	}
+
+	while(!pSession->bStop)
 	{
 		int	ulLen;
 
@@ -383,40 +398,50 @@ FTM_VOID_PTR FTNM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 		if (ulLen == 0)
 		{
 			TRACE("The connection is terminated.\n");
-			break;	
+			pSession->bStop = FTM_TRUE;
+		}
+		else if (ulLen > 0)
+		{
+			FTM_ULONG	ulRetry = 3;
+#if	FTNM_TRACE_IO
+			//TRACE("RECV[%08lx:%08x] : Len = %lu\n", pSession->hSocket, pReq->ulReqID, ulLen);
+#endif
+			pResp->ulReqID = pReq->ulReqID;
+
+			if (FTM_RET_OK != FTNM_SERVER_serviceCall(pSession, pReq, pResp))
+			{
+				pResp->xCmd = pReq->xCmd;
+				pResp->nRet = FTM_RET_INTERNAL_ERROR;
+				pResp->ulLen = sizeof(FTNM_RESP_PARAMS);
+			}
+
+#if	FTNM_TRACE_IO
+			//TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->ulReqID, pResp->ulLen);
+#endif
+			do
+			{
+				ulLen = send(pSession->hSocket, pResp, pResp->ulLen, MSG_DONTWAIT);
+			}
+			while ((--ulRetry > 0) && (ulLen < 0));
+
+			if (ulLen < 0)
+			{
+				ERROR("send failed[%d]\n", -ulLen);	
+				pSession->bStop = FTM_TRUE;
+			}
 		}
 		else if (ulLen < 0)
 		{
-			ERROR("recv failed[%d]\n", -ulLen);
-			break;	
-		}
-
-#if	FTNM_TRACE_IO
-		//TRACE("RECV[%08lx:%08x] : Len = %lu\n", pSession->hSocket, pReq->ulReqID, ulLen);
-#endif
-		pResp->ulReqID = pReq->ulReqID;
-
-		if (FTM_RET_OK != FTNM_SERVER_serviceCall(pSession, pReq, pResp))
-		{
-			pResp->xCmd = pReq->xCmd;
-			pResp->nRet = FTM_RET_INTERNAL_ERROR;
-			pResp->ulLen = sizeof(FTNM_RESP_PARAMS);
-		}
-
-#if	FTNM_TRACE_IO
-		//TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->ulReqID, pResp->ulLen);
-#endif
-		ulLen = send(pSession->hSocket, pResp, pResp->ulLen, MSG_DONTWAIT);
-		if (ulLen < 0)
-		{
-			ERROR("send failed[%d]\n", -ulLen);	
-			break;
+			ERROR("recv failed.[%d]\n", -ulLen);
 		}
 	}
 
 	close(pSession->hSocket);
 	TRACE("The session(%08x) was closed\n", pSession->hSocket);
 
+	FTM_LIST_remove(&pSession->pServer->xSessionList, pSession);	
+	sem_post(&pSession->pServer->xLock);
+	FTM_MEM_free(pSession);
 	return	0;
 }
 

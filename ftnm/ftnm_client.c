@@ -234,6 +234,8 @@ FTM_VOID_PTR	FTNM_CLIENT_process(FTM_VOID_PTR pData)
 		usleep(1000);
 	}
 
+	FTNM_CLIENT_disconnect(pClient);
+
 	TRACE("Client stopped.\n");
 
 	return	0;
@@ -314,6 +316,7 @@ FTM_RET FTNM_CLIENT_disconnect
 	{
 		if (pClient->hSock != -1)
 		{
+			TRACE("Socket close.\n");
 			close(pClient->hSock);
 			pClient->hSock = -1;
 		}

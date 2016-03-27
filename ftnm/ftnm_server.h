@@ -17,6 +17,7 @@ typedef	struct
 	struct sockaddr_in	xPeer;
 	pthread_t			xPThread;
 	FTNM_SERVER_PTR		pServer;
+	FTM_BOOL			bStop;
 	FTM_BYTE			pReqBuff[FTNM_PACKET_LEN];
 	FTM_BYTE			pRespBuff[FTNM_PACKET_LEN];
 }	FTNM_SESSION, _PTR_ FTNM_SESSION_PTR;

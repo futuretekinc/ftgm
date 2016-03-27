@@ -183,7 +183,7 @@ FTM_RET	FTDM_RULE_loadFromDB
 
 			for(i = 0 ; i < nRuleCount ; i++)
 			{
-				FTM_RULE_createCopy(&pRules[i], NULL);
+				FTM_RULE_create(&pRules[i]);
 			}
 		}
 

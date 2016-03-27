@@ -48,7 +48,7 @@ FTM_RET	FTNM_CLIENT_notifyCB(FTM_VOID_PTR pData)
 
 int main(int argc, char *argv[])
 {
-	FTM_MQTT_CLIENT	xMQTTC;
+	FTM_MQTT_CLIENT_PTR	pMQTTC;
 	FTNM_CLIENT		xFTNMC;
 
 	FTM_RET	xRet;
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 //	signal(SIGINT, FTM_MQTT_CLIENT_signalHandle);
 //	signal(SIGTERM, FTM_MQTT_CLIENT_signalHandle);
 
-	xRet = FTM_MQTT_CLIENT_init(&xMQTTC);
+	xRet = FTM_MQTT_CLIENT_create(&pMQTTC);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("MQTT Client initialization fialed.[%08x]\n", xRet);
@@ -72,24 +72,24 @@ int main(int argc, char *argv[])
 		return	0;
 	}
 
-	FTM_MQTT_CLIENT_loadConfig(&xMQTTC, &xMQTTCConfig);
+	FTM_MQTT_CLIENT_loadConfig(pMQTTC, &xMQTTCConfig);
 	FTNM_CLIENT_loadConfig(&xFTNMC, &xFTNMCConfig);
 
 	FTNM_CLIENT_setNotifyCallback(&xFTNMC, FTNM_CLIENT_notifyCB);
 
 	FTNM_CLIENT_start(&xFTNMC);
-	FTM_MQTT_CLIENT_start(&xMQTTC);
+	FTM_MQTT_CLIENT_start(pMQTTC);
 
 	FTM_SHELL_init();
 	FTM_SHELL_setPrompt("FTMQC> ");
 	//FTM_SHELL_addCmds(FTDMS_pCmdList, FTDMS_ulCmdCount);
 	FTM_SHELL_run();
 
+	FTM_MQTT_CLIENT_stop(pMQTTC);
 	FTNM_CLIENT_stop(&xFTNMC);
-	FTM_MQTT_CLIENT_stop(&xMQTTC);
 
+	FTM_MQTT_CLIENT_destroy(&pMQTTC);
 	FTNM_CLIENT_final(&xFTNMC);
-	FTM_MQTT_CLIENT_final(&xMQTTC);
 
 	FTM_MEM_init();
 

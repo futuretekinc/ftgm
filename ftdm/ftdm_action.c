@@ -152,7 +152,7 @@ FTM_RET	FTDM_ACTION_loadFromDB
 
 			for(i = 0 ; i < nActionCount ; i++)
 			{
-				FTM_ACTION_createCopy(&pActions[i], NULL);
+				FTM_ACTION_create(&pActions[i]);
 			}
 		}
 

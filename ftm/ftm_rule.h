@@ -26,7 +26,7 @@ typedef	struct
 FTM_RET	FTM_RULE_init(FTM_VOID);
 FTM_RET	FTM_RULE_final(FTM_VOID);
 
-FTM_RET	FTM_RULE_createCopy(FTM_RULE_PTR pRule, FTM_RULE_PTR _PTR_ ppRule);
+FTM_RET	FTM_RULE_create(FTM_RULE_PTR pRule);
 FTM_RET	FTM_RULE_destroy(FTM_RULE_PTR pRule);
 
 FTM_RET	FTM_RULE_append(FTM_RULE_PTR pRule);

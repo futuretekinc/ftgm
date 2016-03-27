@@ -13,15 +13,15 @@
 #include "ftdm_client_cmds.h"
 #include "ftdm_client_config.h"
 
-static FTM_RET  FTDMC_cmdConfig(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_NODE_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_EP_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_TRIGGER_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
-static FTM_RET	FTDMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+static FTM_RET  FTDMC_cmdConfig(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_NODE_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_EP_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_TRIGGER_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 
 extern FTDMC_CFG		xClientConfig;
 extern FTDMC_SESSION	_xSession;
@@ -145,7 +145,12 @@ FTM_SHELL_CMD			FTDMC_pCmdList[] =
 FTM_ULONG		FTDMC_ulCmdCount = sizeof(FTDMC_pCmdList) / sizeof(FTM_SHELL_CMD);
 FTM_CHAR_PTR	FTDMC_pPrompt = "FTDMC> ";
 
-FTM_RET  FTDMC_cmdConfig(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET  FTDMC_cmdConfig
+(
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
+)
 {
 	switch(nArgc)
 	{
@@ -164,7 +169,12 @@ FTM_RET  FTDMC_cmdConfig(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_cmdConnect
+(
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
+)
 {
 	in_addr_t		xAddr	= inet_addr(xClientConfig.xNetwork.pServerIP);
 	FTM_USHORT		nPort 	= xClientConfig.xNetwork.usPort;
@@ -208,7 +218,12 @@ FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_cmdDisconnect
+(
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
+)
 {
 
 	switch(nArgc)
@@ -228,7 +243,12 @@ FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_NODE_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_NODE_cmd
+(
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
+)
 {
 	FTM_RET	xRet;
 	FTM_INT	i;
@@ -410,7 +430,12 @@ FTM_RET	FTDMC_NODE_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_EP_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_EP_cmd
+(
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
+)
 {
 	FTM_RET		xRet;
 	FTM_INT		i;
@@ -596,7 +621,12 @@ FTM_RET	FTDMC_EP_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_EP_DATA_cmd
+(
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
+)
 {
 	FTM_RET			xRet;
 	FTM_INT			nOpt = 0;
@@ -1012,7 +1042,12 @@ FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_TRIGGER_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_TRIGGER_cmd
+(
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
+)
 {
 	FTM_RET	xRet;
 
@@ -1234,7 +1269,12 @@ FTM_RET	FTDMC_TRIGGER_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_DEBUG_cmd
+(
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
+)
 {
 	if (nArgc < 2)
 	{
@@ -1276,7 +1316,12 @@ FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTDMC_cmdQuit
+(
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR	pData
+)
 {
 	if (nArgc != 1)
 	{

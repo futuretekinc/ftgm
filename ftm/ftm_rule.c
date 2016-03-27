@@ -43,11 +43,11 @@ FTM_RET	FTM_RULE_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_RULE_createCopy(FTM_RULE_PTR pRule, FTM_RULE_PTR _PTR_ ppRule)
+FTM_RET	FTM_RULE_create(FTM_RULE_PTR pRule)
 {
 	ASSERT(pRuleList != NULL);
 
-	FTM_RET		xRet;
+	FTM_RET			xRet;
 	FTM_RULE_PTR	pNewRule;
 
 	pNewRule = (FTM_RULE_PTR)FTM_MEM_malloc(sizeof(FTM_RULE));
@@ -63,11 +63,6 @@ FTM_RET	FTM_RULE_createCopy(FTM_RULE_PTR pRule, FTM_RULE_PTR _PTR_ ppRule)
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pNewRule);	
-	}
-
-	if (ppRule != NULL)
-	{
-		*ppRule = pRule;
 	}
 
 	return	FTM_RET_OK;

@@ -54,12 +54,12 @@ FTM_RET	FTM_TRIGGER_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRIGGER_createCopy(FTM_TRIGGER_PTR pSrc, FTM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTM_TRIGGER_create(FTM_TRIGGER_PTR pTrigger)
 {
-	ASSERT(pSrc != NULL);
+	ASSERT(pTrigger != NULL);
 
 	FTM_RET			xRet;
-	FTM_TRIGGER_PTR	pTrigger;
+	FTM_TRIGGER_PTR	pNew;
 	struct timeval	xTime;
 
 	if (pTriggerList == NULL)
@@ -68,31 +68,26 @@ FTM_RET	FTM_TRIGGER_createCopy(FTM_TRIGGER_PTR pSrc, FTM_TRIGGER_PTR _PTR_ ppTri
 		FTM_TRIGGER_init();
 	}
 
-	pTrigger = (FTM_TRIGGER_PTR)FTM_MEM_malloc(sizeof(FTM_TRIGGER));
-	if (pTrigger == NULL)
+	pNew = (FTM_TRIGGER_PTR)FTM_MEM_malloc(sizeof(FTM_TRIGGER));
+	if (pNew == NULL)
 	{
 		ERROR("Can't not allocation Trigger.\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	memcpy(pTrigger, pSrc, sizeof(FTM_TRIGGER));
+	memcpy(pNew, pTrigger, sizeof(FTM_TRIGGER));
 
-	xRet = FTM_LIST_append(pTriggerList, pTrigger);
+	xRet = FTM_LIST_append(pTriggerList, pNew);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pTrigger);
+		FTM_MEM_free(pNew);
 		return	xRet;
 	}
 
-	if (pTrigger->xID == 0)
+	if (pNew->xID == 0)
 	{
 		gettimeofday(&xTime, NULL);
-		pTrigger->xID = xTime.tv_sec * 1000000 + xTime.tv_usec;
-	}
-
-	if (ppTrigger != NULL)
-	{
-		*ppTrigger = pTrigger;
+		pNew->xID = xTime.tv_sec * 1000000 + xTime.tv_usec;
 	}
 
 	return	FTM_RET_OK;

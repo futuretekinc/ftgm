@@ -44,7 +44,7 @@ FTM_RET	FTM_ACTION_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_ACTION_createCopy(FTM_ACTION_PTR pAction, FTM_ACTION_PTR _PTR_ ppAction)
+FTM_RET	FTM_ACTION_create(FTM_ACTION_PTR pAction)
 {
 	ASSERT(pActionList != NULL);
 
@@ -64,11 +64,6 @@ FTM_RET	FTM_ACTION_createCopy(FTM_ACTION_PTR pAction, FTM_ACTION_PTR _PTR_ ppAct
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pNewAction);	
-	}
-
-	if (ppAction != NULL)
-	{
-		*ppAction = pAction;
 	}
 
 	return	FTM_RET_OK;

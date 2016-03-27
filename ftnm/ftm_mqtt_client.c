@@ -231,7 +231,7 @@ FTM_VOID FTM_MQTT_CLIENT_disconnectCB
 )
 {
 	ASSERT(pObj != NULL);
-	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
 
 	TRACE("MQTT is disconnected.\n");
 }
@@ -248,12 +248,12 @@ FTM_VOID FTM_MQTT_CLIENT_publishCB
 FTM_VOID FTM_MQTT_CLIENT_messageCB
 (
 	struct mosquitto 	*mosq, 
-	void 				*obj, 
+	void 				*pObj, 
 	const struct mosquitto_message *message
 )
 {
 	ASSERT(pObj != NULL);
-	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
 	
 	MESSAGE("message->topic = %s\n", message->topic);
 	MESSAGE("message->payload= %s\n", (char *)message->payload);
@@ -269,5 +269,5 @@ FTM_VOID FTM_MQTT_CLIENT_subscribeCB
 )
 {
 	ASSERT(pObj != NULL);
-	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
 }

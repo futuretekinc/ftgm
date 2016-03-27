@@ -29,6 +29,7 @@ LIB_FTNM_SRCS= ftnm.c \
 			   ftnm_trigger.c\
 			   ftnm_action.c\
 			   ftnm_rule.c\
+			   ftm_mqtt_client.c\
 			   ftnm_service.c
 
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)

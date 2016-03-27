@@ -287,7 +287,7 @@ FTM_RET FTNM_RULEM_count(FTNM_RULEM_PTR pRuleM, FTM_ULONG_PTR pulCount)
 	return	FTM_LIST_count(pRuleM->pRuleList, pulCount);
 }
 
-FTM_RET	FTNM_RULEM_append(FTNM_RULEM_PTR pRuleM, FTM_RULE_PTR pInfo)
+FTM_RET	FTNM_RULEM_add(FTNM_RULEM_PTR pRuleM, FTM_RULE_PTR pInfo)
 {
 	ASSERT(pRuleM != NULL);
 	ASSERT(pInfo != NULL);

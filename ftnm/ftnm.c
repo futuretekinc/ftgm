@@ -12,6 +12,7 @@
 #include "ftnm_service.h"
 #include "ftnm_server.h"
 #include "ftnm_dmc.h"
+#include "ftm_mqtt_client.h"
 #include "ftnm_msg.h"
 #include "nxjson.h"
 
@@ -28,6 +29,7 @@ static	FTNM_SERVER		xServer;
 static	FTNM_SNMPC		xSNMPC;
 static	FTNM_SNMPTRAPD	xSNMPTRAPD;
 static	FTNM_DMC		xDMC;
+static	FTM_MQTT_CLIENT	xMQTTC;
 static  FTNM_MSG_QUEUE	xMsgQ;
 
 		FTNM_TRIGGERM	xTriggerM;
@@ -93,7 +95,21 @@ static 	FTNM_SERVICE	pServices[] =
 		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTNM_DMC_loadFromFile,
 		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTNM_DMC_showConfig,
 		.pData		=	(FTM_VOID_PTR)&xDMC
-	}
+	},
+	{
+		.xType		=	FTNM_SERVICE_MQTT_CLIENT,
+		.xID		=	FTNM_SERVICE_MQTT_CLIENT,
+		.pName		=	"Server",
+		.fInit		=	(FTNM_SERVICE_INIT)FTM_MQTT_CLIENT_init,
+		.fFinal		=	(FTNM_SERVICE_FINAL)FTM_MQTT_CLIENT_final,
+		.fStart 	=	(FTNM_SERVICE_START)FTM_MQTT_CLIENT_start,
+		.fStop		=	(FTNM_SERVICE_STOP)FTM_MQTT_CLIENT_stop,
+		.fSetCallback=	(FTNM_SERVICE_SET_CALLBACK)FTM_MQTT_CLIENT_setServiceCallback,
+		.fCallback	=	FTNM_callback,
+		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTM_MQTT_CLIENT_loadFromFile,
+		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTM_MQTT_CLIENT_showConfig,
+		.fNotify	=	(FTNM_SERVICE_NOTIFY)FTM_MQTT_CLIENT_notify,
+		.pData		= 	(FTM_VOID_PTR)&xMQTTC
 };
 
 FTM_RET	FTNM_init(FTM_VOID)
@@ -405,7 +421,7 @@ FTM_RET	FTNM_TASK_sync(FTNM_CONTEXT_PTR pCTX)
 			continue;
 		}
 
-		xRet = FTNM_RULEM_append(pRuleM, &xRule);
+		xRet = FTNM_RULEM_add(pRuleM, &xRule);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new action event can not registration!\n") ;
