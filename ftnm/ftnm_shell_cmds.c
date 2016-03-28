@@ -6,9 +6,6 @@
 #include "ftnm_msg.h"
 
 extern	FTNM_CONTEXT	xFTNM;
-extern	FTNM_TRIGGERM		xTriggerM;
-extern	FTNM_ACTIONM		xActionM;
-extern	FTNM_RULEM_PTR		pRuleM;
 
 FTM_RET	FTNM_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTNM_SHELL_CMD_list(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
@@ -58,10 +55,12 @@ FTM_RET	FTNM_SHELL_CMD_config
 	FTM_VOID_PTR 	pData
 )
 {
+	FTNM_CONTEXT_PTR pCTX = (FTNM_CONTEXT_PTR)pData;
+
 	switch(nArgc)
 	{
 	case	1:
-		FTNM_showConfig();
+		FTNM_showConfig(pCTX);
 		break;
 	}
 
@@ -157,13 +156,13 @@ FTM_RET	FTNM_SHELL_CMD_list
 	}
 
 	MESSAGE("\n# Trigger Information\n");
-	FTNM_TRIGGERM_count(&xTriggerM, &ulCount);
+	FTNM_TRIGGERM_count(pCTX->pTriggerM, &ulCount);
 	MESSAGE("\t%8s %8s %16s %8s %8s %s\n", "ID", "EPID", "TYPE", "DETECT", "HOLD", "CONDITION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTNM_TRIGGER_PTR	pTrigger;
 
-		xRet = FTNM_TRIGGERM_getAt(&xTriggerM, i, &pTrigger);
+		xRet = FTNM_TRIGGERM_getAt(pCTX->pTriggerM, i, &pTrigger);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_CHAR	pCondition[1024];
@@ -182,13 +181,13 @@ FTM_RET	FTNM_SHELL_CMD_list
 	}
 
 	MESSAGE("\n# Action Information\n");
-	FTNM_ACTIONM_count(&xActionM, &ulCount);
+	FTNM_ACTIONM_count(pCTX->pActionM, &ulCount);
 	MESSAGE("\t%8s %16s\n", "ID","TYPE");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTNM_ACTION_PTR	pAction;
 
-		xRet = FTNM_ACTIONM_getAt(&xActionM, i, &pAction);
+		xRet = FTNM_ACTIONM_getAt(pCTX->pActionM, i, &pAction);
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("\t%8d %16s\n", 
@@ -199,13 +198,13 @@ FTM_RET	FTNM_SHELL_CMD_list
 	}
 	
 	MESSAGE("\n# Rule Information\n");
-	FTNM_RULEM_count(pRuleM, &ulCount);
+	FTNM_RULEM_count(pCTX->pRuleM, &ulCount);
 	MESSAGE("\t%8s %24s %24s\n", "ID","TRIGGER", "ACTION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTNM_RULE_PTR	pRule;
 
-		xRet = FTNM_RULEM_getAt(pRuleM, i, &pRule);
+		xRet = FTNM_RULEM_getAt(pCTX->pRuleM, i, &pRule);
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("\t%8d", pRule->xInfo.xID);
@@ -247,7 +246,9 @@ FTM_RET	FTNM_SHELL_CMD_quit
 	FTM_VOID_PTR 	pData
 )
 {
-	return	FTNM_NOTIFY_quit();
+	FTNM_CONTEXT_PTR	pCTX = (FTNM_CONTEXT_PTR)pData;
+
+	return	FTNM_NOTIFY_quit(pCTX);
 
 }
 

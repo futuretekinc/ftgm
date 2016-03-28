@@ -30,6 +30,8 @@ LIB_FTNM_SRCS= ftnm.c \
 			   ftnm_action.c\
 			   ftnm_rule.c\
 			   ftm_mqtt_client.c\
+			   ftm_mqtt_client_ft.c\
+			   ftm_mqtt_client_tpgw.c\
 			   ftnm_utils.c\
 			   ftnm_service.c
 

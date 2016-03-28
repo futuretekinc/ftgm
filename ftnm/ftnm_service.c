@@ -313,7 +313,6 @@ FTM_RET	FTNM_SERVICE_notify(FTNM_SERVICE_TYPE xType, FTNM_MSG_PTR pMsg)
 		{
 			if (pService->fNotify != NULL)
 			{
-				TRACE("%s[%d] - notify to %s\n", __func__, __LINE__, pService->pName);
 				pService->xRet = pService->fNotify(pService->pData, pMsg);
 			}
 		}
