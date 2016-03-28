@@ -75,7 +75,6 @@ FTM_RET	FTM_MQTT_CLIENT_init(FTNM_CONTEXT_PTR pCTX, FTM_MQTT_CLIENT_PTR pClient)
 	pClient->pCTX = pCTX;
 
 	FTNM_getDID(pClient->pDID, FTM_DID_LEN);
-
 	strncpy(pClient->xConfig.pClientID, pClient->pDID, sizeof(pClient->xConfig.pClientID) - 1);
 	strcpy(pClient->xConfig.xBroker.pHost, FTM_MQTT_CLIENT_DEFAULT_BROKER);
 	pClient->xConfig.xBroker.usPort = FTM_MQTT_CLIENT_DEFAULT_PORT;
@@ -200,6 +199,7 @@ FTM_VOID_PTR FTM_MQTT_CLIENT_process(FTM_VOID_PTR pData)
 
 	mosquitto_lib_init();
 
+	TRACE("CLIENT ID : %s\n", pClient->xConfig.pClientID);
 	pClient->pMosquitto = mosquitto_new(pClient->xConfig.pClientID, true, pClient);
 	if(pClient->pMosquitto == NULL)
 	{
@@ -246,15 +246,19 @@ FTM_VOID_PTR FTM_MQTT_CLIENT_connector(FTM_VOID_PTR pData)
 
 	pClient->bStop = FTM_FALSE;
 
-	TRACE("CLIENT connector is started.\n");
-	mosquitto_connect_async(pClient->pMosquitto, pClient->xConfig.xBroker.pHost, pClient->xConfig.xBroker.usPort, 60);
+	nRet = mosquitto_connect_async(pClient->pMosquitto, pClient->xConfig.xBroker.pHost, pClient->xConfig.xBroker.usPort, 60);
+	TRACE("MQTT client is connected async[%d].\n", nRet);
+
+	mosquitto_loop_start(pClient->pMosquitto);
+
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	while(!pClient->bStop)
 	{
-		nRet = mosquitto_loop(pClient->pMosquitto, -1, 1);
 		if(!pClient->bStop && nRet)
 		{
-			sleep(1);;//pClient->xConfig.ulReconnectionTime);
-			mosquitto_reconnect_async(pClient->pMosquitto);
+	TRACE("%s[%d]\n", __func__, __LINE__);
+			sleep(pClient->xConfig.ulReconnectionTime);
+			//mosquitto_reconnect_async(pClient->pMosquitto);
 		}
 	}
 	TRACE("CLIENT connector was stopped.\n");
@@ -312,11 +316,12 @@ FTM_VOID FTM_MQTT_CLIENT_messageCB
 {
 	ASSERT(pObj != NULL);
 
+	FTM_RET			xRet;
 	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
 	FTM_CHAR		pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
 	FTM_CHAR_PTR	pIDs[10];
 	FTM_INT			nIDs = 0;
-
+	
 	MESSAGE("TOPIC - %s\n", pMessage->topic);
 	MESSAGE("MESSAGE - %s\n", (FTM_CHAR_PTR)pMessage->payload);
 
@@ -332,34 +337,22 @@ FTM_VOID FTM_MQTT_CLIENT_messageCB
 
 	if(strcmp(pIDs[4], "req") == 0)
 	{
-		const nx_json * pJSON = nx_json_parse((FTM_CHAR_PTR)pMessage->payload, nx_json_unicode_to_utf8);
-		if (pJSON == NULL)
+		FTNM_MSG_PTR pMsg;
+
+		xRet = FTM_MQTT_CLIENT_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
+		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Invalid Message[%s]\n", pMessage->payload);
+			ERROR("Invalid message.\n");
 			return;
 		}
 
-		const nx_json *pItem = nx_json_get(pJSON, "id");
-		if (pItem == NULL)
+		xRet = FTNM_MSGQ_push(pClient->pCTX->pMsgQ, pMsg);
+		if (xRet != FTM_RET_OK)
 		{
-			nx_json_free(pJSON);
+			FTM_MEM_free(pMsg);
+			ERROR("Message queue push failed.\n");
 			return;
-		}	
-		
-		pItem = nx_json_get(pJSON, "method");
-		if (pItem == NULL)
-		{
-			nx_json_free(pJSON);
-			return;
-		}	
-		
-		pItem = nx_json_get(pJSON, "time");
-		if (pItem == NULL)
-		{
-			nx_json_free(pJSON);
-			return;
-		}	
-		
+		}
 	}
 }
 
@@ -440,50 +433,55 @@ FTM_RET	FTM_MQTT_CLIENT_publishEPData
 
 struct
 {
-	FTM_CHAR_PTR	pMethod;
-	FTNM_MSG_TYPE	xType;
+	FTM_CHAR_PTR	pString;
+	FTM_ULONG		xMethod;
 } xReqMethod[] =
 {
 	{
-		.pMethod	= "timeSync",
-		.xType		= FTNM_MSG_TYPE_REQ_TIME_SYNC
+		.pString	= "timeSync",
+		.xMethod		= FTM_MQTT_METHOD_REQ_TIME_SYNC
 	},
 	{
-		.pMethod	= "controlACtuator",
-		.xType		= FTNM_MSG_TYPE_REQ_CONTROL_ACTUATOR,
+		.pString	= "controlACtuator",
+		.xMethod		= FTM_MQTT_METHOD_REQ_CONTROL_ACTUATOR,
 	},
 	{
-		.pMethod	= "setProperty",
-		.xType		= FTNM_MSG_TYPE_REQ_SET_PROPERTY,
+		.pString	= "setProperty",
+		.xMethod		= FTM_MQTT_METHOD_REQ_SET_PROPERTY,
 	},
 	{
-		.pMethod	= "poweroff",
-		.xType		= FTNM_MSG_TYPE_REQ_POWER_OFF,
+		.pString	= "poweroff",
+		.xMethod		= FTM_MQTT_METHOD_REQ_POWER_OFF,
 	},
 	{
-		.pMethod	= "reboot",
-		.xType		= FTNM_MSG_TYPE_REQ_REBOOT,
+		.pString	= "reboot",
+		.xMethod		= FTM_MQTT_METHOD_REQ_REBOOT,
 	},
 	{
-		.pMethod	= "restart",
-		.xType		= FTNM_MSG_TYPE_REQ_RESTART,
+		.pString	= "restart",
+		.xMethod		= FTM_MQTT_METHOD_REQ_RESTART,
 	},
 	{
-		.pMethod	= "swUpdate",
-		.xType		= FTNM_MSG_TYPE_REQ_SW_UPDATE,
+		.pString	= "swUpdate",
+		.xMethod		= FTM_MQTT_METHOD_REQ_SW_UPDATE,
 	},
 	{
-		.pMethod	= "swInfo",
-		.xType		= FTNM_MSG_TYPE_REQ_SW_INFO,
+		.pString	= "swInfo",
+		.xMethod		= FTM_MQTT_METHOD_REQ_SW_INFO,
 	}
 };
 
 FTM_RET	FTM_MQTT_CLIENT_requestMessageParser
 (
 	FTM_CHAR_PTR		pMessage,
-	FTNM_MSG_PTR _PTR_	pMsg
+	FTNM_MSG_PTR _PTR_	ppMsg
 )
 {
+	FTNM_MSG		xMsg;
+	FTM_INT			i;
+
+	memset(&xMsg, 0, sizeof(xMsg));
+
 	const nx_json * pJSON = nx_json_parse((FTM_CHAR_PTR)pMessage, nx_json_unicode_to_utf8);
 	if (pJSON == NULL)
 	{
@@ -492,19 +490,29 @@ FTM_RET	FTM_MQTT_CLIENT_requestMessageParser
 	}
 
 	const nx_json *pItem = nx_json_get(pJSON, "id");
-	if (pItem == NULL)
+	if ((pItem == NULL) || (pItem->type == NX_JSON_STRING))
 	{
 		nx_json_free(pJSON);
 		goto error;
 	}	
-		
+	strncpy(xMsg.xParams.xMQTTReq.pReqID, pItem->text_value,sizeof(xMsg.xParams.xMQTTReq.pReqID) - 1);
+
 	pItem = nx_json_get(pJSON, "method");
-	if (pItem == NULL)
+	if ((pItem == NULL) || (pItem->type == NX_JSON_STRING))
 	{
 		nx_json_free(pJSON);
 		goto error;
 	}	
-		
+
+	for(i = 0 ; i < sizeof(xReqMethod) / sizeof(xReqMethod[0]) ; i++)
+	{
+		if (strcmp(xReqMethod[i].pString, pItem->text_value) == 0)
+		{
+			xMsg.xParams.xMQTTReq.ulMethod = xReqMethod[i].xMethod;
+			break;
+		}
+	}
+	
 	pItem = nx_json_get(pJSON, "time");
 	if (pItem == NULL)
 	{
@@ -512,10 +520,17 @@ FTM_RET	FTM_MQTT_CLIENT_requestMessageParser
 		goto error;
 	}	
 
+	xMsg.xParams.xMQTTReq.ulTime = pItem->int_value;
+	xMsg.xType = FTNM_MSG_TYPE_MQTT_REQ;
 
+	*ppMsg = (FTNM_MSG_PTR)FTM_MEM_malloc(sizeof(FTNM_MSG));
+	if (*ppMsg == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
 
-
-
+	memcpy(*ppMsg, &xMsg, sizeof(xMsg));
 
 	return	FTM_RET_OK;
 error:
