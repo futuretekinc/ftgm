@@ -43,19 +43,19 @@ typedef	struct
 {
 	FTM_MQTT_CLIENT_CONFIG	xConfig;
 
-	FTM_OM_PTR		pOM;
+	FTM_OM_PTR			pOM;
 
-	FTM_BOOL				bStop;
-	FTM_BOOL				bConnected;
-	pthread_t				xMain;
-	pthread_t				xConnector;
-	FTM_TIMER				xReconnectionTimer;
+	FTM_BOOL			bStop;
+	FTM_BOOL			bConnected;
+	pthread_t			xMain;
+	pthread_t			xConnector;
+	FTM_TIMER			xReconnectionTimer;
 
-	FTM_CHAR				pDID[FTM_DID_LEN + 1];
-	struct mosquitto		*pMosquitto;
-	FTM_OM_MSG_QUEUE_PTR		pMsgQ;
+	FTM_CHAR			pDID[FTM_DID_LEN + 1];
+	struct mosquitto	*pMosquitto;
+	FTM_OM_MSG_QUEUE_PTR	pMsgQ;
 
-	FTM_OM_SERVICE_ID			xServiceID;
+	FTM_OM_SERVICE_ID		xServiceID;
 	FTM_OM_SERVICE_CALLBACK	fServiceCB;
 }	FTM_MQTT_CLIENT, _PTR_ FTM_MQTT_CLIENT_PTR;
 
@@ -132,20 +132,66 @@ typedef	struct
 	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_BOOL	fPublishEPDataBOOL;
 }	FTM_MQTT_CLIENT_CALLBACK_SET, _PTR_ FTM_MQTT_CLIENT_CALLBACK_SET_PTR;
 
-FTM_RET	FTM_MQTT_CLIENT_create(FTM_OM_PTR pOM, FTM_MQTT_CLIENT_PTR _PTR_ ppClient);
-FTM_RET	FTM_MQTT_CLIENT_destroy(FTM_MQTT_CLIENT_PTR _PTR_ ppClient);
+FTM_RET	FTM_MQTT_CLIENT_create
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_MQTT_CLIENT_PTR _PTR_ ppClient
+);
 
-FTM_RET	FTM_MQTT_CLIENT_init(FTM_OM_PTR pOM, FTM_MQTT_CLIENT_PTR pClient);
-FTM_RET	FTM_MQTT_CLIENT_final(FTM_MQTT_CLIENT_PTR pClient);
+FTM_RET	FTM_MQTT_CLIENT_destroy
+(
+	FTM_MQTT_CLIENT_PTR _PTR_ ppClient
+);
 
-FTM_RET	FTM_MQTT_CLIENT_loadConfig(FTM_MQTT_CLIENT_PTR pClient, FTM_MQTT_CLIENT_CONFIG_PTR pConfig);
-FTM_RET	FTM_MQTT_CLIENT_loadFromFile(FTM_MQTT_CLIENT_PTR pClient, FTM_CHAR_PTR pFileName);
-FTM_RET	FTM_MQTT_CLIENT_showConfig(FTM_MQTT_CLIENT_PTR pClient);
+FTM_RET	FTM_MQTT_CLIENT_init
+(
+	FTM_OM_PTR 			pOM, 
+	FTM_MQTT_CLIENT_PTR pClient
+);
 
-FTM_RET	FTM_MQTT_CLIENT_start(FTM_MQTT_CLIENT_PTR pClient);
-FTM_RET	FTM_MQTT_CLIENT_stop(FTM_MQTT_CLIENT_PTR pClient);
+FTM_RET	FTM_MQTT_CLIENT_final
+(
+	FTM_MQTT_CLIENT_PTR pClient
+);
 
-FTM_RET	FTM_MQTT_CLIENT_setCallback(FTM_MQTT_CLIENT_PTR pClient, FTM_OM_SERVICE_ID xID, FTM_OM_SERVICE_CALLBACK fCB);
-FTM_RET	FTM_MQTT_CLIENT_notify(FTM_MQTT_CLIENT_PTR pClient, FTM_OM_MSG_PTR pMsg);
+FTM_RET	FTM_MQTT_CLIENT_loadConfig
+(
+	FTM_MQTT_CLIENT_PTR 		pClient, 
+	FTM_MQTT_CLIENT_CONFIG_PTR 	pConfig
+);
+
+FTM_RET	FTM_MQTT_CLIENT_loadFromFile
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_CHAR_PTR 		pFileName
+);
+
+FTM_RET	FTM_MQTT_CLIENT_showConfig
+(
+	FTM_MQTT_CLIENT_PTR pClient
+);
+
+FTM_RET	FTM_MQTT_CLIENT_start
+(
+	FTM_MQTT_CLIENT_PTR pClient
+);
+
+FTM_RET	FTM_MQTT_CLIENT_stop
+(
+	FTM_MQTT_CLIENT_PTR pClient
+);
+
+FTM_RET	FTM_MQTT_CLIENT_setCallback
+(
+	FTM_MQTT_CLIENT_PTR 	pClient, 
+	FTM_OM_SERVICE_ID 		xID, 
+	FTM_OM_SERVICE_CALLBACK fCB
+);
+
+FTM_RET	FTM_MQTT_CLIENT_notify
+(
+	FTM_MQTT_CLIENT_PTR 	pClient, 
+	FTM_OM_MSG_PTR 			pMsg
+);
 
 #endif

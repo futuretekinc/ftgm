@@ -60,26 +60,96 @@ typedef	struct FTM_OM_STRUCT
 }	FTM_OM, _PTR_ FTM_OM_PTR;
 
 
-FTM_RET	FTM_OM_create(FTM_OM_PTR _PTR_ ppOM);
-FTM_RET	FTM_OM_destroy(FTM_OM_PTR _PTR_ ppOM);
+FTM_RET	FTM_OM_create
+(
+	FTM_OM_PTR _PTR_ ppOM
+);
 
-FTM_RET	FTM_OM_init(FTM_OM_PTR pOM);
-FTM_RET	FTM_OM_final(FTM_OM_PTR pOM);
+FTM_RET	FTM_OM_destroy
+(
+	FTM_OM_PTR _PTR_ ppOM
+);
 
-FTM_RET	FTM_OM_loadFromFile(FTM_OM_PTR pOM, FTM_CHAR_PTR pConfigFileName);
-FTM_RET	FTM_OM_showConfig(FTM_OM_PTR pOM);
+FTM_RET	FTM_OM_init
+(
+	FTM_OM_PTR pOM
+);
 
-FTM_RET FTM_OM_start(FTM_OM_PTR pOM);
-FTM_RET FTM_OM_stop(FTM_OM_PTR pOM);
-FTM_RET FTM_OM_waitingForFinished(FTM_OM_PTR pOM);
+FTM_RET	FTM_OM_final
+(
+	FTM_OM_PTR pOM
+);
 
-FTM_RET	FTM_OM_getDID(FTM_OM_PTR pOM, FTM_CHAR_PTR pBuff, FTM_ULONG ulBuffLen);
+FTM_RET	FTM_OM_loadFromFile
+(
+	FTM_OM_PTR 	pOM, 
+	FTM_CHAR_PTR 	pConfigFileName
+);
 
-FTM_RET	FTM_OM_createEP(FTM_OM_PTR pOM, FTM_EP_PTR pInfo);
-FTM_RET	FTM_OM_destroyEP(FTM_OM_PTR pOM, FTM_EP_ID xEPID);
-FTM_RET	FTM_OM_getEPDataList(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_ULONG ulStart, FTM_EP_DATA_PTR pDataList, FTM_ULONG ulMaxCount, FTM_ULONG_PTR pulCount);
-FTM_RET	FTM_OM_getEPDataInfo(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount);
-FTM_RET	FTM_OM_getEPDataCount(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_ULONG_PTR ulCount);
+FTM_RET	FTM_OM_showConfig
+(
+	FTM_OM_PTR 	pOM
+);
+
+FTM_RET FTM_OM_start
+(
+	FTM_OM_PTR 	pOM
+);
+
+FTM_RET FTM_OM_stop
+(
+	FTM_OM_PTR 	pOM
+);
+
+FTM_RET FTM_OM_waitingForFinished
+(
+	FTM_OM_PTR 	pOM
+);
+
+FTM_RET	FTM_OM_getDID
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_CHAR_PTR 	pBuff, 
+	FTM_ULONG 		ulBuffLen
+);
+
+FTM_RET	FTM_OM_createEP
+(
+	FTM_OM_PTR pOM, 
+	FTM_EP_PTR pInfo
+);
+
+FTM_RET	FTM_OM_destroyEP
+(
+	FTM_OM_PTR 	pOM, 
+	FTM_EP_ID 	xEPID
+);
+
+FTM_RET	FTM_OM_getEPDataList
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_ULONG 		ulStart, 
+	FTM_EP_DATA_PTR pDataList, 
+	FTM_ULONG 		ulMaxCount, 
+	FTM_ULONG_PTR 	pulCount
+);
+
+FTM_RET	FTM_OM_getEPDataInfo
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_ULONG_PTR 	pulBeginTime, 
+	FTM_ULONG_PTR 	pulEndTime, 
+	FTM_ULONG_PTR 	pulCount
+);
+
+FTM_RET	FTM_OM_getEPDataCount
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_ULONG_PTR 	ulCount
+);
 
 FTM_RET	FTM_OM_NOTIFY_SNMPTrap
 (
@@ -116,41 +186,41 @@ FTM_RET	FTM_OM_NOTIFY_quit
 FTM_RET		FTM_OM_NOTIFY_EPDataTransINT
 (
 	FTM_OM_PTR	pOM,
-	FTM_EP_ID 			xEPID, 
-	FTM_INT				nValue,
-	FTM_INT 			nAverage, 
-	FTM_INT 			nCount, 
-	FTM_INT 			nMax, 
-	FTM_INT 			nMin
+	FTM_EP_ID	xEPID, 
+	FTM_INT		nValue,
+	FTM_INT 	nAverage, 
+	FTM_INT 	nCount, 
+	FTM_INT 	nMax, 
+	FTM_INT 	nMin
 );
 
 FTM_RET		FTM_OM_NOTIFY_EPDataTransULONG
 (
 	FTM_OM_PTR	pOM,
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulValue, 
-	FTM_ULONG 			ulAverage, 
-	FTM_INT 			nCount, 
-	FTM_ULONG 			ulMax, 
-	FTM_ULONG 			ulMin
+	FTM_EP_ID 	xEPID, 
+	FTM_ULONG 	ulValue, 
+	FTM_ULONG 	ulAverage, 
+	FTM_INT 	nCount, 
+	FTM_ULONG 	ulMax, 
+	FTM_ULONG 	ulMin
 );
 
 FTM_RET		FTM_OM_NOTIFY_EPDataTransFLOAT
 (
 	FTM_OM_PTR	pOM,
-	FTM_EP_ID 			xEPID, 
-	FTM_FLOAT 			fValue, 
-	FTM_FLOAT 			fAverage, 
-	FTM_INT 			nCount, 
-	FTM_FLOAT 			fMax, 
-	FTM_FLOAT 			fMin
+	FTM_EP_ID 	xEPID, 
+	FTM_FLOAT 	fValue, 
+	FTM_FLOAT 	fAverage, 
+	FTM_INT 	nCount, 
+	FTM_FLOAT 	fMax, 
+	FTM_FLOAT 	fMin
 );
 
 FTM_RET		FTM_OM_NOTIFY_EPDataTransBOOL
 (
 	FTM_OM_PTR	pOM,
-	FTM_EP_ID 			xEPID, 
-	FTM_BOOL 			bValue
+	FTM_EP_ID 	xEPID, 
+	FTM_BOOL 	bValue
 );
 
 #endif

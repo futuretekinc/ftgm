@@ -24,6 +24,12 @@ FTM_RET			FTM_OM_TASK_startEP(FTM_OM_PTR pOM);
 FTM_RET			FTM_OM_TASK_processing(FTM_OM_PTR pOM);
 FTM_RET			FTM_OM_TASK_stopService(FTM_OM_PTR pOM);
 
+FTM_RET	FTM_OM_onTimeSync
+(
+	FTM_OM_PTR		pOM,
+	FTM_OM_MSG_PTR	pMsg
+);
+
 static 	FTM_RET	FTM_OM_callback(FTM_OM_SERVICE_ID xID, FTM_OM_MSG_TYPE xMsg, FTM_VOID_PTR pData);
 //static	FTM_RET	FTM_OM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg);
 static	FTM_OM_SERVER		xServer;
@@ -845,6 +851,71 @@ FTM_RET			FTM_OM_TASK_processing(FTM_OM_PTR pOM)
 	}
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_OM_onTimeSync
+(
+	FTM_OM_PTR	pOM,
+	FTM_OM_MSG_PTR	pMsg
+)
+	
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pMsg != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_OM_onControl
+(
+	FTM_OM_PTR		pOM,
+	FTM_OM_MSG_PTR	pMsg
+)
+{
+	FTM_RET			xRet;
+	FTM_OM_EP_PTR	pEP;
+	FTM_EP_DATA		xData;
+
+	TRACE("MQTT REQ CONTROL - EP[%08x]\n", pMsg->xParams.xMQTTReqControl.xEPID);
+
+	xRet = FTM_OM_EPM_get(pOM->pEPM, pMsg->xParams.xMQTTReqControl.xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%08x] not found.\n", pMsg->xParams.xMQTTReqControl.xEPID);
+		return	xRet;
+	}
+
+	switch(pMsg->xParams.xMQTTReqControl.xCmd)
+	{
+	case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_OFF:
+		{
+			xData.xType = FTM_EP_DATA_TYPE_INT;
+			xData.xValue.nValue = 0;
+		}
+		break;
+
+	case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_ON:
+		{
+			xData.xType = FTM_EP_DATA_TYPE_INT;
+			xData.xValue.nValue = 1;
+		}
+		break;
+
+	case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_BLINK:
+		{
+			xData.xType = FTM_EP_DATA_TYPE_INT;
+			xData.xValue.nValue = 2;
+		}
+		break;
+	}
+
+	xRet = FTM_OM_EP_setData(pEP, &xData);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%08x] set failed.\n", pMsg->xParams.xMQTTReqControl.xEPID);
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTM_OM_TASK_stopService(FTM_OM_PTR pOM)

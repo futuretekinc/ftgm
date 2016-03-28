@@ -91,86 +91,86 @@ FTM_RET	FTM_OM_CLIENT_loadConfig
 
 FTM_RET	FTM_OM_CLIENT_loadConfigFromFile
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR		pFileName
 );
 
 FTM_RET	FTM_OM_CLIENT_connect
 (
-	FTM_OM_CLIENT_PTR		pClient
+	FTM_OM_CLIENT_PTR	pClient
 );
 
 FTM_RET FTM_OM_CLIENT_disconnect
 (
-	FTM_OM_CLIENT_PTR		pClient
+	FTM_OM_CLIENT_PTR	pClient
 );
 
 FTM_RET FTM_OM_CLIENT_isConnected
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_BOOL_PTR		pbConnected
 );
 
 FTM_RET	FTM_OM_CLIENT_setNotifyCallback
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_OM_CLIENT_NOTIFY_CALLBACK	pCB
 );
 
 FTM_RET FTM_OM_CLIENT_NODE_create
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_NODE_PTR		pInfo
 );
 
 FTM_RET FTM_OM_CLIENT_NODE_destroy
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR		pDID
 );
 
 FTM_RET FTM_OM_CLIENT_NODE_count
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_ULONG_PTR		pulCount
 );
 
 FTM_RET FTM_OM_CLIENT_NODE_getAt
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_ULONG			ulIndex,
 	FTM_NODE_PTR		pInfo
 );
 
 FTM_RET FTM_OM_CLIENT_NODE_get
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR		pDID,
 	FTM_NODE_PTR		pInfo
 );
 
 FTM_RET FTM_OM_CLIENT_EP_create
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_PTR			pInfo
 );
 
 FTM_RET FTM_OM_CLIENT_EP_destroy
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_ID			xEPID
 );
 
 FTM_RET FTM_OM_CLIENT_EP_count
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_TYPE			xType,
 	FTM_ULONG_PTR		pnCount
 );
 
 FTM_RET	FTM_OM_CLIENT_EP_getList
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_TYPE			xType,
 	FTM_EP_ID_PTR		pEPIDList,
 	FTM_ULONG			ulMaxCount,
@@ -179,35 +179,35 @@ FTM_RET	FTM_OM_CLIENT_EP_getList
 
 FTM_RET FTM_OM_CLIENT_EP_get
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_ID			xEPID,
 	FTM_EP_PTR			pEPInfo
 );
 
 FTM_RET FTM_OM_CLIENT_EP_getAt
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_ULONG			nIndex,
 	FTM_EP_PTR			pEPInfo
 );
 
 FTM_RET FTM_OM_CLIENT_EP_DATA_add
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_ID			xEPID,
 	FTM_EP_DATA_PTR		pEPData
 );
 
 FTM_RET	FTM_OM_CLIENT_EP_DATA_getLast
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_ID			xEPID,
 	FTM_EP_DATA_PTR		pEPData
 );
 
 FTM_RET FTM_OM_CLIENT_EP_DATA_getList
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_ID			xEPID,
 	FTM_ULONG			nStartIndex,
 	FTM_EP_DATA_PTR		pData,
@@ -217,7 +217,7 @@ FTM_RET FTM_OM_CLIENT_EP_DATA_getList
 
 FTM_RET FTM_OM_CLIENT_EP_DATA_getWithTime
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_ID			xEPID,
 	FTM_ULONG			nBeginTime,
 	FTM_ULONG			nEndTime,
@@ -228,7 +228,7 @@ FTM_RET FTM_OM_CLIENT_EP_DATA_getWithTime
 
 FTM_RET FTM_OM_CLIENT_EP_DATA_del
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_ID			xEPID,
 	FTM_ULONG			nIndex,
 	FTM_ULONG			nCount
@@ -236,7 +236,7 @@ FTM_RET FTM_OM_CLIENT_EP_DATA_del
 
 FTM_RET FTM_OM_CLIENT_EP_DATA_delWithTime
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_ID			xEPID,
 	FTM_ULONG			nBeginTime,
 	FTM_ULONG			nEndTime
@@ -244,7 +244,7 @@ FTM_RET FTM_OM_CLIENT_EP_DATA_delWithTime
 
 FTM_RET	FTM_OM_CLIENT_EP_DATA_count
 (
-	FTM_OM_CLIENT_PTR		pClient,
+	FTM_OM_CLIENT_PTR	pClient,
 	FTM_EP_ID			xEPID,
 	FTM_ULONG_PTR		pCount
 );
