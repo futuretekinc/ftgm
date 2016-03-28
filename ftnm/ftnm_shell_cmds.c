@@ -75,10 +75,11 @@ FTM_RET	FTNM_SHELL_CMD_list
 	FTM_VOID_PTR 	pData
 )
 {
-	FTM_RET			xRet;
-	FTNM_NODE_PTR	pNode;
-	FTNM_EP_PTR		pEP;
-	FTM_ULONG		i,j, ulCount;
+	FTM_RET				xRet;
+	FTNM_NODE_PTR		pNode;
+	FTNM_EP_PTR			pEP;
+	FTM_ULONG			i,j, ulCount;
+	FTNM_CONTEXT_PTR	pCTX = (FTNM_CONTEXT_PTR)pData;
 
 	MESSAGE("\n# Node Information\n");
 	MESSAGE("%16s %16s %8s %8s %s\n", "DID", "STATE", "INTERVAL", "TIMEOUT", "EPs");
@@ -107,22 +108,27 @@ FTM_RET	FTNM_SHELL_CMD_list
 
 	MESSAGE("\n# EP Information\n");
 	MESSAGE("%16s %16s %16s %16s %8s %24s\n", "EPID", "TYPE", "DID", "STATE", "VALUE", "TIME");
-	FTNM_EP_count(0, &ulCount);
+		TRACE("%s[%d] pCTX = %x\n", __func__, __LINE__, pCTX);
+	FTNM_EPM_count(pCTX->pEPM, 0, &ulCount);
 	for(i = 0; i < ulCount ; i++)
 	{
-		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
+		TRACE("%s[%d]\n", __func__, __LINE__);
+		if (FTNM_EPM_getAt(pCTX->pEPM, i, &pEP) == FTM_RET_OK)
 		{
 			FTM_CHAR	pTimeString[64];
 			FTM_EP_DATA	xData;
 		
+		TRACE("%s[%d]\n", __func__, __LINE__);
 			FTNM_EP_getData(pEP, &xData);
 
+		TRACE("%s[%d]\n", __func__, __LINE__);
 			ctime_r((time_t *)&xData.ulTime, pTimeString);
 			if (strlen(pTimeString) != 0)
 			{
 				pTimeString[strlen(pTimeString) - 1] = '\0';
 			}
 			
+		TRACE("%s[%d]\n", __func__, __LINE__);
 			MESSAGE("%16lx ", pEP->xInfo.xEPID);
 			MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
 			if (pEP->pNode != NULL)

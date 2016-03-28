@@ -27,57 +27,59 @@ typedef	struct
 } FTNM_CALLBACK, _PTR_ FTNM_CALLBACK_PTR;
 
 static FTM_VOID_PTR		FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData);
-static netsnmp_session* FTNM_SNMPTRAPD_addSession(FTNM_SNMPTRAPD_PTR pCTX);
-static FTM_RET			FTNM_SNMPTRAPD_closeSessions(FTNM_SNMPTRAPD_PTR pCTX, netsnmp_session * pSessionList);
+static netsnmp_session* FTNM_SNMPTRAPD_addSession(FTNM_SNMPTRAPD_PTR pSNMPTRAPD);
+static FTM_RET			FTNM_SNMPTRAPD_closeSessions(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, netsnmp_session * pSessionList);
 static FTM_BOOL			FTNM_SNMPTRAPD_seekTrapCB(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
-static FTM_RET			FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg);
+static FTM_RET			FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR pMsg);
 //static FTM_RET		FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) ;
 
-FTM_RET	FTNM_SNMPTRAPD_init(FTNM_SNMPTRAPD_PTR pCTX)
+FTM_RET	FTNM_SNMPTRAPD_init(FTNM_CONTEXT_PTR pCTX, FTNM_SNMPTRAPD_PTR pSNMPTRAPD)
 {
 	FTM_RET	xRet;
 
-	memset(pCTX, 0, sizeof(FTNM_SNMPTRAPD));
-	strcpy(pCTX->xConfig.pName, FTNM_SNMPTRAPD_NAME);
-	pCTX->xConfig.usPort= FTNM_SNMPTRAPD_PORT;
+	memset(pSNMPTRAPD, 0, sizeof(FTNM_SNMPTRAPD));
+	strcpy(pSNMPTRAPD->xConfig.pName, FTNM_SNMPTRAPD_NAME);
+	pSNMPTRAPD->xConfig.usPort= FTNM_SNMPTRAPD_PORT;
 
-	xRet = FTM_LIST_init(&pCTX->xTrapCBList);
+	xRet = FTM_LIST_init(&pSNMPTRAPD->xTrapCBList);
 	if (xRet == FTM_RET_OK)
 	{
-		FTM_LIST_setSeeker(&pCTX->xTrapCBList, FTNM_SNMPTRAPD_seekTrapCB);
+		FTM_LIST_setSeeker(&pSNMPTRAPD->xTrapCBList, FTNM_SNMPTRAPD_seekTrapCB);
 	}
+	
+	pSNMPTRAPD->pCTX = pCTX;
 
 	return	xRet;
 }
 
-FTM_RET	FTNM_SNMPTRAPD_final(FTNM_SNMPTRAPD_PTR pCTX)
+FTM_RET	FTNM_SNMPTRAPD_final(FTNM_SNMPTRAPD_PTR pSNMPTRAPD)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pSNMPTRAPD != NULL);
 	FTNM_CALLBACK_PTR	pCB;
 
-	if (pCTX->bStop)
+	if (pSNMPTRAPD->bStop)
 	{
-		FTNM_SNMPTRAPD_stop(pCTX);	
+		FTNM_SNMPTRAPD_stop(pSNMPTRAPD);	
 	}
 
-	FTM_LIST_iteratorStart(&pCTX->xTrapCBList);
-	while(FTM_LIST_iteratorNext(&pCTX->xTrapCBList, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
+	FTM_LIST_iteratorStart(&pSNMPTRAPD->xTrapCBList);
+	while(FTM_LIST_iteratorNext(&pSNMPTRAPD->xTrapCBList, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
 	{
-		FTM_LIST_remove(&pCTX->xTrapCBList, pCB);
+		FTM_LIST_remove(&pSNMPTRAPD->xTrapCBList, pCB);
 		FTM_MEM_free(pCB);
 	}
 
-	FTM_LIST_final(&pCTX->xTrapCBList);
+	FTM_LIST_final(&pSNMPTRAPD->xTrapCBList);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SNMPTRAPD_start(FTNM_SNMPTRAPD_PTR pCTX)
+FTM_RET FTNM_SNMPTRAPD_start(FTNM_SNMPTRAPD_PTR pSNMPTRAPD)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pSNMPTRAPD != NULL);
 	FTM_INT	nRet;
 
-	nRet = pthread_create(&pCTX->xPThread, NULL, FTNM_SNMPTRAPD_process, pCTX);
+	nRet = pthread_create(&pSNMPTRAPD->xPThread, NULL, FTNM_SNMPTRAPD_process, pSNMPTRAPD);
 	if (nRet != 0)
 	{
 		switch(nRet)
@@ -113,14 +115,14 @@ FTM_RET FTNM_SNMPTRAPD_start(FTNM_SNMPTRAPD_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SNMPTRAPD_stop(FTNM_SNMPTRAPD_PTR pCTX)
+FTM_RET FTNM_SNMPTRAPD_stop(FTNM_SNMPTRAPD_PTR pSNMPTRAPD)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pSNMPTRAPD != NULL);
 	FTM_INT	nRet;
 	void*	pRet;
 
-	pCTX->bStop = FTM_TRUE;
-	nRet = pthread_join(pCTX->xPThread, &pRet);
+	pSNMPTRAPD->bStop = FTM_TRUE;
+	nRet = pthread_join(pSNMPTRAPD->xPThread, &pRet);
 	if (nRet != 0)
 	{
 		switch(nRet)
@@ -157,9 +159,9 @@ FTM_RET FTNM_SNMPTRAPD_stop(FTNM_SNMPTRAPD_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SNMPTRAPD_loadFromFile(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_SNMPTRAPD_loadFromFile(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR pFileName)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pFileName != NULL);
 
 	config_t			xConfig;
@@ -180,14 +182,14 @@ FTM_RET FTNM_SNMPTRAPD_loadFromFile(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pFileN
 		pField = config_setting_get_member(pSection, "name");
 		if (pField != NULL)
 		{
-			memset(pCTX->xConfig.pName, 0, sizeof(pCTX->xConfig.pName));
-			strncpy(pCTX->xConfig.pName,  config_setting_get_string(pField), sizeof(pCTX->xConfig.pName) - 1);
+			memset(pSNMPTRAPD->xConfig.pName, 0, sizeof(pSNMPTRAPD->xConfig.pName));
+			strncpy(pSNMPTRAPD->xConfig.pName,  config_setting_get_string(pField), sizeof(pSNMPTRAPD->xConfig.pName) - 1);
 		}
 
 		pField = config_setting_get_member(pSection, "port");
 		if (pField != NULL)
 		{
-			pCTX->xConfig.usPort =  config_setting_get_int(pField);
+			pSNMPTRAPD->xConfig.usPort =  config_setting_get_int(pField);
 		}
 
 		pList = config_setting_get_member(pSection, "traps");
@@ -209,7 +211,7 @@ FTM_RET FTNM_SNMPTRAPD_loadFromFile(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pFileN
 					if (read_objid(config_setting_get_string(pField), xOID.pOID, (size_t *)&xOID.ulOIDLen) == 1)
 					{
 						MESSAGE("SNMP_PARSE_OID success!\n");
-						FTNM_SNMPTRAPD_addTrapOID(pCTX, &xOID);
+						FTNM_SNMPTRAPD_addTrapOID(pSNMPTRAPD, &xOID);
 					}
 				
 				}
@@ -222,31 +224,31 @@ FTM_RET FTNM_SNMPTRAPD_loadFromFile(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pFileN
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_SNMPTRAPD_showConfig(FTNM_SNMPTRAPD_PTR pCTX)
+FTM_RET FTNM_SNMPTRAPD_showConfig(FTNM_SNMPTRAPD_PTR pSNMPTRAPD)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pSNMPTRAPD != NULL);
 
 	MESSAGE("[ SNMPTRAPD CONFIGURATION ]\n");
-	MESSAGE("%16s : %s\n", "Name", pCTX->xConfig.pName);
-	MESSAGE("%16s : %d\n", "Port", pCTX->xConfig.usPort);
+	MESSAGE("%16s : %s\n", "Name", pSNMPTRAPD->xConfig.pName);
+	MESSAGE("%16s : %d\n", "Port", pSNMPTRAPD->xConfig.usPort);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SNMPTRAPD_setServiceCallback(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SERVICE_ID xServiceID,  FTNM_SERVICE_CALLBACK fServiceCB)
+FTM_RET	FTNM_SNMPTRAPD_setServiceCallback(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTNM_SERVICE_ID xServiceID,  FTNM_SERVICE_CALLBACK fServiceCB)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(fServiceCB != NULL);
 
-	pCTX->xServiceID = xServiceID;
-	pCTX->fServiceCB = fServiceCB;
+	pSNMPTRAPD->xServiceID = xServiceID;
+	pSNMPTRAPD->fServiceCB = fServiceCB;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_SNMPTRAPD_addTrapOID(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SNMP_OID_PTR pOID)
+FTM_RET	FTNM_SNMPTRAPD_addTrapOID(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTNM_SNMP_OID_PTR pOID)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pOID != NULL);
 
 	FTM_RET				xRet;
@@ -260,7 +262,7 @@ FTM_RET	FTNM_SNMPTRAPD_addTrapOID(FTNM_SNMPTRAPD_PTR pCTX, FTNM_SNMP_OID_PTR pOI
 
 	memcpy(&pCB->xOID, pOID, sizeof(FTNM_SNMP_OID));
 
-	xRet = FTM_LIST_append(&pCTX->xTrapCBList, pCB);
+	xRet = FTM_LIST_append(&pSNMPTRAPD->xTrapCBList, pCB);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pCB);	
@@ -347,7 +349,7 @@ FTNM_SNMPTRAPD_inputCB
 	FTM_VOID_PTR 	pMagic
 )
 {
-	FTNM_SNMPTRAPD_PTR	pCTX = (FTNM_SNMPTRAPD_PTR)pMagic;
+	FTNM_SNMPTRAPD_PTR	pSNMPTRAPD = (FTNM_SNMPTRAPD_PTR)pMagic;
 
     oid trapOid[MAX_OID_LEN+2] = {0};
     int trapOidLen;
@@ -406,7 +408,7 @@ FTNM_SNMPTRAPD_inputCB
 						FTNM_SNMP_OID		xOID;
 						memcpy(xOID.pOID, vars->name, sizeof(oid) * vars->name_length);
 						xOID.ulOIDLen  = vars->name_length;
-						if (FTM_LIST_get(&pCTX->xTrapCBList, &xOID, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
+						if (FTM_LIST_get(&pSNMPTRAPD->xTrapCBList, &xOID, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
 						{
 							if (vars->type == ASN_OCTET_STR)
 							{
@@ -414,7 +416,7 @@ FTNM_SNMPTRAPD_inputCB
 		
 								memcpy(pBuff, vars->val.string, vars->val_len);
 								pBuff[vars->val_len] = 0;
-								FTNM_SNMPTRAPD_receiveTrap(pCTX, pBuff);
+								FTNM_SNMPTRAPD_receiveTrap(pSNMPTRAPD, pBuff);
 							}
 						}	
 					}
@@ -486,9 +488,9 @@ FTNM_SNMPTRAPD_inputCB
 }
 
 static 
-netsnmp_session * FTNM_SNMPTRAPD_addSession(FTNM_SNMPTRAPD_PTR pCTX)
+netsnmp_session * FTNM_SNMPTRAPD_addSession(FTNM_SNMPTRAPD_PTR pSNMPTRAPD)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pSNMPTRAPD != NULL);
 
 	netsnmp_session xSession, *pRet = NULL;
 
@@ -499,11 +501,11 @@ netsnmp_session * FTNM_SNMPTRAPD_addSession(FTNM_SNMPTRAPD_PTR pCTX)
 	xSession.retries 		= SNMP_DEFAULT_RETRIES;
 	xSession.timeout 		= SNMP_DEFAULT_TIMEOUT;
 	xSession.callback 		= FTNM_SNMPTRAPD_inputCB;
-	xSession.callback_magic = (void *)pCTX;
+	xSession.callback_magic = (void *)pSNMPTRAPD;
 	xSession.authenticator 	= NULL;
 	xSession.isAuthoritative= SNMP_SESS_UNKNOWNAUTH;
 
-	pRet = snmp_add(&xSession, pCTX->pTransport, FTNM_SNMPTRAPD_preParse, NULL);
+	pRet = snmp_add(&xSession, pSNMPTRAPD->pTransport, FTNM_SNMPTRAPD_preParse, NULL);
 	if (pRet == NULL) 
 	{
 		FTM_CHAR_PTR	pErrMsg = NULL;
@@ -515,7 +517,7 @@ netsnmp_session * FTNM_SNMPTRAPD_addSession(FTNM_SNMPTRAPD_PTR pCTX)
 }
 
 static 
-FTM_RET	FTNM_SNMPTRAPD_closeSessions(FTNM_SNMPTRAPD_PTR pCTX, netsnmp_session * pSessionList)
+FTM_RET	FTNM_SNMPTRAPD_closeSessions(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, netsnmp_session * pSessionList)
 {
 	netsnmp_session *pSession = NULL;
 	netsnmp_session *pNextSession = NULL;
@@ -530,15 +532,15 @@ FTM_RET	FTNM_SNMPTRAPD_closeSessions(FTNM_SNMPTRAPD_PTR pCTX, netsnmp_session * 
 }
 
 static void
-FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pCTX)
+FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pSNMPTRAPD)
 {
 	int             count, numfds, block;
 	fd_set          readfds,writefds,exceptfds;
 	struct timeval  timeout, *tvp;
 	
-	pCTX->bStop = FTM_FALSE;
+	pSNMPTRAPD->bStop = FTM_FALSE;
 
-	while (!pCTX->bStop) 
+	while (!pSNMPTRAPD->bStop) 
 	{
 #if 0
 		if (reconfig) {
@@ -605,14 +607,14 @@ FTNM_SNMPTRAPD_mainLoop(FTNM_SNMPTRAPD_PTR pCTX)
 						continue;
 					}
 					ERROR("select - %s\n", strerror(errno));
-					pCTX->bStop = FTM_TRUE;
+					pSNMPTRAPD->bStop = FTM_TRUE;
 				}
 				break;
 
 			default:
 				{
 					ERROR("select returned %d\n", count);
-					pCTX->bStop = FTM_TRUE;
+					pSNMPTRAPD->bStop = FTM_TRUE;
 				}
 			}
 		}
@@ -626,36 +628,36 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
 
-	FTNM_SNMPTRAPD_PTR	pCTX = (FTNM_SNMPTRAPD_PTR)pData;
+	FTNM_SNMPTRAPD_PTR	pSNMPTRAPD = (FTNM_SNMPTRAPD_PTR)pData;
 
     netsnmp_session		*pSessionList = NULL;
     netsnmp_session		*pSession = NULL;
 	FTM_CHAR			pPort[16];
 
-	sprintf(pPort, "%d", pCTX->xConfig.usPort);
-	pCTX->pTransport = netsnmp_transport_open_server(pCTX->xConfig.pName, pPort); 
-	if (pCTX->pTransport == NULL) 
+	sprintf(pPort, "%d", pSNMPTRAPD->xConfig.usPort);
+	pSNMPTRAPD->pTransport = netsnmp_transport_open_server(pSNMPTRAPD->xConfig.pName, pPort); 
+	if (pSNMPTRAPD->pTransport == NULL) 
 	{
 		ERROR("Couldn't open %d -- errno %d(\"%s\")\n", 
-				pCTX->xConfig.usPort,
+				pSNMPTRAPD->xConfig.usPort,
 				errno, strerror(errno));
-		FTNM_SNMPTRAPD_closeSessions(pCTX, pSessionList);
+		FTNM_SNMPTRAPD_closeSessions(pSNMPTRAPD, pSessionList);
 		SOCK_CLEANUP;
 
 		return	0;
 	} 
 	else 
 	{
-		pSession  = FTNM_SNMPTRAPD_addSession(pCTX);
+		pSession  = FTNM_SNMPTRAPD_addSession(pSNMPTRAPD);
 		if (pSession == NULL) 
 		{
 			/*   
 			 * Shouldn't happen?  We have already opened the transport
 			 * successfully so what could have gone wrong?  
 			 */
-			FTNM_SNMPTRAPD_closeSessions(pCTX, pSessionList);
-			netsnmp_transport_free(pCTX->pTransport);
-			pCTX->pTransport = NULL;
+			FTNM_SNMPTRAPD_closeSessions(pSNMPTRAPD, pSessionList);
+			netsnmp_transport_free(pSNMPTRAPD->pTransport);
+			pSNMPTRAPD->pTransport = NULL;
 			ERROR("couldn't open snmp - %s", strerror(errno));
 			SOCK_CLEANUP;
 
@@ -668,15 +670,15 @@ FTM_VOID_PTR	FTNM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 		}    
 	}    
 
-	FTNM_SNMPTRAPD_mainLoop(pCTX);
+	FTNM_SNMPTRAPD_mainLoop(pSNMPTRAPD);
 
 	return  FTM_RET_OK;
 
 }
 
-FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
+FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR pMsg)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pMsg != NULL);
 	
 	FTM_RET					xRet;
@@ -721,7 +723,7 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 			{
 				xEPID = strtoul(pItem->text_value, 0, 16);
 	
-				xRet = FTNM_EP_get(xEPID, &pEP);
+				xRet = FTNM_EPM_get(pSNMPTRAPD->pCTX->pEPM, xEPID, &pEP);
 				if (xRet == FTM_RET_OK)
 				{
 					FTNM_EP_getData(pEP, &xData);
@@ -822,14 +824,14 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pCTX, FTM_CHAR_PTR pMsg)
 							}
 						}
 
-						if (pCTX->fServiceCB != NULL)
+						if (pSNMPTRAPD->fServiceCB != NULL)
 						{
 							FTNM_MSG_EP_CHANGED_PARAMS xParam;
 							
 							xParam.xEPID = xEPID;
 							memcpy(&xParam.xData, &xData, sizeof(xData));
 
-							pCTX->fServiceCB(pCTX->xServiceID, FTNM_MSG_TYPE_EP_CHANGED, &xParam);
+							pSNMPTRAPD->fServiceCB(pSNMPTRAPD->xServiceID, FTNM_MSG_TYPE_EP_CHANGED, &xParam);
 						}
 					}
 					else

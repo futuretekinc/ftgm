@@ -10,6 +10,7 @@
 
 #define	FTNM_PACKET_LEN					2048
 
+typedef	struct FTNM_CONTEXT_STRUCT _PTR_ FTNM_CONTEXT_PTR;
 typedef	struct FTNM_SERVER_STRUCT _PTR_ FTNM_SERVER_PTR;
 typedef	struct
 {
@@ -43,13 +44,14 @@ typedef	struct FTNM_SERVER_STRUCT
 	FTNM_SERVER_CONFIG		xConfig;
 	pthread_t 				xPThread;
 	sem_t					xLock;
-
+	
+	FTNM_CONTEXT_PTR		pCTX;
 	FTM_LIST				xSessionList;
 	FTNM_SERVICE_ID			xServiceID;
 	FTNM_SERVICE_CALLBACK	fServiceCB;
 }	FTNM_SERVER;
 
-FTM_RET	FTNM_SERVER_init(FTNM_SERVER_PTR 	pServer);
+FTM_RET	FTNM_SERVER_init(FTNM_CONTEXT_PTR pCTX, FTNM_SERVER_PTR 	pServer);
 FTM_RET	FTNM_SERVER_final(FTNM_SERVER_PTR 	pServer);
 
 FTM_RET	FTNM_SERVER_start(FTNM_SERVER_PTR	pServer);

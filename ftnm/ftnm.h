@@ -11,6 +11,7 @@
 #include "ftnm_trigger.h"
 #include "ftnm_action.h"
 #include "ftnm_rule.h"
+#include "ftnm_msg.h"
 
 #define	FTNM_DEFAULT_SERVER_SESSION_COUNT	10
 
@@ -38,15 +39,21 @@ typedef	FTM_ULONG	FTNM_STATE;
 typedef	struct
 {
 	FTM_CHAR		pDID[FTM_DID_LEN + 1];
-}	FTNM_INFO, _PTR_ FTNM_INFO_PTR;
+}	FTM_OM_CONFIG, _PTR_ FTM_OM_CONFIG_PTR;
 
-typedef	struct
+typedef	struct FTNM_EPM_STRUCT _PTR_ FTNM_EPM_PTR;
+
+typedef	struct FTNM_CONTEXT_STRUCT
 {
-	FTNM_STATE		xState;
-	FTM_LIST		xEPList;
-	pthread_t		xThread;
+	FTM_OM_CONFIG		xConfig;
 
-	FTM_BOOL		bStop;
+	FTNM_STATE			xState;
+	pthread_t			xThread;
+
+	FTM_BOOL			bStop;
+
+	FTNM_EPM_PTR		pEPM;
+	FTNM_MSG_QUEUE_PTR	pMsgQ;
 }	FTNM_CONTEXT, _PTR_ FTNM_CONTEXT_PTR;
 
 
@@ -58,6 +65,8 @@ FTM_RET	FTNM_showConfig(FTM_VOID);
 FTM_RET FTNM_start(FTM_VOID);
 FTM_RET FTNM_stop(FTM_VOID);
 FTM_RET FTNM_waitingForFinished(FTM_VOID);
+
+FTM_RET	FTNM_getDID(FTM_CHAR_PTR pBuff, FTM_ULONG ulBuffLen);
 
 FTM_RET	FTNM_getDMC(FTNM_DMC_PTR _PTR_ ppDMC);
 

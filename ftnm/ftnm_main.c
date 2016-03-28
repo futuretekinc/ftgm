@@ -10,7 +10,7 @@
 extern char *program_invocation_short_name;
 extern	FTM_SHELL_CMD	FTNM_shellCmds[];
 extern	FTM_ULONG		FTNM_shellCmdCount;
-
+extern	FTNM_CONTEXT	xCTX;
 
 int main(int nArgc, char *pArgv[])
 {
@@ -71,12 +71,15 @@ int main(int nArgc, char *pArgv[])
 		FTM_MEM_init();
 		FTM_TRACE_setLevel(ulDebugLevel);
 		FTNM_init();
+	TRACE("%s[%d] : xCTX = %08x, xCTX.pEPM = %08x\n", __func__, __LINE__,&xCTX, xCTX.pEPM);
 
 		FTNM_loadFromFile(pConfigFileName);
 
 		FTNM_start();
 
 		FTM_SHELL_init();
+		TRACE("xCTX = %08x\n", &xCTX);
+		FTM_SHELL_setGlobalData(&xCTX);
 		FTM_SHELL_setPrompt("FTNM> ");
 		FTM_SHELL_addCmds(FTNM_shellCmds,FTNM_shellCmdCount);
 		FTM_SHELL_run();

@@ -12,35 +12,35 @@
 
 static FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData);
 
-FTM_RET FTNM_DMC_init(FTNM_DMC_PTR pCTX)
+FTM_RET FTNM_DMC_init(FTNM_CONTEXT_PTR pCTX, FTNM_DMC_PTR pDMC)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 
-	memset(pCTX, 0, sizeof(FTNM_DMC));
+	memset(pDMC, 0, sizeof(FTNM_DMC));
 
-	strcpy(pCTX->xConfig.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
-	pCTX->xConfig.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
-	FTNM_MSGQ_init(&pCTX->xMsgQ);
+	strcpy(pDMC->xConfig.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
+	pDMC->xConfig.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
+	FTNM_MSGQ_init(&pDMC->xMsgQ);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_DMC_final(FTNM_DMC_PTR pCTX)
+FTM_RET FTNM_DMC_final(FTNM_DMC_PTR pDMC)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 	
-	FTNM_MSGQ_final(&pCTX->xMsgQ);
+	FTNM_MSGQ_final(&pDMC->xMsgQ);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_DMC_start(FTNM_DMC_PTR pCTX)
+FTM_RET	FTNM_DMC_start(FTNM_DMC_PTR pDMC)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 
-	pCTX->bStop = FTM_FALSE;
+	pDMC->bStop = FTM_FALSE;
 
-	if (pthread_create(&pCTX->xThread, NULL, FTNM_DMC_process, pCTX) < 0)
+	if (pthread_create(&pDMC->xThread, NULL, FTNM_DMC_process, pDMC) < 0)
 	{
 		return	FTM_RET_ERROR;	
 	}
@@ -48,12 +48,12 @@ FTM_RET	FTNM_DMC_start(FTNM_DMC_PTR pCTX)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_DMC_stop(FTNM_DMC_PTR pCTX)
+FTM_RET	FTNM_DMC_stop(FTNM_DMC_PTR pDMC)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 
-	pCTX->bStop = FTM_TRUE;
-	pthread_join(pCTX->xThread, NULL);
+	pDMC->bStop = FTM_TRUE;
+	pthread_join(pDMC->xThread, NULL);
 
 	return	FTM_RET_OK;
 }
@@ -63,16 +63,16 @@ FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData)
 	ASSERT(pData != NULL);
 
 	FTM_RET			xRet;
-	FTNM_DMC_PTR	pCTX = (FTNM_DMC_PTR)pData;
+	FTNM_DMC_PTR	pDMC = (FTNM_DMC_PTR)pData;
 		
-	while(!pCTX->bStop)
+	while(!pDMC->bStop)
 	{
 		FTM_BOOL	bConnected;
 
-		FTDMC_isConnected(&pCTX->xSession, &bConnected);
+		FTDMC_isConnected(&pDMC->xSession, &bConnected);
 		if (!bConnected)
 		{
-			xRet = FTDMC_connect(&pCTX->xSession, inet_addr(pCTX->xConfig.xNetwork.pServerIP), pCTX->xConfig.xNetwork.usPort);
+			xRet = FTDMC_connect(&pDMC->xSession, inet_addr(pDMC->xConfig.xNetwork.pServerIP), pDMC->xConfig.xNetwork.usPort);
 			if (xRet != FTM_RET_OK)
 			{
 				TRACE("DB connection failed.\n");	
@@ -80,9 +80,9 @@ FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData)
 			}
 			else
 			{
-				if (pCTX->fServiceCB != NULL)
+				if (pDMC->fServiceCB != NULL)
 				{
-					pCTX->fServiceCB(pCTX->xServiceID, FTNM_MSG_TYPE_DMC_CONNECTED, NULL);	
+					pDMC->fServiceCB(pDMC->xServiceID, FTNM_MSG_TYPE_DMC_CONNECTED, NULL);	
 				}
 			}
 		}
@@ -90,13 +90,13 @@ FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData)
 		{
 			FTNM_MSG_PTR	pMsg= NULL;
 
-			while(FTNM_MSGQ_timedPop(&pCTX->xMsgQ, 1000000, &pMsg) == FTM_RET_OK)
+			while(FTNM_MSGQ_timedPop(&pDMC->xMsgQ, 1000000, &pMsg) == FTM_RET_OK)
 			{
 				switch(pMsg->xType)
 				{
 				case	FTNM_MSG_TYPE_QUIT:
 					{
-						pCTX->bStop = FTM_TRUE;	
+						pDMC->bStop = FTM_TRUE;	
 					}
 					break;
 
@@ -115,43 +115,43 @@ FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET	FTNM_DMC_setServiceCallback(FTNM_DMC_PTR pCTX, FTNM_SERVICE_ID xServiceID, FTNM_SERVICE_CALLBACK pServiceCB)
+FTM_RET	FTNM_DMC_setServiceCallback(FTNM_DMC_PTR pDMC, FTNM_SERVICE_ID xServiceID, FTNM_SERVICE_CALLBACK pServiceCB)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 	ASSERT(pServiceCB != NULL);
 
-	pCTX->xServiceID = xServiceID;
-	pCTX->fServiceCB = pServiceCB;
+	pDMC->xServiceID = xServiceID;
+	pDMC->fServiceCB = pServiceCB;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_DMC_EP_create(FTNM_DMC_PTR pCTX, FTM_EP_PTR pInfo)
+FTM_RET	FTNM_DMC_EP_create(FTNM_DMC_PTR pDMC, FTM_EP_PTR pInfo)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EP_append(&pCTX->xSession, pInfo);
+	return	FTDMC_EP_append(&pDMC->xSession, pInfo);
 }
 
-FTM_RET	FTNM_DMC_EP_destroy(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID)
+FTM_RET	FTNM_DMC_EP_destroy(FTNM_DMC_PTR pDMC, FTM_EP_ID xEPID)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 
-	return	FTDMC_EP_remove(&pCTX->xSession, xEPID);
+	return	FTDMC_EP_remove(&pDMC->xSession, xEPID);
 }
 
-FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET	FTNM_DMC_EP_DATA_set(FTNM_DMC_PTR pDMC, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTDMC_EP_DATA_append(&pCTX->xSession, xEPID, pData);
+	return	FTDMC_EP_DATA_append(&pDMC->xSession, xEPID, pData);
 }
 
-FTM_RET FTNM_DMC_EP_DATA_setINT(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
+FTM_RET FTNM_DMC_EP_DATA_setINT(FTNM_DMC_PTR pDMC, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 
 	FTM_EP_DATA	xData;
 
@@ -159,12 +159,12 @@ FTM_RET FTNM_DMC_EP_DATA_setINT(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ul
 	xData.xType = FTM_EP_DATA_TYPE_INT;
 	xData.xValue.nValue = nValue;
 
-	return	FTDMC_EP_DATA_append(&pCTX->xSession, xEPID, &xData);
+	return	FTDMC_EP_DATA_append(&pDMC->xSession, xEPID, &xData);
 }
 
-FTM_RET FTNM_DMC_EP_DATA_setULONG(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue)
+FTM_RET FTNM_DMC_EP_DATA_setULONG(FTNM_DMC_PTR pDMC, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 	
 	FTM_EP_DATA	xData;
 
@@ -172,12 +172,12 @@ FTM_RET FTNM_DMC_EP_DATA_setULONG(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG 
 	xData.xType = FTM_EP_DATA_TYPE_ULONG;
 	xData.xValue.ulValue = ulValue;
 
-	return	FTDMC_EP_DATA_append(&pCTX->xSession, xEPID, &xData);
+	return	FTDMC_EP_DATA_append(&pDMC->xSession, xEPID, &xData);
 }
 
-FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue)
+FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTNM_DMC_PTR pDMC, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_DOUBLE fValue)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 	
 	FTM_EP_DATA	xData;
 
@@ -185,20 +185,20 @@ FTM_RET FTNM_DMC_EP_DATA_setFLOAT(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG 
 	xData.xType = FTM_EP_DATA_TYPE_FLOAT;
 	xData.xValue.fValue = fValue;
 
-	return	FTDMC_EP_DATA_append(&pCTX->xSession, xEPID, &xData);
+	return	FTDMC_EP_DATA_append(&pDMC->xSession, xEPID, &xData);
 }
 
-FTM_RET	FTNM_DMC_EP_DATA_count(FTNM_DMC_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
+FTM_RET	FTNM_DMC_EP_DATA_count(FTNM_DMC_PTR pDMC, FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_count(&pCTX->xSession, xEPID, pulCount);
+	return	FTDMC_EP_DATA_count(&pDMC->xSession, xEPID, pulCount);
 }
 
 FTM_RET FTNM_DMC_EP_DATA_get
 (
-	FTNM_DMC_PTR	pCTX,
+	FTNM_DMC_PTR	pDMC,
 	FTM_EP_ID 		xEPID, 
 	FTM_ULONG		ulStartIndex,
 	FTM_EP_DATA_PTR	pData,
@@ -206,28 +206,28 @@ FTM_RET FTNM_DMC_EP_DATA_get
 	FTM_ULONG_PTR 	pulCount
 )
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 	ASSERT(pData != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_get(&pCTX->xSession, xEPID, ulStartIndex, pData, ulMaxCount, pulCount);
+	return	FTDMC_EP_DATA_get(&pDMC->xSession, xEPID, ulStartIndex, pData, ulMaxCount, pulCount);
 }
 
 FTM_RET FTNM_DMC_EP_DATA_info
 (
-	FTNM_DMC_PTR	pCTX,
+	FTNM_DMC_PTR	pDMC,
 	FTM_EP_ID 		xEPID, 
 	FTM_ULONG_PTR 	pulBeginTime, 
 	FTM_ULONG_PTR 	pulEndTime, 
 	FTM_ULONG_PTR 	pulCount
 )
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 
-	return	FTDMC_EP_DATA_info(&pCTX->xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
+	return	FTDMC_EP_DATA_info(&pDMC->xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
-FTM_RET FTNM_DMC_loadFromFile(FTNM_DMC_PTR pCTX, FTM_CHAR_PTR pFileName)
+FTM_RET FTNM_DMC_loadFromFile(FTNM_DMC_PTR pDMC, FTM_CHAR_PTR pFileName)
 {
 	ASSERT(pFileName != NULL);
 
@@ -249,19 +249,19 @@ FTM_RET FTNM_DMC_loadFromFile(FTNM_DMC_PTR pCTX, FTM_CHAR_PTR pFileName)
 		pField = config_setting_get_member(pSection, "server_ip");
 		if (pField != NULL)
 		{
-			strncpy(pCTX->xConfig.xNetwork.pServerIP, config_setting_get_string(pField), FTDMC_SERVER_IP_LEN);
+			strncpy(pDMC->xConfig.xNetwork.pServerIP, config_setting_get_string(pField), FTDMC_SERVER_IP_LEN);
 		}
 	
 		pField = config_setting_get_member(pSection, "port");
 		if (pField != NULL)
 		{
-			pCTX->xConfig.xNetwork.usPort = (FTM_ULONG)config_setting_get_int(pField);
+			pDMC->xConfig.xNetwork.usPort = (FTM_ULONG)config_setting_get_int(pField);
 		}
 	}
 
 	config_destroy(&xConfig);
 
-	xRet = FTDMC_init(&pCTX->xConfig);
+	xRet = FTDMC_init(&pDMC->xConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -270,13 +270,13 @@ FTM_RET FTNM_DMC_loadFromFile(FTNM_DMC_PTR pCTX, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTNM_DMC_showConfig(FTNM_DMC_PTR pCTX)
+FTM_RET FTNM_DMC_showConfig(FTNM_DMC_PTR pDMC)
 {
-	ASSERT(pCTX != NULL);
+	ASSERT(pDMC != NULL);
 
 	MESSAGE("\n[ DATA MANAGER CONNECTION CONFIGURATION ]\n");
-	MESSAGE("%16s : %s\n", "SERVER", pCTX->xConfig.xNetwork.pServerIP);
-	MESSAGE("%16s : %d\n", "PORT", pCTX->xConfig.xNetwork.usPort);
+	MESSAGE("%16s : %s\n", "SERVER", pDMC->xConfig.xNetwork.pServerIP);
+	MESSAGE("%16s : %d\n", "PORT", pDMC->xConfig.xNetwork.usPort);
 
 	return	FTM_RET_OK;
 }

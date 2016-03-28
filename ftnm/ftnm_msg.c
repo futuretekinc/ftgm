@@ -30,6 +30,50 @@ FTM_RET	FTNM_MSG_destroy(FTNM_MSG_PTR pMsg)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTNM_MSGQ_create(FTNM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
+{
+	ASSERT(ppMsgQ != NULL);
+
+	FTM_RET				xRet;
+	FTNM_MSG_QUEUE_PTR	pMsgQ;
+
+	pMsgQ = (FTNM_MSG_QUEUE_PTR)FTM_MEM_malloc(sizeof(FTNM_MSG_QUEUE));
+	if (pMsgQ == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	memset(pMsgQ, 0, sizeof(FTNM_MSG_QUEUE));
+
+	xRet = FTNM_MSGQ_init(pMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pMsgQ);
+		return	xRet;
+	}
+
+	*ppMsgQ = pMsgQ;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_MSGQ_destroy(FTNM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
+{
+	ASSERT(ppMsgQ != NULL);
+
+	if (*ppMsgQ == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;
+	}
+
+	FTNM_MSGQ_final(*ppMsgQ);
+	FTM_MEM_free(*ppMsgQ);
+
+	*ppMsgQ = NULL;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET FTNM_MSGQ_init(FTNM_MSG_QUEUE_PTR pMsgQ)
 {
 	ASSERT(pMsgQ != NULL);

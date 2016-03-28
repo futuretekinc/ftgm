@@ -14,6 +14,7 @@
 #include "ftnm_dmc.h"
 #include "ftm_mqtt_client.h"
 #include "ftnm_msg.h"
+#include "ftnm_utils.h"
 #include "nxjson.h"
 
 FTM_VOID_PTR	FTNM_process(FTM_VOID_PTR pData);
@@ -30,12 +31,11 @@ static	FTNM_SNMPC		xSNMPC;
 static	FTNM_SNMPTRAPD	xSNMPTRAPD;
 static	FTNM_DMC		xDMC;
 static	FTM_MQTT_CLIENT	xMQTTC;
-static  FTNM_MSG_QUEUE	xMsgQ;
 
 		FTNM_TRIGGERM	xTriggerM;
 		FTNM_ACTIONM	xActionM;
 		FTNM_RULEM_PTR	pRuleM = NULL;
-static 	FTNM_CONTEXT	xCTX;
+FTNM_CONTEXT	xCTX;
 
 static 	FTNM_SERVICE	pServices[] =
 {
@@ -99,27 +99,48 @@ static 	FTNM_SERVICE	pServices[] =
 	{
 		.xType		=	FTNM_SERVICE_MQTT_CLIENT,
 		.xID		=	FTNM_SERVICE_MQTT_CLIENT,
-		.pName		=	"Server",
+		.pName		=	"MQTT Client",
 		.fInit		=	(FTNM_SERVICE_INIT)FTM_MQTT_CLIENT_init,
 		.fFinal		=	(FTNM_SERVICE_FINAL)FTM_MQTT_CLIENT_final,
 		.fStart 	=	(FTNM_SERVICE_START)FTM_MQTT_CLIENT_start,
 		.fStop		=	(FTNM_SERVICE_STOP)FTM_MQTT_CLIENT_stop,
-		.fSetCallback=	(FTNM_SERVICE_SET_CALLBACK)FTM_MQTT_CLIENT_setServiceCallback,
+		.fSetCallback=	(FTNM_SERVICE_SET_CALLBACK)FTM_MQTT_CLIENT_setCallback,
 		.fCallback	=	FTNM_callback,
 		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTM_MQTT_CLIENT_loadFromFile,
 		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTM_MQTT_CLIENT_showConfig,
 		.fNotify	=	(FTNM_SERVICE_NOTIFY)FTM_MQTT_CLIENT_notify,
 		.pData		= 	(FTM_VOID_PTR)&xMQTTC
+	},
 };
 
 FTM_RET	FTNM_init(FTM_VOID)
 {
-	FTNM_EP_init();
+	FTM_RET	xRet;
+
+	memset(&xCTX, 0, sizeof(xCTX));
+
+	FTNM_getDefaultDeviceID(xCTX.xConfig.pDID);
+	TRACE("DID : %s\n", xCTX.xConfig.pDID);
+
+	xRet = FTNM_EPM_create(&xCTX, &xCTX.pEPM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't create EPM\n");
+		return	xRet;	
+	}
+
+	xRet = FTNM_MSGQ_create(&xCTX.pMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't create Message Queue\n");
+		FTNM_EPM_destroy(&xCTX.pEPM);
+		return	xRet;	
+	}
+
 	FTNM_NODE_init();
 	FTNM_EP_CLASS_init();
-	FTNM_MSGQ_init(&xMsgQ);
 
-	FTNM_SERVICE_init(pServices, sizeof(pServices) / sizeof(FTNM_SERVICE));
+	FTNM_SERVICE_init(&xCTX, pServices, sizeof(pServices) / sizeof(FTNM_SERVICE));
 
 	FTNM_TRIGGERM_init(&xTriggerM);
 	FTNM_ACTIONM_init(&xActionM);
@@ -139,10 +160,10 @@ FTM_RET	FTNM_final(FTM_VOID)
 
 	FTNM_SERVICE_final();
 
-	FTNM_MSGQ_final(&xMsgQ);
 	FTNM_EP_CLASS_final();
 	FTNM_NODE_final();
-	FTNM_EP_final();
+	FTNM_MSGQ_destroy(&xCTX.pMsgQ);
+	FTNM_EPM_destroy(&xCTX.pEPM);
 
 	TRACE("FTNM finalization done.\n");
 
@@ -178,7 +199,7 @@ FTM_RET FTNM_start(FTM_VOID)
 
 FTM_RET FTNM_stop(FTM_VOID)
 {
-	FTNM_MSGQ_sendQuit(&xMsgQ);
+	FTNM_MSGQ_sendQuit(xCTX.pMsgQ);
 	pthread_join(xCTX.xThread, NULL);
 
 	return	FTM_RET_OK;
@@ -339,7 +360,7 @@ FTM_RET	FTNM_TASK_sync(FTNM_CONTEXT_PTR pCTX)
 			continue;
 		}
 
-		xRet = FTNM_EP_create(&xEPInfo, &pEP);
+		xRet = FTNM_EPM_createEP(xCTX.pEPM, &xEPInfo, &pEP);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("FTNM_EP_create(xEP, &pNode) = %08lx\n", xRet);
@@ -443,10 +464,10 @@ FTM_RET	FTNM_TASK_startEP(FTNM_CONTEXT_PTR pCTX)
 	FTNM_RULEM_start(pRuleM);
 	FTNM_ACTIONM_start(&xActionM);
 	FTNM_TRIGGERM_start(&xTriggerM);
-	FTNM_EP_count(0, &ulCount);
+	FTNM_EPM_count(xCTX.pEPM, 0, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
+		if (FTNM_EPM_getAt(xCTX.pEPM, i, &pEP) == FTM_RET_OK)
 		{
 			FTNM_EP_start(pEP);
 		}
@@ -470,7 +491,7 @@ FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX)
 
 	while(!bStop)
 	{
-		xRet = FTNM_MSGQ_timedPop(&xMsgQ, 1000000, &pMsg);
+		xRet = FTNM_MSGQ_timedPop(xCTX.pMsgQ, 1000000, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			switch(pMsg->xType)
@@ -504,7 +525,7 @@ FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX)
 					{
 						xEPID = strtoul(pItem->text_value, 0, 16);
 
-						xRet = FTNM_EP_get(xEPID, &pEP);
+						xRet = FTNM_EPM_get(xCTX.pEPM, xEPID, &pEP);
 						if (xRet == FTM_RET_OK)
 						{
 							FTNM_EP_getData(pEP, &xData);
@@ -627,17 +648,18 @@ FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX)
 
 			case	FTNM_MSG_TYPE_EP_CHANGED:
 				{
-					xRet = FTNM_setEPData(pMsg->xParams.xEPChanged.xEPID, &pMsg->xParams.xEPChanged.xData);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR("EP[%08x] data save failed.\n", pMsg->xParams.xEPChanged.xEPID);
-					}
-		
-					FTNM_TRIGGERM_updateEP(&xTriggerM, pMsg->xParams.xEPChanged.xEPID, &pMsg->xParams.xEPChanged.xData);
-					FTNM_SERVICE_notify(FTNM_SERVICE_SERVER, pMsg);
-
+					TRACE("EP changed.\n");
 				}
 				break;
+
+			case	FTNM_MSG_TYPE_EP_DATA_UPDATED:
+				{
+					TRACE("EP[%08x] data updated.\n", pMsg->xParams.xEPDataUpdated.xEPID);
+					FTNM_TRIGGERM_updateEP(&xTriggerM, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
+					FTNM_SERVICE_notify(FTNM_SERVICE_ALL, pMsg);
+				}
+				break;
+
 			default:
 				{
 					ERROR("Message[%08x] not supported.\n", pMsg->xType);
@@ -661,10 +683,10 @@ FTM_RET	FTNM_TASK_stopService(FTNM_CONTEXT_PTR pCTX)
 	FTNM_TRIGGERM_stop(&xTriggerM);
 	FTNM_ACTIONM_stop(&xActionM);
 	FTNM_RULEM_stop(pRuleM);
-	FTNM_EP_count(0, &ulCount);
+	FTNM_EPM_count(xCTX.pEPM, 0, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		if (FTNM_EP_getAt(i, &pEP) == FTM_RET_OK)
+		if (FTNM_EPM_getAt(xCTX.pEPM, i, &pEP) == FTM_RET_OK)
 		{
 			TRACE("EP[%08x] stop request.\n", pEP->xInfo.xEPID);
 			FTNM_EP_stop(pEP, FTM_TRUE);
@@ -679,6 +701,20 @@ FTM_RET	FTNM_TASK_stopService(FTNM_CONTEXT_PTR pCTX)
 	FTNM_SERVICE_stop(FTNM_SERVICE_ALL);
 	
 	pCTX->xState = FTNM_STATE_FINISHED;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_getDID(FTM_CHAR_PTR pBuff, FTM_ULONG ulBuffLen)
+{
+	ASSERT(pBuff != NULL);
+
+	if (ulBuffLen < strlen(xCTX.xConfig.pDID) + 1)
+	{
+		return	FTM_RET_BUFFER_TOO_SMALL;	
+	}
+
+	strcpy(pBuff, xCTX.xConfig.pDID);
 
 	return	FTM_RET_OK;
 }

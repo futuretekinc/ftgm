@@ -164,7 +164,8 @@ static FTNM_SERVER_CMD_SET	pCmdSet[] =
 
 FTM_RET	FTNM_SERVER_init
 (
-	FTNM_SERVER_PTR	pServer
+	FTNM_CONTEXT_PTR	pCTX,
+	FTNM_SERVER_PTR		pServer
 )
 {
 	ASSERT(pServer != NULL);
@@ -176,6 +177,7 @@ FTM_RET	FTNM_SERVER_init
 	pServer->xConfig.usPort			= FTNM_DEFAULT_SERVER_PORT;
 	pServer->xConfig.ulMaxSession	= FTNM_DEFAULT_SERVER_SESSION_COUNT	;
 
+	pServer->pCTX = pCTX;
 	FTM_LIST_init(&pServer->xSessionList);
 
 	return	FTM_RET_OK;
@@ -579,14 +581,14 @@ FTM_RET	FTNM_SERVER_EP_create
 	FTM_RET		xRet;
 	FTNM_EP_PTR	pEP;
 
-	xRet = FTNM_EP_get(pReq->xInfo.xEPID, &pEP);
+	xRet = FTNM_EPM_get(pSession->pServer->pCTX->pEPM, pReq->xInfo.xEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_RET_ALREADY_EXISTS;
 	}
 	else
 	{
-		xRet = FTNM_EP_create(&pReq->xInfo, &pEP);
+		xRet = FTNM_EPM_createEP(pSession->pServer->pCTX->pEPM, &pReq->xInfo, &pEP);
 		if (xRet == FTM_RET_OK)
 		{
 			FTNM_DMC_PTR	pDMC;
@@ -616,11 +618,11 @@ FTM_RET	FTNM_SERVER_EP_destroy
 	FTM_RET		xRet;
 	FTNM_EP_PTR	pEP;
 
-	xRet = FTNM_EP_get(pReq->xEPID, &pEP);
+	xRet = FTNM_EPM_get(pSession->pServer->pCTX->pEPM, pReq->xEPID, &pEP);
 	
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTNM_EP_destroy(pEP);
+		xRet = FTNM_EPM_destroyEP(pSession->pServer->pCTX->pEPM, pEP);
 		if (xRet == FTM_RET_OK)
 		{
 			FTNM_DMC_PTR	pDMC;
@@ -649,7 +651,7 @@ FTM_RET	FTNM_SERVER_EP_count
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_count(pReq->xType, &pResp->nCount);
+	pResp->nRet = FTNM_EPM_count(pSession->pServer->pCTX->pEPM, pReq->xType, &pResp->nCount);
 
 	return	pResp->nRet;
 }
@@ -665,7 +667,7 @@ FTM_RET	FTNM_SERVER_EP_get
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
+	pResp->nRet = FTNM_EPM_get(pSession->pServer->pCTX->pEPM, pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
@@ -682,7 +684,7 @@ FTM_RET	FTNM_SERVER_EP_getList
 )
 {
 	pResp->xCmd = pReq->xCmd;
-	pResp->nRet = FTNM_EP_getIDList(pReq->xType, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
+	pResp->nRet = FTNM_EPM_getIDList(pSession->pServer->pCTX->pEPM, pReq->xType, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_ID) * pResp->ulCount;
 
 	return	pResp->nRet;
@@ -699,7 +701,7 @@ FTM_RET	FTNM_SERVER_EP_getAt
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_getAt(pReq->ulIndex, &pEP);
+	pResp->nRet = FTNM_EPM_getAt(pSession->pServer->pCTX->pEPM, pReq->ulIndex, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
@@ -748,7 +750,7 @@ FTM_RET	FTNM_SERVER_EP_DATA_getLast
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_EP_get(pReq->xEPID, &pEP);
+	pResp->nRet = FTNM_EPM_get(pSession->pServer->pCTX->pEPM, pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		FTM_EP_DATA_PTR	pData;

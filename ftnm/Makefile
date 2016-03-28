@@ -11,7 +11,7 @@ CLIENT_LDFLAGS=$(LDFLAGS) -lftnmc -lftm -lconfig -lpthread
 FTNM=ftnm
 FTNM_SRCS=ftnm_main.c ftnm.c
 FTNM_OBJS=$(FTNM_SRCS:.c=.o)
-FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -ldl -lnetsnmpagent -lnetsnmp
+FTNM_LDFLAGS=$(LDFLAGS) -lftnm -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -ldl -lnetsnmpagent -lnetsnmp -lmosquitto
 
 LIB_FTNM=libftnm
 LIB_FTNM_INCS= ftnm.h 
@@ -30,6 +30,7 @@ LIB_FTNM_SRCS= ftnm.c \
 			   ftnm_action.c\
 			   ftnm_rule.c\
 			   ftm_mqtt_client.c\
+			   ftnm_utils.c\
 			   ftnm_service.c
 
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)
@@ -45,7 +46,7 @@ $(CONSOLE): $(CONSOLE_OBJS)
 	$(CC) -o $@ $(CONSOLE_OBJS) $(CONSOLE_LDFLAGS)
 
 $(FTNM): $(FTNM_OBJS) $(LIB_FTNM)
-	$(CC) -o $@ $(FTNM_OBJS) $(FTNM_LDFLAGS)
+	$(CC) -g -o $@ $(FTNM_OBJS) $(FTNM_LDFLAGS)
 
 $(CLIENT): $(CLIENT_OBJS) $(LIB_FTNMC)
 	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)

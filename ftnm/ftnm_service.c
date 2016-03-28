@@ -5,7 +5,7 @@
 static FTM_BOOL FTNM_SERVICE_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 static FTM_LIST_PTR	pServiceList = NULL;
 
-FTM_RET	FTNM_SERVICE_init(FTNM_SERVICE_PTR pServices, FTM_ULONG ulServices)
+FTM_RET	FTNM_SERVICE_init(FTNM_CONTEXT_PTR pCTX, FTNM_SERVICE_PTR pServices, FTM_ULONG ulServices)
 {
 	FTM_RET				xRet;
 	FTM_ULONG			i;
@@ -32,7 +32,7 @@ FTM_RET	FTNM_SERVICE_init(FTNM_SERVICE_PTR pServices, FTM_ULONG ulServices)
 	{
 		if (pService->fInit != NULL)
 		{
-			pService->xRet = pService->fInit(pService->pData);
+			pService->xRet = pService->fInit(pCTX, pService->pData);
 		}
 
 		if ((pService->fSetCallback != NULL) && (pService->fCallback != NULL))
@@ -313,6 +313,7 @@ FTM_RET	FTNM_SERVICE_notify(FTNM_SERVICE_TYPE xType, FTNM_MSG_PTR pMsg)
 		{
 			if (pService->fNotify != NULL)
 			{
+				TRACE("%s[%d] - notify to %s\n", __func__, __LINE__, pService->pName);
 				pService->xRet = pService->fNotify(pService->pData, pMsg);
 			}
 		}

@@ -77,6 +77,7 @@ FTM_VOID_PTR	FTM_MEM_TRACE_malloc(size_t xSize, const char *pFile, unsigned long
 	{
 		return	NULL;
 	}
+	memset(pMB, 0,sizeof(FTM_MEM_BLOCK) + xSize);
 
 	pMB->pFile = strdup(pFile);
 	pMB->ulLine= ulLine;
