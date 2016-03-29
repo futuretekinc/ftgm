@@ -116,6 +116,39 @@ FTM_RET	FTOM_getDID
 	FTM_ULONG 		ulBuffLen
 );
 
+FTM_RET	FTOM_createNode
+(
+	FTOM_PTR		pOM,
+	FTM_NODE_PTR	pInfo,
+	FTOM_NODE_PTR _PTR_	ppNode
+);
+
+FTM_RET	FTOM_destroyNode
+(
+	FTOM_PTR		pOM,
+	FTOM_NODE_PTR _PTR_	ppNode
+);
+
+FTM_RET	FTOM_countNode
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_getNode
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR			pDID[FTM_DID_LEN + 1],
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTOM_getNodeAt
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG		ulIndex,
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
 FTM_RET	FTOM_createEP
 (
 	FTOM_PTR pOM, 

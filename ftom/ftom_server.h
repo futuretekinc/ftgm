@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "ftom_params.h"
+#include "ftom_node.h"
 #include "ftom_service.h"
 
 #define	FTOM_PACKET_LEN					2048
@@ -95,4 +96,38 @@ FTM_RET	FTOM_SERVER_setServiceCallback
 	FTOM_SERVICE_ID 	xID, 
 	FTOM_SERVICE_CALLBACK fServiceCB
 );
+
+FTM_RET	FTOM_SERVER_createNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_NODE_PTR		pInfo,
+	FTOM_NODE_PTR _PTR_	ppNode
+);
+
+FTM_RET	FTOM_SERVER_destroyNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTOM_NODE_PTR _PTR_	ppNode
+);
+
+FTM_RET	FTOM_SERVER_countNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_ULONG_PTR		pulCount
+);
+
+FTM_RET	FTOM_SERVER_getNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_CHAR			pDID[FTM_DID_LEN + 1],
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTOM_SERVER_getNodeAt
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_ULONG			ulIndex,
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
 #endif

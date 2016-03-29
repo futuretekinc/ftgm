@@ -487,6 +487,72 @@ FTM_RET	FTOM_SERVER_serviceCall
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 
+FTM_RET	FTOM_SERVER_createNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_NODE_PTR		pInfo,
+	FTOM_NODE_PTR _PTR_	ppNode
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(ppNode != NULL);
+
+	return	FTOM_createNode(pServer->pOM, pInfo, ppNode);
+}
+
+FTM_RET	FTOM_SERVER_destroyNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTOM_NODE_PTR _PTR_	ppNode
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(ppNode != NULL);
+	
+	return	FTOM_destroyNode(pServer->pOM, ppNode);
+}
+
+FTM_RET	FTOM_SERVER_countNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pulCount != NULL);
+	
+	return	FTOM_countNode(pServer->pOM, pulCount);
+}
+
+FTM_RET	FTOM_SERVER_getNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_CHAR			pDID[FTM_DID_LEN + 1],
+	FTOM_NODE_PTR _PTR_ ppNode
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(ppNode != NULL);
+	
+	return	FTOM_getNode(pServer->pOM, pDID, ppNode);
+}
+
+FTM_RET	FTOM_SERVER_getNodeAt
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_ULONG			ulIndex,
+	FTOM_NODE_PTR _PTR_ ppNode
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(ppNode != NULL);
+	
+	return	FTOM_getNodeAt(pServer->pOM, ulIndex, ppNode);
+}
+
+/****************************************************************************************************
+ *
+ ****************************************************************************************************/
 FTM_RET	FTOM_SERVER_NODE_create
 (
 	FTOM_SESSION_PTR					pSession,
@@ -502,7 +568,7 @@ FTM_RET	FTOM_SERVER_NODE_create
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTOM_NODE_create(pSession->pServer->pOM->pNodeM, &pReq->xNodeInfo, &pNode);
+	pResp->nRet = FTOM_SERVER_createNode(pSession->pServer, &pReq->xNodeInfo, &pNode);
 
 	return	pResp->nRet;
 }
@@ -523,7 +589,7 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTOM_NODEM_getNode(pSession->pServer->pOM->pNodeM, pReq->pDID, &pNode);
+	pResp->nRet = FTOM_SERVER_getNode(pSession->pServer, pReq->pDID, &pNode);
 	
 	if (pResp->nRet == FTM_RET_OK)
 	{
@@ -546,7 +612,7 @@ FTM_RET	FTOM_SERVER_NODE_count
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTOM_NODEM_countNode(pSession->pServer->pOM->pNodeM, &pResp->ulCount);
+	pResp->nRet = FTOM_SERVER_countNode(pSession->pServer, &pResp->ulCount);
 
 	return	pResp->nRet;
 }
@@ -566,7 +632,7 @@ FTM_RET	FTOM_SERVER_NODE_get
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTOM_NODEM_getNode(pSession->pServer->pOM->pNodeM, pReq->pDID, &pNode);
+	pResp->nRet = FTOM_SERVER_getNode(pSession->pServer, pReq->pDID, &pNode);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
@@ -590,7 +656,7 @@ FTM_RET	FTOM_SERVER_NODE_getAt
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTOM_NODEM_getNodeAt(pSession->pServer->pOM->pNodeM, pReq->ulIndex, &pNode);
+	pResp->nRet = FTOM_SERVER_getNodeAt(pSession->pServer, pReq->ulIndex, &pNode);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));

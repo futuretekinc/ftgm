@@ -927,6 +927,75 @@ FTM_RET	FTOM_callback(FTOM_SERVICE_ID xID, FTOM_MSG_TYPE xMsg, FTM_VOID_PTR pDat
 	return	FTM_RET_OK;
 }
 
+/************************************************************
+ *	Node management 
+ ************************************************************/
+
+FTM_RET	FTOM_createNode
+(
+	FTOM_PTR		pOM,
+	FTM_NODE_PTR	pInfo,
+	FTOM_NODE_PTR _PTR_	ppNode
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+	ASSERT(ppNode != NULL);
+
+	return	FTOM_NODE_create(pOM->pNodeM, pInfo, ppNode);
+}
+
+FTM_RET	FTOM_destroyNode
+(
+	FTOM_PTR		pOM,
+	FTOM_NODE_PTR _PTR_	ppNode
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(ppNode != NULL);
+
+	return	FTOM_NODE_destroy(ppNode);
+}
+
+FTM_RET	FTOM_countNode
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTOM_NODEM_countNode(pOM->pNodeM, pulCount);
+}
+
+FTM_RET	FTOM_getNode
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR		pDID[FTM_DID_LEN + 1],
+	FTOM_NODE_PTR _PTR_ ppNode
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pDID != NULL);
+	ASSERT(ppNode != NULL);
+
+	return	FTOM_NODEM_getNode(pOM->pNodeM, pDID, ppNode);
+}
+
+FTM_RET	FTOM_getNodeAt
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG		ulIndex,
+	FTOM_NODE_PTR _PTR_ ppNode
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(ppNode != NULL);
+
+	return	FTOM_NODEM_getNodeAt(pOM->pNodeM, ulIndex, ppNode);
+}
+
 FTM_RET	FTOM_setEPData
 (
 	FTOM_PTR 		pOM, 
