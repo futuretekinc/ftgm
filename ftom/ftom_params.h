@@ -1,0 +1,341 @@
+#ifndef	__FTOM_PARAMS_H__
+#define	__FTOM_PARAMS_H__
+
+#include "ftom_types.h"
+#include "ftom_server_cmd.h"
+#include "ftom_msg.h"
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+}	FTOM_REQ_PARAMS, _PTR_ FTOM_REQ_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+}	FTOM_RESP_PARAMS, _PTR_ FTOM_RESP_PARAMS_PTR;
+
+typedef	struct 
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_NODE		xNodeInfo;
+}	FTOM_REQ_NODE_CREATE_PARAMS,	_PTR_ FTOM_REQ_NODE_CREATE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_CHAR			pDID[FTM_DID_LEN + 1];
+}	FTOM_RESP_NODE_CREATE_PARAMS, _PTR_ FTOM_RESP_NODE_CREATE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pDID[FTM_DID_LEN+1];
+}	FTOM_REQ_NODE_DESTROY_PARAMS, _PTR_ FTOM_REQ_NODE_DESTROY_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+}	FTOM_RESP_NODE_DESTROY_PARAMS, _PTR_ FTOM_RESP_NODE_DESTROY_PARAMS_PTR;
+
+typedef struct	
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+}	FTOM_REQ_NODE_COUNT_PARAMS, _PTR_ FTOM_REQ_NODE_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+}	FTOM_RESP_NODE_COUNT_PARAMS, _PTR_ FTOM_RESP_NODE_COUNT_PARAMS_PTR;
+
+typedef struct	
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pDID[FTM_DID_LEN+1];
+}	FTOM_REQ_NODE_GET_PARAMS, _PTR_ FTOM_REQ_NODE_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_NODE		xNodeInfo;
+}	FTOM_RESP_NODE_GET_PARAMS, _PTR_ FTOM_RESP_NODE_GET_PARAMS_PTR;
+
+typedef struct	
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_ULONG			ulIndex;
+}	FTOM_REQ_NODE_GET_AT_PARAMS, _PTR_ FTOM_REQ_NODE_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_NODE		xNodeInfo;
+}	FTOM_RESP_NODE_GET_AT_PARAMS, _PTR_ FTOM_RESP_NODE_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP     	xInfo;
+}	FTOM_REQ_EP_CREATE_PARAMS, _PTR_ FTOM_REQ_EP_CREATE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+}	FTOM_RESP_EP_CREATE_PARAMS, _PTR_	FTOM_RESP_EP_CREATE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID 			xEPID;
+}	FTOM_REQ_EP_DESTROY_PARAMS, _PTR_	FTOM_REQ_EP_DESTROY_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+}	FTOM_RESP_EP_DESTROY_PARAMS, _PTR_ 	FTOM_RESP_EP_DESTROY_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_TYPE		xType;
+}	FTOM_REQ_EP_COUNT_PARAMS, _PTR_ 	FTOM_REQ_EP_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			nCount;
+}	FTOM_RESP_EP_COUNT_PARAMS, _PTR_	FTOM_RESP_EP_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_TYPE		xType;
+	FTM_ULONG			ulMaxCount;
+}	FTOM_REQ_EP_GET_LIST_PARAMS, _PTR_ 	FTOM_REQ_EP_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+	FTM_EP_ID			pEPIDList[];
+}	FTOM_RESP_EP_GET_LIST_PARAMS, _PTR_	FTOM_RESP_EP_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTOM_REQ_EP_GET_PARAMS, _PTR_ 	FTOM_REQ_EP_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_EP			xInfo;
+}	FTOM_RESP_EP_GET_PARAMS, _PTR_	FTOM_RESP_EP_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_ULONG			ulIndex;
+}	FTOM_REQ_EP_GET_AT_PARAMS, _PTR_	FTOM_REQ_EP_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_EP			xInfo;
+}	FTOM_RESP_EP_GET_AT_PARAMS, _PTR_	FTOM_RESP_EP_GET_AT_PARAMS_PTR;
+
+typedef struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTOM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS, _PTR_ FTOM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR;
+
+typedef struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTOM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS, _PTR_ FTOM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_EP_ID			xEPID;
+	FTM_EP_DATA			xData;
+}	FTOM_REQ_EP_DATA_ADD_PARAMS, _PTR_ FTOM_REQ_EP_DATA_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTOM_RESP_EP_DATA_ADD_PARAMS, _PTR_	FTOM_RESP_EP_DATA_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTOM_REQ_EP_DATA_INFO_PARAMS, _PTR_ FTOM_REQ_EP_DATA_INFO_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulBeginTime;
+	FTM_ULONG			ulEndTime;
+	FTM_ULONG			ulCount;
+}	FTOM_RESP_EP_DATA_INFO_PARAMS, _PTR_	FTOM_RESP_EP_DATA_INFO_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTOM_REQ_EP_DATA_GET_LAST_PARAMS, _PTR_	FTOM_REQ_EP_DATA_GET_LAST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_EP_DATA 		xData;
+}	FTOM_RESP_EP_DATA_GET_LAST_PARAMS, _PTR_ FTOM_RESP_EP_DATA_GET_LAST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+	FTM_ULONG			nStartIndex;
+	FTM_ULONG			nCount; 
+}	FTOM_REQ_EP_DATA_GET_LIST_PARAMS, _PTR_	FTOM_REQ_EP_DATA_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			nCount; 
+	FTM_EP_DATA 		pData[];
+}	FTOM_RESP_EP_DATA_GET_LIST_PARAMS, _PTR_ FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_EP_ID			xEPID;
+	FTM_ULONG 			nIndex; 
+	FTM_ULONG			nCount;
+}	FTOM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTOM_REQ_EP_DATA_DEL_PARAMS_PTR; 
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTOM_RESP_EP_DATA_DEL_PARAMS, _PTR_ 	FTOM_RESP_EP_DATA_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTOM_REQ_EP_DATA_COUNT_PARAMS, _PTR_ FTOM_REQ_EP_DATA_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+}	FTOM_RESP_EP_DATA_COUNT_PARAMS, _PTR_ FTOM_RESP_EP_DATA_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTOM_MSG			xMsg;
+}	FTOM_RESP_NOTIFY_PARAMS, _PTR_ FTOM_RESP_NOTIFY_PARAMS_PTR;
+
+#endif

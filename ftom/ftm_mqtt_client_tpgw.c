@@ -1,10 +1,10 @@
 #include <string.h>
-#include "ftm_om.h"
+#include "ftom.h"
 #include "ftm_mqtt_client.h"
 #include <nxjson.h>
 
 FTM_RET	FTM_MQTT_CLIENT_TPGW_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
-FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser(FTM_CHAR_PTR pMessage, FTM_OM_MSG_PTR _PTR_	pMsg);
+FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser(FTM_CHAR_PTR pMessage, FTOM_MSG_PTR _PTR_	pMsg);
 
 struct
 {
@@ -124,7 +124,7 @@ FTM_VOID FTM_MQTT_CLIENT_TPGW_messageCB
 
 	if(strcmp(pIDs[4], "req") == 0)
 	{
-		FTM_OM_MSG_PTR pMsg;
+		FTOM_MSG_PTR pMsg;
 
 		xRet = FTM_MQTT_CLIENT_TPGW_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
 		if (xRet != FTM_RET_OK)
@@ -133,7 +133,7 @@ FTM_VOID FTM_MQTT_CLIENT_TPGW_messageCB
 			return;
 		}
 
-		xRet = FTM_OM_MSGQ_push(pClient->pOM->pMsgQ, pMsg);
+		xRet = FTOM_MSGQ_push(pClient->pOM->pMsgQ, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			FTM_MEM_free(pMsg);
@@ -192,13 +192,13 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_topicParser
 FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 (
 	FTM_CHAR_PTR		pMessage,
-	FTM_OM_MSG_PTR _PTR_	ppMsg
+	FTOM_MSG_PTR _PTR_	ppMsg
 )
 {
 	FTM_RET			xRet;
-	FTM_OM_MSG		xMsg;
+	FTOM_MSG		xMsg;
 	FTM_INT			i;
-	FTM_CHAR		pReqID[FTM_OM_MSG_REQ_ID_LENGTH+1];
+	FTM_CHAR		pReqID[FTOM_MSG_REQ_ID_LENGTH+1];
 	FTM_ULONG		ulMethod = 0;
 	
 	memset(&xMsg, 0, sizeof(xMsg));
@@ -217,7 +217,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 		goto error;
 	}
 	memset(pReqID, 0, sizeof(pReqID));
-	strncpy(pReqID, pItem->text_value, FTM_OM_MSG_REQ_ID_LENGTH);
+	strncpy(pReqID, pItem->text_value, FTOM_MSG_REQ_ID_LENGTH);
 
 	pItem = nx_json_get(pJSON, "method");
 	if ((pItem == NULL) || (pItem->type != NX_JSON_STRING))
@@ -258,7 +258,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 		
 			ulTime = pTime->int_value;
 
-			xRet = FTM_OM_MSG_createTimeSync(ulTime, (FTM_OM_MSG_TIME_SYNC_PTR _PTR_)ppMsg);
+			xRet = FTOM_MSG_createTimeSync(ulTime, (FTOM_MSG_TIME_SYNC_PTR _PTR_)ppMsg);
 		}
 		break;
 
@@ -351,7 +351,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 				}	
 			}
 
-			xRet = FTM_OM_MSG_createEPCtrl(xEPID, xEPCtrl, ulDuration, (FTM_OM_MSG_EP_CTRL_PTR _PTR_)ppMsg);
+			xRet = FTOM_MSG_createEPCtrl(xEPID, xEPCtrl, ulDuration, (FTOM_MSG_EP_CTRL_PTR _PTR_)ppMsg);
 
 		}
 		break;

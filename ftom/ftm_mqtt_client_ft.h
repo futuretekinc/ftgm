@@ -2,7 +2,7 @@
 #define	_FTM_MQTT_CLIENT_FT_H_
 
 #include "ftm.h"
-#include "ftm_om.h"
+#include "ftom.h"
 #include "ftm_mqtt_client.h"
 
 FTM_VOID FTM_MQTT_CLIENT_FT_connectCB
@@ -53,7 +53,7 @@ FTM_RET	FTM_MQTT_CLIENT_FT_topicParser
 FTM_RET	FTM_MQTT_CLIENT_FT_requestMessageParser
 (
 	FTM_CHAR_PTR 		pMessage, 
-	FTM_OM_MSG_PTR _PTR_	pMsg
+	FTOM_MSG_PTR _PTR_	pMsg
 );
 
 FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataINT

@@ -22,7 +22,7 @@ static FTM_VOID_PTR FTM_MQTT_CLIENT_process(FTM_VOID_PTR pData);
 static FTM_RET	FTM_MQTT_CLIENT_onPublishEPData
 (
 	FTM_MQTT_CLIENT_PTR	pClient,
-	FTM_OM_MSG_PUBLISH_EP_DATA_PTR	pMsg
+	FTOM_MSG_PUBLISH_EP_DATA_PTR	pMsg
 );
 
 static FTM_VOID_PTR FTM_MQTT_CLIENT_connector
@@ -79,7 +79,7 @@ static 	FTM_ULONG	ulClientInstance = 0;
 
 FTM_RET	FTM_MQTT_CLIENT_create
 (
-	FTM_OM_PTR 			pOM,
+	FTOM_PTR 			pOM,
 	FTM_MQTT_CLIENT_PTR _PTR_ 	ppClient
 )
 {
@@ -126,7 +126,7 @@ FTM_RET	FTM_MQTT_CLIENT_destroy
 FTM_RET	FTM_MQTT_CLIENT_init
 (
 	FTM_MQTT_CLIENT_PTR pClient,
-	FTM_OM_PTR 			pOM
+	FTOM_PTR 			pOM
 )
 {
 	ASSERT(pClient != NULL);
@@ -142,7 +142,7 @@ FTM_RET	FTM_MQTT_CLIENT_init
 
 	pClient->pOM = pOM;
 
-	FTM_OM_getDID(pOM, pClient->pDID, FTM_DID_LEN);
+	FTOM_getDID(pOM, pClient->pDID, FTM_DID_LEN);
 	strncpy(pClient->xConfig.pClientID, pClient->pDID, sizeof(pClient->xConfig.pClientID) - 1);
 	strcpy(pClient->xConfig.xBroker.pHost, FTM_MQTT_CLIENT_DEFAULT_BROKER);
 	pClient->xConfig.xBroker.usPort = FTM_MQTT_CLIENT_DEFAULT_PORT;
@@ -150,12 +150,12 @@ FTM_RET	FTM_MQTT_CLIENT_init
 	pClient->xConfig.ulCBSet = FTM_MQTT_CLIENT_DEFAULT_CB_SET;
 
 	pClient->bStop = FTM_TRUE;
-	FTM_OM_MSGQ_create(&pClient->pMsgQ);
+	FTOM_MSGQ_create(&pClient->pMsgQ);
 
 	xRet = FTM_LIST_create(&pClient->pPublishList);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_OM_MSGQ_destroy(&pClient->pMsgQ);
+		FTOM_MSGQ_destroy(&pClient->pMsgQ);
 		return	xRet;	
 	}
 
@@ -194,7 +194,7 @@ FTM_RET	FTM_MQTT_CLIENT_final
 
 	FTM_LIST_destroy(pClient->pPublishList);
 
-	FTM_OM_MSGQ_destroy(&pClient->pMsgQ);
+	FTOM_MSGQ_destroy(&pClient->pMsgQ);
 
 	if (--ulClientInstance == 0)
 	{
@@ -244,8 +244,8 @@ FTM_RET	FTM_MQTT_CLIENT_showConfig
 FTM_RET	FTM_MQTT_CLIENT_setCallback
 (
 	FTM_MQTT_CLIENT_PTR 	pClient, 
-	FTM_OM_SERVICE_ID 		xServiceID, 
-	FTM_OM_SERVICE_CALLBACK fServiceCB
+	FTOM_SERVICE_ID 		xServiceID, 
+	FTOM_SERVICE_CALLBACK fServiceCB
 )
 {
 	ASSERT(pClient != NULL);
@@ -259,17 +259,17 @@ FTM_RET	FTM_MQTT_CLIENT_setCallback
 FTM_RET	FTM_MQTT_CLIENT_notify
 (
 	FTM_MQTT_CLIENT_PTR 	pClient, 
-	FTM_OM_MSG_PTR			pMsg
+	FTOM_MSG_PTR			pMsg
 )
 {
 	ASSERT(pClient != NULL);
 
 	switch(pMsg->xType)
 	{
-	case	FTM_OM_MSG_TYPE_SEND_EP_DATA:
+	case	FTOM_MSG_TYPE_SEND_EP_DATA:
 		{	
 			
-			//FTM_MQTT_CLIENT_onSendEPData(pClient, (FTM_OM_MSG_SEND_EP_DATA_PTR)pMsg);
+			//FTM_MQTT_CLIENT_onSendEPData(pClient, (FTOM_MSG_SEND_EP_DATA_PTR)pMsg);
 		}
 		break;
 
@@ -284,7 +284,7 @@ FTM_RET	FTM_MQTT_CLIENT_notify
 FTM_RET	FTM_MQTT_CLIENT_onPublishEPData
 (
 	FTM_MQTT_CLIENT_PTR	pClient,
-	FTM_OM_MSG_PUBLISH_EP_DATA_PTR	pMsg
+	FTOM_MSG_PUBLISH_EP_DATA_PTR	pMsg
 )
 {
 	ASSERT(pClient != NULL);
@@ -367,16 +367,16 @@ FTM_VOID_PTR FTM_MQTT_CLIENT_process
 
 		while(!pClient->bStop)
 		{
-			FTM_OM_MSG_PTR	pMsg;
+			FTOM_MSG_PTR	pMsg;
 
-			xRet = FTM_OM_MSGQ_timedPop(pClient->pMsgQ, 1000000, &pMsg);
+			xRet = FTOM_MSGQ_timedPop(pClient->pMsgQ, 1000000, &pMsg);
 			if (xRet == FTM_RET_OK)
 			{
 				switch(pMsg->xType)
 				{
-				case	FTM_OM_MSG_TYPE_PUBLISH_EP_DATA:
+				case	FTOM_MSG_TYPE_PUBLISH_EP_DATA:
 					{
-						xRet = FTM_MQTT_CLIENT_onPublishEPData(pClient, (FTM_OM_MSG_PUBLISH_EP_DATA_PTR)pMsg);	
+						xRet = FTM_MQTT_CLIENT_onPublishEPData(pClient, (FTOM_MSG_PUBLISH_EP_DATA_PTR)pMsg);	
 					}
 					break;
 
@@ -385,7 +385,7 @@ FTM_VOID_PTR FTM_MQTT_CLIENT_process
 						ERROR("Not supported msg[%08x]\n", pMsg->xType);	
 					}
 				}
-				FTM_OM_MSG_destroy(&pMsg);
+				FTOM_MSG_destroy(&pMsg);
 			}
 			else
 			{
@@ -412,13 +412,13 @@ FTM_VOID_PTR FTM_MQTT_CLIENT_process
 FTM_RET	FTM_MQTT_CLIENT_pushMsg
 (
 	FTM_MQTT_CLIENT_PTR pClient,
-	FTM_OM_MSG_PTR		pMsg	
+	FTOM_MSG_PTR		pMsg	
 )
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pMsg != NULL);
 
-	return	FTM_OM_MSGQ_push(pClient->pMsgQ, pMsg);
+	return	FTOM_MSGQ_push(pClient->pMsgQ, pMsg);
 }
 
 FTM_VOID_PTR FTM_MQTT_CLIENT_connector
@@ -465,15 +465,15 @@ FTM_RET	FTM_MQTT_CLIENT_publishEPData
 	ASSERT(pData != NULL);
 
 	FTM_RET	xRet;
-	FTM_OM_MSG_PUBLISH_EP_DATA_PTR	pMsg;
+	FTOM_MSG_PUBLISH_EP_DATA_PTR	pMsg;
 
-	xRet = FTM_OM_MSG_createPublishEPData(xEPID, pData, ulCount, &pMsg);
+	xRet = FTOM_MSG_createPublishEPData(xEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	xRet = FTM_MQTT_CLIENT_pushMsg(pClient, (FTM_OM_MSG_PTR)pMsg);
+	xRet = FTM_MQTT_CLIENT_pushMsg(pClient, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pMsg);	

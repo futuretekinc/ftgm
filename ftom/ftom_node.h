@@ -1,0 +1,169 @@
+#ifndef	__FTOM_NODE_H__
+#define	__FTOM_NODE_H__
+
+#include <pthread.h>
+#include "ftm.h"
+#include "ftom_ep.h"
+
+typedef	FTM_ULONG		FTOM_NODE_STATE;
+
+#define	FTOM_NODE_STATE_CREATED					0x00000001
+#define	FTOM_NODE_STATE_INITIALIZED				0x00000002
+#define	FTOM_NODE_STATE_SYNCHRONIZED			0x00000003
+#define	FTOM_NODE_STATE_PROCESS_INIT			0x00000004
+#define	FTOM_NODE_STATE_RUN						0x00000005
+#define	FTOM_NODE_STATE_STOP					0x00000006
+#define	FTOM_NODE_STATE_RUNNING					0x00000007
+#define	FTOM_NODE_STATE_PROCESS_FINISHED		0x00000008
+#define	FTOM_NODE_STATE_FINISHED				0x00000009
+#define	FTOM_NODE_STATE_ABORT					0x0000000A
+
+#define	FTOM_NODE_STATE_TIMEOUT					0x0000000B
+#define	FTOM_NODE_STATE_ERROR					0x0000000C
+#define	FTOM_NODE_STATE_COMPLETED				0x0000000D
+
+#define	FTOM_NODE_STATE_CANT_OPEN_SESSION		0x0000000E
+
+typedef	struct
+{
+	FTM_LIST_PTR	pList;
+}	FTOM_NODEM, _PTR_ FTOM_NODEM_PTR;
+	
+typedef	struct FTOM_NODE_STRUCT _PTR_ FTOM_NODE_PTR;
+typedef	struct FTOM_EP_STRUCT   _PTR_ FTOM_EP_PTR;
+
+typedef	FTM_RET		(*FTOM_NODE_INIT)(FTOM_NODE_PTR pNode);
+typedef	FTM_RET		(*FTOM_NODE_FINAL)(FTOM_NODE_PTR pNode);
+typedef	FTM_RET		(*FTOM_NODE_START)(FTOM_NODE_PTR pNode);
+typedef	FTM_RET		(*FTOM_NODE_STOP)(FTOM_NODE_PTR pNode);
+typedef	FTM_RET		(*FTOM_NODE_GET_EP_DATA)(FTOM_NODE_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
+typedef	FTM_RET		(*FTOM_NODE_SET_EP_DATA)(FTOM_NODE_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
+
+typedef	struct FTOM_NODE_STRUCT
+{
+	FTM_NODE				xInfo;
+	FTOM_NODEM_PTR			pNodeM;
+	FTM_LIST				xEPList;
+
+	pthread_t				xPThread;
+	pthread_mutex_t			xMutexLock;
+	FTOM_NODE_STATE			xState;
+	FTM_ULONG				ulRetry;
+	int64_t					xTimeout;
+
+	FTOM_NODE_INIT			fInit;
+	FTOM_NODE_FINAL			fFinal;
+	FTOM_NODE_START			fStart;
+	FTOM_NODE_STOP			fStop;
+	FTOM_NODE_GET_EP_DATA	fGetEPData;
+	FTOM_NODE_SET_EP_DATA	fSetEPData;
+}	FTOM_NODE;
+
+FTM_RET	FTOM_NODEM_create
+(
+	FTOM_NODEM_PTR _PTR_ ppNodeM
+);
+
+FTM_RET	FTOM_NODEM_destroy
+(
+	FTOM_NODEM_PTR _PTR_ ppNodeM
+);
+
+FTM_RET	FTOM_NODEM_countNode
+(
+	FTOM_NODEM_PTR	pNodeM,
+	FTM_ULONG_PTR 	pulCount
+);
+
+FTM_RET FTOM_NODEM_getNode
+(
+	FTOM_NODEM_PTR pNodeM,
+	FTM_CHAR_PTR 	pDID, 
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET FTOM_NODEM_getNodeAt
+(
+	FTOM_NODEM_PTR	pNodeM,
+	FTM_ULONG 		ulIndex, 
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTOM_NODE_create
+(
+	FTOM_NODEM_PTR		pNodeM,
+	FTM_NODE_PTR 		pInfo, 
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTOM_NODE_destroy
+(
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTOM_NODE_linkEP
+(
+	FTOM_NODE_PTR 	pNode, 
+	FTOM_EP_PTR 	pEP
+);
+
+FTM_RET	FTOM_NODE_unlinkEP
+(
+	FTOM_NODE_PTR 	pNode, 
+	FTOM_EP_PTR 	pEP
+);
+
+FTM_RET	FTOM_NODE_getEPCount
+(
+	FTOM_NODE_PTR	pNode, 
+	FTM_ULONG_PTR 	pulCount
+);
+
+FTM_RET	FTOM_NODE_getEP
+(
+	FTOM_NODE_PTR 	pNode, 
+	FTM_EP_ID 		xEPID, 
+	FTOM_EP_PTR _PTR_ pEP
+);
+
+FTM_RET	FTOM_NODE_getEPAt
+(
+	FTOM_NODE_PTR 	pNode, 
+	FTM_ULONG 		ulIndex, 
+	FTOM_EP_PTR _PTR_ pEP
+);
+
+FTM_RET	FTOM_NODE_getEPData
+(
+	FTOM_NODE_PTR pNode, 
+	FTOM_EP_PTR 	pEP, 
+	FTM_EP_DATA_PTR pData
+);
+
+FTM_RET	FTOM_NODE_setEPData
+(
+	FTOM_NODE_PTR 	pNode, 
+	FTOM_EP_PTR 	pEP, 
+	FTM_EP_DATA_PTR pData
+);
+
+
+FTM_RET	FTOM_NODE_start
+(
+	FTOM_NODE_PTR 	pNode
+);
+
+FTM_RET	FTOM_NODE_stop
+(
+	FTOM_NODE_PTR 	pNode
+);
+
+FTM_CHAR_PTR	FTOM_NODE_stateToStr
+(
+	FTOM_NODE_STATE xState
+);
+
+#include "ftom_node_snmpc.h"
+
+#endif
+

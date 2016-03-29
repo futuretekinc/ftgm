@@ -1,10 +1,10 @@
 #include "ftm.h"
-#include "ftm_om.h"
+#include "ftom.h"
 #include "ftm_mqtt_client.h"
 #include <nxjson.h>
 
 static FTM_RET	FTM_MQTT_CLIENT_FT_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
-static FTM_RET	FTM_MQTT_CLIENT_FT_requestMessageParser(FTM_CHAR_PTR pMessage, FTM_OM_MSG_PTR _PTR_	pMsg);
+static FTM_RET	FTM_MQTT_CLIENT_FT_requestMessageParser(FTM_CHAR_PTR pMessage, FTOM_MSG_PTR _PTR_	pMsg);
 
 struct
 {
@@ -117,7 +117,7 @@ FTM_VOID FTM_MQTT_CLIENT_FT_messageCB
 
 	if(strcmp(pIDs[4], "req") == 0)
 	{
-		FTM_OM_MSG_PTR pMsg;
+		FTOM_MSG_PTR pMsg;
 
 		xRet = FTM_MQTT_CLIENT_FT_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
 		if (xRet != FTM_RET_OK)
@@ -126,7 +126,7 @@ FTM_VOID FTM_MQTT_CLIENT_FT_messageCB
 			return;
 		}
 
-		xRet = FTM_OM_MSGQ_push(pClient->pOM->pMsgQ, pMsg);
+		xRet = FTOM_MSGQ_push(pClient->pOM->pMsgQ, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			FTM_MEM_free(pMsg);
@@ -185,7 +185,7 @@ FTM_RET	FTM_MQTT_CLIENT_FT_topicParser
 FTM_RET	FTM_MQTT_CLIENT_FT_requestMessageParser
 (
 	FTM_CHAR_PTR		pMessage,
-	FTM_OM_MSG_PTR _PTR_	ppMsg
+	FTOM_MSG_PTR _PTR_	ppMsg
 )
 {
 	return	FTM_RET_MQTT_INVALID_MESSAGE;

@@ -2,7 +2,7 @@
 #define	_FTM_MQTT_CLIENT_H_
 
 #include "ftm.h"
-#include "ftm_om.h"
+#include "ftom.h"
 #include <pthread.h>
 #include <mosquitto.h>
 
@@ -23,7 +23,7 @@
 
 #define	FTM_MQTT_CLIENT_DEFAULT_CB_SET				1
 
-typedef	struct FTM_OM_STRUCT _PTR_ FTM_OM_PTR;
+typedef	struct FTOM_STRUCT _PTR_ FTOM_PTR;
 
 typedef	struct
 {
@@ -43,7 +43,7 @@ typedef	struct
 {
 	FTM_MQTT_CLIENT_CONFIG	xConfig;
 
-	FTM_OM_PTR				pOM;
+	FTOM_PTR				pOM;
 
 	FTM_BOOL				bStop;
 	FTM_BOOL				bConnected;
@@ -53,10 +53,10 @@ typedef	struct
 
 	FTM_CHAR				pDID[FTM_DID_LEN + 1];
 	struct mosquitto		*pMosquitto;
-	FTM_OM_MSG_QUEUE_PTR	pMsgQ;
+	FTOM_MSG_QUEUE_PTR	pMsgQ;
 	FTM_LIST_PTR			pPublishList;
-	FTM_OM_SERVICE_ID		xServiceID;
-	FTM_OM_SERVICE_CALLBACK	fServiceCB;
+	FTOM_SERVICE_ID		xServiceID;
+	FTOM_SERVICE_CALLBACK	fServiceCB;
 }	FTM_MQTT_CLIENT, _PTR_ FTM_MQTT_CLIENT_PTR;
 
 typedef	FTM_VOID (*FTM_MQTT_CLIENT_CONNECT_CB)(struct mosquitto *mosq, void *pObj, int nResult);
@@ -87,7 +87,7 @@ typedef	struct
 
 FTM_RET	FTM_MQTT_CLIENT_create
 (
-	FTM_OM_PTR 		pOM,
+	FTOM_PTR 		pOM,
 	FTM_MQTT_CLIENT_PTR _PTR_ ppClient
 );
 
@@ -99,7 +99,7 @@ FTM_RET	FTM_MQTT_CLIENT_destroy
 FTM_RET	FTM_MQTT_CLIENT_init
 (
 	FTM_MQTT_CLIENT_PTR pClient,
-	FTM_OM_PTR 			pOM
+	FTOM_PTR 			pOM
 );
 
 FTM_RET	FTM_MQTT_CLIENT_final
@@ -137,14 +137,14 @@ FTM_RET	FTM_MQTT_CLIENT_stop
 FTM_RET	FTM_MQTT_CLIENT_setCallback
 (
 	FTM_MQTT_CLIENT_PTR 	pClient, 
-	FTM_OM_SERVICE_ID 		xID, 
-	FTM_OM_SERVICE_CALLBACK fCB
+	FTOM_SERVICE_ID 		xID, 
+	FTOM_SERVICE_CALLBACK fCB
 );
 
 FTM_RET	FTM_MQTT_CLIENT_notify
 (
 	FTM_MQTT_CLIENT_PTR 	pClient, 
-	FTM_OM_MSG_PTR 			pMsg
+	FTOM_MSG_PTR 			pMsg
 );
 
 FTM_RET	FTM_MQTT_CLIENT_publish
@@ -166,7 +166,7 @@ FTM_RET	FTM_MQTT_CLIENT_publishEPData
 FTM_RET	FTM_MQTT_CLIENT_pushMsg
 (
 	FTM_MQTT_CLIENT_PTR pClient,
-	FTM_OM_MSG_PTR		pMsg	
+	FTOM_MSG_PTR		pMsg	
 );
 
 #endif

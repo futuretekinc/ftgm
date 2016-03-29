@@ -1,0 +1,127 @@
+#include "ftom_shell.h"
+#include "ftom_shell_cmds.h"
+
+static FTM_VOID_PTR	FTOM_SHELL_process
+(
+	FTM_VOID_PTR	pData
+);
+
+FTM_RET	FTOM_SHELL_init
+(
+	FTOM_SHELL_PTR 	pShell,
+	FTOM_PTR pOM 
+)
+{
+	ASSERT(pShell != NULL);
+	
+	FTM_RET	xRet;
+
+	xRet = FTM_SHELL_init(&pShell->xShell);
+	FTM_SHELL_setPrompt(&pShell->xShell, "FTOM> ");
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_INT	i;
+
+		for(i = 0 ; i < FTOM_shellCmdCount; i++)
+		{
+			FTOM_shellCmds[i].pData = pOM;
+			FTM_SHELL_appendCmd(&pShell->xShell, &FTOM_shellCmds[i]);
+		}
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_SHELL_final
+(
+	FTOM_SHELL_PTR 	pShell
+)
+{
+	ASSERT(pShell != NULL);
+
+	FTM_SHELL_final(&pShell->xShell);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_start
+(
+	FTOM_SHELL_PTR	pShell
+)
+{
+	ASSERT(pShell != NULL);
+
+	pthread_create(&pShell->xThread, NULL, FTOM_SHELL_process, pShell);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_stop
+(
+	FTOM_SHELL_PTR	pShell
+)
+{
+	ASSERT(pShell != NULL);
+
+	pShell->bStop = FTM_TRUE;
+	pthread_join(pShell->xThread, NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR	FTOM_SHELL_process
+(
+	FTM_VOID_PTR	pData
+)
+{
+	ASSERT(pData != NULL);
+	FTOM_SHELL_PTR	pShell = (FTOM_SHELL_PTR)pData;
+
+	FTM_SHELL_run(&pShell->xShell);
+
+	return	0;
+}
+
+FTM_RET	FTOM_SHELL_loadFromFile
+(
+	FTOM_SHELL_PTR	pShell, 
+	FTM_CHAR_PTR		pFileName
+)
+{
+	ASSERT(pShell != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_showConfig
+(
+	FTOM_SHELL_PTR 	pShell
+)
+{
+	ASSERT(pShell != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_notify
+(
+	FTOM_SHELL_PTR 	pShell, 
+	FTOM_MSG_PTR 		pMsg
+)
+{
+	ASSERT(pShell != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_setServiceCallback
+(
+	FTOM_SHELL_PTR 	pShell, 
+	FTOM_SERVICE_ID 	xID, 
+	FTOM_SERVICE_CALLBACK fServiceCB
+)
+{
+	ASSERT(pShell != NULL);
+
+	return	FTM_RET_OK;
+}

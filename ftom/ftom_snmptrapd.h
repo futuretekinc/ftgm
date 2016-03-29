@@ -1,0 +1,99 @@
+#ifndef	_FTOM_SNMPTRAPD_H_
+#define	_FTOM_SNMPTRAPD_H_
+
+#include <pthread.h>
+#include <net-snmp/net-snmp-config.h>
+#include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/agent/net-snmp-agent-includes.h>
+
+#include "ftm.h"
+#include "ftm_snmp.h"
+#include "ftom_service.h"
+
+#define	FTOM_SNMPTRAPD_NAME_LENGTH	128
+#define	FTOM_SNMPTRAPD_NAME			"ftom:snmptrapd"
+#define	FTOM_SNMPTRAPD_PORT			162
+
+typedef	enum
+{
+	FTOM_SNMPTRAPD_MSG_TYPE_UNKNOWN = 0,
+	FTOM_SNMPTRAPD_MSG_TYPE_EP_CHANGED,
+} FTOM_SNMPTRAPD_MSG_TYPE, _PTR_ FTOM_SNMPTRAPD_MSG_TYPE_PTR;
+
+typedef struct
+{
+	FTM_CHAR				pName[FTOM_SNMPTRAPD_NAME_LENGTH + 1];
+	FTM_USHORT				usPort;
+}	FTOM_SNMPTRAPD_CONFIG, _PTR_ FTOM_SNMPTRAPD_CONFIG_PTR;
+
+typedef	FTM_RET (*FTOM_SNMPTRAPD_CALLBACK)(FTM_CHAR_PTR pTrapMsg);
+
+typedef	struct
+{
+	FTOM_SNMPTRAPD_CONFIG	xConfig;
+	FTM_LIST				xTrapCBList;
+	FTM_BOOL				bStop;
+	pthread_t				xPThread;
+	netsnmp_transport 		*pTransport;
+
+	FTOM_PTR				pOM;
+	FTOM_SERVICE_ID		xServiceID;
+	FTOM_SERVICE_CALLBACK	fServiceCB;
+}	FTOM_SNMPTRAPD, _PTR_ FTOM_SNMPTRAPD_PTR;
+
+FTM_RET	FTOM_SNMPTRAPD_create
+(
+	FTOM_PTR				pOM,
+	FTOM_SNMPTRAPD_PTR _PTR_ ppSNMPTRAPD
+);
+
+FTM_RET	FTOM_SNMPTRAPD_destroy
+(
+	FTOM_SNMPTRAPD_PTR _PTR_ ppSNMPTRAPD
+);
+
+FTM_RET	FTOM_SNMPTRAPD_init
+(
+	FTOM_SNMPTRAPD_PTR pSNMPTRAPD,
+	FTOM_PTR pOM
+);
+
+FTM_RET	FTOM_SNMPTRAPD_final
+(
+	FTOM_SNMPTRAPD_PTR pSNMPTRAPD
+);
+
+FTM_RET FTOM_SNMPTRAPD_start
+(
+	FTOM_SNMPTRAPD_PTR pSNMPTRAPD
+);
+
+FTM_RET FTOM_SNMPTRAPD_stop
+(
+	FTOM_SNMPTRAPD_PTR pSNMPTRAPD
+);
+
+FTM_RET FTOM_SNMPTRAPD_loadFromFile
+(
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_CHAR_PTR 			pFileName
+);
+
+FTM_RET FTOM_SNMPTRAPD_showConfig
+(
+	FTOM_SNMPTRAPD_PTR pSNMPTRAPD
+);
+
+FTM_RET	FTOM_SNMPTRAPD_setServiceCallback
+(
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTOM_SERVICE_ID 		xID, 
+	FTOM_SERVICE_CALLBACK fServiceCB
+);
+
+FTM_RET	FTOM_SNMPTRAPD_addTrapOID
+(
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_SNMP_OID_PTR 		pOID
+);
+#endif
