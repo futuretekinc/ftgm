@@ -187,10 +187,5 @@ FTM_RET	FTM_OM_sendEPData
 	FTM_ULONG		ulCount
 );
 
-FTM_RET	FTM_OM_NOTIFY_quit
-(
-	FTM_OM_PTR 	pOM
-);
-
 #endif
 

@@ -29,11 +29,11 @@ FTM_SHELL_CMD	FTM_OM_shellCmds[] =
 					  "\tShow object list.\n"
 	},
 	{
-		.pString	= "exit",
+		.pString	= "quit",
 		.function	= FTM_OM_SHELL_CMD_quit,
-		.pShortHelp	= "exit.",
+		.pShortHelp	= "quit.",
 		.pHelp		= "\n"\
-					  "\texit.\n"
+					  "\tquit.\n"
 	},
 	{
 		.pString	= "task",
@@ -236,7 +236,7 @@ FTM_RET	FTM_OM_SHELL_CMD_quit
 {
 	FTM_OM_PTR	pOM = (FTM_OM_PTR)pData;
 
-	return	FTM_OM_NOTIFY_quit(pOM);
+	return	FTM_OM_stop(pOM);
 
 }
 

@@ -37,10 +37,22 @@ static FTM_RET	FTM_OM_onEPCtrl
 	FTM_OM_MSG_EP_CTRL_PTR	pMsg
 );
 
+static FTM_RET FTM_OM_onSaveEPData
+(
+	FTM_OM_PTR	pOM,
+	FTM_OM_MSG_SAVE_EP_DATA_PTR	pMsg
+);
+
 static FTM_RET	FTM_OM_onSendEPData
 (
 	FTM_OM_PTR	pOM,
 	FTM_OM_MSG_SEND_EP_DATA_PTR pMsg
+);
+
+static FTM_RET	FTM_OM_onRule
+(
+	FTM_OM_PTR pOM,
+	FTM_OM_MSG_RULE_PTR pMsg
 );
 
 static 	FTM_RET	FTM_OM_callback(FTM_OM_SERVICE_ID xID, FTM_OM_MSG_TYPE xMsg, FTM_VOID_PTR pData);
@@ -274,6 +286,7 @@ FTM_RET FTM_OM_start(FTM_OM_PTR pOM)
 
 FTM_RET FTM_OM_stop(FTM_OM_PTR pOM)
 {
+	TRACE("pOM = %08x\n", pOM);
 	pOM->bStop = FTM_TRUE;
 	pthread_join(pOM->xThread, NULL);
 
@@ -561,68 +574,62 @@ FTM_RET			FTM_OM_TASK_processing(FTM_OM_PTR pOM)
 	ASSERT(pOM != NULL);
 
 	FTM_RET			xRet;
-	FTM_BOOL		bStop =  FTM_FALSE;
-	FTM_OM_MSG_PTR	pCommonMsg = NULL;
+	FTM_OM_MSG_PTR	pMsg = NULL;
 
-	while(!bStop)
+	TRACE("TASK_processing(%08x)\n", pOM);
+	while(!pOM->bStop)
 	{
-		xRet = FTM_OM_MSGQ_timedPop(pOM->pMsgQ, 1000000, &pCommonMsg);
+		xRet = FTM_OM_MSGQ_timedPop(pOM->pMsgQ, 1000000, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
-			switch(pCommonMsg->xType)
+			switch(pMsg->xType)
 			{
 			case	FTM_OM_MSG_TYPE_QUIT:
 				{
 					TRACE("Task stop received.\n");
-					bStop = FTM_TRUE;
+					pOM->bStop = FTM_TRUE;
 					pOM->xState = FTM_OM_STATE_STOPED;
 				}
 				break;
 
 			case	FTM_OM_MSG_TYPE_SAVE_EP_DATA:
 				{
-					FTM_OM_MSG_SAVE_EP_DATA_PTR	pMsg = (FTM_OM_MSG_SAVE_EP_DATA_PTR)pCommonMsg;
-
-					TRACE("Save EP[%08x] Data.\n", pMsg->xEPID);
-					FTM_OM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xEPID, &pMsg->xData);
-					FTM_OM_DMC_EP_DATA_set(&xDMC, pMsg->xEPID, &pMsg->xData);
+					xRet = FTM_OM_onSaveEPData(pOM, (FTM_OM_MSG_SAVE_EP_DATA_PTR)pMsg);
 				}
 				break;
 
 			case	FTM_OM_MSG_TYPE_SEND_EP_DATA:
 				{
-					xRet = FTM_OM_onSendEPData(pOM, (FTM_OM_MSG_SEND_EP_DATA_PTR)pCommonMsg);
+					xRet = FTM_OM_onSendEPData(pOM, (FTM_OM_MSG_SEND_EP_DATA_PTR)pMsg);
 
 				}
 				break;
 
 			case	FTM_OM_MSG_TYPE_TIME_SYNC:
 				{
-					xRet = FTM_OM_onTimeSync(pOM, (FTM_OM_MSG_TIME_SYNC_PTR)pCommonMsg);
+					xRet = FTM_OM_onTimeSync(pOM, (FTM_OM_MSG_TIME_SYNC_PTR)pMsg);
 				}
 				break;
 
 			case	FTM_OM_MSG_TYPE_EP_CTRL:
 				{
-					xRet = FTM_OM_onEPCtrl(pOM, (FTM_OM_MSG_EP_CTRL_PTR)pCommonMsg);
+					xRet = FTM_OM_onEPCtrl(pOM, (FTM_OM_MSG_EP_CTRL_PTR)pMsg);
 				}
 				break;
 
 			case	FTM_OM_MSG_TYPE_RULE:
 				{
-					FTM_OM_MSG_RULE_PTR	pMsg = (FTM_OM_MSG_RULE_PTR)pCommonMsg;
-
-					TRACE("RULE[%d] is %s\n", pMsg->xRuleID, (pMsg->xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
+					xRet = FTM_OM_onRule(pOM, (FTM_OM_MSG_RULE_PTR)pMsg);
 				}
 				break;
 
 			default:
 				{
-					ERROR("Message[%08x] not supported.\n", pCommonMsg->xType);
+					ERROR("Message[%08x] not supported.\n", pMsg->xType);
 				}
 			}
 
-			FTM_MEM_free(pCommonMsg);
+			FTM_MEM_free(pMsg);
 		}
 	}
 
@@ -639,6 +646,22 @@ FTM_RET	FTM_OM_onTimeSync
 	ASSERT(pMsg != NULL);
 
 	TRACE("Time Sync - %d\n", pMsg->ulTime);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTM_OM_onSaveEPData
+(
+	FTM_OM_PTR	pOM,
+	FTM_OM_MSG_SAVE_EP_DATA_PTR	pMsg
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pMsg != NULL);
+
+	TRACE("Save EP[%08x] Data.\n", pMsg->xEPID);
+	FTM_OM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xEPID, &pMsg->xData);
+	FTM_OM_DMC_EP_DATA_set(&xDMC, pMsg->xEPID, &pMsg->xData);
 
 	return	FTM_RET_OK;
 }
@@ -707,7 +730,24 @@ FTM_RET	FTM_OM_onSendEPData
 	return	FTM_MQTT_CLIENT_publishEPData(&xMQTTC, pMsg->xEPID, pMsg->pData, pMsg->ulCount);
 }
 
-FTM_RET	FTM_OM_TASK_stopService(FTM_OM_PTR pOM)
+FTM_RET	FTM_OM_onRule
+(
+	FTM_OM_PTR pOM,
+	FTM_OM_MSG_RULE_PTR pMsg
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pMsg != NULL);
+
+	TRACE("RULE[%d] is %s\n", pMsg->xRuleID, (pMsg->xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_OM_TASK_stopService
+(
+	FTM_OM_PTR 		pOM
+)
 {
 	ASSERT(pOM != NULL);
 
@@ -739,7 +779,12 @@ FTM_RET	FTM_OM_TASK_stopService(FTM_OM_PTR pOM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_OM_getDID(FTM_OM_PTR pOM, FTM_CHAR_PTR pBuff, FTM_ULONG ulBuffLen)
+FTM_RET	FTM_OM_getDID
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_CHAR_PTR 	pBuff, 
+	FTM_ULONG 		ulBuffLen
+)
 {
 	ASSERT(pBuff != NULL);
 
@@ -757,7 +802,11 @@ FTM_RET	FTM_OM_getDID(FTM_OM_PTR pOM, FTM_CHAR_PTR pBuff, FTM_ULONG ulBuffLen)
  * EP management interface
  ******************************************************************/
 
-FTM_RET	FTM_OM_createEP(FTM_OM_PTR pOM, FTM_EP_PTR pInfo)
+FTM_RET	FTM_OM_createEP
+(
+	FTM_OM_PTR 	pOM, 
+	FTM_EP_PTR 	pInfo
+)
 {
 	ASSERT(pOM != NULL);
 	ASSERT(pInfo != NULL);
@@ -765,14 +814,26 @@ FTM_RET	FTM_OM_createEP(FTM_OM_PTR pOM, FTM_EP_PTR pInfo)
 	return	FTDMC_EP_append(&xDMC.xSession, pInfo);
 }
 
-FTM_RET	FTM_OM_destroyEP(FTM_OM_PTR pOM, FTM_EP_ID xEPID)
+FTM_RET	FTM_OM_destroyEP
+(
+	FTM_OM_PTR 	pOM, 
+	FTM_EP_ID 	xEPID
+)
 {
 	ASSERT(pOM != NULL);
 
 	return	FTDMC_EP_remove(&xDMC.xSession, xEPID);
 }
 
-FTM_RET	FTM_OM_getEPDataList(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_ULONG ulStart, FTM_EP_DATA_PTR pDataList, FTM_ULONG ulMaxCount, FTM_ULONG_PTR pulCount)
+FTM_RET	FTM_OM_getEPDataList
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_ULONG 		ulStart, 
+	FTM_EP_DATA_PTR pDataList, 
+	FTM_ULONG 		ulMaxCount, 
+	FTM_ULONG_PTR 	pulCount
+)
 {
 	ASSERT(pOM != NULL);
 	ASSERT(pDataList != NULL);
@@ -781,21 +842,26 @@ FTM_RET	FTM_OM_getEPDataList(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_ULONG ulStart,
 	return	FTDMC_EP_DATA_get(&xDMC.xSession, xEPID, ulStart, pDataList, ulMaxCount, pulCount);
 }
 
-FTM_RET	FTM_OM_getEPDataInfo(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount)
+FTM_RET	FTM_OM_getEPDataInfo
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_ULONG_PTR 	pulBeginTime, 
+	FTM_ULONG_PTR 	pulEndTime, 
+	FTM_ULONG_PTR 	pulCount
+)
 {
 	return	FTDMC_EP_DATA_info(&xDMC.xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
-FTM_RET	FTM_OM_getEPDataCount(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
+FTM_RET	FTM_OM_getEPDataCount
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_ULONG_PTR 	pulCount
+)
 {
 	return	FTDMC_EP_DATA_count(&xDMC.xSession, xEPID, pulCount);
-}
-
-FTM_RET	FTM_OM_NOTIFY_quit(FTM_OM_PTR pOM)
-{
-	FTM_OM_stop(pOM);
-
-	return	FTM_RET_SHELL_QUIT;
 }
 
 FTM_RET	FTM_OM_NOTIFY_rule
