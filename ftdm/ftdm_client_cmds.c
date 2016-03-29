@@ -599,7 +599,7 @@ FTM_RET	FTDMC_EP_cmd
 				MESSAGE("%16s : %s\n", "STATE", (xInfo.bEnable)?"ENABLE":"DISABLE");
 				MESSAGE("%16s : %d\n", "TIMEOUT", xInfo.ulTimeout);
 				MESSAGE("%16s : %d\n", "INTERVAL", xInfo.ulInterval);
-				MESSAGE("%16s : %d\n", "PERIOD", xInfo.ulPeriod);
+				MESSAGE("%16s : %d\n", "CYCLE", xInfo.ulCycle);
 				MESSAGE("%16s : %s\n", "DID", xInfo.pDID);
 				MESSAGE("%16s : %08x\n", "DEPID", xInfo.xEPID);
 				MESSAGE("%16s : %s\n", "PID", xInfo.pPID);

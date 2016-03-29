@@ -370,8 +370,8 @@ FTM_RET FTDM_EP_showList(FTM_VOID)
 	FTM_ULONG	i, ulCount;
 
 	MESSAGE("\n# EP Information\n");
-	MESSAGE("\t%8s %16s %16s %8s %8s %8s %8s %16s %8s %16s %8s %8s %8s\n",
-			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID", "PID", "PEPID", "COUNT", "TIME");
+	MESSAGE("\t%8s %16s %16s %8s %8s %8s %8s %8s %16s %8s %16s %8s %8s %8s\n",
+			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "CYCLE", "TIMEOUT", "DID", "DEPID", "PID", "PEPID", "COUNT", "TIME");
 	if (FTM_EP_count(&ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -394,8 +394,9 @@ FTM_RET FTDM_EP_showList(FTM_VOID)
 				MESSAGE("%8s ", "DISABLE");
 			}
 
-			MESSAGE("%8lu %8lu %16s %08lx %16s %08lx %8d %10d %10d\n",
+			MESSAGE("%8lu %8lu %8lu %16s %08lx %16s %08lx %8d %10d %10d\n",
 				pEP->xInfo.ulInterval,
+				pEP->xInfo.ulCycle,
 				pEP->xInfo.ulTimeout,
 				pEP->xInfo.pDID,
 				pEP->xInfo.xDEPID,
@@ -421,6 +422,7 @@ FTM_RET	FTDM_EP_DATA_add
 	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP;
 
+	TRACE("EP[%08x] data add\n", xEPID);
 	if (pData == NULL)
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	

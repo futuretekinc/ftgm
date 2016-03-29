@@ -805,6 +805,7 @@ FTM_RET	FTM_CONFIG_ITEM_getEP(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_PTR pEP)
 	FTM_CONFIG_ITEM_getItemString(pItem,"unit",		pEP->pUnit, sizeof(pEP->pUnit) - 1);
 	FTM_CONFIG_ITEM_getItemBOOL(pItem, 	"enable",	&pEP->bEnable);
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"interval",	&pEP->ulInterval);
+	FTM_CONFIG_ITEM_getItemULONG(pItem,	"cycle",	&pEP->ulCycle);
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"timeout",	&pEP->ulTimeout);
 
 	FTM_CONFIG_ITEM_getItemString(pItem,"did",		pEP->pDID, sizeof(pEP->pDID) - 1);

@@ -71,7 +71,7 @@ typedef	struct
 	FTM_BOOL		bEnable;
 	FTM_ULONG		ulTimeout;
 	FTM_ULONG		ulInterval;	
-	FTM_ULONG		ulPeriod;
+	FTM_ULONG		ulCycle;
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
 	FTM_EP_ID		xDEPID;
 	FTM_CHAR		pPID[FTM_DID_LEN+1];

@@ -20,6 +20,17 @@ typedef	struct	FTNM_EP_MSG_STRUCT
 static FTM_VOID_PTR	FTNM_EP_process(FTM_VOID_PTR pData);
 static FTM_INT		FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 static FTM_INT		FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2);
+static FTM_RET		FTNM_EPM_notifyEPDataSaveToDB(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
+static FTM_RET		FTNM_EP_transmissionData
+(
+	FTNM_EP_PTR 	pEP,
+	FTM_ULONG		ulStartTime,
+	FTM_ULONG		ulEndTime
+);
+static FTM_RET		FTNM_EPM_notifyEPDataTransmissionINT(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_INT nValue, FTM_INT nAverage, FTM_INT nCount, FTM_INT nMax, FTM_INT nMin);
+static FTM_RET		FTNM_EPM_notifyEPDataTransmissionULONG(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_ULONG ulValue, FTM_ULONG ulAverage, FTM_INT nCount, FTM_ULONG ulMax, FTM_ULONG ulMin);
+static FTM_RET		FTNM_EPM_notifyEPDataTransmissionFLOAT(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_FLOAT fValue, FTM_FLOAT fAverage, FTM_INT nCount, FTM_FLOAT fMax, FTM_FLOAT fMin);
+static FTM_RET		FTNM_EPM_notifyEPDataTransmissionBOOL(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_BOOL bValue);
 
 FTM_RET	FTNM_EPM_create(FTNM_CONTEXT_PTR pCTX, FTNM_EPM_PTR _PTR_ ppEPM)
 {
@@ -315,6 +326,7 @@ FTM_RET FTNM_EPM_getAt
 FTM_RET	FTNM_EPM_notifyEPUpdated(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pEPM != NULL);
+	ASSERT(pData != NULL);
 
 	FTM_RET			xRet;
 	FTNM_MSG_PTR	pMsg;
@@ -333,10 +345,39 @@ FTM_RET	FTNM_EPM_notifyEPUpdated(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP_DATA
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Message push error![%08x]\n", xRet);
-		FTNM_MSG_destroy(pMsg);
+		FTNM_MSG_destroy(&pMsg);
 		return	xRet;
 	}
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_EPM_notifyEPDataSaveToDB(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pEPM != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_SAVE_TO_DB;
+	pMsg->xParams.xEPDataUpdated.xEPID = xEPID;
+	memcpy(&pMsg->xParams.xEPDataUpdated.xData, pData, sizeof(FTM_EP_DATA));
+
+	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+	
 	return	FTM_RET_OK;
 }
 
@@ -434,28 +475,51 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 	ASSERT(pData != NULL);
 
 	FTNM_EP_PTR		pEP = (FTNM_EP_PTR)pData;
-	FTM_TIMER		xInterval;
+	FTM_TIMER		xCollectionTimer;
+	FTM_TIMER		xTransmissionTimer;
+	FTM_TIME		xCurrentTime, xAlignTime, xNextTime, xInterval, xCycle;
 	FTM_BOOL		bStop = FTM_FALSE;
 
 	pEP->xState = FTM_EP_STATE_RUN;
 
 	TRACE("EP[%08x] process start.\n", pEP->xInfo.xEPID);
 
-	FTM_TIMER_init(&xInterval, 0);
+	FTM_TIME_getCurrent(&xAlignTime);
+	switch(pEP->xInfo.ulInterval)
+	{
+	case       1: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_1S, &xAlignTime); break;
+	case      10: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_10S, &xAlignTime); break;
+	case      60: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_1M, &xAlignTime); break;
+	case     600: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_10M, &xAlignTime); break;
+	case    3600: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_1H, &xAlignTime); break;
+	case 24*3600: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_1D, &xAlignTime); break;
+	};
+
+	FTM_TIME_setSeconds(&xInterval, pEP->xInfo.ulInterval);
+	FTM_TIME_add(&xAlignTime, &xInterval, &xNextTime);
+
+	FTM_TIME_getCurrent(&xCurrentTime);
+	FTM_TIME_sub(&xNextTime, &xCurrentTime, &xInterval);
+
+	FTM_TIMER_initTime(&xCollectionTimer, &xInterval);
+
+	FTM_TIME_setSeconds(&xCycle, pEP->xInfo.ulCycle);
+	FTM_TIME_add(&xAlignTime, &xCycle, &xNextTime);
+
+	FTM_TIME_getCurrent(&xCurrentTime);
+	FTM_TIME_sub(&xNextTime, &xCurrentTime, &xCycle);
+
+	FTM_TIMER_initTime(&xTransmissionTimer, &xCycle);
 
 	while(!bStop)
 	{
 		FTM_ULONG		ulRemainTime = 0;
 		FTM_EP_DATA		xData, xReadData;
 		FTNM_EP_MSG_PTR	pMsg = NULL;
-		
-		FTM_TIMER_add(&xInterval, pEP->xInfo.ulInterval * 1000000);
-		FTM_TIMER_remain(&xInterval, &ulRemainTime);
-
+	
 		xData.ulTime = time(NULL);
 		if (FTNM_NODE_getEPData(pEP->pNode, pEP, &xReadData) == FTM_RET_OK)
 		{
-			//TRACE("EP(%08x:%s) - The data import was successful.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
 			xData.xState = FTM_EP_DATA_STATE_VALID;
 			xData.xType = xReadData.xType;
 			memcpy(&xData.xValue, &xReadData.xValue, sizeof(xData.xValue));
@@ -464,11 +528,22 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 		}
 		else
 		{
-			//TRACE("EP(%08x:%s) - The data import was failed.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
+			WARN("EP(%08x:%s) - The data import was failed.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
 		}
 
+		if (FTM_TIMER_isExpired(&xTransmissionTimer))
+		{
+			TRACE("TRANSMISSION : %08x\n", pEP->xInfo.xEPID);
+			FTM_ULONG	ulPrevTime, ulCurrentTime;
+
+			FTM_TIMER_getTime(&xTransmissionTimer, &ulCurrentTime);
+			ulPrevTime = ulCurrentTime - pEP->xInfo.ulCycle;
+
+			FTNM_EP_transmissionData(pEP, ulCurrentTime, ulPrevTime);
+			FTM_TIMER_add(&xTransmissionTimer, pEP->xInfo.ulCycle * 1000000);
+		}
 		
-		FTM_TIMER_remain(&xInterval, &ulRemainTime);
+		FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
 		while (!bStop && (FTM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, (FTM_VOID_PTR _PTR_)&pMsg) == FTM_RET_OK))
 		{
 			switch(pMsg->xCmd)
@@ -480,15 +555,18 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 				break;
 			}
 
-			FTM_TIMER_remain(&xInterval, &ulRemainTime);
+			FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
 
 			FTM_MEM_free(pMsg);
 		}
 	
 		if (!bStop)
 		{
-			FTM_TIMER_waitForExpired(&xInterval);
+			FTM_TIMER_waitForExpired(&xCollectionTimer);
 		}
+
+		FTM_TIMER_add(&xCollectionTimer, pEP->xInfo.ulInterval * 1000000);
+
 	} 
 
 	pEP->xState = FTM_EP_STATE_STOP;
@@ -566,7 +644,7 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 		xRet = FTM_LIST_append(&pEP->xDataList, pNewData);
 		if (xRet == FTM_RET_OK)
 		{
-			FTNM_EPM_notifyEPUpdated(pEP->pEPM, pEP->xInfo.xEPID, pData);
+			FTNM_EPM_notifyEPDataSaveToDB(pEP->pEPM, pEP->xInfo.xEPID, pData);
 		}
 		else
 		{
@@ -575,6 +653,162 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	}
 
 	return	xRet;
+}
+
+FTM_RET	FTNM_EP_transmissionData
+(
+	FTNM_EP_PTR 	pEP,
+	FTM_ULONG		ulStartTime,
+	FTM_ULONG		ulEndTime
+)
+{
+	ASSERT(pEP != NULL);
+	FTM_EP_DATA		xData;
+	FTM_EP_DATA_PTR	pData;
+
+	FTNM_EP_getData(pEP, &xData);
+
+	switch (xData.xType)
+	{
+	case	FTM_EP_DATA_TYPE_INT:
+		{
+			FTM_INT	nMax = 0, nMin = 0, nAverage = 0, nCount = 0;
+
+			FTM_LIST_iteratorStart(&pEP->xDataList);
+			while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+			{
+				if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
+				{
+					if (nCount == 0)
+					{
+						nMax 	= pData->xValue.nValue;	
+						nMin	= pData->xValue.nValue;	
+						nAverage= pData->xValue.nValue;	
+					}
+					else
+					{
+						if (nMax < pData->xValue.nValue)
+						{
+							nMax = pData->xValue.nValue;	
+						}
+						else if (nMin > pData->xValue.nValue)
+						{
+							nMin = pData->xValue.nValue;	
+						}
+
+						nAverage += pData->xValue.nValue;
+					}
+
+					nCount++;
+				}
+			}
+
+			if (nCount != 0)
+			{
+				nAverage = nAverage / nCount;
+			}
+
+			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+			FTNM_EPM_notifyEPDataTransmissionINT(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.nValue, nAverage, nCount, nMax, nMin);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_ULONG:
+		{
+			FTM_ULONG	ulMax = 0, ulMin = 0, ulAverage = 0, nCount = 0;
+
+			FTM_LIST_iteratorStart(&pEP->xDataList);
+			while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+			{
+				if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
+				{
+					if (nCount == 0)
+					{
+						ulMax 	= pData->xValue.nValue;	
+						ulMin	= pData->xValue.nValue;	
+						ulAverage= pData->xValue.nValue;	
+					}
+					else
+					{
+						if (ulMax < pData->xValue.nValue)
+						{
+							ulMax = pData->xValue.nValue;	
+						}
+						else if (ulMin > pData->xValue.nValue)
+						{
+							ulMin = pData->xValue.nValue;	
+						}
+
+						ulAverage += pData->xValue.nValue;
+					}
+
+					nCount++;
+				}
+			}
+
+			if (nCount != 0)
+			{
+				ulAverage = ulAverage / nCount;
+			}
+			
+			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+			FTNM_EPM_notifyEPDataTransmissionULONG(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.ulValue, ulAverage, nCount, ulMax, ulMin);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_FLOAT:
+		{
+			FTM_FLOAT	fMax = 0, fMin = 0, fAverage = 0, nCount = 0;
+
+			FTM_LIST_iteratorStart(&pEP->xDataList);
+			while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+			{
+				if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
+				{
+					if (nCount == 0)
+					{
+						fMax 	= pData->xValue.nValue;	
+						fMin	= pData->xValue.nValue;	
+						fAverage= pData->xValue.nValue;	
+					}
+					else
+					{
+						if (fMax < pData->xValue.nValue)
+						{
+							fMax = pData->xValue.nValue;	
+						}
+						else if (fMin > pData->xValue.nValue)
+						{
+							fMin = pData->xValue.nValue;	
+						}
+
+						fAverage += pData->xValue.nValue;
+					}
+
+					nCount++;
+				}
+			}
+
+			if (nCount != 0)
+			{
+				fAverage = fAverage / nCount;
+			}
+
+			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+			FTNM_EPM_notifyEPDataTransmissionFLOAT(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.fValue, fAverage, nCount, fMax, fMin);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_BOOL:
+		{
+			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+			FTNM_EPM_notifyEPDataTransmissionBOOL(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.bValue);
+		}
+		break;
+	}
+
+	
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_EP_getEventCount(FTNM_EP_PTR pEP, FTM_ULONG_PTR pulCount)
@@ -607,6 +841,166 @@ FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET		FTNM_EPM_notifyEPDataTransmissionINT
+(
+	FTNM_EPM_PTR 	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_INT			nValue,
+	FTM_INT 		nAverage, 
+	FTM_INT 		nCount, 
+	FTM_INT 		nMax, 
+	FTM_INT 		nMin
+)
+{
+	ASSERT(pEPM != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
+	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
+	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_INT;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nValue	= nValue;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nAverage = nAverage;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nCount 	= nCount;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nMax 	= nMax;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nMin 	= nMin;
+
+	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET		FTNM_EPM_notifyEPDataTransmissionULONG
+(
+	FTNM_EPM_PTR 	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_ULONG 		ulValue, 
+	FTM_ULONG 		ulAverage, 
+	FTM_INT 		nCount, 
+	FTM_ULONG 		ulMax, 
+	FTM_ULONG 		ulMin
+)
+{
+	ASSERT(pEPM != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
+	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
+	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_ULONG;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulValue	= ulValue;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulAverage 	= ulAverage;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.nCount 	= nCount;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMax 		= ulMax;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMin 		= ulMin;
+
+	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET		FTNM_EPM_notifyEPDataTransmissionFLOAT
+(
+	FTNM_EPM_PTR	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_FLOAT 		fValue, 
+	FTM_FLOAT 		fAverage, 
+	FTM_INT 		nCount, 
+	FTM_FLOAT 		fMax, 
+	FTM_FLOAT 		fMin
+)
+{
+	ASSERT(pEPM != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
+	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
+	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_FLOAT;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fValue		= fValue;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fAverage 	= fAverage;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.nCount 	= nCount;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMax 		= fMax;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMin 		= fMin;
+
+	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET		FTNM_EPM_notifyEPDataTransmissionBOOL
+(
+	FTNM_EPM_PTR 	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_BOOL 		bValue
+)
+{
+	ASSERT(pEPM != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
+	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
+	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_BOOL;
+	pMsg->xParams.xEPDataTrans.xValue.xBOOL.bValue	= bValue;
+
+	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
 	}
 
 	return	FTM_RET_OK;

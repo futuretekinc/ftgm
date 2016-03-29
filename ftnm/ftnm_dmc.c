@@ -107,7 +107,7 @@ FTM_VOID_PTR	FTNM_DMC_process(FTM_VOID_PTR pData)
 					
 				}
 
-				FTNM_MSG_destroy(pMsg);
+				FTNM_MSG_destroy(&pMsg);
 			}
 		}
 	}
@@ -124,6 +124,31 @@ FTM_RET	FTNM_DMC_setServiceCallback(FTNM_DMC_PTR pDMC, FTNM_SERVICE_ID xServiceI
 	pDMC->fServiceCB = pServiceCB;
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_DMC_notify(FTNM_DMC_PTR pDMC, FTNM_MSG_PTR pMsg)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pMsg != NULL);
+
+	FTM_RET	xRet;
+
+	switch(pMsg->xType)
+	{
+	case	FTNM_MSG_TYPE_EP_DATA_UPDATED:
+		{	
+			
+			xRet = FTDMC_EP_DATA_append(&pDMC->xSession, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
+		}
+		break;
+
+	default:
+		xRet = FTM_RET_INVALID_MESSAGE_TYPE;
+	}
+
+	FTNM_MSG_destroy(&pMsg);
+
+	return	xRet;
 }
 
 FTM_RET	FTNM_DMC_EP_create(FTNM_DMC_PTR pDMC, FTM_EP_PTR pInfo)

@@ -21,11 +21,15 @@ FTM_RET	FTNM_MSG_create(FTNM_MSG_PTR _PTR_ ppMsg)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_MSG_destroy(FTNM_MSG_PTR pMsg)
+FTM_RET	FTNM_MSG_destroy(FTNM_MSG_PTR _PTR_ ppMsg)
 {
-	ASSERT(pMsg != NULL);
+	ASSERT(ppMsg != NULL);
 
-	FTM_MEM_free(pMsg);
+	if (*ppMsg != NULL)
+	{
+		FTM_MEM_free(*ppMsg);
+		*ppMsg = NULL;
+	}
 
 	return	FTM_RET_OK;
 }
@@ -107,7 +111,7 @@ FTM_RET	FTNM_MSGQ_sendSNMPTrap(FTNM_MSG_QUEUE_PTR pMsgQ, FTM_CHAR_PTR pTrapMsg)
 	xRet = FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		FTNM_MSG_destroy(pMsg);
+		FTNM_MSG_destroy(&pMsg);
 	}
 
 	return	xRet;
@@ -134,7 +138,7 @@ FTM_RET FTNM_MSGQ_sendEPChanged(FTNM_MSG_QUEUE_PTR pMsgQ, FTM_EP_ID xEPID, FTM_E
 	xRet = FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		FTNM_MSG_destroy(pMsg);
+		FTNM_MSG_destroy(&pMsg);
 	}
 
 	return	xRet;
@@ -156,7 +160,7 @@ FTM_RET	FTNM_MSGQ_sendQuit(FTNM_MSG_QUEUE_PTR pMsgQ)
 	xRet = FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		FTNM_MSG_destroy(pMsg);
+		FTNM_MSG_destroy(&pMsg);
 	}
 
 	return	xRet;

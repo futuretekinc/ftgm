@@ -278,7 +278,7 @@ FTM_VOID_PTR FTNM_TRIGGERM_process(FTM_VOID_PTR pData)
 				{
 					if (FTM_TIMER_isExpired(&pTrigger->xDetectionTimer))
 					{
-						FTM_LOG(FTM_LOG_TYPE_TRIGGER, "Trigger[%d] occurred!\n", pTrigger->xInfo.xID);
+						INFO("Trigger[%d] occurred!\n", pTrigger->xInfo.xID);
 						pTrigger->xState = FTNM_TRIGGER_STATE_SET;
 						FTM_TIME_getCurrent(&pTrigger->xOccurrenceTime);
 						FTM_TIMER_initTime(&pTrigger->xHoldingTimer, &pTrigger->xInfo.xParams.xCommon.xHoldingTime);
@@ -290,7 +290,7 @@ FTM_VOID_PTR FTNM_TRIGGERM_process(FTM_VOID_PTR pData)
 				{
 					if (FTM_TIMER_isExpired(&pTrigger->xHoldingTimer))
 					{
-						FTM_LOG(FTM_LOG_TYPE_TRIGGER, "Trigger[%d] clrean!\n", pTrigger->xInfo.xID);
+						INFO("Trigger[%d] clrean!\n", pTrigger->xInfo.xID);
 						pTrigger->xState = FTNM_TRIGGER_STATE_RESET;
 						FTM_TIME_getCurrent(&pTrigger->xReleaseTime);
 

@@ -94,6 +94,7 @@ static 	FTNM_SERVICE	pServices[] =
 		.fCallback	=	FTNM_callback,
 		.fLoadFromFile=	(FTNM_SERVICE_LOAD_FROM_FILE)FTNM_DMC_loadFromFile,
 		.fShowConfig=	(FTNM_SERVICE_SHOW_CONFIG)FTNM_DMC_showConfig,
+		.fNotify	=	(FTNM_SERVICE_NOTIFY)FTNM_DMC_notify,
 		.pData		=	(FTM_VOID_PTR)&xDMC
 	},
 	{
@@ -652,11 +653,26 @@ FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX)
 				}
 				break;
 
+			case	FTNM_MSG_TYPE_EP_DATA_SAVE_TO_DB:
+				{
+					TRACE("DATA SAVE TO DB : %08x\n", pMsg->xParams.xEPDataUpdated.xEPID);
+					FTNM_TRIGGERM_updateEP(&xTriggerM, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
+					FTNM_DMC_EP_DATA_set(&xDMC, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
+				}
+				break;
+
 			case	FTNM_MSG_TYPE_EP_DATA_UPDATED:
 				{
-					TRACE("EP[%08x] data updated.\n", pMsg->xParams.xEPDataUpdated.xEPID);
+					TRACE("DATA UPDATE : %08x.\n", pMsg->xParams.xEPDataUpdated.xEPID);
 					FTNM_TRIGGERM_updateEP(&xTriggerM, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
 					FTNM_SERVICE_notify(FTNM_SERVICE_ALL, pMsg);
+				}
+				break;
+
+			case	FTNM_MSG_TYPE_EP_DATA_TRANS:
+				{
+					TRACE("DATA TRANSFER TO SERVER : %08x\n", pMsg->xParams.xEPDataTrans.xEPID);
+					FTNM_SERVICE_notify(FTNM_SERVICE_MQTT_CLIENT, pMsg);
 				}
 				break;
 
@@ -780,6 +796,7 @@ FTM_RET	FTNM_callback(FTNM_SERVICE_ID xID, FTNM_MSG_TYPE xMsg, FTM_VOID_PTR pDat
 			{
 			case	FTNM_MSG_TYPE_EP_CHANGED:
 				{
+					TRACE("Callback : SNMPTRAPD - EP Changed.\n");
 					if (pData != NULL)
 					{
 						FTNM_MSG_EP_CHANGED_PARAMS_PTR pParam = (FTNM_MSG_EP_CHANGED_PARAMS_PTR)pData;

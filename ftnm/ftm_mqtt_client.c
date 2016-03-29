@@ -6,16 +6,95 @@
 #include "nxjson.h"
 #include "ftm_mqtt_client.h"
 
+
+typedef	FTM_VOID (*FTM_MQTT_CLIENT_CONNECT_CB)(struct mosquitto *mosq, void *pObj, int nResult);
+typedef	FTM_VOID (*FTM_MQTT_CLIENT_DISCONNECT_CB)(struct mosquitto *mosq, void *pObj, int nResult);
+typedef	FTM_VOID (*FTM_MQTT_CLIENT_PUBLISH_CB)(struct mosquitto *mosq, void *pObj, int nResult);
+typedef	FTM_VOID (*FTM_MQTT_CLIENT_MESSAGE_CB)(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
+typedef FTM_VOID (*FTM_MQTT_CLIENT_SUBSCRIBE_CB)(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
+typedef FTM_VOID (*FTM_MQTT_CLIENT_TIMER_CB)(struct mosquitto *mosq, void *pObj);
+typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA_INT)(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue, FTM_INT nAverage, FTM_INT nCount, FTM_INT nMax, FTM_INT nMin);
+typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA_ULONG)(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue,FTM_ULONG nAverage, FTM_INT nCount, FTM_ULONG ulMax, FTM_ULONG ulMin);
+typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA_FLOAT)(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_FLOAT fValue, FTM_FLOAT nAverage, FTM_INT nCount, FTM_FLOAT fMax, FTM_FLOAT fMin);
+typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA_BOOL)(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_BOOL bValu);
+
+typedef	struct
+{
+	FTM_MQTT_CLIENT_CONNECT_CB				fConnect;
+	FTM_MQTT_CLIENT_DISCONNECT_CB			fDisconnect;
+	FTM_MQTT_CLIENT_PUBLISH_CB				fPublish;
+	FTM_MQTT_CLIENT_MESSAGE_CB				fMessage;
+	FTM_MQTT_CLIENT_SUBSCRIBE_CB			fSubscribe;
+	FTM_MQTT_CLIENT_TIMER_CB				fTimer;
+	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_INT		fPublishEPDataINT;
+	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_ULONG	fPublishEPDataULONG;
+	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_FLOAT	fPublishEPDataFLOAT;
+	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_BOOL	fPublishEPDataBOOL;
+}	FTM_MQTT_CLIENT_CALLBACK_SET, _PTR_ FTM_MQTT_CLIENT_CALLBACK_SET_PTR;
+
+static FTM_VOID_PTR FTM_MQTT_CLIENT_process(FTM_VOID_PTR pData);
+static FTM_VOID_PTR FTM_MQTT_CLIENT_connector(FTM_VOID_PTR pData);
+static FTM_RET	FTM_MQTT_CLIENT_publishEPData(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_EP_DATA_PTR	pData);
+
 static FTM_VOID FTM_MQTT_CLIENT_connectCB(struct mosquitto *mosq, void *pObj, int nResult);
 static FTM_VOID FTM_MQTT_CLIENT_disconnectCB(struct mosquitto *mosq, void *pObj, int nResult);
 static FTM_VOID FTM_MQTT_CLIENT_publishCB(struct mosquitto *mosq, void *pObj, int nResult);
 static FTM_VOID	FTM_MQTT_CLIENT_messageCB(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
 static FTM_VOID FTM_MQTT_CLIENT_subscribeCB(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
-static FTM_VOID_PTR FTM_MQTT_CLIENT_process(FTM_VOID_PTR pData);
-static FTM_VOID_PTR FTM_MQTT_CLIENT_connector(FTM_VOID_PTR pData);
-static FTM_RET	FTM_MQTT_CLIENT_publishEPData(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_EP_DATA_PTR	pData);
-static FTM_RET	FTM_MQTT_CLIENT_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
-static FTM_RET	FTM_MQTT_CLIENT_requestMessageParser(FTM_CHAR_PTR pMessage, FTNM_MSG_PTR _PTR_	pMsg);
+
+static FTM_VOID FTM_MQTT_CLIENT_FT_connectCB(struct mosquitto *mosq, void *pObj, int nResult);
+static FTM_VOID FTM_MQTT_CLIENT_FT_disconnectCB(struct mosquitto *mosq, void *pObj, int nResult);
+static FTM_VOID FTM_MQTT_CLIENT_FT_publishCB(struct mosquitto *mosq, void *pObj, int nResult);
+static FTM_VOID	FTM_MQTT_CLIENT_FT_messageCB(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
+static FTM_VOID FTM_MQTT_CLIENT_FT_subscribeCB(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
+
+static FTM_RET	FTM_MQTT_CLIENT_FT_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
+static FTM_RET	FTM_MQTT_CLIENT_FT_requestMessageParser(FTM_CHAR_PTR pMessage, FTNM_MSG_PTR _PTR_	pMsg);
+static FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataINT(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue, FTM_INT nAverage, FTM_INT nCount, FTM_INT nMax, FTM_INT nMin);
+static FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataULONG(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue, FTM_ULONG nAverage, FTM_INT nCount, FTM_ULONG ulMax, FTM_ULONG ulMin);
+static FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataFLOAT(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_FLOAT fValue, FTM_FLOAT nAverage, FTM_INT nCount, FTM_FLOAT fMax, FTM_FLOAT fMin);
+static FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataBOOL(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_BOOL bValu);
+
+static FTM_VOID FTM_MQTT_CLIENT_TPGW_connectCB(struct mosquitto *mosq, void *pObj, int nResult);
+static FTM_VOID FTM_MQTT_CLIENT_TPGW_disconnectCB(struct mosquitto *mosq, void *pObj, int nResult);
+static FTM_VOID FTM_MQTT_CLIENT_TPGW_publishCB(struct mosquitto *mosq, void *pObj, int nResult);
+static FTM_VOID	FTM_MQTT_CLIENT_TPGW_messageCB(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
+static FTM_VOID FTM_MQTT_CLIENT_TPGW_subscribeCB(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
+
+static FTM_RET	FTM_MQTT_CLIENT_TPGW_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
+static FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser(FTM_CHAR_PTR pMessage, FTNM_MSG_PTR _PTR_	pMsg);
+static FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataINT(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_INT nValue, FTM_INT nAverage, FTM_INT nCount, FTM_INT nMax, FTM_INT nMin);
+static FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataULONG(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_ULONG ulValue, FTM_ULONG nAverage, FTM_INT nCount, FTM_ULONG ulMax, FTM_ULONG ulMin);
+static FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_FLOAT fValue, FTM_FLOAT nAverage, FTM_INT nCount, FTM_FLOAT fMax, FTM_FLOAT fMin);
+static FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_ULONG ulTime, FTM_BOOL bValu);
+
+static FTM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
+{
+	{
+		.fConnect 	= FTM_MQTT_CLIENT_FT_connectCB,
+		.fDisconnect= FTM_MQTT_CLIENT_FT_disconnectCB,
+		.fPublish 	= FTM_MQTT_CLIENT_FT_publishCB,
+		.fMessage 	= FTM_MQTT_CLIENT_FT_messageCB,
+		.fSubscribe = FTM_MQTT_CLIENT_FT_subscribeCB,
+		.fPublishEPDataINT	= FTM_MQTT_CLIENT_FT_publishEPDataINT,
+		.fPublishEPDataULONG= FTM_MQTT_CLIENT_FT_publishEPDataULONG,
+		.fPublishEPDataFLOAT= FTM_MQTT_CLIENT_FT_publishEPDataFLOAT,
+		.fPublishEPDataBOOL	= FTM_MQTT_CLIENT_FT_publishEPDataBOOL
+	},
+	{
+		.fConnect 	= FTM_MQTT_CLIENT_TPGW_connectCB,
+		.fDisconnect= FTM_MQTT_CLIENT_TPGW_disconnectCB,
+		.fPublish 	= FTM_MQTT_CLIENT_TPGW_publishCB,
+		.fMessage 	= FTM_MQTT_CLIENT_TPGW_messageCB,
+		.fSubscribe = FTM_MQTT_CLIENT_TPGW_subscribeCB,
+		.fPublishEPDataINT	= FTM_MQTT_CLIENT_TPGW_publishEPDataINT,
+		.fPublishEPDataULONG= FTM_MQTT_CLIENT_TPGW_publishEPDataULONG,
+		.fPublishEPDataFLOAT= FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT,
+		.fPublishEPDataBOOL	= FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL
+	},
+};
+
+static 	FTM_ULONG	ulClientInstance = 0;
 
 FTM_RET	FTM_MQTT_CLIENT_create
 (
@@ -79,9 +158,15 @@ FTM_RET	FTM_MQTT_CLIENT_init(FTNM_CONTEXT_PTR pCTX, FTM_MQTT_CLIENT_PTR pClient)
 	strcpy(pClient->xConfig.xBroker.pHost, FTM_MQTT_CLIENT_DEFAULT_BROKER);
 	pClient->xConfig.xBroker.usPort = FTM_MQTT_CLIENT_DEFAULT_PORT;
 	pClient->xConfig.ulReconnectionTime = FTM_MQTT_CLIENT_DEFAULT_RECONNECTION_TIME;
+	pClient->xConfig.ulCBSet = FTM_MQTT_CLIENT_DEFAULT_CB_SET;
 
 	pClient->bStop = FTM_TRUE;
-	FTM_MSGQ_create(&pClient->pMsgQ);
+	FTNM_MSGQ_create(&pClient->pMsgQ);
+
+	if (ulClientInstance++ == 0)
+	{
+		mosquitto_lib_init();
+	}
 
 	return	FTM_RET_OK;
 }
@@ -97,8 +182,12 @@ FTM_RET	FTM_MQTT_CLIENT_final(FTM_MQTT_CLIENT_PTR pClient)
 
 	FTM_MQTT_CLIENT_stop(pClient);
 
-	FTM_MSGQ_destroy(pClient->pMsgQ);
-	pClient->pMsgQ = NULL;
+	FTNM_MSGQ_destroy(&pClient->pMsgQ);
+
+	if (--ulClientInstance == 0)
+	{
+		mosquitto_lib_cleanup();
+	}
 
 	return	FTM_RET_OK;
 }
@@ -153,6 +242,62 @@ FTM_RET	FTM_MQTT_CLIENT_notify(FTM_MQTT_CLIENT_PTR pClient, FTNM_MSG_PTR pMsg)
 		}
 		break;
 
+	case	FTNM_MSG_TYPE_EP_DATA_TRANS:
+		{
+			switch(pMsg->xParams.xEPDataTrans.nType)
+			{
+			case	FTM_EP_DATA_TYPE_INT:
+				{
+					pCBSet[pClient->xConfig.ulCBSet].fPublishEPDataINT(	pClient, 
+														pMsg->xParams.xEPDataTrans.xEPID, 
+														pMsg->xParams.xEPDataTrans.ulTime,
+														pMsg->xParams.xEPDataTrans.xValue.xINT.nValue,
+														pMsg->xParams.xEPDataTrans.xValue.xINT.nAverage,
+														pMsg->xParams.xEPDataTrans.xValue.xINT.nCount,
+														pMsg->xParams.xEPDataTrans.xValue.xINT.nMax,
+														pMsg->xParams.xEPDataTrans.xValue.xINT.nMin);
+				};
+				break;
+
+			case	FTM_EP_DATA_TYPE_ULONG:
+				{
+					pCBSet[pClient->xConfig.ulCBSet].fPublishEPDataULONG(	pClient, 
+														pMsg->xParams.xEPDataTrans.xEPID, 
+														pMsg->xParams.xEPDataTrans.ulTime,
+														pMsg->xParams.xEPDataTrans.xValue.xULONG.ulValue,
+														pMsg->xParams.xEPDataTrans.xValue.xULONG.ulAverage,
+														pMsg->xParams.xEPDataTrans.xValue.xULONG.nCount,
+														pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMax,
+														pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMin);
+				};
+				break;
+
+			case	FTM_EP_DATA_TYPE_FLOAT:
+				{
+					pCBSet[pClient->xConfig.ulCBSet].fPublishEPDataFLOAT(	pClient, 
+														pMsg->xParams.xEPDataTrans.xEPID, 
+														pMsg->xParams.xEPDataTrans.ulTime,
+														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fValue,
+														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fAverage,
+														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.nCount,
+														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMax,
+														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMin);
+				};
+				break;
+
+			case	FTM_EP_DATA_TYPE_BOOL:
+				{
+					pCBSet[pClient->xConfig.ulCBSet].fPublishEPDataBOOL(	pClient, 
+														pMsg->xParams.xEPDataTrans.xEPID, 
+														pMsg->xParams.xEPDataTrans.ulTime,
+														pMsg->xParams.xEPDataTrans.xValue.xBOOL.bValue);
+				};
+				break;
+			}
+
+		}
+		break;
+
 	default:
 		{
 			ERROR("Not supported message[%08x]!\n", pMsg->xType);	
@@ -195,44 +340,51 @@ FTM_VOID_PTR FTM_MQTT_CLIENT_process(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
 
+	FTM_RET				xRet;
 	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pData;
 
-	mosquitto_lib_init();
-
-	TRACE("CLIENT ID : %s\n", pClient->xConfig.pClientID);
+	pClient->bStop 		= FTM_FALSE;
+	pClient->bConnected = FTM_FALSE;
 	pClient->pMosquitto = mosquitto_new(pClient->xConfig.pClientID, true, pClient);
-	if(pClient->pMosquitto == NULL)
+	if(pClient->pMosquitto != NULL)
 	{
-		ERROR("Can't create mosquitto!\n");	
-	}
-	else
-	{
-		mosquitto_connect_callback_set(pClient->pMosquitto, FTM_MQTT_CLIENT_connectCB);
-		mosquitto_disconnect_callback_set(pClient->pMosquitto, FTM_MQTT_CLIENT_disconnectCB);
-		mosquitto_publish_callback_set(pClient->pMosquitto, FTM_MQTT_CLIENT_publishCB);
-		mosquitto_subscribe_callback_set(pClient->pMosquitto, FTM_MQTT_CLIENT_subscribeCB);
-		mosquitto_message_callback_set(pClient->pMosquitto, FTM_MQTT_CLIENT_messageCB);
+		TRACE("MQTT CLIENT[%s] started.\n", pClient->xConfig.pClientID);
+
+		mosquitto_connect_callback_set(pClient->pMosquitto, 	FTM_MQTT_CLIENT_connectCB);
+		mosquitto_disconnect_callback_set(pClient->pMosquitto, 	FTM_MQTT_CLIENT_disconnectCB);
+		mosquitto_publish_callback_set(pClient->pMosquitto,  	FTM_MQTT_CLIENT_publishCB);
+		mosquitto_subscribe_callback_set(pClient->pMosquitto,  	FTM_MQTT_CLIENT_subscribeCB);
+		mosquitto_message_callback_set(pClient->pMosquitto,  	FTM_MQTT_CLIENT_messageCB);
 
 		pthread_create(&pClient->xConnector, NULL, FTM_MQTT_CLIENT_connector, pClient);
 
 		while(!pClient->bStop)
 		{
-			usleep(1000);
+			FTNM_MSG_PTR	pMsg;
+
+			xRet = FTNM_MSGQ_timedPop(pClient->pMsgQ, 1000000, &pMsg);
+			if (xRet == FTM_RET_OK)
+			{
+				FTNM_MSG_destroy(&pMsg);
+			}
+			else
+			{
+				usleep(1000);
+			}
 		}
 
 		pthread_join(pClient->xConnector, NULL);
 
-	}
+		TRACE("MQTT CLIENT[%s] stopped.\n", pClient->xConfig.pClientID);
 
-	if (pClient->pMosquitto != NULL)
-	{
 		mosquitto_destroy(pClient->pMosquitto);
 		pClient->pMosquitto = NULL;
+		
 	}
-
-	mosquitto_lib_cleanup();
-
-	TRACE("CLIENT main stopped.\n");
+	else
+	{
+		ERROR("Can't create mosquitto!\n");	
+	}
 
 	return 0;
 }
@@ -242,164 +394,28 @@ FTM_VOID_PTR FTM_MQTT_CLIENT_connector(FTM_VOID_PTR pData)
 	ASSERT(pData != NULL);
 
 	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pData;
-	FTM_INT	nRet;
 
-	pClient->bStop = FTM_FALSE;
-
-	nRet = mosquitto_connect_async(pClient->pMosquitto, pClient->xConfig.xBroker.pHost, pClient->xConfig.xBroker.usPort, 60);
-	TRACE("MQTT client is connected async[%d].\n", nRet);
-
+	mosquitto_connect_async(pClient->pMosquitto, pClient->xConfig.xBroker.pHost, pClient->xConfig.xBroker.usPort, 60);
 	mosquitto_loop_start(pClient->pMosquitto);
+	FTM_TIMER_init(&pClient->xReconnectionTimer, pClient->xConfig.ulReconnectionTime * 1000000);
 
-	TRACE("%s[%d]\n", __func__, __LINE__);
 	while(!pClient->bStop)
 	{
-		if(!pClient->bStop && nRet)
+		if(!pClient->bStop && !pClient->bConnected)
 		{
-	TRACE("%s[%d]\n", __func__, __LINE__);
-			sleep(pClient->xConfig.ulReconnectionTime);
-			//mosquitto_reconnect_async(pClient->pMosquitto);
+			if (FTM_TIMER_isExpired(&pClient->xReconnectionTimer))
+			{
+				TRACE("MQTT try reconnection !\n");
+				mosquitto_reconnect_async(pClient->pMosquitto);
+				FTM_TIMER_addSeconds(&pClient->xReconnectionTimer, pClient->xConfig.ulReconnectionTime);
+			}
 		}
+
+		usleep(1000);
 	}
-	TRACE("CLIENT connector was stopped.\n");
+	TRACE("MQTT connector was stopped.\n");
 
 	return 0;
-}
-
-FTM_VOID FTM_MQTT_CLIENT_connectCB
-(
-	struct mosquitto 	*mosq, 
-	void				*pObj, 
-	int					nResult
-)
-{
-	ASSERT(pObj != NULL);
-	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
-	FTM_CHAR			pTopic[FTM_MQTT_TOPIC_LEN + 1];
-
-	TRACE("MQTT is connected.\n");
-
-	sprintf(pTopic, "v/a/g/%s/res", pClient->pDID);
-	mosquitto_subscribe(pClient->pMosquitto, NULL, pTopic, 0);
-	sprintf(pTopic, "v/a/g/%s/req", pClient->pDID);
-	mosquitto_subscribe(pClient->pMosquitto, NULL, pTopic, 0);
-}
-
-FTM_VOID FTM_MQTT_CLIENT_disconnectCB
-(
-	struct mosquitto 	*mosq, 
-	void				*pObj, 
-	int					nResult
-)
-{
-	ASSERT(pObj != NULL);
-	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
-
-	TRACE("MQTT is disconnected.\n");
-}
-
-FTM_VOID FTM_MQTT_CLIENT_publishCB
-(
-	struct mosquitto 	*mosq, 
-	void				*pObj, 
-	int					nResult
-)
-{
-}
-
-FTM_VOID FTM_MQTT_CLIENT_messageCB
-(
-	struct mosquitto 	*mosq, 
-	void 				*pObj, 
-	const struct mosquitto_message *pMessage
-)
-{
-	ASSERT(pObj != NULL);
-
-	FTM_RET			xRet;
-	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
-	FTM_CHAR		pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
-	FTM_CHAR_PTR	pIDs[10];
-	FTM_INT			nIDs = 0;
-	
-	MESSAGE("TOPIC - %s\n", pMessage->topic);
-	MESSAGE("MESSAGE - %s\n", (FTM_CHAR_PTR)pMessage->payload);
-
-	memset(pTopic, 0, sizeof(pTopic));
-	strncpy(pTopic, pMessage->topic, FTM_MQTT_CLIENT_TOPIC_LENGTH);
-
-	FTM_MQTT_CLIENT_topicParser(pTopic, pIDs, 10, &nIDs);
-	if ((nIDs != 5) || (strcmp(pClient->pDID, pIDs[3]) != 0))
-	{
-		ERROR("Invalid Topic[%s]\n", pMessage->topic);
-		return;
-	}
-
-	if(strcmp(pIDs[4], "req") == 0)
-	{
-		FTNM_MSG_PTR pMsg;
-
-		xRet = FTM_MQTT_CLIENT_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR("Invalid message.\n");
-			return;
-		}
-
-		xRet = FTNM_MSGQ_push(pClient->pCTX->pMsgQ, pMsg);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_MEM_free(pMsg);
-			ERROR("Message queue push failed.\n");
-			return;
-		}
-	}
-}
-
-FTM_VOID FTM_MQTT_CLIENT_subscribeCB
-(
-	struct mosquitto 	*mosq, 
-	void				*pObj,
-	int					nMID, 
-	int					nQoS, 
-	const int			*pGrantedQoS
-)
-{
-	ASSERT(pObj != NULL);
-	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
-}
-
-FTM_RET	FTM_MQTT_CLIENT_topicParser
-(
-	FTM_CHAR_PTR	pTopic,
-	FTM_CHAR_PTR	pArgv[],
-	FTM_INT			nMaxArgc,
-	FTM_INT_PTR		pnArgc
-)
-{
-	ASSERT(pTopic != NULL);
-	ASSERT(pArgv != NULL);
-	ASSERT(pnArgc != NULL);
-
-	FTM_CHAR_PTR	pPointer;
-	FTM_CHAR_PTR	pToken;
-	FTM_INT			nArgc = 0;
-
-	pPointer = pTopic;
-
-	while((pToken = strtok(pPointer, "/")) != NULL)
-	{
-		pArgv[nArgc++] = pToken;
-		if (nMaxArgc <= nArgc)
-		{
-			break;
-		}
-		pPointer = pPointer + strlen(pToken) + 1;
-	}
-
-	*pnArgc = nArgc;
-
-	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_MQTT_CLIENT_publishEPData
@@ -410,23 +426,19 @@ FTM_RET	FTM_MQTT_CLIENT_publishEPData
 )
 {
 	ASSERT(pClient != NULL);
+	ASSERT(pData != NULL);
 
-	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
-	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
-	FTM_ULONG	ulMessageLen = 0;
-	FTM_CHAR	pValue[32];
-
-	FTM_EP_DATA_snprint(pValue, sizeof(pValue), pData);
-
-	sprintf(pTopic, "v/s/g/%s/s/%08lx", pClient->pDID, xEPID);
-	ulMessageLen += sprintf(&pMessage[ulMessageLen], "{");
-	ulMessageLen += sprintf(&pMessage[ulMessageLen], "'id': '%08lx',", xEPID);
-	ulMessageLen += sprintf(&pMessage[ulMessageLen], "'value': '%s',", pValue);
-	ulMessageLen += sprintf(&pMessage[ulMessageLen], "'time': %lu", pData->ulTime);
-	ulMessageLen += sprintf(&pMessage[ulMessageLen], "}" );
-
-	TRACE("MESSAGE : %s\n", pMessage);
-	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+	switch(pData->xType)
+	{
+	case	FTM_EP_DATA_TYPE_INT:	
+		return	FTM_MQTT_CLIENT_TPGW_publishEPDataINT(pClient, xEPID, pData->ulTime, pData->xValue.nValue, pData->xValue.nValue, 1, pData->xValue.nValue, pData->xValue.nValue);
+	case	FTM_EP_DATA_TYPE_ULONG:	
+		return	FTM_MQTT_CLIENT_TPGW_publishEPDataULONG(pClient, xEPID, pData->ulTime, pData->xValue.ulValue, pData->xValue.ulValue, 1, pData->xValue.ulValue, pData->xValue.ulValue);
+	case	FTM_EP_DATA_TYPE_FLOAT:	
+		return	FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT(pClient, xEPID, pData->ulTime, pData->xValue.fValue, pData->xValue.fValue, 1, pData->xValue.fValue, pData->xValue.fValue);
+	case	FTM_EP_DATA_TYPE_BOOL:	
+		return	FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL(pClient,xEPID,  pData->ulTime, pData->xValue.bValue);
+	}
 
 	return	FTM_RET_OK;
 }
@@ -471,7 +483,244 @@ struct
 	}
 };
 
-FTM_RET	FTM_MQTT_CLIENT_requestMessageParser
+FTM_VOID FTM_MQTT_CLIENT_connectCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj, 
+	int					nResult
+)
+{
+	ASSERT(pObj != NULL);
+
+	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+
+	TRACE("MQTT is connected.\n");
+	pClient->bConnected = FTM_TRUE;
+
+	if (pCBSet[pClient->xConfig.ulCBSet].fConnect != NULL)
+	{
+		pCBSet[pClient->xConfig.ulCBSet].fConnect(mosq, pObj, nResult);
+	}
+}
+
+FTM_VOID FTM_MQTT_CLIENT_disconnectCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj, 
+	int					nResult
+)
+{
+	ASSERT(pObj != NULL);
+
+	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+
+	TRACE("MQTT is disconnected.\n");
+	if (pCBSet[pClient->xConfig.ulCBSet].fDisconnect != NULL)
+	{
+		pCBSet[pClient->xConfig.ulCBSet].fDisconnect(mosq, pObj, nResult);
+	}
+
+	FTM_TIMER_init(&pClient->xReconnectionTimer, 0);
+	FTM_TIMER_addSeconds(&pClient->xReconnectionTimer, pClient->xConfig.ulReconnectionTime);
+
+	pClient->bConnected = FTM_FALSE;
+
+}
+
+FTM_VOID FTM_MQTT_CLIENT_publishCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj, 
+	int					nResult
+)
+{
+	ASSERT(pObj != NULL);
+
+	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+
+	TRACE("MQTT published.\n");
+	if (pCBSet[pClient->xConfig.ulCBSet].fPublish != NULL)
+	{
+		pCBSet[pClient->xConfig.ulCBSet].fPublish(mosq, pObj, nResult);
+	}
+}
+
+FTM_VOID FTM_MQTT_CLIENT_messageCB
+(
+	struct mosquitto 	*mosq, 
+	void 				*pObj, 
+	const struct mosquitto_message *pMessage
+)
+{
+	ASSERT(pObj != NULL);
+
+	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+
+	TRACE("MQTT received message.\n");
+	if (pCBSet[pClient->xConfig.ulCBSet].fMessage != NULL)
+	{
+		pCBSet[pClient->xConfig.ulCBSet].fMessage(mosq, pObj, pMessage);
+	}
+}
+
+FTM_VOID FTM_MQTT_CLIENT_subscribeCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj,
+	int					nMID, 
+	int					nQoS, 
+	const int			*pGrantedQoS
+)
+{
+	ASSERT(pObj != NULL);
+
+	TRACE("MQTT subscribe.\n");
+	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+
+	if (pCBSet[pClient->xConfig.ulCBSet].fSubscribe != NULL)
+	{
+		pCBSet[pClient->xConfig.ulCBSet].fSubscribe(mosq, pObj, nMID, nQoS, pGrantedQoS);
+	}
+}
+
+
+/**************************************************************
+ * Futuretek MQTT interface
+ **************************************************************/
+FTM_VOID FTM_MQTT_CLIENT_FT_connectCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj, 
+	int					nResult
+)
+{
+	ASSERT(pObj != NULL);
+	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	FTM_CHAR			pTopic[FTM_MQTT_TOPIC_LEN + 1];
+
+	TRACE("MQTT is connected.\n");
+
+	sprintf(pTopic, "v/a/g/%s/res", pClient->pDID);
+	mosquitto_subscribe(pClient->pMosquitto, NULL, pTopic, 0);
+	sprintf(pTopic, "v/a/g/%s/req", pClient->pDID);
+	mosquitto_subscribe(pClient->pMosquitto, NULL, pTopic, 0);
+}
+
+FTM_VOID FTM_MQTT_CLIENT_FT_disconnectCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj, 
+	int					nResult
+)
+{
+	ASSERT(pObj != NULL);
+	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+
+	TRACE("MQTT is disconnected.\n");
+}
+
+FTM_VOID FTM_MQTT_CLIENT_FT_publishCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj, 
+	int					nResult
+)
+{
+}
+
+FTM_VOID FTM_MQTT_CLIENT_FT_messageCB
+(
+	struct mosquitto 	*mosq, 
+	void 				*pObj, 
+	const struct mosquitto_message *pMessage
+)
+{
+	ASSERT(pObj != NULL);
+
+	FTM_RET			xRet;
+	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	FTM_CHAR		pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR_PTR	pIDs[10];
+	FTM_INT			nIDs = 0;
+	
+	memset(pTopic, 0, sizeof(pTopic));
+	strncpy(pTopic, pMessage->topic, FTM_MQTT_CLIENT_TOPIC_LENGTH);
+
+	FTM_MQTT_CLIENT_FT_topicParser(pTopic, pIDs, 10, &nIDs);
+	if ((nIDs != 5) || (strcmp(pClient->pDID, pIDs[3]) != 0))
+	{
+		ERROR("Invalid Topic[%s]\n", pMessage->topic);
+		return;
+	}
+
+	if(strcmp(pIDs[4], "req") == 0)
+	{
+		FTNM_MSG_PTR pMsg;
+
+		xRet = FTM_MQTT_CLIENT_FT_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Invalid message.\n");
+			return;
+		}
+
+		xRet = FTNM_MSGQ_push(pClient->pCTX->pMsgQ, pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			FTM_MEM_free(pMsg);
+			ERROR("Message queue push failed.\n");
+			return;
+		}
+	}
+}
+
+FTM_VOID FTM_MQTT_CLIENT_FT_subscribeCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj,
+	int					nMID, 
+	int					nQoS, 
+	const int			*pGrantedQoS
+)
+{
+	ASSERT(pObj != NULL);
+	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_FT_topicParser
+(
+	FTM_CHAR_PTR	pTopic,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_INT			nMaxArgc,
+	FTM_INT_PTR		pnArgc
+)
+{
+	ASSERT(pTopic != NULL);
+	ASSERT(pArgv != NULL);
+	ASSERT(pnArgc != NULL);
+
+	FTM_CHAR_PTR	pPointer;
+	FTM_CHAR_PTR	pToken;
+	FTM_INT			nArgc = 0;
+
+	pPointer = pTopic;
+
+	while((pToken = strtok(pPointer, "/")) != NULL)
+	{
+		pArgv[nArgc++] = pToken;
+		if (nMaxArgc <= nArgc)
+		{
+			break;
+		}
+		pPointer = pPointer + strlen(pToken) + 1;
+	}
+
+	*pnArgc = nArgc;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_FT_requestMessageParser
 (
 	FTM_CHAR_PTR		pMessage,
 	FTNM_MSG_PTR _PTR_	ppMsg
@@ -540,3 +789,527 @@ error:
 	return	FTM_RET_MQTT_INVALID_MESSAGE;
 }
 
+FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataINT
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_ULONG 			ulTime, 
+	FTM_INT 			nValue, 
+	FTM_INT 			nAverage, 
+	FTM_INT 			nCount, 
+	FTM_INT 			nMax, 
+	FTM_INT 			nMin
+)
+{
+	ASSERT(pClient != NULL);
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, nValue);
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataULONG
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_ULONG 			ulTime, 
+	FTM_ULONG 			ulValue, 
+	FTM_ULONG 			ulAverage, 
+	FTM_INT 			nCount, 
+	FTM_ULONG 			ulMax, 
+	FTM_ULONG 			ulMin
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%lu]", ulTime, ulValue);
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataFLOAT
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_ULONG 			ulTime, 
+	FTM_FLOAT			fValue,
+	FTM_FLOAT 			fAverage, 
+	FTM_INT 			nCount, 
+	FTM_FLOAT 			fMax, 
+	FTM_FLOAT 			fMin
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%5.3f]", ulTime, fValue);
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataBOOL
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_ULONG 			ulTime, 
+	FTM_BOOL 			bValue
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, bValue);
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
+}
+
+/***********************************************************************************
+ * Thing+Gateway MQTT interface
+ ***********************************************************************************/
+
+FTM_VOID FTM_MQTT_CLIENT_TPGW_connectCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj, 
+	int					nResult
+)
+{
+	ASSERT(pObj != NULL);
+	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	FTM_CHAR			pTopic[FTM_MQTT_TOPIC_LEN + 1];
+	FTM_CHAR			pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG			ulMessageLen = 0;
+
+	TRACE("MQTT is connected.\n");
+
+	sprintf(pTopic, "v/a/g/%s/mqtt/status", pClient->pDID);
+	ulMessageLen = sprintf(pMessage, "on");
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	sprintf(pTopic, "v/a/g/%s/res", pClient->pDID);
+	mosquitto_subscribe(pClient->pMosquitto, NULL, pTopic, 0);
+	sprintf(pTopic, "v/a/g/%s/req", pClient->pDID);
+	mosquitto_subscribe(pClient->pMosquitto, NULL, pTopic, 0);
+}
+
+FTM_VOID FTM_MQTT_CLIENT_TPGW_disconnectCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj, 
+	int					nResult
+)
+{
+	ASSERT(pObj != NULL);
+	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+
+	TRACE("MQTT is disconnected.\n");
+}
+
+FTM_VOID FTM_MQTT_CLIENT_TPGW_publishCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj, 
+	int					nResult
+)
+{
+}
+
+FTM_VOID FTM_MQTT_CLIENT_TPGW_messageCB
+(
+	struct mosquitto 	*mosq, 
+	void 				*pObj, 
+	const struct mosquitto_message *pMessage
+)
+{
+	ASSERT(pObj != NULL);
+
+	FTM_RET			xRet;
+	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	FTM_CHAR		pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR_PTR	pIDs[10];
+	FTM_INT			nIDs = 0;
+	
+	INFO("TOPIC - %s\n", pMessage->topic);
+	INFO("MESSAGE - %s\n", (FTM_CHAR_PTR)pMessage->payload);
+
+	memset(pTopic, 0, sizeof(pTopic));
+	strncpy(pTopic, pMessage->topic, FTM_MQTT_CLIENT_TOPIC_LENGTH);
+
+	FTM_MQTT_CLIENT_TPGW_topicParser(pTopic, pIDs, 10, &nIDs);
+	if ((nIDs != 5) || (strcmp(pClient->pDID, pIDs[3]) != 0))
+	{
+		ERROR("Invalid Topic[%s]\n", pMessage->topic);
+		return;
+	}
+
+	if(strcmp(pIDs[4], "req") == 0)
+	{
+		FTNM_MSG_PTR pMsg;
+
+		xRet = FTM_MQTT_CLIENT_TPGW_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Invalid message.\n");
+			return;
+		}
+
+		xRet = FTNM_MSGQ_push(pClient->pCTX->pMsgQ, pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			FTM_MEM_free(pMsg);
+			ERROR("Message queue push failed.\n");
+			return;
+		}
+	}
+}
+
+FTM_VOID FTM_MQTT_CLIENT_TPGW_subscribeCB
+(
+	struct mosquitto 	*mosq, 
+	void				*pObj,
+	int					nMID, 
+	int					nQoS, 
+	const int			*pGrantedQoS
+)
+{
+	ASSERT(pObj != NULL);
+	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_TPGW_topicParser
+(
+	FTM_CHAR_PTR	pTopic,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_INT			nMaxArgc,
+	FTM_INT_PTR		pnArgc
+)
+{
+	ASSERT(pTopic != NULL);
+	ASSERT(pArgv != NULL);
+	ASSERT(pnArgc != NULL);
+
+	FTM_CHAR_PTR	pPointer;
+	FTM_CHAR_PTR	pToken;
+	FTM_INT			nArgc = 0;
+
+	pPointer = pTopic;
+
+	while((pToken = strtok(pPointer, "/")) != NULL)
+	{
+		pArgv[nArgc++] = pToken;
+		if (nMaxArgc <= nArgc)
+		{
+			break;
+		}
+		pPointer = pPointer + strlen(pToken) + 1;
+	}
+
+	*pnArgc = nArgc;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
+(
+	FTM_CHAR_PTR		pMessage,
+	FTNM_MSG_PTR _PTR_	ppMsg
+)
+{
+	FTM_RET			xRet;
+	FTNM_MSG		xMsg;
+	FTM_INT			i;
+
+	memset(&xMsg, 0, sizeof(xMsg));
+
+	const nx_json * pJSON = nx_json_parse((FTM_CHAR_PTR)pMessage, nx_json_unicode_to_utf8);
+	if (pJSON == NULL)
+	{
+		ERROR("Message is not json format.[%s]\n", pMessage);
+		return	FTM_RET_MQTT_INVALID_MESSAGE;
+	}
+
+	const nx_json *pItem = nx_json_get(pJSON, "id");
+	if ((pItem == NULL) || (pItem->type != NX_JSON_STRING))
+	{
+		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+		goto error;
+	}	
+	strncpy(xMsg.xParams.xMQTTReq.pReqID, pItem->text_value,sizeof(xMsg.xParams.xMQTTReq.pReqID) - 1);
+
+	pItem = nx_json_get(pJSON, "method");
+	if ((pItem == NULL) || (pItem->type != NX_JSON_STRING))
+	{
+		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+		goto error;
+	}	
+
+	for(i = 0 ; i < sizeof(xReqMethod) / sizeof(xReqMethod[0]) ; i++)
+	{
+		if (strcmp(xReqMethod[i].pString, pItem->text_value) == 0)
+		{
+			xMsg.xParams.xMQTTReq.ulMethod = xReqMethod[i].xMethod;
+			break;
+		}
+	}
+	
+	pItem = nx_json_get(pJSON, "time");
+	if (pItem == NULL)
+	{
+		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+		goto error;
+	}	
+
+	switch(xMsg.xParams.xMQTTReq.ulMethod)
+	{
+	case	FTM_MQTT_METHOD_REQ_TIME_SYNC:
+		{
+			const nx_json *pTime = nx_json_get(pJSON, "time");
+			if ((pTime == NULL) || (pTime->type != NX_JSON_INTEGER))
+			{
+				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+				goto error;
+			}	
+			
+			xMsg.xParams.xMQTTReq.xParams.xTimeSync.ulTime = pTime->int_value;
+		}
+		break;
+
+	case	FTM_MQTT_METHOD_REQ_CONTROL_ACTUATOR:
+		{
+			const nx_json *pParams = nx_json_get(pJSON, "params");
+			if (pParams== NULL)
+			{
+				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+				goto error;
+			}	
+
+			const nx_json *pID =  nx_json_get(pParams, "id");
+			if ((pID == NULL) || (pID->type != NX_JSON_STRING))
+			{
+				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+				goto error;
+			}
+			strncpy(xMsg.xParams.xMQTTReq.xParams.xControlActuator.pID, pID->text_value, sizeof(xMsg.xParams.xMQTTReq.xParams.xControlActuator.pID) - 1);
+
+			const nx_json *pCMD = nx_json_get(pParams, "cmd");
+			if ((pCMD == NULL) || (pCMD->type != NX_JSON_STRING))
+			{
+				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+				goto error;
+			}
+
+			if (strcasecmp(pCMD->text_value, "on") == 0)
+			{
+				xMsg.xParams.xMQTTReq.xParams.xControlActuator.xCmd = FTNM_MSG_MQTT_REQ_CMD_ON;
+			}
+			else if (strcasecmp(pCMD->text_value, "off") == 0)
+			{
+				xMsg.xParams.xMQTTReq.xParams.xControlActuator.xCmd = FTNM_MSG_MQTT_REQ_CMD_OFF;
+			}
+			else if (strcasecmp(pCMD->text_value, "blink") == 0)
+			{
+				xMsg.xParams.xMQTTReq.xParams.xControlActuator.xCmd = FTNM_MSG_MQTT_REQ_CMD_BLINK;
+			}
+			else
+			{
+				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+				goto error;
+			}
+
+			const nx_json *pOptions = nx_json_get(pParams, "options");
+			if (pOptions != NULL)
+			{
+				if (pOptions->type != NX_JSON_INTEGER) 
+				{
+					xMsg.xParams.xMQTTReq.xParams.xControlActuator.xOptions.ulDuration = pOptions->int_value;
+				}
+				else
+				{
+					xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+					goto error;
+				}
+			}	
+		}
+		break;
+
+	case	FTM_MQTT_METHOD_REQ_SET_PROPERTY:
+		{
+		}
+		break;
+
+	case	FTM_MQTT_METHOD_REQ_POWER_OFF:
+		{
+		}
+		break;
+
+	case	FTM_MQTT_METHOD_REQ_REBOOT:
+		{
+		}
+		break;
+
+	case	FTM_MQTT_METHOD_REQ_RESTART:
+		{
+		}
+		break;
+
+	case	FTM_MQTT_METHOD_REQ_SW_UPDATE:
+		{
+		}
+		break;
+
+	case	FTM_MQTT_METHOD_REQ_SW_INFO:
+		{
+		}
+		break;
+	}
+
+	xMsg.xParams.xMQTTReq.ulTime = pItem->int_value;
+	xMsg.xType = FTNM_MSG_TYPE_MQTT_REQ;
+
+	xRet = FTNM_MSG_create(ppMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Not enough memory!\n");
+		return	xRet;	
+	}
+
+	memcpy(*ppMsg, &xMsg, sizeof(xMsg));
+
+error:
+
+	nx_json_free(pJSON);
+
+	return	xRet;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataINT
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_ULONG 			ulTime, 
+	FTM_INT 			nValue, 
+	FTM_INT 			nAverage, 
+	FTM_INT 			nCount, 
+	FTM_INT 			nMax, 
+	FTM_INT 			nMin
+)
+{
+	ASSERT(pClient != NULL);
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, nValue);
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataULONG
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_ULONG 			ulTime, 
+	FTM_ULONG 			ulValue, 
+	FTM_ULONG 			ulAverage, 
+	FTM_INT 			nCount, 
+	FTM_ULONG 			ulMax, 
+	FTM_ULONG 			ulMin
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%lu]", ulTime, ulValue);
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_ULONG 			ulTime, 
+	FTM_FLOAT			fValue,
+	FTM_FLOAT 			fAverage, 
+	FTM_INT 			nCount, 
+	FTM_FLOAT 			fMax, 
+	FTM_FLOAT 			fMin
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%5.3f]", ulTime, fValue);
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_ULONG 			ulTime, 
+	FTM_BOOL 			bValue
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, bValue);
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
+}

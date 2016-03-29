@@ -707,12 +707,6 @@ FTM_RET	FTDMS_EP_DATA_get
 	FTDM_RESP_EP_DATA_GET_PARAMS_PTR	pResp
 )
 {
-	TRACE("Request Frame\n");
-	TRACE("%16s : %08lx\n", "Command", pReq->xCmd);
-	TRACE("%16s : %08lx\n", "Length", pReq->nLen);
-	TRACE("%16s : %08lx\n", "EPID", pReq->xEPID);
-	TRACE("%16s : %08lx\n", "Start Index", pReq->nStartIndex);
-
 	pResp->xCmd = pReq->xCmd;
 	pResp->nCount = pReq->nCount;
 	pResp->nRet = FTDM_EP_DATA_get(
@@ -739,13 +733,6 @@ FTM_RET	FTDMS_EP_DATA_getWithTime
 	FTDM_RESP_EP_DATA_GET_WITH_TIME_PARAMS_PTR	pResp
 )
 {
-	TRACE("Request Frame\n");
-	TRACE("%16s : %08lx\n", "Command", pReq->xCmd);
-	TRACE("%16s : %08lx\n", "Length", pReq->nLen);
-	TRACE("%16s : %08lx\n", "EPID", pReq->xEPID);
-	TRACE("%16s : %08lx\n", "Begin Time", pReq->nBeginTime);
-	TRACE("%16s : %08lx\n", "End Time", pReq->nEndTime);
-
 	pResp->xCmd = pReq->xCmd;
 	pResp->nCount = pReq->nCount;
 	pResp->nRet = FTDM_EP_DATA_getWithTime(

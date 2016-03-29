@@ -168,6 +168,9 @@ FTM_CHAR_PTR	FTM_ACTION_typeString(FTM_ACTION_TYPE xType)
 	switch(xType)
 	{
 	case	FTM_ACTION_TYPE_SET: 	return	"SET";
+	case	FTM_ACTION_TYPE_SMS:	return	"SMS";
+	case	FTM_ACTION_TYPE_PUSH:	return	"PUSH";
+	case	FTM_ACTION_TYPE_MAIL:	return	"MAIL";
 	}
 
 	return	"UNKNOWN";

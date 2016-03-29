@@ -74,12 +74,18 @@ FTM_VOID	FTM_TRACE_packetDump
 #ifdef	TRACE_OFF
 #define	TRACE(format, ...) 
 #else
-#define	TRACE(format, ...) FTM_TRACE_out(FTM_TRACE_LEVEL_TRACE, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
+#define	TRACE(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_TRACE, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
 #endif
-#define	ERROR(format, ...) FTM_TRACE_out(FTM_TRACE_LEVEL_ERROR, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
-#endif
+
+#define	INFO(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_INFO, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
+#define	WARN(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_WARN, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
+#define	ERROR(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_ERROR, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
+#define	FATAL(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, format, ## __VA_ARGS__)
 
 #define	TRACE_ENTRY()	TRACE("ENTRY - %s\n", __func__)
 #define	TRACE_EXIT()	TRACE("EXIT - %s\n", __func__)
 
 FTM_RET	FTM_DEBUG_initSignals(FTM_VOID);
+
+#endif
+

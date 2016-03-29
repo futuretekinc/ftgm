@@ -1,4 +1,6 @@
 #include <unistd.h>
+#include <string.h>
+#include <time.h>
 #include "ftm_timer.h"
 #include "ftm_trace.h"
 
@@ -37,6 +39,19 @@ FTM_RET	FTM_TIMER_add(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
 
 	xTimeout.tv_sec = ulTimeout / 1000000;
 	xTimeout.tv_usec = ulTimeout % 1000000;
+
+	timeradd(&pTimer->xTime, &xTimeout, &pTimer->xTime);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_TIMER_addSeconds(FTM_TIMER_PTR pTimer, FTM_ULONG ulTimeout)
+{
+	ASSERT(pTimer != NULL);
+	struct timeval	xTimeout;
+
+	xTimeout.tv_sec = ulTimeout;
+	xTimeout.tv_usec = 0;
 
 	timeradd(&pTimer->xTime, &xTimeout, &pTimer->xTime);
 
@@ -101,6 +116,40 @@ FTM_RET FTM_TIMER_remain(FTM_TIMER_PTR pTimer, FTM_ULONG_PTR pulTime)
 	{
 		*pulTime = 0;	
 	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_CHAR_PTR	FTM_TIMER_toString
+(
+	FTM_TIMER_PTR	pTimer,
+	FTM_CHAR_PTR	pFormat
+)
+{
+	ASSERT(pTimer != NULL);
+
+	static	FTM_CHAR	pString[128];
+	struct	tm*			pTM;
+
+	pTM = localtime(&pTimer->xTime.tv_sec);
+	if (pFormat != NULL)
+	{
+		strftime(pString, sizeof(pString), pFormat, pTM);
+	}
+	else
+	{
+		strftime(pString, sizeof(pString), "%Y-%m-%d %H:%M:%S", pTM);
+	}
+
+	return	pString;
+}
+
+FTM_RET		FTM_TIMER_getTime(FTM_TIMER_PTR pTimer, FTM_ULONG_PTR pulTime)
+{
+	ASSERT(pTimer != NULL);
+	ASSERT(pulTime != NULL);
+	
+	*pulTime = pTimer->xTime.tv_sec;
 
 	return	FTM_RET_OK;
 }

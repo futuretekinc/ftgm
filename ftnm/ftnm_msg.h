@@ -6,16 +6,31 @@
 #define	FTNM_MSG_STRING_LENGTH	1024
 #define	FTNM_MSG_REQ_ID_LENGTH	32
 
+#if  1
+typedef	long long 	FTNM_MSG_TYPE, _PTR_ FTNM_MSG_TYPE_PTR;
+
+#define	FTNM_MSG_TYPE_QUIT 					(1 << 0)
+#define	FTNM_MSG_TYPE_SNMPTRAP				(1 << 1)
+#define	FTNM_MSG_TYPE_EP_CHANGED			(1 << 2)
+#define	FTNM_MSG_TYPE_EP_DATA_UPDATED		(1 << 3)
+#define	FTNM_MSG_TYPE_EP_DATA_SAVE_TO_DB	(1 << 4)
+#define	FTNM_MSG_TYPE_EP_DATA_TRANS			(1 << 5)
+#define	FTNM_MSG_TYPE_DMC_CONNECTED			(1 << 6)
+#define	FTNM_MSG_TYPE_DMC_DISCONNECTED		(1 << 7)
+#define	FTNM_MSG_TYPE_MQTT_REQ				(1 << 8)
+#else
 typedef	enum
 {
 	FTNM_MSG_TYPE_QUIT = 0,
 	FTNM_MSG_TYPE_SNMPTRAP,
 	FTNM_MSG_TYPE_EP_CHANGED,
 	FTNM_MSG_TYPE_EP_DATA_UPDATED,
+	FTNM_MSG_TYPE_EP_DATA_SAVE_TO_DB,
 	FTNM_MSG_TYPE_DMC_CONNECTED,
 	FTNM_MSG_TYPE_DMC_DISCONNECTED,
 	FTNM_MSG_TYPE_MQTT_REQ
 }	FTNM_MSG_TYPE, _PTR_ FTNM_MSG_TYPE_PTR;
+#endif
 
 typedef	struct
 {
@@ -34,11 +49,84 @@ typedef struct
 	FTM_EP_DATA	xData;
 }	FTNM_MSG_EP_DATA_UPDATED_PARAMS, _PTR_ FTNM_MSG_EP_DATA_UPDATED_PARAMS_PTR;
 
+typedef struct
+{
+	FTM_EP_ID	xEPID;
+	FTM_EP_DATA	xData;
+}	FTNM_MSG_EP_DATA_SAVE_TO_DB_PARAMS, _PTR_ FTNM_MSG_EP_DATA_SAVE_TO_DB_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_EP_ID	xEPID;
+	FTM_ULONG	nType;
+	FTM_ULONG	ulTime;
+	union
+	{
+		struct
+		{
+			FTM_INT		nValue;
+			FTM_INT		nAverage;
+			FTM_INT		nCount;
+			FTM_INT		nMax;
+			FTM_INT		nMin;
+		}	xINT;
+		struct
+		{
+			FTM_ULONG	ulValue;
+			FTM_ULONG	ulAverage;
+			FTM_INT		nCount;
+			FTM_ULONG	ulMax;
+			FTM_ULONG	ulMin;
+		}	xULONG;
+		struct
+		{
+			FTM_FLOAT	fValue;
+			FTM_FLOAT	fAverage;
+			FTM_INT		nCount;
+			FTM_FLOAT	fMax;
+			FTM_FLOAT	fMin;
+		}	xFLOAT;
+		struct
+		{
+			FTM_BOOL	bValue;
+		}	xBOOL;
+	}	xValue;
+}	FTNM_MSG_EP_DATA_TRANS_PARAMS, _PTR_ FTNM_MSG_EP_DATA_TRANS_PARAMS_PTR;
+
+typedef	enum
+{
+	FTNM_MSG_MQTT_REQ_CMD_OFF,
+	FTNM_MSG_MQTT_REQ_CMD_ON,
+	FTNM_MSG_MQTT_REQ_CMD_BLINK
+}	FTNM_MSG_MQTT_REQ_CMD, _PTR_ FTNM_MSG_MATT_REQ_CMD_PTR;
+	
 typedef	struct
 {
 	FTM_CHAR		pReqID[FTNM_MSG_REQ_ID_LENGTH+1];
 	FTM_ULONG		ulMethod;
 	FTM_ULONG		ulTime;
+	union
+	{
+		struct
+		{
+			FTM_ULONG		ulTime;
+		}	xTimeSync;
+
+		struct
+		{
+			FTM_ULONG		ulReportInterval;
+		}	xSetProperty;
+			
+		struct
+		{
+			FTM_CHAR				pID[32];
+			FTNM_MSG_MQTT_REQ_CMD	xCmd;
+			struct
+			{
+				FTM_ULONG	ulDuration;	
+			} xOptions;
+		}	xControlActuator;
+	}	xParams;
 }	FTNM_MSG_MQTT_REQ_PARAMS, _PTR_ FTNM_MSG_MQTT_REQ_PARAMS_PTR;
 
 typedef	struct
@@ -46,10 +134,12 @@ typedef	struct
 	FTNM_MSG_TYPE	xType;
 	union
 	{
-		FTNM_MSG_SNMPTRAP_PARAMS		xSNMPTrap;
-		FTNM_MSG_EP_CHANGED_PARAMS		xEPChanged;
-		FTNM_MSG_EP_DATA_UPDATED_PARAMS	xEPDataUpdated;
-		FTNM_MSG_MQTT_REQ_PARAMS		xMQTTReq;
+		FTNM_MSG_SNMPTRAP_PARAMS			xSNMPTrap;
+		FTNM_MSG_EP_CHANGED_PARAMS			xEPChanged;
+		FTNM_MSG_EP_DATA_UPDATED_PARAMS		xEPDataUpdated;
+		FTNM_MSG_MQTT_REQ_PARAMS			xMQTTReq;
+		FTNM_MSG_EP_DATA_SAVE_TO_DB_PARAMS	xEPDataSaveToDB;
+		FTNM_MSG_EP_DATA_TRANS_PARAMS		xEPDataTrans;
 	}	xParams;
 } FTNM_MSG, _PTR_ FTNM_MSG_PTR;
 
@@ -59,7 +149,7 @@ typedef struct
 } FTNM_MSG_QUEUE, _PTR_ FTNM_MSG_QUEUE_PTR;
 
 FTM_RET	FTNM_MSG_create(FTNM_MSG_PTR _PTR_ ppMsg);
-FTM_RET	FTNM_MSG_destroy(FTNM_MSG_PTR pMsg);
+FTM_RET	FTNM_MSG_destroy(FTNM_MSG_PTR _PTR_ ppMsg);
 
 FTM_RET FTNM_MSGQ_create(FTNM_MSG_QUEUE_PTR _PTR_ ppMsgQ);
 FTM_RET FTNM_MSGQ_destroy(FTNM_MSG_QUEUE_PTR _PTR_ ppMsgQ);

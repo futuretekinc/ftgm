@@ -20,6 +20,8 @@
 #define	FTM_MQTT_METHOD_REQ_SW_UPDATE				7
 #define	FTM_MQTT_METHOD_REQ_SW_INFO					8
 
+#define	FTM_MQTT_CLIENT_DEFAULT_CB_SET				1
+
 typedef	struct FTNM_CONTEXT_STRUCT _PTR_ FTNM_CONTEXT_PTR;
 
 typedef	struct
@@ -33,6 +35,7 @@ typedef	struct
 	}	xBroker;
 
 	FTM_ULONG	ulReconnectionTime;
+	FTM_ULONG	ulCBSet;
 }	FTM_MQTT_CLIENT_CONFIG, _PTR_ FTM_MQTT_CLIENT_CONFIG_PTR;
 
 typedef	struct
@@ -40,13 +43,16 @@ typedef	struct
 	FTM_MQTT_CLIENT_CONFIG	xConfig;
 
 	FTNM_CONTEXT_PTR		pCTX;
+
 	FTM_BOOL				bStop;
+	FTM_BOOL				bConnected;
 	pthread_t				xMain;
 	pthread_t				xConnector;
+	FTM_TIMER				xReconnectionTimer;
 
 	FTM_CHAR				pDID[FTM_DID_LEN + 1];
 	struct mosquitto		*pMosquitto;
-	FTM_MSG_QUEUE_PTR		pMsgQ;
+	FTNM_MSG_QUEUE_PTR		pMsgQ;
 
 	FTNM_SERVICE_ID			xServiceID;
 	FTNM_SERVICE_CALLBACK	fServiceCB;

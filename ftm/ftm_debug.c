@@ -37,6 +37,7 @@ static FTM_TRACE_CFG	_xConfig =
 	},
 };
 
+static FTM_BOOL	bShowIndex = FTM_FALSE;
 
 FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 {
@@ -336,13 +337,24 @@ FTM_RET	FTM_TRACE_out
 
 	va_start ( argptr, format );           
 	xTime = time(NULL);
-	strcpy(szTime, ctime(&xTime));
-	szTime[strlen(szTime)-1] = '\0';
+
+	strftime(szTime, sizeof(szTime), "%Y-%m-%d %H:%M:%S", localtime(&xTime));
+
+	if (bShowIndex)
+	{
+		nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%4d : ", ++nOutputLine);
+	}
 
 	if (bTimeInfo)
 	{
-		nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%4d : [%s] - ", ++nOutputLine, szTime);
+		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s]", szTime);
 	}
+
+	if (ulLevel != FTM_TRACE_LEVEL_MESSAGE)
+	{
+		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s] - ", FTM_TRACE_levelString(ulLevel));
+	}
+
 	if (bLine && (pFunction != NULL))
 	{
 		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%32s[%4d] - ", pFunction, nLine);
@@ -417,13 +429,13 @@ struct
 	FTM_CHAR_PTR	pName;
 } FTM_levelStrings[] =
 {
-	{ FTM_TRACE_LEVEL_ALL, "ALL" },
-	{ FTM_TRACE_LEVEL_TRACE, "TRACE"},
-	{ FTM_TRACE_LEVEL_DEBUG, "DEBUG"},
-	{ FTM_TRACE_LEVEL_INFO, "INFO"},
-	{ FTM_TRACE_LEVEL_WARN, "WARN"}, 
-	{ FTM_TRACE_LEVEL_ERROR, "ERROR"},
-	{ FTM_TRACE_LEVEL_FATAL, "FATAL"},
+	{ FTM_TRACE_LEVEL_ALL, 		"ALL" },
+	{ FTM_TRACE_LEVEL_TRACE, 	"TRACE"},
+	{ FTM_TRACE_LEVEL_DEBUG, 	"DEBUG"},
+	{ FTM_TRACE_LEVEL_INFO, 	"INFO"},
+	{ FTM_TRACE_LEVEL_WARN, 	"WARN"}, 
+	{ FTM_TRACE_LEVEL_ERROR, 	"ERROR"},
+	{ FTM_TRACE_LEVEL_FATAL, 	"FATAL"},
 };
 
 FTM_CHAR_PTR	FTM_TRACE_levelString(FTM_ULONG ulLevel)
