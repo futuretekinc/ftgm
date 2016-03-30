@@ -6,14 +6,14 @@ include ../Makefile.in
 CLIENT=ftm_om_client
 CLIENT_SRCS=ftm_om_client_main.c ftm_om_client_config.c
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_LDFLAGS=$(LDFLAGS) -lftm_omc -lftm -lconfig -lpthread 
+CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lconfig -lpthread 
 
-FTNM=ftm_om
+FTNM=ftom
 FTNM_SRCS=ftm_om_main.c ftm_om.c
 FTNM_OBJS=$(FTNM_SRCS:.c=.o)
-FTNM_LDFLAGS=$(LDFLAGS) -lftm_om -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -ldl -lnetsnmpagent -lnetsnmp -lmosquitto
+FTNM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -ldl -lnetsnmpagent -lnetsnmp -lmosquitto
 
-LIB_FTNM=libftm_om
+LIB_FTNM=libftom
 LIB_FTNM_INCS= ftm_om.h 
 LIB_FTNM_SRCS= ftm_om.c \
 			   ftm_om_msg.c \
@@ -37,7 +37,7 @@ LIB_FTNM_SRCS= ftm_om.c \
 
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)
 
-LIB_FTNMC=libftm_omc
+LIB_FTNMC=libftomc
 LIB_FTNMC_INCS= ftm_om_client.h 
 LIB_FTNMC_SRCS= ftm_om_client.c 
 LIB_FTNMC_OBJS=$(LIB_FTNMC_SRCS:.c=.o)

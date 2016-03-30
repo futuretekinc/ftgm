@@ -674,6 +674,7 @@ FTM_VOID_PTR FTM_OM_EP_process(FTM_VOID_PTR pData)
 	} 
 
 	pEP->xState = FTM_EP_STATE_STOP;
+	TRACE_EXIT();
 
 	return	0;
 }

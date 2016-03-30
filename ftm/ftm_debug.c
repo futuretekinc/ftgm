@@ -292,6 +292,7 @@ FTM_RET	FTM_TRACE_out
 	const char *	pFunction,
 	int				nLine,
 	int				bTimeInfo,
+	int				bFunctionInfo,
 	const char *	format, 
 	...
 )
@@ -355,7 +356,7 @@ FTM_RET	FTM_TRACE_out
 		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s] - ", FTM_TRACE_levelString(ulLevel));
 	}
 
-	if (bLine && (pFunction != NULL))
+	if (bFunctionInfo || (bLine && (pFunction != NULL)))
 	{
 		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%32s[%4d] - ", pFunction, nLine);
 	}
