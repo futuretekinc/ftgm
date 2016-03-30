@@ -1,5 +1,7 @@
 #include <string.h>
 #include <unistd.h>
+#include "ftnm.h"
+#include "ftnm_msg.h"
 #include "ftnm_rule.h"
 #include "ftnm_trigger.h"
 #include "ftnm_action.h"
@@ -11,12 +13,14 @@
 #endif
 
 static FTM_VOID_PTR FTNM_RULEM_process(FTM_VOID_PTR pData);
+static FTM_RET	FTNM_RULE_activate(FTNM_RULE_PTR pRule);
+static FTM_RET	FTNM_RULE_deactivate(FTNM_RULE_PTR pRule);
 
 static FTM_BOOL	bInit = FTM_FALSE;
 static FTM_LIST	xList;
 static sem_t	xLock;
 
-FTM_RET	FTNM_RULEM_create(FTNM_RULEM_PTR _PTR_ ppRuleM)
+FTM_RET	FTNM_RULEM_create(FTNM_CONTEXT_PTR pCTX, FTNM_RULEM_PTR _PTR_ ppRuleM)
 {
 	ASSERT(ppRuleM != NULL);
 
@@ -45,7 +49,7 @@ FTM_RET	FTNM_RULEM_create(FTNM_RULEM_PTR _PTR_ ppRuleM)
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	xRet = FTNM_RULEM_init(pRuleM);
+	xRet = FTNM_RULEM_init(pCTX, pRuleM);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pRuleM);
@@ -93,7 +97,8 @@ FTM_RET	FTNM_RULEM_destroy(FTNM_RULEM_PTR _PTR_ ppRuleM)
 
 FTM_RET	FTNM_RULEM_init
 (
-	FTNM_RULEM_PTR pRuleM
+	FTNM_CONTEXT_PTR	pCTX,
+	FTNM_RULEM_PTR 		pRuleM
 )
 {
 	ASSERT(pRuleM != NULL);
@@ -103,6 +108,7 @@ FTM_RET	FTNM_RULEM_init
 
 	memset(pRuleM, 0, sizeof(FTNM_RULEM));
 
+	pRuleM->pCTX = pCTX;
 	xRet = FTM_MSGQ_create(&pRuleM->pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
@@ -242,8 +248,8 @@ FTM_RET	FTNM_RULEM_notifyChanged(FTM_TRIGGER_ID xTriggerID)
 				{
 					if (pRule->xInfo.xParams.pTriggers[i] == xTriggerID)
 					{
-						FTM_BOOL	bActive = FTM_TRUE;
-						FTM_INT		j;
+						FTM_BOOL		bActive = FTM_TRUE;
+						FTM_INT			j;
 		
 						for(j = 0 ; j < pRule->xInfo.xParams.ulTriggers; j++)
 						{
@@ -255,17 +261,15 @@ FTM_RET	FTNM_RULEM_notifyChanged(FTM_TRIGGER_ID xTriggerID)
 								break;
 							}
 						}
-	
-						if (!pRule->bActive && bActive)
+
+
+						if (bActive)
 						{
-							pRule->bActive = FTM_TRUE;
-							MESSAGE("RULE %d activated\n", pRule->xInfo.xID);	
+							FTNM_RULE_activate(pRule);
 						}
-						if (pRule->bActive && !bActive)
+						else
 						{
-							pRule->bActive = FTM_FALSE;
-							MESSAGE("RULE %d inactivated\n", pRule->xInfo.xID);	
-						
+							FTNM_RULE_deactivate(pRule);
 						}
 					}
 				}
@@ -308,6 +312,7 @@ FTM_RET	FTNM_RULEM_add(FTNM_RULEM_PTR pRuleM, FTM_RULE_PTR pInfo)
 	memcpy(&pRule->xInfo, pInfo, sizeof(FTM_RULE));
 	
 	FTM_LOCK_init(&pRule->xLock);
+	pRule->pRuleM = pRuleM;
 
 	xRet = FTM_LIST_append(pRuleM->pRuleList, pRule);
 	if (xRet != FTM_RET_OK)
@@ -364,6 +369,76 @@ FTM_RET	FTNM_RULEM_setActionM(FTNM_RULEM_PTR pRuleM, struct FTNM_ACTIONM_STRUCT 
 	ASSERT(pActionM != NULL);
 	
 	pRuleM->pActionM = pActionM;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_RULE_activate(FTNM_RULE_PTR pRule)
+{
+	ASSERT(pRule != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	if (!pRule->bActive)
+	{
+		pRule->bActive = FTM_TRUE;
+		MESSAGE("RULE %d activated\n", pRule->xInfo.xID);	
+	}
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message creation failed.\n");
+		return	xRet;
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_RULE;
+	pMsg->xParams.xRule.xRuleID 	= pRule->xInfo.xID;
+	pMsg->xParams.xRule.xRuleState 	= FTM_RULE_STATE_ACTIVATE;
+
+	xRet = FTNM_MSGQ_push(pRule->pRuleM->pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message send failed.\n");
+		FTNM_MSG_destroy(&pMsg);		
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_RULE_deactivate(FTNM_RULE_PTR pRule)
+{
+	ASSERT(pRule != NULL);
+
+	FTM_RET	xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	if (pRule->bActive)
+	{
+		pRule->bActive = FTM_FALSE;
+		MESSAGE("RULE %d inactivated\n", pRule->xInfo.xID);	
+	}
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message creation failed.\n");
+		return	xRet;
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_RULE;
+	pMsg->xParams.xRule.xRuleID 	= pRule->xInfo.xID;
+	pMsg->xParams.xRule.xRuleState 	= FTM_RULE_STATE_DEACTIVATE;
+
+	xRet = FTNM_MSGQ_push(pRule->pRuleM->pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message send failed.\n");
+		FTNM_MSG_destroy(&pMsg);		
+		return	xRet;
+	}
 
 	return	FTM_RET_OK;
 }

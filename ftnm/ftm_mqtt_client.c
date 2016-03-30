@@ -37,6 +37,7 @@ static FTM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
 		.fPublish 	= FTM_MQTT_CLIENT_TPGW_publishCB,
 		.fMessage 	= FTM_MQTT_CLIENT_TPGW_messageCB,
 		.fSubscribe = FTM_MQTT_CLIENT_TPGW_subscribeCB,
+		.fPublishEPData		= FTM_MQTT_CLIENT_TPGW_publishEPData,
 		.fPublishEPDataINT	= FTM_MQTT_CLIENT_TPGW_publishEPDataINT,
 		.fPublishEPDataULONG= FTM_MQTT_CLIENT_TPGW_publishEPDataULONG,
 		.fPublishEPDataFLOAT= FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT,
@@ -103,7 +104,7 @@ FTM_RET	FTM_MQTT_CLIENT_init(FTNM_CONTEXT_PTR pCTX, FTM_MQTT_CLIENT_PTR pClient)
 
 	pClient->pCTX = pCTX;
 
-	FTNM_getDID(pClient->pDID, FTM_DID_LEN);
+	FTNM_getDID(pCTX, pClient->pDID, FTM_DID_LEN);
 	strncpy(pClient->xConfig.pClientID, pClient->pDID, sizeof(pClient->xConfig.pClientID) - 1);
 	strcpy(pClient->xConfig.xBroker.pHost, FTM_MQTT_CLIENT_DEFAULT_BROKER);
 	pClient->xConfig.xBroker.usPort = FTM_MQTT_CLIENT_DEFAULT_PORT;
@@ -189,6 +190,15 @@ FTM_RET	FTM_MQTT_CLIENT_notify(FTM_MQTT_CLIENT_PTR pClient, FTNM_MSG_PTR pMsg)
 			
 			TRACE("EP[%08x] data is updated.\n", pMsg->xParams.xEPDataUpdated.xEPID);
 			FTM_MQTT_CLIENT_publishEPData(pClient, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
+		}
+		break;
+
+	case	FTNM_MSG_TYPE_EP_CHANGED:
+		{
+			pCBSet[pClient->xConfig.ulCBSet].fPublishEPData(pClient, 
+														pMsg->xParams.xEPChanged.xEPID, 
+														&pMsg->xParams.xEPChanged.xData);
+
 		}
 		break;
 

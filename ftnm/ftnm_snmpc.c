@@ -320,7 +320,7 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 					{
 					case	6:
 						{
-							FTM_EP_DATA	xLastData;
+							FTM_EP_DATA_TYPE	xDataType;
 							FTM_CHAR	pBuff[1024];
 	
 							if (pVariable->val_len < 1024)
@@ -334,7 +334,7 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 								pBuff[1023] = 0;
 							}
 
-							xRet = FTNM_EP_getData(pEP, &xLastData);
+							xRet = FTNM_EP_getDataType(pEP, &xDataType);
 							if (xRet != FTM_RET_OK)
 							{
 								break;
@@ -342,8 +342,8 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 
 							pData->ulTime = time(NULL);
 							pData->xState = FTM_EP_STATE_RUN;
-							pData->xType  = xLastData.xType;
-							switch(pData->xType)
+							pData->xType  = xDataType;
+							switch(xDataType)
 							{
 							case	FTM_EP_DATA_TYPE_BOOL:
 								{
@@ -384,6 +384,82 @@ FTM_RET	FTNM_SNMPC_getEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_
 			{
 				//ERROR("EP(%08x:%s) is occurred synch response error! - %s\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID, snmp_errstring(nRet));
 				xRet = FTM_RET_SNMP_ERROR;
+			}
+		}
+
+		if (pRespPDU != NULL)
+		{
+			snmp_free_pdu(pRespPDU);
+		}
+
+		snmp_close(pSession);
+
+	}
+	else
+	{
+		ERROR("SNMP open error - %s\n", snmp_errstring(snmp_errno));
+		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
+	}
+
+	sem_post(&pEP->xLock);
+	sem_post(&pNode->xLock);
+
+	return	xRet;
+}
+
+FTM_RET	FTNM_SNMPC_setEPData(FTNM_NODE_SNMPC_PTR pNode, FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET		xRet = FTM_RET_SNMP_ERROR;
+	struct snmp_session	*pSession = NULL;
+	struct snmp_session	xSession;
+
+	sem_wait(&pNode->xLock);
+	sem_wait(&pEP->xLock);
+
+	snmp_sess_init(&xSession);			/* initialize session */
+
+	xSession.version 		= pNode->xCommon.xInfo.xOption.xSNMP.ulVersion;
+	xSession.peername 		= pNode->xCommon.xInfo.xOption.xSNMP.pURL;
+	xSession.community 		= (u_char *)pNode->xCommon.xInfo.xOption.xSNMP.pCommunity;
+	xSession.community_len	= strlen(pNode->xCommon.xInfo.xOption.xSNMP.pCommunity);
+
+	pSession = snmp_open(&xSession);
+	if (pSession != NULL)
+	{
+		netsnmp_pdu 	*pReqPDU = NULL;
+		netsnmp_pdu		*pRespPDU = NULL; 
+
+		pReqPDU = snmp_pdu_create(SNMP_MSG_SET);	/* send the first GET */
+		if (pReqPDU == NULL)
+		{
+			ERROR("SNMP PDU creation error - %s\n", snmp_errstring(snmp_errno));
+			xRet = FTM_RET_SNMP_ERROR;
+		}
+		else
+		{
+			FTM_CHAR	pValue[32];
+
+			pReqPDU->time = pNode->xCommon.xInfo.ulTimeout;
+			FTM_EP_DATA_snprint(pValue, sizeof(pValue), pData);
+
+			snmp_add_var(pReqPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen, 's', pValue);
+			pNode->xStatistics.ulRequest++;
+		
+			int nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
+			TRACE("SNMP set request[%08x]\n", nRet);	
+			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
+			{
+				pNode->xStatistics.ulResponse++;
+				xRet = FTM_RET_OK;
+			}
+			else
+			{
+				ERROR("EP[%08x] - %s\n", pEP->xInfo.xEPID, snmp_errstring(pRespPDU->errstat));
+				xRet = FTM_RET_SNMP_NOT_SUPPORT_WRITE;
 			}
 		}
 

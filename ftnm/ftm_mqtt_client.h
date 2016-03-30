@@ -66,6 +66,13 @@ typedef	FTM_VOID (*FTM_MQTT_CLIENT_MESSAGE_CB)(struct mosquitto *mosq, void *pOb
 typedef FTM_VOID (*FTM_MQTT_CLIENT_SUBSCRIBE_CB)(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
 typedef FTM_VOID (*FTM_MQTT_CLIENT_TIMER_CB)(struct mosquitto *mosq, void *pObj);
 
+typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA)
+(
+	FTM_MQTT_CLIENT_PTR	pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_EP_DATA_PTR		pData
+);
+
 typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA_INT)
 (
 	FTM_MQTT_CLIENT_PTR	pClient, 
@@ -118,6 +125,7 @@ typedef	struct
 	FTM_MQTT_CLIENT_MESSAGE_CB				fMessage;
 	FTM_MQTT_CLIENT_SUBSCRIBE_CB			fSubscribe;
 	FTM_MQTT_CLIENT_TIMER_CB				fTimer;
+	FTM_MQTT_CLIENT_PUBLISH_EP_DATA			fPublishEPData;
 	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_INT		fPublishEPDataINT;
 	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_ULONG	fPublishEPDataULONG;
 	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_FLOAT	fPublishEPDataFLOAT;

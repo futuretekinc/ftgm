@@ -8,7 +8,7 @@
 #include "ftnm_msg.h"
 #include "libconfig.h"
 
-#define	FTNM_TRIGGER_LOOP_INTERVAL	100000	// 1000 us
+#define	FTNM_TRIGGER_LOOP_INTERVAL	100000	// 1s
 
 #if 0
 #define	TRACE_CALL()	TRACE("%s[%d]\n", __func__, __LINE__)
@@ -49,12 +49,14 @@ FTM_RET	FTNM_TRIGGERM_create(FTNM_TRIGGERM_PTR _PTR_ ppTriggerM)
 	pTriggerM = (FTNM_TRIGGERM_PTR)FTM_MEM_malloc(sizeof(FTNM_TRIGGERM));
 	if (pTriggerM == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
 	xRet = FTNM_TRIGGERM_init(pTriggerM);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Can't create trigger manager!\n");
 		FTM_MEM_free(pTriggerM);	
 	}
 	else

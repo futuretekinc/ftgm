@@ -17,27 +17,84 @@ typedef	struct	FTNM_EP_MSG_STRUCT
 	FTNM_EP_CMD		xCmd;	
 } FTNM_EP_MSG, _PTR_ FTNM_EP_MSG_PTR;
 
-static FTM_VOID_PTR	FTNM_EP_process(FTM_VOID_PTR pData);
-static FTM_INT		FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
-static FTM_INT		FTNM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2);
-static FTM_RET		FTNM_EPM_notifyEPDataSaveToDB(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
-static FTM_RET		FTNM_EP_transmissionData
+static FTM_VOID_PTR	FTNM_EP_process
+(
+	FTM_VOID_PTR 	pData
+);
+
+static FTM_INT	FTNM_EP_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+);
+
+static FTM_INT	FTNM_EP_comparator
+(
+	const FTM_VOID_PTR pElement1, 
+	const FTM_VOID_PTR pElement2
+);
+
+static FTM_RET	FTNM_EPM_notifyEPDataSaveToDB
+(
+	FTNM_EPM_PTR 	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_EP_DATA_PTR pData
+);
+
+static FTM_RET	FTNM_EP_transmissionData
 (
 	FTNM_EP_PTR 	pEP,
 	FTM_ULONG		ulStartTime,
 	FTM_ULONG		ulEndTime
 );
-static FTM_RET		FTNM_EPM_notifyEPDataTransmissionINT(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_INT nValue, FTM_INT nAverage, FTM_INT nCount, FTM_INT nMax, FTM_INT nMin);
-static FTM_RET		FTNM_EPM_notifyEPDataTransmissionULONG(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_ULONG ulValue, FTM_ULONG ulAverage, FTM_INT nCount, FTM_ULONG ulMax, FTM_ULONG ulMin);
-static FTM_RET		FTNM_EPM_notifyEPDataTransmissionFLOAT(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_FLOAT fValue, FTM_FLOAT fAverage, FTM_INT nCount, FTM_FLOAT fMax, FTM_FLOAT fMin);
-static FTM_RET		FTNM_EPM_notifyEPDataTransmissionBOOL(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_BOOL bValue);
+
+static FTM_RET		FTNM_EPM_notifyEPDataTransINT
+(
+	FTNM_EPM_PTR 	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_INT 		nValue, 
+	FTM_INT 		nAverage, 
+	FTM_INT 		nCount, 
+	FTM_INT 		nMax, 
+	FTM_INT 		nMin
+);
+
+static FTM_RET		FTNM_EPM_notifyEPDataTransULONG
+(
+	FTNM_EPM_PTR 	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_ULONG 		ulValue, 
+	FTM_ULONG 		ulAverage, 
+	FTM_INT 		nCount, 
+	FTM_ULONG 		ulMax, 
+	FTM_ULONG 		ulMin
+);
+
+static FTM_RET		FTNM_EPM_notifyEPDataTransFLOAT
+(
+	FTNM_EPM_PTR 	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_FLOAT 		fValue, 
+	FTM_FLOAT 		fAverage, 
+	FTM_INT 		nCount, 
+	FTM_FLOAT 		fMax, 
+	FTM_FLOAT 		fMin
+);
+
+static FTM_RET		FTNM_EPM_notifyEPDataTransBOOL
+(	
+	FTNM_EPM_PTR 	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_BOOL 		bValue
+);
+
 
 FTM_RET	FTNM_EPM_create(FTNM_CONTEXT_PTR pCTX, FTNM_EPM_PTR _PTR_ ppEPM)
 {
 	ASSERT(pCTX != NULL);
 	ASSERT(ppEPM != NULL);
 
-	FTM_RET		xRet;
+	FTM_RET			xRet;
 	FTNM_EPM_PTR	pEPM;
 
 	pEPM = (FTNM_EPM_PTR)FTM_MEM_malloc(sizeof(FTNM_EPM));
@@ -63,15 +120,23 @@ FTM_RET	FTNM_EPM_create(FTNM_CONTEXT_PTR pCTX, FTNM_EPM_PTR _PTR_ ppEPM)
 FTM_RET	FTNM_EPM_destroy(FTNM_EPM_PTR _PTR_ ppEPM)
 {
 	ASSERT(ppEPM != NULL);
+	
+	FTM_RET	xRet;
 
 	if (*ppEPM == NULL)
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		ERROR("EPM has not been initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	FTNM_EPM_final(*ppEPM);
+	xRet = FTNM_EPM_final(*ppEPM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EPM finalize was failed.\n");
+	}
 
 	FTM_MEM_free(*ppEPM);
+	*ppEPM = NULL;
 
 	return	FTM_RET_OK;
 }
@@ -85,12 +150,14 @@ FTM_RET	FTNM_EPM_init(FTNM_CONTEXT_PTR pCTX, FTNM_EPM_PTR pEPM)
 
 	if (pEPM->pEPList != NULL)
 	{
+		ERROR("It has already been initialized.\n");
 		return	FTM_RET_ALREADY_INITIALIZED;
 	}
 
 	xRet = FTM_LIST_create(&pEPM->pEPList);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Can't create a list.\n");
 		return	xRet;
 	}
 
@@ -133,62 +200,20 @@ FTM_RET	FTNM_EPM_createEP(FTNM_EPM_PTR pEPM, FTM_EP_PTR pInfo, FTNM_EP_PTR _PTR_
 
 	FTM_RET			xRet;
 	FTNM_EP_PTR		pEP = NULL;
-	FTM_EP_DATA_PTR	pData;
 
-	TRACE("TYPE = %08x\n", pInfo->xType);
-	pEP = (FTNM_EP_PTR)FTM_MEM_malloc(sizeof(FTNM_EP) + sizeof(FTM_EP_DATA) * FTNM_EP_DATA_COUNT);
-	if (pEP == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
-
-	memset(pEP, 0, sizeof(FTNM_EP));
-	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
-	switch(pInfo->xEPID & FTM_EP_TYPE_MASK)
-	{
-	case	FTM_EP_TYPE_TEMPERATURE:
-	case	FTM_EP_TYPE_HUMIDITY:
-	case	FTM_EP_TYPE_VOLTAGE:
-	case	FTM_EP_TYPE_CURRENT:
-	case	FTM_EP_TYPE_GAS:
-	case	FTM_EP_TYPE_POWER:
-	case	FTM_EP_TYPE_AI:
-	case	FTM_EP_TYPE_COUNT:
-	case	FTM_EP_TYPE_MULTI:
-		{
-			xRet = FTM_EP_DATA_createFloat(0, FTM_EP_DATA_STATE_INVALID, 0, &pData);
-		}
-		break;
-
-	case	FTM_EP_TYPE_DI:
-	case	FTM_EP_TYPE_DO:
-		{	
-			xRet = FTM_EP_DATA_createInt(0, FTM_EP_DATA_STATE_INVALID, 0, &pData);
-		}
-		break;
-
-	default:
-		{
-			xRet = FTM_RET_INVALID_ARGUMENTS;	
-		}
-	}
-
+	xRet = FTNM_EP_create(pInfo, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pEP);
-		return	xRet;
+		ERROR("The EP[%08x] creation failed.\n", pInfo->xEPID);
+		return	xRet;	
 	}
 
-	sem_init(&pEP->xLock, 0, 1);
-	FTM_MSGQ_init(&pEP->xMsgQ);
-
-	FTM_LIST_init(&pEP->xDataList);
-	FTM_LIST_append(&pEP->xDataList, pData);
-
-	FTM_LIST_init(&pEP->xTriggerList);
-	pEP->pEPM = pEPM;
-	
-	FTM_LIST_append(pEPM->pEPList, pEP);
+	xRet = FTNM_EPM_attachEP(pEPM, pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't attach the EP[%08x] to the EPM.\n", pInfo->xEPID);
+		return	xRet;	
+	}
 
 	*ppEP = pEP;
 
@@ -201,31 +226,63 @@ FTM_RET	FTNM_EPM_destroyEP(FTNM_EPM_PTR pEPM, FTNM_EP_PTR	pEP)
 	ASSERT(pEP != NULL);
 
 	FTM_RET	xRet;
-	FTM_EP_DATA_PTR	pData;
+
+	FTNM_EP_stop(pEP, TRUE);
+
+	xRet = FTNM_EPM_detachEP(pEPM, pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't detach the EP[%08x] from the EPM.\n", pEP->xInfo.xEPID);
+		return	xRet;	
+	}
+
+	FTNM_EP_destroy(&pEP);
+
+	return	xRet;
+}
+
+FTM_RET	FTNM_EPM_attachEP(FTNM_EPM_PTR pEPM, FTNM_EP_PTR pEP)
+{
+	ASSERT(pEPM != NULL);
+	ASSERT(pEP != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTM_LIST_append(pEPM->pEPList, pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't attach EP[%08x] to EPM.\n", pEP->xInfo.xEPID);
+		return	xRet;	
+	}
+
+	pEP->pEPM = pEPM;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_EPM_detachEP(FTNM_EPM_PTR pEPM, FTNM_EP_PTR pEP)
+{
+	ASSERT(pEPM != NULL);
+	ASSERT(pEP != NULL);
+
+	FTM_RET	xRet;
+
+	if (pEP->pEPM != pEPM)
+	{
+		WARN("EP[%08x] is not attached.\n", pEP->xInfo.xEPID);
+		return	FTM_RET_EP_IS_NOT_ATTACHED;
+	}
 
 	xRet = FTM_LIST_remove(pEPM->pEPList, pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
+		WARN("EP[%08x] is not attached.\n", pEP->xInfo.xEPID);
+		return	FTM_RET_EP_IS_NOT_ATTACHED;
 	}
 
-	FTM_LIST_iteratorStart(&pEP->xDataList);
-	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
-	{
-		FTM_EP_DATA_destroy(pData);	
-	}
+	pEP->pEPM = NULL;
 
-	FTM_LIST_final(&pEP->xDataList);
-
-	FTNM_EP_stop(pEP, FTM_TRUE);
-
-	FTM_LIST_final(&pEP->xTriggerList);
-	FTM_MSGQ_final(&pEP->xMsgQ);
-	sem_destroy(&pEP->xLock);
-
-	FTM_MEM_free(pEP);	
-
-	return	xRet;
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTNM_EPM_count
@@ -306,7 +363,7 @@ FTM_RET	FTNM_EPM_get
 )
 {
 	ASSERT(pEPM != NULL);
-
+	
 	return	FTM_LIST_get(pEPM->pEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
@@ -328,28 +385,7 @@ FTM_RET	FTNM_EPM_notifyEPUpdated(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP_DATA
 	ASSERT(pEPM != NULL);
 	ASSERT(pData != NULL);
 
-	FTM_RET			xRet;
-	FTNM_MSG_PTR	pMsg;
-
-	xRet = FTNM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_UPDATED;
-	pMsg->xParams.xEPDataUpdated.xEPID = xEPID;
-	memcpy(&pMsg->xParams.xEPDataUpdated.xData, pData, sizeof(FTM_EP_DATA));
-
-	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTNM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
+	return	FTNM_NOTIFY_EPUpdated(pEPM->pCTX, xEPID, pData);
 }
 
 FTM_RET	FTNM_EPM_notifyEPDataSaveToDB(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
@@ -357,33 +393,102 @@ FTM_RET	FTNM_EPM_notifyEPDataSaveToDB(FTNM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP
 	ASSERT(pEPM != NULL);
 	ASSERT(pData != NULL);
 
-	FTM_RET			xRet;
-	FTNM_MSG_PTR	pMsg;
-
-	xRet = FTNM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_SAVE_TO_DB;
-	pMsg->xParams.xEPDataUpdated.xEPID = xEPID;
-	memcpy(&pMsg->xParams.xEPDataUpdated.xData, pData, sizeof(FTM_EP_DATA));
-
-	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTNM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-	
-	return	FTM_RET_OK;
+	return	FTNM_NOTIFY_EPDataSaveToDB(pEPM->pCTX, xEPID, pData);
 }
 
 /***********************************************************************
  * EP object operation
  ***********************************************************************/
+
+FTM_RET	FTNM_EP_create(FTM_EP_PTR pInfo,FTNM_EP_PTR _PTR_ ppEP)
+{
+	ASSERT(ppEP != NULL);
+
+	FTM_RET		xRet;
+	FTNM_EP_PTR	pEP;
+
+	pEP = (FTNM_EP_PTR)FTM_MEM_malloc(sizeof(FTNM_EP));
+	if (pEP == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+	memset(pEP, 0, sizeof(FTNM_EP));
+	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
+
+	sem_init(&pEP->xLock, 0, 1);
+	xRet = FTM_MSGQ_init(&pEP->xMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("MsgQ	init failed.\n");
+		FTM_MEM_free(pEP);
+		return	xRet;
+	}
+
+	xRet = FTM_LIST_init(&pEP->xDataList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Data list init failed.\n");
+		FTM_MEM_free(pEP);
+		return	xRet;
+	}
+
+	xRet = FTM_LIST_init(&pEP->xTriggerList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Trigger list init failed.\n");
+		FTM_MEM_free(pEP);
+		return	xRet;
+	}
+
+	*ppEP = pEP;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_EP_destroy(FTNM_EP_PTR _PTR_ ppEP)
+{
+	ASSERT(ppEP != NULL);
+
+	FTM_RET			xRet;
+	FTM_EP_DATA_PTR	pData;
+
+	FTM_LIST_iteratorStart(&(*ppEP)->xDataList);
+	while(FTM_LIST_iteratorNext(&(*ppEP)->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+	{
+		FTM_EP_DATA_destroy(pData);	
+	}
+
+	xRet = FTM_LIST_final(&(*ppEP)->xTriggerList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Trigger list finalize failed.\n");
+	}
+
+	xRet = FTM_LIST_final(&(*ppEP)->xDataList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Data list finalize failed.\n");
+	}
+
+	xRet = FTM_MSGQ_final(&(*ppEP)->xMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("MsgQ finalize failed.\n");
+	}
+
+	sem_destroy(&(*ppEP)->xLock);
+
+	xRet = FTM_MEM_free(*ppEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP failed to release memory!\n");
+	}
+
+	*ppEP = NULL;
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTNM_EP_attach
 (
@@ -476,7 +581,7 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 
 	FTNM_EP_PTR		pEP = (FTNM_EP_PTR)pData;
 	FTM_TIMER		xCollectionTimer;
-	FTM_TIMER		xTransmissionTimer;
+	FTM_TIMER		xTransTimer;
 	FTM_TIME		xCurrentTime, xAlignTime, xNextTime, xInterval, xCycle;
 	FTM_BOOL		bStop = FTM_FALSE;
 
@@ -509,7 +614,7 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 	FTM_TIME_getCurrent(&xCurrentTime);
 	FTM_TIME_sub(&xNextTime, &xCurrentTime, &xCycle);
 
-	FTM_TIMER_initTime(&xTransmissionTimer, &xCycle);
+	FTM_TIMER_initTime(&xTransTimer, &xCycle);
 
 	while(!bStop)
 	{
@@ -524,23 +629,22 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 			xData.xType = xReadData.xType;
 			memcpy(&xData.xValue, &xReadData.xValue, sizeof(xData.xValue));
 
-			FTNM_EP_setData(pEP, &xData);
+			FTNM_EP_updateData(pEP, &xData);
 		}
 		else
 		{
-			WARN("EP(%08x:%s) - The data import was failed.\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID);
+			WARN("It failed to import data from EP[%s-%08x].\n", pEP->pNode->xInfo.pDID, pEP->xInfo.xEPID);
 		}
 
-		if (FTM_TIMER_isExpired(&xTransmissionTimer))
+		if (FTM_TIMER_isExpired(&xTransTimer))
 		{
-			TRACE("TRANSMISSION : %08x\n", pEP->xInfo.xEPID);
 			FTM_ULONG	ulPrevTime, ulCurrentTime;
 
-			FTM_TIMER_getTime(&xTransmissionTimer, &ulCurrentTime);
+			FTM_TIMER_getTime(&xTransTimer, &ulCurrentTime);
 			ulPrevTime = ulCurrentTime - pEP->xInfo.ulCycle;
 
 			FTNM_EP_transmissionData(pEP, ulCurrentTime, ulPrevTime);
-			FTM_TIMER_add(&xTransmissionTimer, pEP->xInfo.ulCycle * 1000000);
+			FTM_TIMER_add(&xTransTimer, pEP->xInfo.ulCycle * 1000000);
 		}
 		
 		FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
@@ -574,6 +678,18 @@ FTM_VOID_PTR FTNM_EP_process(FTM_VOID_PTR pData)
 	return	0;
 }
 
+FTM_RET	FTNM_EP_getDataType
+(
+	FTNM_EP_PTR 			pEP, 
+	FTM_EP_DATA_TYPE_PTR 	pType
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pType != NULL);
+	
+	return	FTM_EP_getDataType(&pEP->xInfo, pType);
+}
+
 FTM_RET	FTNM_EP_getData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pEP != NULL);
@@ -596,21 +712,38 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
+	FTM_RET			xRet;
+
+	xRet = FTNM_NODE_setEPData(pEP->pNode, pEP, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%08x] set error!\n", pEP->xInfo.xEPID);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTNM_EP_updateData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
 	FTM_RET				xRet;
 	FTM_ULONG			ulCount;
 	FTM_CHAR			pTimeString[64];
-	FTM_EP_DATA_PTR		pLastData;
+	FTM_EP_DATA_TYPE	xDataType;
 	FTM_EP_DATA_PTR		pNewData = NULL;
 
-	xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pLastData);
+	xRet = FTM_EP_getDataType(&pEP->xInfo, &xDataType);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("EP[%08x] data type is unknown.\n", pEP->xInfo.xEPID);
 		return	FTM_RET_ERROR;
 	}
 
-	if (pLastData->xType != pData->xType)
+	if (xDataType != pData->xType)
 	{
-		ERROR("Data type missmatch[%08x:%08x]!\n", pLastData->xType, pData->xType);
+		ERROR("Data type missmatch[%08x:%08x]!\n", xDataType, pData->xType);
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
@@ -621,6 +754,7 @@ FTM_RET	FTNM_EP_setData(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	xRet = FTM_EP_DATA_create(pData, &pNewData);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Data creation failed[%08x]!\n", pData->xType);
 		return	xRet;	
 	}
 
@@ -709,7 +843,7 @@ FTM_RET	FTNM_EP_transmissionData
 			}
 
 			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
-			FTNM_EPM_notifyEPDataTransmissionINT(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.nValue, nAverage, nCount, nMax, nMin);
+			FTNM_EPM_notifyEPDataTransINT(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.nValue, nAverage, nCount, nMax, nMin);
 		}
 		break;
 
@@ -752,7 +886,7 @@ FTM_RET	FTNM_EP_transmissionData
 			}
 			
 			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
-			FTNM_EPM_notifyEPDataTransmissionULONG(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.ulValue, ulAverage, nCount, ulMax, ulMin);
+			FTNM_EPM_notifyEPDataTransULONG(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.ulValue, ulAverage, nCount, ulMax, ulMin);
 		}
 		break;
 
@@ -795,14 +929,14 @@ FTM_RET	FTNM_EP_transmissionData
 			}
 
 			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
-			FTNM_EPM_notifyEPDataTransmissionFLOAT(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.fValue, fAverage, nCount, fMax, fMin);
+			FTNM_EPM_notifyEPDataTransFLOAT(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.fValue, fAverage, nCount, fMax, fMin);
 		}
 		break;
 
 	case	FTM_EP_DATA_TYPE_BOOL:
 		{
 			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
-			FTNM_EPM_notifyEPDataTransmissionBOOL(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.bValue);
+			FTNM_EPM_notifyEPDataTransBOOL(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.bValue);
 		}
 		break;
 	}
@@ -837,7 +971,7 @@ FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	TRACE("The event occurred in EP[%08x].\n", pEP->xInfo.xEPID);
 	TRACE("%6s : %d\n", "STATE", pData->xState);
 
-	xRet = FTNM_EP_setData(pEP, pData);
+	xRet = FTNM_EP_updateData(pEP, pData);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -846,7 +980,7 @@ FTM_RET FTNM_EP_trap(FTNM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	return	FTM_RET_OK;
 }
 
-FTM_RET		FTNM_EPM_notifyEPDataTransmissionINT
+FTM_RET		FTNM_EPM_notifyEPDataTransINT
 (
 	FTNM_EPM_PTR 	pEPM, 
 	FTM_EP_ID 		xEPID, 
@@ -859,36 +993,10 @@ FTM_RET		FTNM_EPM_notifyEPDataTransmissionINT
 {
 	ASSERT(pEPM != NULL);
 
-	FTM_RET			xRet;
-	FTNM_MSG_PTR	pMsg;
-
-	xRet = FTNM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
-	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
-	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_INT;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nValue	= nValue;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nAverage = nAverage;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nCount 	= nCount;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nMax 	= nMax;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nMin 	= nMin;
-
-	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTNM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
+	return	FTNM_NOTIFY_EPDataTransINT(pEPM->pCTX, xEPID, nValue, nAverage, nCount, nMax, nMin);
 }
 
-FTM_RET		FTNM_EPM_notifyEPDataTransmissionULONG
+FTM_RET		FTNM_EPM_notifyEPDataTransULONG
 (
 	FTNM_EPM_PTR 	pEPM, 
 	FTM_EP_ID 		xEPID, 
@@ -901,36 +1009,10 @@ FTM_RET		FTNM_EPM_notifyEPDataTransmissionULONG
 {
 	ASSERT(pEPM != NULL);
 
-	FTM_RET			xRet;
-	FTNM_MSG_PTR	pMsg;
-
-	xRet = FTNM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
-	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
-	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_ULONG;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulValue	= ulValue;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulAverage 	= ulAverage;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.nCount 	= nCount;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMax 		= ulMax;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMin 		= ulMin;
-
-	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTNM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
+	return	FTNM_NOTIFY_EPDataTransULONG(pEPM->pCTX, xEPID, ulValue, ulAverage, nCount, ulMax, ulMin);
 }
 
-FTM_RET		FTNM_EPM_notifyEPDataTransmissionFLOAT
+FTM_RET		FTNM_EPM_notifyEPDataTransFLOAT
 (
 	FTNM_EPM_PTR	pEPM, 
 	FTM_EP_ID 		xEPID, 
@@ -943,36 +1025,10 @@ FTM_RET		FTNM_EPM_notifyEPDataTransmissionFLOAT
 {
 	ASSERT(pEPM != NULL);
 
-	FTM_RET			xRet;
-	FTNM_MSG_PTR	pMsg;
-
-	xRet = FTNM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
-	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
-	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_FLOAT;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fValue		= fValue;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fAverage 	= fAverage;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.nCount 	= nCount;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMax 		= fMax;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMin 		= fMin;
-
-	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTNM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
+	return	FTNM_NOTIFY_EPDataTransFLOAT(pEPM->pCTX, xEPID, fValue, fAverage, nCount, fMax, fMin);
 }
 
-FTM_RET		FTNM_EPM_notifyEPDataTransmissionBOOL
+FTM_RET		FTNM_EPM_notifyEPDataTransBOOL
 (
 	FTNM_EPM_PTR 	pEPM, 
 	FTM_EP_ID 		xEPID, 
@@ -981,29 +1037,7 @@ FTM_RET		FTNM_EPM_notifyEPDataTransmissionBOOL
 {
 	ASSERT(pEPM != NULL);
 
-	FTM_RET			xRet;
-	FTNM_MSG_PTR	pMsg;
-
-	xRet = FTNM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
-	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
-	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_BOOL;
-	pMsg->xParams.xEPDataTrans.xValue.xBOOL.bValue	= bValue;
-
-	xRet = FTNM_MSGQ_push(pEPM->pCTX->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTNM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
+	return	FTNM_NOTIFY_EPDataTransBOOL(pEPM->pCTX, xEPID, bValue);
 }
 
 FTM_INT	FTNM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)

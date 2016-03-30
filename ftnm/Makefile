@@ -42,8 +42,11 @@ LIB_FTNMC_INCS= ftnm_client.h
 LIB_FTNMC_SRCS= ftnm_client.c 
 LIB_FTNMC_OBJS=$(LIB_FTNMC_SRCS:.c=.o)
 
-all: $(LIB_FTNM) $(FTNM) $(LIB_FTNMC) $(CLIENT)
+all: tags $(LIB_FTNM) $(FTNM) $(LIB_FTNMC) $(CLIENT)
 
+tags:
+	ctags -R
+	
 $(CONSOLE): $(CONSOLE_OBJS)
 	$(CC) -o $@ $(CONSOLE_OBJS) $(CONSOLE_LDFLAGS)
 

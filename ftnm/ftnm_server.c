@@ -454,6 +454,10 @@ FTM_RET	FTNM_SERVER_serviceCall
 	FTNM_RESP_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTM_RET				nRet;
 	FTNM_SERVER_CMD_SET_PTR	pSet = pCmdSet;
 
@@ -486,6 +490,10 @@ FTM_RET	FTNM_SERVER_NODE_create
 	FTNM_RESP_NODE_CREATE_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTNM_NODE_PTR	pNode;
 
 	pResp->xCmd = pReq->xCmd;
@@ -503,6 +511,10 @@ FTM_RET	FTNM_SERVER_NODE_destroy
 	FTNM_RESP_NODE_DESTROY_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTNM_NODE_PTR	pNode;
 
 	pResp->xCmd = pReq->xCmd;
@@ -524,6 +536,10 @@ FTM_RET	FTNM_SERVER_NODE_count
 	FTNM_RESP_NODE_COUNT_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->nRet = FTNM_NODE_count(&pResp->ulCount);
@@ -538,6 +554,10 @@ FTM_RET	FTNM_SERVER_NODE_get
 	FTNM_RESP_NODE_GET_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTNM_NODE_PTR	pNode;
  
 	pResp->xCmd	= pReq->xCmd;
@@ -558,6 +578,10 @@ FTM_RET	FTNM_SERVER_NODE_getAt
 	FTNM_RESP_NODE_GET_AT_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTNM_NODE_PTR	pNode;
 
 	pResp->xCmd	= pReq->xCmd;
@@ -578,6 +602,10 @@ FTM_RET	FTNM_SERVER_EP_create
 	FTNM_RESP_EP_CREATE_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTM_RET		xRet;
 	FTNM_EP_PTR	pEP;
 
@@ -591,13 +619,7 @@ FTM_RET	FTNM_SERVER_EP_create
 		xRet = FTNM_EPM_createEP(pSession->pServer->pCTX->pEPM, &pReq->xInfo, &pEP);
 		if (xRet == FTM_RET_OK)
 		{
-			FTNM_DMC_PTR	pDMC;
-
-			xRet = FTNM_getDMC(&pDMC);
-			if (xRet == FTM_RET_OK)
-			{
-				xRet = FTDMC_EP_append(&pDMC->xSession, &pReq->xInfo);
-			}
+			xRet = FTNM_createEP(pSession->pServer->pCTX, &pReq->xInfo);
 		}
 	}
 
@@ -615,6 +637,10 @@ FTM_RET	FTNM_SERVER_EP_destroy
 	FTNM_RESP_EP_DESTROY_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTM_RET		xRet;
 	FTNM_EP_PTR	pEP;
 
@@ -625,13 +651,7 @@ FTM_RET	FTNM_SERVER_EP_destroy
 		xRet = FTNM_EPM_destroyEP(pSession->pServer->pCTX->pEPM, pEP);
 		if (xRet == FTM_RET_OK)
 		{
-			FTNM_DMC_PTR	pDMC;
-
-			xRet = FTNM_getDMC(&pDMC);
-			if (xRet == FTM_RET_OK)
-			{
-				xRet = FTDMC_EP_remove(&pDMC->xSession, pReq->xEPID);
-			}
+			xRet = FTNM_destroyEP(pSession->pServer->pCTX, pReq->xEPID);
 		}
 	}
 
@@ -649,6 +669,10 @@ FTM_RET	FTNM_SERVER_EP_count
 	FTNM_RESP_EP_COUNT_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->nRet = FTNM_EPM_count(pSession->pServer->pCTX->pEPM, pReq->xType, &pResp->nCount);
@@ -663,6 +687,10 @@ FTM_RET	FTNM_SERVER_EP_get
 	FTNM_RESP_EP_GET_PARAMS_PTR		pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTNM_EP_PTR		pEP;
 
 	pResp->xCmd = pReq->xCmd;
@@ -683,6 +711,10 @@ FTM_RET	FTNM_SERVER_EP_getList
 	FTNM_RESP_EP_GET_LIST_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	pResp->xCmd = pReq->xCmd;
 	pResp->nRet = FTNM_EPM_getIDList(pSession->pServer->pCTX->pEPM, pReq->xType, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_ID) * pResp->ulCount;
@@ -697,6 +729,10 @@ FTM_RET	FTNM_SERVER_EP_getAt
 	FTNM_RESP_EP_GET_AT_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTNM_EP_PTR		pEP;
 
 	pResp->xCmd = pReq->xCmd;
@@ -717,6 +753,10 @@ FTM_RET	FTNM_SERVER_EP_registrationNotifyReceiver
  	FTNM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -732,9 +772,13 @@ FTM_RET	FTNM_SERVER_EP_DATA_info
 	FTNM_RESP_EP_DATA_INFO_PARAMS_PTR 	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_getEPDataInfo(pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
+	pResp->nRet = FTNM_getEPDataInfo(pSession->pServer->pCTX, pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
 
 	return	pResp->nRet;
 }
@@ -745,6 +789,10 @@ FTM_RET	FTNM_SERVER_EP_DATA_getLast
 	FTNM_RESP_EP_DATA_GET_LAST_PARAMS_PTR 	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTM_RET		xRet;
 	FTNM_EP_PTR	pEP;
 
@@ -773,22 +821,19 @@ FTM_RET	FTNM_SERVER_EP_DATA_getList
 	FTNM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTM_RET		xRet;
-	FTNM_DMC_PTR	pDMC;
 
-	xRet = FTNM_getDMC(&pDMC);
-	if (xRet == FTM_RET_OK)
+	xRet = FTNM_getEPDataList(pSession->pServer->pCTX, pReq->xEPID, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
+	if (xRet != FTM_RET_OK)
 	{
-		
-		xRet = FTNM_DMC_EP_DATA_get(pDMC, pReq->xEPID, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
-		if (xRet != FTM_RET_OK)
-		{
-			pResp->nCount = 0;
-		}
-
-		pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_DATA) * pResp->nCount;
+		pResp->nCount = 0;
 	}
 
+	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_DATA) * pResp->nCount;
 	pResp->xCmd = pReq->xCmd;
 	pResp->nRet = xRet;
 
@@ -802,11 +847,15 @@ FTM_RET	FTNM_SERVER_EP_DATA_count
 	FTNM_RESP_EP_DATA_COUNT_PARAMS_PTR 	pResp
 )
 {
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
 	FTM_ULONG	ulCount = 0;
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTNM_getEPDataCount(pReq->xEPID, &ulCount);
+	pResp->nRet = FTNM_getEPDataCount(pSession->pServer->pCTX, pReq->xEPID, &ulCount);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		pResp->ulCount = ulCount;

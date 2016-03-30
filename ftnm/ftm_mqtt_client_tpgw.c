@@ -1,3 +1,4 @@
+#include <string.h>
 #include "ftnm.h"
 #include "ftm_mqtt_client.h"
 #include <nxjson.h>
@@ -16,7 +17,7 @@ struct
 		.xMethod		= FTM_MQTT_METHOD_REQ_TIME_SYNC
 	},
 	{
-		.pString	= "controlACtuator",
+		.pString	= "controlActuator",
 		.xMethod		= FTM_MQTT_METHOD_REQ_CONTROL_ACTUATOR,
 	},
 	{
@@ -200,7 +201,9 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 	FTM_RET			xRet;
 	FTNM_MSG		xMsg;
 	FTM_INT			i;
-
+	FTM_CHAR		pReqID[FTNM_MSG_REQ_ID_LENGTH+1];
+	FTM_ULONG		ulMethod = 0;
+	
 	memset(&xMsg, 0, sizeof(xMsg));
 
 	const nx_json * pJSON = nx_json_parse((FTM_CHAR_PTR)pMessage, nx_json_unicode_to_utf8);
@@ -215,8 +218,9 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 	{
 		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 		goto error;
-	}	
-	strncpy(xMsg.xParams.xMQTTReq.pReqID, pItem->text_value,sizeof(xMsg.xParams.xMQTTReq.pReqID) - 1);
+	}
+	memset(pReqID, 0, sizeof(pReqID));
+	strncpy(pReqID, pItem->text_value,sizeof(xMsg.xParams.xMQTTReq.pReqID) - 1);
 
 	pItem = nx_json_get(pJSON, "method");
 	if ((pItem == NULL) || (pItem->type != NX_JSON_STRING))
@@ -227,21 +231,14 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 
 	for(i = 0 ; i < sizeof(xReqMethod) / sizeof(xReqMethod[0]) ; i++)
 	{
-		if (strcmp(xReqMethod[i].pString, pItem->text_value) == 0)
+		if (strcasecmp(xReqMethod[i].pString, pItem->text_value) == 0)
 		{
-			xMsg.xParams.xMQTTReq.ulMethod = xReqMethod[i].xMethod;
+			ulMethod = xReqMethod[i].xMethod;
 			break;
 		}
 	}
-	
-	pItem = nx_json_get(pJSON, "time");
-	if (pItem == NULL)
-	{
-		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
-		goto error;
-	}	
 
-	switch(xMsg.xParams.xMQTTReq.ulMethod)
+	switch(ulMethod)
 	{
 	case	FTM_MQTT_METHOD_REQ_TIME_SYNC:
 		{
@@ -258,52 +255,81 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 
 	case	FTM_MQTT_METHOD_REQ_CONTROL_ACTUATOR:
 		{
+			FTM_CHAR	pTemp[128];
+
 			const nx_json *pParams = nx_json_get(pJSON, "params");
 			if (pParams== NULL)
 			{
+				WARN("MQTT REQ : Params field is not exist.\n");
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}	
 
+			xMsg.xType = FTNM_MSG_TYPE_MQTT_REQ_CONTROL;
+			strcpy(xMsg.xParams.xMQTTReqControl.pReqID, pReqID);
+
 			const nx_json *pID =  nx_json_get(pParams, "id");
 			if ((pID == NULL) || (pID->type != NX_JSON_STRING))
 			{
+				WARN("MQTT REQ : ID field is not exist or invalid format.\n");
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}
-			strncpy(xMsg.xParams.xMQTTReq.xParams.xControlActuator.pID, pID->text_value, sizeof(xMsg.xParams.xMQTTReq.xParams.xControlActuator.pID) - 1);
+
+			strncpy(pTemp, pID->text_value, sizeof(pTemp) - 1);
+			pTemp[sizeof(pTemp)-1] = '\0';
+
+			FTM_CHAR_PTR	pDID = strtok(pTemp, "-");
+			if (pDID == NULL)
+			{
+				WARN("MQTT REQ : Invalid ID[%s]\n", pTemp);
+				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+				goto error;
+			}
+
+			FTM_CHAR_PTR	pEPID = strtok(NULL, "-");
+			if (pEPID == NULL)
+			{
+				WARN("MQTT REQ : Invalid ID[%s]\n", pTemp);
+				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+				goto error;
+			}
+
+			xMsg.xParams.xMQTTReqControl.xEPID = strtoul(pEPID, 0, 16);
 
 			const nx_json *pCMD = nx_json_get(pParams, "cmd");
 			if ((pCMD == NULL) || (pCMD->type != NX_JSON_STRING))
 			{
+				WARN("MQTT REQ : Command field is not exist or invalid format.\n");
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}
 
 			if (strcasecmp(pCMD->text_value, "on") == 0)
 			{
-				xMsg.xParams.xMQTTReq.xParams.xControlActuator.xCmd = FTNM_MSG_MQTT_REQ_CMD_ON;
+				xMsg.xParams.xMQTTReqControl.xCmd = FTNM_MSG_MQTT_REQ_CONTROL_CMD_ON;
 			}
 			else if (strcasecmp(pCMD->text_value, "off") == 0)
 			{
-				xMsg.xParams.xMQTTReq.xParams.xControlActuator.xCmd = FTNM_MSG_MQTT_REQ_CMD_OFF;
+				xMsg.xParams.xMQTTReqControl.xCmd = FTNM_MSG_MQTT_REQ_CONTROL_CMD_OFF;
 			}
 			else if (strcasecmp(pCMD->text_value, "blink") == 0)
 			{
-				xMsg.xParams.xMQTTReq.xParams.xControlActuator.xCmd = FTNM_MSG_MQTT_REQ_CMD_BLINK;
+				xMsg.xParams.xMQTTReqControl.xCmd = FTNM_MSG_MQTT_REQ_CONTROL_CMD_BLINK;
 			}
 			else
 			{
+				WARN("MQTT REQ : Invalid command[%s]\n", pCMD->text_value);
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}
 
 			const nx_json *pOptions = nx_json_get(pParams, "options");
-			if (pOptions != NULL)
+			if (pOptions->type != NX_JSON_NULL)
 			{
-				if (pOptions->type != NX_JSON_INTEGER) 
+				if (pOptions->type == NX_JSON_INTEGER) 
 				{
-					xMsg.xParams.xMQTTReq.xParams.xControlActuator.xOptions.ulDuration = pOptions->int_value;
+					xMsg.xParams.xMQTTReqControl.xOptions.ulDuration = pOptions->int_value;
 				}
 				else
 				{
@@ -345,8 +371,6 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 		break;
 	}
 
-	xMsg.xParams.xMQTTReq.ulTime = pItem->int_value;
-	xMsg.xType = FTNM_MSG_TYPE_MQTT_REQ;
 
 	xRet = FTNM_MSG_create(ppMsg);
 	if (xRet != FTM_RET_OK)
@@ -362,6 +386,73 @@ error:
 	nx_json_free(pJSON);
 
 	return	xRet;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPData
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_EP_DATA_PTR		pData
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+	FTM_ULONG	ulTime;
+
+	if (pData->ulTime != 0)
+	{
+		ulTime = pData->ulTime;
+	}
+	else
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
+	
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	switch(pData->xType)
+	{
+	case	FTM_EP_DATA_TYPE_INT:
+		{
+			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, pData->xValue.nValue);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_ULONG:
+		{
+			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%lu]", ulTime, pData->xValue.ulValue);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_FLOAT:
+		{
+			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%5.3f]", ulTime, pData->xValue.fValue);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_BOOL:
+		{
+			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, pData->xValue.bValue);
+		}
+		break;
+
+	default:
+		{
+			FATAL("Invalid EP data type.!\n");	
+			return	FTM_RET_ERROR;
+		}
+	}
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataINT
@@ -380,6 +471,14 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataINT
 	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
 	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulMessageLen = 0;
+
+	if (ulTime == 0)
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
 
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, nValue);
@@ -408,6 +507,15 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataULONG
 	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulMessageLen = 0;
 
+	if (ulTime == 0)
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%lu]", ulTime, ulValue);
 
@@ -435,6 +543,15 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT
 	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulMessageLen = 0;
 
+	if (ulTime == 0)
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%5.3f]", ulTime, fValue);
 
@@ -458,6 +575,15 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL
 	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulMessageLen = 0;
 
+	if (ulTime == 0)
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
+
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, bValue);
 

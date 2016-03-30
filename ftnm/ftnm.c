@@ -109,6 +109,49 @@ static 	FTNM_SERVICE	pServices[] =
 	},
 };
 
+FTM_RET	FTNM_create(FTNM_CONTEXT_PTR _PTR_ ppCTX)
+{
+	ASSERT(ppCTX != NULL);
+	
+	FTM_RET				xRet;
+	FTNM_CONTEXT_PTR	pCTX;
+
+	pCTX = (FTNM_CONTEXT_PTR)FTM_MEM_malloc(sizeof(FTNM_CONTEXT));
+	if(pCTX == NULL)
+	{
+		ERROR("Not enough memory");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = FTNM_init(pCTX);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pCTX);	
+	}
+	else
+	{
+		*ppCTX = pCTX;	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTNM_destroy(FTNM_CONTEXT_PTR _PTR_ ppCTX)
+{
+	ASSERT(ppCTX != NULL);
+	
+	if (*ppCTX == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	FTNM_final(*ppCTX);
+
+	*ppCTX = NULL;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pCTX)
 {
 	FTM_RET	xRet;
@@ -140,7 +183,7 @@ FTM_RET	FTNM_init(FTNM_CONTEXT_PTR pCTX)
 
 	FTNM_TRIGGERM_create(&pCTX->pTriggerM);
 	FTNM_ACTIONM_create(&pCTX->pActionM);
-	FTNM_RULEM_create(&pCTX->pRuleM);
+	FTNM_RULEM_create(pCTX, &pCTX->pRuleM);
 	FTNM_RULEM_setTriggerM(pCTX->pRuleM, pCTX->pTriggerM);
 	FTNM_RULEM_setActionM(pCTX->pRuleM, pCTX->pActionM);
 
@@ -643,9 +686,121 @@ FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX)
 				}	
 				break;
 
+			case	FTNM_MSG_TYPE_MQTT_REQ:
+				{
+				}
+				break;
+
+			case	FTNM_MSG_TYPE_MQTT_REQ_TIME_SYNC:
+				{
+					FTNM_EP_PTR	pEP;
+					FTM_EP_DATA	xData;
+
+					TRACE("MQTT REQ CONTROL - EP[%08x]\n", pMsg->xParams.xMQTTReqControl.xEPID);
+
+					xRet = FTNM_EPM_get(pCTX->pEPM, pMsg->xParams.xMQTTReqControl.xEPID, &pEP);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("EP[%08x] not found.\n", pMsg->xParams.xMQTTReqControl.xEPID);
+						break;
+					}
+
+					switch(pMsg->xParams.xMQTTReqControl.xCmd)
+					{
+					case FTNM_MSG_MQTT_REQ_CONTROL_CMD_OFF:
+						{
+							xData.xType = FTM_EP_DATA_TYPE_INT;
+							xData.xValue.nValue = 0;
+						}
+						break;
+
+					case FTNM_MSG_MQTT_REQ_CONTROL_CMD_ON:
+						{
+							xData.xType = FTM_EP_DATA_TYPE_INT;
+							xData.xValue.nValue = 1;
+						}
+						break;
+
+					case FTNM_MSG_MQTT_REQ_CONTROL_CMD_BLINK:
+						{
+							xData.xType = FTM_EP_DATA_TYPE_INT;
+							xData.xValue.nValue = 2;
+						}
+						break;
+					}
+
+					xRet = FTNM_EP_setData(pEP, &xData);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("EP[%08x] set failed.\n", pMsg->xParams.xMQTTReqControl.xEPID);
+						break;	
+					}
+
+				}
+				break;
+
+			case	FTNM_MSG_TYPE_MQTT_REQ_CONTROL:
+				{
+					FTNM_EP_PTR	pEP;
+					FTM_EP_DATA	xData;
+
+					TRACE("MQTT REQ CONTROL - EP[%08x]\n", pMsg->xParams.xMQTTReqControl.xEPID);
+
+					xRet = FTNM_EPM_get(pCTX->pEPM, pMsg->xParams.xMQTTReqControl.xEPID, &pEP);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("EP[%08x] not found.\n", pMsg->xParams.xMQTTReqControl.xEPID);
+						break;
+					}
+
+					switch(pMsg->xParams.xMQTTReqControl.xCmd)
+					{
+					case FTNM_MSG_MQTT_REQ_CONTROL_CMD_OFF:
+						{
+							xData.xType = FTM_EP_DATA_TYPE_INT;
+							xData.xValue.nValue = 0;
+						}
+						break;
+
+					case FTNM_MSG_MQTT_REQ_CONTROL_CMD_ON:
+						{
+							xData.xType = FTM_EP_DATA_TYPE_INT;
+							xData.xValue.nValue = 1;
+						}
+						break;
+
+					case FTNM_MSG_MQTT_REQ_CONTROL_CMD_BLINK:
+						{
+							xData.xType = FTM_EP_DATA_TYPE_INT;
+							xData.xValue.nValue = 2;
+						}
+						break;
+					}
+
+					xRet = FTNM_EP_setData(pEP, &xData);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("EP[%08x] set failed.\n", pMsg->xParams.xMQTTReqControl.xEPID);
+						break;	
+					}
+
+				}
+				break;
+
 			case	FTNM_MSG_TYPE_EP_CHANGED:
 				{
-					TRACE("EP changed.\n");
+					FTNM_EP_PTR pEP;
+
+					TRACE("EP[%08x] changed.\n", pMsg->xParams.xEPChanged.xEPID);
+					xRet = FTNM_EPM_get(pCTX->pEPM, pMsg->xParams.xEPChanged.xEPID, &pEP);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("EP[%08x] not found.\n", pMsg->xParams.xEPChanged.xEPID);
+					}
+					else
+					{
+						FTNM_EP_updateData(pEP, &pMsg->xParams.xEPChanged.xData);
+					}
 				}
 				break;
 
@@ -669,6 +824,13 @@ FTM_RET			FTNM_TASK_processing(FTNM_CONTEXT_PTR pCTX)
 				{
 					TRACE("DATA TRANSFER TO SERVER : %08x\n", pMsg->xParams.xEPDataTrans.xEPID);
 					FTNM_SERVICE_notify(FTNM_SERVICE_MQTT_CLIENT, pMsg);
+				}
+				break;
+
+			case	FTNM_MSG_TYPE_RULE:
+				{
+					TRACE("RULE[%d] is %s\n", pMsg->xParams.xRule.xRuleID, 
+						(pMsg->xParams.xRule.xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
 				}
 				break;
 
@@ -731,31 +893,43 @@ FTM_RET	FTNM_getDID(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pBuff, FTM_ULONG ulBuffL
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTNM_getDMC(FTNM_DMC_PTR _PTR_ ppDMC)
+/******************************************************************
+ * EP management interface
+ ******************************************************************/
+
+FTM_RET	FTNM_createEP(FTNM_CONTEXT_PTR pCTX, FTM_EP_PTR pInfo)
 {
-	ASSERT(ppDMC != NULL);
+	ASSERT(pCTX != NULL);
+	ASSERT(pInfo != NULL);
 
-	*ppDMC = &xDMC;
-
-	return	FTM_RET_OK;
+	return	FTDMC_EP_append(&xDMC.xSession, pInfo);
 }
 
-FTM_RET	FTNM_getEPDataInfo(FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount)
+FTM_RET	FTNM_destroyEP(FTNM_CONTEXT_PTR pCTX, FTM_EP_ID xEPID)
 {
-	return	FTNM_DMC_EP_DATA_info(&xDMC, xEPID, pulBeginTime, pulEndTime, pulCount);
+	ASSERT(pCTX != NULL);
+
+	return	FTDMC_EP_remove(&xDMC.xSession, xEPID);
 }
 
-FTM_RET	FTNM_getEPDataCount(FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
+FTM_RET	FTNM_getEPDataList(FTNM_CONTEXT_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG ulStart, FTM_EP_DATA_PTR pDataList, FTM_ULONG ulMaxCount, FTM_ULONG_PTR pulCount)
 {
-	return	FTNM_DMC_EP_DATA_count(&xDMC, xEPID, pulCount);
+	ASSERT(pCTX != NULL);
+	ASSERT(pDataList != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTDMC_EP_DATA_get(&xDMC.xSession, xEPID, ulStart, pDataList, ulMaxCount, pulCount);
 }
 
-#if 0
-FTM_RET	FTNM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg)
+FTM_RET	FTNM_getEPDataInfo(FTNM_CONTEXT_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG_PTR pulBeginTime, FTM_ULONG_PTR pulEndTime, FTM_ULONG_PTR pulCount)
 {
-	return	FTNM_MSGQ_sendSNMPTrap(&xMsgQ, pTrapMsg);
+	return	FTDMC_EP_DATA_info(&xDMC.xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
 }
-#endif
+
+FTM_RET	FTNM_getEPDataCount(FTNM_CONTEXT_PTR pCTX, FTM_EP_ID xEPID, FTM_ULONG_PTR pulCount)
+{
+	return	FTDMC_EP_DATA_count(&xDMC.xSession, xEPID, pulCount);
+}
 
 FTM_RET	FTNM_NOTIFY_quit(FTNM_CONTEXT_PTR pCTX)
 {
@@ -766,7 +940,6 @@ FTM_RET	FTNM_NOTIFY_quit(FTNM_CONTEXT_PTR pCTX)
 
 FTM_RET	FTNM_callback(FTNM_SERVICE_ID xID, FTNM_MSG_TYPE xMsg, FTM_VOID_PTR pData)
 {
-	FTNM_CONTEXT_PTR pCTX = (FTNM_CONTEXT_PTR)pData;
 	switch(xID)
 	{
 	case	FTNM_SERVICE_SERVER:
@@ -781,30 +954,6 @@ FTM_RET	FTNM_callback(FTNM_SERVICE_ID xID, FTNM_MSG_TYPE xMsg, FTM_VOID_PTR pDat
 
 	case	FTNM_SERVICE_SNMPTRAPD:
 		{
-			switch(xMsg)
-			{
-			case	FTNM_MSG_TYPE_EP_CHANGED:
-				{
-					TRACE("Callback : SNMPTRAPD - EP Changed.\n");
-					if (pData != NULL)
-					{
-						FTNM_MSG_EP_CHANGED_PARAMS_PTR pParam = (FTNM_MSG_EP_CHANGED_PARAMS_PTR)pData;
-
-						FTNM_TRIGGERM_updateEP(pCTX->pTriggerM, pParam->xEPID, &pParam->xData);
-						FTNM_DMC_EP_DATA_set(&xDMC, pParam->xEPID, &pParam->xData);
-					}
-					else
-					{
-						ERROR("Invalid service callback parameter!\n");	
-					}
-				}
-				break;
-
-			default:
-				{
-					ERROR("Invalid service callback parameter!\n");	
-				}
-			}
 		}
 		break;
 
@@ -839,3 +988,280 @@ FTM_RET	FTNM_callback(FTNM_SERVICE_ID xID, FTNM_MSG_TYPE xMsg, FTM_VOID_PTR pDat
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTNM_NOTIFY_SNMPTrap(FTNM_CONTEXT_PTR pCTX, FTM_CHAR_PTR pTrapMsg)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pTrapMsg != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR 	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message creation failed.\n");
+		return	xRet;
+	}
+	
+	pMsg->xType = FTNM_MSG_TYPE_SNMPTRAP;
+	strncpy(pMsg->xParams.xSNMPTrap.pString, pTrapMsg, sizeof(pMsg->xParams.xSNMPTrap.pString) - 1);
+
+	xRet = FTNM_MSGQ_push(pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push failed.\n");
+		FTNM_MSG_destroy(&pMsg);
+	}
+
+	return	xRet;
+}
+
+FTM_RET FTNM_NOTIFY_EPChanged(FTNM_CONTEXT_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR 	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message creation failed.\n");
+		return	xRet;
+	}
+	
+	pMsg->xType = FTNM_MSG_TYPE_EP_CHANGED;
+	pMsg->xParams.xEPChanged.xEPID = xEPID;
+	memcpy(&pMsg->xParams.xEPChanged.xData, pData, sizeof(FTM_EP_DATA));
+
+	xRet = FTNM_MSGQ_push(pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push failed.\n");
+		FTNM_MSG_destroy(&pMsg);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTNM_NOTIFY_EPUpdated(FTNM_CONTEXT_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_UPDATED;
+	pMsg->xParams.xEPDataUpdated.xEPID = xEPID;
+	memcpy(&pMsg->xParams.xEPDataUpdated.xData, pData, sizeof(FTM_EP_DATA));
+
+	xRet = FTNM_MSGQ_push(pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTNM_NOTIFY_EPDataSaveToDB(FTNM_CONTEXT_PTR pCTX, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pCTX != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_SAVE_TO_DB;
+	pMsg->xParams.xEPDataUpdated.xEPID = xEPID;
+	memcpy(&pMsg->xParams.xEPDataUpdated.xData, pData, sizeof(FTM_EP_DATA));
+
+	xRet = FTNM_MSGQ_push(pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET		FTNM_NOTIFY_EPDataTransINT
+(
+	FTNM_CONTEXT_PTR	pCTX,
+	FTM_EP_ID 			xEPID, 
+	FTM_INT				nValue,
+	FTM_INT 			nAverage, 
+	FTM_INT 			nCount, 
+	FTM_INT 			nMax, 
+	FTM_INT 			nMin
+)
+{
+	ASSERT(pCTX != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
+	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
+	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_INT;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nValue	= nValue;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nAverage = nAverage;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nCount 	= nCount;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nMax 	= nMax;
+	pMsg->xParams.xEPDataTrans.xValue.xINT.nMin 	= nMin;
+
+	xRet = FTNM_MSGQ_push(pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET		FTNM_NOTIFY_EPDataTransULONG
+(
+	FTNM_CONTEXT_PTR	pCTX,
+	FTM_EP_ID 			xEPID, 
+	FTM_ULONG 			ulValue, 
+	FTM_ULONG 			ulAverage, 
+	FTM_INT 			nCount, 
+	FTM_ULONG 			ulMax, 
+	FTM_ULONG 			ulMin
+)
+{
+	ASSERT(pCTX != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
+	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
+	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_ULONG;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulValue	= ulValue;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulAverage 	= ulAverage;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.nCount 	= nCount;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMax 		= ulMax;
+	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMin 		= ulMin;
+
+	xRet = FTNM_MSGQ_push(pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET		FTNM_NOTIFY_EPDataTransFLOAT
+(
+	FTNM_CONTEXT_PTR	pCTX,
+	FTM_EP_ID 			xEPID, 
+	FTM_FLOAT 			fValue, 
+	FTM_FLOAT 			fAverage, 
+	FTM_INT 			nCount, 
+	FTM_FLOAT 			fMax, 
+	FTM_FLOAT 			fMin
+)
+{
+	ASSERT(pCTX != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
+	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
+	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_FLOAT;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fValue		= fValue;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fAverage 	= fAverage;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.nCount 	= nCount;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMax 		= fMax;
+	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMin 		= fMin;
+
+	xRet = FTNM_MSGQ_push(pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET		FTNM_NOTIFY_EPDataTransBOOL
+(
+	FTNM_CONTEXT_PTR	pCTX,
+	FTNM_EPM_PTR 		pEPM, 
+	FTM_EP_ID 			xEPID, 
+	FTM_BOOL 			bValue
+)
+{
+	ASSERT(pCTX != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_DATA_TRANS;
+	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
+	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_BOOL;
+	pMsg->xParams.xEPDataTrans.xValue.xBOOL.bValue	= bValue;
+
+	xRet = FTNM_MSGQ_push(pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+

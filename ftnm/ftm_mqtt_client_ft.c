@@ -251,6 +251,73 @@ error:
 	return	FTM_RET_MQTT_INVALID_MESSAGE;
 }
 
+FTM_RET	FTM_MQTT_CLIENT_FT_publishEPData
+(
+	FTM_MQTT_CLIENT_PTR pClient, 
+	FTM_EP_ID 			xEPID, 
+	FTM_EP_DATA_PTR		pData
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulMessageLen = 0;
+	FTM_ULONG	ulTime;
+
+	if (pData->ulTime != 0)
+	{
+		ulTime = pData->ulTime;
+	}
+	else
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
+	
+	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	switch(pData->xType)
+	{
+	case	FTM_EP_DATA_TYPE_INT:
+		{
+			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, pData->xValue.nValue);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_ULONG:
+		{
+			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%lu]", ulTime, pData->xValue.ulValue);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_FLOAT:
+		{
+			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%5.3f]", ulTime, pData->xValue.fValue);
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_BOOL:
+		{
+			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, pData->xValue.bValue);
+		}
+		break;
+
+	default:
+		{
+			FATAL("Invalid EP data type.!\n");	
+			return	FTM_RET_ERROR;
+		}
+	}
+
+	TRACE("MESSAGE : %s\n", pMessage);
+	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataINT
 (
 	FTM_MQTT_CLIENT_PTR pClient, 
@@ -267,6 +334,14 @@ FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataINT
 	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
 	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulMessageLen = 0;
+
+	if (ulTime == 0)
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
 
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, nValue);
@@ -295,6 +370,14 @@ FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataULONG
 	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulMessageLen = 0;
 
+	if (ulTime == 0)
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
+
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%lu]", ulTime, ulValue);
 
@@ -322,6 +405,14 @@ FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataFLOAT
 	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulMessageLen = 0;
 
+	if (ulTime == 0)
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
+
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%5.3f]", ulTime, fValue);
 
@@ -344,6 +435,14 @@ FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataBOOL
 	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
 	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulMessageLen = 0;
+
+	if (ulTime == 0)
+	{
+		FTM_TIME	xTime;
+
+		FTM_TIME_getCurrent(&xTime);
+		ulTime = xTime.xTimeval.tv_sec;
+	}
 
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, bValue);

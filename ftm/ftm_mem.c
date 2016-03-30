@@ -119,17 +119,22 @@ FTM_VOID_PTR	FTM_MEM_TRACE_calloc(size_t xNumber, size_t xSize, const char *pFil
 	return	pMB->pMem;
 }
 
-FTM_VOID	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long ulLine)
+FTM_RET	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long ulLine)
 {
 	FTM_MEM_BLOCK_PTR	pMB;
 
 	if (bInitialized == FTM_FALSE)
 	{
-		return	free(pMem);	
+		free(pMem);	
 	}
-
-	if (FTM_LIST_get(pMemList, pMem, (FTM_VOID_PTR _PTR_)&pMB) == FTM_RET_OK)
+	else
 	{
+		if (FTM_LIST_get(pMemList, pMem, (FTM_VOID_PTR _PTR_)&pMB) != FTM_RET_OK)
+		{
+			ERROR("The memory block(%08lx) not found. - %s[%3d]\n", pMem, pFile, ulLine);
+			return	FTM_RET_OUT_OF_MEMORY;
+		}
+	
 		if (bTrace)
 		{
 			MESSAGE("%s[%3d] - %08lx(%d)\n", pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
@@ -138,10 +143,8 @@ FTM_VOID	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long 
 		free(pMB->pFile);
 		free(pMB);
 	}
-	else
-	{
-		ERROR("The memory block(%08lx) not found. - %s[%3d]\n", pMem, pFile, ulLine);
-	}
+	
+	return	FTM_RET_OK;
 }
 
 FTM_INT	FTM_MEM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)

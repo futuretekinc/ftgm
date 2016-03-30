@@ -31,7 +31,7 @@ static netsnmp_session* FTNM_SNMPTRAPD_addSession(FTNM_SNMPTRAPD_PTR pSNMPTRAPD)
 static FTM_RET			FTNM_SNMPTRAPD_closeSessions(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, netsnmp_session * pSessionList);
 static FTM_BOOL			FTNM_SNMPTRAPD_seekTrapCB(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 static FTM_RET			FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR pMsg);
-//static FTM_RET		FTNM_SNMPTRAPD_dumpPDU(netsnmp_pdu 	*pPDU) ;
+static FTM_RET			FTNM_SNMPTRAPD_notifyEPChanged(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
 
 FTM_RET	FTNM_SNMPTRAPD_init(FTNM_CONTEXT_PTR pCTX, FTNM_SNMPTRAPD_PTR pSNMPTRAPD)
 {
@@ -688,9 +688,7 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR p
 	FTNM_SNMPTRAPD_MSG_TYPE	xMsgType = FTNM_SNMPTRAPD_MSG_TYPE_UNKNOWN;	
 	const nx_json 	*pRoot, *pItem;
 
-#if	FTNM_TRACE_SNMPTRAPD_IO
-	TRACE("SNMPTRAPD : %s\n", pMsg);
-#endif
+	INFO("SNMPTRAPD : %s\n", pMsg);
 
 	pRoot = nx_json_parse_utf8(pMsg);
 	if (pRoot == NULL)
@@ -735,6 +733,7 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR p
 						{
 						case	NX_JSON_STRING:
 							{
+								TRACE("VALUE : %s\n", pItem->text_value);
 								switch(xData.xType)
 								{
 								case	FTM_EP_DATA_TYPE_INT:
@@ -754,6 +753,12 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR p
 										xData.xValue.fValue = atof(pItem->text_value);
 									}
 									break;
+
+								case	FTM_EP_DATA_TYPE_BOOL:
+									{
+										xData.xValue.bValue = (strtoul(pItem->text_value, NULL, 10) != 0);
+									}
+									break;
 								}
 		
 							}
@@ -762,12 +767,40 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR p
 						case 	NX_JSON_INTEGER:
 						case	NX_JSON_BOOL:
 							{
-								xData.xValue.nValue = pItem->int_value;
+								TRACE("VALUE : %d\n", pItem->int_value);
+								switch(xData.xType)
+								{
+								case	FTM_EP_DATA_TYPE_INT:
+									{
+										xData.xValue.nValue = pItem->int_value;
+									}
+									break;
+		
+								case	FTM_EP_DATA_TYPE_ULONG:
+									{
+										xData.xValue.ulValue = pItem->int_value;
+									}
+									break;
+		
+								case	FTM_EP_DATA_TYPE_FLOAT:
+									{
+										xData.xValue.fValue = pItem->int_value;
+									}
+									break;
+								
+								case	FTM_EP_DATA_TYPE_BOOL:
+									{
+										xData.xValue.bValue = pItem->int_value;
+									}
+									break;
+								}
+
 							}
 							break;
 		
 						case	NX_JSON_DOUBLE:
 							{
+								TRACE("VALUE : %lu\n", pItem->dbl_value);
 								switch(xData.xType)
 								{
 								case	FTM_EP_DATA_TYPE_INT:
@@ -785,6 +818,12 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR p
 								case	FTM_EP_DATA_TYPE_FLOAT:
 									{
 										xData.xValue.fValue = pItem->dbl_value;
+									}
+									break;
+
+								case	FTM_EP_DATA_TYPE_BOOL:
+									{
+										xData.xValue.bValue = (pItem->dbl_value != 0);
 									}
 									break;
 								}
@@ -823,15 +862,11 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR p
 								}
 							}
 						}
-
-						if (pSNMPTRAPD->fServiceCB != NULL)
+						
+						xRet = FTNM_SNMPTRAPD_notifyEPChanged(pSNMPTRAPD, xEPID, &xData);
+						if (xRet != FTM_RET_OK)
 						{
-							FTNM_MSG_EP_CHANGED_PARAMS xParam;
-							
-							xParam.xEPID = xEPID;
-							memcpy(&xParam.xData, &xData, sizeof(xData));
-
-							pSNMPTRAPD->fServiceCB(pSNMPTRAPD->xServiceID, FTNM_MSG_TYPE_EP_CHANGED, &xParam);
+							ERROR("Notify failed.\n");	
 						}
 					}
 					else
@@ -865,6 +900,39 @@ FTM_RET	FTNM_SNMPTRAPD_receiveTrap(FTNM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR p
 
 	return	xRet;
 
+}
+
+FTM_RET	FTNM_SNMPTRAPD_notifyEPChanged
+(
+	FTNM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_EP_ID 			xEPID, 
+	FTM_EP_DATA_PTR 	pData
+)
+{
+	ASSERT(pSNMPTRAPD != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET			xRet;
+	FTNM_MSG_PTR	pMsg;
+
+	xRet = FTNM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pMsg->xType = FTNM_MSG_TYPE_EP_CHANGED;
+	pMsg->xParams.xEPChanged.xEPID = xEPID;
+	memcpy(&pMsg->xParams.xEPChanged.xData, pData, sizeof(FTM_EP_DATA));
+
+	xRet = FTNM_MSGQ_push(pSNMPTRAPD->pCTX->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTNM_MSG_destroy(&pMsg);
+		return	xRet;
+	}
+	return	FTM_RET_OK;
 }
 
 #if 0

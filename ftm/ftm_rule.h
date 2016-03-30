@@ -10,9 +10,16 @@
 
 typedef	FTM_ULONG	FTM_RULE_ID, _PTR_ FTM_RULE_ID_PTR;
 
+typedef	enum
+{
+	FTM_RULE_STATE_ACTIVATE,
+	FTM_RULE_STATE_DEACTIVATE
+}	FTM_RULE_STATE, _PTR_ FTM_RULE_STATE_PTR;
+
 typedef	struct
 {
 	FTM_RULE_ID		xID;
+	FTM_RULE_STATE	xState;
 	struct 
 	{
 		FTM_ULONG		ulTriggers;

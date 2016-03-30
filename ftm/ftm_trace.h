@@ -60,7 +60,7 @@ FTM_CHAR_PTR	FTM_TRACE_levelString(FTM_ULONG ulLevel);
 FTM_RET	FTM_TRACE_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
 
 
-#define	ASSERT(x)	{ if (!(x)) FTM_TRACE_out(FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, "%s", #x); }
+#define	ASSERT(x)	{ if (!(x)) FTM_TRACE_out(FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, "%s\n", #x); }
 
 FTM_VOID	FTM_TRACE_packetDump
 (

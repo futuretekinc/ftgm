@@ -156,31 +156,85 @@ FTM_RET	FTM_EP_remove(FTM_EP_PTR pEP)
 {
 	ASSERT(pEP != NULL);
 
+	if (pEPList == NULL)
+	{
+		ERROR("EP list is not initialized.\n");
+		FTM_EP_init();
+	}
+
 	return	FTM_LIST_remove(pEPList, pEP);
 }
 
 FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount)
 {
-	ASSERT(pEPList != NULL);
 	ASSERT(pulCount != NULL);
+
+	if (pEPList == NULL)
+	{
+		ERROR("EP list is not initialized.\n");
+		FTM_EP_init();
+	}
 
 	return	FTM_LIST_count(pEPList, pulCount);
 }
 
 FTM_RET	FTM_EP_get(FTM_EP_ID xEPID, FTM_EP_PTR _PTR_ ppEP)
 {
-	ASSERT(pEPList != NULL);
 	ASSERT(ppEP != NULL);
+
+	if (pEPList == NULL)
+	{
+		ERROR("EP list is not initialized.\n");
+		FTM_EP_init();
+	}
 
 	return	FTM_LIST_get(pEPList, (FTM_VOID_PTR)&xEPID, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
 FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppEP)
 {
-	ASSERT(pEPList != NULL);
 	ASSERT(ppEP != NULL);
 
+	if (pEPList == NULL)
+	{
+		ERROR("EP list is not initialized.\n");
+		FTM_EP_init();
+	}
+
 	return	FTM_LIST_getAt(pEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
+}
+
+FTM_RET	FTM_EP_getDataType(FTM_EP_PTR pEP, FTM_EP_DATA_TYPE_PTR pType)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pType != NULL);
+
+	switch(pEP->xEPID & 0x7F000000)
+	{
+	case	FTM_EP_TYPE_TEMPERATURE:
+	case	FTM_EP_TYPE_HUMIDITY:
+	case	FTM_EP_TYPE_VOLTAGE:
+	case	FTM_EP_TYPE_CURRENT:
+	case	FTM_EP_TYPE_GAS:
+	case	FTM_EP_TYPE_POWER:
+	case	FTM_EP_TYPE_AI:
+		{
+			*pType = FTM_EP_DATA_TYPE_FLOAT;
+		}
+		break;
+
+	case	FTM_EP_TYPE_DI:
+	case	FTM_EP_TYPE_DO:
+	case	FTM_EP_TYPE_COUNT:
+	case	FTM_EP_TYPE_MULTI:
+	default:
+		{
+			*pType = FTM_EP_DATA_TYPE_INT;
+		}
+		break;
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_BOOL		FTM_EP_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator)

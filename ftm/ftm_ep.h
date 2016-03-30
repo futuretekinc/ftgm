@@ -28,6 +28,33 @@ typedef	unsigned long	FTM_EP_STATE, 	_PTR_ FTM_EP_STATE_PTR;
 #define	FTM_EP_TYPE_COUNT			0x0B000000
 #define	FTM_EP_TYPE_MULTI			0x7F000000
 
+typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
+
+#define	FTM_EP_DATA_TYPE_INT	0
+#define	FTM_EP_DATA_TYPE_ULONG	1
+#define	FTM_EP_DATA_TYPE_FLOAT	2
+#define	FTM_EP_DATA_TYPE_BOOL	3
+
+typedef	enum
+{
+	FTM_EP_DATA_STATE_VALID =0,
+	FTM_EP_DATA_STATE_INVALID,
+} FTM_EP_DATA_STATE, _PTR_ FTM_EP_DATA_STATE_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulTime;
+	FTM_EP_DATA_TYPE	xType;
+	FTM_EP_DATA_STATE	xState;
+	union 
+	{
+		FTM_INT		nValue;
+		FTM_ULONG	ulValue;
+		FTM_DOUBLE	fValue;
+		FTM_BOOL	bValue;
+	}	xValue;
+}	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
+
 typedef	enum
 {
 	FTM_EP_LIMIT_TYPE_COUNT = 0,
@@ -93,37 +120,13 @@ FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount);
 FTM_RET	FTM_EP_get(FTM_EP_ID xEPID, FTM_EP_PTR _PTR_ ppNode);
 FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppNode);
 
+FTM_RET	FTM_EP_getDataType(FTM_EP_PTR pEP, FTM_EP_DATA_TYPE_PTR pType);
+
 FTM_RET			FTM_initEPTypeString(void);
 FTM_RET			FTM_finalEPTypeString(void);
 FTM_RET			FTM_appendEPTypeString(FTM_EP_TYPE xType, FTM_CHAR_PTR pTypeString);
 FTM_CHAR_PTR	FTM_getEPTypeString(FTM_EP_TYPE xType);
 
-typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
-
-#define	FTM_EP_DATA_TYPE_INT	0
-#define	FTM_EP_DATA_TYPE_ULONG	1
-#define	FTM_EP_DATA_TYPE_FLOAT	2
-#define	FTM_EP_DATA_TYPE_BOOL	3
-
-typedef	enum
-{
-	FTM_EP_DATA_STATE_VALID =0,
-	FTM_EP_DATA_STATE_INVALID,
-} FTM_EP_DATA_STATE, _PTR_ FTM_EP_DATA_STATE_PTR;
-
-typedef	struct
-{
-	FTM_ULONG			ulTime;
-	FTM_EP_DATA_TYPE	xType;
-	FTM_EP_DATA_STATE	xState;
-	union 
-	{
-		FTM_INT		nValue;
-		FTM_ULONG	ulValue;
-		FTM_DOUBLE	fValue;
-		FTM_BOOL	bValue;
-	}	xValue;
-}	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
 
 FTM_RET	FTM_EP_DATA_create(FTM_EP_DATA_PTR pSrcData, FTM_EP_DATA_PTR _PTR_ ppData);
 FTM_RET	FTM_EP_DATA_createInt(FTM_INT nValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);

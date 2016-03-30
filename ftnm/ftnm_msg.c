@@ -92,58 +92,6 @@ FTM_RET	FTNM_MSGQ_final(FTNM_MSG_QUEUE_PTR pMsgQ)
 	return	FTM_MSGQ_final(&pMsgQ->xQueue);	
 }
 
-FTM_RET	FTNM_MSGQ_sendSNMPTrap(FTNM_MSG_QUEUE_PTR pMsgQ, FTM_CHAR_PTR pTrapMsg)
-{
-	ASSERT(pMsgQ != NULL);
-	ASSERT(pTrapMsg != NULL);
-	FTM_RET			xRet;
-	FTNM_MSG_PTR 	pMsg;
-
-	xRet = FTNM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
-	
-	pMsg->xType = FTNM_MSG_TYPE_SNMPTRAP;
-	strncpy(pMsg->xParams.xSNMPTrap.pString, pTrapMsg, sizeof(pMsg->xParams.xSNMPTrap.pString) - 1);
-
-	xRet = FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		FTNM_MSG_destroy(&pMsg);
-	}
-
-	return	xRet;
-}
-
-FTM_RET FTNM_MSGQ_sendEPChanged(FTNM_MSG_QUEUE_PTR pMsgQ, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
-{
-	ASSERT(pMsgQ != NULL);
-	ASSERT(pData != NULL);
-	FTM_RET			xRet;
-	FTNM_MSG_PTR pMsg;
-
-	TRACE("Send EP[%08x] changed!\n", xEPID);
-	xRet = FTNM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
-	
-	pMsg->xType = FTNM_MSG_TYPE_EP_CHANGED;
-	pMsg->xParams.xEPChanged.xEPID = xEPID;
-	memcpy(&pMsg->xParams.xEPChanged.xData, pData, sizeof(FTM_EP_DATA));
-
-	xRet = FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		FTNM_MSG_destroy(&pMsg);
-	}
-
-	return	xRet;
-}
-
 FTM_RET	FTNM_MSGQ_sendQuit(FTNM_MSG_QUEUE_PTR pMsgQ)
 {
 	ASSERT(pMsgQ != NULL);
