@@ -1,0 +1,341 @@
+#ifndef	__FTM_OM_PARAMS_H__
+#define	__FTM_OM_PARAMS_H__
+
+#include "ftm_om_types.h"
+#include "ftm_om_server_cmd.h"
+#include "ftm_om_msg.h"
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+}	FTM_OM_REQ_PARAMS, _PTR_ FTM_OM_REQ_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+}	FTM_OM_RESP_PARAMS, _PTR_ FTM_OM_RESP_PARAMS_PTR;
+
+typedef	struct 
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_NODE		xNodeInfo;
+}	FTM_OM_REQ_NODE_CREATE_PARAMS,	_PTR_ FTM_OM_REQ_NODE_CREATE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_CHAR			pDID[FTM_DID_LEN + 1];
+}	FTM_OM_RESP_NODE_CREATE_PARAMS, _PTR_ FTM_OM_RESP_NODE_CREATE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pDID[FTM_DID_LEN+1];
+}	FTM_OM_REQ_NODE_DESTROY_PARAMS, _PTR_ FTM_OM_REQ_NODE_DESTROY_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+}	FTM_OM_RESP_NODE_DESTROY_PARAMS, _PTR_ FTM_OM_RESP_NODE_DESTROY_PARAMS_PTR;
+
+typedef struct	
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+}	FTM_OM_REQ_NODE_COUNT_PARAMS, _PTR_ FTM_OM_REQ_NODE_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+}	FTM_OM_RESP_NODE_COUNT_PARAMS, _PTR_ FTM_OM_RESP_NODE_COUNT_PARAMS_PTR;
+
+typedef struct	
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pDID[FTM_DID_LEN+1];
+}	FTM_OM_REQ_NODE_GET_PARAMS, _PTR_ FTM_OM_REQ_NODE_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_NODE		xNodeInfo;
+}	FTM_OM_RESP_NODE_GET_PARAMS, _PTR_ FTM_OM_RESP_NODE_GET_PARAMS_PTR;
+
+typedef struct	
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_ULONG			ulIndex;
+}	FTM_OM_REQ_NODE_GET_AT_PARAMS, _PTR_ FTM_OM_REQ_NODE_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_NODE		xNodeInfo;
+}	FTM_OM_RESP_NODE_GET_AT_PARAMS, _PTR_ FTM_OM_RESP_NODE_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP     	xInfo;
+}	FTM_OM_REQ_EP_CREATE_PARAMS, _PTR_ FTM_OM_REQ_EP_CREATE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+}	FTM_OM_RESP_EP_CREATE_PARAMS, _PTR_	FTM_OM_RESP_EP_CREATE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID 			xEPID;
+}	FTM_OM_REQ_EP_DESTROY_PARAMS, _PTR_	FTM_OM_REQ_EP_DESTROY_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+}	FTM_OM_RESP_EP_DESTROY_PARAMS, _PTR_ 	FTM_OM_RESP_EP_DESTROY_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_TYPE		xType;
+}	FTM_OM_REQ_EP_COUNT_PARAMS, _PTR_ 	FTM_OM_REQ_EP_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			nCount;
+}	FTM_OM_RESP_EP_COUNT_PARAMS, _PTR_	FTM_OM_RESP_EP_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_TYPE		xType;
+	FTM_ULONG			ulMaxCount;
+}	FTM_OM_REQ_EP_GET_LIST_PARAMS, _PTR_ 	FTM_OM_REQ_EP_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+	FTM_EP_ID			pEPIDList[];
+}	FTM_OM_RESP_EP_GET_LIST_PARAMS, _PTR_	FTM_OM_RESP_EP_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTM_OM_REQ_EP_GET_PARAMS, _PTR_ 	FTM_OM_REQ_EP_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_EP			xInfo;
+}	FTM_OM_RESP_EP_GET_PARAMS, _PTR_	FTM_OM_RESP_EP_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_ULONG			ulIndex;
+}	FTM_OM_REQ_EP_GET_AT_PARAMS, _PTR_	FTM_OM_REQ_EP_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_EP			xInfo;
+}	FTM_OM_RESP_EP_GET_AT_PARAMS, _PTR_	FTM_OM_RESP_EP_GET_AT_PARAMS_PTR;
+
+typedef struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTM_OM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS, _PTR_ FTM_OM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR;
+
+typedef struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTM_OM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS, _PTR_ FTM_OM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_EP_ID			xEPID;
+	FTM_EP_DATA			xData;
+}	FTM_OM_REQ_EP_DATA_ADD_PARAMS, _PTR_ FTM_OM_REQ_EP_DATA_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTM_OM_RESP_EP_DATA_ADD_PARAMS, _PTR_	FTM_OM_RESP_EP_DATA_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTM_OM_REQ_EP_DATA_INFO_PARAMS, _PTR_ FTM_OM_REQ_EP_DATA_INFO_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulBeginTime;
+	FTM_ULONG			ulEndTime;
+	FTM_ULONG			ulCount;
+}	FTM_OM_RESP_EP_DATA_INFO_PARAMS, _PTR_	FTM_OM_RESP_EP_DATA_INFO_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTM_OM_REQ_EP_DATA_GET_LAST_PARAMS, _PTR_	FTM_OM_REQ_EP_DATA_GET_LAST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_EP_DATA 		xData;
+}	FTM_OM_RESP_EP_DATA_GET_LAST_PARAMS, _PTR_ FTM_OM_RESP_EP_DATA_GET_LAST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+	FTM_ULONG			nStartIndex;
+	FTM_ULONG			nCount; 
+}	FTM_OM_REQ_EP_DATA_GET_LIST_PARAMS, _PTR_	FTM_OM_REQ_EP_DATA_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			nCount; 
+	FTM_EP_DATA 		pData[];
+}	FTM_OM_RESP_EP_DATA_GET_LIST_PARAMS, _PTR_ FTM_OM_RESP_EP_DATA_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_EP_ID			xEPID;
+	FTM_ULONG 			nIndex; 
+	FTM_ULONG			nCount;
+}	FTM_OM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTM_OM_REQ_EP_DATA_DEL_PARAMS_PTR; 
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTM_OM_RESP_EP_DATA_DEL_PARAMS, _PTR_ 	FTM_OM_RESP_EP_DATA_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP_ID			xEPID;
+}	FTM_OM_REQ_EP_DATA_COUNT_PARAMS, _PTR_ FTM_OM_REQ_EP_DATA_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+}	FTM_OM_RESP_EP_DATA_COUNT_PARAMS, _PTR_ FTM_OM_RESP_EP_DATA_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTM_OM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				nRet;
+	FTM_OM_MSG			xMsg;
+}	FTM_OM_RESP_NOTIFY_PARAMS, _PTR_ FTM_OM_RESP_NOTIFY_PARAMS_PTR;
+
+#endif

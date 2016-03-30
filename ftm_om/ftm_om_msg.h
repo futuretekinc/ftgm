@@ -1,0 +1,189 @@
+#ifndef	_FTM_OM_MSG_H_
+#define	_FTM_OM_MSG_H_
+
+#include "ftm.h"
+
+#define	FTM_OM_MSG_STRING_LENGTH	1024
+#define	FTM_OM_MSG_REQ_ID_LENGTH	32
+
+#if  1
+typedef	long long 	FTM_OM_MSG_TYPE, _PTR_ FTM_OM_MSG_TYPE_PTR;
+
+#define	FTM_OM_MSG_TYPE_QUIT 					(1 << 0)
+#define	FTM_OM_MSG_TYPE_SNMPTRAP				(1 << 1)
+#define	FTM_OM_MSG_TYPE_EP_CHANGED			(1 << 2)
+#define	FTM_OM_MSG_TYPE_EP_DATA_UPDATED		(1 << 3)
+#define	FTM_OM_MSG_TYPE_EP_DATA_SAVE_TO_DB	(1 << 4)
+#define	FTM_OM_MSG_TYPE_EP_DATA_TRANS			(1 << 5)
+#define	FTM_OM_MSG_TYPE_DMC_CONNECTED			(1 << 6)
+#define	FTM_OM_MSG_TYPE_DMC_DISCONNECTED		(1 << 7)
+#define	FTM_OM_MSG_TYPE_MQTT_REQ				(1 << 8)
+#define	FTM_OM_MSG_TYPE_MQTT_REQ_TIME_SYNC	(1 << 9)
+#define	FTM_OM_MSG_TYPE_MQTT_REQ_CONTROL		(1 << 10)
+#define	FTM_OM_MSG_TYPE_RULE					(1 << 11)
+#else
+typedef	enum
+{
+	FTM_OM_MSG_TYPE_QUIT = 0,
+	FTM_OM_MSG_TYPE_SNMPTRAP,
+	FTM_OM_MSG_TYPE_EP_CHANGED,
+	FTM_OM_MSG_TYPE_EP_DATA_UPDATED,
+	FTM_OM_MSG_TYPE_EP_DATA_SAVE_TO_DB,
+	FTM_OM_MSG_TYPE_DMC_CONNECTED,
+	FTM_OM_MSG_TYPE_DMC_DISCONNECTED,
+	FTM_OM_MSG_TYPE_MQTT_REQ
+}	FTM_OM_MSG_TYPE, _PTR_ FTM_OM_MSG_TYPE_PTR;
+#endif
+
+typedef	struct
+{
+	FTM_CHAR	pString[FTM_OM_MSG_STRING_LENGTH+1];	
+}	FTM_OM_MSG_SNMPTRAP_PARAMS, _PTR_ FTM_OM_MSG_SNMPTRAP_PARAMS_PTR;
+
+typedef struct
+{
+	FTM_EP_ID	xEPID;
+	FTM_EP_DATA	xData;
+}	FTM_OM_MSG_EP_CHANGED_PARAMS, _PTR_ FTM_OM_MSG_EP_CHANGED_PARAMS_PTR;
+
+typedef struct
+{
+	FTM_EP_ID	xEPID;
+	FTM_EP_DATA	xData;
+}	FTM_OM_MSG_EP_DATA_UPDATED_PARAMS, _PTR_ FTM_OM_MSG_EP_DATA_UPDATED_PARAMS_PTR;
+
+typedef struct
+{
+	FTM_EP_ID	xEPID;
+	FTM_EP_DATA	xData;
+}	FTM_OM_MSG_EP_DATA_SAVE_TO_DB_PARAMS, _PTR_ FTM_OM_MSG_EP_DATA_SAVE_TO_DB_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_EP_ID	xEPID;
+	FTM_ULONG	nType;
+	FTM_ULONG	ulTime;
+	union
+	{
+		struct
+		{
+			FTM_INT		nValue;
+			FTM_INT		nAverage;
+			FTM_INT		nCount;
+			FTM_INT		nMax;
+			FTM_INT		nMin;
+		}	xINT;
+		struct
+		{
+			FTM_ULONG	ulValue;
+			FTM_ULONG	ulAverage;
+			FTM_INT		nCount;
+			FTM_ULONG	ulMax;
+			FTM_ULONG	ulMin;
+		}	xULONG;
+		struct
+		{
+			FTM_FLOAT	fValue;
+			FTM_FLOAT	fAverage;
+			FTM_INT		nCount;
+			FTM_FLOAT	fMax;
+			FTM_FLOAT	fMin;
+		}	xFLOAT;
+		struct
+		{
+			FTM_BOOL	bValue;
+		}	xBOOL;
+	}	xValue;
+}	FTM_OM_MSG_EP_DATA_TRANS_PARAMS, _PTR_ FTM_OM_MSG_EP_DATA_TRANS_PARAMS_PTR;
+
+typedef	enum
+{
+	FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_OFF,
+	FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_ON,
+	FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_BLINK
+}	FTM_OM_MSG_MQTT_REQ_CONTROL_CMD, _PTR_ FTM_OM_MSG_MATT_REQ_CONTROL_CMD_PTR;
+	
+typedef	struct
+{
+	FTM_CHAR		pReqID[FTM_OM_MSG_REQ_ID_LENGTH+1];
+	FTM_ULONG		ulMethod;
+	FTM_ULONG		ulTime;
+	union
+	{
+		struct
+		{
+			FTM_ULONG		ulTime;
+		}	xTimeSync;
+
+		struct
+		{
+			FTM_ULONG		ulReportInterval;
+		}	xSetProperty;
+			
+		struct
+		{
+			FTM_CHAR						pID[32];
+			FTM_OM_MSG_MQTT_REQ_CONTROL_CMD	xCmd;
+			struct
+			{
+				FTM_ULONG	ulDuration;	
+			} xOptions;
+		}	xControlActuator;
+	}	xParams;
+}	FTM_OM_MSG_MQTT_REQ_PARAMS, _PTR_ FTM_OM_MSG_MQTT_REQ_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_CHAR		pReqID[FTM_OM_MSG_REQ_ID_LENGTH+1];
+	FTM_EP_ID		xEPID;
+	FTM_OM_MSG_MQTT_REQ_CONTROL_CMD	xCmd;
+	struct
+	{
+		FTM_ULONG	ulDuration;	
+	} xOptions;
+}	FTM_OM_MSG_MQTT_REQ_CONTROL_PARAMS, _PTR_ FTM_OM_MSG_MQTT_REQ_CONTROL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_RULE_ID		xRuleID;
+	FTM_RULE_STATE	xRuleState;
+}	FTM_OM_MSG_RULE_PARAMS, _PTR_ FTM_OM_MSG_RULE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_OM_MSG_TYPE	xType;
+	union
+	{
+		FTM_OM_MSG_SNMPTRAP_PARAMS			xSNMPTrap;
+		FTM_OM_MSG_EP_CHANGED_PARAMS			xEPChanged;
+		FTM_OM_MSG_EP_DATA_UPDATED_PARAMS		xEPDataUpdated;
+		FTM_OM_MSG_EP_DATA_SAVE_TO_DB_PARAMS	xEPDataSaveToDB;
+		FTM_OM_MSG_EP_DATA_TRANS_PARAMS		xEPDataTrans;
+		FTM_OM_MSG_MQTT_REQ_PARAMS			xMQTTReq;
+		FTM_OM_MSG_MQTT_REQ_CONTROL_PARAMS	xMQTTReqControl;
+		FTM_OM_MSG_RULE_PARAMS				xRule;
+	}	xParams;
+} FTM_OM_MSG, _PTR_ FTM_OM_MSG_PTR;
+
+typedef struct
+{
+	FTM_MSG_QUEUE	xQueue;
+} FTM_OM_MSG_QUEUE, _PTR_ FTM_OM_MSG_QUEUE_PTR;
+
+FTM_RET	FTM_OM_MSG_create(FTM_OM_MSG_PTR _PTR_ ppMsg);
+FTM_RET	FTM_OM_MSG_destroy(FTM_OM_MSG_PTR _PTR_ ppMsg);
+
+FTM_RET FTM_OM_MSGQ_create(FTM_OM_MSG_QUEUE_PTR _PTR_ ppMsgQ);
+FTM_RET FTM_OM_MSGQ_destroy(FTM_OM_MSG_QUEUE_PTR _PTR_ ppMsgQ);
+
+FTM_RET FTM_OM_MSGQ_init(FTM_OM_MSG_QUEUE_PTR pMsgQ);
+FTM_RET FTM_OM_MSGQ_final(FTM_OM_MSG_QUEUE_PTR pMsgQ);
+
+FTM_RET	FTM_OM_MSGQ_push(FTM_OM_MSG_QUEUE_PTR pMsgQ, FTM_OM_MSG_PTR pMsg);
+FTM_RET	FTM_OM_MSGQ_pop(FTM_OM_MSG_QUEUE_PTR pMsgQ, FTM_OM_MSG_PTR _PTR_ ppMsg);
+FTM_RET	FTM_OM_MSGQ_timedPop(FTM_OM_MSG_QUEUE_PTR pMsgQ, FTM_ULONG ulTimeout, FTM_OM_MSG_PTR _PTR_ ppMsg);
+FTM_RET	FTM_OM_MSGQ_sendSNMPTrap(FTM_OM_MSG_QUEUE_PTR pMsgQ, FTM_CHAR_PTR pTrapMsg);
+FTM_RET FTM_OM_MSGQ_sendEPChanged(FTM_OM_MSG_QUEUE_PTR pMsgQ, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
+FTM_RET	FTM_OM_MSGQ_sendQuit(FTM_OM_MSG_QUEUE_PTR pMsgQ);
+
+#endif
