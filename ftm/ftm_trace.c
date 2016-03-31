@@ -358,7 +358,7 @@ FTM_RET	FTM_TRACE_out
 
 	if (bFunctionInfo || (bLine && (pFunction != NULL)))
 	{
-		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%32s[%4d] - ", pFunction, nLine);
+		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%s[%04d] - ", pFunction, nLine);
 	}
 	nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, format, argptr);
 	va_end(argptr);

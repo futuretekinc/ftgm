@@ -334,6 +334,7 @@ int main(int nArgc, char *pArgv[])
 	FTM_BOOL	bDBErase = FTM_FALSE;
 	FTM_CHAR	pConfigFileName[1024];
 	FTM_CHAR	pObjectFileName[1024];
+	FTM_SHELL	xShell;
 
 	FTM_MEM_init();
 	
@@ -458,10 +459,11 @@ int main(int nArgc, char *pArgv[])
 	else
 	{
 		FTDMS_start(&xServer);
-		FTM_SHELL_init();
-		FTM_SHELL_setPrompt(FTDMS_pPrompt);
-		FTM_SHELL_addCmds(FTDMS_pCmdList,FTDMS_ulCmdCount);
-		FTM_SHELL_run();
+		FTM_SHELL_init(&xShell);
+		FTM_SHELL_setPrompt(&xShell, FTDMS_pPrompt);
+		FTM_SHELL_addCmds(&xShell, FTDMS_pCmdList,FTDMS_ulCmdCount);
+		FTM_SHELL_run(&xShell);
+		FTM_SHELL_final(&xShell);
 		FTDMS_stop(&xServer);
 	}
 

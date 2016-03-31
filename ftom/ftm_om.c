@@ -12,6 +12,7 @@
 #include "ftm_om_service.h"
 #include "ftm_om_server.h"
 #include "ftm_om_dmc.h"
+#include "ftm_om_shell.h"
 #include "ftm_mqtt_client.h"
 #include "ftm_om_msg.h"
 #include "ftm_om_utils.h"
@@ -35,8 +36,9 @@ static 	FTM_RET	FTM_OM_callback(FTM_OM_SERVICE_ID xID, FTM_OM_MSG_TYPE xMsg, FTM
 static	FTM_OM_SERVER		xServer;
 static	FTM_OM_SNMPC		xSNMPC;
 static	FTM_OM_SNMPTRAPD	xSNMPTRAPD;
-static	FTM_OM_DMC		xDMC;
-static	FTM_MQTT_CLIENT	xMQTTC;
+static	FTM_OM_DMC			xDMC;
+static	FTM_OM_SHELL		xShell;
+static	FTM_MQTT_CLIENT		xMQTTC;
 
 static 	FTM_OM_SERVICE	pServices[] =
 {
@@ -112,6 +114,21 @@ static 	FTM_OM_SERVICE	pServices[] =
 		.fShowConfig=	(FTM_OM_SERVICE_SHOW_CONFIG)FTM_MQTT_CLIENT_showConfig,
 		.fNotify	=	(FTM_OM_SERVICE_NOTIFY)FTM_MQTT_CLIENT_notify,
 		.pData		= 	(FTM_VOID_PTR)&xMQTTC
+	},
+	{
+		.xType		=	FTM_OM_SERVICE_SHELL,
+		.xID		=	FTM_OM_SERVICE_SHELL,
+		.pName		=	"Shell",
+		.fInit		=	(FTM_OM_SERVICE_INIT)FTM_OM_SHELL_init,
+		.fFinal		=	(FTM_OM_SERVICE_FINAL)FTM_OM_SHELL_final,
+		.fStart 	=	(FTM_OM_SERVICE_START)FTM_OM_SHELL_start,
+		.fStop		=	(FTM_OM_SERVICE_STOP)FTM_OM_SHELL_stop,
+		.fSetCallback=	NULL,
+		.fCallback	=	NULL,
+		.fLoadFromFile=	(FTM_OM_SERVICE_LOAD_FROM_FILE)FTM_OM_SHELL_loadFromFile,
+		.fShowConfig=	(FTM_OM_SERVICE_SHOW_CONFIG)FTM_OM_SHELL_showConfig,
+		.fNotify	=	(FTM_OM_SERVICE_NOTIFY)FTM_OM_SHELL_notify,
+		.pData		= 	(FTM_VOID_PTR)&xShell
 	},
 };
 
@@ -812,7 +829,6 @@ FTM_RET			FTM_OM_TASK_processing(FTM_OM_PTR pOM)
 
 			case	FTM_OM_MSG_TYPE_EP_DATA_SAVE_TO_DB:
 				{
-					TRACE("DATA SAVE TO DB : %08x\n", pMsg->xParams.xEPDataUpdated.xEPID);
 					FTM_OM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
 					FTM_OM_DMC_EP_DATA_set(&xDMC, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
 				}
@@ -828,7 +844,6 @@ FTM_RET			FTM_OM_TASK_processing(FTM_OM_PTR pOM)
 
 			case	FTM_OM_MSG_TYPE_EP_DATA_TRANS:
 				{
-					TRACE("DATA TRANSFER TO SERVER : %08x\n", pMsg->xParams.xEPDataTrans.xEPID);
 					FTM_OM_SERVICE_notify(FTM_OM_SERVICE_MQTT_CLIENT, pMsg);
 				}
 				break;
@@ -1009,6 +1024,40 @@ FTM_RET	FTM_OM_NOTIFY_quit(FTM_OM_PTR pOM)
 	return	FTM_RET_SHELL_QUIT;
 }
 
+FTM_RET	FTM_OM_NOTIFY_rule
+(
+	FTM_OM_PTR 			pOM,
+	FTM_OM_RULE_ID		xRuleID,
+	FTM_OM_RULE_STATE	xRuleState
+)
+{
+	ASSERT(pOM != NULL);
+
+	FTM_RET			xRet;
+	FTM_OM_MSG_PTR	pMsg;
+
+	xRet = FTM_OM_MSG_create(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message creation failed.\n");
+		return	xRet;
+	}
+
+	pMsg->xType 					= FTM_OM_MSG_TYPE_RULE;
+	pMsg->xParams.xRule.xRuleID 	= xRuleID;
+	pMsg->xParams.xRule.xRuleState 	= xRuleState;
+
+	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message send failed.\n");
+		FTM_OM_MSG_destroy(&pMsg);		
+		return	xRet;
+	}
+
+	return	xRet;
+}
+
 FTM_RET	FTM_OM_callback(FTM_OM_SERVICE_ID xID, FTM_OM_MSG_TYPE xMsg, FTM_VOID_PTR pData)
 {
 	switch(xID)
@@ -1058,34 +1107,6 @@ FTM_RET	FTM_OM_callback(FTM_OM_SERVICE_ID xID, FTM_OM_MSG_TYPE xMsg, FTM_VOID_PT
 	}
 
 	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_OM_NOTIFY_SNMPTrap(FTM_OM_PTR pOM, FTM_CHAR_PTR pTrapMsg)
-{
-	ASSERT(pOM != NULL);
-	ASSERT(pTrapMsg != NULL);
-
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR 	pMsg;
-
-	xRet = FTM_OM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message creation failed.\n");
-		return	xRet;
-	}
-	
-	pMsg->xType = FTM_OM_MSG_TYPE_SNMPTRAP;
-	strncpy(pMsg->xParams.xSNMPTrap.pString, pTrapMsg, sizeof(pMsg->xParams.xSNMPTrap.pString) - 1);
-
-	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push failed.\n");
-		FTM_OM_MSG_destroy(&pMsg);
-	}
-
-	return	xRet;
 }
 
 FTM_RET FTM_OM_NOTIFY_EPChanged(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)

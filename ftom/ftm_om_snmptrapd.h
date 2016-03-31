@@ -7,7 +7,7 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
 #include "ftm.h"
-#include "ftm_om_snmp.h"
+#include "ftm_snmp.h"
 #include "ftm_om_service.h"
 
 #define	FTM_OM_SNMPTRAPD_NAME_LENGTH	128
@@ -36,15 +36,26 @@ typedef	struct
 	pthread_t				xPThread;
 	netsnmp_transport 		*pTransport;
 
-	FTM_OM_PTR		pOM;
-	FTM_OM_SERVICE_ID			xServiceID;
+	FTM_OM_PTR				pOM;
+	FTM_OM_SERVICE_ID		xServiceID;
 	FTM_OM_SERVICE_CALLBACK	fServiceCB;
 }	FTM_OM_SNMPTRAPD, _PTR_ FTM_OM_SNMPTRAPD_PTR;
 
+FTM_RET	FTM_OM_SNMPTRAPD_create
+(
+	FTM_OM_PTR				pOM,
+	FTM_OM_SNMPTRAPD_PTR _PTR_ ppSNMPTRAPD
+);
+
+FTM_RET	FTM_OM_SNMPTRAPD_destroy
+(
+	FTM_OM_SNMPTRAPD_PTR _PTR_ ppSNMPTRAPD
+);
+
 FTM_RET	FTM_OM_SNMPTRAPD_init
 (
-	FTM_OM_PTR pOM, 
-	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD,
+	FTM_OM_PTR pOM
 );
 
 FTM_RET	FTM_OM_SNMPTRAPD_final
@@ -83,6 +94,6 @@ FTM_RET	FTM_OM_SNMPTRAPD_setServiceCallback
 FTM_RET	FTM_OM_SNMPTRAPD_addTrapOID
 (
 	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_OM_SNMP_OID_PTR 	pOID
+	FTM_SNMP_OID_PTR 		pOID
 );
 #endif

@@ -377,68 +377,26 @@ FTM_RET	FTM_OM_RULE_activate(FTM_OM_RULE_PTR pRule)
 {
 	ASSERT(pRule != NULL);
 
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR	pMsg;
-
-	if (!pRule->bActive)
+	if (pRule->bActive)
 	{
-		pRule->bActive = FTM_TRUE;
-		MESSAGE("RULE %d activated\n", pRule->xInfo.xID);	
+		return	FTM_RET_OK;
 	}
 
-	xRet = FTM_OM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message creation failed.\n");
-		return	xRet;
-	}
+	pRule->bActive 	= FTM_TRUE;
 
-	pMsg->xType = FTM_OM_MSG_TYPE_RULE;
-	pMsg->xParams.xRule.xRuleID 	= pRule->xInfo.xID;
-	pMsg->xParams.xRule.xRuleState 	= FTM_RULE_STATE_ACTIVATE;
-
-	xRet = FTM_OM_MSGQ_push(pRule->pRuleM->pOM->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message send failed.\n");
-		FTM_OM_MSG_destroy(&pMsg);		
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
+	return	FTM_OM_NOTIFY_rule(pRule->pRuleM->pOM, pRule->xInfo.xID, FTM_RULE_STATE_ACTIVATE);
 }
 
 FTM_RET	FTM_OM_RULE_deactivate(FTM_OM_RULE_PTR pRule)
 {
 	ASSERT(pRule != NULL);
 
-	FTM_RET	xRet;
-	FTM_OM_MSG_PTR	pMsg;
-
-	if (pRule->bActive)
+	if (!pRule->bActive)
 	{
-		pRule->bActive = FTM_FALSE;
-		MESSAGE("RULE %d inactivated\n", pRule->xInfo.xID);	
+		return	FTM_RET_OK;
 	}
 
-	xRet = FTM_OM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message creation failed.\n");
-		return	xRet;
-	}
+	pRule->bActive 	= FTM_FALSE;
 
-	pMsg->xType = FTM_OM_MSG_TYPE_RULE;
-	pMsg->xParams.xRule.xRuleID 	= pRule->xInfo.xID;
-	pMsg->xParams.xRule.xRuleState 	= FTM_RULE_STATE_DEACTIVATE;
-
-	xRet = FTM_OM_MSGQ_push(pRule->pRuleM->pOM->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message send failed.\n");
-		FTM_OM_MSG_destroy(&pMsg);		
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
+	return	FTM_OM_NOTIFY_rule(pRule->pRuleM->pOM, pRule->xInfo.xID, FTM_RULE_STATE_DEACTIVATE);
 }

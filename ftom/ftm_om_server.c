@@ -164,8 +164,8 @@ static FTM_OM_SERVER_CMD_SET	pCmdSet[] =
 
 FTM_RET	FTM_OM_SERVER_init
 (
-	FTM_OM_PTR	pOM,
-	FTM_OM_SERVER_PTR		pServer
+	FTM_OM_SERVER_PTR	pServer,
+	FTM_OM_PTR	pOM
 )
 {
 	ASSERT(pServer != NULL);
@@ -401,6 +401,10 @@ FTM_VOID_PTR FTM_OM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 		{
 			TRACE("The connection is terminated.\n");
 			pSession->bStop = FTM_TRUE;
+		}
+		else if (ulLen == -1)
+		{
+				
 		}
 		else if (ulLen > 0)
 		{

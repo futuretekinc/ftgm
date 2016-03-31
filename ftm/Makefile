@@ -2,7 +2,7 @@ include ../Makefile.in
 
 LIB_FTM=libftm
 LIB_FTM_INCS= ftm_types.h ftm_node.h ftm_ep.h ftm_object.h ftm_debug.h ftm_list.h ftm_shell.h 
-LIB_FTM_SRCS= ftm_debug.c \
+LIB_FTM_SRCS= ftm_trace.c \
 			  ftm_log.c \
 			  convert.c \
 			  ftm_node.c \
@@ -20,7 +20,8 @@ LIB_FTM_SRCS= ftm_debug.c \
 			  ftm_trigger.c \
 			  ftm_action.c \
 			  ftm_rule.c \
-			  ftm_lock.c
+			  ftm_lock.c \
+			  ftm_snmp.c
 
 LIB_FTM_OBJS=$(LIB_FTM_SRCS:.c=.o)
 

@@ -43,18 +43,18 @@ typedef	struct
 {
 	FTM_MQTT_CLIENT_CONFIG	xConfig;
 
-	FTM_OM_PTR			pOM;
+	FTM_OM_PTR				pOM;
 
-	FTM_BOOL			bStop;
-	FTM_BOOL			bConnected;
-	pthread_t			xMain;
-	pthread_t			xConnector;
-	FTM_TIMER			xReconnectionTimer;
+	FTM_BOOL				bStop;
+	FTM_BOOL				bConnected;
+	pthread_t				xMain;
+	pthread_t				xConnector;
+	FTM_TIMER				xReconnectionTimer;
 
-	FTM_CHAR			pDID[FTM_DID_LEN + 1];
-	struct mosquitto	*pMosquitto;
+	FTM_CHAR				pDID[FTM_DID_LEN + 1];
+	struct mosquitto		*pMosquitto;
 	FTM_OM_MSG_QUEUE_PTR	pMsgQ;
-
+	FTM_LIST_PTR			pPublishList;
 	FTM_OM_SERVICE_ID		xServiceID;
 	FTM_OM_SERVICE_CALLBACK	fServiceCB;
 }	FTM_MQTT_CLIENT, _PTR_ FTM_MQTT_CLIENT_PTR;
@@ -134,7 +134,7 @@ typedef	struct
 
 FTM_RET	FTM_MQTT_CLIENT_create
 (
-	FTM_OM_PTR 		pOM, 
+	FTM_OM_PTR 		pOM,
 	FTM_MQTT_CLIENT_PTR _PTR_ ppClient
 );
 
@@ -145,8 +145,8 @@ FTM_RET	FTM_MQTT_CLIENT_destroy
 
 FTM_RET	FTM_MQTT_CLIENT_init
 (
-	FTM_OM_PTR 			pOM, 
-	FTM_MQTT_CLIENT_PTR pClient
+	FTM_MQTT_CLIENT_PTR pClient,
+	FTM_OM_PTR 			pOM
 );
 
 FTM_RET	FTM_MQTT_CLIENT_final
@@ -194,4 +194,11 @@ FTM_RET	FTM_MQTT_CLIENT_notify
 	FTM_OM_MSG_PTR 			pMsg
 );
 
+FTM_RET	FTM_MQTT_CLIENT_publish
+(
+	FTM_MQTT_CLIENT_PTR 	pClient, 
+	FTM_CHAR_PTR			pTopic,
+	FTM_CHAR_PTR			pMessage,
+	FTM_ULONG				ulMessageLen
+);
 #endif

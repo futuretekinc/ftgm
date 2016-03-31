@@ -202,8 +202,6 @@ FTM_VOID_PTR FTM_OM_ACTIONM_process(FTM_VOID_PTR pData)
 	FTM_OM_ACTION_MSG_PTR		pMsg;
 	FTM_TIMER				xTimer;
 	
-	TRACE_ENTRY();
-
 	FTM_TIMER_init(&xTimer, 0);
 
 	pActionM->bStop = FTM_FALSE;
@@ -239,7 +237,6 @@ FTM_VOID_PTR FTM_OM_ACTIONM_process(FTM_VOID_PTR pData)
 			usleep(ulRemain);
 		}
 	}
-	TRACE_EXIT();
 
 	return	0;
 }

@@ -32,7 +32,7 @@ FTM_RET	FTM_OM_SERVICE_init(FTM_OM_PTR pOM, FTM_OM_SERVICE_PTR pServices, FTM_UL
 	{
 		if (pService->fInit != NULL)
 		{
-			pService->xRet = pService->fInit(pOM, pService->pData);
+			pService->xRet = pService->fInit(pService->pData, pOM);
 		}
 
 		if ((pService->fSetCallback != NULL) && (pService->fCallback != NULL))

@@ -6,11 +6,11 @@
 #include "ftm_om_msg.h"
 #include "ftm_om_service.h"
 
-typedef	struct	FTM_OM_CONTEXT_STRUCT _PTR_ FTM_OM_CONTEXT_PTR;
+typedef	struct	FTM_OM_STRUCT _PTR_ FTM_OM_PTR;
 
 typedef	struct
 {
-	FTM_OM_CONTEXT_PTR		pCTX;
+	FTM_OM_PTR				pOM;
 	FTDMC_SESSION			xSession;
 	FTDMC_CFG				xConfig;
 	pthread_t				xThread;
@@ -22,8 +22,8 @@ typedef	struct
 
 FTM_RET FTM_OM_DMC_init
 (
-	FTM_OM_CONTEXT_PTR 	pCTX, 
-	FTM_OM_DMC_PTR 		pDMC
+	FTM_OM_DMC_PTR 	pDMC,
+	FTM_OM_PTR 		pOM 
 );
 
 FTM_RET FTM_OM_DMC_final

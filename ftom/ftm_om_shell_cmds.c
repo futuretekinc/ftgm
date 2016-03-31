@@ -107,27 +107,22 @@ FTM_RET	FTM_OM_SHELL_CMD_list
 
 	MESSAGE("\n# EP Information\n");
 	MESSAGE("%16s %16s %16s %16s %8s %24s\n", "EPID", "TYPE", "DID", "STATE", "VALUE", "TIME");
-		TRACE("%s[%d] pOM = %x\n", __func__, __LINE__, pOM);
 	FTM_OM_EPM_count(pOM->pEPM, 0, &ulCount);
 	for(i = 0; i < ulCount ; i++)
 	{
-		TRACE("%s[%d]\n", __func__, __LINE__);
 		if (FTM_OM_EPM_getAt(pOM->pEPM, i, &pEP) == FTM_RET_OK)
 		{
 			FTM_CHAR	pTimeString[64];
 			FTM_EP_DATA	xData;
 		
-		TRACE("%s[%d]\n", __func__, __LINE__);
 			FTM_OM_EP_getData(pEP, &xData);
 
-		TRACE("%s[%d]\n", __func__, __LINE__);
 			ctime_r((time_t *)&xData.ulTime, pTimeString);
 			if (strlen(pTimeString) != 0)
 			{
 				pTimeString[strlen(pTimeString) - 1] = '\0';
 			}
 			
-		TRACE("%s[%d]\n", __func__, __LINE__);
 			MESSAGE("%16lx ", pEP->xInfo.xEPID);
 			MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
 			if (pEP->pNode != NULL)

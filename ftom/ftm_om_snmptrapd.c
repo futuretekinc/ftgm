@@ -22,18 +22,104 @@
 
 typedef	struct
 {
-	FTM_OM_SNMP_OID				xOID;
-	FTM_OM_SNMPTRAPD_CALLBACK		fCallback;
+	FTM_SNMP_OID				xOID;
+	FTM_OM_SNMPTRAPD_CALLBACK	fCallback;
 } FTM_OM_CALLBACK, _PTR_ FTM_OM_CALLBACK_PTR;
 
-static FTM_VOID_PTR		FTM_OM_SNMPTRAPD_process(FTM_VOID_PTR pData);
-static netsnmp_session* FTM_OM_SNMPTRAPD_addSession(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD);
-static FTM_RET			FTM_OM_SNMPTRAPD_closeSessions(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, netsnmp_session * pSessionList);
-static FTM_BOOL			FTM_OM_SNMPTRAPD_seekTrapCB(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
-static FTM_RET			FTM_OM_SNMPTRAPD_receiveTrap(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR pMsg);
-static FTM_RET			FTM_OM_SNMPTRAPD_notifyEPChanged(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData);
+static FTM_VOID_PTR		FTM_OM_SNMPTRAPD_process
+(
+	FTM_VOID_PTR 	pData
+);
 
-FTM_RET	FTM_OM_SNMPTRAPD_init(FTM_OM_PTR pOM, FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
+static netsnmp_session* FTM_OM_SNMPTRAPD_addSession
+(
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD
+);
+
+static FTM_RET	FTM_OM_SNMPTRAPD_closeSessions
+(
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, 
+	netsnmp_session 	*pSessionList
+);
+
+static FTM_BOOL	FTM_OM_SNMPTRAPD_seekTrapCB
+(
+	const FTM_VOID_PTR 	pElement, 
+	const FTM_VOID_PTR 	pIndicator
+);
+
+static FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
+(
+	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_CHAR_PTR 			pMsg
+);
+
+static FTM_RET	FTM_OM_SNMPTRAPD_notifyEPChanged
+(
+	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_EP_ID 				xEPID, 
+	FTM_EP_DATA_PTR 		pData
+);
+
+FTM_RET	FTM_OM_SNMPTRAPD_create
+(
+	FTM_OM_PTR				pOM,
+	FTM_OM_SNMPTRAPD_PTR _PTR_ ppSNMPTRAPD
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(ppSNMPTRAPD != NULL);
+
+	FTM_RET	xRet;
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD;
+
+	pSNMPTRAPD = (FTM_OM_SNMPTRAPD_PTR)FTM_MEM_malloc(sizeof(FTM_OM_SNMPTRAPD));
+	if (pSNMPTRAPD == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = FTM_OM_SNMPTRAPD_init(pSNMPTRAPD, pOM);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pSNMPTRAPD);	
+		ERROR("Initialize failed[%08x].\n", xRet);
+	}
+	return	xRet;
+}
+
+FTM_RET	FTM_OM_SNMPTRAPD_destroy
+(
+	FTM_OM_SNMPTRAPD_PTR _PTR_ ppSNMPTRAPD
+)
+{
+	ASSERT(ppSNMPTRAPD != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTM_OM_SNMPTRAPD_final(*ppSNMPTRAPD);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Finalize failed[%08x].\n", xRet);
+	}
+
+	xRet = FTM_MEM_free(*ppSNMPTRAPD);	
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Memory free failed[%08x].\n", xRet);
+	}
+
+	*ppSNMPTRAPD = NULL;
+
+	return	xRet;
+}
+
+FTM_RET	FTM_OM_SNMPTRAPD_init
+(
+	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD,
+	FTM_OM_PTR 				pOM 
+)
 {
 	FTM_RET	xRet;
 
@@ -52,7 +138,10 @@ FTM_RET	FTM_OM_SNMPTRAPD_init(FTM_OM_PTR pOM, FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
 	return	xRet;
 }
 
-FTM_RET	FTM_OM_SNMPTRAPD_final(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
+FTM_RET	FTM_OM_SNMPTRAPD_final
+(
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD
+)
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	FTM_OM_CALLBACK_PTR	pCB;
@@ -74,7 +163,10 @@ FTM_RET	FTM_OM_SNMPTRAPD_final(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_OM_SNMPTRAPD_start(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
+FTM_RET FTM_OM_SNMPTRAPD_start
+(
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD
+)
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	FTM_INT	nRet;
@@ -115,7 +207,10 @@ FTM_RET FTM_OM_SNMPTRAPD_start(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_OM_SNMPTRAPD_stop(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
+FTM_RET FTM_OM_SNMPTRAPD_stop
+(
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD
+)
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	FTM_INT	nRet;
@@ -159,14 +254,18 @@ FTM_RET FTM_OM_SNMPTRAPD_stop(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_OM_SNMPTRAPD_loadFromFile(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR pFileName)
+FTM_RET FTM_OM_SNMPTRAPD_loadFromFile
+(
+	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_CHAR_PTR 			pFileName
+)
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pFileName != NULL);
 
 	config_t			xConfig;
 	config_setting_t	*pSection;
-	
+
 	config_init(&xConfig);
 	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
 	{
@@ -203,11 +302,11 @@ FTM_RET FTM_OM_SNMPTRAPD_loadFromFile(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_
 				pField = config_setting_get_elem(pList, i);
 				if (pField != NULL)
 				{
-					FTM_OM_SNMP_OID	xOID;
+					FTM_SNMP_OID	xOID;
 					
-					xOID.ulOIDLen = FTM_OM_SNMP_OID_LENGTH;
+					xOID.ulOIDLen = FTM_SNMP_OID_LENGTH;
 
-					MESSAGE("pObID = %s\n", config_setting_get_string(pField));
+					MESSAGE("pObjID = %s\n", config_setting_get_string(pField));
 					if (read_objid(config_setting_get_string(pField), xOID.pOID, (size_t *)&xOID.ulOIDLen) == 1)
 					{
 						MESSAGE("SNMP_PARSE_OID success!\n");
@@ -224,7 +323,10 @@ FTM_RET FTM_OM_SNMPTRAPD_loadFromFile(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_OM_SNMPTRAPD_showConfig(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
+FTM_RET FTM_OM_SNMPTRAPD_showConfig
+(
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD
+)
 {
 	ASSERT(pSNMPTRAPD != NULL);
 
@@ -235,7 +337,12 @@ FTM_RET FTM_OM_SNMPTRAPD_showConfig(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_OM_SNMPTRAPD_setServiceCallback(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_OM_SERVICE_ID xServiceID,  FTM_OM_SERVICE_CALLBACK fServiceCB)
+FTM_RET	FTM_OM_SNMPTRAPD_setServiceCallback
+(
+	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_OM_SERVICE_ID 		xServiceID,  
+	FTM_OM_SERVICE_CALLBACK fServiceCB
+)
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(fServiceCB != NULL);
@@ -246,7 +353,11 @@ FTM_RET	FTM_OM_SNMPTRAPD_setServiceCallback(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_OM_SNMPTRAPD_addTrapOID(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_OM_SNMP_OID_PTR pOID)
+FTM_RET	FTM_OM_SNMPTRAPD_addTrapOID
+(
+	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_SNMP_OID_PTR 		pOID
+)
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pOID != NULL);
@@ -257,27 +368,35 @@ FTM_RET	FTM_OM_SNMPTRAPD_addTrapOID(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_OM_SNMP
 	pCB = (FTM_OM_CALLBACK_PTR)FTM_MEM_malloc(sizeof(FTM_OM_CALLBACK));
 	if (pCB == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	memcpy(&pCB->xOID, pOID, sizeof(FTM_OM_SNMP_OID));
+	memcpy(&pCB->xOID, pOID, sizeof(FTM_SNMP_OID));
 
 	xRet = FTM_LIST_append(&pSNMPTRAPD->xTrapCBList, pCB);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("List append failed.!\n");
 		FTM_MEM_free(pCB);	
 	}
+
+	TRACE("OID : %s\n", FTM_SNMP_OID_toStr(pOID));
 
 	return	FTM_RET_OK;
 }
 
-FTM_BOOL	FTM_OM_SNMPTRAPD_seekTrapCB(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+FTM_BOOL	FTM_OM_SNMPTRAPD_seekTrapCB
+(
+	const FTM_VOID_PTR 	pElement, 
+	const FTM_VOID_PTR 	pIndicator
+)
 {
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
 
 	FTM_OM_CALLBACK_PTR	pCB = (FTM_OM_CALLBACK_PTR)pElement;
-	FTM_OM_SNMP_OID_PTR	pOID = (FTM_OM_SNMP_OID_PTR)pIndicator;
+	FTM_SNMP_OID_PTR	pOID = (FTM_SNMP_OID_PTR)pIndicator;
 
 	return	snmp_oid_compare(pCB->xOID.pOID, pCB->xOID.ulOIDLen, pOID->pOID, pOID->ulOIDLen) == 0;
 }
@@ -354,6 +473,7 @@ FTM_OM_SNMPTRAPD_inputCB
     oid trapOid[MAX_OID_LEN+2] = {0};
     int trapOidLen;
 
+	TRACE("SNMPTRAP Received.\n");
     switch (nOP) 
 	{
     case NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE:
@@ -405,7 +525,7 @@ FTM_OM_SNMPTRAPD_inputCB
 					for ( vars = pPDU->variables; vars; vars=vars->next_variable) 
 					{
 						FTM_OM_CALLBACK_PTR	pCB;
-						FTM_OM_SNMP_OID		xOID;
+						FTM_SNMP_OID		xOID;
 						memcpy(xOID.pOID, vars->name, sizeof(oid) * vars->name_length);
 						xOID.ulOIDLen  = vars->name_length;
 						if (FTM_LIST_get(&pSNMPTRAPD->xTrapCBList, &xOID, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
@@ -488,7 +608,10 @@ FTM_OM_SNMPTRAPD_inputCB
 }
 
 static 
-netsnmp_session * FTM_OM_SNMPTRAPD_addSession(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
+netsnmp_session * FTM_OM_SNMPTRAPD_addSession
+(
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD
+)
 {
 	ASSERT(pSNMPTRAPD != NULL);
 
@@ -517,7 +640,11 @@ netsnmp_session * FTM_OM_SNMPTRAPD_addSession(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
 }
 
 static 
-FTM_RET	FTM_OM_SNMPTRAPD_closeSessions(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, netsnmp_session * pSessionList)
+FTM_RET	FTM_OM_SNMPTRAPD_closeSessions
+(
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, 
+	netsnmp_session 	*pSessionList
+)
 {
 	netsnmp_session *pSession = NULL;
 	netsnmp_session *pNextSession = NULL;
@@ -531,8 +658,11 @@ FTM_RET	FTM_OM_SNMPTRAPD_closeSessions(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, netsnmp_
 	return	FTM_RET_OK;
 }
 
-static void
-FTM_OM_SNMPTRAPD_mainLoop(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
+static 
+FTM_VOID FTM_OM_SNMPTRAPD_mainLoop
+(
+	FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD
+)
 {
 	int             count, numfds, block;
 	fd_set          readfds,writefds,exceptfds;
@@ -624,7 +754,10 @@ FTM_OM_SNMPTRAPD_mainLoop(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD)
 	TRACE("exit SNMP Trapd mainloop!\n");
 }
 
-FTM_VOID_PTR	FTM_OM_SNMPTRAPD_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR	FTM_OM_SNMPTRAPD_process
+(
+	FTM_VOID_PTR pData
+)
 {
 	ASSERT(pData != NULL);
 
@@ -676,7 +809,11 @@ FTM_VOID_PTR	FTM_OM_SNMPTRAPD_process(FTM_VOID_PTR pData)
 
 }
 
-FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_PTR pMsg)
+FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
+(
+	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_CHAR_PTR 			pMsg
+)
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pMsg != NULL);
@@ -905,8 +1042,8 @@ FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap(FTM_OM_SNMPTRAPD_PTR pSNMPTRAPD, FTM_CHAR_P
 FTM_RET	FTM_OM_SNMPTRAPD_notifyEPChanged
 (
 	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_EP_ID 			xEPID, 
-	FTM_EP_DATA_PTR 	pData
+	FTM_EP_ID 				xEPID, 
+	FTM_EP_DATA_PTR 		pData
 )
 {
 	ASSERT(pSNMPTRAPD != NULL);

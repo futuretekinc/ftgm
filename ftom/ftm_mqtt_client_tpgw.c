@@ -112,9 +112,6 @@ FTM_VOID FTM_MQTT_CLIENT_TPGW_messageCB
 	FTM_CHAR_PTR	pIDs[10];
 	FTM_INT			nIDs = 0;
 	
-	INFO("TOPIC - %s\n", pMessage->topic);
-	INFO("MESSAGE - %s\n", (FTM_CHAR_PTR)pMessage->payload);
-
 	memset(pTopic, 0, sizeof(pTopic));
 	strncpy(pTopic, pMessage->topic, FTM_MQTT_CLIENT_TOPIC_LENGTH);
 
@@ -242,14 +239,23 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 	{
 	case	FTM_MQTT_METHOD_REQ_TIME_SYNC:
 		{
-			const nx_json *pTime = nx_json_get(pJSON, "time");
+			const nx_json *pParams = nx_json_get(pJSON, "params");
+			if (pParams== NULL)
+			{
+				WARN("MQTT REQ : Params is not exist.\n");
+				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+				goto error;
+			}	
+
+			const nx_json *pTime = nx_json_get(pParams, "time");
 			if ((pTime == NULL) || (pTime->type != NX_JSON_INTEGER))
 			{
+				WARN("MQTT REQ : Time is not exist.\n");
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}	
 			
-			xMsg.xParams.xMQTTReq.xParams.xTimeSync.ulTime = pTime->int_value;
+			xMsg.xParams.xTimeSync.ulTime = pTime->int_value;
 		}
 		break;
 
@@ -260,7 +266,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 			const nx_json *pParams = nx_json_get(pJSON, "params");
 			if (pParams== NULL)
 			{
-				WARN("MQTT REQ : Params field is not exist.\n");
+				WARN("MQTT REQ : Params is not exist.\n");
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}	
@@ -271,7 +277,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 			const nx_json *pID =  nx_json_get(pParams, "id");
 			if ((pID == NULL) || (pID->type != NX_JSON_STRING))
 			{
-				WARN("MQTT REQ : ID field is not exist or invalid format.\n");
+				WARN("MQTT REQ : ID is not exist or invalid format.\n");
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}
@@ -300,7 +306,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 			const nx_json *pCMD = nx_json_get(pParams, "cmd");
 			if ((pCMD == NULL) || (pCMD->type != NX_JSON_STRING))
 			{
-				WARN("MQTT REQ : Command field is not exist or invalid format.\n");
+				WARN("MQTT REQ : Command is not exist or invalid format.\n");
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}
@@ -327,16 +333,20 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 			const nx_json *pOptions = nx_json_get(pParams, "options");
 			if (pOptions->type != NX_JSON_NULL)
 			{
-				if (pOptions->type == NX_JSON_INTEGER) 
+				const nx_json *pDuration = nx_json_get(pOptions, "duration");
+				if (pDuration ->type != NX_JSON_NULL)
 				{
-					xMsg.xParams.xMQTTReqControl.xOptions.ulDuration = pOptions->int_value;
-				}
-				else
-				{
-					xRet = FTM_RET_MQTT_INVALID_MESSAGE;
-					goto error;
-				}
-			}	
+					if (pOptions->type == NX_JSON_INTEGER) 
+					{
+						xMsg.xParams.xMQTTReqControl.xOptions.ulDuration = pOptions->int_value;
+					}
+					else
+					{
+						xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+							goto error;
+					}
+				}	
+			}
 		}
 		break;
 
@@ -449,10 +459,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPData
 		}
 	}
 
-	TRACE("MESSAGE : %s\n", pMessage);
-	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
-
-	return	FTM_RET_OK;
+	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
 }
 
 FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataINT
@@ -483,10 +490,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataINT
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, nValue);
 
-	TRACE("MESSAGE : %s\n", pMessage);
-	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
-
-	return	FTM_RET_OK;
+	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
 }
 
 FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataULONG
@@ -519,10 +523,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataULONG
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%lu]", ulTime, ulValue);
 
-	TRACE("MESSAGE : %s\n", pMessage);
-	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
-
-	return	FTM_RET_OK;
+	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
 }
 
 FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT
@@ -555,10 +556,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%5.3f]", ulTime, fValue);
 
-	TRACE("MESSAGE : %s\n", pMessage);
-	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
-
-	return	FTM_RET_OK;
+	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
 }
 
 FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL
@@ -587,8 +585,5 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
 	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, bValue);
 
-	TRACE("MESSAGE : %s\n", pMessage);
-	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
-
-	return	FTM_RET_OK;
+	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
 }

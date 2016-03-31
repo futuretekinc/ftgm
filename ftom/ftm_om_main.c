@@ -62,23 +62,14 @@ int main(int nArgc, char *pArgv[])
 
 	if (bDaemon)
 	{
-		if (fork() == 0)
+		if (fork() != 0)
 		{
-			FTM_OM_start(pOM);
-			FTM_OM_waitingForFinished(pOM);
-
+			return	0;
 		}
 	}
-	else
-	{
-		FTM_OM_start(pOM);
 
-		FTM_SHELL_init();
-		FTM_SHELL_setGlobalData(pOM);
-		FTM_SHELL_setPrompt("FTNM> ");
-		FTM_SHELL_addCmds(FTM_OM_shellCmds,FTM_OM_shellCmdCount);
-		FTM_SHELL_run();
-	}
+	FTM_OM_start(pOM);
+	FTM_OM_waitingForFinished(pOM);
 
 	FTM_OM_destroy(&pOM);
 	FTM_MEM_final();

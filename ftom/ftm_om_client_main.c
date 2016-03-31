@@ -114,7 +114,9 @@ extern	char *		program_invocation_short_name;
 int main(int argc , char *argv[])
 {
 	FTM_CHAR		pConfigFileName[FTM_FILE_NAME_LEN];
-	FTM_OM_CLIENT		xClient;
+	FTM_OM_CLIENT	xClient;
+	FTM_SHELL		xShell;
+	FTM_INT			i;
 
 	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
 
@@ -127,13 +129,17 @@ int main(int argc , char *argv[])
 	FTM_OM_CLIENT_setNotifyCallback(&xClient, FTM_OM_CLIENT_notifyCallback);
 
 
-	FTM_SHELL_init();
-	FTM_SHELL_setPrompt(_strPrompt);
-	FTM_SHELL_setGlobalData(&xClient);
-	FTM_SHELL_addCmds(_cmds, sizeof(_cmds) / sizeof(FTM_SHELL_CMD));
+	FTM_SHELL_init(&xShell);
+	FTM_SHELL_setPrompt(&xShell, _strPrompt);
+	for(i = 0 ; i < sizeof(_cmds) / sizeof(FTM_SHELL_CMD);i++)
+	{
+		_cmds[i].pData = &xClient;
+		FTM_SHELL_appendCmd(&xShell, &_cmds[i]);
+	}
+
 	FTM_OM_CLIENT_start(&xClient);
 
-	FTM_SHELL_run();
+	FTM_SHELL_run(&xShell);
 
 	FTM_OM_CLIENT_final(&xClient);
 

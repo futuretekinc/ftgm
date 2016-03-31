@@ -46,6 +46,7 @@ FTM_RET	FTM_TRACE_setLevel(FTM_ULONG		ulLevel);
 FTM_RET	FTM_TRACE_getLevel(FTM_ULONG_PTR	pulLevel);
 
 FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR	szBuff);
+
 FTM_RET	FTM_TRACE_out
 (
 	unsigned long	ulLevel,
@@ -79,7 +80,7 @@ FTM_VOID	FTM_TRACE_packetDump
 #endif
 
 #define	INFO(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_INFO, __func__, __LINE__, FTM_TRUE, FTM_FALSE, format, ## __VA_ARGS__)
-#define	WARN(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_WARN, __func__, __LINE__, FTM_TRUE, FTM_FALSE, format, ## __VA_ARGS__)
+#define	WARN(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_WARN, __func__, __LINE__, FTM_TRUE, FTM_TRUE, format, ## __VA_ARGS__)
 #define	ERROR(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_ERROR, __func__, __LINE__, FTM_TRUE, FTM_FALSE, format, ## __VA_ARGS__)
 #define	FATAL(format, ...) 	FTM_TRACE_out(FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, FTM_FALSE, format, ## __VA_ARGS__)
 

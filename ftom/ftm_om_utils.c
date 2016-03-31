@@ -6,6 +6,7 @@
 #include <net/if.h>  
 #include <unistd.h> 
 #include "ftm.h"
+#include "ftm_om.h"
 
 FTM_RET	FTM_OM_getMACAddress(FTM_CHAR_PTR pIFName, FTM_UINT8	pMAC[6]);
 
@@ -62,3 +63,4 @@ FTM_RET	FTM_OM_getMACAddress(FTM_CHAR_PTR pIFName, FTM_UINT8 pMAC[6])
 
 	return	FTM_RET_NOT_EXISTS;
 }
+

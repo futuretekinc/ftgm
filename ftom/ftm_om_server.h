@@ -41,20 +41,20 @@ typedef	struct
 
 typedef	struct FTM_OM_SERVER_STRUCT
 {
-	FTM_OM_SERVER_CONFIG		xConfig;
+	FTM_OM_SERVER_CONFIG	xConfig;
 	pthread_t 				xPThread;
 	sem_t					xLock;
 	
-	FTM_OM_PTR		pOM;
+	FTM_OM_PTR				pOM;
 	FTM_LIST				xSessionList;
-	FTM_OM_SERVICE_ID			xServiceID;
+	FTM_OM_SERVICE_ID		xServiceID;
 	FTM_OM_SERVICE_CALLBACK	fServiceCB;
 }	FTM_OM_SERVER;
 
 FTM_RET	FTM_OM_SERVER_init
 (
-	FTM_OM_PTR pOM, 
-	FTM_OM_SERVER_PTR 	pServer
+	FTM_OM_SERVER_PTR 	pServer,
+	FTM_OM_PTR pOM 
 );
 
 FTM_RET	FTM_OM_SERVER_final

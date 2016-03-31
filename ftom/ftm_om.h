@@ -45,18 +45,19 @@ typedef	struct FTM_OM_EPM_STRUCT _PTR_ FTM_OM_EPM_PTR;
 
 typedef	struct FTM_OM_STRUCT
 {
-	FTM_OM_CONFIG		xConfig;
+	FTM_OM_CONFIG			xConfig;
 
 	FTM_OM_STATE			xState;
-	pthread_t			xThread;
+	pthread_t				xThread;
 
-	FTM_BOOL			bStop;
+	FTM_BOOL				bStop;
 
-	FTM_OM_EPM_PTR		pEPM;
+	FTM_OM_EPM_PTR			pEPM;
 	FTM_OM_MSG_QUEUE_PTR	pMsgQ;
-	FTM_OM_TRIGGERM_PTR	pTriggerM;
-	FTM_OM_ACTIONM_PTR	pActionM;
+	FTM_OM_TRIGGERM_PTR		pTriggerM;
+	FTM_OM_ACTIONM_PTR		pActionM;
 	FTM_OM_RULEM_PTR		pRuleM;
+	FTM_SHELL				xShell;
 }	FTM_OM, _PTR_ FTM_OM_PTR;
 
 
@@ -149,6 +150,13 @@ FTM_RET	FTM_OM_getEPDataCount
 	FTM_OM_PTR 		pOM, 
 	FTM_EP_ID 		xEPID, 
 	FTM_ULONG_PTR 	ulCount
+);
+
+FTM_RET	FTM_OM_NOTIFY_rule
+(
+	FTM_OM_PTR 			pOM,
+	FTM_OM_RULE_ID		xRuleID,
+	FTM_OM_RULE_STATE	xRuleState
 );
 
 FTM_RET	FTM_OM_NOTIFY_SNMPTrap

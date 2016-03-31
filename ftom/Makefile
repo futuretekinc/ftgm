@@ -3,7 +3,7 @@ include ../Makefile.in
 #CFLAGS=$(CFLAGS)\
 		-D__malloc_and_calloc_defined=1 \
 		-D__need_malloc_and_calloc=1
-CLIENT=ftm_om_client
+CLIENT=ftomc
 CLIENT_SRCS=ftm_om_client_main.c ftm_om_client_config.c
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lconfig -lpthread 
@@ -33,7 +33,8 @@ LIB_FTNM_SRCS= ftm_om.c \
 			   ftm_mqtt_client_ft.c\
 			   ftm_mqtt_client_tpgw.c\
 			   ftm_om_utils.c\
-			   ftm_om_service.c
+			   ftm_om_service.c\
+			   ftm_om_shell.c
 
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)
 

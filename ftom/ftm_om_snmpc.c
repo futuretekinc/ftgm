@@ -16,7 +16,11 @@ FTM_VOID_PTR	FTM_OM_SNMPC_process(FTM_VOID_PTR pData);
 
 extern int	active_hosts;
 
-FTM_RET	FTM_OM_SNMPC_init(FTM_OM_CONTEXT_PTR pCTX, FTM_OM_SNMPC_PTR pClient)
+FTM_RET	FTM_OM_SNMPC_init
+(
+	FTM_OM_SNMPC_PTR pClient,
+	FTM_OM_PTR pOM 
+)
 {
 	ASSERT(pClient != NULL);
 
@@ -28,7 +32,7 @@ FTM_RET	FTM_OM_SNMPC_init(FTM_OM_CONTEXT_PTR pCTX, FTM_OM_SNMPC_PTR pClient)
 	strcpy(pClient->xConfig.pName, FTM_OM_SNMPC_NAME);
 	FTM_LIST_init(&pClient->xConfig.xMIBList);
 	pClient->xConfig.ulMaxRetryCount = FTM_OM_SNMPC_RETRY_COUNT;
-	pClient->pCTX = pCTX;
+	pClient->pOM = pOM;
 
 	return	FTM_RET_OK;
 }
