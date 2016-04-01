@@ -54,7 +54,7 @@ static FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
 	FTM_CHAR_PTR 			pMsg
 );
 
-static FTM_RET	FTM_OM_SNMPTRAPD_notifyEPChanged
+static FTM_RET	FTM_OM_SNMPTRAPD_setEPData
 (
 	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
 	FTM_EP_ID 				xEPID, 
@@ -818,10 +818,10 @@ FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pMsg != NULL);
 	
-	FTM_RET					xRet;
-	FTM_EP_ID				xEPID = 0;
-	FTM_OM_EP_PTR				pEP = NULL;
-	FTM_EP_DATA				xData;
+	FTM_RET			xRet;
+	FTM_EP_ID		xEPID = 0;
+	FTM_OM_EP_PTR	pEP = NULL;
+	FTM_EP_DATA		xData;
 	FTM_OM_SNMPTRAPD_MSG_TYPE	xMsgType = FTM_OM_SNMPTRAPD_MSG_TYPE_UNKNOWN;	
 	const nx_json 	*pRoot, *pItem;
 
@@ -861,7 +861,9 @@ FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
 				xRet = FTM_OM_EPM_get(pSNMPTRAPD->pOM->pEPM, xEPID, &pEP);
 				if (xRet == FTM_RET_OK)
 				{
-					FTM_OM_EP_getData(pEP, &xData);
+					FTM_EP_DATA_TYPE	xDataType;
+
+					FTM_OM_EP_getDataType(pEP, &xDataType);
 		
 					pItem = nx_json_get(pRoot, "value");
 					if (pItem->type != NX_JSON_NULL)
@@ -871,6 +873,7 @@ FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
 						case	NX_JSON_STRING:
 							{
 								TRACE("VALUE : %s\n", pItem->text_value);
+								xData.xType = xDataType;
 								switch(xData.xType)
 								{
 								case	FTM_EP_DATA_TYPE_INT:
@@ -905,6 +908,7 @@ FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
 						case	NX_JSON_BOOL:
 							{
 								TRACE("VALUE : %d\n", pItem->int_value);
+								xData.xType = xDataType;
 								switch(xData.xType)
 								{
 								case	FTM_EP_DATA_TYPE_INT:
@@ -938,6 +942,7 @@ FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
 						case	NX_JSON_DOUBLE:
 							{
 								TRACE("VALUE : %lu\n", pItem->dbl_value);
+								xData.xType = xDataType;
 								switch(xData.xType)
 								{
 								case	FTM_EP_DATA_TYPE_INT:
@@ -1000,7 +1005,7 @@ FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
 							}
 						}
 						
-						xRet = FTM_OM_SNMPTRAPD_notifyEPChanged(pSNMPTRAPD, xEPID, &xData);
+						xRet = FTM_OM_SNMPTRAPD_setEPData(pSNMPTRAPD, xEPID, &xData);
 						if (xRet != FTM_RET_OK)
 						{
 							ERROR("Notify failed.\n");	
@@ -1039,7 +1044,7 @@ FTM_RET	FTM_OM_SNMPTRAPD_receiveTrap
 
 }
 
-FTM_RET	FTM_OM_SNMPTRAPD_notifyEPChanged
+FTM_RET	FTM_OM_SNMPTRAPD_setEPData
 (
 	FTM_OM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
 	FTM_EP_ID 				xEPID, 
@@ -1049,27 +1054,7 @@ FTM_RET	FTM_OM_SNMPTRAPD_notifyEPChanged
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pData != NULL);
 
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR	pMsg;
-
-	xRet = FTM_OM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTM_OM_MSG_TYPE_EP_CHANGED;
-	pMsg->xParams.xEPChanged.xEPID = xEPID;
-	memcpy(&pMsg->xParams.xEPChanged.xData, pData, sizeof(FTM_EP_DATA));
-
-	xRet = FTM_OM_MSGQ_push(pSNMPTRAPD->pOM->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTM_OM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-	return	FTM_RET_OK;
+	return	FTM_OM_setEPData(pSNMPTRAPD->pOM, xEPID, pData);
 }
 
 #if 0

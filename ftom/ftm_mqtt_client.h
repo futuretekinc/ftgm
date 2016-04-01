@@ -70,51 +70,8 @@ typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA)
 (
 	FTM_MQTT_CLIENT_PTR	pClient, 
 	FTM_EP_ID 			xEPID, 
-	FTM_EP_DATA_PTR		pData
-);
-
-typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA_INT)
-(
-	FTM_MQTT_CLIENT_PTR	pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_INT 			nValue, 
-	FTM_INT 			nAverage, 
-	FTM_INT 			nCount, 
-	FTM_INT 			nMax, 
-	FTM_INT 			nMin
-);
-
-typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA_ULONG)
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_ULONG 			ulValue,
-	FTM_ULONG 			nAverage, 
-	FTM_INT 			nCount, 
-	FTM_ULONG 			ulMax, 
-	FTM_ULONG 			ulMin
-);
-
-typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA_FLOAT)
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_FLOAT 			fValue, 
-	FTM_FLOAT 			fAverage, 
-	FTM_INT 			nCount, 
-	FTM_FLOAT 			fMax, 
-	FTM_FLOAT 			fMin
-);
-
-typedef FTM_RET	 (*FTM_MQTT_CLIENT_PUBLISH_EP_DATA_BOOL)
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_BOOL 			bValue
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			ulCount
 );
 
 typedef	struct
@@ -126,10 +83,6 @@ typedef	struct
 	FTM_MQTT_CLIENT_SUBSCRIBE_CB			fSubscribe;
 	FTM_MQTT_CLIENT_TIMER_CB				fTimer;
 	FTM_MQTT_CLIENT_PUBLISH_EP_DATA			fPublishEPData;
-	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_INT		fPublishEPDataINT;
-	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_ULONG	fPublishEPDataULONG;
-	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_FLOAT	fPublishEPDataFLOAT;
-	FTM_MQTT_CLIENT_PUBLISH_EP_DATA_BOOL	fPublishEPDataBOOL;
 }	FTM_MQTT_CLIENT_CALLBACK_SET, _PTR_ FTM_MQTT_CLIENT_CALLBACK_SET_PTR;
 
 FTM_RET	FTM_MQTT_CLIENT_create
@@ -201,4 +154,19 @@ FTM_RET	FTM_MQTT_CLIENT_publish
 	FTM_CHAR_PTR			pMessage,
 	FTM_ULONG				ulMessageLen
 );
+
+FTM_RET	FTM_MQTT_CLIENT_publishEPData
+(
+	FTM_MQTT_CLIENT_PTR pClient,
+	FTM_EP_ID			xEPID,
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			ulCount
+);
+
+FTM_RET	FTM_MQTT_CLIENT_pushMsg
+(
+	FTM_MQTT_CLIENT_PTR pClient,
+	FTM_OM_MSG_PTR		pMsg	
+);
+
 #endif

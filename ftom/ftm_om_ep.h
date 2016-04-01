@@ -95,22 +95,23 @@ FTM_RET FTM_OM_EPM_getAt
 	FTM_OM_EP_PTR _PTR_ ppEP
 );
 
-FTM_RET	FTM_OM_EPM_notifyEPUpdated
+FTM_RET	FTM_OM_EPM_sendEPData
 (
 	FTM_OM_EPM_PTR 	pEPM, 
 	FTM_EP_ID 		xEPID, 
-	FTM_EP_DATA_PTR pData
+	FTM_EP_DATA_PTR pData,
+	FTM_ULONG		ulCount
 );
 
 
 typedef	struct FTM_OM_EP_STRUCT
 {
-	FTM_EP			xInfo;
+	FTM_EP				xInfo;
 
 	FTM_OM_EPM_PTR		pEPM;
-	FTM_OM_NODE_PTR 		pNode;
+	FTM_OM_NODE_PTR		pNode;
 
-	FTM_EP_STATE		xState;
+	FTM_BOOL			bStop;
 	FTM_ULONG			ulRetryCount;
 
 	pthread_t			xPThread;
@@ -139,6 +140,17 @@ FTM_RET	FTM_OM_EP_create
 FTM_RET	FTM_OM_EP_destroy
 (
 	FTM_OM_EP_PTR _PTR_ ppEP
+);
+
+FTM_RET	FTM_OM_EP_init
+(
+	FTM_OM_EP_PTR 		pEP, 
+	FTM_EP_PTR 			pInfo
+);
+
+FTM_RET	FTM_OM_EP_final
+(
+	FTM_OM_EP_PTR 		pEP 
 );
 
 FTM_RET	FTM_OM_EP_attach
@@ -181,7 +193,13 @@ FTM_RET	FTM_OM_EP_getData
 	FTM_EP_DATA_PTR 	pData
 );
 
-FTM_RET	FTM_OM_EP_updateData
+FTM_RET	FTM_OM_EP_pushData
+(
+	FTM_OM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTM_OM_EP_pullData
 (
 	FTM_OM_EP_PTR 		pEP, 
 	FTM_EP_DATA_PTR 	pData

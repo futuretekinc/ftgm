@@ -89,6 +89,13 @@ typedef	struct
 	}	xParams;
 }	FTM_EP_LIMIT, _PTR_ FTM_EP_LIMIT_PTR;
 
+typedef	enum
+{
+	FTM_EP_CTRL_OFF,
+	FTM_EP_CTRL_ON,
+	FTM_EP_CTRL_BLINK
+}	FTM_EP_CTRL, _PTR_ FTM_EP_CTRL_PTR;
+	
 typedef	struct
 {
 	FTM_EP_ID		xEPID;

@@ -1163,43 +1163,6 @@ FTM_RET	FTM_OM_CLIENT_notifyCallback(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
 
-	FTM_OM_MSG_PTR	pMsg = (FTM_OM_MSG_PTR)pData;
-
-	switch(pMsg->xType)
-	{
-	case	FTM_OM_MSG_TYPE_EP_CHANGED:
-		{
-			switch(pMsg->xParams.xEPChanged.xData.xType)
-			{
-			case	FTM_EP_DATA_TYPE_INT:
-				{
-					TRACE("EP[%08x] : changed value = %d\n", pMsg->xParams.xEPChanged.xEPID, pMsg->xParams.xEPChanged.xData.xValue.nValue);
-				}
-				break;
-
-			case	FTM_EP_DATA_TYPE_ULONG:
-				{
-					TRACE("EP[%08x] : changed value = %lu\n", pMsg->xParams.xEPChanged.xEPID, pMsg->xParams.xEPChanged.xData.xValue.ulValue);
-				}
-				break;
-
-			case	FTM_EP_DATA_TYPE_FLOAT:
-				{
-					TRACE("EP[%08x] : changed value = %5.2f\n", pMsg->xParams.xEPChanged.xEPID, pMsg->xParams.xEPChanged.xData.xValue.fValue);
-				}
-				break;
-
-			}
-
-		}
-		break;
-	
-	default:
-		{
-			ERROR("Not supported message[%08x]\n", pMsg->xType);
-		}
-	}
-	
 	return	FTM_RET_OK;
 
 }

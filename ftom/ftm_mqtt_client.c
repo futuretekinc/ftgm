@@ -18,9 +18,17 @@ typedef	struct
 }	FTM_MQTT_PUBLISH, _PTR_ FTM_MQTT_PUBLISH_PTR;
 
 static FTM_VOID_PTR FTM_MQTT_CLIENT_process(FTM_VOID_PTR pData);
-static FTM_VOID_PTR FTM_MQTT_CLIENT_connector(FTM_VOID_PTR pData);
-static FTM_RET	FTM_MQTT_CLIENT_publishEPData(FTM_MQTT_CLIENT_PTR pClient, FTM_EP_ID xEPID, FTM_EP_DATA_PTR	pData);
 
+static FTM_RET	FTM_MQTT_CLIENT_onPublishEPData
+(
+	FTM_MQTT_CLIENT_PTR	pClient,
+	FTM_OM_MSG_PUBLISH_EP_DATA_PTR	pMsg
+);
+
+static FTM_VOID_PTR FTM_MQTT_CLIENT_connector
+(
+	FTM_VOID_PTR 		pData
+);
 static FTM_VOID FTM_MQTT_CLIENT_connectCB(struct mosquitto *mosq, void *pObj, int nResult);
 static FTM_VOID FTM_MQTT_CLIENT_disconnectCB(struct mosquitto *mosq, void *pObj, int nResult);
 static FTM_VOID FTM_MQTT_CLIENT_publishCB(struct mosquitto *mosq, void *pObj, int nResult);
@@ -41,7 +49,7 @@ static FTM_RET	FTM_MQTT_PUBLISH_destroy
 	FTM_MQTT_PUBLISH_PTR _PTR_ ppPublish
 );
 
-FTM_BOOL FTM_MQTT_PUBLISH_LIST_comparator
+FTM_BOOL FTM_MQTT_PUBLISH_LIST_seeker
 (
 	const FTM_VOID_PTR pElement, 
 	const FTM_VOID_PTR pKey
@@ -55,10 +63,7 @@ static FTM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
 		.fPublish 	= FTM_MQTT_CLIENT_FT_publishCB,
 		.fMessage 	= FTM_MQTT_CLIENT_FT_messageCB,
 		.fSubscribe = FTM_MQTT_CLIENT_FT_subscribeCB,
-		.fPublishEPDataINT	= FTM_MQTT_CLIENT_FT_publishEPDataINT,
-		.fPublishEPDataULONG= FTM_MQTT_CLIENT_FT_publishEPDataULONG,
-		.fPublishEPDataFLOAT= FTM_MQTT_CLIENT_FT_publishEPDataFLOAT,
-		.fPublishEPDataBOOL	= FTM_MQTT_CLIENT_FT_publishEPDataBOOL
+		.fPublishEPData		= FTM_MQTT_CLIENT_TPGW_publishEPData,
 	},
 	{
 		.fConnect 	= FTM_MQTT_CLIENT_TPGW_connectCB,
@@ -67,10 +72,6 @@ static FTM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
 		.fMessage 	= FTM_MQTT_CLIENT_TPGW_messageCB,
 		.fSubscribe = FTM_MQTT_CLIENT_TPGW_subscribeCB,
 		.fPublishEPData		= FTM_MQTT_CLIENT_TPGW_publishEPData,
-		.fPublishEPDataINT	= FTM_MQTT_CLIENT_TPGW_publishEPDataINT,
-		.fPublishEPDataULONG= FTM_MQTT_CLIENT_TPGW_publishEPDataULONG,
-		.fPublishEPDataFLOAT= FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT,
-		.fPublishEPDataBOOL	= FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL
 	},
 };
 
@@ -158,7 +159,7 @@ FTM_RET	FTM_MQTT_CLIENT_init
 		return	xRet;	
 	}
 
-	FTM_LIST_setComparator(pClient->pPublishList, FTM_MQTT_PUBLISH_LIST_comparator);
+	FTM_LIST_setSeeker(pClient->pPublishList, FTM_MQTT_PUBLISH_LIST_seeker);
 
 	if (ulClientInstance++ == 0)
 	{
@@ -265,77 +266,10 @@ FTM_RET	FTM_MQTT_CLIENT_notify
 
 	switch(pMsg->xType)
 	{
-	case	FTM_OM_MSG_TYPE_EP_DATA_UPDATED:
+	case	FTM_OM_MSG_TYPE_SEND_EP_DATA:
 		{	
 			
-			TRACE("EP[%08x] data is updated.\n", pMsg->xParams.xEPDataUpdated.xEPID);
-			FTM_MQTT_CLIENT_publishEPData(pClient, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
-		}
-		break;
-
-	case	FTM_OM_MSG_TYPE_EP_CHANGED:
-		{
-			pCBSet[pClient->xConfig.ulCBSet].fPublishEPData(pClient, 
-														pMsg->xParams.xEPChanged.xEPID, 
-														&pMsg->xParams.xEPChanged.xData);
-
-		}
-		break;
-
-	case	FTM_OM_MSG_TYPE_EP_DATA_TRANS:
-		{
-			switch(pMsg->xParams.xEPDataTrans.nType)
-			{
-			case	FTM_EP_DATA_TYPE_INT:
-				{
-					
-					pCBSet[pClient->xConfig.ulCBSet].fPublishEPDataINT(	pClient, 
-														pMsg->xParams.xEPDataTrans.xEPID, 
-														pMsg->xParams.xEPDataTrans.ulTime,
-														pMsg->xParams.xEPDataTrans.xValue.xINT.nValue,
-														pMsg->xParams.xEPDataTrans.xValue.xINT.nAverage,
-														pMsg->xParams.xEPDataTrans.xValue.xINT.nCount,
-														pMsg->xParams.xEPDataTrans.xValue.xINT.nMax,
-														pMsg->xParams.xEPDataTrans.xValue.xINT.nMin);
-				};
-				break;
-
-			case	FTM_EP_DATA_TYPE_ULONG:
-				{
-					pCBSet[pClient->xConfig.ulCBSet].fPublishEPDataULONG(	pClient, 
-														pMsg->xParams.xEPDataTrans.xEPID, 
-														pMsg->xParams.xEPDataTrans.ulTime,
-														pMsg->xParams.xEPDataTrans.xValue.xULONG.ulValue,
-														pMsg->xParams.xEPDataTrans.xValue.xULONG.ulAverage,
-														pMsg->xParams.xEPDataTrans.xValue.xULONG.nCount,
-														pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMax,
-														pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMin);
-				};
-				break;
-
-			case	FTM_EP_DATA_TYPE_FLOAT:
-				{
-					pCBSet[pClient->xConfig.ulCBSet].fPublishEPDataFLOAT(	pClient, 
-														pMsg->xParams.xEPDataTrans.xEPID, 
-														pMsg->xParams.xEPDataTrans.ulTime,
-														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fValue,
-														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fAverage,
-														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.nCount,
-														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMax,
-														pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMin);
-				};
-				break;
-
-			case	FTM_EP_DATA_TYPE_BOOL:
-				{
-					pCBSet[pClient->xConfig.ulCBSet].fPublishEPDataBOOL(	pClient, 
-														pMsg->xParams.xEPDataTrans.xEPID, 
-														pMsg->xParams.xEPDataTrans.ulTime,
-														pMsg->xParams.xEPDataTrans.xValue.xBOOL.bValue);
-				};
-				break;
-			}
-
+			//FTM_MQTT_CLIENT_onSendEPData(pClient, (FTM_OM_MSG_SEND_EP_DATA_PTR)pMsg);
 		}
 		break;
 
@@ -345,6 +279,29 @@ FTM_RET	FTM_MQTT_CLIENT_notify
 		}
 	}
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_onPublishEPData
+(
+	FTM_MQTT_CLIENT_PTR	pClient,
+	FTM_OM_MSG_PUBLISH_EP_DATA_PTR	pMsg
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pMsg != NULL);
+
+	FTM_RET	xRet;
+
+	if (pCBSet[pClient->xConfig.ulCBSet].fPublishEPData != NULL)
+	{
+		xRet = pCBSet[pClient->xConfig.ulCBSet].fPublishEPData(pClient, pMsg->xEPID, pMsg->pData, pMsg->ulCount);
+	}
+	else
+	{
+		xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTM_MQTT_CLIENT_start
@@ -415,6 +372,19 @@ FTM_VOID_PTR FTM_MQTT_CLIENT_process
 			xRet = FTM_OM_MSGQ_timedPop(pClient->pMsgQ, 1000000, &pMsg);
 			if (xRet == FTM_RET_OK)
 			{
+				switch(pMsg->xType)
+				{
+				case	FTM_OM_MSG_TYPE_PUBLISH_EP_DATA:
+					{
+						xRet = FTM_MQTT_CLIENT_onPublishEPData(pClient, (FTM_OM_MSG_PUBLISH_EP_DATA_PTR)pMsg);	
+					}
+					break;
+
+				default:
+					{
+						ERROR("Not supported msg[%08x]\n", pMsg->xType);	
+					}
+				}
 				FTM_OM_MSG_destroy(&pMsg);
 			}
 			else
@@ -437,6 +407,18 @@ FTM_VOID_PTR FTM_MQTT_CLIENT_process
 	}
 
 	return 0;
+}
+
+FTM_RET	FTM_MQTT_CLIENT_pushMsg
+(
+	FTM_MQTT_CLIENT_PTR pClient,
+	FTM_OM_MSG_PTR		pMsg	
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pMsg != NULL);
+
+	return	FTM_OM_MSGQ_push(pClient->pMsgQ, pMsg);
 }
 
 FTM_VOID_PTR FTM_MQTT_CLIENT_connector
@@ -475,25 +457,29 @@ FTM_RET	FTM_MQTT_CLIENT_publishEPData
 (
 	FTM_MQTT_CLIENT_PTR pClient,
 	FTM_EP_ID			xEPID,
-	FTM_EP_DATA_PTR		pData
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			ulCount
 )
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pData != NULL);
 
-	switch(pData->xType)
+	FTM_RET	xRet;
+	FTM_OM_MSG_PUBLISH_EP_DATA_PTR	pMsg;
+
+	xRet = FTM_OM_MSG_createPublishEPData(xEPID, pData, ulCount, &pMsg);
+	if (xRet != FTM_RET_OK)
 	{
-	case	FTM_EP_DATA_TYPE_INT:	
-		return	FTM_MQTT_CLIENT_TPGW_publishEPDataINT(pClient, xEPID, pData->ulTime, pData->xValue.nValue, pData->xValue.nValue, 1, pData->xValue.nValue, pData->xValue.nValue);
-	case	FTM_EP_DATA_TYPE_ULONG:	
-		return	FTM_MQTT_CLIENT_TPGW_publishEPDataULONG(pClient, xEPID, pData->ulTime, pData->xValue.ulValue, pData->xValue.ulValue, 1, pData->xValue.ulValue, pData->xValue.ulValue);
-	case	FTM_EP_DATA_TYPE_FLOAT:	
-		return	FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT(pClient, xEPID, pData->ulTime, pData->xValue.fValue, pData->xValue.fValue, 1, pData->xValue.fValue, pData->xValue.fValue);
-	case	FTM_EP_DATA_TYPE_BOOL:	
-		return	FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL(pClient,xEPID,  pData->ulTime, pData->xValue.bValue);
+		return	xRet;	
 	}
 
-	return	FTM_RET_OK;
+	xRet = FTM_MQTT_CLIENT_pushMsg(pClient, (FTM_OM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pMsg);	
+	}
+
+	return	xRet;
 }
 
 
@@ -686,7 +672,7 @@ FTM_VOID FTM_MQTT_CLIENT_subscribeCB
 	}
 }
 
-FTM_BOOL FTM_MQTT_PUBLISH_LIST_comparator
+FTM_BOOL FTM_MQTT_PUBLISH_LIST_seeker
 (
 	const FTM_VOID_PTR pElement, 
 	const FTM_VOID_PTR pKey
@@ -716,7 +702,6 @@ FTM_RET	FTM_MQTT_PUBLISH_create
 
 	FTM_MQTT_PUBLISH_PTR pPublish;
 	
-	TRACE("1111\n");
 	pPublish = FTM_MEM_malloc(sizeof(FTM_MQTT_PUBLISH) + strlen(pTopic) + 1 + ulMessageLen);
 	if (pPublish == NULL)
 	{
@@ -724,8 +709,8 @@ FTM_RET	FTM_MQTT_PUBLISH_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	pPublish->pTopic 		= (FTM_CHAR_PTR)pPublish ;
-	pPublish->pMessage		= (FTM_CHAR_PTR)pPublish + sizeof(FTM_MQTT_PUBLISH) + 1;
+	pPublish->pTopic 		= (FTM_CHAR_PTR)pPublish + sizeof(FTM_MQTT_PUBLISH);
+	pPublish->pMessage		= (FTM_CHAR_PTR)pPublish + sizeof(FTM_MQTT_PUBLISH) + strlen(pTopic) + 1;
 
 	strcpy(pPublish->pTopic, pTopic);
 	memcpy(pPublish->pMessage, pMessage, ulMessageLen);
@@ -734,7 +719,6 @@ FTM_RET	FTM_MQTT_PUBLISH_create
 	pPublish->nMessageID	= 0;
 
 	*ppPublish = pPublish;
-	TRACE("1111\n");
 
 	return	FTM_RET_OK;
 }
@@ -752,4 +736,5 @@ FTM_RET	FTM_MQTT_PUBLISH_destroy
 
 	return	FTM_RET_OK;
 }
+
 

@@ -130,14 +130,7 @@ FTM_RET	FTM_OM_SHELL_CMD_list
 				MESSAGE("%16s ", pEP->pNode->xInfo.pDID);
 			}
 	
-			switch(pEP->xState)
-			{
-			case	FTM_EP_STATE_DISABLE: MESSAGE("%16s ", "DISABLE"); break;
-			case	FTM_EP_STATE_RUN: 	MESSAGE("%16s ", "RUN");		break;
-			case	FTM_EP_STATE_STOP: 	MESSAGE("%16s ", "STOP");		break;
-			case	FTM_EP_STATE_ERROR: MESSAGE("%16s ", "ERROR");		break;
-			default:					MESSAGE("%16s ", "UNKNOWN");		break;
-			}
+			MESSAGE("%16s ", (!pEP->bStop)?"RUN":"STOP");
 
 			switch(xData.xType)
 			{

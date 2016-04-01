@@ -41,51 +41,8 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPData
 (
 	FTM_MQTT_CLIENT_PTR pClient, 
 	FTM_EP_ID 			xEPID, 
-	FTM_EP_DATA_PTR 	pData
-);
-
-FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataINT
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_INT 			nValue, 
-	FTM_INT 			nAverage, 
-	FTM_INT 			nCount, 
-	FTM_INT 			nMax, 
-	FTM_INT 			nMin
-);
-
-FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataULONG
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_ULONG 			ulValue, 
-	FTM_ULONG 			nAverage, 
-	FTM_INT 			nCount, 
-	FTM_ULONG 			ulMax, 
-	FTM_ULONG 			ulMin
-);
-
-FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_FLOAT 			fValue, 
-	FTM_FLOAT 			nAverage, 
-	FTM_INT 			nCount, 
-	FTM_FLOAT 			fMax, 
-	FTM_FLOAT 			fMin
-);
-
-FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_BOOL 			bValu
+	FTM_EP_DATA_PTR 	pData,
+	FTM_ULONG			ulCount
 );
 
 #endif

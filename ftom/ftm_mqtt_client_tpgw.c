@@ -217,7 +217,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 		goto error;
 	}
 	memset(pReqID, 0, sizeof(pReqID));
-	strncpy(pReqID, pItem->text_value,sizeof(xMsg.xParams.xMQTTReq.pReqID) - 1);
+	strncpy(pReqID, pItem->text_value, FTM_OM_MSG_REQ_ID_LENGTH);
 
 	pItem = nx_json_get(pJSON, "method");
 	if ((pItem == NULL) || (pItem->type != NX_JSON_STRING))
@@ -239,6 +239,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 	{
 	case	FTM_MQTT_METHOD_REQ_TIME_SYNC:
 		{
+			FTM_ULONG	ulTime;
 			const nx_json *pParams = nx_json_get(pJSON, "params");
 			if (pParams== NULL)
 			{
@@ -254,14 +255,19 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}	
-			
-			xMsg.xParams.xTimeSync.ulTime = pTime->int_value;
+		
+			ulTime = pTime->int_value;
+
+			xRet = FTM_OM_MSG_createTimeSync(ulTime, (FTM_OM_MSG_TIME_SYNC_PTR _PTR_)ppMsg);
 		}
 		break;
 
 	case	FTM_MQTT_METHOD_REQ_CONTROL_ACTUATOR:
 		{
 			FTM_CHAR	pTemp[128];
+			FTM_EP_ID	xEPID;
+			FTM_EP_CTRL	xEPCtrl;
+			FTM_ULONG	ulDuration = 0;
 
 			const nx_json *pParams = nx_json_get(pJSON, "params");
 			if (pParams== NULL)
@@ -270,9 +276,6 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}	
-
-			xMsg.xType = FTM_OM_MSG_TYPE_MQTT_REQ_CONTROL;
-			strcpy(xMsg.xParams.xMQTTReqControl.pReqID, pReqID);
 
 			const nx_json *pID =  nx_json_get(pParams, "id");
 			if ((pID == NULL) || (pID->type != NX_JSON_STRING))
@@ -300,8 +303,8 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 				goto error;
 			}
-
-			xMsg.xParams.xMQTTReqControl.xEPID = strtoul(pEPID, 0, 16);
+			
+			xEPID = strtoul(pEPID, 0, 16);
 
 			const nx_json *pCMD = nx_json_get(pParams, "cmd");
 			if ((pCMD == NULL) || (pCMD->type != NX_JSON_STRING))
@@ -313,15 +316,15 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 
 			if (strcasecmp(pCMD->text_value, "on") == 0)
 			{
-				xMsg.xParams.xMQTTReqControl.xCmd = FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_ON;
+				xEPCtrl = FTM_EP_CTRL_ON;
 			}
 			else if (strcasecmp(pCMD->text_value, "off") == 0)
 			{
-				xMsg.xParams.xMQTTReqControl.xCmd = FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_OFF;
+				xEPCtrl = FTM_EP_CTRL_OFF;
 			}
 			else if (strcasecmp(pCMD->text_value, "blink") == 0)
 			{
-				xMsg.xParams.xMQTTReqControl.xCmd = FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_BLINK;
+				xEPCtrl = FTM_EP_CTRL_BLINK;
 			}
 			else
 			{
@@ -338,7 +341,7 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 				{
 					if (pOptions->type == NX_JSON_INTEGER) 
 					{
-						xMsg.xParams.xMQTTReqControl.xOptions.ulDuration = pOptions->int_value;
+						ulDuration = pOptions->int_value;
 					}
 					else
 					{
@@ -347,49 +350,24 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_requestMessageParser
 					}
 				}	
 			}
+
+			xRet = FTM_OM_MSG_createEPCtrl(xEPID, xEPCtrl, ulDuration, (FTM_OM_MSG_EP_CTRL_PTR _PTR_)ppMsg);
+
 		}
 		break;
 
 	case	FTM_MQTT_METHOD_REQ_SET_PROPERTY:
-		{
-		}
-		break;
-
 	case	FTM_MQTT_METHOD_REQ_POWER_OFF:
-		{
-		}
-		break;
-
 	case	FTM_MQTT_METHOD_REQ_REBOOT:
-		{
-		}
-		break;
-
 	case	FTM_MQTT_METHOD_REQ_RESTART:
-		{
-		}
-		break;
-
 	case	FTM_MQTT_METHOD_REQ_SW_UPDATE:
-		{
-		}
-		break;
-
 	case	FTM_MQTT_METHOD_REQ_SW_INFO:
 		{
+			xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
 		}
 		break;
 	}
 
-
-	xRet = FTM_OM_MSG_create(ppMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Not enough memory!\n");
-		return	xRet;	
-	}
-
-	memcpy(*ppMsg, &xMsg, sizeof(xMsg));
 
 error:
 
@@ -402,7 +380,8 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPData
 (
 	FTM_MQTT_CLIENT_PTR pClient, 
 	FTM_EP_ID 			xEPID, 
-	FTM_EP_DATA_PTR		pData
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			ulCount
 )
 {
 	ASSERT(pClient != NULL);
@@ -411,179 +390,61 @@ FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPData
 	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
 	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulMessageLen = 0;
-	FTM_ULONG	ulTime;
+	FTM_INT		i;
 
-	if (pData->ulTime != 0)
-	{
-		ulTime = pData->ulTime;
-	}
-	else
-	{
-		FTM_TIME	xTime;
-
-		FTM_TIME_getCurrent(&xTime);
-		ulTime = xTime.xTimeval.tv_sec;
-	}
+	pMessage[sizeof(pMessage) - 1] = '\0';
 	
 	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
-	switch(pData->xType)
+
+	ulMessageLen = sprintf(pMessage, "[");
+	for(i = 0 ; i < ulCount ; i++)
 	{
-	case	FTM_EP_DATA_TYPE_INT:
+		TRACE("%d,%lu\n", pData[i].ulTime, pData[i].xValue.ulValue);
+		if (i == 0)
 		{
-			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, pData->xValue.nValue);
+			ulMessageLen += snprintf(&pMessage[ulMessageLen], FTM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, "%lu", pData[i].ulTime);
 		}
-		break;
-
-	case	FTM_EP_DATA_TYPE_ULONG:
+		else
 		{
-			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%lu]", ulTime, pData->xValue.ulValue);
+			ulMessageLen += snprintf(&pMessage[ulMessageLen], FTM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%lu", pData[i].ulTime);
 		}
-		break;
 
-	case	FTM_EP_DATA_TYPE_FLOAT:
+		switch(pData[i].xType)
 		{
-			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%5.3f]", ulTime, pData->xValue.fValue);
-		}
-		break;
+		case	FTM_EP_DATA_TYPE_INT:
+			{
+				ulMessageLen += snprintf(&pMessage[ulMessageLen], FTM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%d", pData[i].xValue.nValue);
+			}
+			break;
 
-	case	FTM_EP_DATA_TYPE_BOOL:
-		{
-			ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, pData->xValue.bValue);
-		}
-		break;
+		case	FTM_EP_DATA_TYPE_ULONG:
+			{
+				ulMessageLen += snprintf(&pMessage[ulMessageLen], FTM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%lu", pData[i].xValue.ulValue);
+			}
+			break;
 
-	default:
-		{
-			FATAL("Invalid EP data type.!\n");	
-			return	FTM_RET_ERROR;
+		case	FTM_EP_DATA_TYPE_FLOAT:
+			{
+				ulMessageLen += snprintf(&pMessage[ulMessageLen], FTM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%5.3f", pData[i].xValue.fValue);
+			}
+			break;
+
+		case	FTM_EP_DATA_TYPE_BOOL:
+			{
+				ulMessageLen += snprintf(&pMessage[ulMessageLen], FTM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%d", pData[i].xValue.bValue);
+			}
+			break;
+
+		default:
+			{
+				FATAL("Invalid EP data type.!\n");	
+				return	FTM_RET_ERROR;
+			}
 		}
 	}
+
+	ulMessageLen += snprintf(&pMessage[ulMessageLen], FTM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, "]");
 
 	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
 }
 
-FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataINT
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_INT 			nValue, 
-	FTM_INT 			nAverage, 
-	FTM_INT 			nCount, 
-	FTM_INT 			nMax, 
-	FTM_INT 			nMin
-)
-{
-	ASSERT(pClient != NULL);
-	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
-	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
-	FTM_ULONG	ulMessageLen = 0;
-
-	if (ulTime == 0)
-	{
-		FTM_TIME	xTime;
-
-		FTM_TIME_getCurrent(&xTime);
-		ulTime = xTime.xTimeval.tv_sec;
-	}
-
-	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
-	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, nValue);
-
-	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
-}
-
-FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataULONG
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_ULONG 			ulValue, 
-	FTM_ULONG 			ulAverage, 
-	FTM_INT 			nCount, 
-	FTM_ULONG 			ulMax, 
-	FTM_ULONG 			ulMin
-)
-{
-	ASSERT(pClient != NULL);
-
-	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
-	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
-	FTM_ULONG	ulMessageLen = 0;
-
-	if (ulTime == 0)
-	{
-		FTM_TIME	xTime;
-
-		FTM_TIME_getCurrent(&xTime);
-		ulTime = xTime.xTimeval.tv_sec;
-	}
-
-	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
-	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
-	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%lu]", ulTime, ulValue);
-
-	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
-}
-
-FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataFLOAT
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_FLOAT			fValue,
-	FTM_FLOAT 			fAverage, 
-	FTM_INT 			nCount, 
-	FTM_FLOAT 			fMax, 
-	FTM_FLOAT 			fMin
-)
-{
-	ASSERT(pClient != NULL);
-
-	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
-	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
-	FTM_ULONG	ulMessageLen = 0;
-
-	if (ulTime == 0)
-	{
-		FTM_TIME	xTime;
-
-		FTM_TIME_getCurrent(&xTime);
-		ulTime = xTime.xTimeval.tv_sec;
-	}
-
-	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
-	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
-	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%5.3f]", ulTime, fValue);
-
-	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
-}
-
-FTM_RET	FTM_MQTT_CLIENT_TPGW_publishEPDataBOOL
-(
-	FTM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulTime, 
-	FTM_BOOL 			bValue
-)
-{
-	ASSERT(pClient != NULL);
-
-	FTM_CHAR	pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
-	FTM_CHAR	pMessage[FTM_MQTT_CLIENT_MESSAGE_LENGTH+1];
-	FTM_ULONG	ulMessageLen = 0;
-
-	if (ulTime == 0)
-	{
-		FTM_TIME	xTime;
-
-		FTM_TIME_getCurrent(&xTime);
-		ulTime = xTime.xTimeval.tv_sec;
-	}
-
-	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
-	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
-	ulMessageLen += sprintf(&pMessage[ulMessageLen], "[%lu,%d]", ulTime, bValue);
-
-	return	FTM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
-}

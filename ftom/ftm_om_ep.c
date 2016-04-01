@@ -22,6 +22,13 @@ static FTM_VOID_PTR	FTM_OM_EP_process
 	FTM_VOID_PTR 	pData
 );
 
+FTM_RET	FTM_OM_EP_sendDataInTime
+(
+	FTM_OM_EP_PTR 	pEP,
+	FTM_ULONG		ulStartTime,
+	FTM_ULONG		ulEndTime
+);
+
 static FTM_INT	FTM_OM_EP_seeker
 (
 	const FTM_VOID_PTR pElement, 
@@ -33,61 +40,6 @@ static FTM_INT	FTM_OM_EP_comparator
 	const FTM_VOID_PTR pElement1, 
 	const FTM_VOID_PTR pElement2
 );
-
-static FTM_RET	FTM_OM_EPM_notifyEPDataSaveToDB
-(
-	FTM_OM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_EP_DATA_PTR pData
-);
-
-static FTM_RET	FTM_OM_EP_transmissionData
-(
-	FTM_OM_EP_PTR 	pEP,
-	FTM_ULONG		ulStartTime,
-	FTM_ULONG		ulEndTime
-);
-
-static FTM_RET		FTM_OM_EPM_notifyEPDataTransINT
-(
-	FTM_OM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_INT 		nValue, 
-	FTM_INT 		nAverage, 
-	FTM_INT 		nCount, 
-	FTM_INT 		nMax, 
-	FTM_INT 		nMin
-);
-
-static FTM_RET		FTM_OM_EPM_notifyEPDataTransULONG
-(
-	FTM_OM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_ULONG 		ulValue, 
-	FTM_ULONG 		ulAverage, 
-	FTM_INT 		nCount, 
-	FTM_ULONG 		ulMax, 
-	FTM_ULONG 		ulMin
-);
-
-static FTM_RET		FTM_OM_EPM_notifyEPDataTransFLOAT
-(
-	FTM_OM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_FLOAT 		fValue, 
-	FTM_FLOAT 		fAverage, 
-	FTM_INT 		nCount, 
-	FTM_FLOAT 		fMax, 
-	FTM_FLOAT 		fMin
-);
-
-static FTM_RET		FTM_OM_EPM_notifyEPDataTransBOOL
-(	
-	FTM_OM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_BOOL 		bValue
-);
-
 
 FTM_RET	FTM_OM_EPM_create(FTM_OM_PTR pOM, FTM_OM_EPM_PTR _PTR_ ppEPM)
 {
@@ -308,7 +260,7 @@ FTM_RET	FTM_OM_EPM_count
 		{
 			FTM_OM_EP_PTR	pEP;
 
-			FTM_LIST_getAt(pEPM->pEPList, i,	(FTM_VOID_PTR _PTR_)&pEP);
+			FTM_LIST_getAt(pEPM->pEPList, i,(FTM_VOID_PTR _PTR_)&pEP);
 			if (xType == (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK))
 			{
 				ulCount++;
@@ -342,7 +294,7 @@ FTM_RET FTM_OM_EPM_getIDList
 	{
 		FTM_OM_EP_PTR	pEP;
 
-		FTM_LIST_getAt(pEPM->pEPList, i,	(FTM_VOID_PTR _PTR_)&pEP);
+		FTM_LIST_getAt(pEPM->pEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
 		if ((xType == 0) || (xType == (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK)))
 		{
 			pEPIDList[ulCount++] = pEP->xInfo.xEPID;
@@ -379,23 +331,32 @@ FTM_RET FTM_OM_EPM_getAt
 	return	FTM_LIST_getAt(pEPM->pEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
-
-FTM_RET	FTM_OM_EPM_notifyEPUpdated(FTM_OM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET	FTM_OM_EPM_saveEPData
+(
+	FTM_OM_EPM_PTR	pEPM,
+	FTM_EP_ID		xEPID,
+	FTM_EP_DATA_PTR	pData
+)
 {
 	ASSERT(pEPM != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTM_OM_NOTIFY_EPUpdated(pEPM->pOM, xEPID, pData);
+	return	FTM_OM_saveEPData(pEPM->pOM, xEPID, pData);
 }
 
-FTM_RET	FTM_OM_EPM_notifyEPDataSaveToDB(FTM_OM_EPM_PTR pEPM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET	FTM_OM_EPM_sendEPData
+(
+	FTM_OM_EPM_PTR 	pEPM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_EP_DATA_PTR pData,
+	FTM_ULONG		ulCount
+)
 {
 	ASSERT(pEPM != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTM_OM_NOTIFY_EPDataSaveToDB(pEPM->pOM, xEPID, pData);
+	return	FTM_OM_sendEPData(pEPM->pOM, xEPID, pData, ulCount);
 }
-
 /***********************************************************************
  * EP object operation
  ***********************************************************************/
@@ -404,7 +365,7 @@ FTM_RET	FTM_OM_EP_create(FTM_EP_PTR pInfo,FTM_OM_EP_PTR _PTR_ ppEP)
 {
 	ASSERT(ppEP != NULL);
 
-	FTM_RET		xRet;
+	FTM_RET			xRet;
 	FTM_OM_EP_PTR	pEP;
 
 	pEP = (FTM_OM_EP_PTR)FTM_MEM_malloc(sizeof(FTM_OM_EP));
@@ -413,30 +374,10 @@ FTM_RET	FTM_OM_EP_create(FTM_EP_PTR pInfo,FTM_OM_EP_PTR _PTR_ ppEP)
 		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
-	memset(pEP, 0, sizeof(FTM_OM_EP));
-	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
 
-	sem_init(&pEP->xLock, 0, 1);
-	xRet = FTM_MSGQ_init(&pEP->xMsgQ);
+	xRet = FTM_OM_EP_init(pEP, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MsgQ	init failed.\n");
-		FTM_MEM_free(pEP);
-		return	xRet;
-	}
-
-	xRet = FTM_LIST_init(&pEP->xDataList);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Data list init failed.\n");
-		FTM_MEM_free(pEP);
-		return	xRet;
-	}
-
-	xRet = FTM_LIST_init(&pEP->xTriggerList);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Trigger list init failed.\n");
 		FTM_MEM_free(pEP);
 		return	xRet;
 	}
@@ -451,33 +392,12 @@ FTM_RET	FTM_OM_EP_destroy(FTM_OM_EP_PTR _PTR_ ppEP)
 	ASSERT(ppEP != NULL);
 
 	FTM_RET			xRet;
-	FTM_EP_DATA_PTR	pData;
 
-	FTM_LIST_iteratorStart(&(*ppEP)->xDataList);
-	while(FTM_LIST_iteratorNext(&(*ppEP)->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
-	{
-		FTM_EP_DATA_destroy(pData);	
-	}
-
-	xRet = FTM_LIST_final(&(*ppEP)->xTriggerList);
+	xRet = FTM_OM_EP_final(*ppEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger list finalize failed.\n");
+		ERROR("EP finailize failed.\n");
 	}
-
-	xRet = FTM_LIST_final(&(*ppEP)->xDataList);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Data list finalize failed.\n");
-	}
-
-	xRet = FTM_MSGQ_final(&(*ppEP)->xMsgQ);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("MsgQ finalize failed.\n");
-	}
-
-	sem_destroy(&(*ppEP)->xLock);
 
 	xRet = FTM_MEM_free(*ppEP);
 	if (xRet != FTM_RET_OK)
@@ -486,6 +406,77 @@ FTM_RET	FTM_OM_EP_destroy(FTM_OM_EP_PTR _PTR_ ppEP)
 	}
 
 	*ppEP = NULL;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_OM_EP_init(FTM_OM_EP_PTR pEP, FTM_EP_PTR pInfo)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET		xRet;
+
+	memset(pEP, 0, sizeof(FTM_OM_EP));
+	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
+
+	pEP->bStop = FTM_TRUE;
+	sem_init(&pEP->xLock, 0, 1);
+	xRet = FTM_MSGQ_init(&pEP->xMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("MsgQ	init failed.\n");
+		return	xRet;
+	}
+
+	xRet = FTM_LIST_init(&pEP->xDataList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Data list init failed.\n");
+		return	xRet;
+	}
+
+	xRet = FTM_LIST_init(&pEP->xTriggerList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Trigger list init failed.\n");
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_OM_EP_final(FTM_OM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET			xRet;
+	FTM_EP_DATA_PTR	pData;
+
+	FTM_LIST_iteratorStart(&pEP->xDataList);
+	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+	{
+		FTM_EP_DATA_destroy(pData);	
+	}
+
+	xRet = FTM_LIST_final(&pEP->xTriggerList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Trigger list finalize failed.\n");
+	}
+
+	xRet = FTM_LIST_final(&pEP->xDataList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Data list finalize failed.\n");
+	}
+
+	xRet = FTM_MSGQ_final(&pEP->xMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("MsgQ finalize failed.\n");
+	}
+
+	sem_destroy(&pEP->xLock);
 
 	return	FTM_RET_OK;
 }
@@ -538,7 +529,7 @@ FTM_RET FTM_OM_EP_start(FTM_OM_EP_PTR pEP)
 		return	FTM_RET_EP_IS_NOT_ATTACHED;	
 	}
 
-	if (pEP->xState == FTM_EP_STATE_RUN)
+	if (!pEP->bStop)
 	{
 		ERROR("EP[%08x] already started.\n", pEP->xInfo.xEPID);
 		return	FTM_RET_ALREADY_STARTED;
@@ -551,25 +542,11 @@ FTM_RET FTM_OM_EP_start(FTM_OM_EP_PTR pEP)
 
 FTM_RET	FTM_OM_EP_stop(FTM_OM_EP_PTR pEP, FTM_BOOL bWaitForStop)
 {
-	FTM_VOID_PTR	xRet;
-	FTM_OM_EP_MSG_PTR	pMsg;
-	if (pEP->xState == FTM_EP_STATE_STOP)
-	{
-		return	FTM_RET_EP_DID_NOT_START;
-	}
-
-	pMsg = (FTM_OM_EP_MSG_PTR)FTM_MEM_malloc(sizeof(FTM_OM_EP_MSG));
-	if (pMsg == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;		
-	}
-
-	pMsg->xCmd = FTM_OM_EP_CMD_STOP;
-	FTM_MSGQ_push(&pEP->xMsgQ, pMsg);
+	pEP->bStop = FTM_TRUE;
 
 	if (bWaitForStop)
 	{
-		pthread_join(pEP->xPThread, (void **)&xRet);
+		pthread_join(pEP->xPThread, NULL);
 	}
 
 	return	FTM_RET_OK;
@@ -579,13 +556,13 @@ FTM_VOID_PTR FTM_OM_EP_process(FTM_VOID_PTR pData)
 {
 	ASSERT(pData != NULL);
 
-	FTM_OM_EP_PTR		pEP = (FTM_OM_EP_PTR)pData;
+	FTM_RET			xRet;
+	FTM_OM_EP_PTR	pEP = (FTM_OM_EP_PTR)pData;
 	FTM_TIMER		xCollectionTimer;
 	FTM_TIMER		xTransTimer;
 	FTM_TIME		xCurrentTime, xAlignTime, xNextTime, xInterval, xCycle;
-	FTM_BOOL		bStop = FTM_FALSE;
 
-	pEP->xState = FTM_EP_STATE_RUN;
+	pEP->bStop = FTM_FALSE;
 
 	TRACE("EP[%08x] process start.\n", pEP->xInfo.xEPID);
 
@@ -616,20 +593,18 @@ FTM_VOID_PTR FTM_OM_EP_process(FTM_VOID_PTR pData)
 
 	FTM_TIMER_initTime(&xTransTimer, &xCycle);
 
-	while(!bStop)
+	while(!pEP->bStop)
 	{
 		FTM_ULONG		ulRemainTime = 0;
-		FTM_EP_DATA		xData, xReadData;
+		FTM_EP_DATA		xData;
 		FTM_OM_EP_MSG_PTR	pMsg = NULL;
 	
-		xData.ulTime = time(NULL);
-		if (FTM_OM_NODE_getEPData(pEP->pNode, pEP, &xReadData) == FTM_RET_OK)
+		xRet = FTM_OM_EP_pullData(pEP, &xData);
+		if (xRet == FTM_RET_OK)
 		{
 			xData.xState = FTM_EP_DATA_STATE_VALID;
-			xData.xType = xReadData.xType;
-			memcpy(&xData.xValue, &xReadData.xValue, sizeof(xData.xValue));
-
-			FTM_OM_EP_updateData(pEP, &xData);
+			xData.ulTime = time(NULL);
+			FTM_OM_EP_setData(pEP, &xData);
 		}
 		else
 		{
@@ -643,28 +618,19 @@ FTM_VOID_PTR FTM_OM_EP_process(FTM_VOID_PTR pData)
 			FTM_TIMER_getTime(&xTransTimer, &ulCurrentTime);
 			ulPrevTime = ulCurrentTime - pEP->xInfo.ulCycle;
 
-			FTM_OM_EP_transmissionData(pEP, ulCurrentTime, ulPrevTime);
+			FTM_OM_EP_sendDataInTime(pEP, ulPrevTime, ulCurrentTime);
 			FTM_TIMER_add(&xTransTimer, pEP->xInfo.ulCycle * 1000000);
 		}
 		
 		FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
-		while (!bStop && (FTM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, (FTM_VOID_PTR _PTR_)&pMsg) == FTM_RET_OK))
+		while (!pEP->bStop && (FTM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, (FTM_VOID_PTR _PTR_)&pMsg) == FTM_RET_OK))
 		{
-			switch(pMsg->xCmd)
-			{
-			case	FTM_OM_EP_CMD_STOP:
-				{
-					bStop = FTM_TRUE;
-				}	
-				break;
-			}
-
 			FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
 
 			FTM_MEM_free(pMsg);
 		}
 	
-		if (!bStop)
+		if (!pEP->bStop)
 		{
 			FTM_TIMER_waitForExpired(&xCollectionTimer);
 		}
@@ -673,7 +639,8 @@ FTM_VOID_PTR FTM_OM_EP_process(FTM_VOID_PTR pData)
 
 	} 
 
-	pEP->xState = FTM_EP_STATE_STOP;
+	pEP->bStop = FTM_TRUE;
+
 	TRACE_EXIT();
 
 	return	0;
@@ -689,6 +656,38 @@ FTM_RET	FTM_OM_EP_getDataType
 	ASSERT(pType != NULL);
 	
 	return	FTM_EP_getDataType(&pEP->xInfo, pType);
+}
+
+FTM_RET	FTM_OM_EP_pushData(FTM_OM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET			xRet;
+
+	xRet = FTM_OM_NODE_setEPData(pEP->pNode, pEP, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%08x] data push error!\n", pEP->xInfo.xEPID);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTM_OM_EP_pullData(FTM_OM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET			xRet;
+
+	xRet = FTM_OM_NODE_getEPData(pEP->pNode, pEP, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%08x] data pull error!\n", pEP->xInfo.xEPID);
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTM_OM_EP_getData(FTM_OM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
@@ -709,22 +708,6 @@ FTM_RET	FTM_OM_EP_getData(FTM_OM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 }
 
 FTM_RET	FTM_OM_EP_setData(FTM_OM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
-{
-	ASSERT(pEP != NULL);
-	ASSERT(pData != NULL);
-
-	FTM_RET			xRet;
-
-	xRet = FTM_OM_NODE_setEPData(pEP->pNode, pEP, pData);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("EP[%08x] set error!\n", pEP->xInfo.xEPID);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTM_OM_EP_updateData(FTM_OM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 {
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
@@ -779,7 +762,7 @@ FTM_RET	FTM_OM_EP_updateData(FTM_OM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 		xRet = FTM_LIST_append(&pEP->xDataList, pNewData);
 		if (xRet == FTM_RET_OK)
 		{
-			FTM_OM_EPM_notifyEPDataSaveToDB(pEP->pEPM, pEP->xInfo.xEPID, pData);
+			FTM_OM_EPM_saveEPData(pEP->pEPM, pEP->xInfo.xEPID, pData);
 		}
 		else
 		{
@@ -790,7 +773,7 @@ FTM_RET	FTM_OM_EP_updateData(FTM_OM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	return	xRet;
 }
 
-FTM_RET	FTM_OM_EP_transmissionData
+FTM_RET	FTM_OM_EP_sendDataInTime
 (
 	FTM_OM_EP_PTR 	pEP,
 	FTM_ULONG		ulStartTime,
@@ -798,152 +781,46 @@ FTM_RET	FTM_OM_EP_transmissionData
 )
 {
 	ASSERT(pEP != NULL);
-	FTM_EP_DATA		xData;
+
+	FTM_RET			xRet;
 	FTM_EP_DATA_PTR	pData;
+	FTM_EP_DATA_PTR	pDataList;
+	FTM_INT			i, nCount = 0;
 
-	FTM_OM_EP_getData(pEP, &xData);
-
-	switch (xData.xType)
+	FTM_LIST_iteratorStart(&pEP->xDataList);
+	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
 	{
-	case	FTM_EP_DATA_TYPE_INT:
+		if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
 		{
-			FTM_INT	nMax = 0, nMin = 0, nAverage = 0, nCount = 0;
-
-			FTM_LIST_iteratorStart(&pEP->xDataList);
-			while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
-			{
-				if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
-				{
-					if (nCount == 0)
-					{
-						nMax 	= pData->xValue.nValue;	
-						nMin	= pData->xValue.nValue;	
-						nAverage= pData->xValue.nValue;	
-					}
-					else
-					{
-						if (nMax < pData->xValue.nValue)
-						{
-							nMax = pData->xValue.nValue;	
-						}
-						else if (nMin > pData->xValue.nValue)
-						{
-							nMin = pData->xValue.nValue;	
-						}
-
-						nAverage += pData->xValue.nValue;
-					}
-
-					nCount++;
-				}
-			}
-
-			if (nCount != 0)
-			{
-				nAverage = nAverage / nCount;
-			}
-
-			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
-			FTM_OM_EPM_notifyEPDataTransINT(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.nValue, nAverage, nCount, nMax, nMin);
+			nCount++;
 		}
-		break;
-
-	case	FTM_EP_DATA_TYPE_ULONG:
-		{
-			FTM_ULONG	ulMax = 0, ulMin = 0, ulAverage = 0, nCount = 0;
-
-			FTM_LIST_iteratorStart(&pEP->xDataList);
-			while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
-			{
-				if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
-				{
-					if (nCount == 0)
-					{
-						ulMax 	= pData->xValue.nValue;	
-						ulMin	= pData->xValue.nValue;	
-						ulAverage= pData->xValue.nValue;	
-					}
-					else
-					{
-						if (ulMax < pData->xValue.nValue)
-						{
-							ulMax = pData->xValue.nValue;	
-						}
-						else if (ulMin > pData->xValue.nValue)
-						{
-							ulMin = pData->xValue.nValue;	
-						}
-
-						ulAverage += pData->xValue.nValue;
-					}
-
-					nCount++;
-				}
-			}
-
-			if (nCount != 0)
-			{
-				ulAverage = ulAverage / nCount;
-			}
-			
-			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
-			FTM_OM_EPM_notifyEPDataTransULONG(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.ulValue, ulAverage, nCount, ulMax, ulMin);
-		}
-		break;
-
-	case	FTM_EP_DATA_TYPE_FLOAT:
-		{
-			FTM_FLOAT	fMax = 0, fMin = 0, fAverage = 0, nCount = 0;
-
-			FTM_LIST_iteratorStart(&pEP->xDataList);
-			while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
-			{
-				if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
-				{
-					if (nCount == 0)
-					{
-						fMax 	= pData->xValue.nValue;	
-						fMin	= pData->xValue.nValue;	
-						fAverage= pData->xValue.nValue;	
-					}
-					else
-					{
-						if (fMax < pData->xValue.nValue)
-						{
-							fMax = pData->xValue.nValue;	
-						}
-						else if (fMin > pData->xValue.nValue)
-						{
-							fMin = pData->xValue.nValue;	
-						}
-
-						fAverage += pData->xValue.nValue;
-					}
-
-					nCount++;
-				}
-			}
-
-			if (nCount != 0)
-			{
-				fAverage = fAverage / nCount;
-			}
-
-			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
-			FTM_OM_EPM_notifyEPDataTransFLOAT(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.fValue, fAverage, nCount, fMax, fMin);
-		}
-		break;
-
-	case	FTM_EP_DATA_TYPE_BOOL:
-		{
-			FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
-			FTM_OM_EPM_notifyEPDataTransBOOL(pEP->pEPM, pEP->xInfo.xEPID, pData->xValue.bValue);
-		}
-		break;
 	}
 
-	
-	return	FTM_RET_OK;
+	if (nCount == 0)
+	{
+		return	FTM_RET_OK;
+	}
+
+	pDataList = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * nCount);
+	if (pDataList == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	FTM_LIST_iteratorStart(&pEP->xDataList);
+	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+	{
+		if ((i < nCount) && (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime))
+		{
+			memcpy(&pDataList[i++], pData, sizeof(FTM_EP_DATA));
+			nCount++;
+		}
+	}
+
+	xRet = FTM_OM_EPM_sendEPData(pEP->pEPM, pEP->xInfo.xEPID, pDataList, nCount);
+	FTM_MEM_free(pDataList);
+
+	return	xRet;
 }
 
 FTM_RET	FTM_OM_EP_getEventCount(FTM_OM_EP_PTR pEP, FTM_ULONG_PTR pulCount)
@@ -952,93 +829,6 @@ FTM_RET	FTM_OM_EP_getEventCount(FTM_OM_EP_PTR pEP, FTM_ULONG_PTR pulCount)
 	ASSERT(pulCount != NULL);
 
 	return	FTM_LIST_count(&pEP->xTriggerList, pulCount);
-}
-#if 0
-FTM_RET	FTM_OM_EP_getEventAt(FTM_OM_EP_PTR pEP, FTM_ULONG ulIndex, FTM_TRIGGER_ID_PTR pTriggerID)
-{
-	ASSERT(pEP != NULL);
-	ASSERT(pTriggerID != NULL);
-	
-	return	FTM_LIST_getAt(&pEP->xTriggerList, ulIndex, (FTM_VOID_PTR _PTR_)&pTriggerID);
-}
-#endif
-FTM_RET FTM_OM_EP_trap(FTM_OM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
-{
-	ASSERT(pEP != NULL);
-	ASSERT(pData != NULL);
-
-	FTM_RET				xRet;
-
-	TRACE("The event occurred in EP[%08x].\n", pEP->xInfo.xEPID);
-	TRACE("%6s : %d\n", "STATE", pData->xState);
-
-	xRet = FTM_OM_EP_updateData(pEP, pData);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET		FTM_OM_EPM_notifyEPDataTransINT
-(
-	FTM_OM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_INT			nValue,
-	FTM_INT 		nAverage, 
-	FTM_INT 		nCount, 
-	FTM_INT 		nMax, 
-	FTM_INT 		nMin
-)
-{
-	ASSERT(pEPM != NULL);
-
-	return	FTM_OM_NOTIFY_EPDataTransINT(pEPM->pOM, xEPID, nValue, nAverage, nCount, nMax, nMin);
-}
-
-FTM_RET		FTM_OM_EPM_notifyEPDataTransULONG
-(
-	FTM_OM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_ULONG 		ulValue, 
-	FTM_ULONG 		ulAverage, 
-	FTM_INT 		nCount, 
-	FTM_ULONG 		ulMax, 
-	FTM_ULONG 		ulMin
-)
-{
-	ASSERT(pEPM != NULL);
-
-	return	FTM_OM_NOTIFY_EPDataTransULONG(pEPM->pOM, xEPID, ulValue, ulAverage, nCount, ulMax, ulMin);
-}
-
-FTM_RET		FTM_OM_EPM_notifyEPDataTransFLOAT
-(
-	FTM_OM_EPM_PTR	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_FLOAT 		fValue, 
-	FTM_FLOAT 		fAverage, 
-	FTM_INT 		nCount, 
-	FTM_FLOAT 		fMax, 
-	FTM_FLOAT 		fMin
-)
-{
-	ASSERT(pEPM != NULL);
-
-	return	FTM_OM_NOTIFY_EPDataTransFLOAT(pEPM->pOM, xEPID, fValue, fAverage, nCount, fMax, fMin);
-}
-
-FTM_RET		FTM_OM_EPM_notifyEPDataTransBOOL
-(
-	FTM_OM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_BOOL 		bValue
-)
-{
-	ASSERT(pEPM != NULL);
-
-	return	FTM_OM_NOTIFY_EPDataTransBOOL(pEPM->pOM, xEPID, bValue);
 }
 
 FTM_INT	FTM_OM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)

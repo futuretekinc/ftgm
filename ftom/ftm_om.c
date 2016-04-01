@@ -25,10 +25,22 @@ FTM_RET			FTM_OM_TASK_startEP(FTM_OM_PTR pOM);
 FTM_RET			FTM_OM_TASK_processing(FTM_OM_PTR pOM);
 FTM_RET			FTM_OM_TASK_stopService(FTM_OM_PTR pOM);
 
-FTM_RET	FTM_OM_onTimeSync
+static FTM_RET	FTM_OM_onTimeSync
+(
+	FTM_OM_PTR	pOM,
+	FTM_OM_MSG_TIME_SYNC_PTR	pMsg
+);
+
+static FTM_RET	FTM_OM_onEPCtrl
 (
 	FTM_OM_PTR		pOM,
-	FTM_OM_MSG_PTR	pMsg
+	FTM_OM_MSG_EP_CTRL_PTR	pMsg
+);
+
+static FTM_RET	FTM_OM_onSendEPData
+(
+	FTM_OM_PTR	pOM,
+	FTM_OM_MSG_SEND_EP_DATA_PTR pMsg
 );
 
 static 	FTM_RET	FTM_OM_callback(FTM_OM_SERVICE_ID xID, FTM_OM_MSG_TYPE xMsg, FTM_VOID_PTR pData);
@@ -262,7 +274,7 @@ FTM_RET FTM_OM_start(FTM_OM_PTR pOM)
 
 FTM_RET FTM_OM_stop(FTM_OM_PTR pOM)
 {
-	FTM_OM_MSGQ_sendQuit(pOM->pMsgQ);
+	pOM->bStop = FTM_TRUE;
 	pthread_join(pOM->xThread, NULL);
 
 	return	FTM_RET_OK;
@@ -550,14 +562,14 @@ FTM_RET			FTM_OM_TASK_processing(FTM_OM_PTR pOM)
 
 	FTM_RET			xRet;
 	FTM_BOOL		bStop =  FTM_FALSE;
-	FTM_OM_MSG_PTR	pMsg = NULL;
+	FTM_OM_MSG_PTR	pCommonMsg = NULL;
 
 	while(!bStop)
 	{
-		xRet = FTM_OM_MSGQ_timedPop(pOM->pMsgQ, 1000000, &pMsg);
+		xRet = FTM_OM_MSGQ_timedPop(pOM->pMsgQ, 1000000, &pCommonMsg);
 		if (xRet == FTM_RET_OK)
 		{
-			switch(pMsg->xType)
+			switch(pCommonMsg->xType)
 			{
 			case	FTM_OM_MSG_TYPE_QUIT:
 				{
@@ -567,301 +579,50 @@ FTM_RET			FTM_OM_TASK_processing(FTM_OM_PTR pOM)
 				}
 				break;
 
-			case	FTM_OM_MSG_TYPE_SNMPTRAP:
+			case	FTM_OM_MSG_TYPE_SAVE_EP_DATA:
 				{
-					FTM_EP_ID		xEPID = 0;
-					FTM_OM_EP_PTR		pEP = NULL;
-					FTM_EP_DATA		xData;
+					FTM_OM_MSG_SAVE_EP_DATA_PTR	pMsg = (FTM_OM_MSG_SAVE_EP_DATA_PTR)pCommonMsg;
 
-					TRACE("TRAP : %s\n", pMsg->xParams.xSNMPTrap.pString);
-					const nx_json *pRoot, *pItem;
-
-					pRoot = nx_json_parse_utf8(pMsg->xParams.xSNMPTrap.pString);
-					if (pRoot == NULL)
-					{
-						ERROR("Invalid trap message[%s]\n", pMsg->xParams.xSNMPTrap.pString);
-						break;	
-					}
-
-					pItem = nx_json_get(pRoot, "id");
-					if (pItem != NULL)
-					{
-						xEPID = strtoul(pItem->text_value, 0, 16);
-
-						xRet = FTM_OM_EPM_get(pOM->pEPM, xEPID, &pEP);
-						if (xRet == FTM_RET_OK)
-						{
-							FTM_OM_EP_getData(pEP, &xData);
-
-							pItem = nx_json_get(pRoot, "value");
-							if (pItem != NULL)
-							{
-								switch(pItem->type)
-								{
-								case	NX_JSON_STRING:
-									{
-										switch(xData.xType)
-										{
-										case	FTM_EP_DATA_TYPE_INT:
-											{
-												xData.xValue.nValue = strtol(pItem->text_value, NULL, 10);
-											}
-											break;
-
-										case	FTM_EP_DATA_TYPE_ULONG:
-											{
-												xData.xValue.ulValue = strtoul(pItem->text_value, NULL, 10);
-											}
-											break;
-
-										case	FTM_EP_DATA_TYPE_FLOAT:
-											{
-												xData.xValue.fValue = atof(pItem->text_value);
-											}
-											break;
-										}
-										
-									}
-									break;
-
-								case 	NX_JSON_INTEGER:
-								case	NX_JSON_BOOL:
-									{
-										xData.xValue.nValue = pItem->int_value;
-									}
-									break;
-
-								case	NX_JSON_DOUBLE:
-									{
-
-										switch(xData.xType)
-										{
-										case	FTM_EP_DATA_TYPE_INT:
-											{
-												xData.xValue.nValue = (FTM_INT)pItem->dbl_value;
-											}
-											break;
-	
-										case	FTM_EP_DATA_TYPE_ULONG:
-											{
-												xData.xValue.ulValue = (FTM_ULONG)pItem->dbl_value;
-											}
-											break;
-
-										case	FTM_EP_DATA_TYPE_FLOAT:
-											{
-												xData.xValue.fValue = pItem->dbl_value;
-											}
-											break;
-										}
-									}
-									break;
-					
-								default:
-									{
-										ERROR("Invalid value type[%d].\n", pItem->type);
-									}
-									break;
-								}
-
-								pItem = nx_json_get(pRoot, "time");
-								if (pItem != NULL)
-								{
-									xData.ulTime = (FTM_ULONG)pItem->int_value;
-								}
-
-								pItem = nx_json_get(pRoot, "state");
-								if (pItem != NULL)
-								{
-									if (strcasecmp(pItem->text_value, "enable") == 0)
-									{
-										xData.xState = FTM_EP_STATE_RUN;
-									}
-									else if (strcasecmp(pItem->text_value, "disable") == 0)
-									{
-										xData.xState = FTM_EP_STATE_STOP;
-									}
-									else if (strcasecmp(pItem->text_value, "error") == 0)
-									{
-										xData.xState = FTM_EP_STATE_ERROR;
-									}
-								}
-							}
-							else
-							{
-								ERROR("TRAP : Value is not exist.\n");
-							}
-						}
-						else
-						{
-								ERROR("Can't found EP[%08x]\n", xEPID);	
-						}
-					}
-					else
-					{
-						ERROR("TRAP : ID is not exist.\n");
-					}
-
-					nx_json_free(pRoot);
-
-
-					FTM_OM_EP_trap(pEP, &xData);
-				}	
-				break;
-
-			case	FTM_OM_MSG_TYPE_MQTT_REQ:
-				{
+					TRACE("Save EP[%08x] Data.\n", pMsg->xEPID);
+					FTM_OM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xEPID, &pMsg->xData);
+					FTM_OM_DMC_EP_DATA_set(&xDMC, pMsg->xEPID, &pMsg->xData);
 				}
 				break;
 
-			case	FTM_OM_MSG_TYPE_MQTT_REQ_TIME_SYNC:
+			case	FTM_OM_MSG_TYPE_SEND_EP_DATA:
 				{
-					FTM_OM_EP_PTR	pEP;
-					FTM_EP_DATA	xData;
-
-					TRACE("MQTT REQ CONTROL - EP[%08x]\n", pMsg->xParams.xMQTTReqControl.xEPID);
-
-					xRet = FTM_OM_EPM_get(pOM->pEPM, pMsg->xParams.xMQTTReqControl.xEPID, &pEP);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR("EP[%08x] not found.\n", pMsg->xParams.xMQTTReqControl.xEPID);
-						break;
-					}
-
-					switch(pMsg->xParams.xMQTTReqControl.xCmd)
-					{
-					case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_OFF:
-						{
-							xData.xType = FTM_EP_DATA_TYPE_INT;
-							xData.xValue.nValue = 0;
-						}
-						break;
-
-					case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_ON:
-						{
-							xData.xType = FTM_EP_DATA_TYPE_INT;
-							xData.xValue.nValue = 1;
-						}
-						break;
-
-					case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_BLINK:
-						{
-							xData.xType = FTM_EP_DATA_TYPE_INT;
-							xData.xValue.nValue = 2;
-						}
-						break;
-					}
-
-					xRet = FTM_OM_EP_setData(pEP, &xData);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR("EP[%08x] set failed.\n", pMsg->xParams.xMQTTReqControl.xEPID);
-						break;	
-					}
+					xRet = FTM_OM_onSendEPData(pOM, (FTM_OM_MSG_SEND_EP_DATA_PTR)pCommonMsg);
 
 				}
 				break;
 
-			case	FTM_OM_MSG_TYPE_MQTT_REQ_CONTROL:
+			case	FTM_OM_MSG_TYPE_TIME_SYNC:
 				{
-					FTM_OM_EP_PTR	pEP;
-					FTM_EP_DATA	xData;
-
-					TRACE("MQTT REQ CONTROL - EP[%08x]\n", pMsg->xParams.xMQTTReqControl.xEPID);
-
-					xRet = FTM_OM_EPM_get(pOM->pEPM, pMsg->xParams.xMQTTReqControl.xEPID, &pEP);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR("EP[%08x] not found.\n", pMsg->xParams.xMQTTReqControl.xEPID);
-						break;
-					}
-
-					switch(pMsg->xParams.xMQTTReqControl.xCmd)
-					{
-					case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_OFF:
-						{
-							xData.xType = FTM_EP_DATA_TYPE_INT;
-							xData.xValue.nValue = 0;
-						}
-						break;
-
-					case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_ON:
-						{
-							xData.xType = FTM_EP_DATA_TYPE_INT;
-							xData.xValue.nValue = 1;
-						}
-						break;
-
-					case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_BLINK:
-						{
-							xData.xType = FTM_EP_DATA_TYPE_INT;
-							xData.xValue.nValue = 2;
-						}
-						break;
-					}
-
-					xRet = FTM_OM_EP_setData(pEP, &xData);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR("EP[%08x] set failed.\n", pMsg->xParams.xMQTTReqControl.xEPID);
-						break;	
-					}
-
+					xRet = FTM_OM_onTimeSync(pOM, (FTM_OM_MSG_TIME_SYNC_PTR)pCommonMsg);
 				}
 				break;
 
-			case	FTM_OM_MSG_TYPE_EP_CHANGED:
+			case	FTM_OM_MSG_TYPE_EP_CTRL:
 				{
-					FTM_OM_EP_PTR pEP;
-
-					TRACE("EP[%08x] changed.\n", pMsg->xParams.xEPChanged.xEPID);
-					xRet = FTM_OM_EPM_get(pOM->pEPM, pMsg->xParams.xEPChanged.xEPID, &pEP);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR("EP[%08x] not found.\n", pMsg->xParams.xEPChanged.xEPID);
-					}
-					else
-					{
-						FTM_OM_EP_updateData(pEP, &pMsg->xParams.xEPChanged.xData);
-					}
-				}
-				break;
-
-			case	FTM_OM_MSG_TYPE_EP_DATA_SAVE_TO_DB:
-				{
-					FTM_OM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
-					FTM_OM_DMC_EP_DATA_set(&xDMC, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
-				}
-				break;
-
-			case	FTM_OM_MSG_TYPE_EP_DATA_UPDATED:
-				{
-					TRACE("DATA UPDATE : %08x.\n", pMsg->xParams.xEPDataUpdated.xEPID);
-					FTM_OM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
-					FTM_OM_SERVICE_notify(FTM_OM_SERVICE_ALL, pMsg);
-				}
-				break;
-
-			case	FTM_OM_MSG_TYPE_EP_DATA_TRANS:
-				{
-					FTM_OM_SERVICE_notify(FTM_OM_SERVICE_MQTT_CLIENT, pMsg);
+					xRet = FTM_OM_onEPCtrl(pOM, (FTM_OM_MSG_EP_CTRL_PTR)pCommonMsg);
 				}
 				break;
 
 			case	FTM_OM_MSG_TYPE_RULE:
 				{
-					TRACE("RULE[%d] is %s\n", pMsg->xParams.xRule.xRuleID, 
-						(pMsg->xParams.xRule.xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
+					FTM_OM_MSG_RULE_PTR	pMsg = (FTM_OM_MSG_RULE_PTR)pCommonMsg;
+
+					TRACE("RULE[%d] is %s\n", pMsg->xRuleID, (pMsg->xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
 				}
 				break;
 
 			default:
 				{
-					ERROR("Message[%08x] not supported.\n", pMsg->xType);
+					ERROR("Message[%08x] not supported.\n", pCommonMsg->xType);
 				}
 			}
 
-			FTM_MEM_free(pMsg);
+			FTM_MEM_free(pCommonMsg);
 		}
 	}
 
@@ -871,52 +632,53 @@ FTM_RET			FTM_OM_TASK_processing(FTM_OM_PTR pOM)
 FTM_RET	FTM_OM_onTimeSync
 (
 	FTM_OM_PTR	pOM,
-	FTM_OM_MSG_PTR	pMsg
+	FTM_OM_MSG_TIME_SYNC_PTR	pMsg
 )
-	
 {
 	ASSERT(pOM != NULL);
 	ASSERT(pMsg != NULL);
 
+	TRACE("Time Sync - %d\n", pMsg->ulTime);
+
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_OM_onControl
+FTM_RET	FTM_OM_onEPCtrl
 (
 	FTM_OM_PTR		pOM,
-	FTM_OM_MSG_PTR	pMsg
+	FTM_OM_MSG_EP_CTRL_PTR	pMsg
 )
 {
 	FTM_RET			xRet;
-	FTM_OM_EP_PTR	pEP;
-	FTM_EP_DATA		xData;
+	FTM_OM_EP_PTR				pEP;
+	FTM_EP_DATA					xData;
 
-	TRACE("MQTT REQ CONTROL - EP[%08x]\n", pMsg->xParams.xMQTTReqControl.xEPID);
+	TRACE("EP[%08x] Control\n", pMsg->xEPID);
 
-	xRet = FTM_OM_EPM_get(pOM->pEPM, pMsg->xParams.xMQTTReqControl.xEPID, &pEP);
+	xRet = FTM_OM_EPM_get(pOM->pEPM, pMsg->xEPID, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%08x] not found.\n", pMsg->xParams.xMQTTReqControl.xEPID);
+		ERROR("EP[%08x] not found.\n", pMsg->xEPID);
 		return	xRet;
 	}
 
-	switch(pMsg->xParams.xMQTTReqControl.xCmd)
+	switch(pMsg->xCtrl)
 	{
-	case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_OFF:
+	case FTM_EP_CTRL_OFF:
 		{
 			xData.xType = FTM_EP_DATA_TYPE_INT;
 			xData.xValue.nValue = 0;
 		}
 		break;
 
-	case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_ON:
+	case FTM_EP_CTRL_ON:
 		{
 			xData.xType = FTM_EP_DATA_TYPE_INT;
 			xData.xValue.nValue = 1;
 		}
 		break;
 
-	case FTM_OM_MSG_MQTT_REQ_CONTROL_CMD_BLINK:
+	case FTM_EP_CTRL_BLINK:
 		{
 			xData.xType = FTM_EP_DATA_TYPE_INT;
 			xData.xValue.nValue = 2;
@@ -924,13 +686,25 @@ FTM_RET	FTM_OM_onControl
 		break;
 	}
 
-	xRet = FTM_OM_EP_setData(pEP, &xData);
+	xRet = FTM_OM_EP_pushData(pEP, &xData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%08x] set failed.\n", pMsg->xParams.xMQTTReqControl.xEPID);
+		ERROR("EP[%08x] set failed.\n", pMsg->xEPID);
 	}
 
 	return	xRet;
+}
+
+FTM_RET	FTM_OM_onSendEPData
+(
+	FTM_OM_PTR	pOM,
+	FTM_OM_MSG_SEND_EP_DATA_PTR pMsg
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pMsg != NULL);
+
+	return	FTM_MQTT_CLIENT_publishEPData(&xMQTTC, pMsg->xEPID, pMsg->pData, pMsg->ulCount);
 }
 
 FTM_RET	FTM_OM_TASK_stopService(FTM_OM_PTR pOM)
@@ -1034,24 +808,20 @@ FTM_RET	FTM_OM_NOTIFY_rule
 	ASSERT(pOM != NULL);
 
 	FTM_RET			xRet;
-	FTM_OM_MSG_PTR	pMsg;
+	FTM_OM_MSG_RULE_PTR	pMsg;
 
-	xRet = FTM_OM_MSG_create(&pMsg);
+	xRet = FTM_OM_MSG_createRule(xRuleID, xRuleState, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Message creation failed.\n");
 		return	xRet;
 	}
 
-	pMsg->xType 					= FTM_OM_MSG_TYPE_RULE;
-	pMsg->xParams.xRule.xRuleID 	= xRuleID;
-	pMsg->xParams.xRule.xRuleState 	= xRuleState;
-
-	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
+	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, (FTM_OM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Message send failed.\n");
-		FTM_OM_MSG_destroy(&pMsg);		
+		FTM_OM_MSG_destroy((FTM_OM_MSG_PTR _PTR_)&pMsg);		
 		return	xRet;
 	}
 
@@ -1079,24 +849,6 @@ FTM_RET	FTM_OM_callback(FTM_OM_SERVICE_ID xID, FTM_OM_MSG_TYPE xMsg, FTM_VOID_PT
 
 	case	FTM_OM_SERVICE_DBM:
 		{
-			switch(xMsg)
-			{
-			case	FTM_OM_MSG_TYPE_DMC_CONNECTED:
-				{
-					TRACE("DMC connected!\n");
-				}
-				break;
-
-			case	FTM_OM_MSG_TYPE_DMC_DISCONNECTED:
-				{
-				}
-				break;
-
-			default:
-				{
-					ERROR("Invalid service callback parameter!\n");	
-				}
-			}
 		}
 		break;
 
@@ -1109,247 +861,92 @@ FTM_RET	FTM_OM_callback(FTM_OM_SERVICE_ID xID, FTM_OM_MSG_TYPE xMsg, FTM_VOID_PT
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTM_OM_NOTIFY_EPChanged(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET	FTM_OM_setEPData
+(
+	FTM_OM_PTR 		pOM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_EP_DATA_PTR pData
+)
 {
 	ASSERT(pOM != NULL);
 	ASSERT(pData != NULL);
 
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR 	pMsg;
+	FTM_RET						xRet;
+	FTM_OM_MSG_SET_EP_DATA_PTR	pMsg;
 
-	xRet = FTM_OM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message creation failed.\n");
-		return	xRet;
-	}
-	
-	pMsg->xType = FTM_OM_MSG_TYPE_EP_CHANGED;
-	pMsg->xParams.xEPChanged.xEPID = xEPID;
-	memcpy(&pMsg->xParams.xEPChanged.xData, pData, sizeof(FTM_EP_DATA));
-
-	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push failed.\n");
-		FTM_OM_MSG_destroy(&pMsg);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTM_OM_NOTIFY_EPUpdated(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
-{
-	ASSERT(pOM != NULL);
-	ASSERT(pData != NULL);
-
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR	pMsg;
-
-	xRet = FTM_OM_MSG_create(&pMsg);
+	xRet = FTM_OM_MSG_createSetEPData(xEPID, pData, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	pMsg->xType = FTM_OM_MSG_TYPE_EP_DATA_UPDATED;
-	pMsg->xParams.xEPDataUpdated.xEPID = xEPID;
-	memcpy(&pMsg->xParams.xEPDataUpdated.xData, pData, sizeof(FTM_EP_DATA));
-
-	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
+	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, (FTM_OM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Message push error![%08x]\n", xRet);
-		FTM_OM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_OM_NOTIFY_EPDataSaveToDB(FTM_OM_PTR pOM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
-{
-	ASSERT(pOM != NULL);
-	ASSERT(pData != NULL);
-
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR	pMsg;
-
-	xRet = FTM_OM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTM_OM_MSG_TYPE_EP_DATA_SAVE_TO_DB;
-	pMsg->xParams.xEPDataUpdated.xEPID = xEPID;
-	memcpy(&pMsg->xParams.xEPDataUpdated.xData, pData, sizeof(FTM_EP_DATA));
-
-	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTM_OM_MSG_destroy(&pMsg);
+		FTM_OM_MSG_destroy((FTM_OM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
 	
 	return	FTM_RET_OK;
 }
 
-FTM_RET		FTM_OM_NOTIFY_EPDataTransINT
+FTM_RET	FTM_OM_saveEPData
 (
-	FTM_OM_PTR	pOM,
-	FTM_EP_ID 			xEPID, 
-	FTM_INT				nValue,
-	FTM_INT 			nAverage, 
-	FTM_INT 			nCount, 
-	FTM_INT 			nMax, 
-	FTM_INT 			nMin
+	FTM_OM_PTR 		pOM, 
+	FTM_EP_ID 		xEPID, 
+	FTM_EP_DATA_PTR pData
 )
 {
 	ASSERT(pOM != NULL);
+	ASSERT(pData != NULL);
 
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR	pMsg;
+	FTM_RET						xRet;
+	FTM_OM_MSG_SAVE_EP_DATA_PTR	pMsg;
 
-	xRet = FTM_OM_MSG_create(&pMsg);
+	xRet = FTM_OM_MSG_createSaveEPData(xEPID, pData, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	pMsg->xType = FTM_OM_MSG_TYPE_EP_DATA_TRANS;
-	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
-	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_INT;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nValue	= nValue;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nAverage = nAverage;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nCount 	= nCount;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nMax 	= nMax;
-	pMsg->xParams.xEPDataTrans.xValue.xINT.nMin 	= nMin;
-
-	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
+	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, (FTM_OM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Message push error![%08x]\n", xRet);
-		FTM_OM_MSG_destroy(&pMsg);
+		FTM_OM_MSG_destroy((FTM_OM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
-
+	
 	return	FTM_RET_OK;
 }
 
-FTM_RET		FTM_OM_NOTIFY_EPDataTransULONG
+FTM_RET	FTM_OM_sendEPData
 (
-	FTM_OM_PTR	pOM,
-	FTM_EP_ID 			xEPID, 
-	FTM_ULONG 			ulValue, 
-	FTM_ULONG 			ulAverage, 
-	FTM_INT 			nCount, 
-	FTM_ULONG 			ulMax, 
-	FTM_ULONG 			ulMin
+	FTM_OM_PTR		pOM,
+	FTM_EP_ID 		xEPID, 
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulCount
 )
 {
 	ASSERT(pOM != NULL);
+	ASSERT(pData != NULL);
 
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR	pMsg;
+	FTM_RET						xRet;
+	FTM_OM_MSG_SEND_EP_DATA_PTR	pMsg;
 
-	xRet = FTM_OM_MSG_create(&pMsg);
+	xRet = FTM_OM_MSG_createSendEPData(xEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	pMsg->xType = FTM_OM_MSG_TYPE_EP_DATA_TRANS;
-	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
-	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_ULONG;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulValue	= ulValue;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulAverage 	= ulAverage;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.nCount 	= nCount;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMax 		= ulMax;
-	pMsg->xParams.xEPDataTrans.xValue.xULONG.ulMin 		= ulMin;
 
-	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
+	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, (FTM_OM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Message push error![%08x]\n", xRet);
-		FTM_OM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET		FTM_OM_NOTIFY_EPDataTransFLOAT
-(
-	FTM_OM_PTR	pOM,
-	FTM_EP_ID 			xEPID, 
-	FTM_FLOAT 			fValue, 
-	FTM_FLOAT 			fAverage, 
-	FTM_INT 			nCount, 
-	FTM_FLOAT 			fMax, 
-	FTM_FLOAT 			fMin
-)
-{
-	ASSERT(pOM != NULL);
-
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR	pMsg;
-
-	xRet = FTM_OM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTM_OM_MSG_TYPE_EP_DATA_TRANS;
-	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
-	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_FLOAT;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fValue		= fValue;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fAverage 	= fAverage;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.nCount 	= nCount;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMax 		= fMax;
-	pMsg->xParams.xEPDataTrans.xValue.xFLOAT.fMin 		= fMin;
-
-	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTM_OM_MSG_destroy(&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET		FTM_OM_NOTIFY_EPDataTransBOOL
-(
-	FTM_OM_PTR			pOM,
-	FTM_EP_ID 			xEPID, 
-	FTM_BOOL 			bValue
-)
-{
-	ASSERT(pOM != NULL);
-
-	FTM_RET			xRet;
-	FTM_OM_MSG_PTR	pMsg;
-
-	xRet = FTM_OM_MSG_create(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pMsg->xType = FTM_OM_MSG_TYPE_EP_DATA_TRANS;
-	pMsg->xParams.xEPDataTrans.xEPID = xEPID;
-	pMsg->xParams.xEPDataTrans.nType = FTM_EP_DATA_TYPE_BOOL;
-	pMsg->xParams.xEPDataTrans.xValue.xBOOL.bValue	= bValue;
-
-	xRet = FTM_OM_MSGQ_push(pOM->pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTM_OM_MSG_destroy(&pMsg);
+		FTM_OM_MSG_destroy((FTM_OM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
 

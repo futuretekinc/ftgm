@@ -10,7 +10,16 @@
 #include "ftm_om_server.h"
 #include "ftm_om_dmc.h"
 
-static FTM_VOID_PTR	FTM_OM_DMC_process(FTM_VOID_PTR pData);
+static FTM_VOID_PTR	FTM_OM_DMC_process
+(
+	FTM_VOID_PTR 	pData
+);
+
+static FTM_RET	FTM_OM_DMC_onSaveEPData
+(
+	FTM_OM_DMC_PTR	pDMC,
+	FTM_OM_MSG_SAVE_EP_DATA_PTR	pMsg
+);
 
 FTM_RET FTM_OM_DMC_init
 (
@@ -98,7 +107,7 @@ FTM_VOID_PTR	FTM_OM_DMC_process
 			{
 				if (pDMC->fServiceCB != NULL)
 				{
-					pDMC->fServiceCB(pDMC->xServiceID, FTM_OM_MSG_TYPE_DMC_CONNECTED, NULL);	
+					pDMC->fServiceCB(pDMC->xServiceID, FTM_OM_MSG_TYPE_CONNECTED, NULL);	
 				}
 			}
 		}
@@ -160,10 +169,9 @@ FTM_RET	FTM_OM_DMC_notify
 
 	switch(pMsg->xType)
 	{
-	case	FTM_OM_MSG_TYPE_EP_DATA_UPDATED:
+	case	FTM_OM_MSG_TYPE_SAVE_EP_DATA:
 		{	
-			
-			xRet = FTDMC_EP_DATA_append(&pDMC->xSession, pMsg->xParams.xEPDataUpdated.xEPID, &pMsg->xParams.xEPDataUpdated.xData);
+			xRet = FTM_OM_DMC_onSaveEPData(pDMC, (FTM_OM_MSG_SAVE_EP_DATA_PTR)pMsg);
 		}
 		break;
 
@@ -174,6 +182,18 @@ FTM_RET	FTM_OM_DMC_notify
 	FTM_OM_MSG_destroy(&pMsg);
 
 	return	xRet;
+}
+
+FTM_RET	FTM_OM_DMC_onSaveEPData
+(
+	FTM_OM_DMC_PTR	pDMC,
+	FTM_OM_MSG_SAVE_EP_DATA_PTR	pMsg
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pMsg != NULL);
+	
+	return	FTDMC_EP_DATA_append(&pDMC->xSession, pMsg->xEPID, &pMsg->xData);
 }
 
 FTM_RET	FTM_OM_DMC_EP_create

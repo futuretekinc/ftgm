@@ -165,70 +165,31 @@ FTM_RET	FTM_OM_NOTIFY_SNMPTrap
 	FTM_CHAR_PTR 		pTrapMsg
 );
 
-FTM_RET FTM_OM_NOTIFY_EPChanged
-(	
-	FTM_OM_PTR 	pOM, 
-	FTM_EP_ID 			xEPID, 
-	FTM_EP_DATA_PTR 	pData
-);
-
-FTM_RET	FTM_OM_NOTIFY_EPUpdated
+FTM_RET	FTM_OM_setEPData
 (
 	FTM_OM_PTR 	pOM, 
 	FTM_EP_ID 			xEPID, 
 	FTM_EP_DATA_PTR 	pData
 );
 
-FTM_RET	FTM_OM_NOTIFY_EPDataSaveToDB
+FTM_RET	FTM_OM_saveEPData
 (
 	FTM_OM_PTR 	pOM, 
 	FTM_EP_ID 			xEPID, 
 	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTM_OM_sendEPData
+(
+	FTM_OM_PTR		pOM,
+	FTM_EP_ID 		xEPID, 
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulCount
 );
 
 FTM_RET	FTM_OM_NOTIFY_quit
 (
 	FTM_OM_PTR 	pOM
-);
-
-FTM_RET		FTM_OM_NOTIFY_EPDataTransINT
-(
-	FTM_OM_PTR	pOM,
-	FTM_EP_ID	xEPID, 
-	FTM_INT		nValue,
-	FTM_INT 	nAverage, 
-	FTM_INT 	nCount, 
-	FTM_INT 	nMax, 
-	FTM_INT 	nMin
-);
-
-FTM_RET		FTM_OM_NOTIFY_EPDataTransULONG
-(
-	FTM_OM_PTR	pOM,
-	FTM_EP_ID 	xEPID, 
-	FTM_ULONG 	ulValue, 
-	FTM_ULONG 	ulAverage, 
-	FTM_INT 	nCount, 
-	FTM_ULONG 	ulMax, 
-	FTM_ULONG 	ulMin
-);
-
-FTM_RET		FTM_OM_NOTIFY_EPDataTransFLOAT
-(
-	FTM_OM_PTR	pOM,
-	FTM_EP_ID 	xEPID, 
-	FTM_FLOAT 	fValue, 
-	FTM_FLOAT 	fAverage, 
-	FTM_INT 	nCount, 
-	FTM_FLOAT 	fMax, 
-	FTM_FLOAT 	fMin
-);
-
-FTM_RET		FTM_OM_NOTIFY_EPDataTransBOOL
-(
-	FTM_OM_PTR	pOM,
-	FTM_EP_ID 	xEPID, 
-	FTM_BOOL 	bValue
 );
 
 #endif
