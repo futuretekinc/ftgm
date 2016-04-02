@@ -1,55 +1,15 @@
 #include "ftm.h"
 #include "ftom.h"
-#include "ftm_mqtt_client.h"
+#include "ftom_mqtt_client.h"
 #include <nxjson.h>
 
-static FTM_RET	FTM_MQTT_CLIENT_FT_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
-static FTM_RET	FTM_MQTT_CLIENT_FT_requestMessageParser(FTM_CHAR_PTR pMessage, FTOM_MSG_PTR _PTR_	pMsg);
-
-struct
-{
-	FTM_CHAR_PTR	pString;
-	FTM_ULONG		xMethod;
-} static xReqMethod[] =
-{
-	{
-		.pString	= "timeSync",
-		.xMethod		= FTM_MQTT_METHOD_REQ_TIME_SYNC
-	},
-	{
-		.pString	= "controlACtuator",
-		.xMethod		= FTM_MQTT_METHOD_REQ_CONTROL_ACTUATOR,
-	},
-	{
-		.pString	= "setProperty",
-		.xMethod		= FTM_MQTT_METHOD_REQ_SET_PROPERTY,
-	},
-	{
-		.pString	= "poweroff",
-		.xMethod		= FTM_MQTT_METHOD_REQ_POWER_OFF,
-	},
-	{
-		.pString	= "reboot",
-		.xMethod		= FTM_MQTT_METHOD_REQ_REBOOT,
-	},
-	{
-		.pString	= "restart",
-		.xMethod		= FTM_MQTT_METHOD_REQ_RESTART,
-	},
-	{
-		.pString	= "swUpdate",
-		.xMethod		= FTM_MQTT_METHOD_REQ_SW_UPDATE,
-	},
-	{
-		.pString	= "swInfo",
-		.xMethod		= FTM_MQTT_METHOD_REQ_SW_INFO,
-	}
-};
+static FTM_RET	FTOM_MQTT_CLIENT_FT_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
+static FTM_RET	FTOM_MQTT_CLIENT_FT_requestMessageParser(FTM_CHAR_PTR pMessage, FTOM_MSG_PTR _PTR_	pMsg);
 
 /**************************************************************
  * Futuretek MQTT interface
  **************************************************************/
-FTM_VOID FTM_MQTT_CLIENT_FT_connectCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_connectCB
 (
 	struct mosquitto 	*mosq, 
 	void				*pObj, 
@@ -57,7 +17,7 @@ FTM_VOID FTM_MQTT_CLIENT_FT_connectCB
 )
 {
 	ASSERT(pObj != NULL);
-	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 	FTM_CHAR			pTopic[FTM_MQTT_TOPIC_LEN + 1];
 
 	TRACE("MQTT is connected.\n");
@@ -68,7 +28,7 @@ FTM_VOID FTM_MQTT_CLIENT_FT_connectCB
 	mosquitto_subscribe(pClient->pMosquitto, NULL, pTopic, 0);
 }
 
-FTM_VOID FTM_MQTT_CLIENT_FT_disconnectCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_disconnectCB
 (
 	struct mosquitto 	*mosq, 
 	void				*pObj, 
@@ -76,12 +36,12 @@ FTM_VOID FTM_MQTT_CLIENT_FT_disconnectCB
 )
 {
 	ASSERT(pObj != NULL);
-	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	//FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 
 	TRACE("MQTT is disconnected.\n");
 }
 
-FTM_VOID FTM_MQTT_CLIENT_FT_publishCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_publishCB
 (
 	struct mosquitto 	*mosq, 
 	void				*pObj, 
@@ -90,7 +50,7 @@ FTM_VOID FTM_MQTT_CLIENT_FT_publishCB
 {
 }
 
-FTM_VOID FTM_MQTT_CLIENT_FT_messageCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_messageCB
 (
 	struct mosquitto 	*mosq, 
 	void 				*pObj, 
@@ -100,15 +60,15 @@ FTM_VOID FTM_MQTT_CLIENT_FT_messageCB
 	ASSERT(pObj != NULL);
 
 	FTM_RET			xRet;
-	FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
-	FTM_CHAR		pTopic[FTM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
+	FTM_CHAR		pTopic[FTOM_MQTT_CLIENT_TOPIC_LENGTH+1];
 	FTM_CHAR_PTR	pIDs[10];
 	FTM_INT			nIDs = 0;
 	
 	memset(pTopic, 0, sizeof(pTopic));
-	strncpy(pTopic, pMessage->topic, FTM_MQTT_CLIENT_TOPIC_LENGTH);
+	strncpy(pTopic, pMessage->topic, FTOM_MQTT_CLIENT_TOPIC_LENGTH);
 
-	FTM_MQTT_CLIENT_FT_topicParser(pTopic, pIDs, 10, &nIDs);
+	FTOM_MQTT_CLIENT_FT_topicParser(pTopic, pIDs, 10, &nIDs);
 	if ((nIDs != 5) || (strcmp(pClient->pDID, pIDs[3]) != 0))
 	{
 		ERROR("Invalid Topic[%s]\n", pMessage->topic);
@@ -119,7 +79,7 @@ FTM_VOID FTM_MQTT_CLIENT_FT_messageCB
 	{
 		FTOM_MSG_PTR pMsg;
 
-		xRet = FTM_MQTT_CLIENT_FT_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
+		xRet = FTOM_MQTT_CLIENT_FT_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Invalid message.\n");
@@ -136,7 +96,7 @@ FTM_VOID FTM_MQTT_CLIENT_FT_messageCB
 	}
 }
 
-FTM_VOID FTM_MQTT_CLIENT_FT_subscribeCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_subscribeCB
 (
 	struct mosquitto 	*mosq, 
 	void				*pObj,
@@ -146,10 +106,10 @@ FTM_VOID FTM_MQTT_CLIENT_FT_subscribeCB
 )
 {
 	ASSERT(pObj != NULL);
-	//FTM_MQTT_CLIENT_PTR	pClient = (FTM_MQTT_CLIENT_PTR)pObj;
+	//FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 }
 
-FTM_RET	FTM_MQTT_CLIENT_FT_topicParser
+FTM_RET	FTOM_MQTT_CLIENT_FT_topicParser
 (
 	FTM_CHAR_PTR	pTopic,
 	FTM_CHAR_PTR	pArgv[],
@@ -182,7 +142,7 @@ FTM_RET	FTM_MQTT_CLIENT_FT_topicParser
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_MQTT_CLIENT_FT_requestMessageParser
+FTM_RET	FTOM_MQTT_CLIENT_FT_requestMessageParser
 (
 	FTM_CHAR_PTR		pMessage,
 	FTOM_MSG_PTR _PTR_	ppMsg

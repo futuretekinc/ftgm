@@ -45,9 +45,10 @@ typedef	struct FTOM_SERVER_STRUCT
 	FTOM_SERVER_CONFIG	xConfig;
 	pthread_t 				xPThread;
 	sem_t					xLock;
-	
+	FTM_BOOL				bStop;	
 	FTOM_PTR				pOM;
 	FTM_LIST				xSessionList;
+	FTM_INT				hSocket;
 	FTOM_SERVICE_ID		xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
 }	FTOM_SERVER;

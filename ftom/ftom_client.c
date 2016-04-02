@@ -164,6 +164,11 @@ FTM_RET	FTOM_CLIENT_stop
 {
 	ASSERT(pClient != NULL);
 
+	if (!pClient->bStop)
+	{
+		return	FTM_RET_NOT_START;	
+	}
+
 	pClient->bStop = FTM_TRUE;
 	pthread_join(pClient->xThread, NULL);
 

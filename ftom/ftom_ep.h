@@ -10,99 +10,7 @@
 
 typedef	struct FTOM_STRUCT _PTR_	FTOM_PTR;
 typedef	struct FTOM_NODE_STRUCT _PTR_ FTOM_NODE_PTR;
-typedef	struct FTOM_EP_STRUCT _PTR_ FTOM_EP_PTR;
-
-typedef	struct FTOM_EPM_STRUCT
-{
-	FTOM_PTR	pOM;
-	FTM_LIST_PTR		pEPList;
-}	FTOM_EPM, _PTR_ FTOM_EPM_PTR;
-
-FTM_RET	FTOM_EPM_create
-(
-	FTOM_PTR 	pOM, 
-	FTOM_EPM_PTR _PTR_ ppEPM
-);
-
-FTM_RET	FTOM_EPM_destroy
-(
-	FTOM_EPM_PTR _PTR_ ppEPM
-);
-
-FTM_RET	FTOM_EPM_init
-(
-	FTOM_PTR 		pOM, 
-	FTOM_EPM_PTR 	pEPM
-);
-
-FTM_RET	FTOM_EPM_final
-(
-	FTOM_EPM_PTR 	pEPM
-);
-
-FTM_RET	FTOM_EPM_createEP
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTM_EP_PTR 		pInfo, 
-	FTOM_EP_PTR _PTR_ ppEP
-);
-
-FTM_RET	FTOM_EPM_destroyEP
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTOM_EP_PTR 	pEP
-);
-
-FTM_RET	FTOM_EPM_attachEP
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTOM_EP_PTR 	pEP
-);
-
-FTM_RET	FTOM_EPM_detachEP
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTOM_EP_PTR 	pEP
-);
-
-FTM_RET	FTOM_EPM_count
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTM_EP_TYPE 	xType, 
-	FTM_ULONG_PTR 	pulCount
-);
-
-FTM_RET FTOM_EPM_getIDList
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTM_EP_TYPE 	xType, 
-	FTM_EP_ID_PTR 	pEPID, 
-	FTM_ULONG 		ulMaxCount, 
-	FTM_ULONG_PTR 	pulCount
-);
-
-FTM_RET FTOM_EPM_get
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTOM_EP_PTR _PTR_ ppEP
-);
-
-FTM_RET FTOM_EPM_getAt
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTM_ULONG 		ulIndex, 
-	FTOM_EP_PTR _PTR_ ppEP
-);
-
-FTM_RET	FTOM_EPM_sendEPData
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_EP_DATA_PTR pData,
-	FTM_ULONG		ulCount
-);
-
+typedef	struct FTOM_EPM_STRUCT _PTR_ FTOM_EPM_PTR;
 
 typedef	struct FTOM_EP_STRUCT
 {
@@ -116,7 +24,7 @@ typedef	struct FTOM_EP_STRUCT
 
 	pthread_t			xPThread;
 	sem_t				xLock;
-	FTM_MSG_QUEUE		xMsgQ;
+	FTOM_MSG_QUEUE		xMsgQ;
 
 	FTM_LIST			xDataList;
 	FTM_LIST			xTriggerList;
@@ -129,7 +37,7 @@ typedef	struct FTOM_EP_STRUCT
 			size_t	nOIDLen;
 		}	xSNMP;
 	}	xOption;
-}	FTOM_EP;
+}	FTOM_EP, _PTR_ FTOM_EP_PTR;
 
 FTM_RET	FTOM_EP_create
 (

@@ -3,6 +3,7 @@
 #include "ftm.h"
 #include "ftom.h"
 #include "ftom_ep.h"
+#include "ftom_ep_management.h"
 #include "ftom_dmc.h"
 
 #define	FTOM_EP_DATA_COUNT	32
@@ -29,339 +30,15 @@ FTM_RET	FTOM_EP_sendDataInTime
 	FTM_ULONG		ulEndTime
 );
 
-static FTM_INT	FTOM_EP_seeker
-(
-	const FTM_VOID_PTR pElement, 
-	const FTM_VOID_PTR pIndicator
-);
-
-static FTM_INT	FTOM_EP_comparator
-(
-	const FTM_VOID_PTR pElement1, 
-	const FTM_VOID_PTR pElement2
-);
-
-FTM_RET	FTOM_EPM_create(FTOM_PTR pOM, FTOM_EPM_PTR _PTR_ ppEPM)
-{
-	ASSERT(pOM != NULL);
-	ASSERT(ppEPM != NULL);
-
-	FTM_RET			xRet;
-	FTOM_EPM_PTR	pEPM;
-
-	pEPM = (FTOM_EPM_PTR)FTM_MEM_malloc(sizeof(FTOM_EPM));
-	if (pEPM == NULL)
-	{
-		ERROR("Not enough memory.\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	xRet = FTOM_EPM_init(pOM, pEPM);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("EPM init failed[%08x].\n", xRet);
-		FTM_MEM_free(pEPM);
-		return	xRet;
-	}
-
-	*ppEPM = pEPM;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EPM_destroy(FTOM_EPM_PTR _PTR_ ppEPM)
-{
-	ASSERT(ppEPM != NULL);
-	
-	FTM_RET	xRet;
-
-	if (*ppEPM == NULL)
-	{
-		ERROR("EPM has not been initialized.\n");
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
-
-	xRet = FTOM_EPM_final(*ppEPM);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("EPM finalize was failed.\n");
-	}
-
-	FTM_MEM_free(*ppEPM);
-	*ppEPM = NULL;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EPM_init(FTOM_PTR pOM, FTOM_EPM_PTR pEPM)
-{
-	ASSERT(pOM != NULL);
-	ASSERT(pEPM != NULL);
-
-	FTM_RET	xRet;
-
-	if (pEPM->pEPList != NULL)
-	{
-		ERROR("It has already been initialized.\n");
-		return	FTM_RET_ALREADY_INITIALIZED;
-	}
-
-	xRet = FTM_LIST_create(&pEPM->pEPList);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Can't create a list.\n");
-		return	xRet;
-	}
-
-	pEPM->pOM = pOM;
-	FTM_LIST_setSeeker(pEPM->pEPList, FTOM_EP_seeker);
-	FTM_LIST_setComparator(pEPM->pEPList, FTOM_EP_comparator);
-
-	TRACE("EP management initialized.\n");
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EPM_final(FTOM_EPM_PTR pEPM)
-{
-	ASSERT(pEPM != NULL);
-
-	if (pEPM->pEPList == NULL)
-	{
-		return	FTM_RET_NOT_INITIALIZED;	
-	}
-
-	FTOM_EP_PTR	pEP;
-
-	FTM_LIST_iteratorStart(pEPM->pEPList);
-	while(FTM_LIST_iteratorNext(pEPM->pEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
-	{
-		FTOM_EPM_destroyEP(pEPM, pEP);	
-	}
-
-	FTM_LIST_destroy(pEPM->pEPList);
-	pEPM->pEPList = NULL;
-
-	TRACE("EP management finished.\n");
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EPM_createEP(FTOM_EPM_PTR pEPM, FTM_EP_PTR pInfo, FTOM_EP_PTR _PTR_ ppEP)
-{
-	ASSERT(pInfo != NULL);
-	ASSERT(ppEP != NULL);
-
-	FTM_RET			xRet;
-	FTOM_EP_PTR		pEP = NULL;
-
-	xRet = FTOM_EP_create(pInfo, &pEP);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("The EP[%08x] creation failed.\n", pInfo->xEPID);
-		return	xRet;	
-	}
-
-	xRet = FTOM_EPM_attachEP(pEPM, pEP);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Can't attach the EP[%08x] to the EPM.\n", pInfo->xEPID);
-		return	xRet;	
-	}
-
-	*ppEP = pEP;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EPM_destroyEP(FTOM_EPM_PTR pEPM, FTOM_EP_PTR	pEP)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pEP != NULL);
-
-	FTM_RET	xRet;
-
-	FTOM_EP_stop(pEP, TRUE);
-
-	xRet = FTOM_EPM_detachEP(pEPM, pEP);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Can't detach the EP[%08x] from the EPM.\n", pEP->xInfo.xEPID);
-		return	xRet;	
-	}
-
-	FTOM_EP_destroy(&pEP);
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_EPM_attachEP(FTOM_EPM_PTR pEPM, FTOM_EP_PTR pEP)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pEP != NULL);
-
-	FTM_RET	xRet;
-
-	xRet = FTM_LIST_append(pEPM->pEPList, pEP);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Can't attach EP[%08x] to EPM.\n", pEP->xInfo.xEPID);
-		return	xRet;	
-	}
-
-	pEP->pEPM = pEPM;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EPM_detachEP(FTOM_EPM_PTR pEPM, FTOM_EP_PTR pEP)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pEP != NULL);
-
-	FTM_RET	xRet;
-
-	if (pEP->pEPM != pEPM)
-	{
-		WARN("EP[%08x] is not attached.\n", pEP->xInfo.xEPID);
-		return	FTM_RET_EP_IS_NOT_ATTACHED;
-	}
-
-	xRet = FTM_LIST_remove(pEPM->pEPList, pEP);
-	if (xRet != FTM_RET_OK)
-	{
-		WARN("EP[%08x] is not attached.\n", pEP->xInfo.xEPID);
-		return	FTM_RET_EP_IS_NOT_ATTACHED;
-	}
-
-	pEP->pEPM = NULL;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EPM_count
-(
-	FTOM_EPM_PTR	pEPM,
-	FTM_EP_TYPE 	xType, 
-	FTM_ULONG_PTR 	pulCount
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pulCount != NULL);
-
-	if ((xType == 0XFFFFFFFF) || (xType == 0))
-	{
-		return	FTM_LIST_count(pEPM->pEPList, pulCount);
-	}
-	else
-	{
-		FTM_ULONG	i, ulTotalCount, ulCount = 0;
-
-		FTM_LIST_count(pEPM->pEPList, &ulTotalCount);
-		for(i = 0 ; i < ulTotalCount; i++)
-		{
-			FTOM_EP_PTR	pEP;
-
-			FTM_LIST_getAt(pEPM->pEPList, i,(FTM_VOID_PTR _PTR_)&pEP);
-			if (xType == (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK))
-			{
-				ulCount++;
-			}
-		}
-
-
-		*pulCount = ulCount;
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTOM_EPM_getIDList
-(
-	FTOM_EPM_PTR		pEPM,
-	FTM_EP_TYPE 	xType, 
-	FTM_EP_ID_PTR 	pEPIDList, 
-	FTM_ULONG 		ulMaxCount, 
-	FTM_ULONG_PTR 	pulCount
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pEPIDList != NULL);
-	ASSERT(pulCount != NULL);
-
-	FTM_ULONG	i, ulTotalCount, ulCount = 0;
-	
-	FTM_LIST_count(pEPM->pEPList, &ulTotalCount);
-	for(i = 0 ; i < ulTotalCount && ulCount < ulMaxCount; i++)
-	{
-		FTOM_EP_PTR	pEP;
-
-		FTM_LIST_getAt(pEPM->pEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
-		if ((xType == 0) || (xType == (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK)))
-		{
-			pEPIDList[ulCount++] = pEP->xInfo.xEPID;
-		}
-	}
-
-	
-	*pulCount = ulCount;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EPM_get
-(
-	FTOM_EPM_PTR		pEPM,
-	FTM_EP_ID 			xEPID, 
-	FTOM_EP_PTR _PTR_ 	ppEP
-)
-{
-	ASSERT(pEPM != NULL);
-	
-	return	FTM_LIST_get(pEPM->pEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEP);
-}
-
-FTM_RET FTOM_EPM_getAt
-(
-	FTOM_EPM_PTR		pEPM,
-	FTM_ULONG 			ulIndex, 
-	FTOM_EP_PTR _PTR_ 	ppEP
-)
-{
-	ASSERT(pEPM != NULL);
-
-	return	FTM_LIST_getAt(pEPM->pEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
-}
-
-FTM_RET	FTOM_EPM_saveEPData
-(
-	FTOM_EPM_PTR	pEPM,
-	FTM_EP_ID		xEPID,
-	FTM_EP_DATA_PTR	pData
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pData != NULL);
-
-	return	FTOM_saveEPData(pEPM->pOM, xEPID, pData);
-}
-
-FTM_RET	FTOM_EPM_sendEPData
-(
-	FTOM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
-	FTM_EP_DATA_PTR pData,
-	FTM_ULONG		ulCount
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pData != NULL);
-
-	return	FTOM_sendEPData(pEPM->pOM, xEPID, pData, ulCount);
-}
 /***********************************************************************
  * EP object operation
  ***********************************************************************/
 
-FTM_RET	FTOM_EP_create(FTM_EP_PTR pInfo,FTOM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTOM_EP_create
+(
+	FTM_EP_PTR pInfo,
+	FTOM_EP_PTR _PTR_ ppEP
+)
 {
 	ASSERT(ppEP != NULL);
 
@@ -387,7 +64,10 @@ FTM_RET	FTOM_EP_create(FTM_EP_PTR pInfo,FTOM_EP_PTR _PTR_ ppEP)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_EP_destroy(FTOM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTOM_EP_destroy
+(
+	FTOM_EP_PTR _PTR_ ppEP
+)
 {
 	ASSERT(ppEP != NULL);
 
@@ -410,7 +90,11 @@ FTM_RET	FTOM_EP_destroy(FTOM_EP_PTR _PTR_ ppEP)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_EP_init(FTOM_EP_PTR pEP, FTM_EP_PTR pInfo)
+FTM_RET	FTOM_EP_init
+(
+	FTOM_EP_PTR pEP, 
+	FTM_EP_PTR pInfo
+)
 {
 	ASSERT(pEP != NULL);
 
@@ -421,7 +105,7 @@ FTM_RET	FTOM_EP_init(FTOM_EP_PTR pEP, FTM_EP_PTR pInfo)
 
 	pEP->bStop = FTM_TRUE;
 	sem_init(&pEP->xLock, 0, 1);
-	xRet = FTM_MSGQ_init(&pEP->xMsgQ);
+	xRet = FTOM_MSGQ_init(&pEP->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("MsgQ	init failed.\n");
@@ -445,7 +129,10 @@ FTM_RET	FTOM_EP_init(FTOM_EP_PTR pEP, FTM_EP_PTR pInfo)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_EP_final(FTOM_EP_PTR pEP)
+FTM_RET	FTOM_EP_final
+(
+	FTOM_EP_PTR pEP
+)
 {
 	ASSERT(pEP != NULL);
 
@@ -470,7 +157,7 @@ FTM_RET	FTOM_EP_final(FTOM_EP_PTR pEP)
 		ERROR("Data list finalize failed.\n");
 	}
 
-	xRet = FTM_MSGQ_final(&pEP->xMsgQ);
+	xRet = FTOM_MSGQ_final(&pEP->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("MsgQ finalize failed.\n");
@@ -510,7 +197,10 @@ FTM_RET	FTOM_EP_attach
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_EP_detach(FTOM_EP_PTR pEP)
+FTM_RET	FTOM_EP_detach
+(
+	FTOM_EP_PTR pEP
+)
 {
 	ASSERT(pEP != NULL);
 
@@ -519,7 +209,10 @@ FTM_RET	FTOM_EP_detach(FTOM_EP_PTR pEP)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_EP_start(FTOM_EP_PTR pEP)
+FTM_RET FTOM_EP_start
+(
+	FTOM_EP_PTR pEP
+)
 {
 	ASSERT(pEP != NULL);
 
@@ -540,19 +233,60 @@ FTM_RET FTOM_EP_start(FTOM_EP_PTR pEP)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_EP_stop(FTOM_EP_PTR pEP, FTM_BOOL bWaitForStop)
+FTM_RET	FTOM_EP_stop
+(
+	FTOM_EP_PTR pEP, 
+	FTM_BOOL 	bWaitForStop
+)
 {
-	pEP->bStop = FTM_TRUE;
+	ASSERT(pEP != NULL);
+
+	if (pEP->bStop)
+	{
+		return	FTM_RET_NOT_START;	
+	}
+
+#if 0
+	FTM_RET			xRet;
+	FTOM_MSG_PTR	pMsg;
+
+	xRet = FTOM_MSG_createQuit(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't create quit message!\n");
+		goto exit;
+	}
+
+	TRACE("Message Pushed!\n");
+	xRet = FTOM_MSGQ_push(&pEP->xMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTOM_MSG_destroy(&pMsg);
+		ERROR("Can't create quit message!\n");
+		goto exit;
+	}
 
 	if (bWaitForStop)
 	{
+		TRACE("Waiting for EP[%08x] stop\n", pEP->xInfo.xEPID);
 		pthread_join(pEP->xPThread, NULL);
 	}
+	xRet = FTM_RET_OK;
+
+exit:
+
+	return	xRet;
+#else
+	pthread_cancel(pEP->xPThread);
 
 	return	FTM_RET_OK;
+#endif
 }
 
-FTM_VOID_PTR FTOM_EP_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTOM_EP_process
+(
+	FTM_VOID_PTR pData
+)
 {
 	ASSERT(pData != NULL);
 
@@ -597,8 +331,9 @@ FTM_VOID_PTR FTOM_EP_process(FTM_VOID_PTR pData)
 	{
 		FTM_ULONG		ulRemainTime = 0;
 		FTM_EP_DATA		xData;
-		FTOM_EP_MSG_PTR	pMsg = NULL;
-	
+		FTOM_MSG_PTR	pMsg = NULL;
+
+		TRACE("EP[%08x] pull data entry!\n", pEP->xInfo.xEPID);
 		xRet = FTOM_EP_pullData(pEP, &xData);
 		if (xRet == FTM_RET_OK)
 		{
@@ -610,6 +345,7 @@ FTM_VOID_PTR FTOM_EP_process(FTM_VOID_PTR pData)
 		{
 			WARN("It failed to import data from EP[%s-%08x].\n", pEP->pNode->xInfo.pDID, pEP->xInfo.xEPID);
 		}
+		TRACE("EP[%08x] pull data exit!\n", pEP->xInfo.xEPID);
 
 		if (FTM_TIMER_isExpired(&xTransTimer))
 		{
@@ -623,8 +359,23 @@ FTM_VOID_PTR FTOM_EP_process(FTM_VOID_PTR pData)
 		}
 		
 		FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
-		while (!pEP->bStop && (FTM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, (FTM_VOID_PTR _PTR_)&pMsg) == FTM_RET_OK))
+		while (!pEP->bStop && (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
 		{
+			TRACE("Receive Message : EP[%08x], MSG[%08x]\n", pEP->xInfo.xEPID, pMsg->xType);
+			switch(pMsg->xType)
+			{
+			case	FTOM_MSG_TYPE_QUIT:
+				{
+					pEP->bStop = FTM_TRUE;
+				}
+				break;
+
+			default:
+				{	
+					WARN("Invalid message[%08x]\n", pMsg->xType);
+				}
+			}
+
 			FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
 
 			FTM_MEM_free(pMsg);
@@ -658,7 +409,11 @@ FTM_RET	FTOM_EP_getDataType
 	return	FTM_EP_getDataType(&pEP->xInfo, pType);
 }
 
-FTM_RET	FTOM_EP_pushData(FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+FTM_RET	FTOM_EP_pushData
+(
+	FTOM_EP_PTR 	pEP, 
+	FTM_EP_DATA_PTR pData
+)
 {
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
@@ -674,7 +429,11 @@ FTM_RET	FTOM_EP_pushData(FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	return	xRet;
 }
 
-FTM_RET	FTOM_EP_pullData(FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+FTM_RET	FTOM_EP_pullData
+(
+	FTOM_EP_PTR 	pEP, 
+	FTM_EP_DATA_PTR pData
+)
 {
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
@@ -690,7 +449,11 @@ FTM_RET	FTOM_EP_pullData(FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	return	xRet;
 }
 
-FTM_RET	FTOM_EP_getData(FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+FTM_RET	FTOM_EP_getData
+(
+	FTOM_EP_PTR 	pEP, 
+	FTM_EP_DATA_PTR pData
+)
 {
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
@@ -707,7 +470,11 @@ FTM_RET	FTOM_EP_getData(FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
 	return	xRet;
 }
 
-FTM_RET	FTOM_EP_setData(FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+FTM_RET	FTOM_EP_setData
+(
+	FTOM_EP_PTR 	pEP, 
+	FTM_EP_DATA_PTR pData
+)
 {
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
@@ -823,33 +590,15 @@ FTM_RET	FTOM_EP_sendDataInTime
 	return	xRet;
 }
 
-FTM_RET	FTOM_EP_getEventCount(FTOM_EP_PTR pEP, FTM_ULONG_PTR pulCount)
+FTM_RET	FTOM_EP_getEventCount
+(
+	FTOM_EP_PTR 	pEP, 
+	FTM_ULONG_PTR 	pulCount
+)
 {
 	ASSERT(pEP != NULL);
 	ASSERT(pulCount != NULL);
 
 	return	FTM_LIST_count(&pEP->xTriggerList, pulCount);
-}
-
-FTM_INT	FTOM_EP_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
-{
-	ASSERT(pElement != NULL);
-	ASSERT(pIndicator != NULL);
-
-	FTOM_EP_PTR		pEP = (FTOM_EP_PTR)pElement;
-	FTM_EP_ID_PTR	pEPID=(FTM_EP_ID_PTR)pIndicator;
-
-	return	(pEP->xInfo.xEPID == *pEPID);
-}
-
-FTM_INT	FTOM_EP_comparator(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2)
-{
-	ASSERT(pElement1 != NULL);
-	ASSERT(pElement2 != NULL);
-
-	FTOM_EP_PTR		pEP1 = (FTOM_EP_PTR)pElement1;
-	FTOM_EP_PTR		pEP2 = (FTOM_EP_PTR)pElement2;
-	
-	return	(pEP1->xInfo.xEPID - pEP2->xInfo.xEPID);
 }
 

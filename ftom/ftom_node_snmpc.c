@@ -3,13 +3,23 @@
 #include "ftom_node_snmpc.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
-#include "ftom_ep_class.h"
+#include "ftom_ep_management.h"
 
 FTM_ULONG		active_hosts = 0;
-FTM_RET			FTOM_NODE_SNMPC_start(FTOM_NODE_SNMPC_PTR pNode);
-FTM_RET			FTOM_NODE_SNMPC_stop(FTOM_NODE_SNMPC_PTR pNode);
-FTM_RET			FTOM_NODE_SNMPC_getEPData(FTOM_NODE_SNMPC_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
-FTM_RET			FTOM_NODE_SNMPC_setEPData(FTOM_NODE_SNMPC_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData);
+
+static FTM_RET	FTOM_NODE_SNMPC_getEPData
+(
+	FTOM_NODE_SNMPC_PTR	pSNMPC,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	PData
+);
+
+static FTM_RET	FTOM_NODE_SNMPC_setEPData
+(
+	FTOM_NODE_SNMPC_PTR	pSNMPC,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	PData
+);
 
 FTM_RET	FTOM_NODE_SNMPC_create
 (
@@ -30,17 +40,11 @@ FTM_RET	FTOM_NODE_SNMPC_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	memset(pNode, 0, sizeof(FTOM_NODE_SNMPC));
-
-	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
-	FTM_LIST_init(&pNode->xCommon.xEPList);
-	pthread_mutex_init(&pNode->xCommon.xMutexLock, NULL);
-	sem_init(&pNode->xLock, 0, 1);
-	
-	pNode->xCommon.fStart	= (FTOM_NODE_START)FTOM_NODE_SNMPC_start;
-	pNode->xCommon.fStop 	= (FTOM_NODE_STOP)FTOM_NODE_SNMPC_stop;
-	pNode->xCommon.fGetEPData=(FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_getEPData;
-	pNode->xCommon.fSetEPData=(FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_setEPData;
+	pNode->xCommon.xDescript.xType		= FTOM_NODE_TYPE_SNMPC;
+	pNode->xCommon.xDescript.fInit		= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_init;
+	pNode->xCommon.xDescript.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_final;
+	pNode->xCommon.xDescript.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_getEPData;
+	pNode->xCommon.xDescript.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_setEPData;
 	*ppNode = (FTOM_NODE_PTR)pNode;
 
 	return	FTM_RET_OK;
@@ -48,14 +52,16 @@ FTM_RET	FTOM_NODE_SNMPC_create
 
 FTM_RET	FTOM_NODE_SNMPC_destroy
 (
-	FTOM_NODE_SNMPC_PTR pNode
+	FTOM_NODE_SNMPC_PTR _PTR_ ppNode
 )
 {
-	ASSERT(pNode != NULL);
+	ASSERT(ppNode != NULL);
 
-	FTM_LIST_final(&pNode->xCommon.xEPList);
+	FTM_LIST_final(&(*ppNode)->xCommon.xEPList);
 
-	FTM_MEM_free(pNode);
+	FTM_MEM_free(*ppNode);
+
+	*ppNode = NULL;
 
 	return	FTM_RET_OK;
 }
@@ -69,6 +75,8 @@ FTM_RET	FTOM_NODE_SNMPC_init
 	FTM_ULONG			ulEPCount;
 
 	ASSERT(pNode != NULL);
+
+	sem_init(&pNode->xLock, 0, 1);
 
 	nRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, &ulEPCount);
 	if (nRet != FTM_RET_OK)
@@ -93,7 +101,7 @@ FTM_RET	FTOM_NODE_SNMPC_init
 				continue;
 			}
 
-			if (FTOM_EP_CLASS_get((pEP->xInfo.xEPID & FTM_EP_TYPE_MASK), &pEPClassInfo) != FTM_RET_OK)
+			if (FTOM_EPM_getClass(pEP->pEPM, (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK), &pEPClassInfo) != FTM_RET_OK)
 			{
 				TRACE("EP CLASS[%08lx] information not found\n", pEP->xInfo.xEPID);
 				continue;
@@ -129,26 +137,6 @@ FTM_RET	FTOM_NODE_SNMPC_final
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_NODE_SNMPC_start
-(
-	FTOM_NODE_SNMPC_PTR pNode
-)
-{
-	return	FTM_RET_OK;
-}
-
-
-FTM_RET	FTOM_NODE_SNMPC_stop
-(
-	FTOM_NODE_SNMPC_PTR pNode
-)
-{
-	ASSERT(pNode != NULL);
-
-	return	FTM_RET_OK;
-}
-
-
 FTM_RET	FTOM_NODE_SNMPC_getEPData
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
@@ -168,6 +156,48 @@ FTM_RET	FTOM_NODE_SNMPC_setEPData
 {
 	return	FTOM_SNMPC_setEPData(pNode, pEP, pData);
 }
+
+#if 0
+FTM_VOID_PTR FTOM_NODE_SNMPC_process
+(
+	FTM_VOID_PTR	pData
+)
+{
+	ASSERT(pData != NULL);
+	FTOM_NODE_SNMPC_PTR	pSNMPC = (FTOM_NODE_SNMPC_PTR)pData;
+	FTM_TIMER		xLoopTimer;
+	FTOM_MSG_PTR	pMsg;
+
+	TRACE("Node[%s] start.\n", pSNMPC->xCommon.xInfo.pDID);
+	FTM_TIMER_init(&xLoopTimer, pSNMPC->xCommon.xInfo.ulInterval * 1000000);
+
+	pSNMPC->xCommon.bStop = FTM_FALSE;
+	while(!pSNMPC->xCommon.bStop)
+	{
+		FTM_ULONG		ulRemainTime = 0;
+		
+		FTM_TIMER_remain(&xLoopTimer, &ulRemainTime);
+		while (!pSNMPC->xCommon.bStop && (FTOM_MSGQ_timedPop(&pSNMPC->xCommon.xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
+		{
+			FTM_TIMER_remain(&xLoopTimer, &ulRemainTime);
+
+			FTM_MEM_free(pMsg);
+		}
+	
+		if (!pSNMPC->xCommon.bStop)
+		{
+			FTM_TIMER_waitForExpired(&xLoopTimer);
+		}
+
+		FTM_TIMER_add(&xLoopTimer, pSNMPC->xCommon.xInfo.ulInterval * 1000000);
+
+	} 
+	TRACE("SNMPC stopped.\n");
+
+	return	FTM_RET_OK;
+}
+#endif
+
 static FTM_CHAR_PTR	pOIDNamePrefix[] =
 {
 	"",

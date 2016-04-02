@@ -19,8 +19,9 @@ LIB_FTNM_SRCS= ftom.c \
 			   ftom_msg.c \
 			   ftom_server.c\
 			   ftom_node.c\
+			   ftom_node_management.c\
 			   ftom_ep.c\
-			   ftom_ep_class.c\
+			   ftom_ep_management.c\
 			   ftom_node_snmpc.c\
 			   ftom_snmpc.c\
 			   ftom_snmptrapd.c\
@@ -29,9 +30,9 @@ LIB_FTNM_SRCS= ftom.c \
 			   ftom_trigger.c\
 			   ftom_action.c\
 			   ftom_rule.c\
-			   ftm_mqtt_client.c\
-			   ftm_mqtt_client_ft.c\
-			   ftm_mqtt_client_tpgw.c\
+			   ftom_mqtt_client.c\
+			   ftom_mqtt_client_ft.c\
+			   ftom_mqtt_client_tpgw.c\
 			   ftom_utils.c\
 			   ftom_service.c\
 			   ftom_shell.c

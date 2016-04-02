@@ -136,7 +136,7 @@ FTM_RET	FTOM_RULEM_final
 {
 	ASSERT(pRuleM != NULL);
 
-	TRACE_CALL();
+	FTM_RET	xRet;
 
 	if (!pRuleM->bStop)
 	{
@@ -151,6 +151,17 @@ FTM_RET	FTOM_RULEM_final
 
 	if (pRuleM->pRuleList)
 	{
+		FTOM_RULE_PTR pRule;
+
+		FTM_LIST_iteratorStart(pRuleM->pRuleList);
+		while(FTM_LIST_iteratorNext(pRuleM->pRuleList, (FTM_VOID_PTR _PTR_)&pRule) == FTM_RET_OK)
+		{
+			xRet = FTM_LIST_remove(pRuleM->pRuleList, pRule);	
+			if (xRet == FTM_RET_OK)
+			{
+				FTM_MEM_free(pRule);	
+			}
+		}
 		FTM_LIST_destroy(pRuleM->pRuleList);
 		pRuleM->pRuleList = NULL;
 	}
@@ -178,7 +189,7 @@ FTM_RET	FTOM_RULEM_start(FTOM_RULEM_PTR pRuleM)
 
 	if (!pRuleM->bStop)
 	{
-		return	FTM_RET_ALREADY_RUNNING;	
+		return	FTM_RET_ALREADY_STARTED;	
 	}
 
 	nRet = pthread_create(&pRuleM->xThread, NULL, FTOM_RULEM_process, pRuleM);
@@ -298,8 +309,6 @@ FTM_RET	FTOM_RULEM_add(FTOM_RULEM_PTR pRuleM, FTM_RULE_PTR pInfo)
 
 	FTM_RET			xRet;
 	FTOM_RULE_PTR	pRule;
-
-	TRACE_CALL();
 
 	pRule = (FTOM_RULE_PTR)FTM_MEM_malloc(sizeof(FTOM_RULE));
 	if (pRule == NULL)

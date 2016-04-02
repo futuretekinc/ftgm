@@ -14,7 +14,7 @@
 #include "ftom_node_snmpc.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
-#include "ftom_ep_class.h"
+#include "ftom_ep_management.h"
 
 #ifndef	FTOM_TRACE_SNMPTRAPD_IO	
 #define	FTOM_TRACE_SNMPTRAPD_IO	0
@@ -171,6 +171,11 @@ FTM_RET FTOM_SNMPTRAPD_start
 	ASSERT(pSNMPTRAPD != NULL);
 	FTM_INT	nRet;
 
+	if (!pSNMPTRAPD->bStop)
+	{
+		return	FTM_RET_ALREADY_STARTED;	
+	}
+
 	nRet = pthread_create(&pSNMPTRAPD->xPThread, NULL, FTOM_SNMPTRAPD_process, pSNMPTRAPD);
 	if (nRet != 0)
 	{
@@ -213,43 +218,15 @@ FTM_RET FTOM_SNMPTRAPD_stop
 )
 {
 	ASSERT(pSNMPTRAPD != NULL);
-	FTM_INT	nRet;
 	void*	pRet;
 
-	pSNMPTRAPD->bStop = FTM_TRUE;
-	nRet = pthread_join(pSNMPTRAPD->xPThread, &pRet);
-	if (nRet != 0)
+	if (pSNMPTRAPD->bStop)
 	{
-		switch(nRet)
-		{ 
-		case	EDEADLK: 
-			{
-				MESSAGE("A deadlock was detected (e.g., two threads tried to join with each other); or thread specifies the calling thread.\n"); 
-			}
-			break;
-
-		case	EINVAL: 
-			{
-				MESSAGE("thread is not a joinable thread. Another thread is already waiting to join with this thread.\n"); 
-			}
-			break;
-
-		case	ESRCH:  
-			{	
-				MESSAGE("No thread with the ID thread could be found.\n");
-			}
-			break;
-
-		default:
-			{
-				MESSAGE("Unknown error[%d]\n", nRet); 
-			}
-			break;
-		}
-
-		return	FTM_RET_THREAD_JOIN_ERROR;
+		return	FTM_RET_NOT_START;	
 	}
 
+	pSNMPTRAPD->bStop = FTM_TRUE;
+	pthread_join(pSNMPTRAPD->xPThread, &pRet);
 
 	return	FTM_RET_OK;
 }
@@ -414,7 +391,8 @@ FTM_INT FTOM_SNMPTRAPD_preParse
 #if NETSNMP_USE_LIBWRAP
 	char *addr_string = NULL;
 
-	if (transport != NULL && transport->f_fmtaddr != NULL) {
+	if (transport != NULL && transport->f_fmtaddr != NULL) 
+	{
 		/*
 		 * Okay I do know how to format this address for logging.  
 		 */
@@ -425,10 +403,12 @@ FTM_INT FTOM_SNMPTRAPD_preParse
 		 */
 	}
 
-	if (addr_string != NULL) {
+	if (addr_string != NULL) 
+	{
 		/* Catch udp,udp6,tcp,tcp6 transports using "[" */
 		char *tcpudpaddr = strstr(addr_string, "[");
-		if ( tcpudpaddr != 0 ) {
+		if ( tcpudpaddr != 0 ) 
+		{
 			char sbuf[64];
 			char *xp;
 
@@ -437,17 +417,18 @@ FTM_INT FTOM_SNMPTRAPD_preParse
 			if (xp)
 				*xp = '\0';
 
-			if (hosts_ctl("snmptrapd", STRING_UNKNOWN,
-							sbuf, STRING_UNKNOWN) == 0) {
+			if (hosts_ctl("snmptrapd", STRING_UNKNOWN, sbuf, STRING_UNKNOWN) == 0) 
+			{
 					TRACE("%s rejected", addr_string);
 					SNMP_FREE(addr_string);
 				return 0;
 			}
 		}
 		SNMP_FREE(addr_string);
-	} else {
-		if (hosts_ctl("snmptrapd", STRING_UNKNOWN,
-						STRING_UNKNOWN, STRING_UNKNOWN) == 0) {
+	} else 
+	{
+		if (hosts_ctl("snmptrapd", STRING_UNKNOWN, STRING_UNKNOWN, STRING_UNKNOWN) == 0) 
+		{
 			TRACE("[unknown] rejected");
 			return 0;
 		}
@@ -659,19 +640,20 @@ FTM_RET	FTOM_SNMPTRAPD_closeSessions
 }
 
 static 
-FTM_VOID FTOM_SNMPTRAPD_mainLoop
+FTM_VOID FTOM_SNMPTRAPD_loop
 (
 	FTOM_SNMPTRAPD_PTR pSNMPTRAPD
 )
 {
-	int             count, numfds, block;
-	fd_set          readfds,writefds,exceptfds;
-	struct timeval  timeout, *tvp;
-	
 	pSNMPTRAPD->bStop = FTM_FALSE;
 
 	while (!pSNMPTRAPD->bStop) 
 	{
+		FTM_INT	nFDS;
+		FTM_INT	nBlock;
+		FTM_INT	nCount;
+		struct timeval  xTimeout = { .tv_sec = 1, .tv_usec = 0};
+		fd_set 	xReadFDS, xWriteFDS, xExceptFDS;
 #if 0
 		if (reconfig) {
 			/*
@@ -690,46 +672,27 @@ FTM_VOID FTOM_SNMPTRAPD_mainLoop
 			reconfig = 0;
 		}
 #endif
-		numfds = 0;
-		FD_ZERO(&readfds);
-		FD_ZERO(&writefds);
-		FD_ZERO(&exceptfds);
-		block = 0;
-		tvp = &timeout;
-		timerclear(tvp);
-		tvp->tv_sec = 1;
-		snmp_select_info(&numfds, &readfds, tvp, &block);
-		if (block == 1)
-		{
-			tvp = NULL;         /* block without timeout */
-		}
-#ifndef NETSNMP_FEATURE_REMOVE_FD_EVENT_MANAGER
-		netsnmp_external_event_info(&numfds, &readfds, &writefds, &exceptfds);
-#endif /* NETSNMP_FEATURE_REMOVE_FD_EVENT_MANAGER */
-		count = select(numfds, &readfds, &writefds, &exceptfds, tvp);
-		if (count > 0) 
-		{
-#ifndef NETSNMP_FEATURE_REMOVE_FD_EVENT_MANAGER
-			netsnmp_dispatch_external_events(&count, &readfds, &writefds,
-										&exceptfds);
-#endif /* NETSNMP_FEATURE_REMOVE_FD_EVENT_MANAGER */
-	/* If there are any more events after external events, then
-					 * try SNMP events. */
-			if (count > 0) 
-			{
-					snmp_read(&readfds);
-			}
-		} 
-		else 
-		{
-			switch (count) 
-			{
-			case 0:
-				{
-					snmp_timeout();
-				}
-				break;
+		nFDS = 0;
+		nBlock = 0;
+		nCount = 0;
+		FD_ZERO(&xReadFDS);
+		FD_ZERO(&xWriteFDS);
+		FD_ZERO(&xExceptFDS);
+		snmp_select_info(&nFDS, &xReadFDS, &xTimeout, &nBlock);
 
+		nCount = select(nFDS, &xReadFDS, &xWriteFDS, &xExceptFDS, &xTimeout);
+		if (nCount > 0) 
+		{
+			snmp_read(&xReadFDS);
+		} 
+		else  if (nCount == 0)
+		{
+			snmp_timeout();
+		}
+		else
+		{
+			switch (nCount) 
+			{
 			case -1:
 				{
 					if (errno == EINTR)
@@ -737,16 +700,15 @@ FTM_VOID FTOM_SNMPTRAPD_mainLoop
 						continue;
 					}
 					ERROR("select - %s\n", strerror(errno));
-					pSNMPTRAPD->bStop = FTM_TRUE;
 				}
 				break;
 
 			default:
 				{
-					ERROR("select returned %d\n", count);
-					pSNMPTRAPD->bStop = FTM_TRUE;
+					ERROR("select returned %d\n", nCount);
 				}
 			}
+			pSNMPTRAPD->bStop = FTM_TRUE;
 		}
 		run_alarms();
 	}
@@ -803,7 +765,7 @@ FTM_VOID_PTR	FTOM_SNMPTRAPD_process
 		}    
 	}    
 
-	FTOM_SNMPTRAPD_mainLoop(pSNMPTRAPD);
+	FTOM_SNMPTRAPD_loop(pSNMPTRAPD);
 
 	return  FTM_RET_OK;
 
@@ -858,7 +820,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 			{
 				xEPID = strtoul(pItem->text_value, 0, 16);
 	
-				xRet = FTOM_EPM_get(pSNMPTRAPD->pOM->pEPM, xEPID, &pEP);
+				xRet = FTOM_EPM_getEP(pSNMPTRAPD->pOM->pEPM, xEPID, &pEP);
 				if (xRet == FTM_RET_OK)
 				{
 					FTM_EP_DATA_TYPE	xDataType;

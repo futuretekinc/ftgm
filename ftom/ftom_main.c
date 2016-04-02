@@ -68,7 +68,7 @@ int main(int nArgc, char *pArgv[])
 
 	FTOM_start(pOM);
 	FTOM_waitingForFinished(pOM);
-
+	
 	FTOM_destroy(&pOM);
 	FTM_MEM_final();
 

@@ -255,19 +255,13 @@ FTM_RET	FTM_SHELL_addCmds
 {
 	FTM_ULONG			i;
 	FTM_RET				xRet;
-	FTM_SHELL_CMD_PTR	pCmd;
 
 	for(i = 0 ; i < ulCmds; i++)
 	{
-		pCmd = (FTM_SHELL_CMD_PTR)FTM_MEM_malloc(sizeof(FTM_SHELL_CMD));
-		if (pCmd != NULL)
+		xRet = FTM_SHELL_appendCmd(pShell, &pCmds[i]);
+		if (xRet != FTM_RET_OK)
 		{
-			memcpy(pCmd, &pCmds[i], sizeof(FTM_SHELL_CMD));
-			xRet = FTM_LIST_insert(pShell->pCmdList, pCmd, FTM_LIST_POS_ASSENDING);
-			if (xRet != FTM_RET_OK)
-			{
-				FTM_MEM_free(pCmd);	
-			}
+			ERROR("Command append failed.\n");	
 		}
 	}
 
@@ -287,9 +281,9 @@ FTM_RET	FTM_SHELL_appendCmd
 	if (FTM_LIST_get(pShell->pCmdList, pCmd->pString, (FTM_VOID_PTR _PTR_)&pExistCmd) == FTM_RET_OK)
 	{
 		xRet = FTM_LIST_remove(pShell->pCmdList, pExistCmd);
-		if (xRet != FTM_RET_OK)
+		if (xRet == FTM_RET_OK)
 		{
-			FTM_MEM_free(pCmd);	
+			FTM_MEM_free(pExistCmd);	
 		}
 	}
 

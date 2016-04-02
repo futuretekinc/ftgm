@@ -57,7 +57,11 @@ FTM_RET	FTOM_DMC_start
 {
 	ASSERT(pDMC != NULL);
 
-	pDMC->bStop = FTM_FALSE;
+	if (pDMC->bStop)
+	{
+		return	FTM_RET_ALREADY_STARTED;	
+	}
+
 
 	if (pthread_create(&pDMC->xThread, NULL, FTOM_DMC_process, pDMC) < 0)
 	{
@@ -74,6 +78,11 @@ FTM_RET	FTOM_DMC_stop
 {
 	ASSERT(pDMC != NULL);
 
+	if (pDMC->bStop)
+	{
+		return	FTM_RET_NOT_START;	
+	}
+
 	pDMC->bStop = FTM_TRUE;
 	pthread_join(pDMC->xThread, NULL);
 
@@ -89,6 +98,8 @@ FTM_VOID_PTR	FTOM_DMC_process
 
 	FTM_RET			xRet;
 	FTOM_DMC_PTR	pDMC = (FTOM_DMC_PTR)pData;
+
+	pDMC->bStop = FTM_FALSE;
 		
 	while(!pDMC->bStop)
 	{
@@ -219,7 +230,7 @@ FTM_RET	FTOM_DMC_EP_destroy
 	return	FTDMC_EP_remove(&pDMC->xSession, xEPID);
 }
 
-FTM_RET	FTOM_DMC_EP_DATA_set
+FTM_RET	FTOM_DMC_appendEPData
 (
 	FTOM_DMC_PTR 	pDMC, 
 	FTM_EP_ID 		xEPID, 
@@ -230,63 +241,6 @@ FTM_RET	FTOM_DMC_EP_DATA_set
 	ASSERT(pData != NULL);
 
 	return	FTDMC_EP_DATA_append(&pDMC->xSession, xEPID, pData);
-}
-
-FTM_RET FTOM_DMC_EP_DATA_setINT
-(
-	FTOM_DMC_PTR 	pDMC, 
-	FTM_EP_ID 		xEPID, 
-	FTM_ULONG 		ulTime, 
-	FTM_INT 		nValue
-)
-{
-	ASSERT(pDMC != NULL);
-
-	FTM_EP_DATA	xData;
-
-	xData.ulTime = ulTime;
-	xData.xType = FTM_EP_DATA_TYPE_INT;
-	xData.xValue.nValue = nValue;
-
-	return	FTDMC_EP_DATA_append(&pDMC->xSession, xEPID, &xData);
-}
-
-FTM_RET FTOM_DMC_EP_DATA_setULONG
-(
-	FTOM_DMC_PTR 	pDMC, 
-	FTM_EP_ID 		xEPID, 
-	FTM_ULONG 		ulTime, 
-	FTM_ULONG 		ulValue
-)
-{
-	ASSERT(pDMC != NULL);
-	
-	FTM_EP_DATA	xData;
-
-	xData.ulTime = ulTime;
-	xData.xType = FTM_EP_DATA_TYPE_ULONG;
-	xData.xValue.ulValue = ulValue;
-
-	return	FTDMC_EP_DATA_append(&pDMC->xSession, xEPID, &xData);
-}
-
-FTM_RET FTOM_DMC_EP_DATA_setFLOAT
-(
-	FTOM_DMC_PTR 	pDMC, 
-	FTM_EP_ID 		xEPID, 
-	FTM_ULONG 		ulTime, 
-	FTM_DOUBLE 		fValue
-)
-{
-	ASSERT(pDMC != NULL);
-	
-	FTM_EP_DATA	xData;
-
-	xData.ulTime = ulTime;
-	xData.xType = FTM_EP_DATA_TYPE_FLOAT;
-	xData.xValue.fValue = fValue;
-
-	return	FTDMC_EP_DATA_append(&pDMC->xSession, xEPID, &xData);
 }
 
 FTM_RET	FTOM_DMC_EP_DATA_count

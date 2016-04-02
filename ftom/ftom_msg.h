@@ -10,28 +10,29 @@ typedef	FTM_ULONG	FTOM_MSG_ID, _PTR_ FTOM_MSG_ID_PTR;
 
 typedef	enum
 {
-	FTOM_MSG_TYPE_QUIT				=	1,
-	FTOM_MSG_TYPE_EP_CTRL				=	2,
-	FTOM_MSG_TYPE_RULE				=	3,
-	FTOM_MSG_TYPE_SET_EP_DATA			=	4,
-	FTOM_MSG_TYPE_SEND_EP_DATA		=	5,
-	FTOM_MSG_TYPE_SAVE_EP_DATA		=   6,
-	FTOM_MSG_TYPE_PUBLISH_EP_DATA		=	7,
-	FTOM_MSG_TYPE_TIME_SYNC			=   8,
-	FTOM_MSG_TYPE_CONNECTED			=   9,
-	FTOM_MSG_TYPE_DISCONNECTED		=   10,
+	FTOM_MSG_TYPE_QUIT				=	0,
+	FTOM_MSG_TYPE_EP_CTRL			=	1,
+	FTOM_MSG_TYPE_RULE				=	2,
+	FTOM_MSG_TYPE_SET_EP_DATA		=	3,
+	FTOM_MSG_TYPE_SEND_EP_DATA		=	4,
+	FTOM_MSG_TYPE_SAVE_EP_DATA		=   5,
+	FTOM_MSG_TYPE_PUBLISH_EP_DATA	=	6,
+	FTOM_MSG_TYPE_TIME_SYNC			=   7,
+	FTOM_MSG_TYPE_CONNECTED			=   8,
+	FTOM_MSG_TYPE_DISCONNECTED		=   9,
+	FTOM_MSG_TYPE_MAX
 }	FTOM_MSG_TYPE, _PTR_ FTOM_MSG_TYPE_PTR;
 
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTOM_MSG_ID	xMsgID;
+	FTOM_MSG_ID		xMsgID;
 } FTOM_MSG, _PTR_ FTOM_MSG_PTR;
 
 typedef struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTOM_MSG_ID	xMsgID;
+	FTOM_MSG_ID		xMsgID;
 	FTM_EP_ID		xEPID;
 	FTM_EP_DATA		xData;
 }	FTOM_MSG_SET_EP_DATA, _PTR_ FTOM_MSG_SET_EP_DATA_PTR;
@@ -39,7 +40,7 @@ typedef struct
 typedef struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTOM_MSG_ID	xMsgID;
+	FTOM_MSG_ID		xMsgID;
 	FTM_EP_ID		xEPID;
 	FTM_EP_DATA		xData;
 }	FTOM_MSG_SAVE_EP_DATA, _PTR_ FTOM_MSG_SAVE_EP_DATA_PTR;
@@ -47,7 +48,7 @@ typedef struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTOM_MSG_ID	xMsgID;
+	FTOM_MSG_ID		xMsgID;
 	FTM_EP_ID		xEPID;
 	FTM_ULONG		ulCount;
 	FTM_EP_DATA		pData[];
@@ -56,7 +57,7 @@ typedef	struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTOM_MSG_ID	xMsgID;
+	FTOM_MSG_ID		xMsgID;
 	FTM_EP_ID		xEPID;
 	FTM_ULONG		ulCount;
 	FTM_EP_DATA		pData[];
@@ -65,14 +66,14 @@ typedef	struct
 typedef struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTOM_MSG_ID	xMsgID;
+	FTOM_MSG_ID		xMsgID;
 	FTM_ULONG		ulTime;
 }	FTOM_MSG_TIME_SYNC, _PTR_ FTOM_MSG_TIME_SYNC_PTR;
 
 typedef struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTOM_MSG_ID	xMsgID;
+	FTOM_MSG_ID		xMsgID;
 	FTM_EP_ID		xEPID;
 	FTM_EP_CTRL		xCtrl;
 	FTM_ULONG		ulDuration;	
@@ -81,7 +82,7 @@ typedef struct
 typedef struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTOM_MSG_ID	xMsgID;
+	FTOM_MSG_ID		xMsgID;
 	FTM_RULE_ID		xRuleID;
 	FTM_RULE_STATE	xRuleState;
 }	FTOM_MSG_RULE, _PTR_ FTOM_MSG_RULE_PTR;

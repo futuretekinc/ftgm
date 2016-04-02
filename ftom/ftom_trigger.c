@@ -5,25 +5,34 @@
 #include "ftom_ep.h"
 #include "ftom_trigger.h"
 #include "ftom_action.h"
+#include "ftom_rule.h"
 #include "ftom_msg.h"
 #include "libconfig.h"
 
 #define	FTOM_TRIGGER_LOOP_INTERVAL	100000	// 1s
 
-#if 0
-#define	TRACE_CALL()	TRACE("%s[%d]\n", __func__, __LINE__)
-#else
-#define	TRACE_CALL()
-#endif
+static 
+FTM_VOID_PTR FTOM_TRIGGERM_process
+(
+	FTM_VOID_PTR pData
+);
 
-static FTM_VOID_PTR FTOM_TRIGGERM_process(FTM_VOID_PTR pData);
-static FTM_BOOL		FTOM_TRIGGERM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
+static 
+FTM_BOOL	FTOM_TRIGGERM_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+);
 
 static FTM_BOOL	bInit = FTM_FALSE;
 static FTM_LIST	xList;
 static sem_t	xLock;
 
-FTM_RET	FTOM_TRIGGERM_create(FTOM_TRIGGERM_PTR _PTR_ ppTriggerM)
+FTM_RET	FTOM_TRIGGERM_create
+(
+	FTOM_PTR	pOM,
+	FTOM_TRIGGERM_PTR _PTR_ ppTriggerM
+)
 {
 	ASSERT(ppTriggerM != NULL);
 
@@ -61,6 +70,7 @@ FTM_RET	FTOM_TRIGGERM_create(FTOM_TRIGGERM_PTR _PTR_ ppTriggerM)
 	}
 	else
 	{
+		pTriggerM->pOM = pOM;
 		FTM_LIST_append(&xList, pTriggerM);
 
 		*ppTriggerM = pTriggerM;	
@@ -69,7 +79,10 @@ FTM_RET	FTOM_TRIGGERM_create(FTOM_TRIGGERM_PTR _PTR_ ppTriggerM)
 	return	xRet;
 }
 
-FTM_RET	FTOM_TRIGGERM_destroy(FTOM_TRIGGERM_PTR _PTR_ ppTriggerM)
+FTM_RET	FTOM_TRIGGERM_destroy
+(
+	FTOM_TRIGGERM_PTR _PTR_ ppTriggerM
+)
 {
 	ASSERT(ppTriggerM != NULL);
 	
@@ -94,14 +107,15 @@ FTM_RET	FTOM_TRIGGERM_destroy(FTOM_TRIGGERM_PTR _PTR_ ppTriggerM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TRIGGERM_init(FTOM_TRIGGERM_PTR pTriggerM)
+FTM_RET	FTOM_TRIGGERM_init
+(
+	FTOM_TRIGGERM_PTR pTriggerM
+)
 {
 	ASSERT(pTriggerM);
 
 	FTM_RET	xRet;
 	
-	TRACE_CALL();
-
 	FTM_TRIGGER_init();
 
 	memset(pTriggerM, 0, sizeof(FTOM_TRIGGERM));
@@ -127,14 +141,15 @@ FTM_RET	FTOM_TRIGGERM_init(FTOM_TRIGGERM_PTR pTriggerM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TRIGGERM_final(FTOM_TRIGGERM_PTR pTriggerM)
+FTM_RET	FTOM_TRIGGERM_final
+(
+	FTOM_TRIGGERM_PTR pTriggerM
+)
 {
 	ASSERT(pTriggerM != NULL);
 
 	FTM_RET			xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
-
-	TRACE_CALL();
 
 	FTM_MSGQ_destroy(pTriggerM->pMsgQ);
 	pTriggerM->pMsgQ = NULL;
@@ -158,12 +173,14 @@ FTM_RET	FTOM_TRIGGERM_final(FTOM_TRIGGERM_PTR pTriggerM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TRIGGER_loadConfig(FTOM_TRIGGERM_PTR pTriggerM, FTM_CHAR_PTR pFileName)
+FTM_RET	FTOM_TRIGGER_loadConfig
+(
+	FTOM_TRIGGERM_PTR 	pTriggerM, 
+	FTM_CHAR_PTR 		pFileName
+)
 {
 	ASSERT(pTriggerM != NULL);
 	ASSERT(pFileName != NULL);
-
-	TRACE_CALL();
 
 #if 0
 	config_t			xConfig;
@@ -219,13 +236,19 @@ FTM_RET	FTOM_TRIGGER_loadConfig(FTOM_TRIGGERM_PTR pTriggerM, FTM_CHAR_PTR pFileN
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TRIGGERM_start(FTOM_TRIGGERM_PTR pTriggerM)
+FTM_RET	FTOM_TRIGGERM_start
+(
+	FTOM_TRIGGERM_PTR pTriggerM
+)
 {
 	ASSERT(pTriggerM != NULL);
 	
 	FTM_INT	nRet;
 
-	TRACE_CALL();
+	if (pTriggerM->bStop)
+	{
+		return	FTM_RET_ALREADY_STARTED;	
+	}
 
 	nRet = pthread_create(&pTriggerM->xEventThread, NULL, FTOM_TRIGGERM_process, pTriggerM);
 	if (nRet < 0)
@@ -237,11 +260,18 @@ FTM_RET	FTOM_TRIGGERM_start(FTOM_TRIGGERM_PTR pTriggerM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TRIGGERM_stop(FTOM_TRIGGERM_PTR pTriggerM)
+FTM_RET	FTOM_TRIGGERM_stop
+(
+	FTOM_TRIGGERM_PTR pTriggerM
+)
 {
 	ASSERT(pTriggerM != NULL);
 
-	TRACE_CALL();
+
+	if (!pTriggerM->bStop)
+	{
+		return	FTM_RET_NOT_START;	
+	}
 
 	pTriggerM->bStop = FTM_TRUE;
 	pthread_join(pTriggerM->xEventThread, NULL);
@@ -249,14 +279,15 @@ FTM_RET	FTOM_TRIGGERM_stop(FTOM_TRIGGERM_PTR pTriggerM)
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_TRIGGERM_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTOM_TRIGGERM_process
+(
+	FTM_VOID_PTR pData
+)
 {
 	ASSERT(pData != NULL);
 	FTOM_TRIGGERM_PTR	pTriggerM = (FTOM_TRIGGERM_PTR)pData;
 	FTM_TIMER				xTimer;
 	
-	TRACE_CALL();
-
 	FTM_TIMER_init(&xTimer, 0);
 
 	TRACE("Trigger management process started.\n");
@@ -318,24 +349,28 @@ FTM_VOID_PTR FTOM_TRIGGERM_process(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET FTOM_TRIGGERM_count(FTOM_TRIGGERM_PTR pTriggerM, FTM_ULONG_PTR pulCount)
+FTM_RET FTOM_TRIGGERM_count
+(
+	FTOM_TRIGGERM_PTR 	pTriggerM, 
+	FTM_ULONG_PTR 		pulCount
+)
 {
 	ASSERT(pTriggerM != NULL);
-
-	TRACE_CALL();
 
 	return	FTM_LIST_count(&pTriggerM->xEventList, pulCount);
 }
 
-FTM_RET	FTOM_TRIGGERM_add(FTOM_TRIGGERM_PTR pTriggerM, FTM_TRIGGER_PTR pInfo)
+FTM_RET	FTOM_TRIGGERM_add
+(
+	FTOM_TRIGGERM_PTR 	pTriggerM, 
+	FTM_TRIGGER_PTR 	pInfo
+)
 {
 	ASSERT(pTriggerM != NULL);
 	ASSERT(pInfo != NULL);
 
 	FTM_RET			xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
-
-	TRACE_CALL();
 
 	pTrigger = (FTOM_TRIGGER_PTR)FTM_MEM_malloc(sizeof(FTOM_TRIGGER));
 	if (pTrigger == NULL)
@@ -358,14 +393,16 @@ FTM_RET	FTOM_TRIGGERM_add(FTOM_TRIGGERM_PTR pTriggerM, FTM_TRIGGER_PTR pInfo)
 	return	xRet;
 }
 
-FTM_RET	FTOM_TRIGGERM_del(FTOM_TRIGGERM_PTR pTriggerM, FTOM_TRIGGER_ID  xEventID)
+FTM_RET	FTOM_TRIGGERM_del
+(
+	FTOM_TRIGGERM_PTR 	pTriggerM, 
+	FTOM_TRIGGER_ID  	xEventID
+)
 {
 	ASSERT(pTriggerM != NULL);
 
 	FTM_RET			xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
-
-	TRACE_CALL();
 
 	xRet = FTM_LIST_get(&pTriggerM->xEventList, (FTM_VOID_PTR)&xEventID, (FTM_VOID_PTR _PTR_)&pTrigger);
 	if (xRet == FTM_RET_OK)
@@ -379,34 +416,43 @@ FTM_RET	FTOM_TRIGGERM_del(FTOM_TRIGGERM_PTR pTriggerM, FTOM_TRIGGER_ID  xEventID
 	return	xRet;	
 }
 
-FTM_RET	FTOM_TRIGGERM_get(FTOM_TRIGGERM_PTR pTriggerM, FTOM_TRIGGER_ID xEventID, FTOM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTOM_TRIGGERM_get
+(
+	FTOM_TRIGGERM_PTR 	pTriggerM, 
+	FTOM_TRIGGER_ID 	xEventID, 
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
 	ASSERT(pTriggerM != NULL);
-
-	TRACE_CALL();
 
 	return	FTM_LIST_get(&pTriggerM->xEventList, (FTM_VOID_PTR)&xEventID, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
-FTM_RET	FTOM_TRIGGERM_getAt(FTOM_TRIGGERM_PTR pTriggerM, FTM_ULONG ulIndex, FTOM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTOM_TRIGGERM_getAt
+(
+	FTOM_TRIGGERM_PTR 	pTriggerM, 
+	FTM_ULONG 			ulIndex, 
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
 	ASSERT(pTriggerM != NULL);
-
-	TRACE_CALL();
 
 	return	FTM_LIST_getAt(&pTriggerM->xEventList, ulIndex, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
 
-FTM_RET	FTOM_TRIGGERM_updateEP(FTOM_TRIGGERM_PTR pTriggerM, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData)
+FTM_RET	FTOM_TRIGGERM_updateEP
+(
+	FTOM_TRIGGERM_PTR	pTriggerM, 
+	FTM_EP_ID 			xEPID, 
+	FTM_EP_DATA_PTR 	pData
+)
 {
 	ASSERT(pTriggerM != NULL);
 
 	FTM_RET				xRet;
 	FTOM_TRIGGER_PTR		pTrigger;
 	FTM_ULONG			i, ulCount;
-
-	TRACE_CALL();
 
 	FTM_LIST_count(&pTriggerM->xEventList, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -475,12 +521,14 @@ FTM_RET	FTOM_TRIGGERM_updateEP(FTOM_TRIGGERM_PTR pTriggerM, FTM_EP_ID xEPID, FTM
 	return	FTM_RET_OK;
 }
 
-FTM_BOOL	FTOM_TRIGGERM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+FTM_BOOL	FTOM_TRIGGERM_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+)
 {
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
-
-	TRACE_CALL();
 
 	return	((FTOM_TRIGGER_PTR)pElement)->xInfo.xID == *((FTM_TRIGGER_ID_PTR)pIndicator);
 }

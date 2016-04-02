@@ -45,7 +45,7 @@ FTM_RET			FTM_MEM_final(void)
 	{
 		FTM_MEM_BLOCK_PTR	pMB;
 
-		MESSAGE("Memory leak detected\n");	
+		MESSAGE("Memory leak detected : %d\n", ulLeakedBlockCount);	
 		for(i = 0 ; i < ulLeakedBlockCount ; i++)
 		{
 			FTM_LIST_getAt(pMemList, i, (FTM_VOID_PTR _PTR_)&pMB);

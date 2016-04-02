@@ -6,24 +6,35 @@
 #include "ftom.h"
 #include "ftdm_client.h"
 #include "ftom_node.h"
+#include "ftom_node_management.h"
 #include "ftom_snmpc.h"
 #include "ftom_ep.h"
-#include "ftom_ep_class.h"
+#include "ftom_ep_management.h"
 #include "ftom_service.h"
 #include "ftom_server.h"
 #include "ftom_dmc.h"
 #include "ftom_shell.h"
-#include "ftm_mqtt_client.h"
+#include "ftom_mqtt_client.h"
 #include "ftom_msg.h"
 #include "ftom_utils.h"
-#include "nxjson.h"
+#include "ftom_trigger.h"
+#include "ftom_action.h"
+#include "ftom_rule.h"
 
 FTM_VOID_PTR	FTOM_process(FTM_VOID_PTR pData);
 FTM_RET			FTOM_TASK_startService(FTOM_PTR pOM);
-FTM_RET			FTOM_TASK_sync(FTOM_PTR pOM);
-FTM_RET			FTOM_TASK_startEP(FTOM_PTR pOM);
-FTM_RET			FTOM_TASK_processing(FTOM_PTR pOM);
 FTM_RET			FTOM_TASK_stopService(FTOM_PTR pOM);
+FTM_RET			FTOM_TASK_sync(FTOM_PTR pOM);
+
+FTM_RET			FTOM_TASK_start(FTOM_PTR pOM);
+FTM_RET			FTOM_TASK_stop(FTOM_PTR pOM);
+FTM_RET			FTOM_TASK_processing(FTOM_PTR pOM);
+
+static FTM_RET	FTOM_onQuit
+(
+	FTOM_PTR	pOM,
+	FTOM_MSG_TIME_SYNC_PTR	pMsg
+);
 
 static FTM_RET	FTOM_onTimeSync
 (
@@ -55,14 +66,20 @@ static FTM_RET	FTOM_onRule
 	FTOM_MSG_RULE_PTR pMsg
 );
 
-static 	FTM_RET	FTOM_callback(FTOM_SERVICE_ID xID, FTOM_MSG_TYPE xMsg, FTM_VOID_PTR pData);
+static 	FTM_RET	FTOM_callback
+(
+	FTOM_SERVICE_ID xID, 
+	FTOM_MSG_TYPE 	xMsg, 
+	FTM_VOID_PTR 	pData
+);
+
 //static	FTM_RET	FTOM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg);
 static	FTOM_SERVER		xServer;
 static	FTOM_SNMPC		xSNMPC;
 static	FTOM_SNMPTRAPD	xSNMPTRAPD;
-static	FTOM_DMC			xDMC;
+static	FTOM_DMC		xDMC;
 static	FTOM_SHELL		xShell;
-static	FTM_MQTT_CLIENT		xMQTTC;
+static	FTOM_MQTT_CLIENT	xMQTTC;
 
 static 	FTOM_SERVICE	pServices[] =
 {
@@ -128,15 +145,15 @@ static 	FTOM_SERVICE	pServices[] =
 		.xType		=	FTOM_SERVICE_MQTT_CLIENT,
 		.xID		=	FTOM_SERVICE_MQTT_CLIENT,
 		.pName		=	"MQTT Client",
-		.fInit		=	(FTOM_SERVICE_INIT)FTM_MQTT_CLIENT_init,
-		.fFinal		=	(FTOM_SERVICE_FINAL)FTM_MQTT_CLIENT_final,
-		.fStart 	=	(FTOM_SERVICE_START)FTM_MQTT_CLIENT_start,
-		.fStop		=	(FTOM_SERVICE_STOP)FTM_MQTT_CLIENT_stop,
-		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTM_MQTT_CLIENT_setCallback,
+		.fInit		=	(FTOM_SERVICE_INIT)FTOM_MQTT_CLIENT_init,
+		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_MQTT_CLIENT_final,
+		.fStart 	=	(FTOM_SERVICE_START)FTOM_MQTT_CLIENT_start,
+		.fStop		=	(FTOM_SERVICE_STOP)FTOM_MQTT_CLIENT_stop,
+		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_MQTT_CLIENT_setCallback,
 		.fCallback	=	FTOM_callback,
-		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTM_MQTT_CLIENT_loadFromFile,
-		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTM_MQTT_CLIENT_showConfig,
-		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTM_MQTT_CLIENT_notify,
+		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_MQTT_CLIENT_loadFromFile,
+		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_MQTT_CLIENT_showConfig,
+		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_MQTT_CLIENT_notify,
 		.pData		= 	(FTM_VOID_PTR)&xMQTTC
 	},
 	{
@@ -187,12 +204,20 @@ FTM_RET	FTOM_destroy(FTOM_PTR _PTR_ ppOM)
 {
 	ASSERT(ppOM != NULL);
 	
+	FTM_RET	xRet;
+
 	if (*ppOM == NULL)
 	{
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	FTOM_final(*ppOM);
+	xRet = FTOM_final(*ppOM);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("FTOM finalize failed[%08x].\n", xRet);
+	}
+
+	FTM_MEM_free(*ppOM);
 
 	*ppOM = NULL;
 
@@ -208,45 +233,111 @@ FTM_RET	FTOM_init(FTOM_PTR pOM)
 	FTOM_getDefaultDeviceID(pOM->xConfig.pDID);
 	TRACE("DID : %s\n", pOM->xConfig.pDID);
 
-	xRet = FTOM_EPM_create(pOM, &pOM->pEPM);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Can't create EPM\n");
-		return	xRet;	
-	}
+	pOM->bStop = FTM_TRUE;
+
+	pOM->onMessage[FTOM_MSG_TYPE_QUIT] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onQuit;
+	pOM->onMessage[FTOM_MSG_TYPE_SAVE_EP_DATA] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onSaveEPData;
+	pOM->onMessage[FTOM_MSG_TYPE_SEND_EP_DATA] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onSendEPData;
+	pOM->onMessage[FTOM_MSG_TYPE_TIME_SYNC] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onTimeSync;
+	pOM->onMessage[FTOM_MSG_TYPE_EP_CTRL] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPCtrl;
+	pOM->onMessage[FTOM_MSG_TYPE_RULE] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onRule;
 
 	xRet = FTOM_MSGQ_create(&pOM->pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't create Message Queue\n");
-		FTOM_EPM_destroy(&pOM->pEPM);
-		return	xRet;	
+		ERROR("Message queue creation failed[%08x].\n", xRet);
+		goto error;
 	}
 
-	FTOM_NODEM_create(&pOM->pNodeM);
-	FTOM_EP_CLASS_init();
+	xRet = FTOM_NODEM_create(pOM, &pOM->pNodeM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node management creation failed[%08x].\n", xRet);
+		goto error;
+	}
 
-	FTOM_SERVICE_init(pOM, pServices, sizeof(pServices) / sizeof(FTOM_SERVICE));
+	xRet = FTOM_EPM_create(pOM, &pOM->pEPM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP management creation failed[%08x].\n", xRet);
+		goto error;
+	}
 
-	FTOM_TRIGGERM_create(&pOM->pTriggerM);
-	FTOM_ACTIONM_create(&pOM->pActionM);
+	xRet = FTOM_TRIGGERM_create(pOM, &pOM->pTriggerM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Trigger management creation failed[%08x].\n", xRet);
+		goto error;
+	}
+
+	FTOM_ACTIONM_create(pOM, &pOM->pActionM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Action management creation failed[%08x].\n", xRet);
+		goto error;
+	}
+
 	FTOM_RULEM_create(pOM, &pOM->pRuleM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Rule management creation failed[%08x].\n", xRet);
+		goto error;
+	}
+
 	FTOM_RULEM_setTriggerM(pOM->pRuleM, pOM->pTriggerM);
 	FTOM_RULEM_setActionM(pOM->pRuleM, pOM->pActionM);
 
+	FTOM_SERVICE_init(pOM, pServices, sizeof(pServices) / sizeof(FTOM_SERVICE));
+
 	TRACE("initialization done.\n");
+
 	return	FTM_RET_OK;
+
+error:
+	if (pOM->pRuleM != NULL)
+	{
+		FTOM_RULEM_destroy(&pOM->pRuleM);
+	}
+
+	if (pOM->pActionM != NULL)
+	{
+		FTOM_ACTIONM_destroy(&pOM->pActionM);
+	}
+
+	if (pOM->pTriggerM != NULL)
+	{
+		FTOM_TRIGGERM_destroy(&pOM->pTriggerM);
+	}
+
+	if (pOM->pEPM != NULL)
+	{
+		FTOM_EPM_destroy(&pOM->pEPM);
+	}
+
+	if (pOM->pMsgQ!= NULL)
+	{
+		FTOM_MSGQ_destroy(&pOM->pMsgQ);
+	}
+
+	if (pOM->pNodeM != NULL)
+	{
+		FTOM_NODEM_destroy(&pOM->pNodeM);
+	}
+	
+	return	xRet;
 }
 
-FTM_RET	FTOM_final(FTOM_PTR pOM)
+FTM_RET	FTOM_final
+(
+	FTOM_PTR pOM
+)
 {
+	FTOM_SERVICE_final();
+
 	FTOM_RULEM_destroy(&pOM->pRuleM);
 	FTOM_ACTIONM_destroy(&pOM->pActionM);
 	FTOM_TRIGGERM_destroy(&pOM->pTriggerM);
 
-	FTOM_SERVICE_final();
-
-	FTOM_EP_CLASS_final();
 	FTOM_MSGQ_destroy(&pOM->pMsgQ);
 	FTOM_EPM_destroy(&pOM->pEPM);
 	FTOM_NODEM_destroy(&pOM->pNodeM);
@@ -256,7 +347,11 @@ FTM_RET	FTOM_final(FTOM_PTR pOM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_loadFromFile(FTOM_PTR pOM, FTM_CHAR_PTR pFileName)
+FTM_RET	FTOM_loadFromFile
+(
+	FTOM_PTR 		pOM, 
+	FTM_CHAR_PTR 	pFileName
+)
 {
 	ASSERT(pOM != NULL);
 	ASSERT(pFileName != NULL);
@@ -267,15 +362,28 @@ FTM_RET	FTOM_loadFromFile(FTOM_PTR pOM, FTM_CHAR_PTR pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_showConfig(FTOM_PTR pOM)
+FTM_RET	FTOM_showConfig
+(
+	FTOM_PTR 	pOM
+)
 {
 	FTOM_SERVICE_showConfig(FTOM_SERVICE_ALL);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_start(FTOM_PTR pOM)
+FTM_RET FTOM_start
+(
+	FTOM_PTR 	pOM
+)
 {
+	ASSERT(pOM != NULL);
+
+	if (!pOM->bStop)
+	{
+		return	FTM_RET_ALREADY_STARTED;	
+	}
+
 	if (pthread_create(&pOM->xThread, NULL, FTOM_process, (FTM_VOID_PTR)pOM) < 0)
 	{
 		return	FTM_RET_ERROR;	
@@ -284,29 +392,43 @@ FTM_RET FTOM_start(FTOM_PTR pOM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_stop(FTOM_PTR pOM)
+FTM_RET FTOM_stop
+(
+	FTOM_PTR 	pOM
+)
 {
-	TRACE("pOM = %08x\n", pOM);
+	ASSERT(pOM != NULL);
+
+	if (pOM->bStop)
+	{
+		return	FTM_RET_NOT_START;	
+	}
+
 	pOM->bStop = FTM_TRUE;
 	pthread_join(pOM->xThread, NULL);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_waitingForFinished(FTOM_PTR pOM)
+FTM_RET FTOM_waitingForFinished
+(
+	FTOM_PTR 	pOM
+)
 {
 	pthread_join(pOM->xThread, NULL);
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR	FTOM_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR	FTOM_process
+(
+	FTM_VOID_PTR 	pData
+)
 {
 	ASSERT (pData != NULL);
 	
 	FTOM_PTR	pOM = (FTOM_PTR)pData;
 
-	TRACE("started.\n");
 	pOM->xState = FTOM_STATE_INITIALIZED;
 	pOM->bStop	= FTM_FALSE;
 
@@ -328,7 +450,7 @@ FTM_VOID_PTR	FTOM_process(FTM_VOID_PTR pData)
 
 		case	FTOM_STATE_SYNCHRONIZED:
 			{
-				FTOM_TASK_startEP(pOM);	
+				FTOM_TASK_start(pOM);	
 			}
 			break;
 
@@ -337,25 +459,23 @@ FTM_VOID_PTR	FTOM_process(FTM_VOID_PTR pData)
 				FTOM_TASK_processing(pOM);	
 			}
 			break;
-
-		case	FTOM_STATE_STOPED:
-			{
-				FTOM_TASK_stopService(pOM);	
-			}
-			break;
-
-		case	FTOM_STATE_FINISHED:
-			{
-				pOM->bStop = FTM_TRUE;
-			}
 		}
+	}
+
+	if (pOM->xState == FTOM_STATE_PROCESSING)
+	{
+		FTOM_TASK_stop(pOM);	
+		FTOM_TASK_stopService(pOM);	
 	}
 
 	TRACE("finished.\n");
 	return	0;
 }
 
-FTM_RET	FTOM_TASK_startService(FTOM_PTR pOM)
+FTM_RET	FTOM_TASK_startService
+(
+	FTOM_PTR 	pOM
+)
 {
 	ASSERT(pOM != NULL);
 
@@ -366,7 +486,10 @@ FTM_RET	FTOM_TASK_startService(FTOM_PTR pOM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TASK_sync(FTOM_PTR pOM)
+FTM_RET	FTOM_TASK_sync
+(
+	FTOM_PTR 	pOM
+)
 {
 	ASSERT(pOM != NULL);
 
@@ -387,16 +510,23 @@ FTM_RET	FTOM_TASK_sync(FTOM_PTR pOM)
 		xRet = FTDMC_NODE_getAt(&xDMC.xSession, i, &xNodeInfo);	
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTDMC_NODE_getAt(%08lx, %d, &xNodeInfo) = %08lx\n",
-					xDMC.xSession.hSock, i, xRet);
+			ERROR("Can't get node info from DMC!\n");
 			continue;	
 		}
 
-		xRet = FTOM_NODE_create(pOM->pNodeM, &xNodeInfo, &pNode);
+		xRet = FTOM_NODE_create(&xNodeInfo, &pNode);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTOM_NODE_create(xNode, &pNode) = %08lx\n", xRet);
+			ERROR("Node creation failed[%08lx].\n", xRet);
 			continue;	
+		}
+
+		xRet = FTOM_NODEM_attachNode(pOM->pNodeM, pNode);
+		if (xRet != FTM_RET_OK)
+		{
+			FTOM_NODE_destroy(&pNode);
+			ERROR("Can't attach node[%08x].\n", xRet);
+			continue;
 		}
 
 		TRACE("Node[%s] creating success.\n", pNode->xInfo.pDID);
@@ -420,7 +550,7 @@ FTM_RET	FTOM_TASK_sync(FTOM_PTR pOM)
 			continue;
 		}
 
-		xRet = FTOM_EP_CLASS_create(&xEPClassInfo);
+		xRet = FTOM_EPM_createClass(pOM->pEPM, &xEPClassInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("FTOM_EP_TYPE_append(&xEPClassInfo) = %08lx\n", xRet);
@@ -542,96 +672,115 @@ FTM_RET	FTOM_TASK_sync(FTOM_PTR pOM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TASK_startEP(FTOM_PTR pOM)
+FTM_RET	FTOM_TASK_start(FTOM_PTR pOM)
 {
 	ASSERT(pOM != NULL);
 
-	FTOM_EP_PTR	pEP;
 	FTM_ULONG	i, ulCount;
 	
 	FTOM_RULEM_start(pOM->pRuleM);
 	FTOM_ACTIONM_start(pOM->pActionM);
 	FTOM_TRIGGERM_start(pOM->pTriggerM);
-	FTOM_EPM_count(pOM->pEPM, 0, &ulCount);
+
+	FTOM_NODEM_countNode(pOM->pNodeM, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		if (FTOM_EPM_getAt(pOM->pEPM, i, &pEP) == FTM_RET_OK)
+		FTOM_NODE_PTR	pNode;
+
+		if (FTOM_NODEM_getNodeAt(pOM->pNodeM, i, &pNode) == FTM_RET_OK)
 		{
-			FTOM_EP_start(pEP);
+			FTOM_NODE_start(pNode);
 		}
 		else
 		{
-			ERROR("EP not found at %d\n", i);
+			ERROR("Node not found at %d\n", i);
 		}
 	}
-	
+
 	pOM->xState = FTOM_STATE_PROCESSING;
+
 	return	FTM_RET_OK;
 }
 
-FTM_RET			FTOM_TASK_processing(FTOM_PTR pOM)
+FTM_RET	FTOM_TASK_processing
+(
+	FTOM_PTR pOM
+)
 {
 	ASSERT(pOM != NULL);
 
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg = NULL;
 
-	TRACE("TASK_processing(%08x)\n", pOM);
 	while(!pOM->bStop)
 	{
 		xRet = FTOM_MSGQ_timedPop(pOM->pMsgQ, 1000000, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
-			switch(pMsg->xType)
+			if ((pMsg->xType < FTOM_MSG_TYPE_MAX) && (pOM->onMessage != NULL))
 			{
-			case	FTOM_MSG_TYPE_QUIT:
-				{
-					TRACE("Task stop received.\n");
-					pOM->bStop = FTM_TRUE;
-					pOM->xState = FTOM_STATE_STOPED;
-				}
-				break;
-
-			case	FTOM_MSG_TYPE_SAVE_EP_DATA:
-				{
-					xRet = FTOM_onSaveEPData(pOM, (FTOM_MSG_SAVE_EP_DATA_PTR)pMsg);
-				}
-				break;
-
-			case	FTOM_MSG_TYPE_SEND_EP_DATA:
-				{
-					xRet = FTOM_onSendEPData(pOM, (FTOM_MSG_SEND_EP_DATA_PTR)pMsg);
-
-				}
-				break;
-
-			case	FTOM_MSG_TYPE_TIME_SYNC:
-				{
-					xRet = FTOM_onTimeSync(pOM, (FTOM_MSG_TIME_SYNC_PTR)pMsg);
-				}
-				break;
-
-			case	FTOM_MSG_TYPE_EP_CTRL:
-				{
-					xRet = FTOM_onEPCtrl(pOM, (FTOM_MSG_EP_CTRL_PTR)pMsg);
-				}
-				break;
-
-			case	FTOM_MSG_TYPE_RULE:
-				{
-					xRet = FTOM_onRule(pOM, (FTOM_MSG_RULE_PTR)pMsg);
-				}
-				break;
-
-			default:
-				{
-					ERROR("Message[%08x] not supported.\n", pMsg->xType);
-				}
+				xRet = pOM->onMessage[pMsg->xType](pOM, pMsg);
+			}
+			else
+			{
+				ERROR("Message[%08x] not supported.\n", pMsg->xType);
 			}
 
 			FTM_MEM_free(pMsg);
 		}
 	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_TASK_stop
+(
+	FTOM_PTR 		pOM
+)
+{
+	ASSERT(pOM != NULL);
+
+	FTM_ULONG	i, ulCount;
+	
+	FTOM_TRIGGERM_stop(pOM->pTriggerM);
+	FTOM_ACTIONM_stop(pOM->pActionM);
+	FTOM_RULEM_stop(pOM->pRuleM);
+	FTOM_NODEM_countNode(pOM->pNodeM, &ulCount);
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTOM_NODE_PTR	pNode;
+
+		if (FTOM_NODEM_getNodeAt(pOM->pNodeM, i, &pNode) == FTM_RET_OK)
+		{
+			FTOM_NODE_stop(pNode);
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_TASK_stopService
+(
+	FTOM_PTR 		pOM
+)
+{
+	ASSERT(pOM != NULL);
+
+	FTOM_SERVICE_stop(FTOM_SERVICE_ALL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_onQuit
+(
+	FTOM_PTR	pOM,
+	FTOM_MSG_TIME_SYNC_PTR	pMsg
+)
+{
+	ASSERT(pOM != NULL);
+
+	pOM->bStop = FTM_TRUE;
+	pOM->xState = FTOM_STATE_STOPED;
 
 	return	FTM_RET_OK;
 }
@@ -661,7 +810,7 @@ FTM_RET FTOM_onSaveEPData
 
 	TRACE("Save EP[%08x] Data.\n", pMsg->xEPID);
 	FTOM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xEPID, &pMsg->xData);
-	FTOM_DMC_EP_DATA_set(&xDMC, pMsg->xEPID, &pMsg->xData);
+	FTOM_DMC_appendEPData(&xDMC, pMsg->xEPID, &pMsg->xData);
 
 	return	FTM_RET_OK;
 }
@@ -678,7 +827,7 @@ FTM_RET	FTOM_onEPCtrl
 
 	TRACE("EP[%08x] Control\n", pMsg->xEPID);
 
-	xRet = FTOM_EPM_get(pOM->pEPM, pMsg->xEPID, &pEP);
+	xRet = FTOM_EPM_getEP(pOM->pEPM, pMsg->xEPID, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP[%08x] not found.\n", pMsg->xEPID);
@@ -727,7 +876,7 @@ FTM_RET	FTOM_onSendEPData
 	ASSERT(pOM != NULL);
 	ASSERT(pMsg != NULL);
 
-	return	FTM_MQTT_CLIENT_publishEPData(&xMQTTC, pMsg->xEPID, pMsg->pData, pMsg->ulCount);
+	return	FTOM_MQTT_CLIENT_publishEPData(&xMQTTC, pMsg->xEPID, pMsg->pData, pMsg->ulCount);
 }
 
 FTM_RET	FTOM_onRule
@@ -740,41 +889,6 @@ FTM_RET	FTOM_onRule
 	ASSERT(pMsg != NULL);
 
 	TRACE("RULE[%d] is %s\n", pMsg->xRuleID, (pMsg->xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_TASK_stopService
-(
-	FTOM_PTR 		pOM
-)
-{
-	ASSERT(pOM != NULL);
-
-	FTOM_EP_PTR	pEP;
-	FTM_ULONG	i, ulCount;
-	
-	FTOM_TRIGGERM_stop(pOM->pTriggerM);
-	FTOM_ACTIONM_stop(pOM->pActionM);
-	FTOM_RULEM_stop(pOM->pRuleM);
-	FTOM_EPM_count(pOM->pEPM, 0, &ulCount);
-	for(i = 0 ; i < ulCount ; i++)
-	{
-		if (FTOM_EPM_getAt(pOM->pEPM, i, &pEP) == FTM_RET_OK)
-		{
-			TRACE("EP[%08x] stop request.\n", pEP->xInfo.xEPID);
-			FTOM_EP_stop(pEP, FTM_TRUE);
-			TRACE("EP[%08x] stop finished.\n", pEP->xInfo.xEPID);
-		}
-		else
-		{
-			ERROR("EP not found at %d\n", i);
-		}
-	}
-	
-	FTOM_SERVICE_stop(FTOM_SERVICE_ALL);
-	
-	pOM->xState = FTOM_STATE_FINISHED;
 
 	return	FTM_RET_OK;
 }
@@ -866,9 +980,9 @@ FTM_RET	FTOM_getEPDataCount
 
 FTM_RET	FTOM_NOTIFY_rule
 (
-	FTOM_PTR 			pOM,
-	FTOM_RULE_ID		xRuleID,
-	FTOM_RULE_STATE	xRuleState
+	FTOM_PTR 		pOM,
+	FTM_RULE_ID		xRuleID,
+	FTM_RULE_STATE	xRuleState
 )
 {
 	ASSERT(pOM != NULL);
@@ -894,7 +1008,12 @@ FTM_RET	FTOM_NOTIFY_rule
 	return	xRet;
 }
 
-FTM_RET	FTOM_callback(FTOM_SERVICE_ID xID, FTOM_MSG_TYPE xMsg, FTM_VOID_PTR pData)
+FTM_RET	FTOM_callback
+(
+	FTOM_SERVICE_ID 	xID, 
+	FTOM_MSG_TYPE 		xMsg, 
+	FTM_VOID_PTR 		pData
+)
 {
 	switch(xID)
 	{
@@ -942,7 +1061,27 @@ FTM_RET	FTOM_createNode
 	ASSERT(pInfo != NULL);
 	ASSERT(ppNode != NULL);
 
-	return	FTOM_NODE_create(pOM->pNodeM, pInfo, ppNode);
+	FTM_RET	xRet;
+	FTOM_NODE_PTR	pNode;
+
+	xRet = FTOM_NODE_create(pInfo, &pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node creation failed[%08x]\n", xRet);
+		return	xRet;	
+	}
+
+	xRet = FTOM_NODEM_attachNode(pOM->pNodeM, pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't attach node[%08x]\n", xRet);
+		FTOM_NODE_destroy(&pNode);
+		return	xRet;	
+	}
+
+	*ppNode = pNode;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_destroyNode

@@ -51,6 +51,11 @@ FTM_RET	FTOM_SHELL_start
 {
 	ASSERT(pShell != NULL);
 
+	if (pShell->bStop)
+	{
+		return	FTM_RET_ALREADY_STARTED;	
+	}
+
 	pthread_create(&pShell->xThread, NULL, FTOM_SHELL_process, pShell);
 
 	return	FTM_RET_OK;
@@ -63,8 +68,14 @@ FTM_RET	FTOM_SHELL_stop
 {
 	ASSERT(pShell != NULL);
 
-	pShell->bStop = FTM_TRUE;
-	pthread_join(pShell->xThread, NULL);
+	if (!pShell->bStop)
+	{
+		return	FTM_RET_NOT_START;	
+	}
+
+	pShell->xShell.bStop = FTM_TRUE;
+	pthread_cancel(pShell->xThread);
+//	pthread_join(pShell->xThread, NULL);
 
 	return	FTM_RET_OK;
 }

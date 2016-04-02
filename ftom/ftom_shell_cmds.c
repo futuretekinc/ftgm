@@ -1,9 +1,13 @@
 #include "ftom.h"
 #include "ftom_shell_cmds.h"
 #include "ftom_node.h"
+#include "ftom_node_management.h"
 #include "ftom_ep.h"
-#include "ftom_ep_class.h"
+#include "ftom_ep_management.h"
 #include "ftom_msg.h"
+#include "ftom_trigger.h"
+#include "ftom_action.h"
+#include "ftom_rule.h"
 
 extern	FTOM	xFTNM;
 
@@ -110,7 +114,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 	FTOM_EPM_count(pOM->pEPM, 0, &ulCount);
 	for(i = 0; i < ulCount ; i++)
 	{
-		if (FTOM_EPM_getAt(pOM->pEPM, i, &pEP) == FTM_RET_OK)
+		if (FTOM_EPM_getEPAt(pOM->pEPM, i, &pEP) == FTM_RET_OK)
 		{
 			FTM_CHAR	pTimeString[64];
 			FTM_EP_DATA	xData;

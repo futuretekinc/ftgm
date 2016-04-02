@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include "ftm.h"
+#include "ftom.h"
 
 typedef	FTM_TRIGGER_ID	FTOM_TRIGGER_ID;
 
@@ -33,14 +34,16 @@ typedef	struct
 typedef	struct FTOM_TRIGGERM_STRUCT
 {
 	FTOM_TRIGGERM_CONFIG	xConfig;
-	FTM_MSG_QUEUE_PTR	pMsgQ;
-	FTM_BOOL			bStop;
-	FTM_LIST			xEventList;
-	pthread_t			xEventThread;
+	FTOM_PTR				pOM;
+	FTM_MSG_QUEUE_PTR		pMsgQ;
+	FTM_BOOL				bStop;
+	FTM_LIST				xEventList;
+	pthread_t				xEventThread;
 }	FTOM_TRIGGERM, _PTR_ FTOM_TRIGGERM_PTR;
 	
 FTM_RET	FTOM_TRIGGERM_create
 (
+	FTOM_PTR	pOM,
 	FTOM_TRIGGERM_PTR _PTR_ pTriggerM
 );
 

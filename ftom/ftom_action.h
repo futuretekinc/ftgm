@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include "ftm.h"
+#include "ftom.h"
 
 typedef enum
 {
@@ -28,7 +29,8 @@ typedef	struct
 typedef	struct FTOM_ACTIONM_STRUCT
 {
 	FTOM_ACTIONM_CONFIG	xConfig;
-
+	
+	FTOM_PTR			pOM;
 	pthread_t			xThread;
 	FTM_BOOL			bStop;
 
@@ -38,6 +40,7 @@ typedef	struct FTOM_ACTIONM_STRUCT
 	
 FTM_RET	FTOM_ACTIONM_create
 (
+	FTOM_PTR	pOM,
 	FTOM_ACTIONM_PTR _PTR_ ppActionM
 );
 
@@ -48,7 +51,8 @@ FTM_RET	FTOM_ACTIONM_destroy
 
 FTM_RET	FTOM_ACTIONM_init
 (
-	FTOM_ACTIONM_PTR pActionM
+	FTOM_ACTIONM_PTR pActionM,
+	FTOM_PTR	pOM
 );
 
 FTM_RET	FTOM_ACTIONM_final

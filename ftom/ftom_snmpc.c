@@ -9,7 +9,7 @@
 #include "ftom_node_snmpc.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
-#include "ftom_ep_class.h"
+#include "ftom_ep_management.h"
 #include "ftom_snmptrapd.h"
 
 FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData);
@@ -32,6 +32,7 @@ FTM_RET	FTOM_SNMPC_init
 	strcpy(pClient->xConfig.pName, FTOM_SNMPC_NAME);
 	FTM_LIST_init(&pClient->xConfig.xMIBList);
 	pClient->xConfig.ulMaxRetryCount = FTOM_SNMPC_RETRY_COUNT;
+	FTM_LOCK_init(&pClient->xLock);
 	pClient->pOM = pOM;
 
 	return	FTM_RET_OK;
@@ -43,6 +44,7 @@ FTM_RET	FTOM_SNMPC_final(FTOM_SNMPC_PTR pClient)
 
 	FTM_ULONG i, ulCount;
 
+	FTM_LOCK_final(&pClient->xLock);
 	FTM_LIST_count(&pClient->xConfig.xMIBList, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
@@ -64,6 +66,11 @@ FTM_RET FTOM_SNMPC_start(FTOM_SNMPC_PTR pClient)
 	ASSERT(pClient != NULL);
 
 	FTM_INT	nRet;
+
+	if (pClient->bStop)
+	{
+		return	FTM_RET_ALREADY_STARTED;	
+	}
 
 	nRet = pthread_create(&pClient->xPThread, NULL, FTOM_SNMPC_process, pClient);
 	if (nRet != 0)
@@ -100,43 +107,15 @@ FTM_RET	FTOM_SNMPC_stop(FTOM_SNMPC_PTR pClient)
 {
 	ASSERT(pClient != NULL);
 	
-	FTM_INT			nRet;
 	FTM_VOID_PTR 	pRet = NULL;
 
-	pClient->bStop = FTM_TRUE;
-	nRet = pthread_join(pClient->xPThread, &pRet);
-	if (nRet != 0)
+	if (!pClient->bStop)
 	{
-		switch(nRet)
-		{ 
-		case	EDEADLK: 
-			{
-				MESSAGE("A deadlock was detected (e.g., two threads tried to join with each other); or thread specifies the calling thread.\n"); 
-			}
-			break;
-
-		case	EINVAL: 
-			{
-				MESSAGE("thread is not a joinable thread. Another thread is already waiting to join with this thread.\n"); 
-			}
-			break;
-
-		case	ESRCH:  
-			{	
-				MESSAGE("No thread with the ID thread could be found.\n");
-			}
-			break;
-
-		default:
-			{
-				MESSAGE("Unknown error[%d]\n", nRet); 
-			}
-			break;
-		}
-
-		return	FTM_RET_THREAD_JOIN_ERROR;
+		return	FTM_RET_NOT_START;	
 	}
 
+	pClient->bStop = FTM_TRUE;
+	pthread_join(pClient->xPThread, &pRet);
 	TRACE("SNMP client finished.\n");
 
 	return	FTM_RET_OK;
@@ -149,17 +128,18 @@ FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData)
 	FTOM_SNMPC_PTR	pClient = (FTOM_SNMPC_PTR)pData;
 	pClient->bStop = FTM_FALSE;
 
+	TRACE("SNMP client started!\n");
 	while (!pClient->bStop)
 	{	
-		if (active_hosts) 
+		//if (active_hosts) 
 		{
-			FTM_INT	fds = 0, block = 1;
+			FTM_INT	fds = 0, block = 0;
 			fd_set fdset;
-			struct timeval timeout;
+			struct timeval xTimeout = {.tv_sec = 1, .tv_usec = 0};
 
 			FD_ZERO(&fdset);
-			snmp_select_info(&fds, &fdset, &timeout, &block);
-			fds = select(fds, &fdset, NULL, NULL, block ? NULL : &timeout);
+			snmp_select_info(&fds, &fdset, &xTimeout, &block);
+			fds = select(fds, &fdset, NULL, NULL, &xTimeout);
 			if (fds < 0) 
 			{
 				perror("select failed");
@@ -167,15 +147,17 @@ FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData)
 			}
 			if (fds)
 			{
-				snmp_read(&fdset);
+			//	snmp_read(&fdset);
 			}
 			else
 			{
-				snmp_timeout();
+			//	snmp_timeout();
 			}
 		}
 		usleep(1000);
 	}
+	
+	TRACE("SNMP client stopped!\n");
 
 	return	0;
 }
@@ -281,7 +263,8 @@ FTM_RET	FTOM_SNMPC_getEPData(FTOM_NODE_SNMPC_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
-	FTM_RET		xRet = FTM_RET_SNMP_ERROR;
+	FTM_RET	xRet = FTM_RET_SNMP_ERROR;
+	FTM_INT	nRet;
 	struct snmp_session	*pSession = NULL;
 	struct snmp_session	xSession;
 
@@ -312,9 +295,8 @@ FTM_RET	FTOM_SNMPC_getEPData(FTOM_NODE_SNMPC_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_
 			pReqPDU->time = pNode->xCommon.xInfo.ulTimeout;
 			snmp_add_null_var(pReqPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
 			pNode->xStatistics.ulRequest++;
-		
-			int nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
-		
+
+			nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
 			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
 			{
 				struct variable_list *pVariable = pRespPDU->variables;
@@ -345,7 +327,7 @@ FTM_RET	FTOM_SNMPC_getEPData(FTOM_NODE_SNMPC_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_
 							}
 
 							pData->ulTime = time(NULL);
-							pData->xState = FTM_EP_STATE_RUN;
+							pData->xState = FTM_EP_DATA_STATE_VALID;
 							pData->xType  = xDataType;
 							switch(xDataType)
 							{

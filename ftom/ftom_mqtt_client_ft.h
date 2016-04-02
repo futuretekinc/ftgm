@@ -1,39 +1,39 @@
-#ifndef	_FTM_MQTT_CLIENT_FT_H_
-#define	_FTM_MQTT_CLIENT_FT_H_
+#ifndef	_FTOM_MQTT_CLIENT_FT_H_
+#define	_FTOM_MQTT_CLIENT_FT_H_
 
 #include "ftm.h"
 #include "ftom.h"
-#include "ftm_mqtt_client.h"
+#include "ftom_mqtt_client.h"
 
-FTM_VOID FTM_MQTT_CLIENT_FT_connectCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_connectCB
 (
 	struct mosquitto 	*mosq, 
 	void 				*pObj, 
 	int 				nResult
 );
 
-FTM_VOID FTM_MQTT_CLIENT_FT_disconnectCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_disconnectCB
 (
 	struct mosquitto 	*mosq, 
 	void 				*pObj, 
 	int 				nResult
 );
 
-FTM_VOID FTM_MQTT_CLIENT_FT_publishCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_publishCB
 (
 	struct mosquitto 	*mosq, 
 	void 				*pObj, 
 	int 				nResult
 );
 
-FTM_VOID FTM_MQTT_CLIENT_FT_messageCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_messageCB
 (
 	struct mosquitto 	*mosq, 
 	void 				*pObj, 
 	const struct mosquitto_message *message
 );
 
-FTM_VOID FTM_MQTT_CLIENT_FT_subscribeCB
+FTM_VOID FTOM_MQTT_CLIENT_FT_subscribeCB
 (
 	struct mosquitto 	*mosq, 
 	void 				*pObj, 
@@ -42,7 +42,7 @@ FTM_VOID FTM_MQTT_CLIENT_FT_subscribeCB
 	const int 			*pGrantedQoS
 );
 
-FTM_RET	FTM_MQTT_CLIENT_FT_topicParser
+FTM_RET	FTOM_MQTT_CLIENT_FT_topicParser
 (
 	FTM_CHAR_PTR		pTopic, 
 	FTM_CHAR_PTR		pArgv[], 
@@ -50,15 +50,15 @@ FTM_RET	FTM_MQTT_CLIENT_FT_topicParser
 	FTM_INT_PTR			pnArgc
 );
 
-FTM_RET	FTM_MQTT_CLIENT_FT_requestMessageParser
+FTM_RET	FTOM_MQTT_CLIENT_FT_requestMessageParser
 (
 	FTM_CHAR_PTR 		pMessage, 
 	FTOM_MSG_PTR _PTR_	pMsg
 );
 
-FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataINT
+FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataINT
 (
-	FTM_MQTT_CLIENT_PTR pClient, 
+	FTOM_MQTT_CLIENT_PTR pClient, 
 	FTM_EP_ID 			xEPID, 
 	FTM_ULONG 			ulTime, 
 	FTM_INT 			nValue, 
@@ -68,9 +68,9 @@ FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataINT
 	FTM_INT 			nMin
 );
 
-FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataULONG
+FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataULONG
 (
-	FTM_MQTT_CLIENT_PTR pClient, 
+	FTOM_MQTT_CLIENT_PTR pClient, 
 	FTM_EP_ID 			xEPID, 
 	FTM_ULONG 			ulTime, 
 	FTM_ULONG 			ulValue, 
@@ -80,9 +80,9 @@ FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataULONG
 	FTM_ULONG 			ulMin
 );
 
-FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataFLOAT
+FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataFLOAT
 (
-	FTM_MQTT_CLIENT_PTR pClient, 
+	FTOM_MQTT_CLIENT_PTR pClient, 
 	FTM_EP_ID 			xEPID, 
 	FTM_ULONG 			ulTime, 
 	FTM_FLOAT 			fValue, 
@@ -92,9 +92,9 @@ FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataFLOAT
 	FTM_FLOAT 			fMin
 );
 
-FTM_RET	FTM_MQTT_CLIENT_FT_publishEPDataBOOL
+FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataBOOL
 (
-	FTM_MQTT_CLIENT_PTR pClient, 
+	FTOM_MQTT_CLIENT_PTR pClient, 
 	FTM_EP_ID 			xEPID, 
 	FTM_ULONG 			ulTime, 
 	FTM_BOOL 			bValue

@@ -33,10 +33,11 @@ typedef	struct
 {
 	FTOM_SNMPC_CONFIG		xConfig;
 	pthread_t				xPThread;
-	FTM_BOOL				bStop;
 
+	FTM_BOOL				bStop;
+	FTM_LOCK				xLock;
 	FTOM_PTR				pOM;
-	FTOM_SERVICE_ID		xServiceID;
+	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
 }	FTOM_SNMPC, _PTR_ FTOM_SNMPC_PTR;
 
@@ -74,23 +75,23 @@ FTM_RET FTOM_SNMPC_stop
 
 FTM_RET	FTOM_SNMPC_setServiceCallback
 (
-	FTOM_SNMPC_PTR pClient, 
-	FTOM_SERVICE_ID xID, 
+	FTOM_SNMPC_PTR 		pClient, 
+	FTOM_SERVICE_ID 	xID, 
 	FTOM_SERVICE_CALLBACK fServiceCB
 );
 
 FTM_RET	FTOM_SNMPC_getEPData
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
-	FTOM_EP_PTR 	pEP, 
-	FTM_EP_DATA_PTR pData
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
 );
 
 FTM_RET	FTOM_SNMPC_setEPData
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
-	FTOM_EP_PTR 	pEP, 
-	FTM_EP_DATA_PTR pData
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
 );
 
 FTM_RET	FTOM_SNMPC_getOID

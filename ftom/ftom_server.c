@@ -9,6 +9,7 @@
 #include "ftom_params.h"
 #include "ftom_node.h"
 #include "ftom_ep.h"
+#include "ftom_ep_management.h"
 #include "ftom_server.h"
 #include "ftom_server_cmd.h"
 
@@ -178,6 +179,7 @@ FTM_RET	FTOM_SERVER_init
 	pServer->xConfig.ulMaxSession	= FTOM_DEFAULT_SERVER_SESSION_COUNT	;
 
 	pServer->pOM = pOM;
+	pServer->bStop = FTM_TRUE;
 	FTM_LIST_init(&pServer->xSessionList);
 
 	return	FTM_RET_OK;
@@ -206,13 +208,18 @@ FTM_RET	FTOM_SERVER_start
 
 	FTM_INT	nRet;
 
+	if (!pServer->bStop)
+	{
+		return	FTM_RET_ALREADY_STARTED;
+	}
+
 	nRet = pthread_create(&pServer->xPThread, NULL, FTOM_SERVER_process, (FTM_VOID_PTR)pServer);
 	if (nRet != 0)
 	{
 		ERROR("Can't create thread[%d]\n", nRet);
 		return	FTM_RET_CANT_CREATE_THREAD;
 	}
-
+	TRACE("xThread = %08x\n", pServer->xPThread);
 	return	FTM_RET_OK;
 }
 
@@ -223,21 +230,26 @@ FTM_RET	FTOM_SERVER_stop
 {
 	ASSERT(pServer != NULL);
 
-	FTM_VOID_PTR	pRes;
-
 	FTOM_SESSION_PTR	pSession = NULL;
+
+	if (pServer->bStop)
+	{
+		return	FTM_RET_NOT_START;
+	}
 
 	FTM_LIST_iteratorStart(&pServer->xSessionList);
 	while(FTM_LIST_iteratorNext(&pServer->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
 	{
 		pthread_cancel(pSession->xPThread);
-		pthread_join(pSession->xPThread, &pRes);
+		pthread_join(pSession->xPThread, NULL);
 
 		FTM_MEM_free(pSession);		
 	}
 
-	pthread_cancel(pServer->xPThread);
-	pthread_join(pServer->xPThread, &pRes);
+	pServer->bStop = FTM_TRUE;
+	shutdown(pServer->hSocket, SHUT_RD);
+	//pthread_cancel(pServer->xPThread);
+	pthread_join(pServer->xPThread, NULL);
 
 	TRACE("Server finished.\n");
 	return	FTM_RET_OK;
@@ -290,10 +302,9 @@ FTM_VOID_PTR FTOM_SERVER_process
 {
 	ASSERT(pData != NULL);
 
-	FTM_INT				nRet;
-	FTM_INT				hSocket;
-	struct sockaddr_in	xServerAddr, xClientAddr;
 	FTOM_SERVER_PTR 	pServer = (FTOM_SERVER_PTR)pData;
+	FTM_INT				nRet;
+	struct sockaddr_in	xServerAddr, xClientAddr;
 
 
 	if (sem_init(&pServer->xLock, 0,pServer->xConfig.ulMaxSession) < 0)
@@ -302,8 +313,8 @@ FTM_VOID_PTR FTOM_SERVER_process
 		return	0;	
 	}
 
-	hSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (hSocket == -1)
+	pServer->hSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (pServer->hSocket == -1)
 	{
 		ERROR("Could not create socket\n");
 		return	0;
@@ -313,17 +324,18 @@ FTM_VOID_PTR FTOM_SERVER_process
 	xServerAddr.sin_addr.s_addr = INADDR_ANY;
 	xServerAddr.sin_port 		= htons( pServer->xConfig.usPort );
 
-	nRet = bind( hSocket, (struct sockaddr *)&xServerAddr, sizeof(xServerAddr));
+	nRet = bind( pServer->hSocket, (struct sockaddr *)&xServerAddr, sizeof(xServerAddr));
 	if (nRet < 0)
 	{
 		ERROR("bind failed.[nRet = %d]\n", nRet);
 		return	0;
 	}
 
-	listen(hSocket, 3);
+	listen(pServer->hSocket, 3);
 
-
-	while(FTM_TRUE)
+	pServer->bStop = FTM_FALSE;
+	
+	while(!pServer->bStop)
 	{
 		FTM_INT	hClient;
 		FTM_INT	nValue;
@@ -334,8 +346,8 @@ FTM_VOID_PTR FTOM_SERVER_process
 		{
 			sem_getvalue(&pServer->xLock, &nValue);
 			MESSAGE("Waiting for connections ...[%d]\n", nValue);
-			hClient = accept(hSocket, (struct sockaddr *)&xClientAddr, (socklen_t *)&nSockAddrIulLen);
-			if (hClient != 0)
+			hClient = accept(pServer->hSocket, (struct sockaddr *)&xClientAddr, (socklen_t *)&nSockAddrIulLen);
+			if (hClient > 0)
 			{
 				TRACE("Accept new connection.[ %s:%d ]\n", inet_ntoa(xClientAddr.sin_addr), ntohs(xClientAddr.sin_port));
 
@@ -343,8 +355,8 @@ FTM_VOID_PTR FTOM_SERVER_process
 				if (pSession == NULL)
 				{
 					ERROR("System memory is not enough!\n");
-					close(hClient);
 					TRACE("The session(%08x) was closed.\n", hClient);
+					close(hClient);
 				}
 				else
 				{
@@ -357,14 +369,17 @@ FTM_VOID_PTR FTOM_SERVER_process
 					{
 						FTM_LIST_append(&pServer->xSessionList, pSession);	
 					}
+					else
+					{
+						FTM_MEM_free(pSession);
+					}
 				}
-			
 			}
 		}
 		else
 		{
 			TRACE("It has exceeded the allowed number of sessions.\n");
-			shutdown(hSocket, SHUT_RD);
+			shutdown(pServer->hSocket, SHUT_RD);
 		}
 	}
 
@@ -679,7 +694,7 @@ FTM_RET	FTOM_SERVER_EP_create
 	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP;
 
-	xRet = FTOM_EPM_get(pSession->pServer->pOM->pEPM, pReq->xInfo.xEPID, &pEP);
+	xRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xInfo.xEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_RET_ALREADY_EXISTS;
@@ -714,7 +729,7 @@ FTM_RET	FTOM_SERVER_EP_destroy
 	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP;
 
-	xRet = FTOM_EPM_get(pSession->pServer->pOM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xEPID, &pEP);
 	
 	if (xRet == FTM_RET_OK)
 	{
@@ -765,7 +780,7 @@ FTM_RET	FTOM_SERVER_EP_get
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTOM_EPM_get(pSession->pServer->pOM->pEPM, pReq->xEPID, &pEP);
+	pResp->nRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
@@ -807,7 +822,7 @@ FTM_RET	FTOM_SERVER_EP_getAt
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTOM_EPM_getAt(pSession->pServer->pOM->pEPM, pReq->ulIndex, &pEP);
+	pResp->nRet = FTOM_EPM_getEPAt(pSession->pServer->pOM->pEPM, pReq->ulIndex, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
@@ -868,7 +883,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_getLast
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->nRet = FTOM_EPM_get(pSession->pServer->pOM->pEPM, pReq->xEPID, &pEP);
+	pResp->nRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xEPID, &pEP);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		FTM_EP_DATA_PTR	pData;

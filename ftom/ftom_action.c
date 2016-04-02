@@ -21,7 +21,7 @@ static FTM_BOOL	bInit = FTM_FALSE;
 static FTM_LIST	xList;
 static sem_t	xLock;
 
-FTM_RET	FTOM_ACTIONM_create(FTOM_ACTIONM_PTR _PTR_ ppActionM)
+FTM_RET	FTOM_ACTIONM_create(FTOM_PTR pOM, FTOM_ACTIONM_PTR _PTR_ ppActionM)
 {
 	ASSERT(ppActionM != NULL);
 
@@ -50,7 +50,7 @@ FTM_RET	FTOM_ACTIONM_create(FTOM_ACTIONM_PTR _PTR_ ppActionM)
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	xRet = FTOM_ACTIONM_init(pActionM);
+	xRet = FTOM_ACTIONM_init(pActionM, pOM);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pActionM);	
@@ -90,7 +90,7 @@ FTM_RET	FTOM_ACTIONM_destroy(FTOM_ACTIONM_PTR _PTR_ ppActionM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_ACTIONM_init(FTOM_ACTIONM_PTR pActionM)
+FTM_RET	FTOM_ACTIONM_init(FTOM_ACTIONM_PTR pActionM, FTOM_PTR pOM)
 {
 	ASSERT(pActionM != NULL);
 	FTM_RET	xRet;
@@ -114,6 +114,7 @@ FTM_RET	FTOM_ACTIONM_init(FTOM_ACTIONM_PTR pActionM)
 		return	xRet;	
 	}
 
+	pActionM->pOM = pOM;
 	FTM_LIST_setSeeker(pActionM->pActionList, FTOM_ACTIONM_seeker);
 
 	return	FTM_RET_OK;
@@ -170,7 +171,10 @@ FTM_RET	FTOM_ACTIONM_start(FTOM_ACTIONM_PTR pActionM)
 	
 	FTM_INT	nRet;
 
-	TRACE_CALL();
+	if (pActionM->bStop)
+	{
+		return	FTM_RET_ALREADY_STARTED;	
+	}
 
 	nRet = pthread_create(&pActionM->xThread, NULL, FTOM_ACTIONM_process, pActionM);
 	if (nRet < 0)
@@ -186,7 +190,10 @@ FTM_RET	FTOM_ACTIONM_stop(FTOM_ACTIONM_PTR pActionM)
 {
 	ASSERT(pActionM != NULL);
 
-	TRACE_CALL();
+	if (!pActionM->bStop)
+	{
+		return	FTM_RET_NOT_START;	
+	}
 
 	pActionM->bStop = FTM_TRUE;
 	pthread_join(pActionM->xThread, NULL);
