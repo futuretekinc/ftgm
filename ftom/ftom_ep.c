@@ -261,35 +261,34 @@ FTM_RET	FTOM_EP_stop
 	}
 
 	FTM_RET			xRet;
-	FTOM_MSG_PTR	pMsg;
+	FTOM_MSG_PTR	pMsg = NULL;
 
 	xRet = FTOM_MSG_createQuit(&pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Can't create quit message!\n");
-		goto cancel;
+	}
+	else
+	{
+		xRet = FTOM_MSGQ_push(&pEP->xMsgQ, pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Message push failed[%08x].!\n", xRet);
+			FTOM_MSG_destroy(&pMsg);
+		}
 	}
 
-	xRet = FTOM_MSGQ_push(&pEP->xMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
+	if (pMsg == NULL)
 	{
-		ERROR("Message push failed[%08x].!\n", xRet);
-		FTOM_MSG_destroy(&pMsg);
-		goto cancel;
+		pthread_cancel(pEP->xPThread);
 	}
 
 	if (bWaitForStop)
 	{
-		TRACE("Waiting for EP[%08x] stop\n", pEP->xInfo.xEPID);
 		pthread_join(pEP->xPThread, NULL);
 	}
 
 	return	FTM_RET_OK;
-
-cancel:
-	pthread_cancel(pEP->xPThread);
-
-	return	xRet;
 }
 
 FTM_VOID_PTR FTOM_EP_process

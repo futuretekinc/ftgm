@@ -344,7 +344,7 @@ FTM_RET FTOM_NODE_stop
 {
 	ASSERT(pNode != NULL);
 	FTM_RET	xRet;
-	FTOM_MSG_PTR	pMsg;
+	FTOM_MSG_PTR	pMsg = NULL;
 
 	if (pNode->bStop)
 	{
@@ -357,9 +357,12 @@ FTM_RET FTOM_NODE_stop
 		pNode->xDescript.fPrestop(pNode);
 	}
 
-	TRACE("Node[%s] called stop\n", pNode->xInfo.pDID);
 	xRet = FTOM_MSG_createQuit(&pMsg);
 	if (xRet == FTM_RET_OK)
+	{
+		ERROR("Can't create quit message!\n");
+	}
+	else
 	{
 		xRet = FTOM_MSGQ_push(&pNode->xMsgQ, pMsg);
 		if (xRet != FTM_RET_OK)
@@ -368,6 +371,30 @@ FTM_RET FTOM_NODE_stop
 		}
 	}
 
+	if (pMsg == NULL)
+	{
+		FTM_ULONG	ulCount;
+
+		xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_INT	i;
+
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				FTOM_EP_PTR	pEP;
+
+				xRet = FTM_LIST_getAt(&pNode->xEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
+				if (xRet == FTM_RET_OK)
+				{
+					FTOM_EP_stop(pEP, FTM_TRUE);
+				}
+			}
+		}
+
+		pthread_cancel(pNode->xThread);
+	}
+	
 	pthread_join(pNode->xThread, NULL);
 	pNode->xThread = 0;
 
