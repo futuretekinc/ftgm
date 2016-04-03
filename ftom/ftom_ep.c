@@ -215,6 +215,8 @@ FTM_RET FTOM_EP_start
 )
 {
 	ASSERT(pEP != NULL);
+	
+	FTM_INT	nRet;
 
 	if (pEP->pNode == NULL)
 	{
@@ -222,13 +224,24 @@ FTM_RET FTOM_EP_start
 		return	FTM_RET_EP_IS_NOT_ATTACHED;	
 	}
 
+	if (!pEP->xInfo.bEnable)
+	{
+		INFO("EP[%08x] is disabled.\n", pEP->xInfo.xEPID);
+		return	FTM_RET_OK;
+	}
+
 	if (!pEP->bStop)
 	{
-		ERROR("EP[%08x] already started.\n", pEP->xInfo.xEPID);
+		WARN("EP[%08x] already started.\n", pEP->xInfo.xEPID);
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
-	pthread_create(&pEP->xPThread, NULL, FTOM_EP_process, (FTM_VOID_PTR)pEP);
+	nRet = pthread_create(&pEP->xPThread, NULL, FTOM_EP_process, (FTM_VOID_PTR)pEP);
+	if (nRet != 0)
+	{
+		ERROR("Can't create thread.\n");	
+		return	FTM_RET_THREAD_CREATION_ERROR;
+	}
 
 	return	FTM_RET_OK;
 }
@@ -243,10 +256,10 @@ FTM_RET	FTOM_EP_stop
 
 	if (pEP->bStop)
 	{
+		WARN("EP[%08x] is stopped.\n", pEP->xInfo.xEPID);
 		return	FTM_RET_NOT_START;	
 	}
 
-#if 0
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg;
 
@@ -254,16 +267,15 @@ FTM_RET	FTOM_EP_stop
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Can't create quit message!\n");
-		goto exit;
+		goto cancel;
 	}
 
-	TRACE("Message Pushed!\n");
 	xRet = FTOM_MSGQ_push(&pEP->xMsgQ, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Message push failed[%08x].!\n", xRet);
 		FTOM_MSG_destroy(&pMsg);
-		ERROR("Can't create quit message!\n");
-		goto exit;
+		goto cancel;
 	}
 
 	if (bWaitForStop)
@@ -271,16 +283,13 @@ FTM_RET	FTOM_EP_stop
 		TRACE("Waiting for EP[%08x] stop\n", pEP->xInfo.xEPID);
 		pthread_join(pEP->xPThread, NULL);
 	}
-	xRet = FTM_RET_OK;
-
-exit:
-
-	return	xRet;
-#else
-	pthread_cancel(pEP->xPThread);
 
 	return	FTM_RET_OK;
-#endif
+
+cancel:
+	pthread_cancel(pEP->xPThread);
+
+	return	xRet;
 }
 
 FTM_VOID_PTR FTOM_EP_process
@@ -290,11 +299,11 @@ FTM_VOID_PTR FTOM_EP_process
 {
 	ASSERT(pData != NULL);
 
-	FTM_RET			xRet;
+	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP = (FTOM_EP_PTR)pData;
-	FTM_TIMER		xCollectionTimer;
-	FTM_TIMER		xTransTimer;
-	FTM_TIME		xCurrentTime, xAlignTime, xNextTime, xInterval, xCycle;
+	FTM_TIMER	xCollectionTimer;
+	FTM_TIMER	xTransTimer;
+	FTM_TIME	xCurrentTime, xAlignTime, xNextTime, xInterval, xCycle;
 
 	pEP->bStop = FTM_FALSE;
 
@@ -355,41 +364,35 @@ FTM_VOID_PTR FTOM_EP_process
 			FTOM_EP_sendDataInTime(pEP, ulPrevTime, ulCurrentTime);
 			FTM_TIMER_add(&xTransTimer, pEP->xInfo.ulCycle * 1000000);
 		}
-		
-		FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
-		while (!pEP->bStop && (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
-		{
-			TRACE("Receive Message : EP[%08x], MSG[%08x]\n", pEP->xInfo.xEPID, pMsg->xType);
-			switch(pMsg->xType)
-			{
-			case	FTOM_MSG_TYPE_QUIT:
-				{
-					pEP->bStop = FTM_TRUE;
-				}
-				break;
-
-			default:
-				{	
-					WARN("Invalid message[%08x]\n", pMsg->xType);
-				}
-			}
-
-			FTM_MEM_free(pMsg);
-
-			FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
-		}
 	
-		if (!pEP->bStop)
+		do
 		{
-			FTM_TIMER_waitForExpired(&xCollectionTimer);
-		}
+			FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
+		
+			if (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK)
+			{
+				TRACE("Receive Message : EP[%08x], MSG[%08x]\n", pEP->xInfo.xEPID, pMsg->xType);
+				switch(pMsg->xType)
+				{
+				case	FTOM_MSG_TYPE_QUIT:
+					{
+						pEP->bStop = FTM_TRUE;
+					}
+					break;
 
+				default:
+					{	
+						WARN("Invalid message[%08x]\n", pMsg->xType);
+					}
+				}
+
+				FTM_MEM_free(pMsg);
+			}
+		}
+		while (!pEP->bStop && (FTM_TIMER_isExpired(&xCollectionTimer) != FTM_TRUE));
+	
 		FTM_TIMER_add(&xCollectionTimer, pEP->xInfo.ulInterval * 1000000);
 	} 
-
-	pEP->bStop = FTM_TRUE;
-
-	TRACE_EXIT();
 
 	return	0;
 }
