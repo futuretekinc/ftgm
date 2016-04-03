@@ -376,11 +376,6 @@ FTM_VOID_PTR FTOM_SERVER_process
 				}
 			}
 		}
-		else
-		{
-			TRACE("It has exceeded the allowed number of sessions.\n");
-			shutdown(pServer->hSocket, SHUT_RD);
-		}
 	}
 
 	return	FTM_RET_OK;
@@ -395,8 +390,8 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 	FTOM_RESP_PARAMS_PTR	pResp 	= (FTOM_RESP_PARAMS_PTR)pSession->pRespBuff;
 	struct timeval			xTimeval;
 
-	xTimeval.tv_sec = 1;
-	xTimeval.tv_usec = 0;
+	xTimeval.tv_sec = 0;
+	xTimeval.tv_usec = 100000;
 
 	pSession->bStop = FTM_FALSE;
 

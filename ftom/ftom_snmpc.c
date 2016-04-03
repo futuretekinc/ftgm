@@ -38,7 +38,10 @@ FTM_RET	FTOM_SNMPC_init
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_SNMPC_final(FTOM_SNMPC_PTR pClient)
+FTM_RET	FTOM_SNMPC_final
+(
+	FTOM_SNMPC_PTR pClient
+)
 {
 	ASSERT(pClient != NULL);
 
@@ -61,7 +64,10 @@ FTM_RET	FTOM_SNMPC_final(FTOM_SNMPC_PTR pClient)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_SNMPC_start(FTOM_SNMPC_PTR pClient)
+FTM_RET FTOM_SNMPC_start
+(
+	FTOM_SNMPC_PTR pClient
+)
 {
 	ASSERT(pClient != NULL);
 
@@ -103,7 +109,10 @@ FTM_RET FTOM_SNMPC_start(FTOM_SNMPC_PTR pClient)
 }
 
 
-FTM_RET	FTOM_SNMPC_stop(FTOM_SNMPC_PTR pClient)
+FTM_RET	FTOM_SNMPC_stop
+(
+	FTOM_SNMPC_PTR pClient
+)
 {
 	ASSERT(pClient != NULL);
 	
@@ -121,7 +130,10 @@ FTM_RET	FTOM_SNMPC_stop(FTOM_SNMPC_PTR pClient)
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR	FTOM_SNMPC_process
+(
+	FTM_VOID_PTR pData
+)
 {
 	ASSERT(pData != NULL);
 
@@ -133,19 +145,19 @@ FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData)
 	{	
 		//if (active_hosts) 
 		{
-			FTM_INT	fds = 0, block = 0;
-			fd_set fdset;
+			FTM_INT	nFDS = 0, nBlock = 0;
+			fd_set xFDSet;
 			struct timeval xTimeout = {.tv_sec = 1, .tv_usec = 0};
 
-			FD_ZERO(&fdset);
-			snmp_select_info(&fds, &fdset, &xTimeout, &block);
-			fds = select(fds, &fdset, NULL, NULL, &xTimeout);
-			if (fds < 0) 
+			FD_ZERO(&xFDSet);
+			snmp_select_info(&nFDS, &xFDSet, &xTimeout, &nBlock);
+			nFDS = select(nFDS, &xFDSet, NULL, NULL, &xTimeout);
+			if (nFDS < 0) 
 			{
 				perror("select failed");
 				exit(1);
 			}
-			if (fds)
+			if (nFDS)
 			{
 			//	snmp_read(&fdset);
 			}
@@ -162,16 +174,56 @@ FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET FTOM_SNMPC_loadFromFile(FTOM_SNMPC_PTR pClient, FTM_CHAR_PTR pFileName)
+FTM_RET FTOM_SNMPC_loadFromFile
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CHAR_PTR 	pFileName
+)
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pFileName != NULL);
 
+#if 0
+	FTM_RET			xRet;
+	FTM_CONFIG_PTR	pConfig;
+	FTM_CONFIG_ITEM_PTR	pSection;
+
+	xRet = FTM_CONFIG_create(pFileName, &pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTM_CONFIG_getItem(pConfig, "snmpc", &pSection);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_CONFIG_ITEM_PTR	pMIBS;
+
+		xRet = FTM_CONFIG_ITEM_getChildItem(pSection, "mibs", &pMIBS);
+		if (xRet == FTM_RET_OK)
+		{	
+			FTM_ULONG	ulCount;
+			xRet = FTM_CONFIG_LIST_getItemCount(pMIBS, &ulCount);
+			if (xRet == FTM_RET_OK)
+			{
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					FTM_CONFIG_ITEM	xItem;
+
+					xRet = FTM_CONFIG_LIST_getItemAt(pMIBS, i, &xItem);
+					if (xRet == FTM_RET_OK)
+					{}
+				}
+			
+			}
+		}
+	}
+
+#else
 	config_t			xConfig;
 	config_setting_t	*pSection;
 	
 	config_init(&xConfig);
-	printf("pFileName = %s\n", pFileName);
 	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
 	{
 		return	FTM_RET_CONFIG_LOAD_FAILED;
@@ -197,7 +249,7 @@ FTM_RET FTOM_SNMPC_loadFromFile(FTOM_SNMPC_PTR pClient, FTM_CHAR_PTR pFileName)
 					{
 						strcpy(pBuff, pMIBFileName);
 						FTM_LIST_append(&pClient->xConfig.xMIBList, pBuff);
-				read_mib(pBuff);
+						read_mib(pBuff);
 					}
 				}
 			}
@@ -214,11 +266,14 @@ FTM_RET FTOM_SNMPC_loadFromFile(FTOM_SNMPC_PTR pClient, FTM_CHAR_PTR pFileName)
 		}
 	}
 	config_destroy(&xConfig);
-
+#endif
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_SNMPC_showConfig(FTOM_SNMPC_PTR pClient)
+FTM_RET FTOM_SNMPC_showConfig
+(
+	FTOM_SNMPC_PTR pClient
+)
 {
 	ASSERT(pClient != NULL);
 
@@ -245,7 +300,12 @@ FTM_RET FTOM_SNMPC_showConfig(FTOM_SNMPC_PTR pClient)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_SNMPC_setServiceCallback(FTOM_SNMPC_PTR pClient, FTOM_SERVICE_ID xServiceID, FTOM_SERVICE_CALLBACK fServiceCB)
+FTM_RET	FTOM_SNMPC_setServiceCallback
+(
+	FTOM_SNMPC_PTR 			pClient, 
+	FTOM_SERVICE_ID 		xServiceID, 
+	FTOM_SERVICE_CALLBACK 	fServiceCB
+)
 {
 	ASSERT(pClient != NULL);
 	ASSERT(fServiceCB != NULL);
@@ -257,7 +317,12 @@ FTM_RET	FTOM_SNMPC_setServiceCallback(FTOM_SNMPC_PTR pClient, FTOM_SERVICE_ID xS
 }
 
 
-FTM_RET	FTOM_SNMPC_getEPData(FTOM_NODE_SNMPC_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+FTM_RET	FTOM_SNMPC_getEPData
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+)
 {
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
@@ -393,7 +458,12 @@ FTM_RET	FTOM_SNMPC_getEPData(FTOM_NODE_SNMPC_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_
 	return	xRet;
 }
 
-FTM_RET	FTOM_SNMPC_setEPData(FTOM_NODE_SNMPC_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_DATA_PTR pData)
+FTM_RET	FTOM_SNMPC_setEPData
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+)
 {
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
@@ -469,7 +539,12 @@ FTM_RET	FTOM_SNMPC_setEPData(FTOM_NODE_SNMPC_PTR pNode, FTOM_EP_PTR pEP, FTM_EP_
 	return	xRet;
 }
 
-FTM_RET		FTOM_SNMPC_getOID(FTM_CHAR_PTR pInput, oid *pOID, size_t	*pnOIDLen)
+FTM_RET	FTOM_SNMPC_getOID
+(
+	FTM_CHAR_PTR 	pInput, 
+	oid 			*pOID, 
+	size_t			*pnOIDLen
+)
 {
 	if (read_objid(pInput, pOID, pnOIDLen) == 1)
 	{

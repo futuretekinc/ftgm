@@ -112,9 +112,23 @@ FTM_RET	FTOM_NODE_init
 	ASSERT(pNode != NULL);
 	ASSERT(pInfo != NULL);
 
+	FTM_RET	xRet;
+
 	memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
-	FTM_LIST_init(&pNode->xEPList);
-	FTOM_MSGQ_init(&pNode->xMsgQ);
+	xRet = FTM_LIST_init(&pNode->xEPList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("List initialize failed[%08x].\n", xRet);
+		return	xRet;	
+	}
+	
+	xRet = FTOM_MSGQ_init(&pNode->xMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message queue initialize failed[%08x].\n", xRet);
+		return	xRet;	
+	}
+
 	pthread_mutex_init(&pNode->xMutexLock, NULL);
 	
 	pNode->bStop = FTM_TRUE;
@@ -161,6 +175,9 @@ FTM_RET FTOM_NODE_final
 			WARN("Node detach failed[%08x].\n", xRet);	
 		}
 	}
+
+	pNode->xState = FTOM_NODE_STATE_FINALIZED;
+
 	return	FTM_RET_OK;
 }
 
@@ -291,12 +308,6 @@ FTM_RET	FTOM_NODE_start
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
-	if (pNode->xState != FTOM_NODE_STATE_INITIALIZED)
-	{
-		ERROR("Node[%s] invalid state[%d]!\n", pNode->xInfo.pDID, pNode->xState);
-		return	FTM_RET_ALREADY_STARTED;
-	}
-
 	if (pNode->xDescript.fPrestart != NULL)
 	{
 		pNode->xDescript.fPrestart(pNode);
@@ -358,7 +369,6 @@ FTM_RET FTOM_NODE_stop
 	}
 
 	pthread_join(pNode->xThread, NULL);
-
 	pNode->xThread = 0;
 
 	if (pNode->xDescript.fPoststop != NULL)
@@ -379,10 +389,10 @@ FTM_VOID_PTR FTOM_NODE_process
 	FTM_RET			xRet;
 	FTOM_NODE_PTR pNode = (FTOM_NODE_PTR)pData;
 	FTOM_MSG_PTR	pMsg;
-	FTM_TIMER		xLoopTimer;
+	FTM_TIMER		xReportTimer;
 	FTM_ULONG		ulCount;
 
-	pNode->xState = FTOM_NODE_STATE_RUNNING;
+	pNode->xState = FTOM_NODE_STATE_RUN;
 
 	TRACE("Node[%s] start.\n", pNode->xInfo.pDID);
 
@@ -404,14 +414,13 @@ FTM_VOID_PTR FTOM_NODE_process
 	}
 
 	pNode->bStop = FTM_FALSE;
-	FTM_TIMER_init(&xLoopTimer, pNode->xInfo.ulInterval * 1000000);
+	FTM_TIMER_init(&xReportTimer, pNode->xInfo.ulInterval * 1000000);
 
 	while(!pNode->bStop)
 	{
 		FTM_ULONG		ulRemainTime = 0;
-		
-			TRACE("Node[%s] : %s[%d]\n", pNode->xInfo.pDID, __func__, __LINE__);
-		FTM_TIMER_remain(&xLoopTimer, &ulRemainTime);
+	
+		FTM_TIMER_remain(&xReportTimer, &ulRemainTime);
 		while (!pNode->bStop && (FTOM_MSGQ_timedPop(&pNode->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
 		{
 			TRACE("Message received[%08x]\n", pMsg->xType);
@@ -428,23 +437,20 @@ FTM_VOID_PTR FTOM_NODE_process
 					WARN("Invalid message[%08x]\n", pMsg->xType);	
 				}
 			}
-
-			FTM_TIMER_remain(&xLoopTimer, &ulRemainTime);
-
 			FTM_MEM_free(pMsg);
+
+			FTM_TIMER_remain(&xReportTimer, &ulRemainTime);
 		}
 	
 		if (!pNode->bStop)
 		{
-			TRACE("Node[%s] is not stopped.\n",pNode->xInfo.pDID);
-			FTM_TIMER_waitForExpired(&xLoopTimer);
+			FTM_TIMER_waitForExpired(&xReportTimer);
 		}
 
-		FTM_TIMER_add(&xLoopTimer, pNode->xInfo.ulInterval * 1000000);
+		FTM_TIMER_add(&xReportTimer, pNode->xInfo.ulInterval * 1000000);
 	} 
 
 	xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
-	TRACE("Node[%s] EP count : %lu\n", pNode->xInfo.pDID, ulCount);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_INT	i;
@@ -498,15 +504,10 @@ FTM_CHAR_PTR	FTOM_NODE_stateToStr
 {
 	switch(xState)
 	{
-	case	FTOM_NODE_STATE_CREATED:	return	"CREATED";
-	case	FTOM_NODE_STATE_INITIALIZED: return "INITIALIZED";
-	case	FTOM_NODE_STATE_SYNCHRONIZED:	return	"SYNCHRONIZED";
-	case	FTOM_NODE_STATE_PROCESS_INIT:	return	"PROCECSS_INIT";
+	case	FTOM_NODE_STATE_CREATED:		return	"CREATED";
+	case	FTOM_NODE_STATE_INITIALIZED: 	return	"INITIALIZED";
 	case	FTOM_NODE_STATE_RUN:			return	"RUN";
-	case	FTOM_NODE_STATE_RUNNING:		return	"RUNNING";
-	case	FTOM_NODE_STATE_PROCESS_FINISHED:return	"PROCESS_FINISHED";
-	case	FTOM_NODE_STATE_FINISHED:		return	"FINISHED";
-	case	FTOM_NODE_STATE_ABORT:			return	"ABORT";
+	case	FTOM_NODE_STATE_FINALIZED:		return	"FINALIZED";
 	}
 
 	return	"UNKNOWN";

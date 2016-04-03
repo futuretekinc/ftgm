@@ -270,14 +270,14 @@ FTM_RET	FTOM_init(FTOM_PTR pOM)
 		goto error;
 	}
 
-	FTOM_ACTIONM_create(pOM, &pOM->pActionM);
+	xRet = FTOM_ACTIONM_create(pOM, &pOM->pActionM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action management creation failed[%08x].\n", xRet);
 		goto error;
 	}
 
-	FTOM_RULEM_create(pOM, &pOM->pRuleM);
+	xRet = FTOM_RULEM_create(pOM, &pOM->pRuleM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Rule management creation failed[%08x].\n", xRet);
@@ -332,17 +332,47 @@ FTM_RET	FTOM_final
 	FTOM_PTR pOM
 )
 {
+	FTM_RET	xRet;
+
 	FTOM_SERVICE_final();
 
-	FTOM_RULEM_destroy(&pOM->pRuleM);
-	FTOM_ACTIONM_destroy(&pOM->pActionM);
-	FTOM_TRIGGERM_destroy(&pOM->pTriggerM);
+	xRet = FTOM_RULEM_destroy(&pOM->pRuleM);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Rule management destruction failed.\n");
+	}
 
-	FTOM_MSGQ_destroy(&pOM->pMsgQ);
-	FTOM_EPM_destroy(&pOM->pEPM);
-	FTOM_NODEM_destroy(&pOM->pNodeM);
+	xRet = FTOM_ACTIONM_destroy(&pOM->pActionM);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Action management destruction failed.\n");
+	}
 
-	TRACE("finalization done.\n");
+	xRet = FTOM_TRIGGERM_destroy(&pOM->pTriggerM);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Trigger management destruction failed.\n");
+	}
+
+	xRet = FTOM_MSGQ_destroy(&pOM->pMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Message queue destruction failed.\n");
+	}
+
+	xRet = FTOM_EPM_destroy(&pOM->pEPM);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("EP management destruction failed.\n");
+	}
+
+	xRet = FTOM_NODEM_destroy(&pOM->pNodeM);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Node management destruction failed.\n");
+	}
+
+	TRACE("Finalize done.\n");
 
 	return	FTM_RET_OK;
 }

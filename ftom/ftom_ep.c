@@ -333,7 +333,6 @@ FTM_VOID_PTR FTOM_EP_process
 		FTM_EP_DATA		xData;
 		FTOM_MSG_PTR	pMsg = NULL;
 
-		TRACE("EP[%08x] pull data entry!\n", pEP->xInfo.xEPID);
 		xRet = FTOM_EP_pullData(pEP, &xData);
 		if (xRet == FTM_RET_OK)
 		{
@@ -345,7 +344,6 @@ FTM_VOID_PTR FTOM_EP_process
 		{
 			WARN("It failed to import data from EP[%s-%08x].\n", pEP->pNode->xInfo.pDID, pEP->xInfo.xEPID);
 		}
-		TRACE("EP[%08x] pull data exit!\n", pEP->xInfo.xEPID);
 
 		if (FTM_TIMER_isExpired(&xTransTimer))
 		{
@@ -376,9 +374,9 @@ FTM_VOID_PTR FTOM_EP_process
 				}
 			}
 
-			FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
-
 			FTM_MEM_free(pMsg);
+
+			FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
 		}
 	
 		if (!pEP->bStop)
@@ -387,7 +385,6 @@ FTM_VOID_PTR FTOM_EP_process
 		}
 
 		FTM_TIMER_add(&xCollectionTimer, pEP->xInfo.ulInterval * 1000000);
-
 	} 
 
 	pEP->bStop = FTM_TRUE;
