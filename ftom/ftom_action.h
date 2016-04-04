@@ -5,16 +5,6 @@
 #include "ftm.h"
 #include "ftom.h"
 
-typedef enum
-{
-	FTOM_ACTION_MSG_TYPE_RUN = 0
-}	FTOM_ACTION_MSG_TYPE, _PTR_ FTOM_ACTION_MSG_TYPE_PTR;
-
-typedef	struct
-{
-	FTOM_ACTION_MSG_TYPE	xType;
-	FTM_ACTION_ID			xActionID;
-}	FTOM_ACTION_MSG, _PTR_ FTOM_ACTION_MSG_PTR;
 
 typedef	struct
 {
@@ -34,7 +24,7 @@ typedef	struct FTOM_ACTIONM_STRUCT
 	pthread_t			xThread;
 	FTM_BOOL			bStop;
 
-	FTM_MSG_QUEUE_PTR	pMsgQ;
+	FTOM_MSG_QUEUE_PTR	pMsgQ;
 	FTM_LIST_PTR		pActionList;
 }	FTOM_ACTIONM, _PTR_ FTOM_ACTIONM_PTR;
 	
@@ -114,9 +104,11 @@ FTM_RET	FTOM_ACTIONM_getAt
 	FTOM_ACTION_PTR _PTR_ ppActor
 );
 
-FTM_RET	FTOM_ACTIONM_run
+FTM_RET	FTOM_ACTIONM_active
 (
 	FTOM_ACTIONM_PTR 	pActionM, 
-	FTM_ACTION_ID 		xActionID
+	FTM_ACTION_ID 		xActionID,
+	FTM_BOOL			bActivate
 );
+
 #endif

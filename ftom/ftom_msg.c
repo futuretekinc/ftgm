@@ -214,6 +214,32 @@ FTM_RET FTOM_MSG_createRule
 	return	FTM_RET_OK;
 }
 
+FTM_RET FTOM_MSG_createAction
+(
+	FTM_ACTION_ID		xActionID,
+	FTM_BOOL			bActivate,
+	FTOM_MSG_ACTION_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_ACTION_PTR	pMsg;
+
+	pMsg = (FTOM_MSG_ACTION_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_ACTION));
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_ACTION;
+	pMsg->xActionID	= xActionID;
+	pMsg->bActivate = bActivate;
+
+	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_MSG_destroy(FTOM_MSG_PTR _PTR_ ppMsg)
 {
 	ASSERT(ppMsg != NULL);

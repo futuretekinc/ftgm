@@ -28,7 +28,7 @@ typedef	struct	FTOM_RULEM_STRUCT
 	FTOM_PTR	pOM;
 
 	FTM_BOOL			bStop;
-	FTM_MSG_QUEUE_PTR	pMsgQ;
+	FTOM_MSG_QUEUE_PTR	pMsgQ;
 	FTM_LIST_PTR		pRuleList;
 
 	struct FTOM_TRIGGERM_STRUCT *pTriggerM;
@@ -126,5 +126,17 @@ FTM_RET	FTOM_RULEM_getAt
 FTM_RET	FTOM_RULEM_notifyChanged
 (
 	FTM_TRIGGER_ID xTrigger
+);
+
+FTM_RET	FTOM_RULEM_activate
+(
+	FTOM_RULEM_PTR 	pRuleM, 
+	FTM_RULE_ID 	xRuleID
+);
+
+FTM_RET	FTOM_RULEM_deactivate
+(
+	FTOM_RULEM_PTR 	pRuleM, 
+	FTM_RULE_ID 	xRuleID
 );
 #endif

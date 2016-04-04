@@ -126,6 +126,7 @@ FTM_RET	FTOM_SNMPTRAPD_init
 	memset(pSNMPTRAPD, 0, sizeof(FTOM_SNMPTRAPD));
 	strcpy(pSNMPTRAPD->xConfig.pName, FTOM_SNMPTRAPD_NAME);
 	pSNMPTRAPD->xConfig.usPort= FTOM_SNMPTRAPD_PORT;
+	pSNMPTRAPD->bStop = FTM_TRUE;
 
 	xRet = FTM_LIST_init(&pSNMPTRAPD->xTrapCBList);
 	if (xRet == FTM_RET_OK)
@@ -209,6 +210,7 @@ FTM_RET FTOM_SNMPTRAPD_start
 		return	FTM_RET_THREAD_CREATION_ERROR;
 	}
 
+	TRACE("SNMP TrapD started!\n");
 	return	FTM_RET_OK;
 }
 
@@ -507,8 +509,18 @@ FTOM_SNMPTRAPD_inputCB
 					{
 						FTOM_CALLBACK_PTR	pCB;
 						FTM_SNMP_OID		xOID;
+						FTM_INT				i;
+
 						memcpy(xOID.pOID, vars->name, sizeof(oid) * vars->name_length);
 						xOID.ulOIDLen  = vars->name_length;
+
+						MESSAGE("OID : ");
+						for(i = 0 ; i < xOID.ulOIDLen ; i++)
+						{
+							MESSAGE(".%d", xOID.pOID[i]);
+						}
+						MESSAGE("\n");
+
 						if (FTM_LIST_get(&pSNMPTRAPD->xTrapCBList, &xOID, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
 						{
 							if (vars->type == ASN_OCTET_STR)
@@ -729,7 +741,7 @@ FTM_VOID_PTR	FTOM_SNMPTRAPD_process
     netsnmp_session		*pSession = NULL;
 	FTM_CHAR			pPort[16];
 
-	sprintf(pPort, "%d", pSNMPTRAPD->xConfig.usPort);
+	sprintf(pPort, "udp:%d", pSNMPTRAPD->xConfig.usPort);
 	pSNMPTRAPD->pTransport = netsnmp_transport_open_server(pSNMPTRAPD->xConfig.pName, pPort); 
 	if (pSNMPTRAPD->pTransport == NULL) 
 	{

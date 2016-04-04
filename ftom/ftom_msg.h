@@ -20,6 +20,7 @@ typedef	enum
 	FTOM_MSG_TYPE_TIME_SYNC			=   7,
 	FTOM_MSG_TYPE_CONNECTED			=   8,
 	FTOM_MSG_TYPE_DISCONNECTED		=   9,
+	FTOM_MSG_TYPE_ACTION			=	10,
 	FTOM_MSG_TYPE_MAX
 }	FTOM_MSG_TYPE, _PTR_ FTOM_MSG_TYPE_PTR;
 
@@ -78,6 +79,13 @@ typedef struct
 	FTM_EP_CTRL		xCtrl;
 	FTM_ULONG		ulDuration;	
 }	FTOM_MSG_EP_CTRL, _PTR_ FTOM_MSG_EP_CTRL_PTR;
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ACTION_ID	xActionID;
+	FTM_BOOL		bActivate;
+}	FTOM_MSG_ACTION, _PTR_ FTOM_MSG_ACTION_PTR;
 
 typedef struct
 {
@@ -140,6 +148,13 @@ FTM_RET FTOM_MSG_createRule
 	FTOM_MSG_RULE_PTR _PTR_ ppMsg
 );
 
+FTM_RET FTOM_MSG_createAction
+(
+	FTM_ACTION_ID		xActionID,
+	FTM_BOOL			bActivate,
+	FTOM_MSG_ACTION_PTR _PTR_ ppMsg
+);
+
 FTM_RET	FTOM_MSG_createSendEPData
 (
 	FTM_EP_ID			xEPID,
@@ -176,7 +191,7 @@ FTM_RET FTOM_MSGQ_final
 FTM_RET	FTOM_MSGQ_push
 (
 	FTOM_MSG_QUEUE_PTR 	pMsgQ, 
-	FTOM_MSG_PTR 			pMsg
+	FTOM_MSG_PTR 		pMsg
 );
 
 FTM_RET	FTOM_MSGQ_pop

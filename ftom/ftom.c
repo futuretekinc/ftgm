@@ -741,10 +741,16 @@ FTM_RET	FTOM_TASK_processing
 
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg = NULL;
+	FTM_TIMER		xHelloTimer;
+
+	FTM_TIMER_init(&xHelloTimer, 10000000);
 
 	while(!pOM->bStop)
 	{
-		xRet = FTOM_MSGQ_timedPop(pOM->pMsgQ, 1000000, &pMsg);
+		FTM_ULONG	ulRemainTime;
+
+		FTM_TIMER_remain(&xHelloTimer, &ulRemainTime);
+		xRet = FTOM_MSGQ_timedPop(pOM->pMsgQ, ulRemainTime, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			if ((pMsg->xType < FTOM_MSG_TYPE_MAX) && (pOM->onMessage != NULL))
@@ -757,6 +763,12 @@ FTM_RET	FTOM_TASK_processing
 			}
 
 			FTM_MEM_free(pMsg);
+		}
+
+		if (FTM_TIMER_isExpired(&xHelloTimer))
+		{
+			FTOM_helloNode(pOM);
+			FTM_TIMER_add(&xHelloTimer, 10000000);
 		}
 	}
 
@@ -1257,3 +1269,61 @@ FTM_RET	FTOM_sendEPData
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_helloNode
+(
+	FTOM_PTR		pOM
+)
+{
+	FTM_CHAR_PTR	pDestIP ="255.255.255.255";
+	FTM_CHAR_PTR	pMsg = "Hello?";
+	FTM_USHORT		usPort = 1234;
+	FTM_INT			nSockFD;
+	FTM_INT			nRet;
+	FTM_INT			nBroadcast = 1;
+	FTM_INT			nBytes;
+	struct sockaddr_in xSrcAddr;
+	struct sockaddr_in xDestAddr;
+
+	TRACE("Hello node?\n");
+	nSockFD = socket(PF_INET,SOCK_DGRAM,0);
+	if(nSockFD == -1)
+	{
+		return	FTM_RET_ERROR;
+	}
+
+	nRet = setsockopt(nSockFD, SOL_SOCKET, SO_BROADCAST, &nBroadcast,sizeof(nBroadcast));
+	if (nRet == -1)
+	{
+		ERROR("setsocketopt error!\n");
+		return	FTM_RET_ERROR;
+	}
+
+	xSrcAddr.sin_family = AF_INET;
+	xSrcAddr.sin_port = 1234;
+	xSrcAddr.sin_addr.s_addr = INADDR_ANY;
+	memset(xSrcAddr.sin_zero,'\0',sizeof(xSrcAddr.sin_zero));
+
+	nRet = bind(nSockFD, (struct sockaddr*) &xSrcAddr, sizeof(xSrcAddr));
+	if(nRet == -1)
+	{
+		ERROR("bind error!\n");
+		return	FTM_RET_ERROR;
+	}
+
+	xDestAddr.sin_family = AF_INET;
+	xDestAddr.sin_port = htons(usPort);
+	xDestAddr.sin_addr.s_addr = inet_addr(pDestIP);
+	memset(xDestAddr.sin_zero,'\0',sizeof(xDestAddr.sin_zero));
+	
+	nBytes = sendto(nSockFD, pMsg, strlen(pMsg) , 0, (struct sockaddr *)&xDestAddr, sizeof(xDestAddr));
+	if (nBytes == -1)
+	{
+		ERROR("Packet send failed.\n");
+		return	FTM_RET_ERROR;
+	}
+
+	close(nSockFD);
+
+	return	FTM_RET_OK;
+
+}

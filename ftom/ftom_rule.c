@@ -6,6 +6,7 @@
 #include "ftom_trigger.h"
 #include "ftom_action.h"
 
+#define	FTOM_RULEM_LOOP_INTERVAL	100000
 #if 0
 #define	TRACE_CALL()	TRACE("%s[%d]\n", __func__, __LINE__)
 #else
@@ -13,8 +14,6 @@
 #endif
 
 static FTM_VOID_PTR FTOM_RULEM_process(FTM_VOID_PTR pData);
-static FTM_RET	FTOM_RULE_activate(FTOM_RULE_PTR pRule);
-static FTM_RET	FTOM_RULE_deactivate(FTOM_RULE_PTR pRule);
 
 static FTM_BOOL	bInit = FTM_FALSE;
 static FTM_LIST	xList;
@@ -109,7 +108,7 @@ FTM_RET	FTOM_RULEM_init
 	memset(pRuleM, 0, sizeof(FTOM_RULEM));
 
 	pRuleM->pOM = pOM;
-	xRet = FTM_MSGQ_create(&pRuleM->pMsgQ);
+	xRet = FTOM_MSGQ_create(&pRuleM->pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -118,7 +117,7 @@ FTM_RET	FTOM_RULEM_init
 	xRet = FTM_LIST_create(&pRuleM->pRuleList);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MSGQ_destroy(pRuleM->pMsgQ);
+		FTOM_MSGQ_destroy(&pRuleM->pMsgQ);
 		pRuleM->pMsgQ = NULL;
 
 		return	xRet;	
@@ -145,7 +144,7 @@ FTM_RET	FTOM_RULEM_final
 
 	if (pRuleM->pMsgQ)
 	{
-		FTM_MSGQ_destroy(pRuleM->pMsgQ);
+		FTOM_MSGQ_destroy(&pRuleM->pMsgQ);
 		pRuleM->pMsgQ = NULL;
 	}
 
@@ -169,7 +168,11 @@ FTM_RET	FTOM_RULEM_final
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_RULEM_loadConfig(FTOM_RULEM_PTR pRuleM, FTOM_RULEM_CONFIG_PTR pConfig)
+FTM_RET	FTOM_RULEM_loadConfig
+(
+	FTOM_RULEM_PTR 	pRuleM, 
+	FTOM_RULEM_CONFIG_PTR pConfig
+)
 {
 	ASSERT(pRuleM != NULL);
 	ASSERT(pConfig != NULL);
@@ -179,7 +182,10 @@ FTM_RET	FTOM_RULEM_loadConfig(FTOM_RULEM_PTR pRuleM, FTOM_RULEM_CONFIG_PTR pConf
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_RULEM_start(FTOM_RULEM_PTR pRuleM)
+FTM_RET	FTOM_RULEM_start
+(
+	FTOM_RULEM_PTR 	pRuleM
+)
 {
 	ASSERT(pRuleM != NULL);
 	
@@ -197,46 +203,102 @@ FTM_RET	FTOM_RULEM_start(FTOM_RULEM_PTR pRuleM)
 	{
 		return	FTM_RET_THREAD_CREATION_ERROR;
 	}
-	
+
+	TRACE("Rule management started.\n");
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_RULEM_stop(FTOM_RULEM_PTR pRuleM)
+FTM_RET	FTOM_RULEM_stop
+(
+	FTOM_RULEM_PTR 	pRuleM
+)
 {
 	ASSERT(pRuleM != NULL);
 
-	TRACE_CALL();
+	FTM_RET			xRet;
+	FTOM_MSG_PTR	pMsg;
 
-	if (pRuleM->bStop)
+	xRet = FTOM_MSG_createQuit(&pMsg);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_NOT_START;	
+		return	xRet;	
 	}
 
-	pRuleM->bStop = FTM_TRUE;
+	xRet = FTOM_MSGQ_push(pRuleM->pMsgQ, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		pthread_cancel(pRuleM->xThread);
+	}
+
 	pthread_join(pRuleM->xThread, NULL);
+
+	TRACE("Rule management stopped.\n");
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_RULEM_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTOM_RULEM_process
+(
+	FTM_VOID_PTR 	pData
+)
 {
 	ASSERT(pData != NULL);
-
-	FTOM_RULEM_PTR	pRuleM = (FTOM_RULEM_PTR)pData;
-
-	TRACE_CALL();
+	FTOM_RULEM_PTR		pRuleM = (FTOM_RULEM_PTR)pData;
+	FTM_RET					xRet;
+	FTOM_MSG_RULE_PTR		pMsg;
+	FTM_TIMER				xTimer;
+	
+	FTM_TIMER_init(&xTimer, 0);
 
 	pRuleM->bStop = FTM_FALSE;
 
 	while(!pRuleM->bStop)
 	{
-		usleep(1000);
+		FTM_TIMER_add(&xTimer, FTOM_RULEM_LOOP_INTERVAL);
+	
+		do
+		{
+			FTM_ULONG	ulRemain = 0;	
+
+			FTM_TIMER_remain(&xTimer, &ulRemain);
+
+			xRet = FTOM_MSGQ_timedPop(pRuleM->pMsgQ, ulRemain, (FTOM_MSG_PTR _PTR_)&pMsg);
+			if (xRet == FTM_RET_OK)
+			{
+				switch(pMsg->xType)
+				{
+				case	FTOM_MSG_TYPE_QUIT:
+					{
+						pRuleM->bStop = FTM_TRUE;
+					}
+					break;
+
+				case	FTOM_MSG_TYPE_RULE:
+					{
+						TRACE("Rule [%08x] is updated.\n",	pMsg->xRuleID);
+					}
+					break;
+
+				default:
+					{
+						TRACE("Unknown message[%08x].\n", pMsg->xType);	
+					}
+				}
+
+				FTM_MEM_free(pMsg);
+			}
+		}
+		while(!pRuleM->bStop && (FTM_TIMER_isExpired(&xTimer) != FTM_TRUE));
+
 	}
 
 	return	0;
 }
 
-FTM_RET	FTOM_RULEM_notifyChanged(FTM_TRIGGER_ID xTriggerID)
+FTM_RET	FTOM_RULEM_notifyChanged
+(
+	FTM_TRIGGER_ID xTriggerID
+)
 {
 	FTOM_RULEM_PTR	pRuleM = NULL;
 	FTM_RET			xRet;
@@ -276,11 +338,11 @@ FTM_RET	FTOM_RULEM_notifyChanged(FTM_TRIGGER_ID xTriggerID)
 
 						if (bActive)
 						{
-							FTOM_RULE_activate(pRule);
+							FTOM_RULEM_activate(pRuleM, pRule->xInfo.xID);
 						}
 						else
 						{
-							FTOM_RULE_deactivate(pRule);
+							FTOM_RULEM_deactivate(pRuleM, pRule->xInfo.xID);
 						}
 					}
 				}
@@ -293,7 +355,11 @@ FTM_RET	FTOM_RULEM_notifyChanged(FTM_TRIGGER_ID xTriggerID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_RULEM_count(FTOM_RULEM_PTR pRuleM, FTM_ULONG_PTR pulCount)
+FTM_RET FTOM_RULEM_count
+(
+	FTOM_RULEM_PTR	pRuleM, 
+	FTM_ULONG_PTR 	pulCount
+)
 {
 	ASSERT(pRuleM != NULL);
 
@@ -302,7 +368,11 @@ FTM_RET FTOM_RULEM_count(FTOM_RULEM_PTR pRuleM, FTM_ULONG_PTR pulCount)
 	return	FTM_LIST_count(pRuleM->pRuleList, pulCount);
 }
 
-FTM_RET	FTOM_RULEM_add(FTOM_RULEM_PTR pRuleM, FTM_RULE_PTR pInfo)
+FTM_RET	FTOM_RULEM_add
+(
+	FTOM_RULEM_PTR	pRuleM, 
+	FTM_RULE_PTR 	pInfo
+)
 {
 	ASSERT(pRuleM != NULL);
 	ASSERT(pInfo != NULL);
@@ -332,7 +402,11 @@ FTM_RET	FTOM_RULEM_add(FTOM_RULEM_PTR pRuleM, FTM_RULE_PTR pInfo)
 	return	xRet;
 }
 
-FTM_RET	FTOM_RULEM_del(FTOM_RULEM_PTR pRuleM, FTOM_RULE_ID  xEventID)
+FTM_RET	FTOM_RULEM_del
+(
+	FTOM_RULEM_PTR 	pRuleM, 
+	FTOM_RULE_ID  	xEventID
+)
 {
 	ASSERT(pRuleM != NULL);
 
@@ -354,7 +428,12 @@ FTM_RET	FTOM_RULEM_del(FTOM_RULEM_PTR pRuleM, FTOM_RULE_ID  xEventID)
 }
 
 
-FTM_RET	FTOM_RULEM_getAt(FTOM_RULEM_PTR pRuleM, FTM_ULONG ulIndex, FTOM_RULE_PTR _PTR_ ppRule)
+FTM_RET	FTOM_RULEM_getAt
+(
+	FTOM_RULEM_PTR 	pRuleM, 
+	FTM_ULONG 		ulIndex, 
+	FTOM_RULE_PTR _PTR_ ppRule
+)
 {
 	TRACE_CALL();
 
@@ -362,7 +441,11 @@ FTM_RET	FTOM_RULEM_getAt(FTOM_RULEM_PTR pRuleM, FTM_ULONG ulIndex, FTOM_RULE_PTR
 }
 
 
-FTM_RET	FTOM_RULEM_setTriggerM(FTOM_RULEM_PTR pRuleM, struct FTOM_TRIGGERM_STRUCT *pTriggerM)
+FTM_RET	FTOM_RULEM_setTriggerM
+(
+	FTOM_RULEM_PTR pRuleM, 
+	struct FTOM_TRIGGERM_STRUCT *pTriggerM
+)
 {
 	ASSERT(pRuleM != NULL);
 	ASSERT(pTriggerM != NULL);
@@ -372,7 +455,11 @@ FTM_RET	FTOM_RULEM_setTriggerM(FTOM_RULEM_PTR pRuleM, struct FTOM_TRIGGERM_STRUC
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_RULEM_setActionM(FTOM_RULEM_PTR pRuleM, struct FTOM_ACTIONM_STRUCT *pActionM)
+FTM_RET	FTOM_RULEM_setActionM
+(
+	FTOM_RULEM_PTR pRuleM, 
+	struct FTOM_ACTIONM_STRUCT *pActionM
+)
 {
 	ASSERT(pRuleM != NULL);
 	ASSERT(pActionM != NULL);
@@ -382,30 +469,54 @@ FTM_RET	FTOM_RULEM_setActionM(FTOM_RULEM_PTR pRuleM, struct FTOM_ACTIONM_STRUCT 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_RULE_activate(FTOM_RULE_PTR pRule)
+FTM_RET	FTOM_RULEM_activate
+(
+	FTOM_RULEM_PTR 	pRuleM, 
+	FTM_RULE_ID 	xRuleID
+)
 {
-	ASSERT(pRule != NULL);
+	ASSERT(pRuleM != NULL);
 
-	if (pRule->bActive)
+	FTM_RET				xRet;
+	FTOM_MSG_RULE_PTR	pMsg;
+
+	xRet = FTOM_MSG_createRule(xRuleID, FTM_TRUE, &pMsg);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_OK;
+		return	xRet;	
 	}
 
-	pRule->bActive 	= FTM_TRUE;
+	xRet = FTOM_MSGQ_push(pRuleM->pMsgQ, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
+	}
 
-	return	FTOM_NOTIFY_rule(pRule->pRuleM->pOM, pRule->xInfo.xID, FTM_RULE_STATE_ACTIVATE);
+	return	xRet;
 }
 
-FTM_RET	FTOM_RULE_deactivate(FTOM_RULE_PTR pRule)
+FTM_RET	FTOM_RULEM_deactivate
+(
+	FTOM_RULEM_PTR 	pRuleM, 
+	FTM_RULE_ID 	xRuleID
+)
 {
-	ASSERT(pRule != NULL);
+	ASSERT(pRuleM != NULL);
 
-	if (!pRule->bActive)
+	FTM_RET				xRet;
+	FTOM_MSG_RULE_PTR	pMsg;
+
+	xRet = FTOM_MSG_createRule(xRuleID, FTM_FALSE, &pMsg);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_OK;
+		return	xRet;	
 	}
 
-	pRule->bActive 	= FTM_FALSE;
+	xRet = FTOM_MSGQ_push(pRuleM->pMsgQ, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
+	}
 
-	return	FTOM_NOTIFY_rule(pRule->pRuleM->pOM, pRule->xInfo.xID, FTM_RULE_STATE_DEACTIVATE);
+	return	xRet;
 }

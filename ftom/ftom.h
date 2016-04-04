@@ -214,5 +214,9 @@ FTM_RET	FTOM_sendEPData
 	FTM_ULONG		ulCount
 );
 
+FTM_RET	FTOM_helloNode
+(
+	FTOM_PTR		pOM
+);
 #endif
 
