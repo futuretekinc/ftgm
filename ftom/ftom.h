@@ -218,5 +218,21 @@ FTM_RET	FTOM_helloNode
 (
 	FTOM_PTR		pOM
 );
+
+FTM_RET	FTOM_sendAlert
+(
+	FTOM_PTR		pOM,
+	FTM_EP_ID 		xEPID, 
+	FTM_EP_DATA_PTR	pData
+);
+
+FTM_RET	FTOM_sendDiscovery
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pName,
+	FTM_CHAR_PTR	pDID,
+	FTM_EP_TYPE_PTR	pTypes,
+	FTM_ULONG		ulCount
+);
 #endif
 

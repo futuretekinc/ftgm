@@ -66,6 +66,18 @@ static FTM_RET	FTOM_onRule
 	FTOM_MSG_RULE_PTR pMsg
 );
 
+static FTM_RET	FTOM_onAlert
+(
+	FTOM_PTR pOM,
+	FTOM_MSG_ALERT_PTR pMsg
+);
+
+static FTM_RET	FTOM_onDiscovery
+(
+	FTOM_PTR pOM,
+	FTOM_MSG_DISCOVERY_PTR pMsg
+);
+
 static 	FTM_RET	FTOM_callback
 (
 	FTOM_SERVICE_ID xID, 
@@ -241,6 +253,8 @@ FTM_RET	FTOM_init(FTOM_PTR pOM)
 	pOM->onMessage[FTOM_MSG_TYPE_TIME_SYNC] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onTimeSync;
 	pOM->onMessage[FTOM_MSG_TYPE_EP_CTRL] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPCtrl;
 	pOM->onMessage[FTOM_MSG_TYPE_RULE] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onRule;
+	pOM->onMessage[FTOM_MSG_TYPE_ALERT] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onAlert;
+	pOM->onMessage[FTOM_MSG_TYPE_DISCOVERY] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscovery;
 
 	xRet = FTOM_MSGQ_create(&pOM->pMsgQ);
 	if (xRet != FTM_RET_OK)
@@ -753,8 +767,9 @@ FTM_RET	FTOM_TASK_processing
 		xRet = FTOM_MSGQ_timedPop(pOM->pMsgQ, ulRemainTime, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
-			if ((pMsg->xType < FTOM_MSG_TYPE_MAX) && (pOM->onMessage != NULL))
+			if ((pMsg->xType < FTOM_MSG_TYPE_MAX) && (pOM->onMessage[pMsg->xType] != NULL))
 			{
+				ERROR("Received message[%08x].\n", pMsg->xType);
 				xRet = pOM->onMessage[pMsg->xType](pOM, pMsg);
 			}
 			else
@@ -932,6 +947,38 @@ FTM_RET	FTOM_onRule
 
 	TRACE("RULE[%d] is %s\n", pMsg->xRuleID, (pMsg->xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_onAlert
+(
+	FTOM_PTR	pOM,
+	FTOM_MSG_ALERT_PTR	pMsg
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pMsg != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_onDiscovery
+(
+	FTOM_PTR	pOM,
+	FTOM_MSG_DISCOVERY_PTR	pMsg
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pMsg != NULL);
+	
+	FTM_INT	i;
+
+	TRACE("MSG : DISCOVERY\n");
+	TRACE("DID - %s\n", pMsg->pDID);
+	for(i = 0 ; i < pMsg->ulCount; i++)
+	{
+		TRACE("TYPE[%d] - %s\n", i, FTM_getEPTypeString(pMsg->pTypes[i]));	
+	}
 	return	FTM_RET_OK;
 }
 
@@ -1326,4 +1373,69 @@ FTM_RET	FTOM_helloNode
 
 	return	FTM_RET_OK;
 
+}
+
+FTM_RET	FTOM_sendAlert
+(
+	FTOM_PTR		pOM,
+	FTM_EP_ID 		xEPID, 
+	FTM_EP_DATA_PTR	pData
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET				xRet;
+	FTOM_MSG_ALERT_PTR	pMsg;
+
+	xRet = FTOM_MSG_createAlert(xEPID, pData, &pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+
+	xRet = FTOM_MSGQ_push(pOM->pMsgQ, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_sendDiscovery
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pName,
+	FTM_CHAR_PTR	pDID,
+	FTM_EP_TYPE_PTR	pTypes,
+	FTM_ULONG		ulCount
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pDID != NULL);
+	ASSERT(pTypes != NULL);
+
+	FTM_RET				xRet;
+	FTOM_MSG_DISCOVERY_PTR	pMsg;
+
+	xRet = FTOM_MSG_createDiscovery(pName, pDID, pTypes, ulCount, &pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+
+	xRet = FTOM_MSGQ_push(pOM->pMsgQ, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
 }

@@ -21,6 +21,8 @@ typedef	enum
 	FTOM_MSG_TYPE_CONNECTED			=   8,
 	FTOM_MSG_TYPE_DISCONNECTED		=   9,
 	FTOM_MSG_TYPE_ACTION			=	10,
+	FTOM_MSG_TYPE_ALERT				=	11,
+	FTOM_MSG_TYPE_DISCOVERY			=	12,
 	FTOM_MSG_TYPE_MAX
 }	FTOM_MSG_TYPE, _PTR_ FTOM_MSG_TYPE_PTR;
 
@@ -95,6 +97,22 @@ typedef struct
 	FTM_RULE_STATE	xRuleState;
 }	FTOM_MSG_RULE, _PTR_ FTOM_MSG_RULE_PTR;
 
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_EP_ID		xEPID;
+	FTM_EP_DATA		xData;
+}	FTOM_MSG_ALERT, _PTR_ FTOM_MSG_ALERT_PTR;
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_CHAR		pName[FTM_DEVICE_NAME_LEN + 1];
+	FTM_CHAR		pDID[FTM_DID_LEN + 1];
+	FTM_ULONG		ulCount;
+	FTM_EP_TYPE		pTypes[];
+}	FTOM_MSG_DISCOVERY, _PTR_ FTOM_MSG_DISCOVERY_PTR;
+
 typedef struct
 {
 	FTM_MSG_QUEUE	xQueue;
@@ -161,6 +179,22 @@ FTM_RET	FTOM_MSG_createSendEPData
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount,
 	FTOM_MSG_SEND_EP_DATA_PTR _PTR_ ppMsg
+);
+
+FTM_RET	FTOM_MSG_createAlert
+(
+	FTM_EP_ID			xEPID,
+	FTM_EP_DATA_PTR		pData,
+	FTOM_MSG_ALERT_PTR _PTR_ ppMsg
+);
+
+FTM_RET	FTOM_MSG_createDiscovery
+(
+	FTM_CHAR_PTR		pName,
+	FTM_CHAR_PTR		pDID,
+	FTM_EP_TYPE_PTR		pTypes,
+	FTM_ULONG			ulCount,
+	FTOM_MSG_DISCOVERY_PTR _PTR_ ppMsg
 );
 
 FTM_RET	FTOM_MSG_destroy

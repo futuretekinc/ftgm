@@ -240,6 +240,68 @@ FTM_RET FTOM_MSG_createAction
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_MSG_createAlert
+(
+	FTM_EP_ID			xEPID,
+	FTM_EP_DATA_PTR		pData,
+	FTOM_MSG_ALERT_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(pData != NULL);
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_ALERT_PTR	pMsg;
+
+	pMsg = (FTOM_MSG_ALERT_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_ALERT));
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_ALERT;
+	pMsg->xEPID		= xEPID;
+	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
+
+	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MSG_createDiscovery
+(
+	FTM_CHAR_PTR		pName,
+	FTM_CHAR_PTR		pDID,
+	FTM_EP_TYPE_PTR		pTypes,
+	FTM_ULONG			ulCount,
+	FTOM_MSG_DISCOVERY_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(pDID != NULL);
+	ASSERT(pTypes != NULL);
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_DISCOVERY_PTR	pMsg;
+
+	pMsg = (FTOM_MSG_DISCOVERY_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_DISCOVERY) + sizeof(FTM_EP_TYPE) * ulCount);
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_DISCOVERY;
+	if (pName != NULL)
+	{
+		strncpy(pMsg->pName, pName, FTM_DEVICE_NAME_LEN);
+	}
+	strncpy(pMsg->pDID, pDID, FTM_DID_LEN);
+	pMsg->ulCount 	= ulCount;
+	memcpy(pMsg->pTypes, pTypes, sizeof(FTM_EP_TYPE) * ulCount);
+
+	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_MSG_destroy(FTOM_MSG_PTR _PTR_ ppMsg)
 {
 	ASSERT(ppMsg != NULL);

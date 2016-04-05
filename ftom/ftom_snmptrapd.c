@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <net-snmp/net-snmp-config.h>
@@ -22,9 +23,9 @@
 
 typedef	struct
 {
-	FTM_SNMP_OID				xOID;
-	FTOM_SNMPTRAPD_CALLBACK	fCallback;
-} FTOM_CALLBACK, _PTR_ FTOM_CALLBACK_PTR;
+	FTM_SNMP_OID			xOID;
+	FTOM_SNMPTRAPD_CALLBACK	fCB;
+} FTOM_TRAP, _PTR_ FTOM_TRAP_PTR;
 
 static FTM_VOID_PTR		FTOM_SNMPTRAPD_process
 (
@@ -51,7 +52,21 @@ static FTM_BOOL	FTOM_SNMPTRAPD_seekTrapCB
 static FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 (
 	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_CHAR_PTR 			pMsg
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_CHAR_PTR 		pMsg
+);
+
+static FTM_RET	FTOM_SNMPTRAPD_alert
+(
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_CHAR_PTR 		pMsg
+);
+static FTM_RET	FTOM_SNMPTRAPD_discovery
+(
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_CHAR_PTR 		pMsg
 );
 
 static FTM_RET	FTOM_SNMPTRAPD_setEPData
@@ -59,6 +74,22 @@ static FTM_RET	FTOM_SNMPTRAPD_setEPData
 	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
 	FTM_EP_ID 				xEPID, 
 	FTM_EP_DATA_PTR 		pData
+);
+
+static FTM_RET	FTOM_SNMPTRAPD_sendAlert
+(
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_EP_ID 				xEPID, 
+	FTM_EP_DATA_PTR 		pData
+);
+
+static FTM_RET	FTOM_SNMPTRAPD_sendDiscovery
+(
+	FTOM_SNMPTRAPD_PTR	pSNMPTRAPD,
+	FTM_CHAR_PTR	pName,
+	FTM_CHAR_PTR	pDID,
+	FTM_EP_TYPE_PTR	pTypes,
+	FTM_ULONG		ulCount
 );
 
 FTM_RET	FTOM_SNMPTRAPD_create
@@ -145,7 +176,7 @@ FTM_RET	FTOM_SNMPTRAPD_final
 )
 {
 	ASSERT(pSNMPTRAPD != NULL);
-	FTOM_CALLBACK_PTR	pCB;
+	FTOM_TRAP_PTR	pTrap;
 
 	if (pSNMPTRAPD->bStop)
 	{
@@ -153,10 +184,10 @@ FTM_RET	FTOM_SNMPTRAPD_final
 	}
 
 	FTM_LIST_iteratorStart(&pSNMPTRAPD->xTrapCBList);
-	while(FTM_LIST_iteratorNext(&pSNMPTRAPD->xTrapCBList, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
+	while(FTM_LIST_iteratorNext(&pSNMPTRAPD->xTrapCBList, (FTM_VOID_PTR _PTR_)&pTrap) == FTM_RET_OK)
 	{
-		FTM_LIST_remove(&pSNMPTRAPD->xTrapCBList, pCB);
-		FTM_MEM_free(pCB);
+		FTM_LIST_remove(&pSNMPTRAPD->xTrapCBList, pTrap);
+		FTM_MEM_free(pTrap);
 	}
 
 	FTM_LIST_final(&pSNMPTRAPD->xTrapCBList);
@@ -242,6 +273,7 @@ FTM_RET FTOM_SNMPTRAPD_loadFromFile
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pFileName != NULL);
 
+	FTM_RET				xRet;
 	config_t			xConfig;
 	config_setting_t	*pSection;
 
@@ -270,6 +302,24 @@ FTM_RET FTOM_SNMPTRAPD_loadFromFile
 			pSNMPTRAPD->xConfig.usPort =  config_setting_get_int(pField);
 		}
 
+		pField = config_setting_get_member(pSection, "target");
+		if (pField != NULL)
+		{
+			if (strcmp(config_setting_get_string(pField), "ft") ==0)
+			{
+				pSNMPTRAPD->xConfig.xTarget = FTOM_SNMPTRAPD_TARGET_FT;
+			}
+			else if (strcmp(config_setting_get_string(pField), "tpgw") ==0)
+			{
+				pSNMPTRAPD->xConfig.xTarget = FTOM_SNMPTRAPD_TARGET_TPGW;
+			}
+			else
+			{
+				pSNMPTRAPD->xConfig.xTarget = FTOM_SNMPTRAPD_TARGET_UNKNOWN;
+			}
+		}
+
+		pField = config_setting_get_member(pSection, "port");
 		pList = config_setting_get_member(pSection, "traps");
 		if (pList != NULL)
         {
@@ -278,20 +328,82 @@ FTM_RET FTOM_SNMPTRAPD_loadFromFile
 			ulCount = config_setting_length(pList);
 			for(i = 0 ; i < ulCount ; i++)
 			{
-				pField = config_setting_get_elem(pList, i);
-				if (pField != NULL)
-				{
-					FTM_SNMP_OID	xOID;
-					
-					xOID.ulOIDLen = FTM_SNMP_OID_LENGTH;
+				FTOM_SNMPTRAPD_MSG_TYPE	xMsgType;
+				config_setting_t		*pElement;
 
-					MESSAGE("pObjID = %s\n", config_setting_get_string(pField));
-					if (read_objid(config_setting_get_string(pField), xOID.pOID, (size_t *)&xOID.ulOIDLen) == 1)
+				pElement = config_setting_get_elem(pList, i);
+				if (pElement != NULL)
+				{
+					pField = config_setting_get_member(pElement, "msg");
+					if (pField != NULL)
 					{
-						MESSAGE("SNMP_PARSE_OID success!\n");
-						FTOM_SNMPTRAPD_addTrapOID(pSNMPTRAPD, &xOID);
+						if (strcasecmp("alert", config_setting_get_string(pField)) == 0)
+						{
+							xMsgType = FTOM_SNMPTRAPD_MSG_TYPE_ALERT;			
+						}
+						else if (strcasecmp("discovery", config_setting_get_string(pField)) == 0)
+						{
+							xMsgType = FTOM_SNMPTRAPD_MSG_TYPE_DISCOVERY;			
+						}
+						else
+						{
+							WARN("Invalid message type[%s]\n", config_setting_get_string(pField));
+							continue;	
+						}
 					}
-				
+					
+					pField = config_setting_get_member(pElement, "oid");
+					if (pField != NULL)
+					{
+						FTM_INT			nRet;
+						FTM_SNMP_OID	xOID;
+
+						xOID.ulOIDLen = FTM_SNMP_OID_LENGTH;
+
+						nRet = read_objid(config_setting_get_string(pField), xOID.pOID, (size_t *)&xOID.ulOIDLen);
+						if (nRet == 1)
+						{
+							switch(xMsgType)
+							{
+							case FTOM_SNMPTRAPD_MSG_TYPE_UNKNOWN:
+							case FTOM_SNMPTRAPD_MSG_TYPE_EP_CHANGED:
+								{
+									xRet = FTOM_SNMPTRAPD_addTrapOID(pSNMPTRAPD, &xOID, FTOM_SNMPTRAPD_receiveTrap);
+								}
+								break;
+
+
+							case	FTOM_SNMPTRAPD_MSG_TYPE_ALERT:
+								{
+									xRet = FTOM_SNMPTRAPD_addTrapOID(pSNMPTRAPD, &xOID, FTOM_SNMPTRAPD_alert);
+								}
+								break;
+
+							case	FTOM_SNMPTRAPD_MSG_TYPE_DISCOVERY:
+								{
+									xRet = FTOM_SNMPTRAPD_addTrapOID(pSNMPTRAPD, &xOID, FTOM_SNMPTRAPD_discovery);
+								}
+								break;
+							
+							default:
+								{
+									xRet = FTM_RET_ERROR;	
+								}
+							}
+							if (xRet == FTM_RET_OK)
+							{
+								TRACE("The trap OID has been registered. - %s\n", FTM_SNMP_OID_toStr(&xOID));
+							}
+							else
+							{
+								TRACE("The trap OID failed to register. - %s\n", FTM_SNMP_OID_toStr(&xOID));
+							}
+						}
+						else
+						{
+							TRACE("Can't know the OID for %s.\n", config_setting_get_string(pField));
+						}
+					}
 				}
 			}
 		}
@@ -334,30 +446,33 @@ FTM_RET	FTOM_SNMPTRAPD_setServiceCallback
 
 FTM_RET	FTOM_SNMPTRAPD_addTrapOID
 (
-	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_SNMP_OID_PTR 		pOID
+	FTOM_SNMPTRAPD_PTR 		pSNMPTRAPD, 
+	FTM_SNMP_OID_PTR 		pOID,
+	FTOM_SNMPTRAPD_CALLBACK	fTrapCB
 )
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pOID != NULL);
 
-	FTM_RET				xRet;
-	FTOM_CALLBACK_PTR 	pCB;
+	FTM_RET			xRet;
+	FTOM_TRAP_PTR 	pTrap;
 	
-	pCB = (FTOM_CALLBACK_PTR)FTM_MEM_malloc(sizeof(FTOM_CALLBACK));
-	if (pCB == NULL)
+	pTrap = (FTOM_TRAP_PTR)FTM_MEM_malloc(sizeof(FTOM_TRAP));
+	if (pTrap == NULL)
 	{
 		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	memcpy(&pCB->xOID, pOID, sizeof(FTM_SNMP_OID));
+	memcpy(&pTrap->xOID, pOID, sizeof(FTM_SNMP_OID));
+	pTrap->fCB = fTrapCB;
 
-	xRet = FTM_LIST_append(&pSNMPTRAPD->xTrapCBList, pCB);
+	TRACE("Add Trap : %s\n",FTM_SNMP_OID_toStr(pOID));
+	xRet = FTM_LIST_append(&pSNMPTRAPD->xTrapCBList, pTrap);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("List append failed.!\n");
-		FTM_MEM_free(pCB);	
+		FTM_MEM_free(pTrap);	
 	}
 
 	TRACE("OID : %s\n", FTM_SNMP_OID_toStr(pOID));
@@ -374,10 +489,10 @@ FTM_BOOL	FTOM_SNMPTRAPD_seekTrapCB
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
 
-	FTOM_CALLBACK_PTR	pCB = (FTOM_CALLBACK_PTR)pElement;
+	FTOM_TRAP_PTR		pTrap = (FTOM_TRAP_PTR)pElement;
 	FTM_SNMP_OID_PTR	pOID = (FTM_SNMP_OID_PTR)pIndicator;
 
-	return	snmp_oid_compare(pCB->xOID.pOID, pCB->xOID.ulOIDLen, pOID->pOID, pOID->ulOIDLen) == 0;
+	return	snmp_oid_compare(pTrap->xOID.pOID, pTrap->xOID.ulOIDLen, pOID->pOID, pOID->ulOIDLen) == 0;
 }
 
 
@@ -507,29 +622,37 @@ FTOM_SNMPTRAPD_inputCB
 					 */
 					for ( vars = pPDU->variables; vars; vars=vars->next_variable) 
 					{
-						FTOM_CALLBACK_PTR	pCB;
+						FTOM_TRAP_PTR	pTrap;
 						FTM_SNMP_OID		xOID;
-						FTM_INT				i;
 
 						memcpy(xOID.pOID, vars->name, sizeof(oid) * vars->name_length);
 						xOID.ulOIDLen  = vars->name_length;
 
-						MESSAGE("OID : ");
-						for(i = 0 ; i < xOID.ulOIDLen ; i++)
-						{
-							MESSAGE(".%d", xOID.pOID[i]);
-						}
-						MESSAGE("\n");
-
-						if (FTM_LIST_get(&pSNMPTRAPD->xTrapCBList, &xOID, (FTM_VOID_PTR _PTR_)&pCB) == FTM_RET_OK)
+						if (FTM_LIST_get(&pSNMPTRAPD->xTrapCBList, &xOID, (FTM_VOID_PTR _PTR_)&pTrap) == FTM_RET_OK)
 						{
 							if (vars->type == ASN_OCTET_STR)
 							{
-								FTM_CHAR	pBuff[1024];
-		
+								FTM_CHAR_PTR	pBuff = NULL;
+
+								pBuff = FTM_MEM_malloc(vars->val_len + 1);
+								if (pBuff == NULL)
+								{
+									ERROR("Not enough memory\n");	
+									break;
+								}
+
 								memcpy(pBuff, vars->val.string, vars->val_len);
 								pBuff[vars->val_len] = 0;
-								FTOM_SNMPTRAPD_receiveTrap(pSNMPTRAPD, pBuff);
+								if (pTrap->fCB != NULL)
+								{
+									pTrap->fCB(pSNMPTRAPD, &xOID, pBuff);
+								}
+								else
+								{
+									FTOM_SNMPTRAPD_receiveTrap(pSNMPTRAPD, &xOID, pBuff);
+								}
+
+								FTM_MEM_free(pBuff);
 							}
 						}	
 					}
@@ -786,7 +909,8 @@ FTM_VOID_PTR	FTOM_SNMPTRAPD_process
 FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 (
 	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_CHAR_PTR 			pMsg
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_CHAR_PTR 		pMsg
 )
 {
 	ASSERT(pSNMPTRAPD != NULL);
@@ -794,12 +918,12 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 	
 	FTM_RET			xRet;
 	FTM_EP_ID		xEPID = 0;
-	FTOM_EP_PTR	pEP = NULL;
+	FTOM_EP_PTR		pEP = NULL;
 	FTM_EP_DATA		xData;
 	FTOM_SNMPTRAPD_MSG_TYPE	xMsgType = FTOM_SNMPTRAPD_MSG_TYPE_UNKNOWN;	
 	const nx_json 	*pRoot, *pItem;
 
-	INFO("SNMPTRAPD : %s\n", pMsg);
+	TRACE("SNMPTRAPD : %s\n", pMsg);
 
 	pRoot = nx_json_parse_utf8(pMsg);
 	if (pRoot == NULL)
@@ -1017,6 +1141,305 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 	return	xRet;
 
 }
+FTM_RET	FTOM_SNMPTRAPD_alert
+(
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_CHAR_PTR 		pMsg
+)
+{
+	ASSERT(pSNMPTRAPD != NULL);
+	ASSERT(pMsg != NULL);
+	
+	FTM_RET			xRet;
+	FTM_EP_ID		xEPID = 0;
+	FTOM_EP_PTR		pEP = NULL;
+	FTM_EP_DATA_TYPE	xDataType;
+	FTM_EP_DATA		xData;
+	const nx_json 	*pRoot, *pItem;
+
+	TRACE("ALERT : %s\n", pMsg);
+
+	pRoot = nx_json_parse_utf8(pMsg);
+	if (pRoot == NULL)
+	{
+		ERROR("Invalid trap message[%s]\n", pMsg);
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	pItem = nx_json_get(pRoot, "id");
+	if (pItem->type == NX_JSON_NULL)
+	{
+		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+		goto error;
+	}
+
+	xEPID = strtoul(pItem->text_value, 0, 16);
+
+	xRet = FTOM_EPM_getEP(pSNMPTRAPD->pOM->pEPM, xEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("EP[%08x] does not exist!\n",xEPID);
+		return	xRet;
+	}
+
+	FTOM_EP_getDataType(pEP, &xDataType);
+		
+	pItem = nx_json_get(pRoot, "value");
+	if (pItem->type != NX_JSON_NULL)
+	{
+		switch(pItem->type)
+		{
+		case	NX_JSON_STRING:
+			{
+				TRACE("VALUE : %s\n", pItem->text_value);
+				xData.xType = xDataType;
+				switch(xData.xType)
+				{
+				case	FTM_EP_DATA_TYPE_INT:
+					{
+						xData.xValue.nValue = strtol(pItem->text_value, NULL, 10);
+					}
+					break;
+		
+				case	FTM_EP_DATA_TYPE_ULONG:
+					{
+						xData.xValue.ulValue = strtoul(pItem->text_value, NULL, 10);
+					}
+					break;
+		
+				case	FTM_EP_DATA_TYPE_FLOAT:
+					{
+						xData.xValue.fValue = atof(pItem->text_value);
+					}
+					break;
+
+				case	FTM_EP_DATA_TYPE_BOOL:
+					{
+						xData.xValue.bValue = (strtoul(pItem->text_value, NULL, 10) != 0);
+					}
+					break;
+				}
+			}
+			break;
+		
+		case 	NX_JSON_INTEGER:
+		case	NX_JSON_BOOL:
+			{
+				TRACE("VALUE : %d\n", pItem->int_value);
+				xData.xType = xDataType;
+				switch(xData.xType)
+				{
+				case	FTM_EP_DATA_TYPE_INT:
+					{
+						xData.xValue.nValue = pItem->int_value;
+					}
+					break;
+		
+				case	FTM_EP_DATA_TYPE_ULONG:
+					{
+						xData.xValue.ulValue = pItem->int_value;
+					}
+					break;
+		
+				case	FTM_EP_DATA_TYPE_FLOAT:
+					{
+						xData.xValue.fValue = pItem->int_value;
+					}
+					break;
+								
+				case	FTM_EP_DATA_TYPE_BOOL:
+					{
+						xData.xValue.bValue = pItem->int_value;
+					}
+					break;
+				}
+			}
+			break;
+		
+		case	NX_JSON_DOUBLE:
+			{
+				TRACE("VALUE : %lu\n", pItem->dbl_value);
+				xData.xType = xDataType;
+				switch(xData.xType)
+				{
+				case	FTM_EP_DATA_TYPE_INT:
+					{
+						xData.xValue.nValue = (FTM_INT)pItem->dbl_value;
+					}
+					break;
+		
+				case	FTM_EP_DATA_TYPE_ULONG:
+					{
+						xData.xValue.ulValue = (FTM_ULONG)pItem->dbl_value;
+					}
+					break;
+		
+				case	FTM_EP_DATA_TYPE_FLOAT:
+					{
+						xData.xValue.fValue = pItem->dbl_value;
+					}
+					break;
+
+				case	FTM_EP_DATA_TYPE_BOOL:
+					{
+						xData.xValue.bValue = (pItem->dbl_value != 0);
+					}
+					break;
+				}
+			}
+			break;
+		
+		default:
+			{
+				ERROR("Invalid value type[%d].\n", pItem->type);
+			}
+			break;
+		}
+		
+		pItem = nx_json_get(pRoot, "time");
+		if (pItem->type != NX_JSON_NULL)
+		{
+			xData.ulTime = (FTM_ULONG)pItem->int_value;
+		}
+		
+		pItem = nx_json_get(pRoot, "state");
+		if (pItem->type != NX_JSON_NULL)
+		{
+			if (pItem->type == NX_JSON_STRING)
+			{
+				if (strcasecmp(pItem->text_value, "enable") == 0)
+				{
+					xData.xState = FTM_EP_STATE_RUN;
+				}
+				else if (strcasecmp(pItem->text_value, "disable") == 0)
+				{
+					xData.xState = FTM_EP_STATE_STOP;
+				}
+				else if (strcasecmp(pItem->text_value, "error") == 0)
+				{
+					xData.xState = FTM_EP_STATE_ERROR;
+				}
+			}
+		}
+						
+		xRet = FTOM_SNMPTRAPD_sendAlert(pSNMPTRAPD, xEPID, &xData);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Notify failed.\n");	
+		}
+	}
+	else
+	{
+		xRet = FTM_RET_INVALID_DATA;
+		ERROR("TRAP : Value is not exist.\n");
+	}
+
+error:
+	nx_json_free(pRoot);
+
+	return	xRet;
+
+}
+FTM_RET	FTOM_SNMPTRAPD_discovery
+(
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_CHAR_PTR 		pMsg
+)
+{
+	ASSERT(pSNMPTRAPD != NULL);
+	ASSERT(pMsg != NULL);
+	
+	FTM_RET			xRet;
+	FTM_INT			i;
+	FTM_ULONG		ulDIDLen;
+	FTM_CHAR		pName[FTM_DEVICE_NAME_LEN + 1];
+	FTM_CHAR		pDID[FTM_DID_LEN + 1];
+	FTM_EP_TYPE		pEPTypes[32];
+	FTM_ULONG		ulEPTypes = 0;
+	const nx_json 	*pRoot, *pItem, *pOIDs;
+
+	TRACE("DISCOVERY : %s\n", pMsg);
+
+	pRoot = nx_json_parse_utf8(pMsg);
+	if (pRoot == NULL)
+	{
+		ERROR("Invalid trap message[%s]\n", pMsg);
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	pItem = nx_json_get(pRoot, "id");
+	if (pItem->type != NX_JSON_STRING)
+	{
+		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+		goto error;
+	}
+	memset(pName, 0, sizeof(pName));
+	strncpy(pName, pItem->text_value, FTM_DEVICE_NAME_LEN);
+
+
+	pItem = nx_json_get(pRoot, "mac");
+	if ((pItem->type != NX_JSON_STRING) || strlen(pItem->text_value) != 17)
+	{
+		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+		goto error;
+	}
+
+	ulDIDLen  = 0;
+	memset(pDID, 0, sizeof(pDID));
+	for(i = 0 ; i < strlen(pItem->text_value); i++)
+	{
+		if (((i + 1) % 3) != 0)
+		{
+			pDID[ulDIDLen++] = toupper(pItem->text_value[i]);	
+		}
+	}
+
+	pOIDs = nx_json_get(pRoot, "oids");
+	if (pOIDs->type != NX_JSON_ARRAY)
+	{
+		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+		goto error;
+	}
+
+	ulEPTypes = 0;
+
+	for(i = 0 ; i < pOIDs->length ; i++)
+	{
+		FTM_ULONG	ulType;
+
+		pItem = nx_json_item(pOIDs, i);
+		if(pOIDs->type == NX_JSON_NULL)
+		{
+			continue;		
+		}
+
+		if (pItem->type == NX_JSON_STRING)
+		{
+			ulType = strtol(pItem->text_value, NULL, 10);
+		}
+		else if (pItem->type == NX_JSON_INTEGER)
+		{
+			ulType = pItem->int_value;
+		}
+		else
+		{
+			continue;	
+		}
+
+		pEPTypes[ulEPTypes++] = (ulType << 16);
+	}	
+	
+	FTOM_SNMPTRAPD_sendDiscovery(pSNMPTRAPD, pName, pDID, pEPTypes, ulEPTypes);
+
+error:
+
+	nx_json_free(pRoot);
+
+	return	xRet;
+
+}
 
 FTM_RET	FTOM_SNMPTRAPD_setEPData
 (
@@ -1029,6 +1452,35 @@ FTM_RET	FTOM_SNMPTRAPD_setEPData
 	ASSERT(pData != NULL);
 
 	return	FTOM_setEPData(pSNMPTRAPD->pOM, xEPID, pData);
+}
+
+FTM_RET	FTOM_SNMPTRAPD_sendAlert
+(
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
+	FTM_EP_ID 				xEPID, 
+	FTM_EP_DATA_PTR 		pData
+)
+{
+	ASSERT(pSNMPTRAPD != NULL);
+	ASSERT(pData != NULL);
+
+	return	FTOM_sendAlert(pSNMPTRAPD->pOM, xEPID, pData);
+}
+
+FTM_RET	FTOM_SNMPTRAPD_sendDiscovery
+(
+	FTOM_SNMPTRAPD_PTR	pSNMPTRAPD,
+	FTM_CHAR_PTR	pName,
+	FTM_CHAR_PTR	pDID,
+	FTM_EP_TYPE_PTR	pTypes,
+	FTM_ULONG		ulCount
+)
+{
+	ASSERT(pSNMPTRAPD != NULL);
+	ASSERT(pDID != NULL);
+	ASSERT(pTypes != NULL);
+
+	return	FTOM_sendDiscovery(pSNMPTRAPD->pOM, pName, pDID, pTypes, ulCount);
 }
 
 #if 0
