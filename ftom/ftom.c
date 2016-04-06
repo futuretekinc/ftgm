@@ -865,7 +865,11 @@ FTM_RET FTOM_onSaveEPData
 	ASSERT(pOM != NULL);
 	ASSERT(pMsg != NULL);
 
-	TRACE("Save EP[%08x] Data.\n", pMsg->xEPID);
+	FTM_CHAR	pBuff[64];
+
+	FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pMsg->xData);
+
+	TRACE("Save EP[%08x] Data. - %d:%s\n", pMsg->xEPID, pMsg->xData.ulTime, pBuff);
 	FTOM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xEPID, &pMsg->xData);
 	FTOM_DMC_appendEPData(&xDMC, pMsg->xEPID, &pMsg->xData);
 
@@ -977,7 +981,7 @@ FTM_RET	FTOM_onDiscovery
 	TRACE("DID - %s\n", pMsg->pDID);
 	for(i = 0 ; i < pMsg->ulCount; i++)
 	{
-		TRACE("TYPE[%d] - %s\n", i, FTM_getEPTypeString(pMsg->pTypes[i]));	
+		TRACE("TYPE[%d] - %s[%08x]\n", i, FTM_EP_typeString(pMsg->pTypes[i]), pMsg->pTypes[i]);	
 	}
 	return	FTM_RET_OK;
 }
@@ -1270,6 +1274,7 @@ FTM_RET	FTOM_saveEPData
 	xRet = FTOM_MSG_createSaveEPData(xEPID, pData, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
+		WARN("Save EP data message creation failed[%08x].\n", xRet);
 		return	xRet;	
 	}
 
@@ -1301,6 +1306,7 @@ FTM_RET	FTOM_sendEPData
 	xRet = FTOM_MSG_createSendEPData(xEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
+		WARN("Send EP data message creation failed[%08x].\n", xRet);
 		return	xRet;	
 	}
 

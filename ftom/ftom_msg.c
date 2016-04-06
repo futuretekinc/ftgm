@@ -15,6 +15,7 @@ FTM_RET FTOM_MSG_createQuit
 	pMsg = (FTOM_MSG_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG));
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -40,6 +41,7 @@ FTM_RET	FTOM_MSG_createSetEPData
 	pMsg = (FTOM_MSG_SET_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_SET_EP_DATA));
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -67,6 +69,7 @@ FTM_RET	FTOM_MSG_createSaveEPData
 	pMsg = (FTOM_MSG_SAVE_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_SAVE_EP_DATA));
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -94,6 +97,7 @@ FTM_RET	FTOM_MSG_createSendEPData
 	pMsg = (FTOM_MSG_SEND_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_SEND_EP_DATA) + sizeof(FTM_EP_DATA) * ulCount) ;
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -122,6 +126,7 @@ FTM_RET	FTOM_MSG_createPublishEPData
 	pMsg = (FTOM_MSG_PUBLISH_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_PUBLISH_EP_DATA) + sizeof(FTM_EP_DATA) * ulCount) ;
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -148,6 +153,7 @@ FTM_RET	FTOM_MSG_createTimeSync
 	pMsg = (FTOM_MSG_TIME_SYNC_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_TIME_SYNC));
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -174,6 +180,7 @@ FTM_RET FTOM_MSG_createEPCtrl
 	pMsg = (FTOM_MSG_EP_CTRL_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_EP_CTRL));
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -202,6 +209,7 @@ FTM_RET FTOM_MSG_createRule
 	pMsg = (FTOM_MSG_RULE_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_RULE));
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -228,6 +236,7 @@ FTM_RET FTOM_MSG_createAction
 	pMsg = (FTOM_MSG_ACTION_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_ACTION));
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -255,6 +264,7 @@ FTM_RET	FTOM_MSG_createAlert
 	pMsg = (FTOM_MSG_ALERT_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_ALERT));
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -285,6 +295,7 @@ FTM_RET	FTOM_MSG_createDiscovery
 	pMsg = (FTOM_MSG_DISCOVERY_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_DISCOVERY) + sizeof(FTM_EP_TYPE) * ulCount);
 	if (pMsg == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -325,6 +336,7 @@ FTM_RET	FTOM_MSGQ_create(FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
 	pMsgQ = (FTOM_MSG_QUEUE_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_QUEUE));
 	if (pMsgQ == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 

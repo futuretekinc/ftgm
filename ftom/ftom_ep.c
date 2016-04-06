@@ -553,6 +553,7 @@ FTM_RET	FTOM_EP_sendDataInTime
 	FTM_EP_DATA_PTR	pDataList;
 	FTM_INT			i, nCount = 0;
 
+	TRACE("Send data in time[%d ~ %d]\n", ulStartTime, ulEndTime);
 	FTM_LIST_iteratorStart(&pEP->xDataList);
 	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
 	{
@@ -578,8 +579,11 @@ FTM_RET	FTOM_EP_sendDataInTime
 	{
 		if ((i < nCount) && (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime))
 		{
+			FTM_CHAR	pBuff[64];
+
+			FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), pData);
+			TRACE("pData[%08x] = %s\n", pData, pBuff);
 			memcpy(&pDataList[i++], pData, sizeof(FTM_EP_DATA));
-			nCount++;
 		}
 	}
 

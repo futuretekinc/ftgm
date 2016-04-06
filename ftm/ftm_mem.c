@@ -107,7 +107,11 @@ FTM_VOID_PTR	FTM_MEM_TRACE_calloc(size_t xNumber, size_t xSize, const char *pFil
 	}
 
 	memset(pMB, 0, sizeof(FTM_MEM_BLOCK) + xNumber * xSize);
-	pMB->pFile = strdup(pFile);
+	if (pFile != NULL)
+	{
+		pMB->pFile = malloc(strlen(pFile) + 1);
+		strcpy(pMB->pFile, pFile); 
+	}
 	pMB->ulLine= ulLine;
 	pMB->xSize = xNumber * xSize;
 	FTM_LIST_append(pMemList, pMB);
@@ -140,7 +144,10 @@ FTM_RET	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long u
 			MESSAGE("%s[%3d] - %08lx(%d)\n", pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
 		}
 		FTM_LIST_remove(pMemList, pMB);
-		free(pMB->pFile);
+		if (pMB->pFile != NULL)
+		{
+			free(pMB->pFile);
+		}
 		free(pMB);
 	}
 	
