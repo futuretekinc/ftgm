@@ -1,0 +1,48 @@
+#ifndef	_FTOM_DISCOVERY_H_
+#define	_FTOM_DISCOVERY_H_
+
+#include "ftom.h"
+
+typedef	struct
+{
+	FTM_CHAR	pDID[FTM_DID_LEN + 1];
+	FTM_EP_TYPE	pEPTypes[16];
+}	FTOM_DISCOVERY_NODE, _PTR_ FTOM_DISCOVERY_NODE_PTR;
+
+typedef	struct
+{
+	FTOM_PTR	pOM;
+	FTM_LIST	xNodeList;	
+}	FTOM_DISCOVERY, _PTR_ FTOM_DISCOVERY_PTR;
+
+FTM_RET	FTOM_DISCOVERY_init
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTOM_PTR			pOM
+);
+
+FTM_RET	FTOM_DISCOVERY_final
+(
+	FTOM_DISCOVERY_PTR	pDiscovery
+);
+
+FTM_RET	FTOM_DISCOVERY_run
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_ULONG			ulTimeout
+);
+
+FTM_RET	FTOM_DISCOVERY_getNodeInfoCount
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_ULONG_PTR		pulCount
+);
+
+FTM_RET	FTOM_DISCOVERY_getNodeInfoAt
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_ULONG			i,
+	FTOM_DISCOVERY_NODE_PTR	pNodeInfo
+);
+
+#endif

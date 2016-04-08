@@ -8,13 +8,44 @@
 #include "ftom_trigger.h"
 #include "ftom_action.h"
 #include "ftom_rule.h"
+#include "ftom_discovery.h"
 
-extern	FTOM	xFTNM;
+FTM_ULONG	ulGetheringTime = 3;
 
-FTM_RET	FTOM_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTOM_SHELL_CMD_list(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTOM_SHELL_CMD_task(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTOM_SHELL_CMD_quit(FTM_INT		nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_SHELL_CMD_config
+(
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
+FTM_RET	FTOM_SHELL_CMD_list
+(
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
+FTM_RET	FTOM_SHELL_CMD_task
+(
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
+FTM_RET	FTOM_SHELL_CMD_quit
+(
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
+FTM_RET	FTOM_SHELL_CMD_discovery
+(
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
 
 FTM_SHELL_CMD	FTOM_shellCmds[] = 
 {
@@ -45,6 +76,13 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pShortHelp	= "task management",
 		.pHelp		= "\n"\
 					  "\ttask management.\n"
+	},
+	{
+		.pString	= "discovery",
+		.function	= FTOM_SHELL_CMD_discovery,
+		.pShortHelp	= "Node discovery.",
+		.pHelp		= "\n"\
+					  "\tNode discovery.\n"
 	}
 
 };
@@ -253,5 +291,59 @@ FTM_RET	FTOM_SHELL_CMD_task
 {
 	return	FTM_RET_OK;
 
+}
+
+FTM_RET	FTOM_SHELL_CMD_discovery
+(
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
+)
+{
+	ASSERT(pData != NULL);
+
+	FTM_RET		xRet;
+	FTOM_PTR 	pOM = (FTOM_PTR)pData;
+	
+	switch(nArgc)
+	{
+	case	1:
+		{
+			FTOM_DISCOVERY	xDiscovery;
+			FTM_ULONG		i, ulCount = 0;
+			FTOM_DISCOVERY_NODE	xNodeInfo;
+
+			xRet = FTOM_DISCOVERY_init(&xDiscovery, pOM);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Discovery initalize failed.\n");
+				return	xRet;	
+			}
+
+			
+			xRet = FTOM_DISCOVERY_run(&xDiscovery, 5000000);
+			if (xRet != FTM_RET_OK)
+			{
+				WARN("Discovery failed.\n");
+			}
+
+			FTOM_DISCOVERY_getNodeInfoCount(&xDiscovery, &ulCount);
+
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				FTOM_DISCOVERY_getNodeInfoAt(&xDiscovery, i, &xNodeInfo);
+
+				TRACE("DID - %s\n", xNodeInfo.pDID);
+				for(i = 0 ; i < sizeof(xNodeInfo.pEPTypes) / sizeof(xNodeInfo.pEPTypes[0]); i++)
+				{
+					TRACE("TYPE[%d] - %s[%08x]\n", i, FTM_EP_typeString(xNodeInfo.pEPTypes[i]), xNodeInfo.pEPTypes[i]);	
+				}
+			}
+			FTOM_DISCOVERY_final(&xDiscovery);
+		}
+		break;
+	}
+
+	return	FTM_RET_OK;
 }
 

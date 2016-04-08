@@ -35,7 +35,8 @@ LIB_FTNM_SRCS= ftom.c \
 			   ftom_mqtt_client_tpgw.c\
 			   ftom_utils.c\
 			   ftom_service.c\
-			   ftom_shell.c
+			   ftom_shell.c\
+			   ftom_discovery.c
 
 LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)
 

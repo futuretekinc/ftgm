@@ -399,7 +399,6 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 	ulMessageLen = sprintf(pMessage, "[");
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		TRACE("%d,%lu\n", pData[i].ulTime, pData[i].xValue.ulValue);
 		if (i == 0)
 		{
 			ulMessageLen += snprintf(&pMessage[ulMessageLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, "%lu", pData[i].ulTime);

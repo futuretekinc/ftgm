@@ -574,15 +574,12 @@ FTM_RET	FTOM_EP_sendDataInTime
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
+	i = 0;
 	FTM_LIST_iteratorStart(&pEP->xDataList);
 	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
 	{
 		if ((i < nCount) && (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime))
 		{
-			FTM_CHAR	pBuff[64];
-
-			FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), pData);
-			TRACE("pData[%08x] = %s\n", pData, pBuff);
 			memcpy(&pDataList[i++], pData, sizeof(FTM_EP_DATA));
 		}
 	}

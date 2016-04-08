@@ -3,6 +3,7 @@
 
 #include "ftm.h"
 #include "ftom_types.h"
+#include "ftom_config.h"
 #include "ftom_dmc.h"
 #include "ftom_client.h"
 #include "ftom_server.h"
@@ -10,8 +11,6 @@
 #include "ftom_snmptrapd.h"
 #include "ftom_node.h"
 #include "ftom_msg.h"
-
-#define	FTOM_DEFAULT_SERVER_SESSION_COUNT	10
 
 typedef	FTM_ULONG	FTOM_STATE;
 
@@ -32,7 +31,7 @@ typedef struct FTOM_TRIGGERM_STRUCT _PTR_ FTOM_TRIGGERM_PTR;
 typedef struct FTOM_ACTIONM_STRUCT 	_PTR_ FTOM_ACTIONM_PTR;
 typedef struct FTOM_RULEM_STRUCT 	_PTR_ FTOM_RULEM_PTR;
 
-typedef	FTM_RET	(*FTOM_ON_MESSAGE_CALLBACK)(FTOM_PTR pOM, FTOM_MSG_PTR pMsg);
+typedef	FTM_RET	(*FTOM_ON_MESSAGE_CALLBACK)(FTOM_PTR pOM, FTOM_MSG_PTR pMsg, FTM_VOID_PTR pData);
 
 typedef	struct FTOM_STRUCT
 {
@@ -52,6 +51,7 @@ typedef	struct FTOM_STRUCT
 	FTM_SHELL			xShell;
 
 	FTOM_ON_MESSAGE_CALLBACK	onMessage[FTOM_MSG_TYPE_MAX];
+	FTM_VOID_PTR				pOnMessageData[FTOM_MSG_TYPE_MAX];
 }	FTOM, _PTR_ FTOM_PTR;
 
 
@@ -214,9 +214,11 @@ FTM_RET	FTOM_sendEPData
 	FTM_ULONG		ulCount
 );
 
-FTM_RET	FTOM_helloNode
+FTM_RET	FTOM_nodeDiscovery
 (
-	FTOM_PTR		pOM
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pNetwork,
+	FTM_USHORT		usPort
 );
 
 FTM_RET	FTOM_sendAlert
@@ -234,5 +236,16 @@ FTM_RET	FTOM_sendDiscovery
 	FTM_EP_TYPE_PTR	pTypes,
 	FTM_ULONG		ulCount
 );
+
+FTM_RET	FTOM_setMessageCallback
+(
+	FTOM_PTR		pOM,
+	FTOM_MSG_TYPE 	xMsg, 
+	FTOM_ON_MESSAGE_CALLBACK	fMessageCB,
+	FTM_VOID_PTR				pData,
+	FTOM_ON_MESSAGE_CALLBACK _PTR_	pOldCB,
+	FTM_VOID_PTR _PTR_			pOldData
+);
+
 #endif
 

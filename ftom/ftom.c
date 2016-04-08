@@ -755,22 +755,21 @@ FTM_RET	FTOM_TASK_processing
 
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg = NULL;
-	FTM_TIMER		xHelloTimer;
+	FTM_TIMER		xLoopTimer;
 
-	FTM_TIMER_init(&xHelloTimer, 10000000);
+	FTM_TIMER_init(&xLoopTimer, FTOM_LOOP_INTERVAL);
 
 	while(!pOM->bStop)
 	{
 		FTM_ULONG	ulRemainTime;
 
-		FTM_TIMER_remain(&xHelloTimer, &ulRemainTime);
+		FTM_TIMER_remain(&xLoopTimer, &ulRemainTime);
 		xRet = FTOM_MSGQ_timedPop(pOM->pMsgQ, ulRemainTime, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			if ((pMsg->xType < FTOM_MSG_TYPE_MAX) && (pOM->onMessage[pMsg->xType] != NULL))
 			{
-				ERROR("Received message[%08x].\n", pMsg->xType);
-				xRet = pOM->onMessage[pMsg->xType](pOM, pMsg);
+				xRet = pOM->onMessage[pMsg->xType](pOM, pMsg, pOM->pOnMessageData[pMsg->xType]);
 			}
 			else
 			{
@@ -780,10 +779,9 @@ FTM_RET	FTOM_TASK_processing
 			FTM_MEM_free(pMsg);
 		}
 
-		if (FTM_TIMER_isExpired(&xHelloTimer))
+		if (FTM_TIMER_isExpired(&xLoopTimer))
 		{
-			FTOM_helloNode(pOM);
-			FTM_TIMER_add(&xHelloTimer, 10000000);
+			FTM_TIMER_add(&xLoopTimer, FTOM_LOOP_INTERVAL);
 		}
 	}
 
@@ -869,7 +867,6 @@ FTM_RET FTOM_onSaveEPData
 
 	FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pMsg->xData);
 
-	TRACE("Save EP[%08x] Data. - %d:%s\n", pMsg->xEPID, pMsg->xData.ulTime, pBuff);
 	FTOM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xEPID, &pMsg->xData);
 	FTOM_DMC_appendEPData(&xDMC, pMsg->xEPID, &pMsg->xData);
 
@@ -983,6 +980,42 @@ FTM_RET	FTOM_onDiscovery
 	{
 		TRACE("TYPE[%d] - %s[%08x]\n", i, FTM_EP_typeString(pMsg->pTypes[i]), pMsg->pTypes[i]);	
 	}
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_setMessageCallback
+(
+	FTOM_PTR					pOM,
+	FTOM_MSG_TYPE 				xMsg, 
+	FTOM_ON_MESSAGE_CALLBACK	fMessageCB,
+	FTM_VOID_PTR				pData,
+	FTOM_ON_MESSAGE_CALLBACK _PTR_	pOldCB,
+	FTM_VOID_PTR _PTR_	ppOldData
+
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(fMessageCB != NULL);
+
+	if (xMsg >= FTOM_MSG_TYPE_MAX)
+	{
+		ERROR("Message type[%08x] is invalid.\n", xMsg);
+		return	FTM_RET_INVALID_MESSAGE_TYPE;
+	}
+
+	if (pOldCB != NULL)
+	{
+		*pOldCB = pOM->onMessage[xMsg];
+	}
+
+	if (ppOldData != NULL)
+	{
+		*ppOldData = pOM->pOnMessageData[xMsg];
+	}
+
+	pOM->onMessage[xMsg] = fMessageCB;
+	pOM->pOnMessageData[xMsg] = pData;
+
 	return	FTM_RET_OK;
 }
 
@@ -1322,65 +1355,6 @@ FTM_RET	FTOM_sendEPData
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_helloNode
-(
-	FTOM_PTR		pOM
-)
-{
-	FTM_CHAR_PTR	pDestIP ="255.255.255.255";
-	FTM_CHAR_PTR	pMsg = "Hello?";
-	FTM_USHORT		usPort = 1234;
-	FTM_INT			nSockFD;
-	FTM_INT			nRet;
-	FTM_INT			nBroadcast = 1;
-	FTM_INT			nBytes;
-	struct sockaddr_in xSrcAddr;
-	struct sockaddr_in xDestAddr;
-
-	TRACE("Hello node?\n");
-	nSockFD = socket(PF_INET,SOCK_DGRAM,0);
-	if(nSockFD == -1)
-	{
-		return	FTM_RET_ERROR;
-	}
-
-	nRet = setsockopt(nSockFD, SOL_SOCKET, SO_BROADCAST, &nBroadcast,sizeof(nBroadcast));
-	if (nRet == -1)
-	{
-		ERROR("setsocketopt error!\n");
-		return	FTM_RET_ERROR;
-	}
-
-	xSrcAddr.sin_family = AF_INET;
-	xSrcAddr.sin_port = 1234;
-	xSrcAddr.sin_addr.s_addr = INADDR_ANY;
-	memset(xSrcAddr.sin_zero,'\0',sizeof(xSrcAddr.sin_zero));
-
-	nRet = bind(nSockFD, (struct sockaddr*) &xSrcAddr, sizeof(xSrcAddr));
-	if(nRet == -1)
-	{
-		ERROR("bind error!\n");
-		return	FTM_RET_ERROR;
-	}
-
-	xDestAddr.sin_family = AF_INET;
-	xDestAddr.sin_port = htons(usPort);
-	xDestAddr.sin_addr.s_addr = inet_addr(pDestIP);
-	memset(xDestAddr.sin_zero,'\0',sizeof(xDestAddr.sin_zero));
-	
-	nBytes = sendto(nSockFD, pMsg, strlen(pMsg) , 0, (struct sockaddr *)&xDestAddr, sizeof(xDestAddr));
-	if (nBytes == -1)
-	{
-		ERROR("Packet send failed.\n");
-		return	FTM_RET_ERROR;
-	}
-
-	close(nSockFD);
-
-	return	FTM_RET_OK;
-
-}
-
 FTM_RET	FTOM_sendAlert
 (
 	FTOM_PTR		pOM,
@@ -1434,7 +1408,6 @@ FTM_RET	FTOM_sendDiscovery
 		return	xRet;	
 	}
 
-
 	xRet = FTOM_MSGQ_push(pOM->pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
@@ -1445,3 +1418,50 @@ FTM_RET	FTOM_sendDiscovery
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTOM_nodeDiscovery
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pNetwork,
+	FTM_USHORT		usPort
+)
+{
+	FTM_CHAR_PTR	pMsg = "Hello?";
+	FTM_INT			nSockFD;
+	FTM_INT			nRet;
+	FTM_INT			nBroadcast = 1;
+	FTM_INT			nBytes;
+	struct sockaddr_in xDestAddr;
+
+	TRACE("Node discovery start\n");
+	nSockFD = socket(PF_INET,SOCK_DGRAM,0);
+	if(nSockFD == -1)
+	{
+		return	FTM_RET_ERROR;
+	}
+
+	nRet = setsockopt(nSockFD, SOL_SOCKET, SO_BROADCAST, &nBroadcast,sizeof(nBroadcast));
+	if (nRet == -1)
+	{
+		ERROR("setsocketopt error!\n");
+		return	FTM_RET_ERROR;
+	}
+
+	xDestAddr.sin_family = AF_INET;
+	xDestAddr.sin_port = htons(usPort);
+	xDestAddr.sin_addr.s_addr = inet_addr(pNetwork);
+	memset(xDestAddr.sin_zero,'\0',sizeof(xDestAddr.sin_zero));
+	
+	nBytes = sendto(nSockFD, pMsg, strlen(pMsg) , 0, (struct sockaddr *)&xDestAddr, sizeof(xDestAddr));
+	if (nBytes == -1)
+	{
+		ERROR("Packet send failed.\n");
+		return	FTM_RET_ERROR;
+	}
+
+	close(nSockFD);
+
+	return	FTM_RET_OK;
+
+}
+

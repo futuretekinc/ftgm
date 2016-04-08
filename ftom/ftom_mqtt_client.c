@@ -505,12 +505,12 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 		return	xRet;	
 	}
 
-	TRACE("%s:%s\n", pTopic, pMessage);
 	nRet = mosquitto_publish(pClient->pMosquitto, &pPublish->nMessageID, pPublish->pTopic, pPublish->ulMessageLen, pPublish->pMessage, pPublish->ulQoS, 0);
 	switch(nRet)
 	{
 	case	MOSQ_ERR_SUCCESS:
 		{
+			TRACE("Publish[%04d] - %s:%s\n", pPublish->nMessageID, pTopic, pMessage);
 			xRet = FTM_LIST_append(pClient->pPublishList, pPublish);
 			if (xRet != FTM_RET_OK)
 			{
@@ -521,30 +521,35 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 
 	case	MOSQ_ERR_INVAL:
 		{
+			ERROR("Invalid arguments.\n");
 			xRet = FTM_RET_INVALID_ARGUMENTS;
 		}
 		break;
 
 	case	MOSQ_ERR_NOMEM:
 		{
+			ERROR("Not enoguh memory!.\n");
 			xRet = FTM_RET_NOT_ENOUGH_MEMORY;
 		}
 		break;
 
 	case	MOSQ_ERR_NO_CONN:
 		{
+			ERROR("Not connected.\n");
 			xRet = FTM_RET_NOT_CONNECTED;
 		}
 		break;
 
 	case	MOSQ_ERR_PROTOCOL:
 		{
+			ERROR("Protocol error!\n");
 			xRet = FTM_RET_ERROR;
 		}
 		break;
 
 	case	MOSQ_ERR_PAYLOAD_SIZE:
 		{
+			ERROR("Payload is too large.\n");
 			xRet = FTM_RET_PAYLOAD_IS_TOO_LARGE;
 		}
 		break;
