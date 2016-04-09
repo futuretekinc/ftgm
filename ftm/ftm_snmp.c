@@ -18,3 +18,18 @@ FTM_CHAR_PTR	FTM_SNMP_OID_toStr(FTM_SNMP_OID_PTR pOID)
 
 	return	pString;
 }
+
+FTM_CHAR_PTR	FTM_SNMP_versionString(FTM_ULONG ulVersion)
+{
+	switch(ulVersion)
+	{
+	case	FTM_SNMP_VERSION_1:
+		return	"SNMPv1";
+	case	FTM_SNMP_VERSION_2:
+		return	"SNMPv2";
+	case	FTM_SNMP_VERSION_3:
+		return	"SNMPv3";
+	}
+
+	return	"SNMPv?";
+}

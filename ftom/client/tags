@@ -1,0 +1,91 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CLIENT	Makefile	/^CLIENT=ftomc$/;"	m
+CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lconfig -lpthread $/;"	m
+CLIENT_OBJS	Makefile	/^CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)$/;"	m
+CLIENT_SRCS	Makefile	/^CLIENT_SRCS=ftom_client_main.c ftom_client_config.c$/;"	m
+FTDMC_EP_DATA_del	ftom_client.c	/^FTM_RET	FTDMC_EP_DATA_del$/;"	f
+FTOM_CLIENT	ftom_client.h	/^}	FTOM_CLIENT, _PTR_ FTOM_CLIENT_PTR;$/;"	t	typeref:struct:__anon4
+FTOM_CLIENT_CMD_EP	ftom_client_main.c	/^FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
+FTOM_CLIENT_CMD_EP_DATA	ftom_client_main.c	/^FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
+FTOM_CLIENT_CMD_NODE	ftom_client_main.c	/^FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
+FTOM_CLIENT_CMD_debug	ftom_client_main.c	/^FTM_RET	FTOM_CLIENT_CMD_debug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
+FTOM_CLIENT_CMD_quit	ftom_client_main.c	/^FTM_RET	FTOM_CLIENT_CMD_quit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
+FTOM_CLIENT_CONFIG	ftom_client.h	/^}	FTOM_CLIENT_CONFIG, _PTR_ FTOM_CLIENT_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
+FTOM_CLIENT_CONFIG_PTR	ftom_client.h	/^}	FTOM_CLIENT_CONFIG, _PTR_ FTOM_CLIENT_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
+FTOM_CLIENT_EP_DATA_add	ftom_client.c	/^FTM_RET	FTOM_CLIENT_EP_DATA_add$/;"	f
+FTOM_CLIENT_EP_DATA_count	ftom_client.c	/^FTM_RET	FTOM_CLIENT_EP_DATA_count$/;"	f
+FTOM_CLIENT_EP_DATA_getLast	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_DATA_getLast$/;"	f
+FTOM_CLIENT_EP_DATA_getList	ftom_client.c	/^FTM_RET	FTOM_CLIENT_EP_DATA_getList$/;"	f
+FTOM_CLIENT_EP_DATA_info	ftom_client.c	/^FTM_RET	FTOM_CLIENT_EP_DATA_info$/;"	f
+FTOM_CLIENT_EP_count	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_count$/;"	f
+FTOM_CLIENT_EP_create	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_create$/;"	f
+FTOM_CLIENT_EP_destroy	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_destroy$/;"	f
+FTOM_CLIENT_EP_get	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_get$/;"	f
+FTOM_CLIENT_EP_getAt	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_getAt$/;"	f
+FTOM_CLIENT_EP_getList	ftom_client.c	/^FTM_RET	FTOM_CLIENT_EP_getList$/;"	f
+FTOM_CLIENT_MAX_ARGS	ftom_client_main.c	17;"	d	file:
+FTOM_CLIENT_MAX_LINE	ftom_client_main.c	16;"	d	file:
+FTOM_CLIENT_NODE_count	ftom_client.c	/^FTM_RET FTOM_CLIENT_NODE_count$/;"	f
+FTOM_CLIENT_NODE_create	ftom_client.c	/^FTM_RET FTOM_CLIENT_NODE_create$/;"	f
+FTOM_CLIENT_NODE_destroy	ftom_client.c	/^FTM_RET FTOM_CLIENT_NODE_destroy$/;"	f
+FTOM_CLIENT_NODE_get	ftom_client.c	/^FTM_RET FTOM_CLIENT_NODE_get$/;"	f
+FTOM_CLIENT_NODE_getAt	ftom_client.c	/^FTM_RET FTOM_CLIENT_NODE_getAt$/;"	f
+FTOM_CLIENT_NOTIFY_CALLBACK	ftom_client.h	/^typedef	FTM_RET (*FTOM_CLIENT_NOTIFY_CALLBACK)(FTM_VOID_PTR);$/;"	t
+FTOM_CLIENT_PTR	ftom_client.h	/^}	FTOM_CLIENT, _PTR_ FTOM_CLIENT_PTR;$/;"	t	typeref:struct:__anon4
+FTOM_CLIENT_SERVER_IP_LEN	ftom_client_config.h	7;"	d
+FTOM_CLIENT_TRANS	ftom_client.h	/^}	FTOM_CLIENT_TRANS, _PTR_ FTOM_CLIENT_TRANS_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_CLIENT_TRANS_PTR	ftom_client.h	/^}	FTOM_CLIENT_TRANS, _PTR_ FTOM_CLIENT_TRANS_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_CLIENT_TRANS_final	ftom_client.c	/^FTM_RET FTOM_CLIENT_TRANS_final$/;"	f
+FTOM_CLIENT_TRANS_init	ftom_client.c	/^FTM_RET FTOM_CLIENT_TRANS_init$/;"	f
+FTOM_CLIENT_connect	ftom_client.c	/^FTM_RET	FTOM_CLIENT_connect$/;"	f
+FTOM_CLIENT_create	ftom_client.c	/^FTM_RET	FTOM_CLIENT_create$/;"	f
+FTOM_CLIENT_destroy	ftom_client.c	/^FTM_RET	FTOM_CLIENT_destroy$/;"	f
+FTOM_CLIENT_disconnect	ftom_client.c	/^FTM_RET FTOM_CLIENT_disconnect$/;"	f
+FTOM_CLIENT_final	ftom_client.c	/^FTM_RET	FTOM_CLIENT_final$/;"	f
+FTOM_CLIENT_init	ftom_client.c	/^FTM_RET	FTOM_CLIENT_init$/;"	f
+FTOM_CLIENT_isConnected	ftom_client.c	/^FTM_RET FTOM_CLIENT_isConnected$/;"	f
+FTOM_CLIENT_loadConfig	ftom_client.c	/^FTM_RET	FTOM_CLIENT_loadConfig$/;"	f
+FTOM_CLIENT_loadConfigFromFile	ftom_client.c	/^FTM_RET	FTOM_CLIENT_loadConfigFromFile$/;"	f
+FTOM_CLIENT_notifyCallback	ftom_client_main.c	/^FTM_RET	FTOM_CLIENT_notifyCallback(FTM_VOID_PTR pData)$/;"	f
+FTOM_CLIENT_process	ftom_client.c	/^FTM_VOID_PTR	FTOM_CLIENT_process(FTM_VOID_PTR pData)$/;"	f
+FTOM_CLIENT_request	ftom_client.c	/^FTM_RET FTOM_CLIENT_request$/;"	f
+FTOM_CLIENT_setNotifyCallback	ftom_client.c	/^FTM_RET	FTOM_CLIENT_setNotifyCallback$/;"	f
+FTOM_CLIENT_start	ftom_client.c	/^FTM_RET	FTOM_CLIENT_start$/;"	f
+FTOM_CLIENT_stop	ftom_client.c	/^FTM_RET	FTOM_CLIENT_stop$/;"	f
+FTOM_CLIENT_transSeeker	ftom_client.c	/^FTM_BOOL FTOM_CLIENT_transSeeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)$/;"	f
+FTOM_DEFAULT_SERVER_IP	ftom_client_config.h	9;"	d
+FTOM_DEFAULT_SERVER_PORT	ftom_client_config.h	10;"	d
+_XOPEN_SOURCE	ftom_client_config.c	1;"	d	file:
+_XOPEN_SOURCE	ftom_client_main.c	7;"	d	file:
+__FTOM_CLIENT_CONFIG_H__	ftom_client_config.h	2;"	d
+__FTOM_CLIENT_H__	ftom_client.h	2;"	d
+__USE_XOPEN	ftom_client_main.c	3;"	d	file:
+_cmds	ftom_client_main.c	/^FTM_SHELL_CMD	_cmds[] = $/;"	v
+_strPrompt	ftom_client_main.c	/^FTM_CHAR_PTR 		_strPrompt = "FTNMC > ";$/;"	v
+bConnected	ftom_client.h	/^	FTM_BOOL			bConnected;$/;"	m	struct:__anon4
+bInit	ftom_client.h	/^	FTM_BOOL			bInit;$/;"	m	struct:__anon4
+bRequested	ftom_client.h	/^	FTM_BOOL			bRequested;$/;"	m	struct:__anon4
+bStop	ftom_client.h	/^	FTM_BOOL			bStop;$/;"	m	struct:__anon4
+fNotifyCallback	ftom_client.h	/^	FTOM_CLIENT_NOTIFY_CALLBACK 	fNotifyCallback;$/;"	m	struct:__anon4
+hSock	ftom_client.h	/^	FTM_INT				hSock;$/;"	m	struct:__anon4
+main	ftom_client_main.c	/^int main(int argc , char *argv[])$/;"	f
+pHost	ftom_client.h	/^		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];$/;"	m	struct:__anon2::__anon3
+pMsgQ	ftom_client.h	/^	FTM_MSG_QUEUE_PTR	pMsgQ;$/;"	m	struct:__anon4
+pReq	ftom_client.h	/^	FTOM_REQ_PARAMS_PTR		pReq;$/;"	m	struct:__anon1
+pResp	ftom_client.h	/^	FTOM_RESP_PARAMS_PTR	pResp;$/;"	m	struct:__anon1
+ulReqID	ftom_client.h	/^	FTM_ULONG			ulReqID;$/;"	m	struct:__anon4
+ulReqLen	ftom_client.h	/^	FTM_ULONG				ulReqLen;$/;"	m	struct:__anon1
+ulRespLen	ftom_client.h	/^	FTM_ULONG				ulRespLen;$/;"	m	struct:__anon1
+ulTimeout	ftom_client.h	/^	FTM_ULONG			ulTimeout;$/;"	m	struct:__anon4
+usPort	ftom_client.h	/^		FTM_USHORT	usPort;$/;"	m	struct:__anon2::__anon3
+xConfig	ftom_client.h	/^	FTOM_CLIENT_CONFIG	xConfig;$/;"	m	struct:__anon4
+xDone	ftom_client.h	/^	sem_t					xDone;$/;"	m	struct:__anon1
+xReqLock	ftom_client.h	/^	sem_t				xReqLock;$/;"	m	struct:__anon4
+xServer	ftom_client.h	/^	}	xServer;$/;"	m	struct:__anon2	typeref:struct:__anon2::__anon3
+xThread	ftom_client.h	/^	pthread_t			xThread;$/;"	m	struct:__anon4
+xTransList	ftom_client.h	/^	FTM_LIST			xTransList;$/;"	m	struct:__anon4

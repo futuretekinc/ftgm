@@ -251,7 +251,7 @@ FTM_INT	FTOM_NODEM_seek
 		return	0;	
 	}
 
-	return	(strcmp(pNode->xInfo.pDID, pDID) == 0);
+	return	(strcasecmp(pNode->xInfo.pDID, pDID) == 0);
 }
 
 FTM_INT	FTOM_NODEM_comparator
@@ -268,7 +268,7 @@ FTM_INT	FTOM_NODEM_comparator
 		return	0;	
 	}
 
-	return	strcmp(pNode1->xInfo.pDID, pNode2->xInfo.pDID);
+	return	strcasecmp(pNode1->xInfo.pDID, pNode2->xInfo.pDID);
 }
 
 

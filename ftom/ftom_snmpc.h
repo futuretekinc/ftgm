@@ -73,6 +73,23 @@ FTM_RET FTOM_SNMPC_stop
 	FTOM_SNMPC_PTR pClient
 );
 
+FTM_RET	FTOM_SNMPC_getEPCount
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CHAR_PTR	pIP,	
+	FTM_EP_TYPE		xType,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_SNMPC_getEPInfo
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CHAR_PTR	pIP,	
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_EP_PTR		pEPInfo
+);
+
 FTM_RET	FTOM_SNMPC_setServiceCallback
 (
 	FTOM_SNMPC_PTR 		pClient, 

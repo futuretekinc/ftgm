@@ -7,8 +7,12 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/library/oid.h>
-#include "ftm.h"
+#include "ftm_types.h"
 
+#define	FTM_SNMP_VERSION_1	0 
+#define	FTM_SNMP_VERSION_2	1
+#define	FTM_SNMP_VERSION_3	2
+	
 #define	FTM_SNMP_OID_LENGTH	32
 
 typedef	struct FTM_SNMP_OID_STRUCT
@@ -18,5 +22,5 @@ typedef	struct FTM_SNMP_OID_STRUCT
 }	FTM_SNMP_OID, _PTR_ FTM_SNMP_OID_PTR;	
 
 FTM_CHAR_PTR	FTM_SNMP_OID_toStr(FTM_SNMP_OID_PTR pOID);
-
+FTM_CHAR_PTR	FTM_SNMP_versionString(FTM_ULONG ulVersion);
 #endif

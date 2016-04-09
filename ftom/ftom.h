@@ -5,7 +5,6 @@
 #include "ftom_types.h"
 #include "ftom_config.h"
 #include "ftom_dmc.h"
-#include "ftom_client.h"
 #include "ftom_server.h"
 #include "ftom_snmpc.h"
 #include "ftom_snmptrapd.h"
@@ -228,11 +227,19 @@ FTM_RET	FTOM_sendAlert
 	FTM_EP_DATA_PTR	pData
 );
 
-FTM_RET	FTOM_sendDiscovery
+FTM_RET	FTOM_discovery
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pNetwork,
+	FTM_USHORT		usPort
+);
+
+FTM_RET	FTOM_receivedDiscovery
 (
 	FTOM_PTR		pOM,
 	FTM_CHAR_PTR	pName,
 	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pIP,
 	FTM_EP_TYPE_PTR	pTypes,
 	FTM_ULONG		ulCount
 );

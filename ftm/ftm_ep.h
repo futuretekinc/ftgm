@@ -127,13 +127,14 @@ FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount);
 FTM_RET	FTM_EP_get(FTM_EP_ID xEPID, FTM_EP_PTR _PTR_ ppNode);
 FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppNode);
 
+FTM_CHAR_PTR FTM_EP_typeString(FTM_EP_TYPE nType);
+
 FTM_RET	FTM_EP_getDataType(FTM_EP_PTR pEP, FTM_EP_DATA_TYPE_PTR pType);
 
 FTM_RET			FTM_initEPTypeString(void);
 FTM_RET			FTM_finalEPTypeString(void);
 FTM_RET			FTM_appendEPTypeString(FTM_EP_TYPE xType, FTM_CHAR_PTR pTypeString);
-FTM_CHAR_PTR	FTM_getEPTypeString(FTM_EP_TYPE xType);
-
+FTM_CHAR_PTR 	FTM_getEPTypeString(FTM_EP_TYPE nType);
 
 FTM_RET	FTM_EP_DATA_create(FTM_EP_DATA_PTR pSrcData, FTM_EP_DATA_PTR _PTR_ ppData);
 FTM_RET	FTM_EP_DATA_createInt(FTM_INT nValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
@@ -144,8 +145,6 @@ FTM_RET	FTM_EP_DATA_createBool(FTM_BOOL bValue, FTM_EP_DATA_STATE xState, FTM_UL
 FTM_RET	FTM_EP_DATA_destroy(FTM_EP_DATA_PTR pData);
 
 FTM_RET	FTM_EP_DATA_compare(FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_INT_PTR pResult);
-
-FTM_CHAR_PTR FTM_EP_typeString(FTM_NODE_TYPE nType);
 
 
 typedef	struct

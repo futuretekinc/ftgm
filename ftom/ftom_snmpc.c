@@ -316,6 +316,82 @@ FTM_RET	FTOM_SNMPC_setServiceCallback
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_SNMPC_getEPCount
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CHAR_PTR	pIP,	
+	FTM_EP_TYPE		xType,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pIP != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET	xRet = FTM_RET_SNMP_ERROR;
+	FTM_INT	nRet;
+	struct snmp_session	*pSession = NULL;
+	struct snmp_session	xSession;
+
+	snmp_sess_init(&xSession);			/* initialize session */
+
+	xSession.version 		= FTM_SNMP_VERSION_2;
+	xSession.peername 		= pIP;
+	xSession.community 		= "public";
+	xSession.community_len	= 6;
+
+	pSession = snmp_open(&xSession);
+	if (pSession != NULL)
+	{
+		netsnmp_pdu 	*pReqPDU = NULL;
+		netsnmp_pdu		*pRespPDU = NULL; 
+
+		pReqPDU = snmp_pdu_create(SNMP_MSG_GET);	/* send the first GET */
+		if (pReqPDU == NULL)
+		{
+			ERROR("SNMP PDU creation error - %s\n", snmp_errstring(snmp_errno));
+			xRet = FTM_RET_SNMP_ERROR;
+		}
+		else
+		{
+			pReqPDU->time = time(NULL);
+			snmp_add_null_var(pReqPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
+
+			nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
+			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
+			{
+				struct variable_list *pVariable = pRespPDU->variables;
+				while (pVariable) 
+				{
+					switch(pVariable->name[pVariable->name_length-2])
+					{
+					case	6:
+						{
+							FTM_EP_DATA_TYPE	xDataType;
+							FTM_CHAR	pBuff[1024];
+						}
+					}
+				}
+			}
+		}
+
+		if (pRespPDU != NULL)
+		{
+			snmp_free_pdu(pRespPDU);
+		}
+
+		snmp_close(pSession);
+
+	}
+	else
+	{
+		ERROR("SNMP open error - %s\n", snmp_errstring(snmp_errno));
+		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
+	}
+
+	return	xRet;
+
+}
 
 FTM_RET	FTOM_SNMPC_getEPData
 (
@@ -554,3 +630,4 @@ FTM_RET	FTOM_SNMPC_getOID
 	return	FTM_RET_SNMP_CANT_FIND_OID;
 
 }
+

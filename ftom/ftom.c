@@ -20,6 +20,7 @@
 #include "ftom_trigger.h"
 #include "ftom_action.h"
 #include "ftom_rule.h"
+#include "ftom_discovery.h"
 
 FTM_VOID_PTR	FTOM_process(FTM_VOID_PTR pData);
 FTM_RET			FTOM_TASK_startService(FTOM_PTR pOM);
@@ -78,6 +79,18 @@ static FTM_RET	FTOM_onDiscovery
 	FTOM_MSG_DISCOVERY_PTR pMsg
 );
 
+static FTM_RET	FTOM_onDiscoveryInfo
+(
+	FTOM_PTR pOM,
+	FTOM_MSG_DISCOVERY_INFO_PTR pMsg
+);
+
+static FTM_RET	FTOM_onDiscoveryDone
+(
+	FTOM_PTR pOM,
+	FTOM_MSG_DISCOVERY_DONE_PTR pMsg
+);
+
 static 	FTM_RET	FTOM_callback
 (
 	FTOM_SERVICE_ID xID, 
@@ -92,6 +105,7 @@ static	FTOM_SNMPTRAPD	xSNMPTRAPD;
 static	FTOM_DMC		xDMC;
 static	FTOM_SHELL		xShell;
 static	FTOM_MQTT_CLIENT	xMQTTC;
+static 	FTOM_DISCOVERY	xDiscovery;
 
 static 	FTOM_SERVICE	pServices[] =
 {
@@ -183,6 +197,21 @@ static 	FTOM_SERVICE	pServices[] =
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_SHELL_notify,
 		.pData		= 	(FTM_VOID_PTR)&xShell
 	},
+	{
+		.xType		=	FTOM_SERVICE_DISCOVERY,
+		.xID		=	FTOM_SERVICE_DISCOVERY,
+		.pName		=	"Discovery",
+		.fInit		=	(FTOM_SERVICE_INIT)FTOM_DISCOVERY_init,
+		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_DISCOVERY_final,
+		.fStart 	=	(FTOM_SERVICE_START)FTOM_DISCOVERY_start,
+		.fStop		=	(FTOM_SERVICE_STOP)FTOM_DISCOVERY_stop,
+		.fSetCallback=	NULL,
+		.fCallback	=	NULL,
+		.fLoadFromFile=	NULL,
+		.fShowConfig=	NULL,
+		.fNotify	=	NULL,
+		.pData		= 	(FTM_VOID_PTR)&xDiscovery
+	},
 };
 
 FTM_RET	FTOM_create(FTOM_PTR _PTR_ ppOM)
@@ -255,6 +284,8 @@ FTM_RET	FTOM_init(FTOM_PTR pOM)
 	pOM->onMessage[FTOM_MSG_TYPE_RULE] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onRule;
 	pOM->onMessage[FTOM_MSG_TYPE_ALERT] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onAlert;
 	pOM->onMessage[FTOM_MSG_TYPE_DISCOVERY] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscovery;
+	pOM->onMessage[FTOM_MSG_TYPE_DISCOVERY_INFO]= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryInfo;
+	pOM->onMessage[FTOM_MSG_TYPE_DISCOVERY_DONE]= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryDone;
 
 	xRet = FTOM_MSGQ_create(&pOM->pMsgQ);
 	if (xRet != FTM_RET_OK)
@@ -971,6 +1002,20 @@ FTM_RET	FTOM_onDiscovery
 {
 	ASSERT(pOM != NULL);
 	ASSERT(pMsg != NULL);
+
+	FTOM_DISCOVERY_call(&xDiscovery, pMsg->pNetwork, pMsg->usPort);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_onDiscoveryInfo
+(
+	FTOM_PTR	pOM,
+	FTOM_MSG_DISCOVERY_INFO_PTR	pMsg
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pMsg != NULL);
 	
 	FTM_INT	i;
 
@@ -980,6 +1025,31 @@ FTM_RET	FTOM_onDiscovery
 	{
 		TRACE("TYPE[%d] - %s[%08x]\n", i, FTM_EP_typeString(pMsg->pTypes[i]), pMsg->pTypes[i]);	
 	}
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_onDiscoveryDone
+(
+	FTOM_PTR	pOM,
+	FTOM_MSG_DISCOVERY_DONE_PTR	pMsg
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pMsg != NULL);
+	
+	TRACE("Discovery Done!\n");
+	FTM_INT	i;
+
+	for(i = 0 ; i < pMsg->ulNodeCount ; i++)
+	{
+		TRACE("NODE[%d] : %s\n", pMsg->pNodeInfos[i].pDID);	
+	}
+
+	for(i = 0 ; i < pMsg->ulEPCount ; i++)
+	{
+		TRACE("EP[%d] : %08x\n", pMsg->pEPInfos[i].xEPID);	
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -1386,11 +1456,12 @@ FTM_RET	FTOM_sendAlert
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_sendDiscovery
+FTM_RET	FTOM_receivedDiscovery
 (
 	FTOM_PTR		pOM,
 	FTM_CHAR_PTR	pName,
 	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pIP,
 	FTM_EP_TYPE_PTR	pTypes,
 	FTM_ULONG		ulCount
 )
@@ -1400,9 +1471,9 @@ FTM_RET	FTOM_sendDiscovery
 	ASSERT(pTypes != NULL);
 
 	FTM_RET				xRet;
-	FTOM_MSG_DISCOVERY_PTR	pMsg;
+	FTOM_MSG_DISCOVERY_INFO_PTR	pMsg;
 
-	xRet = FTOM_MSG_createDiscovery(pName, pDID, pTypes, ulCount, &pMsg);
+	xRet = FTOM_MSG_createDiscoveryInfo(pName, pDID, pIP, pTypes, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -1419,49 +1490,42 @@ FTM_RET	FTOM_sendDiscovery
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_nodeDiscovery
+FTM_RET	FTOM_discovery
 (
 	FTOM_PTR		pOM,
 	FTM_CHAR_PTR	pNetwork,
 	FTM_USHORT		usPort
 )
 {
-	FTM_CHAR_PTR	pMsg = "Hello?";
-	FTM_INT			nSockFD;
-	FTM_INT			nRet;
-	FTM_INT			nBroadcast = 1;
-	FTM_INT			nBytes;
-	struct sockaddr_in xDestAddr;
+	ASSERT(pOM != NULL);
+	ASSERT(pNetwork != NULL);
 
-	TRACE("Node discovery start\n");
-	nSockFD = socket(PF_INET,SOCK_DGRAM,0);
-	if(nSockFD == -1)
+	FTM_RET	xRet;
+	FTOM_MSG_DISCOVERY_PTR	pMsg;
+
+	xRet = FTOM_MSG_createDiscovery(pNetwork, usPort, &pMsg);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_ERROR;
+		ERROR("Discovery message creation failed[%08x].\n", xRet);
+		return	xRet;	
 	}
 
-	nRet = setsockopt(nSockFD, SOL_SOCKET, SO_BROADCAST, &nBroadcast,sizeof(nBroadcast));
-	if (nRet == -1)
+	xRet = FTOM_MSGQ_push(pOM->pMsgQ, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR("setsocketopt error!\n");
-		return	FTM_RET_ERROR;
+		ERROR("Message push error![%08x]\n", xRet);
+		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
+		return	xRet;
 	}
-
-	xDestAddr.sin_family = AF_INET;
-	xDestAddr.sin_port = htons(usPort);
-	xDestAddr.sin_addr.s_addr = inet_addr(pNetwork);
-	memset(xDestAddr.sin_zero,'\0',sizeof(xDestAddr.sin_zero));
-	
-	nBytes = sendto(nSockFD, pMsg, strlen(pMsg) , 0, (struct sockaddr *)&xDestAddr, sizeof(xDestAddr));
-	if (nBytes == -1)
-	{
-		ERROR("Packet send failed.\n");
-		return	FTM_RET_ERROR;
-	}
-
-	close(nSockFD);
 
 	return	FTM_RET_OK;
-
 }
 
+FTM_RET	FTOM_getNodeInfo
+(
+	FTM_CHAR_PTR	pDID,
+	FTM_NODE_PTR	pNodeInfo
+)
+{
+	return	FTM_RET_OK;
+}

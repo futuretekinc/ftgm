@@ -309,37 +309,16 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 	{
 	case	1:
 		{
-			FTOM_DISCOVERY	xDiscovery;
-			FTM_ULONG		i, ulCount = 0;
-			FTOM_DISCOVERY_NODE	xNodeInfo;
-
-			xRet = FTOM_DISCOVERY_init(&xDiscovery, pOM);
+			xRet = FTOM_discovery(pOM, "255.255.255.255", 1234);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("Discovery initalize failed.\n");
-				return	xRet;	
+				MESSAGE("Discovery request was failed[%08x].\n", xRet);	
 			}
-
+			else
+			{
+				MESSAGE("Discovery request is complete.\n");	
 			
-			xRet = FTOM_DISCOVERY_run(&xDiscovery, 5000000);
-			if (xRet != FTM_RET_OK)
-			{
-				WARN("Discovery failed.\n");
 			}
-
-			FTOM_DISCOVERY_getNodeInfoCount(&xDiscovery, &ulCount);
-
-			for(i = 0 ; i < ulCount ; i++)
-			{
-				FTOM_DISCOVERY_getNodeInfoAt(&xDiscovery, i, &xNodeInfo);
-
-				TRACE("DID - %s\n", xNodeInfo.pDID);
-				for(i = 0 ; i < sizeof(xNodeInfo.pEPTypes) / sizeof(xNodeInfo.pEPTypes[0]); i++)
-				{
-					TRACE("TYPE[%d] - %s[%08x]\n", i, FTM_EP_typeString(xNodeInfo.pEPTypes[i]), xNodeInfo.pEPTypes[i]);	
-				}
-			}
-			FTOM_DISCOVERY_final(&xDiscovery);
 		}
 		break;
 	}

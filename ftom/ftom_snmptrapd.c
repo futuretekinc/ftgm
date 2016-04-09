@@ -83,11 +83,12 @@ static FTM_RET	FTOM_SNMPTRAPD_sendAlert
 	FTM_EP_DATA_PTR 		pData
 );
 
-static FTM_RET	FTOM_SNMPTRAPD_sendDiscovery
+static FTM_RET	FTOM_SNMPTRAPD_receivedDiscovery
 (
 	FTOM_SNMPTRAPD_PTR	pSNMPTRAPD,
 	FTM_CHAR_PTR	pName,
 	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pIP,
 	FTM_EP_TYPE_PTR	pTypes,
 	FTM_ULONG		ulCount
 );
@@ -734,7 +735,7 @@ netsnmp_session * FTOM_SNMPTRAPD_addSession
 	netsnmp_session xSession, *pRet = NULL;
 
 	snmp_sess_init(&xSession);
-	xSession.peername 		= SNMP_DEFAULT_PEERNAME;  /* Original code had NULL here */
+	xSession.peername 		= NULL;//SNMP_DEFAULT_PEERNAME;  /* Original code had NULL here */
 	xSession.version 		= SNMP_DEFAULT_VERSION;
 	xSession.community_len 	= SNMP_DEFAULT_COMMUNITY_LEN;
 	xSession.retries 		= SNMP_DEFAULT_RETRIES;
@@ -1356,6 +1357,7 @@ FTM_RET	FTOM_SNMPTRAPD_discovery
 	FTM_ULONG		ulDIDLen;
 	FTM_CHAR		pName[FTM_DEVICE_NAME_LEN + 1];
 	FTM_CHAR		pDID[FTM_DID_LEN + 1];
+	FTM_CHAR		pDeviceIP[32];
 	FTM_EP_TYPE		pEPTypes[32];
 	FTM_ULONG		ulEPTypes = 0;
 	const nx_json 	*pRoot, *pItem, *pOIDs;
@@ -1378,6 +1380,18 @@ FTM_RET	FTOM_SNMPTRAPD_discovery
 	memset(pName, 0, sizeof(pName));
 	strncpy(pName, pItem->text_value, FTM_DEVICE_NAME_LEN);
 
+
+	memset(pDeviceIP, 0, sizeof(pDeviceIP));
+	pItem = nx_json_get(pRoot, "ip");
+	if (pItem->type != NX_JSON_NULL)
+	{ 
+		if (pItem->type != NX_JSON_STRING)
+		{
+			xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+			goto error;
+		}
+		strncpy(pDeviceIP, pItem->text_value, sizeof(pDeviceIP) - 1);
+	}
 
 	pItem = nx_json_get(pRoot, "mac");
 	if ((pItem->type != NX_JSON_STRING) || strlen(pItem->text_value) != 17)
@@ -1431,7 +1445,7 @@ FTM_RET	FTOM_SNMPTRAPD_discovery
 		pEPTypes[ulEPTypes++] = (ulType << 16);
 	}	
 	
-	FTOM_SNMPTRAPD_sendDiscovery(pSNMPTRAPD, pName, pDID, pEPTypes, ulEPTypes);
+	FTOM_SNMPTRAPD_receivedDiscovery(pSNMPTRAPD, pName, pDID, pDeviceIP, pEPTypes, ulEPTypes);
 
 error:
 
@@ -1467,11 +1481,12 @@ FTM_RET	FTOM_SNMPTRAPD_sendAlert
 	return	FTOM_sendAlert(pSNMPTRAPD->pOM, xEPID, pData);
 }
 
-FTM_RET	FTOM_SNMPTRAPD_sendDiscovery
+FTM_RET	FTOM_SNMPTRAPD_receivedDiscovery
 (
 	FTOM_SNMPTRAPD_PTR	pSNMPTRAPD,
 	FTM_CHAR_PTR	pName,
 	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pIP,
 	FTM_EP_TYPE_PTR	pTypes,
 	FTM_ULONG		ulCount
 )
@@ -1480,7 +1495,7 @@ FTM_RET	FTOM_SNMPTRAPD_sendDiscovery
 	ASSERT(pDID != NULL);
 	ASSERT(pTypes != NULL);
 
-	return	FTOM_sendDiscovery(pSNMPTRAPD->pOM, pName, pDID, pTypes, ulCount);
+	return	FTOM_receivedDiscovery(pSNMPTRAPD->pOM, pName, pDID, pIP, pTypes, ulCount);
 }
 
 #if 0

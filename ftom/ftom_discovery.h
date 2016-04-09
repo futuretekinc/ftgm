@@ -3,16 +3,32 @@
 
 #include "ftom.h"
 
-typedef	struct
+typedef	struct FTOM_DISCOVERY_INFO_STRUCT
 {
-	FTM_CHAR	pDID[FTM_DID_LEN + 1];
-	FTM_EP_TYPE	pEPTypes[16];
-}	FTOM_DISCOVERY_NODE, _PTR_ FTOM_DISCOVERY_NODE_PTR;
+	FTM_CHAR		pName[FTM_DEVICE_NAME_LEN + 1];
+	FTM_CHAR		pDID[FTM_DID_LEN + 1];
+	FTM_ULONG		ulCount;
+	FTM_EP_TYPE		pEPTypes[];
+}	FTOM_DISCOVERY_INFO, _PTR_ FTOM_DISCOVERY_INFO_PTR;
 
 typedef	struct
 {
-	FTOM_PTR	pOM;
-	FTM_LIST	xNodeList;	
+	FTOM_PTR			pOM;
+	pthread_t			xThread;
+
+	FTM_BOOL			bStop;
+	FTM_BOOL			bInProgress;
+	FTM_LIST			xInfoList;
+	FTM_LIST			xNodeList;
+	FTM_LIST			xEPList;
+	FTOM_MSG_QUEUE_PTR	pMsgQ;
+
+	FTM_ULONG			ulTimeout;	
+	FTM_ULONG			ulRetryCount;	
+	FTM_ULONG			ulLoopCount;	
+	FTM_TIMER			xTimer;
+	FTOM_ON_MESSAGE_CALLBACK	fOldCB;
+	FTM_VOID_PTR				pOldData;
 }	FTOM_DISCOVERY, _PTR_ FTOM_DISCOVERY_PTR;
 
 FTM_RET	FTOM_DISCOVERY_init
@@ -26,23 +42,21 @@ FTM_RET	FTOM_DISCOVERY_final
 	FTOM_DISCOVERY_PTR	pDiscovery
 );
 
-FTM_RET	FTOM_DISCOVERY_run
+FTM_RET	FTOM_DISCOVERY_start
 (
-	FTOM_DISCOVERY_PTR	pDiscovery,
-	FTM_ULONG			ulTimeout
+	FTOM_DISCOVERY_PTR	pDiscovery
 );
 
-FTM_RET	FTOM_DISCOVERY_getNodeInfoCount
+FTM_RET	FTOM_DISCOVERY_stop
 (
-	FTOM_DISCOVERY_PTR	pDiscovery,
-	FTM_ULONG_PTR		pulCount
+	FTOM_DISCOVERY_PTR	pDiscovery
 );
 
-FTM_RET	FTOM_DISCOVERY_getNodeInfoAt
+FTM_RET	FTOM_DISCOVERY_call
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,
-	FTM_ULONG			i,
-	FTOM_DISCOVERY_NODE_PTR	pNodeInfo
+	FTM_CHAR_PTR		pNetwork,
+	FTM_USHORT			usPort
 );
 
 #endif
