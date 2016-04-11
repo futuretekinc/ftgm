@@ -170,8 +170,27 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 			case	FTOM_MSG_TYPE_DISCOVERY_INFO:
 				{
 					FTOM_MSG_DISCOVERY_INFO_PTR	pMsg = (FTOM_MSG_DISCOVERY_INFO_PTR)pCommonMsg;
+					FTOM_NODE_PTR	pNode;
 
 					TRACE("Discovery Node : %s\n", pMsg->pDID);
+					xRet = FTOM_getNode(pDiscovery->pOM, pMsg->pDID, &pNode);
+					if (xRet != FTM_RET_OK)
+					{
+						WARN("Unknown Node[%s]\n", pMsg->pDID);	
+					}
+					else
+					{ 
+						FTM_ULONG	i, ulCount;
+
+						for(i = 0 ; i < pMsg->ulCount ; i++)
+						{
+							xRet = FTOM_discoveryEPCount(pDiscovery->pOM, pMsg->pIP, pMsg->pTypes[i], &ulCount);
+							if (xRet == FTM_RET_OK)
+							{
+								TRACE("EP[%08x] is %d\n", pMsg->pTypes[i], ulCount);	
+							}
+						}	
+					}
 					//FTM_NODE	xNodeInfo;
 					//FTOM_DISCOVERY_getNodeInfo(pMsg->pDID, &xNodeInfO);
 				}

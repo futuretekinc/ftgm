@@ -1521,6 +1521,21 @@ FTM_RET	FTOM_discovery
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_discoveryEPCount
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pIP != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTOM_SNMPC_getEPCount(&xSNMPC, pIP, xType, pulCount);
+}
+
 FTM_RET	FTOM_getNodeInfo
 (
 	FTM_CHAR_PTR	pDID,

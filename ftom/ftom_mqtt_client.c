@@ -510,7 +510,7 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 	{
 	case	MOSQ_ERR_SUCCESS:
 		{
-			TRACE("Publish[%04d] - %s:%s\n", pPublish->nMessageID, pTopic, pMessage);
+			//TRACE("Publish[%04d] - %s:%s\n", pPublish->nMessageID, pTopic, pMessage);
 			xRet = FTM_LIST_append(pClient->pPublishList, pPublish);
 			if (xRet != FTM_RET_OK)
 			{
@@ -621,7 +621,6 @@ FTM_VOID FTOM_MQTT_CLIENT_publishCB
 	FTOM_MQTT_PUBLISH_PTR	pPublish;
 
 
-	TRACE("MQTT published.\n");
 	if (pCBSet[pClient->xConfig.ulCBSet].fPublish != NULL)
 	{
 		pCBSet[pClient->xConfig.ulCBSet].fPublish(mosq, pObj, nMID);

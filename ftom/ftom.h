@@ -244,6 +244,14 @@ FTM_RET	FTOM_receivedDiscovery
 	FTM_ULONG		ulCount
 );
 
+FTM_RET	FTOM_discoveryEPCount
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG_PTR	pulCount
+);
+
 FTM_RET	FTOM_setMessageCallback
 (
 	FTOM_PTR		pOM,

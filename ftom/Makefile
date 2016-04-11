@@ -5,14 +5,14 @@ include $(TOPDIR)/Makefile.in
 		-D__malloc_and_calloc_defined=1 \
 		-D__need_malloc_and_calloc=1
 
-FTNM=ftom
-FTNM_SRCS=ftom_main.c ftom.c
-FTNM_OBJS=$(FTNM_SRCS:.c=.o)
-FTNM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -ldl -lnetsnmpagent -lnetsnmp -lmosquitto
+FTOM=ftom
+FTOM_SRCS=ftom_main.c ftom.c
+FTOM_OBJS=$(FTOM_SRCS:.c=.o)
+FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -ldl -lnetsnmpagent -lnetsnmp -lmosquitto
 
-LIB_FTNM=libftom
-LIB_FTNM_INCS= ftom.h 
-LIB_FTNM_SRCS= ftom.c \
+LIB_FTOM=libftom
+LIB_FTOM_INCS= ftom.h 
+LIB_FTOM_SRCS= ftom.c \
 			   ftom_msg.c \
 			   ftom_server.c\
 			   ftom_node.c\
@@ -35,10 +35,10 @@ LIB_FTNM_SRCS= ftom.c \
 			   ftom_shell.c\
 			   ftom_discovery.c
 
-LIB_FTNM_OBJS=$(LIB_FTNM_SRCS:.c=.o)
+LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)
 
 
-all: tags $(LIB_FTNM) $(FTNM)
+all: tags $(LIB_FTOM) $(FTOM)
 
 tags:
 	ctags -R
@@ -46,12 +46,12 @@ tags:
 $(CONSOLE): $(CONSOLE_OBJS)
 	$(CC) -o $@ $(CONSOLE_OBJS) $(CONSOLE_LDFLAGS)
 
-$(FTNM): $(FTNM_OBJS) $(LIB_FTNM)
-	$(CC) -g -o $@ $(FTNM_OBJS) $(FTNM_LDFLAGS)
+$(FTOM): $(FTOM_OBJS) $(LIB_FTOM)
+	$(CC) -g -o $@ $(FTOM_OBJS) $(FTOM_LDFLAGS)
 
-$(LIB_FTNM): $(LIB_FTNM_OBJS)
-	$(AR) rcs $(LIB_FTNM).a $(LIB_FTNM_OBJS)
-	$(CC) -shared -o $(LIB_FTNM).so.1.0.1 $(LIB_FTNM_OBJS) $(LDFLAGS)
+$(LIB_FTOM): $(LIB_FTOM_OBJS)
+	$(AR) rcs $(LIB_FTOM).a $(LIB_FTOM_OBJS)
+	$(CC) -shared -o $(LIB_FTOM).so.1.0.1 $(LIB_FTOM_OBJS) $(LDFLAGS)
 
 .c.o:  $(SERVER_SRC) *.h
 	$(CC) $(CFLAGS) $< -o $@

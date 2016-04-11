@@ -118,5 +118,21 @@ FTM_RET	FTOM_SNMPC_getOID
 	size_t 			*pnOIDLen
 );
 
+FTM_RET	FTOM_SNMPC_getULONG
+(
+	FTOM_SNMPC_PTR 		pClient, 
+	FTM_CHAR_PTR		pIP,	
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_ULONG_PTR		pulCount
+);
+
+FTM_RET	FTOM_SNMPC_getString
+(
+	FTOM_SNMPC_PTR 		pClient, 
+	FTM_CHAR_PTR		pIP,	
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_CHAR_PTR		pBuff,
+	FTM_ULONG			ulMaxLen
+);
 #endif
 
