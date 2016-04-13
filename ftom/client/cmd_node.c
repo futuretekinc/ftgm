@@ -42,7 +42,8 @@ FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR p
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		memset(&xNodeInfo, 0, sizeof(FTM_NODE));
+		FTM_NODE_setDefault(&xNodeInfo);
+
 		if (strcasecmp(pArgv[3], "SNMP") == 0)
 		{
 			xNodeInfo.xType = FTM_NODE_TYPE_SNMP;	

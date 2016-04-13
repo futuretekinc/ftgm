@@ -368,7 +368,7 @@ FTM_RET FTOM_CLIENT_NODE_create
 {
 	ASSERT(pClient != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTOM_REQ_NODE_CREATE_PARAMS		xReq;
 	FTOM_RESP_NODE_CREATE_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
@@ -378,25 +378,32 @@ FTM_RET FTOM_CLIENT_NODE_create
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
+	xRet = FTM_NODE_isValid(pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Invalid node information!\n");
+		return	xRet;	
+	}
+
 	memset(&xReq, 0, sizeof(xReq));
 
 	xReq.xCmd	=	FTOM_CMD_NODE_CREATE;
 	xReq.ulLen	=	sizeof(xReq);
 	memcpy(&xReq.xNodeInfo, pInfo, sizeof(FTM_NODE));
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;
+		return	xRet;
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET FTOM_CLIENT_NODE_destroy
@@ -405,7 +412,7 @@ FTM_RET FTOM_CLIENT_NODE_destroy
 	FTM_CHAR_PTR			pDID
 )
 {
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTOM_REQ_NODE_DESTROY_PARAMS	xReq;
 	FTOM_RESP_NODE_DESTROY_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
@@ -426,19 +433,19 @@ FTM_RET FTOM_CLIENT_NODE_destroy
 	xReq.ulLen	=	sizeof(xReq);
 	strcpy(xReq.pDID, pDID);
 	
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;
+		return	xRet;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET FTOM_CLIENT_NODE_count
@@ -447,7 +454,7 @@ FTM_RET FTOM_CLIENT_NODE_count
 	FTM_ULONG_PTR			pulCount
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTOM_REQ_NODE_COUNT_PARAMS	xReq;
 	FTOM_RESP_NODE_COUNT_PARAMS	xResp;
 	FTM_ULONG					ulRespLen;
@@ -467,24 +474,24 @@ FTM_RET FTOM_CLIENT_NODE_count
 	xReq.xCmd 	=	FTOM_CMD_NODE_COUNT;
 	xReq.ulLen	=	sizeof(xReq);
 	
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;
+		return	xRet;
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pulCount = xResp.ulCount;
 	}	
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET FTOM_CLIENT_NODE_getAt
@@ -494,7 +501,7 @@ FTM_RET FTOM_CLIENT_NODE_getAt
 	FTM_NODE_PTR		pInfo
 )
 {
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTOM_REQ_NODE_GET_AT_PARAMS		xReq;
 	FTOM_RESP_NODE_GET_AT_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
@@ -511,24 +518,24 @@ FTM_RET FTOM_CLIENT_NODE_getAt
 	xReq.ulLen	=	sizeof(xReq);
 	xReq.ulIndex	=	ulIndex;
 	
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xNodeInfo, sizeof(FTM_NODE));
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET FTOM_CLIENT_NODE_get
@@ -538,7 +545,7 @@ FTM_RET FTOM_CLIENT_NODE_get
 	FTM_NODE_PTR		pInfo
 )
 {
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTOM_REQ_NODE_GET_PARAMS		xReq;
 	FTOM_RESP_NODE_GET_PARAMS	xResp;
 	FTM_ULONG					ulRespLen;
@@ -559,24 +566,24 @@ FTM_RET FTOM_CLIENT_NODE_get
 	xReq.ulLen	=	sizeof(xReq);
 	strcpy(xReq.pDID, pDID);
 	
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xNodeInfo, sizeof(FTM_NODE));
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET FTOM_CLIENT_EP_create
@@ -585,7 +592,7 @@ FTM_RET FTOM_CLIENT_EP_create
 	FTM_EP_PTR			pInfo
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTOM_REQ_EP_CREATE_PARAMS	xReq;
 	FTOM_RESP_EP_CREATE_PARAMS	xResp;
 	FTM_ULONG					ulRespLen;
@@ -603,20 +610,21 @@ FTM_RET FTOM_CLIENT_EP_create
 	xReq.xCmd	=	FTOM_CMD_EP_CREATE;
 	xReq.ulLen	=	sizeof(xReq);
 	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
-
-	nRet = FTOM_CLIENT_request(
+	
+	TRACE("%s[%d]\n", __func__, __LINE__);
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET FTOM_CLIENT_EP_destroy
@@ -625,7 +633,7 @@ FTM_RET FTOM_CLIENT_EP_destroy
 	FTM_EP_ID			xEPID
 )
 {
-	FTM_RET					nRet;
+	FTM_RET					xRet;
 	FTOM_REQ_EP_DESTROY_PARAMS	xReq;
 	FTOM_RESP_EP_DESTROY_PARAMS	xResp;
 	FTM_ULONG					ulRespLen;
@@ -639,19 +647,19 @@ FTM_RET FTOM_CLIENT_EP_destroy
 	xReq.ulLen	=	sizeof(xReq);
 	xReq.xEPID	=	xEPID;
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;
+		return	xRet;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET FTOM_CLIENT_EP_count
@@ -661,7 +669,7 @@ FTM_RET FTOM_CLIENT_EP_count
 	FTM_ULONG_PTR			pnCount
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTOM_REQ_EP_COUNT_PARAMS	xReq;
 	FTOM_RESP_EP_COUNT_PARAMS	xResp;
 	FTM_ULONG					ulRespLen;
@@ -680,24 +688,24 @@ FTM_RET FTOM_CLIENT_EP_count
 	xReq.xType	=	xType;
 	xReq.ulLen	=	sizeof(xReq);
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pnCount = xResp.nCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTOM_CLIENT_EP_getList
@@ -709,7 +717,7 @@ FTM_RET	FTOM_CLIENT_EP_getList
 	FTM_ULONG_PTR			pnCount
 )
 {
-	FTM_RET	nRet;
+	FTM_RET	xRet;
 	FTOM_REQ_EP_GET_LIST_PARAMS		xReq;
 	FTM_ULONG						nRespSize = 0;
 	FTOM_RESP_EP_GET_LIST_PARAMS_PTR	pResp;
@@ -732,22 +740,22 @@ FTM_RET	FTOM_CLIENT_EP_getList
 	xReq.xType		=	xType;
 	xReq.ulMaxCount	=	ulMaxCount;
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				nRespSize,
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pResp);
 		return	FTM_RET_ERROR;	
 	}
 
-	nRet = pResp->nRet;
+	xRet = pResp->xRet;
 
-	if (nRet == FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
 		memcpy(pEPIDList, pResp->pEPIDList, sizeof(FTM_EP_ID) * pResp->ulCount);
 		*pnCount = pResp->ulCount;
@@ -755,7 +763,7 @@ FTM_RET	FTOM_CLIENT_EP_getList
 
 	FTM_MEM_free(pResp);
 
-	return	nRet;
+	return	xRet;
 }
 
 FTM_RET FTOM_CLIENT_EP_get
@@ -765,7 +773,7 @@ FTM_RET FTOM_CLIENT_EP_get
 	FTM_EP_PTR			pInfo
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTOM_REQ_EP_GET_PARAMS		xReq;
 	FTOM_RESP_EP_GET_PARAMS		xResp;
 	FTM_ULONG					ulRespLen;
@@ -784,23 +792,23 @@ FTM_RET FTOM_CLIENT_EP_get
 	xReq.ulLen	=	sizeof(xReq);
 	xReq.xEPID	=	xEPID;
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP));
 	}
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET FTOM_CLIENT_EP_getAt
@@ -810,7 +818,7 @@ FTM_RET FTOM_CLIENT_EP_getAt
 	FTM_EP_PTR			pInfo
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTOM_REQ_EP_GET_AT_PARAMS	xReq;
 	FTOM_RESP_EP_GET_AT_PARAMS	xResp;
 	FTM_ULONG					ulRespLen;
@@ -829,24 +837,24 @@ FTM_RET FTOM_CLIENT_EP_getAt
 	xReq.ulLen	=	sizeof(xReq);
 	xReq.ulIndex=	ulIndex;
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP));
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 
@@ -860,7 +868,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_add
 	FTM_EP_DATA_PTR			pEPData
 )
 {
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTOM_REQ_EP_DATA_ADD_PARAMS		xReq;
 	FTOM_RESP_EP_DATA_ADD_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
@@ -875,19 +883,19 @@ FTM_RET	FTOM_CLIENT_EP_DATA_add
 	xReq.xEPID	=	xEPID;
 	memcpy(&xReq.xData, pEPData, sizeof(FTM_EP_DATA));
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -902,7 +910,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_info
 	FTM_ULONG_PTR			pCount
 )
 {
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTOM_REQ_EP_DATA_INFO_PARAMS	xReq;
 	FTOM_RESP_EP_DATA_INFO_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
@@ -916,26 +924,26 @@ FTM_RET	FTOM_CLIENT_EP_DATA_info
 	xReq.ulLen		=	sizeof(xReq);
 	xReq.xEPID		=	xEPID;
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pulBeginTime 	= xResp.ulBeginTime;
 		*pulEndTime 	= xResp.ulEndTime;
 		*pCount 		= xResp.ulCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -948,7 +956,7 @@ FTM_RET FTOM_CLIENT_EP_DATA_getLast
 	FTM_EP_DATA_PTR			pData
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTOM_REQ_EP_DATA_GET_LAST_PARAMS	xReq;
 	FTOM_RESP_EP_DATA_GET_LAST_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
@@ -967,24 +975,24 @@ FTM_RET FTOM_CLIENT_EP_DATA_getLast
 	xReq.ulLen	=	sizeof(xReq);
 	xReq.xEPID	=	xEPID;
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pData, &xResp.xData, sizeof(FTM_EP_DATA));
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 /*****************************************************************
  *
@@ -999,7 +1007,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 	FTM_ULONG_PTR		pnCount
 )
 {
-	FTM_RET									nRet;
+	FTM_RET									xRet;
 	FTOM_REQ_EP_DATA_GET_LIST_PARAMS		xReq;
 	FTM_ULONG								nRespSize = 0;
 	FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp = NULL;
@@ -1038,22 +1046,22 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 		xReq.nStartIndex=	nStartIndex;
 		xReq.nCount		=	ulReqCount;
 	
-		nRet = FTOM_CLIENT_request(
+		xRet = FTOM_CLIENT_request(
 					pClient, 
 					(FTM_VOID_PTR)&xReq, 
 					sizeof(xReq), 
 					(FTM_VOID_PTR)pResp, 
 					nRespSize,
 					&ulRespLen);
-		if (nRet != FTM_RET_OK)
+		if (xRet != FTM_RET_OK)
 		{
 			FTM_MEM_free(pResp);
 			return	FTM_RET_ERROR;	
 		}
 	
-		nRet = pResp->nRet;
+		xRet = pResp->xRet;
 	
-		if (pResp->nRet == FTM_RET_OK)
+		if (pResp->xRet == FTM_RET_OK)
 		{
 			FTM_INT	i;
 	
@@ -1078,7 +1086,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 
 	*pnCount = ulRespCount;
 
-	return	nRet;
+	return	xRet;
 }
 
 /*****************************************************************
@@ -1092,7 +1100,7 @@ FTM_RET	FTDMC_EP_DATA_del
 	FTM_ULONG				nCount
 )
 {
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTOM_REQ_EP_DATA_DEL_PARAMS		xReq;
 	FTOM_RESP_EP_DATA_DEL_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
@@ -1108,19 +1116,19 @@ FTM_RET	FTDMC_EP_DATA_del
 	xReq.nIndex		=	nIndex;
 	xReq.nCount		=	nCount;
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTOM_CLIENT_EP_DATA_count
@@ -1130,7 +1138,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_count
 	FTM_ULONG_PTR			pCount
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTOM_REQ_EP_DATA_COUNT_PARAMS	xReq;
 	FTOM_RESP_EP_DATA_COUNT_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
@@ -1144,24 +1152,24 @@ FTM_RET	FTOM_CLIENT_EP_DATA_count
 	xReq.ulLen		=	sizeof(xReq);
 	xReq.xEPID		=	xEPID;
 
-	nRet = FTOM_CLIENT_request(
+	xRet = FTOM_CLIENT_request(
 				pClient, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp),
 				&ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pCount = xResp.ulCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************

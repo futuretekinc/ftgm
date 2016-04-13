@@ -823,7 +823,7 @@ FTM_VOID FTOM_SNMPTRAPD_loop
 		} 
 		else  if (nCount == 0)
 		{
-			snmp_timeout();
+			//snmp_timeout();
 		}
 		else
 		{

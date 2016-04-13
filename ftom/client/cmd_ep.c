@@ -19,15 +19,11 @@ FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pDa
 	FTM_INT		i;
 	FTM_CHAR	pPID[FTM_DID_LEN + 1];
 	FTM_CHAR	pDID[FTM_DID_LEN + 1];
-	FTM_CHAR	pName[FTM_NAME_LEN + 1];
-	FTM_CHAR	pUnit[FTM_UNIT_LEN + 1];
 	FTM_EP		xInfo;
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 
 	memset(pPID, 0, sizeof(pPID));
 	memset(pDID, 0, sizeof(pDID));
-	memset(pUnit, 0, sizeof(pUnit));
-	memset(pName, 0, sizeof(pName));
 
 	if (nArgc < 2)
 	{
@@ -84,12 +80,6 @@ FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pDa
 		}
 
 		xInfo.xEPID = strtoul(pArgv[2], NULL, 16);
-		if (xInfo.xEPID < 0)
-		{
-			ERROR("Invalid EPID.\n");
-			return	FTM_RET_INVALID_ARGUMENTS;
-		}
-
 		xInfo.xType = (xInfo.xEPID & FTM_EP_TYPE_MASK);
 
 		for(i = 0 ; i < sizeof(xInfo.pDID) - 1 && i < strlen(pArgv[3]); i ++)
@@ -100,6 +90,13 @@ FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pDa
 		if (xInfo.pPID[0] == 0)
 		{
 			memcpy(xInfo.pPID, xInfo.pDID, sizeof(xInfo.pPID));	
+		}
+
+		xRet = FTM_EP_isValid(&xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			MESSAGE("Invalid node information!\n");
+			return	xRet;
 		}
 
 		xRet = FTOM_CLIENT_EP_create(pClient, &xInfo);

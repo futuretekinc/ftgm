@@ -1,18 +1,7 @@
 #ifndef	__FTM_NODE_H__
 #define __FTM_NODE_H__
 
-#define	FTM_DID_LEN							32
-#define	FTM_URL_LEN							256
-#define	FTM_LOCATION_LEN					256
-#define	FTM_SNMP_COMMUNITY_LEN				128
-#define	FTM_SNMP_MIB_LEN					128
-
-#define	FTM_MQTT_TOPIC_LEN					128
-
-#define	FTM_DEVICE_NAME_LEN					256
-
-#define	FTM_NAME_LEN						256
-#define	FTM_UNIT_LEN						32
+#include "ftm_types.h"
 
 typedef	unsigned long	FTM_NODE_TYPE, _PTR_ FTM_NODE_TYPE_PTR;
 
@@ -68,6 +57,13 @@ FTM_RET	FTM_NODE_remove(FTM_NODE_PTR pEP);
 FTM_RET	FTM_NODE_count(FTM_ULONG_PTR pulCount);
 FTM_RET	FTM_NODE_get(FTM_CHAR_PTR pDID, FTM_NODE_PTR _PTR_ ppNode);
 FTM_RET	FTM_NODE_getAt(FTM_ULONG ulIndex, FTM_NODE_PTR _PTR_ ppNode);
+
+FTM_RET	FTM_NODE_isValid(FTM_NODE_PTR pNode);
+FTM_RET FTM_NODE_isValidType(FTM_ULONG	xType);
+FTM_RET	FTM_NODE_isValidTimeout(FTM_NODE_PTR pNode, FTM_ULONG ulTimeout);
+FTM_RET	FTM_NODE_isValidSNMPOpt(FTM_NODE_PTR pNode, FTM_NODE_OPT_SNMP_PTR pOpts);
+
+FTM_RET	FTM_NODE_setDefault(FTM_NODE_PTR pNode);
 
 FTM_CHAR_PTR	FTM_NODE_typeString(FTM_NODE_TYPE xType);
 #endif

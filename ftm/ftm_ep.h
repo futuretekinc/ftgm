@@ -3,9 +3,6 @@
 
 #include "ftm_node.h"
 
-#define	FTM_EP_NAME_LEN						256
-#define	FTM_EP_UNIT_LEN						32
-
 typedef	unsigned long	FTM_EP_ID, 		_PTR_ FTM_EP_ID_PTR;
 typedef	unsigned long	FTM_EP_TYPE, 	_PTR_ FTM_EP_TYPE_PTR;
 typedef	unsigned long	FTM_EP_STATE, 	_PTR_ FTM_EP_STATE_PTR;
@@ -100,8 +97,8 @@ typedef	struct
 {
 	FTM_EP_ID		xEPID;
 	FTM_EP_TYPE		xType;
-	FTM_CHAR		pName[FTM_EP_NAME_LEN+1];
-	FTM_CHAR		pUnit[FTM_EP_UNIT_LEN+1];
+	FTM_CHAR		pName[FTM_NAME_LEN+1];
+	FTM_CHAR		pUnit[FTM_UNIT_LEN+1];
 	FTM_BOOL		bEnable;
 	FTM_ULONG		ulTimeout;
 	FTM_ULONG		ulInterval;	
@@ -126,6 +123,9 @@ FTM_RET	FTM_EP_remove(FTM_EP_PTR pEP);
 FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount);
 FTM_RET	FTM_EP_get(FTM_EP_ID xEPID, FTM_EP_PTR _PTR_ ppNode);
 FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppNode);
+
+FTM_RET	FTM_EP_isValid(FTM_EP_PTR pEP);
+FTM_RET	FTM_EP_isValidTimeout(FTM_EP_PTR pEP, FTM_ULONG ulTimeout);
 
 FTM_CHAR_PTR FTM_EP_typeString(FTM_EP_TYPE nType);
 

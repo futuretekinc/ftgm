@@ -1,4 +1,5 @@
 #include "ftm_snmp.h"
+#include "ftm_trace.h"
 
 FTM_CHAR_PTR	FTM_SNMP_OID_toStr(FTM_SNMP_OID_PTR pOID)
 {

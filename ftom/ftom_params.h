@@ -17,7 +17,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 }	FTOM_RESP_PARAMS, _PTR_ FTOM_RESP_PARAMS_PTR;
 
 typedef	struct 
@@ -33,7 +33,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_CHAR			pDID[FTM_DID_LEN + 1];
 }	FTOM_RESP_NODE_CREATE_PARAMS, _PTR_ FTOM_RESP_NODE_CREATE_PARAMS_PTR;
 
@@ -50,7 +50,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 }	FTOM_RESP_NODE_DESTROY_PARAMS, _PTR_ FTOM_RESP_NODE_DESTROY_PARAMS_PTR;
 
 typedef struct	
@@ -65,7 +65,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_ULONG			ulCount;
 }	FTOM_RESP_NODE_COUNT_PARAMS, _PTR_ FTOM_RESP_NODE_COUNT_PARAMS_PTR;
 
@@ -82,7 +82,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_NODE		xNodeInfo;
 }	FTOM_RESP_NODE_GET_PARAMS, _PTR_ FTOM_RESP_NODE_GET_PARAMS_PTR;
 
@@ -99,7 +99,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_NODE		xNodeInfo;
 }	FTOM_RESP_NODE_GET_AT_PARAMS, _PTR_ FTOM_RESP_NODE_GET_AT_PARAMS_PTR;
 
@@ -116,7 +116,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 }	FTOM_RESP_EP_CREATE_PARAMS, _PTR_	FTOM_RESP_EP_CREATE_PARAMS_PTR;
 
 typedef	struct
@@ -132,7 +132,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 }	FTOM_RESP_EP_DESTROY_PARAMS, _PTR_ 	FTOM_RESP_EP_DESTROY_PARAMS_PTR;
 
 typedef	struct
@@ -148,7 +148,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_ULONG			nCount;
 }	FTOM_RESP_EP_COUNT_PARAMS, _PTR_	FTOM_RESP_EP_COUNT_PARAMS_PTR;
 
@@ -166,7 +166,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_ULONG			ulCount;
 	FTM_EP_ID			pEPIDList[];
 }	FTOM_RESP_EP_GET_LIST_PARAMS, _PTR_	FTOM_RESP_EP_GET_LIST_PARAMS_PTR;
@@ -184,7 +184,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_EP			xInfo;
 }	FTOM_RESP_EP_GET_PARAMS, _PTR_	FTOM_RESP_EP_GET_PARAMS_PTR;
 
@@ -201,7 +201,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_EP			xInfo;
 }	FTOM_RESP_EP_GET_AT_PARAMS, _PTR_	FTOM_RESP_EP_GET_AT_PARAMS_PTR;
 
@@ -235,7 +235,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 }	FTOM_RESP_EP_DATA_ADD_PARAMS, _PTR_	FTOM_RESP_EP_DATA_ADD_PARAMS_PTR;
 
 typedef	struct
@@ -251,7 +251,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_ULONG			ulBeginTime;
 	FTM_ULONG			ulEndTime;
 	FTM_ULONG			ulCount;
@@ -270,7 +270,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_EP_DATA 		xData;
 }	FTOM_RESP_EP_DATA_GET_LAST_PARAMS, _PTR_ FTOM_RESP_EP_DATA_GET_LAST_PARAMS_PTR;
 
@@ -289,7 +289,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_ULONG			nCount; 
 	FTM_EP_DATA 		pData[];
 }	FTOM_RESP_EP_DATA_GET_LIST_PARAMS, _PTR_ FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR;
@@ -309,7 +309,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 }	FTOM_RESP_EP_DATA_DEL_PARAMS, _PTR_ 	FTOM_RESP_EP_DATA_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -325,7 +325,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_ULONG			ulCount;
 }	FTOM_RESP_EP_DATA_COUNT_PARAMS, _PTR_ FTOM_RESP_EP_DATA_COUNT_PARAMS_PTR;
 
@@ -334,7 +334,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTOM_MSG			xMsg;
 }	FTOM_RESP_NOTIFY_PARAMS, _PTR_ FTOM_RESP_NOTIFY_PARAMS_PTR;
 

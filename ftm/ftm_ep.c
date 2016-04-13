@@ -237,6 +237,56 @@ FTM_RET	FTM_EP_getDataType(FTM_EP_PTR pEP, FTM_EP_DATA_TYPE_PTR pType)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_EP_isValid(FTM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+	FTM_RET	xRet;
+
+	if ((pEP->xEPID & FTM_EP_TYPE_MASK)	!= pEP->xType)
+	{
+		return	FTM_RET_INVALID_TYPE;	
+	}
+
+	xRet = FTM_isValidName(pEP->pName);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	xRet = FTM_isValidUnit(pEP->pUnit);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+	
+	xRet = FTM_isValidInterval(pEP->ulInterval);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+	
+	xRet = FTM_EP_isValidTimeout(pEP, pEP->ulTimeout);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+	
+	return	xRet;
+}
+
+FTM_RET	FTM_EP_isValidTimeout(FTM_EP_PTR pEP, FTM_ULONG	ulTimeout)
+{
+	ASSERT(pEP != NULL);
+
+	if (pEP->ulInterval < ulTimeout)
+	{
+		return	FTM_RET_INVALID_TIMEOUT;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+
 FTM_BOOL		FTM_EP_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator)
 {
 	ASSERT(pItem != NULL);

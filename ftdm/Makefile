@@ -1,4 +1,5 @@
-include ../Makefile.in
+TOPDIR=..
+include ${TOPDIR}/Makefile.in
 
 SERVER=ftdm
 SERVER_INCS=ftdm.h ftdm_server.h ftdm_server_cmds.h

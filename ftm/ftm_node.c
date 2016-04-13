@@ -124,6 +124,23 @@ FTM_RET	FTM_NODE_append(FTM_NODE_PTR pNode)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_NODE_setDefault(FTM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	memset(pNode, 0, sizeof(FTM_NODE));
+	
+	pNode->xType		= FTM_NODE_TYPE_SNMP;
+	pNode->ulInterval	= 60;
+	pNode->ulTimeout	= 10;
+	pNode->xOption.xSNMP.ulVersion = 1;
+	strcpy(pNode->xOption.xSNMP.pURL, "127.0.0.1");
+	strcpy(pNode->xOption.xSNMP.pCommunity, "public");
+	pNode->xOption.xSNMP.ulMaxRetryCount = 3;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_NODE_remove(FTM_NODE_PTR pNODE)
 {
 	ASSERT(pNODE != NULL);
@@ -154,6 +171,102 @@ FTM_RET	FTM_NODE_getAt(FTM_ULONG ulIndex, FTM_NODE_PTR _PTR_ ppNode)
 	ASSERT(ppNode != NULL);
 
 	return	FTM_LIST_getAt(pNodeList, ulIndex, (FTM_VOID_PTR _PTR_)ppNode);
+}
+
+FTM_RET	FTM_NODE_isValid(FTM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTM_isValidDID(pNode->pDID);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTM_isValidLocation(pNode->pLocation);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTM_isValidInterval(pNode->ulInterval);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet= FTM_NODE_isValidType(pNode->xType);
+	if(xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	xRet = FTM_NODE_isValidTimeout(pNode, pNode->ulTimeout);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+	
+	xRet = FTM_NODE_isValidSNMPOpt(pNode, &pNode->xOption.xSNMP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTM_NODE_isValidType(FTM_NODE_TYPE xType)
+{
+	if ((xType == FTM_NODE_TYPE_SNMP) ||
+		(xType == FTM_NODE_TYPE_MODBUS_OVER_TCP) ||
+		(xType == FTM_NODE_TYPE_MODBUS_OVER_SERIAL))
+	{
+		return	FTM_RET_OK;	
+	}
+
+	return	FTM_RET_INVALID_TYPE;
+}
+
+FTM_RET	FTM_NODE_isValidSNMPOpt(FTM_NODE_PTR pNode, FTM_NODE_OPT_SNMP_PTR pOpts)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pOpts != NULL);
+	
+	FTM_RET	xRet;
+
+	if (pOpts->ulVersion >= 3)
+	{
+		return	FTM_RET_INVALID_VERSION;	
+	}
+
+	xRet = FTM_isValidURL(pOpts->pURL);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTM_isValidCommunity(pOpts->pCommunity);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_NODE_isValidTimeout(FTM_NODE_PTR pNode, FTM_ULONG	ulTimeout)
+{
+	ASSERT(pNode != NULL);
+
+	if (pNode->ulInterval < ulTimeout)
+	{
+		return	FTM_RET_INVALID_TIMEOUT;	
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_CHAR_PTR FTM_NODE_typeString(FTM_NODE_TYPE xType)
