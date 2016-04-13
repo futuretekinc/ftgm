@@ -81,6 +81,25 @@ FTM_RET	FTOM_SNMPC_getEPCount
 	FTM_ULONG_PTR	pulCount
 );
 
+FTM_RET	FTOM_SNMPC_getEPID
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_EP_ID_PTR	pEPID
+);
+
+FTM_RET	FTOM_SNMPC_getEPName
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulMaxLen
+);
+
 FTM_RET	FTOM_SNMPC_getEPInfo
 (
 	FTOM_SNMPC_PTR 	pClient, 

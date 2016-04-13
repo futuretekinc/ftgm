@@ -269,6 +269,32 @@ FTM_RET	FTM_NODE_isValidTimeout(FTM_NODE_PTR pNode, FTM_ULONG	ulTimeout)
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_NODE_isStatic(FTM_NODE_PTR pNode)
+{
+	ASSERT(pNode != NULL);
+
+	if (pNode->xFlags & FTM_NODE_FLAG_STATIC)
+	{
+		return	FTM_RET_TRUE;
+	}
+
+	return	FTM_RET_FALSE;
+}
+
+FTM_RET	FTM_NODE_setDID(FTM_NODE_PTR pNode, FTM_CHAR_PTR pDID)
+{
+	ASSERT(pNode != NULL);
+
+	if (pDID == NULL)
+	{
+		memset(pNode->pDID, 0, sizeof(pNode->pDID));
+	}
+
+	strcpy(pNode->pDID, pDID);
+
+	return	FTM_RET_OK;
+}
+
 FTM_CHAR_PTR FTM_NODE_typeString(FTM_NODE_TYPE xType)
 {
 	switch(xType)

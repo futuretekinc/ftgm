@@ -1544,3 +1544,40 @@ FTM_RET	FTOM_getNodeInfo
 {
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTOM_discoveryEP
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_EP_PTR		pEPInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pIP != NULL);
+	ASSERT(pEPInfo != NULL);
+
+	FTM_RET		xRet;
+	FTM_EP_ID	xEPID;
+	FTM_CHAR	pName[FTM_NAME_LEN + 1];
+
+	xRet = FTOM_SNMPC_getEPID(&xSNMPC, pIP, xType, ulIndex, &xEPID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP not found!\n");
+		return	xRet;	
+	}
+
+	xRet = FTOM_SNMPC_getEPName(&xSNMPC, pIP, xType, ulIndex, pName, FTM_NAME_LEN);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP not found!\n");
+		return	xRet;	
+	}
+
+	pEPInfo->xEPID = xEPID;
+	strcpy(pEPInfo->pName, pName);
+
+	return	FTM_RET_OK;
+}

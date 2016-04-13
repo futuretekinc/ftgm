@@ -281,72 +281,21 @@ typedef struct
 	FTM_NODE_PTR	pInfos;
 }	FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS_PTR;
 
-static int _FTDM_DBIF_NODE_getListCB(void *pData, int nArgc, char **pArgv, char **pColName)
+static 
+int _FTDM_DBIF_NODE_getListCB(void *pData, int nArgc, char **pArgv, char **pColName)
 {
 	FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_DEVICE_LIST_PARAMS_PTR)pData;
 
 	if (nArgc != 0)
 	{
 		FTM_INT	i;
-		FTM_NODE_PTR	pNodeInfo = &pParams->pInfos[(*pParams->pulCount)++];
 
 		for(i = 0 ; i < nArgc ; i++)
 		{
-			if (strcasecmp(pColName[i], "DID") == 0)
+			if (strcmp(pColName[i], "VALUE") == 0)
 			{
-				strncpy(pNodeInfo->pDID, pArgv[i], 32);
-			}
-			else if (strcasecmp(pColName[i], "TYPE") == 0)
-			{
-				pNodeInfo->xType = strtoul(pArgv[i], 0, 10);
-			}
-			else if (strcasecmp(pColName[i], "LOC") == 0)
-			{
-				strncpy(pNodeInfo->pLocation, pArgv[i], FTM_LOCATION_LEN);
-			}
-			else if (strcasecmp(pColName[i], "INTERVAL") == 0)
-			{
-				pNodeInfo->ulInterval = strtoul(pArgv[i], NULL, 10);
-			}
-			else if (strcasecmp(pColName[i], "TIMEOUT") == 0)
-			{
-				pNodeInfo->ulTimeout = strtoul(pArgv[i], NULL, 10);
-			}
-			else if (strcasecmp(pColName[i], "OPT0") == 0)
-			{
-				switch (pNodeInfo->xType)
-				{
-				case	FTM_NODE_TYPE_SNMP:
-					pNodeInfo->xOption.xSNMP.ulVersion = strtoul(pArgv[i], 0, 10);
-					break;
-				}
-			}
-			else if (strcasecmp(pColName[i], "OPT1") == 0)
-			{
-				switch (pNodeInfo->xType)
-				{
-				case	FTM_NODE_TYPE_SNMP:
-					strncpy(pNodeInfo->xOption.xSNMP.pURL, pArgv[i], FTM_URL_LEN);
-					break;
-				}
-			}
-			else if (strcasecmp(pColName[i], "OPT2") == 0)
-			{
-				switch (pNodeInfo->xType)
-				{
-				case	FTM_NODE_TYPE_SNMP:
-					strncpy(pNodeInfo->xOption.xSNMP.pCommunity, pArgv[i], FTM_SNMP_COMMUNITY_LEN);
-					break;
-				}
-			}
-			else if (strcasecmp(pColName[i], "OPT3") == 0)
-			{
-				switch (pNodeInfo->xType)
-				{
-				case	FTM_NODE_TYPE_SNMP:
-					strncpy(pNodeInfo->xOption.xSNMP.pMIB, pArgv[i], FTM_SNMP_MIB_LEN);
-					break;
-				}
+				memcpy(&pParams->pInfos[(*pParams->pulCount)], pArgv[i], sizeof(FTM_NODE));
+				(*pParams->pulCount)++;
 			}
 		}
 	}
@@ -393,59 +342,43 @@ FTM_RET	FTDM_DBIF_NODE_getList
  ***************************************************************/
 FTM_RET	FTDM_DBIF_NODE_create
 (
- 	FTM_NODE_PTR	pNodeInfo
+ 	FTM_NODE_PTR	pInfo
 )
 {
-	FTM_RET			xRet;
-	FTM_CHAR_PTR	pErrMsg = NULL;
-	FTM_CHAR		pSQL[1024];
-	FTM_CHAR		pOpt0[256] = {0,};
-	FTM_CHAR		pOpt1[256] = {0,};
-	FTM_CHAR		pOpt2[256] = {0,};
-	FTM_CHAR		pOpt3[256] = {0,};
+	ASSERT(pInfo != NULL);
 
-	ASSERT(pNodeInfo != NULL);
+	FTM_INT			nRC;
+	sqlite3_stmt 	*pStmt;
+	FTM_CHAR		pSQL[1024];
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		TRACE("DB is not initialize.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	switch(pNodeInfo->xType)
+	sprintf(pSQL, "INSERT INTO node_info (DID,VALUE) VALUES (?,?)");
+	do 
 	{
-	case	FTM_NODE_TYPE_SNMP:	
-		{	
-			sprintf(pOpt0, "%lu", pNodeInfo->xOption.xSNMP.ulVersion);
-			sprintf(pOpt1, "%s", pNodeInfo->xOption.xSNMP.pURL);
-			sprintf(pOpt2, "%s", pNodeInfo->xOption.xSNMP.pCommunity);
-			sprintf(pOpt3, "%s", pNodeInfo->xOption.xSNMP.pMIB);
+		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRC!=SQLITE_OK )
+		{
+			ERROR("SQLite3 prepare error[%d]!\n", nRC);
+			return FTM_RET_ERROR;
 		}
-		break;
-	}
 
-	sprintf(pSQL, 
-			"INSERT INTO node_info (DID,TYPE,LOC,INTERVAL,TIMEOUT,OPT0,OPT1,OPT2,OPT3) "\
-			"VALUES (\'%s\',%lu,\'%s\',%lu,%lu,\'%s\',\'%s\',\'%s\',\'%s\')",
-			pNodeInfo->pDID, 
-			pNodeInfo->xType, 
-			pNodeInfo->pLocation,
-			pNodeInfo->ulInterval,
-			pNodeInfo->ulTimeout,
-			pOpt0,
-			pOpt1,
-			pOpt2,
-			pOpt3);
-	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
-	if (xRet != SQLITE_OK)
-	{
-		ERROR("SQL error : %s\n", pErrMsg);	
-		sqlite3_free(pErrMsg);
+		pInfo->xFlags |= FTM_EP_FLAG_STATIC;
 
-		return	FTM_RET_ERROR;
-	}
+		sqlite3_bind_text(pStmt, 1, pInfo->pDID, strlen(pInfo->pDID), 0);
+		sqlite3_bind_blob(pStmt, 2, pInfo, sizeof(FTM_NODE), SQLITE_STATIC);
 
-	return	FTM_RET_OK;
+		nRC = sqlite3_step(pStmt);
+		ASSERT( nRC != SQLITE_ROW);
+
+		nRC = sqlite3_finalize(pStmt);
+	}  while (nRC == SQLITE_SCHEMA);
+
+	return FTM_RET_OK;
 }
 
 /***************************************************************
@@ -456,7 +389,7 @@ FTM_RET	FTDM_DBIF_NODE_destroy
 	FTM_CHAR_PTR		pDID
 )
 {
-	FTM_RET		xRet;
+	FTM_RET			xRet;
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
 
@@ -464,11 +397,6 @@ FTM_RET	FTDM_DBIF_NODE_destroy
 	{
 		ERROR("DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
-	}
-
-	if (strlen(pDID) > FTM_DID_LEN)
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
 	sprintf(pSQL, "DELETE FROM node_info WHERE DID == %s", pDID);
@@ -493,53 +421,9 @@ static int _FTDM_DBIF_NODE_getCB(void *pData, int nArgc, char **pArgv, char **pC
 
 	if (nArgc != 0)
 	{
-		if (strcmp(pColName[0], "DID") == 0)
+		if (strcmp(pColName[0], "VALUE") == 0)
 		{
-			memcpy(pInfo->pDID, pArgv[0], 32);
-		}
-		else if (strcmp(pColName[0], "TYPE") == 0)
-		{
-			pInfo->xType = atoi(pArgv[0]);
-		}
-		else if (strcmp(pColName[0], "LOC") == 0)
-		{
-			strncpy(pInfo->pLocation, pArgv[0], FTM_LOCATION_LEN);
-		}
-		else if (strcmp(pColName[0], "INTERVAL") == 0)
-		{
-			pInfo->ulInterval = strtoul(pArgv[0], NULL, 10);
-		}
-		else if (strcmp(pColName[0], "TIMEOUT") == 0)
-		{
-			pInfo->ulTimeout= strtoul(pArgv[0], NULL, 10);
-		}
-		else if (strcmp(pColName[0], "OPT0") == 0)
-		{
-			if (pInfo->xType == FTM_NODE_TYPE_SNMP)
-			{
-				pInfo->xOption.xSNMP.ulVersion = strtoul(pArgv[0],0, 10);
-			}
-		}
-		else if (strcmp(pColName[0], "OPT1") == 0)
-		{
-			if (pInfo->xType == FTM_NODE_TYPE_SNMP)
-			{
-				strncpy(pInfo->xOption.xSNMP.pURL, pArgv[0], FTM_URL_LEN);
-			}
-		}
-		else if (strcmp(pColName[0], "OPT0") == 0)
-		{
-			if (pInfo->xType == FTM_NODE_TYPE_SNMP)
-			{
-				strncpy(pInfo->xOption.xSNMP.pCommunity, pArgv[0], FTM_SNMP_COMMUNITY_LEN);
-			}
-		}
-		else if (strcmp(pColName[0], "OPT0") == 0)
-		{
-			if (pInfo->xType == FTM_NODE_TYPE_SNMP)
-			{
-				strncpy(pInfo->xOption.xSNMP.pMIB, pArgv[0], FTM_SNMP_MIB_LEN);
-			}
+			memcpy(pInfo, pArgv[0], sizeof(FTM_NODE));
 		}
 	}
 	return	FTM_RET_OK;
@@ -704,6 +588,8 @@ FTM_RET	FTDM_DBIF_EP_append
 		{
 			return FTM_RET_ERROR;
 		}
+
+		pInfo->xFlags |= FTM_EP_FLAG_STATIC;
 
 		sqlite3_bind_int(pStmt, 1, pInfo->xEPID);
 		sqlite3_bind_blob(pStmt, 2, pInfo, sizeof(FTM_EP), SQLITE_STATIC);
@@ -1598,15 +1484,8 @@ FTM_RET	_FTDM_DBIF_NODE_createTable
 	}
 
 	sprintf(pSQL, "CREATE TABLE %s ("\
-						"DID		TEXT PRIMARY KEY,"\
-						"TYPE		INT,"\
-						"LOC		TEXT,"\
-						"INTERVAL	INT,"\
-						"TIMEOUT	INT,"\
-						"OPT0		TEXT,"\
-						"OPT1		TEXT,"\
-						"OPT2		TEXT,"\
-						"OPT3		TEXT)", pTableName);
+					"DID	TEXT PRIMARY KEY,"\
+					"VALUE	BLOB)" , pTableName);
 
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)

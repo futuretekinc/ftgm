@@ -32,6 +32,11 @@ typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
 #define	FTM_EP_DATA_TYPE_FLOAT	2
 #define	FTM_EP_DATA_TYPE_BOOL	3
 
+typedef enum
+{
+	FTM_EP_FLAG_STATIC = (1 << 0)
+}	FTM_EP_FLAG, _PTR_ FTM_EP_FLAG_PTR;
+
 typedef	enum
 {
 	FTM_EP_DATA_STATE_VALID =0,
@@ -97,6 +102,7 @@ typedef	struct
 {
 	FTM_EP_ID		xEPID;
 	FTM_EP_TYPE		xType;
+	FTM_EP_FLAG		xFlags;
 	FTM_CHAR		pName[FTM_NAME_LEN+1];
 	FTM_CHAR		pUnit[FTM_UNIT_LEN+1];
 	FTM_BOOL		bEnable;

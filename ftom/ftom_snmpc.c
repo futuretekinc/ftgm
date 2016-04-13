@@ -340,6 +340,55 @@ FTM_RET	FTOM_SNMPC_getEPCount
 	return FTOM_SNMPC_getULONG(pClient, pIP, &xOID, pulCount);
 }
 
+FTM_RET	FTOM_SNMPC_getEPID
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_EP_ID_PTR	pEPID
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pIP != NULL);
+	ASSERT(pEPID != NULL);
+
+	FTM_SNMP_OID	xOID = 
+	{ 
+		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1,1},
+		.ulOIDLen = 13
+	};
+
+	xOID.pOID[9] = (xType >> 16);
+
+	return	FTOM_SNMPC_getULONG(pClient, pIP, &xOID, (FTM_ULONG_PTR)pEPID);
+}
+
+FTM_RET	FTOM_SNMPC_getEPName
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulMaxLen
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pIP != NULL);
+	ASSERT(pBuff != NULL);
+
+	FTM_SNMP_OID	xOID = 
+	{ 
+		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1,3},
+		.ulOIDLen = 13
+	};
+
+	xOID.pOID[9] = (xType >> 16);
+
+	return	FTOM_SNMPC_getString(pClient, pIP, &xOID, pBuff, ulMaxLen);
+}
+
 FTM_RET	FTOM_SNMPC_getEPData
 (
 	FTOM_NODE_SNMPC_PTR pNode, 

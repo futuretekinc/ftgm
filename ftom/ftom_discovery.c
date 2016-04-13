@@ -95,7 +95,12 @@ FTM_RET	FTOM_DISCOVERY_start
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
-	xRet = FTOM_setMessageCallback(pDiscovery->pOM, FTOM_MSG_TYPE_DISCOVERY_INFO, (FTOM_ON_MESSAGE_CALLBACK)FTOM_DISCOVERY_infoCB, (FTM_VOID_PTR)pDiscovery, &pDiscovery->fOldCB, &pDiscovery->pOldData);
+	xRet = FTOM_setMessageCallback(pDiscovery->pOM, 
+				FTOM_MSG_TYPE_DISCOVERY_INFO, 
+				(FTOM_ON_MESSAGE_CALLBACK)FTOM_DISCOVERY_infoCB, 
+				(FTM_VOID_PTR)pDiscovery, 
+				&pDiscovery->fOldCB, 
+				&pDiscovery->pOldData);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
@@ -126,7 +131,12 @@ FTM_RET	FTOM_DISCOVERY_stop
 	pDiscovery->bStop = FTM_TRUE;
 	pthread_join(pDiscovery->xThread, NULL);
 
-	FTOM_setMessageCallback(pDiscovery->pOM, FTOM_MSG_TYPE_DISCOVERY_INFO, pDiscovery->fOldCB, pDiscovery->pOldData, NULL, NULL);
+	FTOM_setMessageCallback(pDiscovery->pOM, 
+			FTOM_MSG_TYPE_DISCOVERY_INFO, 
+			pDiscovery->fOldCB, 
+			pDiscovery->pOldData, 
+			NULL, 
+			NULL);
 
 	return	FTM_RET_OK;
 }
@@ -170,29 +180,46 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 			case	FTOM_MSG_TYPE_DISCOVERY_INFO:
 				{
 					FTOM_MSG_DISCOVERY_INFO_PTR	pMsg = (FTOM_MSG_DISCOVERY_INFO_PTR)pCommonMsg;
-					FTOM_NODE_PTR	pNode;
+					FTOM_DISCOVERY_NODE_PTR	pNode;
+					FTM_ULONG				i, j, ulCount;
 
-					TRACE("Discovery Node : %s\n", pMsg->pDID);
-					xRet = FTOM_getNode(pDiscovery->pOM, pMsg->pDID, &pNode);
-					if (xRet != FTM_RET_OK)
+					pNode = (FTOM_DISCOVERY_NODE_PTR)FTM_MEM_malloc(sizeof(FTOM_DISCOVERY_NODE));
+					if (pNode == NULL)
 					{
-						WARN("Unknown Node[%s]\n", pMsg->pDID);	
+						break;
 					}
-					else
-					{ 
-						FTM_ULONG	i, ulCount;
 
-						for(i = 0 ; i < pMsg->ulCount ; i++)
+					FTM_NODE_setDefault(&pNode->xInfo);
+					strcpy(pNode->xInfo.pDID, pMsg->pDID);
+					strcpy(pNode->pIP, pMsg->pIP);
+
+					FTM_LIST_append(&pDiscovery->xNodeList, pNode);
+
+					for(i = 0 ; i < pMsg->ulCount ; i++)
+					{
+						xRet = FTOM_discoveryEPCount(pDiscovery->pOM, pMsg->pIP, pMsg->pTypes[i], &ulCount);
+						if (xRet == FTM_RET_OK)
 						{
-							xRet = FTOM_discoveryEPCount(pDiscovery->pOM, pMsg->pIP, pMsg->pTypes[i], &ulCount);
-							if (xRet == FTM_RET_OK)
+							for(j = 0 ; j < ulCount ; j++)
 							{
-								TRACE("EP[%08x] is %d\n", pMsg->pTypes[i], ulCount);	
+								FTM_EP	xEPInfo;
+
+								FTM_EP_setDefault(&xEPInfo);
+								xRet = FTOM_discoveryEP(pDiscovery->pOM, pMsg->pIP, pMsg->pTypes[i], j, &xEPInfo);
+								if (xRet == FTM_RET_OK)
+								{
+									FTOM_DISCOVERY_EP_PTR	pEP;
+
+									pEP = (FTOM_DISCOVERY_EP_PTR)FTM_MEM_malloc(sizeof(FTOM_DISCOVERY_EP));
+									if (pEP != NULL)
+									{
+										memcpy(&pEP->xInfo, &xEPInfo, sizeof(FTM_EP));
+										FTM_LIST_append(&pDiscovery->xEPList, pEP);
+									}
+								}
 							}
-						}	
-					}
-					//FTM_NODE	xNodeInfo;
-					//FTOM_DISCOVERY_getNodeInfo(pMsg->pDID, &xNodeInfO);
+						}
+					}	
 				}
 				break;
 
@@ -323,6 +350,7 @@ FTM_RET	FTOM_DISCOVERY_infoCB
 	}
 
 	strcpy(pInfo->pDID, pMsg->pDID);
+	strcpy(pInfo->pIP, pMsg->pIP);
 	memcpy(pInfo->pEPTypes, pMsg->pTypes, sizeof(FTM_EP_TYPE)*pMsg->ulCount);
 	pInfo->ulCount = pMsg->ulCount;
 
