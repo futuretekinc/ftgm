@@ -205,6 +205,22 @@ typedef	struct
 	FTM_EP			xInfo;
 }	FTOM_RESP_EP_GET_AT_PARAMS, _PTR_	FTOM_RESP_EP_GET_AT_PARAMS_PTR;
 
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_EP				xInfo;
+}	FTOM_REQ_EP_SET_PARAMS, _PTR_ 	FTOM_REQ_EP_SET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTOM_RESP_EP_SET_PARAMS, _PTR_	FTOM_RESP_EP_SET_PARAMS_PTR;
+
 typedef struct
 {
 	FTM_ULONG			ulReqID;

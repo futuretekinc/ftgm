@@ -15,6 +15,7 @@ typedef	struct
 	{
 		FTM_CHAR	pServerIP[FTDMC_SERVER_IP_LEN];
 		FTM_USHORT	usPort;
+		FTM_BOOL	bAutoConnect;
 	}	xNetwork;
 
 	struct

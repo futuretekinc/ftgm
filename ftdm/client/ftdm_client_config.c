@@ -70,6 +70,7 @@ FTM_RET	FTDMC_CFG_load(FTDMC_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		{
 			config_setting_t *pIPSetting;
 			config_setting_t *pPortSetting;
+			config_setting_t *pAutoConnectSetting;
 
 			pIPSetting = config_setting_get_member(pServerSetting, "ip");
 			if (pIPSetting)
@@ -83,6 +84,12 @@ FTM_RET	FTDMC_CFG_load(FTDMC_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 			if (pPortSetting)
 			{
 				pConfig->xNetwork.usPort = config_setting_get_int(pPortSetting);
+			}
+
+			pAutoConnectSetting = config_setting_get_member(pServerSetting, "auto_connect");
+			if (pAutoConnectSetting)
+			{
+				pConfig->xNetwork.bAutoConnect = config_setting_get_int(pAutoConnectSetting);
 			}
 		}
 	}

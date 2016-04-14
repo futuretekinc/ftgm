@@ -381,8 +381,6 @@ FTM_RET	FTM_SHELL_cmdHelp
 	FTM_VOID_PTR 	pData
 )
 {
-	ASSERT(pData != NULL);
-
 	switch(nArgc)
 	{
 	case	1:

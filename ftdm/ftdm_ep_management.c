@@ -324,7 +324,6 @@ FTM_RET FTDM_EPM_append
 	ASSERT(pEPM != NULL);
 	ASSERT(pEP != NULL);
 
-	TRACE("Append : pEPM->pList = %08x, pEP = %08x\n", pEPM->pList, pEP);
 	return	FTM_LIST_append(pEPM->pList, pEP);
 }
 

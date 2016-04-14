@@ -609,11 +609,22 @@ FTM_RET	FTDMS_EP_add
 	FTDM_RESP_EP_ADD_PARAMS_PTR	pResp
 )
 {
+	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP;
+
+	xRet = FTDM_EP_create(&pReq->xInfo, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTDM_EPM_append(pServer->pDM->pEPM, pEP);
+		if (xRet != FTM_RET_OK)
+		{
+			FTDM_EP_destroy(&pEP);
+		}
+	}
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_EP_create(&pReq->xInfo, &pEP);
+	pResp->nRet = xRet;
 
 	return	pResp->nRet;
 }

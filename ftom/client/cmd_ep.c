@@ -13,7 +13,13 @@
 #include "ftom_client.h"
 #include "ftom_client_config.h"
 
-FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)
+FTM_RET	FTOM_CLIENT_CMD_EP
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[], 
+	FTM_VOID_PTR 	pData
+)
 {
 	FTM_RET		xRet;
 	FTM_INT		i;
@@ -142,7 +148,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pDa
 				}
 				else
 				{
-					MESSAGE("%-8s %-16s %-16s %-8s %-8s %-16s %-16s %-8s\n",
+					MESSAGE("%8s %16s %16s %8s %8s %16s %16s %8s\n",
 						"EPID", "CLASS", "NAME", "UNIT", "INTERNAL", "DID", "PID", "VALUE");
 					FTOM_CLIENT_EP_getList(pClient, 0x00000000, pEPIDs, nCount, &nCount);
 					for(i = 0 ; i< nCount ; i++)
@@ -152,7 +158,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pDa
 						xRet = FTOM_CLIENT_EP_get(pClient, pEPIDs[i], &xInfo);
 						if (xRet == FTM_RET_OK)
 						{
-							MESSAGE("%08lx %-16s %-16s %-8s %8lu %-16s %-16s ",
+							MESSAGE("%08lx %16s %16s %8s %8lu %16s %16s ",
 									xInfo.xEPID,
 									FTM_EP_typeString(xInfo.xType),
 									xInfo.pName,
@@ -336,6 +342,23 @@ FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pDa
 				break;
 
 			case	4:
+				{
+					if (strcasecmp(pArgv[2], "name") == 0)
+					{
+						if (strlen(pArgv[3]) > FTM_NAME_LEN)
+						{
+							MESSAGE("Name is too long.\n");
+						}
+						else
+						{
+							strcpy(xInfo.pName, pArgv[3]);	
+						}
+
+						xRet = FTOM_CLIENT_EP_set(pClient, &xInfo);
+					}
+				}
+				break;
+
 			case	5:
 				{
 					if (strcasecmp(pArgv[2], "data") == 0)

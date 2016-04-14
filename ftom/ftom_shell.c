@@ -16,7 +16,7 @@ FTM_RET	FTOM_SHELL_init
 	
 	FTM_RET	xRet;
 
-	xRet = FTM_SHELL_init(&pShell->xShell);
+	xRet = FTM_SHELL_init(&pShell->xShell, pOM);
 	FTM_SHELL_setPrompt(&pShell->xShell, "FTOM> ");
 	if (xRet == FTM_RET_OK)
 	{

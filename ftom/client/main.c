@@ -43,7 +43,7 @@ int main(int argc , char *argv[])
 	FTOM_CLIENT_setNotifyCallback(&xClient, FTOM_CLIENT_notifyCallback);
 
 
-	FTM_SHELL_init(&xShell);
+	FTM_SHELL_init(&xShell, NULL);
 	FTM_SHELL_setPrompt(&xShell, _strPrompt);
 	for(i = 0 ; i < ulCmds;i++)
 	{

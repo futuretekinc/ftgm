@@ -458,7 +458,6 @@ int main(int nArgc, char *pArgv[])
 
 	if (bLoadObjectFromFile)
 	{
-		TRACE("%s[%d]\n", __func__, __LINE__);
 		xRet = FTDM_loadObjectFromFile(&xFTDM, pObjectFileName);
 		if (xRet != FTM_RET_OK)
 		{
@@ -466,12 +465,10 @@ int main(int nArgc, char *pArgv[])
 			ERROR("File Name : %s\n", pObjectFileName);
 			return	0;	
 		}
-		TRACE("%s[%d]\n", __func__, __LINE__);
 
 		FTDM_saveObjectToDB(&xFTDM);
 	}
 
-		TRACE("%s[%d]\n", __func__, __LINE__);
 	if (bDaemon)
 	{ 
 		if (fork() == 0)

@@ -13,7 +13,13 @@
 #include "ftom_client.h"
 #include "ftom_client_config.h"
 
-FTM_RET	FTOM_CLIENT_CMD_quit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)
+FTM_RET	FTOM_CLIENT_CMD_quit
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[], 
+	FTM_VOID_PTR 	pData
+)
 {
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 

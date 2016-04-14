@@ -107,6 +107,13 @@ static FTM_RET	FTOM_SERVER_EP_getAt
 	FTOM_RESP_EP_GET_AT_PARAMS_PTR		pResp
 );
 
+static FTM_RET	FTOM_SERVER_EP_set
+(
+	FTOM_SESSION_PTR					pSession,
+ 	FTOM_REQ_EP_SET_PARAMS_PTR			pReq,
+	FTOM_RESP_EP_SET_PARAMS_PTR			pResp
+);
+
 static FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
 (
 	FTOM_SESSION_PTR							pSession,
@@ -155,6 +162,7 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_GET_LIST,			FTOM_SERVER_EP_getList),
 	MK_CMD_SET(FTOM_CMD_EP_GET,					FTOM_SERVER_EP_get),
 	MK_CMD_SET(FTOM_CMD_EP_GET_AT,				FTOM_SERVER_EP_getAt),
+	MK_CMD_SET(FTOM_CMD_EP_SET,					FTOM_SERVER_EP_set),
 	MK_CMD_SET(FTOM_CMD_EP_REG_NOTIFY_RECEIVER, FTOM_SERVER_EP_registrationNotifyReceiver),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_INFO,			FTOM_SERVER_EP_DATA_info),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_GET_LAST,		FTOM_SERVER_EP_DATA_getLast),
@@ -823,6 +831,32 @@ FTM_RET	FTOM_SERVER_EP_getAt
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
 	}
 	
+	return	pResp->xRet;
+}
+
+FTM_RET	FTOM_SERVER_EP_set
+(
+	FTOM_SESSION_PTR				pSession,
+ 	FTOM_REQ_EP_SET_PARAMS_PTR		pReq,
+	FTOM_RESP_EP_SET_PARAMS_PTR		pResp
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET			xRet;
+	FTOM_EP_PTR		pEP;
+
+	xRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xInfo.xEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_EP_setInfo(pEP, &pReq->xInfo);
+	}
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = xRet;
+
 	return	pResp->xRet;
 }
 

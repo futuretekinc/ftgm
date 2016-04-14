@@ -89,6 +89,12 @@ FTM_RET	FTOM_EP_getDataType
 	FTM_EP_DATA_TYPE_PTR pType
 );
 
+FTM_RET	FTOM_EP_setInfo
+(
+	FTOM_EP_PTR			pEP,
+	FTM_EP_PTR			pInfo
+);
+
 FTM_RET	FTOM_EP_setData
 (
 	FTOM_EP_PTR 		pEP, 

@@ -857,6 +857,45 @@ FTM_RET FTOM_CLIENT_EP_getAt
 	return	xResp.xRet;
 }
 
+FTM_RET FTOM_CLIENT_EP_set
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_EP_PTR			pInfo
+)
+{
+	FTM_RET						xRet;
+	FTOM_REQ_EP_SET_PARAMS		xReq;
+	FTOM_RESP_EP_SET_PARAMS		xResp;
+	FTM_ULONG					ulRespLen;
+
+	if ((pClient == NULL) || (pClient->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	if (pInfo == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	xReq.xCmd	=	FTOM_CMD_EP_SET;
+	xReq.ulLen	=	sizeof(xReq);
+	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
+
+	xRet = FTOM_CLIENT_request(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
 
 /*****************************************************************
  *

@@ -14,7 +14,13 @@
 #include "ftom_client.h"
 #include "ftom_client_config.h"
 
-FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)
+FTM_RET	FTOM_CLIENT_CMD_NODE
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[], 
+	FTM_VOID_PTR 	pData
+)
 {
 	ASSERT(pData != NULL);
 
@@ -35,6 +41,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR p
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
+	TRACE("Cmd node\n");
 	if (strcasecmp(pArgv[1], "add") == 0)
 	{
 		if (nArgc < 4)
@@ -194,7 +201,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR p
 
 		MESSAGE("NODE COUNT : %d\n", nNodeCount);
 
-		MESSAGE("%-16s %-16s %-16s %-8s %-16s %-16s %-16s\n", 
+		MESSAGE("%16s %16s %16s %8s %16s %16s %16s\n", 
 			"DID", "TYPE", "LOCATION", "INTERVAL", "OPT0", "OPT1", "OPT2", "OPT3");
 
 		for(i = 0 ; i < nNodeCount; i++)
@@ -204,7 +211,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR p
 			xRet = FTOM_CLIENT_NODE_getAt(pClient, i, &xInfo);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%-16s %-16s %-16s %8d ", 
+				MESSAGE("%16s %16s %16s %8d ", 
 					xInfo.pDID, 
 					FTM_NODE_typeString(xInfo.xType), 
 					xInfo.pLocation,
@@ -214,7 +221,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR p
 				{
 				case	FTM_NODE_TYPE_SNMP:
 					{
-						MESSAGE("%-16d %-16s %-16s", 
+						MESSAGE("%16d %16s %16s", 
 							xInfo.xOption.xSNMP.ulVersion,
 							xInfo.xOption.xSNMP.pURL,
 							xInfo.xOption.xSNMP.pCommunity);

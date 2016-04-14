@@ -85,7 +85,7 @@ FTM_SHELL_CMD			FTDMC_pCmdList[] =
 		.pHelp      = "<COMMAND> ...\n"\
 					  "\tEndPoint management.\n"\
 					  "COMMANDS:\n"\
-					  "\tadd    <EPID> <Type> [Name] [Unit] [Interval] [DID] [PID]\n"\
+					  "\tadd    <EPID> [Name] [Unit] [Interval] [DID] [PID]\n"\
 					  "\tdel    <EPID>\n"\
 					  "\tlist\n"\
 					  "PARAMETERS:\n"\
@@ -515,6 +515,7 @@ FTM_RET	FTDMC_EP_cmd
 		case	8:
 			if (strlen(pArgv[7]) > FTM_DID_LEN)
 			{
+				MESSAGE("PID is too long.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
@@ -526,6 +527,7 @@ FTM_RET	FTDMC_EP_cmd
 		case	7:
 			if (strlen(pArgv[6]) > FTM_DID_LEN)
 			{
+				MESSAGE("DID is too long.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
@@ -536,14 +538,16 @@ FTM_RET	FTDMC_EP_cmd
 
 		case	6:
 			xInfo.ulInterval = atoi(pArgv[5]);
-			if (xInfo.ulInterval < 0)
+			if (xInfo.ulInterval <= 0)
 			{
+				MESSAGE("Invalid interval.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
 		case	5:
 			if (strlen(pArgv[4]) > FTM_UNIT_LEN)
 			{
+				MESSAGE("Invalid Unit.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 
@@ -555,6 +559,7 @@ FTM_RET	FTDMC_EP_cmd
 		case	4:
 			if (strlen(pArgv[3]) > FTM_NAME_LEN)
 			{
+				MESSAGE("Name is too long.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 

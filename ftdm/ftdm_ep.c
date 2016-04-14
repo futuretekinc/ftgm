@@ -49,12 +49,6 @@ FTM_RET	FTDM_EP_create
 	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTM_EP_get(pInfo->xEPID, (FTM_EP_PTR _PTR_)&pEP);
-	if (xRet == FTM_RET_OK)
-	{
-		return	FTM_RET_ALREADY_EXIST_OBJECT;	
-	}
-	
 	pEP = (FTDM_EP_PTR)FTM_MEM_malloc(sizeof(FTDM_EP));
 	if (pEP == NULL)
 	{
@@ -72,6 +66,7 @@ FTM_RET	FTDM_EP_create
 		xRet = FTDM_DBIF_EP_append(pInfo);
 		if (xRet != FTM_RET_OK)
 		{
+			ERROR("EP append failed[%08x].\n", xRet);
 			FTM_MEM_free(pEP);
 			return	xRet;
 		}
@@ -347,10 +342,10 @@ FTM_RET	FTDM_EP_DATA_countWithTime
 
 FTM_INT	FTDM_EPSeeker(const void *pElement, const void *pKey)
 {
-	FTM_EP_PTR	pEPInfo = (FTM_EP_PTR)pElement;
+	FTDM_EP_PTR		pEP= (FTDM_EP_PTR)pElement;
 	FTM_EP_ID_PTR	pEPID = (FTM_EP_ID_PTR)pKey;
 
-	if (pEPInfo->xEPID == *pEPID)
+	if (pEP->xInfo.xEPID == *pEPID)
 	{
 		return	1;	
 	}

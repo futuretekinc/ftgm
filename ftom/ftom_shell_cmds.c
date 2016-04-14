@@ -14,6 +14,7 @@ FTM_ULONG	ulGetheringTime = 3;
 
 FTM_RET	FTOM_SHELL_CMD_config
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc, 
 	FTM_CHAR_PTR	pArgv[], 
 	FTM_VOID_PTR 	pData
@@ -21,6 +22,7 @@ FTM_RET	FTOM_SHELL_CMD_config
 
 FTM_RET	FTOM_SHELL_CMD_list
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc, 
 	FTM_CHAR_PTR	pArgv[], 
 	FTM_VOID_PTR 	pData
@@ -28,6 +30,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 FTM_RET	FTOM_SHELL_CMD_task
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc, 
 	FTM_CHAR_PTR	pArgv[], 
 	FTM_VOID_PTR 	pData
@@ -35,6 +38,7 @@ FTM_RET	FTOM_SHELL_CMD_task
 
 FTM_RET	FTOM_SHELL_CMD_quit
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc, 
 	FTM_CHAR_PTR	pArgv[], 
 	FTM_VOID_PTR 	pData
@@ -42,6 +46,7 @@ FTM_RET	FTOM_SHELL_CMD_quit
 
 FTM_RET	FTOM_SHELL_CMD_discovery
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc, 
 	FTM_CHAR_PTR	pArgv[], 
 	FTM_VOID_PTR 	pData
@@ -92,6 +97,7 @@ FTM_ULONG		FTOM_shellCmdCount = sizeof(FTOM_shellCmds) / sizeof(FTM_SHELL_CMD);
 
 FTM_RET	FTOM_SHELL_CMD_config
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR 	pData
@@ -111,6 +117,7 @@ FTM_RET	FTOM_SHELL_CMD_config
 
 FTM_RET	FTOM_SHELL_CMD_list
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR 	pData
@@ -271,6 +278,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 FTM_RET	FTOM_SHELL_CMD_quit
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR 	pData
@@ -284,6 +292,7 @@ FTM_RET	FTOM_SHELL_CMD_quit
 
 FTM_RET	FTOM_SHELL_CMD_task
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR 	pData
@@ -295,6 +304,7 @@ FTM_RET	FTOM_SHELL_CMD_task
 
 FTM_RET	FTOM_SHELL_CMD_discovery
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR 	pData
