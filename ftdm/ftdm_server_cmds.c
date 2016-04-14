@@ -14,13 +14,13 @@
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
 
-FTM_RET	FTDMS_SHELL_CMD_config(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_object(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_session(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_trace(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_node(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_ep(FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR	pData);
-FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
+FTM_RET	FTDMS_SHELL_CMD_config(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_object(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_session(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_trace(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_node(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTDMS_SHELL_CMD_ep(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR	pData);
+FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_SHELL_PTR pShell, FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
 
 static FTDM_CFG	xConfig;
 FTM_SHELL_CMD	FTDMS_pCmdList[] =
@@ -74,6 +74,7 @@ FTM_CHAR_PTR	FTDMS_pPrompt = "FTDMS> ";
 
 FTM_RET	FTDMS_SHELL_CMD_config
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR	pData
@@ -98,19 +99,23 @@ FTM_RET	FTDMS_SHELL_CMD_config
 
 FTM_RET	FTDMS_SHELL_CMD_object
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR	pData
 )
 {
+	FTDM_SERVER_PTR	pServer = (FTDM_SERVER_PTR)pData;
+
 	FTM_RET	xRet;
-	
+
+	TRACE("pServer = %08x, pServer->pDM = %08x\n", pServer, pServer->pDM);
 	switch (nArgc)
 	{
 	case	1:
 		{
-			FTDM_NODE_showList();
-			FTDM_EP_showList();
+			FTDM_NODEM_showList(pServer->pDM->pNodeM);
+			FTDM_EPM_showList(pServer->pDM->pEPM);
 			FTDM_TRIGGER_showList();
 			FTDM_ACTION_showList();
 			FTDM_RULE_showList();
@@ -121,7 +126,7 @@ FTM_RET	FTDMS_SHELL_CMD_object
 		{
 			if (strcasecmp(pArgv[1], "load") == 0)
 			{
-				xRet = FTDM_loadObjectFromFile(pArgv[2]);	
+				xRet = FTDM_loadObjectFromFile(pServer->pDM, pArgv[2]);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR("Objects loading failed.[%08x]\n", xRet);
@@ -144,6 +149,7 @@ FTM_RET	FTDMS_SHELL_CMD_object
 
 FTM_RET	FTDMS_SHELL_CMD_session
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR	pData
@@ -182,6 +188,7 @@ FTM_RET	FTDMS_SHELL_CMD_session
 
 FTM_RET FTDMS_SHELL_CMD_trace
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR	pData
@@ -228,16 +235,19 @@ FTM_RET FTDMS_SHELL_CMD_trace
 
 FTM_RET FTDMS_SHELL_CMD_node
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR	pData
 )
 {
+	FTDM_SERVER_PTR	pServer = (FTDM_SERVER_PTR)pData;
+
 	switch(nArgc)
 	{
 	case	1:
 		{
-			FTDM_SHELL_showNodeList();
+			FTDM_SHELL_showNodeList(pServer->pDM->pNodeM);
 		}
 		break;
 
@@ -256,7 +266,7 @@ FTM_RET FTDMS_SHELL_CMD_node
 			}
 			else
 			{
-				FTDM_SHELL_showNodeInfo(pArgv[1]);
+				FTDM_SHELL_showNodeInfo(pServer->pDM->pNodeM, pArgv[1]);
 			}
 	
 		}
@@ -267,17 +277,19 @@ FTM_RET FTDMS_SHELL_CMD_node
 
 FTM_RET FTDMS_SHELL_CMD_ep
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
 	FTM_CHAR_PTR	pArgv[],
 	FTM_VOID_PTR	pData
 )
 {
+	FTDM_SERVER_PTR	pServer = (FTDM_SERVER_PTR)pData;
 
 	switch (nArgc)
 	{
 	case	1:	
 		{
-			FTDM_SHELL_showEPList();
+			FTDM_SHELL_showEPList(pServer->pDM->pEPM);
 		}
 		break;
 
@@ -301,7 +313,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 
 				xEPID = strtoul(pArgv[1], NULL, 16);
 
-				FTDM_SHELL_showEPInfo(xEPID);
+				FTDM_SHELL_showEPInfo(pServer->pDM->pEPM, xEPID);
 			}
 		}
 			
@@ -315,7 +327,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 
 				xEPID = strtoul(pArgv[1], NULL, 16);
 
-				FTDM_SHELL_showEPData(xEPID, 0, 100);
+				FTDM_SHELL_showEPData(pServer->pDM->pEPM, xEPID, 0, 100);
 			}
 		}
 		break;
@@ -337,7 +349,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 					break;
 				}
 
-				FTDM_SHELL_showEPData(xEPID, ulStart - 1, ulCount);
+				FTDM_SHELL_showEPData(pServer->pDM->pEPM, xEPID, ulStart - 1, ulCount);
 			}
 		}
 		break;
@@ -362,7 +374,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 						break;
 					}
 
-					FTDM_SHELL_delEPData(xEPID, nIndex, ulCount);
+					FTDM_SHELL_delEPData(pServer->pDM->pEPM, xEPID, nIndex, ulCount);
 				}
 			}
 		}

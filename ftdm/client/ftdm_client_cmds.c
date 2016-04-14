@@ -7,21 +7,22 @@
 #include <time.h>    
 #include <sys/socket.h> 
 #include <arpa/inet.h>
-#include "libconfig.h"
 #include "ftm.h"
+#include "ftm_snmp.h"
 #include "ftdm_client.h"
 #include "ftdm_client_cmds.h"
 #include "ftdm_client_config.h"
+#include "libconfig.h"
 
-static FTM_RET  FTDMC_cmdConfig(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-static FTM_RET	FTDMC_cmdConnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-static FTM_RET	FTDMC_cmdDisconnect(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-static FTM_RET	FTDMC_NODE_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-static FTM_RET	FTDMC_EP_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-static FTM_RET	FTDMC_EP_DATA_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-static FTM_RET	FTDMC_TRIGGER_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-static FTM_RET	FTDMC_DEBUG_cmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-static FTM_RET	FTDMC_cmdQuit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET  FTDMC_cmdConfig(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_cmdConnect(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_cmdDisconnect(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_NODE_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_EP_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_EP_DATA_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_TRIGGER_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_DEBUG_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_cmdQuit(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 
 extern FTDMC_CFG		xClientConfig;
 extern FTDMC_SESSION	_xSession;
@@ -147,6 +148,7 @@ FTM_CHAR_PTR	FTDMC_pPrompt = "FTDMC> ";
 
 FTM_RET  FTDMC_cmdConfig
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
@@ -171,6 +173,7 @@ FTM_RET  FTDMC_cmdConfig
 
 FTM_RET	FTDMC_cmdConnect
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
@@ -220,6 +223,7 @@ FTM_RET	FTDMC_cmdConnect
 
 FTM_RET	FTDMC_cmdDisconnect
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
@@ -245,13 +249,13 @@ FTM_RET	FTDMC_cmdDisconnect
 
 FTM_RET	FTDMC_NODE_cmd
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
 )
 {
-	FTM_RET	xRet;
-	FTM_INT	i;
+	FTM_RET		xRet = FTM_RET_OK;
 	FTM_NODE	xNodeInfo;
 	FTM_CHAR	pDID[FTM_DID_LEN + 1];
 	FTM_CHAR	pURL[FTM_URL_LEN + 1];
@@ -273,7 +277,8 @@ FTM_RET	FTDMC_NODE_cmd
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		memset(&xNodeInfo, 0, sizeof(FTM_NODE));
+		FTM_NODE_setDefault(&xNodeInfo);
+
 		if (strcasecmp(pArgv[3], "SNMP") == 0)
 		{
 			xNodeInfo.xType = FTM_NODE_TYPE_SNMP;	
@@ -293,6 +298,8 @@ FTM_RET	FTDMC_NODE_cmd
 
 		if ((xNodeInfo.xType == FTM_NODE_TYPE_SNMP) && (nArgc == 6))
 		{
+			FTM_INT	i;
+
 			if ((strlen(pArgv[5]) > FTM_SNMP_COMMUNITY_LEN) ||
 				(strlen(pArgv[4]) > FTM_URL_LEN) ||
 				(strlen(pArgv[2]) > FTM_DID_LEN))
@@ -320,7 +327,7 @@ FTM_RET	FTDMC_NODE_cmd
 			xRet = FTDMC_NODE_append(&_xSession, &xNodeInfo);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("%s : ERROR - %lx\n", pArgv[0], xRet);
+				ERROR("%s : ERROR - %08lx\n", pArgv[0], xRet);
 			}
 			else
 			{
@@ -377,17 +384,19 @@ FTM_RET	FTDMC_NODE_cmd
 		xRet = FTDMC_NODE_get(&_xSession, pDID, &xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+			ERROR("Can't get node[%s] information[%08x]\n", pDID, xRet);
 		}
 		else
 		{
-			MESSAGE("NODE INFORMATION\n"\
-					"%16s : %s\n"\
-					"%16s : %lu\n"\
-					"%16s : %s\n",
-					"DID", xInfo.pDID,
-					"TYPE", xInfo.xType,
-					"LOCATION", xInfo.pLocation);
+			MESSAGE("NODE INFORMATION\n");
+			MESSAGE("%16s : %s\n", "DID", 		xInfo.pDID);
+			MESSAGE("%16s : %s\n", "Type", 		FTM_NODE_typeString(xInfo.xType));
+			MESSAGE("%16s : %s\n", "Location", 	xInfo.pLocation);
+			MESSAGE("%16s : %d\n", "Interval", 	xInfo.ulInterval);
+			MESSAGE("%16s : %d\n", "Timeout", 	xInfo.ulTimeout);
+			MESSAGE("%16s : %s\n", "Version", 	FTM_SNMP_versionString(xInfo.xOption.xSNMP.ulVersion));
+			MESSAGE("%16s : %s\n", "URL", 		xInfo.xOption.xSNMP.pURL);
+			MESSAGE("%16s : %s\n", "Community", 	xInfo.xOption.xSNMP.pCommunity);
 		}
 	}
 	else if (strcasecmp(pArgv[1], "list") == 0)
@@ -400,10 +409,7 @@ FTM_RET	FTDMC_NODE_cmd
 			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
 		}
 
-		MESSAGE("NODE COUNT : %d\n", nNodeCount);
-
-		MESSAGE("%16s %16s %16s %8s %8s\n", 
-			"DID", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT");
+		MESSAGE("%16s %8s %16s %8s %8s %8s %16s %8s %16s\n", "DID", "Type", "Flags", "Interval", "Timeout", "Version", "URL", "Community", "Location");
 
 		for(i = 0 ; i < nNodeCount; i++)
 		{
@@ -412,19 +418,63 @@ FTM_RET	FTDMC_NODE_cmd
 			xRet = FTDMC_NODE_getAt(&_xSession, i, &xInfo);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%16s %16s %16s %8d %8d\n", 
-					xInfo.pDID, 
-					FTM_NODE_typeString(xInfo.xType), 
-					xInfo.pLocation,
-					xInfo.ulInterval,
-					xInfo.ulTimeout);
+				MESSAGE("%16s %8s %16s %8d %8d %8s %16s %8s\n", 
+						xInfo.pDID,
+						FTM_NODE_typeString(xInfo.xType),
+						FTM_NODE_isStatic(&xInfo)?"Static":"Dynamic",
+						xInfo.ulInterval,
+						xInfo.ulTimeout,
+						FTM_SNMP_versionString(xInfo.xOption.xSNMP.ulVersion),
+						xInfo.xOption.xSNMP.pURL,
+						xInfo.xOption.xSNMP.pCommunity,
+						xInfo.pLocation);
 			}
 		
 		}
 	}
 	else
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		FTM_INT			i;
+		FTM_NODE	xInfo;
+
+		if ((nArgc < 3) || (strlen(pArgv[1]) > FTM_DID_LEN))
+		{
+			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
+
+		memset(pDID, 0, sizeof(pDID));
+		for(i = 0 ; i < strlen(pArgv[1]) ; i++)
+		{
+			pDID[i] = toupper(pArgv[1][i]);	
+		}
+
+		xRet = FTDMC_NODE_get(&_xSession, pDID, &xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+
+		
+		if (strcasecmp(pArgv[2], "url") == 0)
+		{
+			if (strlen(pArgv[3]) > FTM_URL_LEN)
+			{
+				ERROR("%s : URL is too long[ < %d]\n", pArgv[0], FTM_URL_LEN);
+				return	FTM_RET_INVALID_ARGUMENTS;	
+			}
+
+			strcpy(xInfo.xOption.xSNMP.pURL, pArgv[3]);
+
+			xRet = FTDMC_NODE_set(&_xSession, &xInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("%s : Node information update failed[%08x].\n", pArgv[0], xRet);
+				return	FTM_RET_INVALID_ARGUMENTS;	
+			}
+		}
+		
 	}
 	
 	return	FTM_RET_OK;
@@ -432,6 +482,7 @@ FTM_RET	FTDMC_NODE_cmd
 
 FTM_RET	FTDMC_EP_cmd
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
@@ -623,6 +674,7 @@ FTM_RET	FTDMC_EP_cmd
 
 FTM_RET	FTDMC_EP_DATA_cmd
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
@@ -1044,6 +1096,7 @@ FTM_RET	FTDMC_EP_DATA_cmd
 
 FTM_RET	FTDMC_TRIGGER_cmd
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
@@ -1271,6 +1324,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 
 FTM_RET	FTDMC_DEBUG_cmd
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
@@ -1318,6 +1372,7 @@ FTM_RET	FTDMC_DEBUG_cmd
 
 FTM_RET	FTDMC_cmdQuit
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData

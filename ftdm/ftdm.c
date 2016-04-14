@@ -7,6 +7,7 @@
 #include "ftdm.h"
 #include "ftdm_config.h"
 #include "ftdm_ep.h"
+#include "ftdm_ep_management.h"
 #include "ftdm_ep_class.h"
 #include "ftdm_node.h"
 #include "ftdm_params.h"
@@ -19,7 +20,7 @@
 
 static FTDM_SERVER	xServer;
 
-FTM_RET 	FTDM_init(FTM_VOID)
+FTM_RET 	FTDM_init(FTDM_CONTEXT_PTR pDM)
 {
 	FTM_RET	xRet;
 
@@ -30,13 +31,13 @@ FTM_RET 	FTDM_init(FTM_VOID)
 		return	FTM_RET_OK;
 	}
 
-	xRet = FTDM_NODE_init();
+	xRet = FTDM_NODEM_create(&pDM->pNodeM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Node management initialization fialed.[%08x]\n", xRet);
 	}
 
-	xRet = FTDM_EP_init();
+	xRet = FTDM_EPM_create(&pDM->pEPM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP management initialization fialed.[%08x]\n", xRet);
@@ -66,7 +67,7 @@ FTM_RET 	FTDM_init(FTM_VOID)
 		ERROR("EP type management initialization failed.[%08x]\n", xRet);	
 	}
 
-	xRet = FTDMS_init(&xServer);
+	xRet = FTDMS_init(&xServer, pDM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Server initialization failed.[%08x]\n", xRet);	
@@ -75,7 +76,7 @@ FTM_RET 	FTDM_init(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_final(FTM_VOID)
+FTM_RET	FTDM_final(FTDM_CONTEXT_PTR pFTDM)
 {
 	FTM_RET	xRet;
 
@@ -109,13 +110,13 @@ FTM_RET	FTDM_final(FTM_VOID)
 		ERROR("Trigger management finalize failed.[%08x]\n", xRet);	
 	}
 
-	xRet = FTDM_EP_final();
+	xRet = FTDM_EPM_destroy(&pFTDM->pEPM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP management finalize failed.[%08x]\n", xRet);	
 	}
 
-	xRet = FTDM_NODE_final();
+	xRet = FTDM_NODEM_destroy(&pFTDM->pNodeM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Node management finalize failed.[%08x]\n", xRet);	
@@ -133,7 +134,11 @@ FTM_RET	FTDM_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET 	FTDM_loadConfig(FTDM_CFG_PTR pConfig)
+FTM_RET 	FTDM_loadConfig
+(
+	FTDM_CONTEXT_PTR	pDM,
+	FTDM_CFG_PTR 		pConfig
+)
 {
 	FTM_RET	xRet;
 
@@ -160,7 +165,11 @@ FTM_RET 	FTDM_loadConfig(FTDM_CFG_PTR pConfig)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_loadConfigFromFile(FTM_CHAR_PTR pFileName)
+FTM_RET	FTDM_loadConfigFromFile
+(
+	FTDM_CONTEXT_PTR	pDM,
+	FTM_CHAR_PTR pFileName
+)
 {
 	FTDM_CFG	xConfig;
 
@@ -168,26 +177,30 @@ FTM_RET	FTDM_loadConfigFromFile(FTM_CHAR_PTR pFileName)
 	FTDM_CFG_init(&xConfig);
 	FTDM_CFG_readFromFile(&xConfig, pFileName);
 
-	FTDM_loadConfig(&xConfig);
+	FTDM_loadConfig(pDM, &xConfig);
 
 	FTDM_CFG_final(&xConfig);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_loadObjectFromFile(FTM_CHAR_PTR	pFileName)
+FTM_RET	FTDM_loadObjectFromFile
+(
+	FTDM_CONTEXT_PTR	pDM,
+	FTM_CHAR_PTR		pFileName
+)
 {
 	FTM_RET	xRet;
 
 	TRACE("Object load from file\n");
-	xRet = FTDM_NODE_loadFromFile(pFileName);
+	xRet = FTDM_NODEM_loadFromFile(pDM->pNodeM, pFileName);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Node configuration load failed.\n");
 		return	FTM_RET_ERROR;
 	}
 
-	xRet = FTDM_EP_loadFromFile(pFileName);
+	xRet = FTDM_EPM_loadFromFile(pDM->pEPM, pFileName);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Node configuration load failed.\n");
@@ -218,18 +231,21 @@ FTM_RET	FTDM_loadObjectFromFile(FTM_CHAR_PTR	pFileName)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_loadObjectFromDB(FTM_VOID)
+FTM_RET	FTDM_loadObjectFromDB
+(	
+	FTDM_CONTEXT_PTR	pDM
+)
 {
 	FTM_RET	xRet;
 
 	TRACE("Objects load from DB\n");
-	xRet = FTDM_NODE_loadFromDB();
+	xRet = FTDM_NODEM_loadFromDB(pDM->pNodeM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to load the node.[%08x]\n");
 	}
 
-	xRet = FTDM_EP_loadFromDB();
+	xRet = FTDM_EPM_loadFromDB(pDM->pEPM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to load the EP.[%08x]\n");
@@ -255,34 +271,41 @@ FTM_RET	FTDM_loadObjectFromDB(FTM_VOID)
 
 	return	FTM_RET_OK;
 }
-FTM_RET	FTDM_saveObjectToDB(FTM_VOID)
+FTM_RET	FTDM_saveObjectToDB
+(
+	FTDM_CONTEXT_PTR	pDM
+)
 {
 	FTM_RET	xRet;
 
 	TRACE("Objects save to DB\n");
-	xRet = FTDM_NODE_saveToDB();
+	xRet = FTDM_NODEM_saveToDB(pDM->pNodeM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to save the node.[%08x]\n");
 	}
 
-	xRet = FTDM_EP_saveToDB();
+		TRACE("%s[%d]\n", __func__, __LINE__);
+	xRet = FTDM_EPM_saveToDB(pDM->pEPM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to save the EP.[%08x]\n");
 	}
 
+		TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTDM_TRIGGER_saveToDB();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to save the trigger.[%08x]\n");
 	}
+		TRACE("%s[%d]\n", __func__, __LINE__);
 
 	xRet = FTDM_ACTION_saveToDB();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to save the action.[%08x]\n");
 	}
+		TRACE("%s[%d]\n", __func__, __LINE__);
 
 	xRet = FTDM_RULE_saveToDB();
 	if (xRet != FTM_RET_OK)
@@ -321,6 +344,8 @@ static FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName);
 
 extern char *program_invocation_short_name;
 
+
+static 	FTDM_CONTEXT	xFTDM;
 
 int main(int nArgc, char *pArgv[])
 {
@@ -402,8 +427,8 @@ int main(int nArgc, char *pArgv[])
 
 	/* apply configuration */
 		
-	FTDM_init();
-	FTDM_loadConfigFromFile(pConfigFileName);
+	FTDM_init(&xFTDM);
+	FTDM_loadConfigFromFile(&xFTDM, pConfigFileName);
 
 	if (ulTraceLevel >= 0)
 	{
@@ -424,7 +449,7 @@ int main(int nArgc, char *pArgv[])
 
 	if (bDBFirst)
 	{
-		xRet = FTDM_loadObjectFromDB();
+		xRet = FTDM_loadObjectFromDB(&xFTDM);
 		if (xRet == FTM_RET_OK)
 		{
 			bLoadObjectFromFile = FTM_FALSE;
@@ -433,17 +458,20 @@ int main(int nArgc, char *pArgv[])
 
 	if (bLoadObjectFromFile)
 	{
-		xRet = FTDM_loadObjectFromFile(pObjectFileName);
+		TRACE("%s[%d]\n", __func__, __LINE__);
+		xRet = FTDM_loadObjectFromFile(&xFTDM, pObjectFileName);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Can't load object from file[%08x]\n", xRet);
 			ERROR("File Name : %s\n", pObjectFileName);
 			return	0;	
 		}
+		TRACE("%s[%d]\n", __func__, __LINE__);
 
-		FTDM_saveObjectToDB();
+		FTDM_saveObjectToDB(&xFTDM);
 	}
 
+		TRACE("%s[%d]\n", __func__, __LINE__);
 	if (bDaemon)
 	{ 
 		if (fork() == 0)
@@ -459,7 +487,7 @@ int main(int nArgc, char *pArgv[])
 	else
 	{
 		FTDMS_start(&xServer);
-		FTM_SHELL_init(&xShell);
+		FTM_SHELL_init(&xShell, &xServer);
 		FTM_SHELL_setPrompt(&xShell, FTDMS_pPrompt);
 		FTM_SHELL_addCmds(&xShell, FTDMS_pCmdList,FTDMS_ulCmdCount);
 		FTM_SHELL_run(&xShell);
@@ -469,7 +497,7 @@ int main(int nArgc, char *pArgv[])
 
 	FTDM_DBIF_close();
 	
-	FTDM_final();
+	FTDM_final(&xFTDM);
 
 	FTM_MEM_final();
 

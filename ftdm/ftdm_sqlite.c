@@ -769,7 +769,7 @@ FTM_RET	FTDM_DBIF_EP_get
 		return	FTM_RET_OBJECT_NOT_FOUND;	
 	}
 
-	memcpy(&xEP, pEP, sizeof(FTM_EP));
+	memcpy(pEP, &xEP, sizeof(FTM_EP));
 
 	return	FTM_RET_OK;
 }

@@ -88,6 +88,20 @@ typedef	struct
 	FTM_NODE		xNodeInfo;
 }	FTDM_RESP_NODE_GET_PARAMS, _PTR_ FTDM_RESP_NODE_GET_PARAMS_PTR;
 
+typedef struct	
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_NODE			xNodeInfo;
+}	FTDM_REQ_NODE_SET_PARAMS, _PTR_ 	FTDM_REQ_NODE_SET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTDM_RESP_NODE_SET_PARAMS, _PTR_ FTDM_RESP_NODE_SET_PARAMS_PTR;
+
 typedef	struct
 {
 	FTDM_CMD			xCmd;

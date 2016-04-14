@@ -33,7 +33,7 @@ int main(int argc , char *argv[])
 	/* apply configuraton */
 	FTDMC_init(&xClientConfig);
 
-	FTM_SHELL_init(&xShell);
+	FTM_SHELL_init(&xShell, NULL);
 	FTM_SHELL_setPrompt(&xShell, FTDMC_pPrompt);
 	FTM_SHELL_addCmds(&xShell, FTDMC_pCmdList,FTDMC_ulCmdCount);
 	FTM_SHELL_run(&xShell);

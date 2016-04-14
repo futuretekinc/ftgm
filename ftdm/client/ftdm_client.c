@@ -345,6 +345,44 @@ FTM_RET FTDMC_NODE_get
 /*****************************************************************
  *
  *****************************************************************/
+FTM_RET FTDMC_NODE_set
+(
+ 	FTDMC_SESSION_PTR		pSession,
+	FTM_NODE_PTR	pInfo
+)
+{
+	FTM_RET							nRet;
+	FTDM_REQ_NODE_SET_PARAMS		xReq;
+	FTDM_RESP_NODE_SET_PARAMS	xResp;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd 	=	FTDM_CMD_NODE_SET;
+	xReq.nLen	=	sizeof(xReq);
+	memcpy(&xReq.xNodeInfo, pInfo, sizeof(FTM_NODE));
+	
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	nRet;	
+	}
+	
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
 FTM_RET	FTDMC_EP_append
 (
 	FTDMC_SESSION_PTR	pSession,
@@ -1620,7 +1658,7 @@ FTM_RET FTDMC_request
 
 	sem_wait(&pSession->xLock);
 
-//	TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, nReqLen);
+	//TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, nReqLen);
 
 	if( send(pSession->hSock, pReq, nReqLen, 0) < 0)
 	{
@@ -1632,7 +1670,7 @@ FTM_RET FTDMC_request
 		while(--nTimeout > 0)
 		{
 			int	nLen = recv(pSession->hSock, pResp, nRespLen, MSG_DONTWAIT);
-//			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
+			//TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
 			if (nLen > 0)
 			{
 				break;

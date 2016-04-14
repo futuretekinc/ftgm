@@ -7,6 +7,7 @@ LIB_FTM_SRCS= ftm_types.c \
 			  ftm_log.c \
 			  convert.c \
 			  ftm_node.c \
+			  ftm_node_management.c \
 			  ftm_ep.c \
 			  ftm_list.c \
 			  ftm_queue.c \

@@ -73,6 +73,12 @@ FTM_RET FTDMC_NODE_get
 	FTM_NODE_PTR			pNode
 );
 
+FTM_RET FTDMC_NODE_set
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_NODE_PTR			pNode
+);
+
 FTM_RET FTDMC_EP_append
 (
 	FTDMC_SESSION_PTR		pSession,

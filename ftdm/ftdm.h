@@ -6,38 +6,49 @@
 #include "ftdm_cmd.h"
 #include "ftdm_config.h"
 #include "ftdm_node.h"
+#include "ftdm_node_management.h"
 #include "ftdm_ep.h"
+#include "ftdm_ep_management.h"
 #include "ftdm_ep_class.h"
 #include "ftdm_server.h"
 
+typedef struct FTDM_CONTEXT_STRUCT
+{
+	FTDM_NODEM_PTR	pNodeM;	
+	FTDM_EPM_PTR	pEPM;	
+} FTDM_CONTEXT, _PTR_ FTDM_CONTEXT_PTR;
+
 FTM_RET	FTDM_init
 (
-	FTM_VOID
+	FTDM_CONTEXT_PTR	pFTDM
 );
 
 FTM_RET	FTDM_final
 (
-	FTM_VOID
+	FTDM_CONTEXT_PTR	pFTDM
 );
 
 FTM_RET FTDM_loadConfig
 (
-	FTDM_CFG_PTR pConfig
+	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_CFG_PTR 		pConfig
 );
 
 FTM_RET	FTDM_loadFromFile
 (
-	FTM_CHAR_PTR	pFileName
+	FTDM_CONTEXT_PTR	pFTDM,
+	FTM_CHAR_PTR		pFileName
 );
 
 FTM_RET	FTDM_loadObjectFromFile
 (
-	FTM_CHAR_PTR	pFileName
+	FTDM_CONTEXT_PTR	pFTDM,
+	FTM_CHAR_PTR		pFileName
 );
 
 FTM_RET	FTDM_saveObjectToDB
 (
-	FTM_VOID
+	FTDM_CONTEXT_PTR	pFTDM
 );
 
 FTM_RET	FTDM_setDebugLevel

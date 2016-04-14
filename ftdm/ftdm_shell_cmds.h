@@ -3,14 +3,16 @@
 
 #include "ftm_types.h"
 #include "ftm_node.h"
+#include "ftdm_node_management.h"
 #include "ftm_ep.h"
+#include "ftdm_ep_management.h"
 
-FTM_RET	FTDM_SHELL_showNodeList(void);
-FTM_RET	FTDM_SHELL_showNodeInfo(FTM_CHAR_PTR pDID);
-FTM_RET	FTDM_SHELL_showEPList(void);
-FTM_RET	FTDM_SHELL_showEPInfo(FTM_EP_ID xEPID);
-FTM_RET	FTDM_SHELL_showEPData(FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
-FTM_RET	FTDM_SHELL_delEPData(FTM_EP_ID	xEPID, FTM_INT	nBegin, FTM_ULONG ulCount);
+FTM_RET	FTDM_SHELL_showNodeList(FTDM_NODEM_PTR pNodeM);
+FTM_RET	FTDM_SHELL_showNodeInfo(FTDM_NODEM_PTR pNodeM, FTM_CHAR_PTR pDID);
+FTM_RET	FTDM_SHELL_showEPList(FTDM_EPM_PTR pEPM);
+FTM_RET	FTDM_SHELL_showEPInfo(FTDM_EPM_PTR pEPM, FTM_EP_ID xEPID);
+FTM_RET	FTDM_SHELL_showEPData(FTDM_EPM_PTR pEPM, FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
+FTM_RET	FTDM_SHELL_delEPData(FTDM_EPM_PTR pEPM, FTM_EP_ID	xEPID, FTM_INT nIndex, FTM_ULONG ulCount);
 
 #endif
 

@@ -7,10 +7,19 @@
 
 #define		FTM_SHELL_MAX_ARGS	16
 
+typedef	struct
+{
+	FTM_CHAR		pPrompt[128];
+	FTM_LIST_PTR	pCmdList;
+	pthread_t		xThread;
+	FTM_BOOL		bStop;
+	FTM_VOID_PTR	pData;
+}	FTM_SHELL, _PTR_ FTM_SHELL_PTR;
+
 typedef struct	_FTMC_CMD
 {
 	FTM_CHAR_PTR	pString;
-	FTM_RET			(*function)(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+	FTM_RET			(*function)(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 	FTM_CHAR_PTR	pShortHelp;
 	FTM_CHAR_PTR	pHelp;
 	FTM_VOID_PTR	pData;
@@ -23,17 +32,10 @@ typedef	struct
 	FTM_ULONG			ulCmdCount;
 }	FTM_SHELL_CONFIG, _PTR_ FTM_SHELL_CONFIG_PTR;
 
-typedef	struct
-{
-	FTM_CHAR		pPrompt[128];
-	FTM_LIST_PTR	pCmdList;
-	pthread_t		xThread;
-	FTM_BOOL		bStop;
-}	FTM_SHELL, _PTR_ FTM_SHELL_PTR;
-
 FTM_RET	FTM_SHELL_init
 (
-	FTM_SHELL_PTR	pShell
+	FTM_SHELL_PTR	pShell,
+	FTM_VOID_PTR	pData
 );
 
 FTM_RET	FTM_SHELL_final

@@ -23,13 +23,15 @@ static FTM_RET FTM_SHELL_getCmd
 
 static FTM_RET	FTM_SHELL_cmdHelp
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
 );
 
 static FTM_RET	FTM_SHELL_cmdQuit
-(
+(	
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[],
 	FTM_VOID_PTR	pData
@@ -111,7 +113,7 @@ FTM_VOID_PTR	FTM_SHELL_process
 			nRet = FTM_SHELL_getCmd(pShell, pArgv[0], &pCmd);
 			if (nRet == FTM_RET_OK)
 			{
-				nRet = pCmd->function(nArgc, pArgv, pCmd->pData);
+				nRet = pCmd->function(pShell, nArgc, pArgv, pCmd->pData);
 				switch(nRet)
 				{
 				case	FTM_RET_INVALID_ARGUMENTS:
@@ -130,7 +132,7 @@ FTM_VOID_PTR	FTM_SHELL_process
 			{
 				FTM_CHAR_PTR pNewArgv[] = {"help"};
 				MESSAGE("%s is invalid command.\n", pArgv[0]);
-				FTM_SHELL_cmdHelp(1, pNewArgv, pShell);
+				FTM_SHELL_cmdHelp(pShell, 1, pNewArgv, pShell);
 
 			}
 		}
@@ -141,7 +143,8 @@ FTM_VOID_PTR	FTM_SHELL_process
 
 FTM_RET FTM_SHELL_init
 (
-	FTM_SHELL_PTR	pShell
+	FTM_SHELL_PTR	pShell,
+	FTM_VOID_PTR	pData
 )
 {
 	ASSERT(pShell != NULL);
@@ -160,11 +163,13 @@ FTM_RET FTM_SHELL_init
 		if (pCmd != NULL)
 		{
 			memcpy(pCmd, &xDefaultCmds[i], sizeof(FTM_SHELL_CMD));
-			pCmd->pData = pShell;
+			pCmd->pData = pData;
 
 			FTM_LIST_insert(pShell->pCmdList, pCmd, FTM_LIST_POS_ASSENDING);
 		}
 	}
+
+	pShell->pData = pData;
 
 	return	FTM_RET_OK;
 }	
@@ -295,6 +300,10 @@ FTM_RET	FTM_SHELL_appendCmd
 	}
 
 	memcpy(pNewCmd, pCmd, sizeof(FTM_SHELL_CMD));
+	if (pNewCmd->pData == NULL)
+	{
+		pNewCmd->pData = pShell->pData;	
+	}
 	xRet = FTM_LIST_insert(pShell->pCmdList, pNewCmd, FTM_LIST_POS_ASSENDING);
 	if (xRet != FTM_RET_OK)
 	{
@@ -366,6 +375,7 @@ FTM_RET	FTM_SHELL_parseLine
 
 FTM_RET	FTM_SHELL_cmdHelp
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[], 
 	FTM_VOID_PTR 	pData
@@ -373,8 +383,6 @@ FTM_RET	FTM_SHELL_cmdHelp
 {
 	ASSERT(pData != NULL);
 
-	FTM_SHELL_PTR	pShell = (FTM_SHELL_PTR)pData;
-	
 	switch(nArgc)
 	{
 	case	1:
@@ -409,6 +417,7 @@ FTM_RET	FTM_SHELL_cmdHelp
 
 FTM_RET	FTM_SHELL_cmdQuit
 (
+	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
 	FTM_CHAR_PTR 	pArgv[], 
 	FTM_VOID_PTR	pData
