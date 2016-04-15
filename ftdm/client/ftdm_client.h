@@ -44,7 +44,7 @@ FTM_RET FTDMC_isConnected
 FTM_RET FTDMC_NODE_append
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_NODE_PTR		pInfo
+	FTM_NODE_PTR			pInfo
 );
 
 FTM_RET FTDMC_NODE_remove
@@ -109,6 +109,12 @@ FTM_RET FTDMC_EP_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				ulIndex,
+	FTM_EP_PTR				pEP
+);
+
+FTM_RET	FTDMC_EP_set
+(
+	FTDMC_SESSION_PTR		pSession,
 	FTM_EP_PTR				pEP
 );
 

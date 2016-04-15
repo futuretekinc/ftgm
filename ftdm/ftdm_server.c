@@ -42,6 +42,7 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_EP_COUNT,				FTDMS_EP_count ),
 	MK_CMD_SET(FTDM_CMD_EP_GET,					FTDMS_EP_get ),
 	MK_CMD_SET(FTDM_CMD_EP_GET_AT,				FTDMS_EP_getAt ),
+	MK_CMD_SET(FTDM_CMD_EP_SET,					FTDMS_EP_set ),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_ADD,			FTDMS_EP_CLASS_add),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_DEL,			FTDMS_EP_CLASS_del),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_COUNT,			FTDMS_EP_CLASS_count ),
@@ -682,7 +683,7 @@ FTM_RET	FTDMS_EP_get
 	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
+		xRet = FTDM_EP_get(pEP, &pResp->xInfo);
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -706,8 +707,31 @@ FTM_RET	FTDMS_EP_getAt
 	
 	if (xRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
+		FTDM_EP_get(pEP, &pResp->xInfo);
 	}
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = xRet;
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_EP_set
+(
+	FTDM_SERVER_PTR				pServer,
+ 	FTDM_REQ_EP_SET_PARAMS_PTR	pReq,
+	FTDM_RESP_EP_SET_PARAMS_PTR	pResp
+)
+{
+	FTM_RET		xRet;
+	FTDM_EP_PTR	pEP;
+
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xInfo.xEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTDM_EP_set(pEP, &pReq->xInfo);
+	}
+
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nRet = xRet;

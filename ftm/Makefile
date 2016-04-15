@@ -23,7 +23,8 @@ LIB_FTM_SRCS= ftm_types.c \
 			  ftm_action.c \
 			  ftm_rule.c \
 			  ftm_lock.c \
-			  ftm_snmp.c
+			  ftm_snmp.c \
+			  ftm_shared_memory.c
 
 LIB_FTM_OBJS=$(LIB_FTM_SRCS:.c=.o)
 

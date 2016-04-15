@@ -600,6 +600,47 @@ FTM_RET	FTDMC_EP_getAt
 /*****************************************************************
  *
  *****************************************************************/
+FTM_RET	FTDMC_EP_set
+(
+	FTDMC_SESSION_PTR	pSession,
+	FTM_EP_PTR			pInfo
+)
+{
+	FTM_RET					nRet;
+	FTDM_REQ_EP_SET_PARAMS	xReq;
+	FTDM_RESP_EP_SET_PARAMS	xResp;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	if (pInfo == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	xReq.xCmd	=	FTDM_CMD_EP_SET;
+	xReq.nLen	=	sizeof(xReq);
+	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
 FTM_RET	FTDMC_EP_CLASS_count
 (
 	FTDMC_SESSION_PTR		pSession,

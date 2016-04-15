@@ -7,6 +7,13 @@
 #include "ftdm_ep_management.h"
 #include "ftdm_sqlite.h"
 
+static 
+FTM_BOOL	FTDM_EPM_seekEP
+(
+	const FTM_VOID_PTR pElement,
+	const FTM_VOID_PTR pKey
+);
+
 FTM_RET	FTDM_EPM_init
 (
 	FTDM_EPM_PTR	pEPM
@@ -16,7 +23,10 @@ FTM_RET	FTDM_EPM_init
 	FTM_RET	xRet;
 
 	xRet = FTM_LIST_create(&pEPM->pList);
-	
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_LIST_setSeeker(pEPM->pList, FTDM_EPM_seekEP);
+	}
 	return	xRet;
 }
 
@@ -417,4 +427,18 @@ FTM_RET FTDM_EPM_showList
 }
 
 
+FTM_BOOL	FTDM_EPM_seekEP
+(
+	const FTM_VOID_PTR pElement,
+	const FTM_VOID_PTR pKey
+)
+{
+	ASSERT(pElement != NULL);
+	ASSERT(pKey != NULL);
 
+	FTDM_EP_PTR		pEP = (FTDM_EP_PTR)pElement;
+	FTM_EP_ID_PTR	pEPID = (FTM_EP_ID_PTR)pKey;
+
+	return	(pEP->xInfo.xEPID == *pEPID);
+
+}

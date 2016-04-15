@@ -10,12 +10,12 @@ CLIENT_OBJS	Makefile	/^CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)$/;"	m
 CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c\\$/;"	m
 FTDMC_EP_DATA_del	ftom_client.c	/^FTM_RET	FTDMC_EP_DATA_del$/;"	f
 FTOM_CLIENT	ftom_client.h	/^}	FTOM_CLIENT, _PTR_ FTOM_CLIENT_PTR;$/;"	t	typeref:struct:__anon4
-FTOM_CLIENT_CMD_EP	cmd_ep.c	/^FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
+FTOM_CLIENT_CMD_EP	cmd_ep.c	/^FTM_RET	FTOM_CLIENT_CMD_EP$/;"	f
 FTOM_CLIENT_CMD_EP_DATA	cmd_ep.c	/^FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
-FTOM_CLIENT_CMD_NODE	cmd_node.c	/^FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
-FTOM_CLIENT_CMD_debug	cmd_debug.c	/^FTM_RET	FTOM_CLIENT_CMD_debug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
-FTOM_CLIENT_CMD_discovery	cmd_discovery.c	/^FTM_RET	FTOM_CLIENT_CMD_discovery(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
-FTOM_CLIENT_CMD_quit	cmd_quit.c	/^FTM_RET	FTOM_CLIENT_CMD_quit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData)$/;"	f
+FTOM_CLIENT_CMD_NODE	cmd_node.c	/^FTM_RET	FTOM_CLIENT_CMD_NODE$/;"	f
+FTOM_CLIENT_CMD_debug	cmd_debug.c	/^FTM_RET	FTOM_CLIENT_CMD_debug$/;"	f
+FTOM_CLIENT_CMD_discovery	cmd_discovery.c	/^FTM_RET	FTOM_CLIENT_CMD_discovery$/;"	f
+FTOM_CLIENT_CMD_quit	cmd_quit.c	/^FTM_RET	FTOM_CLIENT_CMD_quit$/;"	f
 FTOM_CLIENT_CONFIG	ftom_client.h	/^}	FTOM_CLIENT_CONFIG, _PTR_ FTOM_CLIENT_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
 FTOM_CLIENT_CONFIG_PTR	ftom_client.h	/^}	FTOM_CLIENT_CONFIG, _PTR_ FTOM_CLIENT_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
 FTOM_CLIENT_EP_DATA_add	ftom_client.c	/^FTM_RET	FTOM_CLIENT_EP_DATA_add$/;"	f
@@ -29,6 +29,7 @@ FTOM_CLIENT_EP_destroy	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_destroy$/;"	f
 FTOM_CLIENT_EP_get	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_get$/;"	f
 FTOM_CLIENT_EP_getAt	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_getAt$/;"	f
 FTOM_CLIENT_EP_getList	ftom_client.c	/^FTM_RET	FTOM_CLIENT_EP_getList$/;"	f
+FTOM_CLIENT_EP_set	ftom_client.c	/^FTM_RET FTOM_CLIENT_EP_set$/;"	f
 FTOM_CLIENT_MAX_ARGS	ftom_client_cmds.c	17;"	d	file:
 FTOM_CLIENT_MAX_ARGS	ftom_client_config.h	13;"	d
 FTOM_CLIENT_MAX_ARGS	main.c	17;"	d	file:

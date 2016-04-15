@@ -287,6 +287,20 @@ FTM_RET	FTM_EP_isValidTimeout(FTM_EP_PTR pEP, FTM_ULONG	ulTimeout)
 }
 
 
+FTM_RET	FTM_EP_isStatic(FTM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+
+	if (pEP->xFlags & FTM_EP_FLAG_STATIC)
+	{
+		return	FTM_RET_TRUE;
+	}
+	else
+	{
+		return	FTM_RET_FALSE;	
+	}
+}
+
 FTM_BOOL		FTM_EP_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator)
 {
 	ASSERT(pItem != NULL);

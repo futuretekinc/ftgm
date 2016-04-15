@@ -252,6 +252,7 @@ FTM_RET	FTDM_SHELL_showEPData(FTDM_EPM_PTR pEPM, FTM_EP_ID	xEPID, FTM_ULONG ulBe
 	FTDM_EP_PTR		pEP;
 	FTM_EP_DATA_PTR pData;
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	if (FTDM_EPM_get(pEPM, xEPID, &pEP) != FTM_RET_OK)
 	{
 		MESSAGE("Invalid EPID [%08x]\n", xEPID);

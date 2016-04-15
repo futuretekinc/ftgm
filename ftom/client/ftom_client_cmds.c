@@ -17,12 +17,12 @@
 #define		FTOM_CLIENT_MAX_ARGS	16
 
 
-FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTOM_CLIENT_CMD_EP(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTOM_CLIENT_CMD_debug(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTOM_CLIENT_CMD_discovery(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTOM_CLIENT_CMD_quit(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_CLIENT_CMD_EP(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_CLIENT_CMD_debug(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_CLIENT_CMD_discovery(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_CLIENT_CMD_quit(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 
 
 FTM_CHAR_PTR 		_strPrompt = "FTNMC > ";
@@ -58,12 +58,18 @@ FTM_SHELL_CMD	_cmds[] =
 		.pHelp      = "<COMMAND> ...\n"\
 					  "\tEndPoint management.\n"\
 					  "COMMANDS:\n"\
-					  "\tadd    <EPID> <Type> <DID> [ -n <Name>] [ -u <Unit>] [ -i <Interval>] [ -t <timeout>]\n"\
+					  "\tadd    <EPID> <DID> [-n <Name>] [-u <Unit>] [-i <Interval>] [-t <timeout>]\n"\
 					  "\tdel    <EPID>\n"\
 					  "\tlist\n"\
+					  "\t<EPID> [[name <name>] | [unit <unit>] | [interval <interval>]]\n"\
 					  "PARAMETERS:\n"\
 					  "\tEPID   EndPoint ID. 8Digit Hexa Number\n"\
-					  "\t       (Ex. : 010A0003)\n"
+					  "\t       (Ex. : 010A0003)\n"\
+					  "\tDID	Node ID.\n"\
+					  "\tname	EndPoint name.\n"\
+					  "\tunit   Unit of measurement, a definite magnitude of a physical quantity.\n"\
+					  "\tinterval Measurement interval.\n"\
+					  "\ttimeout The response latency.\n"
 
 	},
 	{	

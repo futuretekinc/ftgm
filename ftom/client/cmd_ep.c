@@ -48,25 +48,25 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 		{
 			switch(toupper(nOpt))
 			{
-			case	'N':	
+			case	'n':	
 				{
 					strncpy(xInfo.pName, optarg, sizeof(xInfo.pName) - 1);
 				}
 				break;
 
-			case	'U':
+			case	'u':
 				{
 					strncpy(xInfo.pUnit, optarg, sizeof(xInfo.pUnit) - 1);
 				}
 				break;
 
-			case	'I':
+			case	'i':
 				{
 					xInfo.ulInterval = strtoul(optarg, NULL, 10);
 				}
 				break;
 
-			case	'T':
+			case	't':
 				{
 					xInfo.ulTimeout = strtoul(optarg, NULL, 10);
 				}
@@ -338,6 +338,33 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 					{
 						MESSAGE("%-8s : NOT EXISTS\n", "VALUE");
 					}
+				}
+				break;
+	
+			case	3:
+				{
+					if (strcasecmp(pArgv[2], "start") == 0)
+					{
+						if (xInfo.bEnable)
+						{
+							MESSAGE("EP[%08x] has been already started.\n", xInfo.xEPID);
+							break;
+						}
+
+						xInfo.bEnable = FTM_TRUE;
+						xRet = FTOM_CLIENT_EP_set(pClient, &xInfo);
+					}
+					else if (strcasecmp(pArgv[2], "stop") == 0)
+					{
+						if (!xInfo.bEnable)
+						{
+							MESSAGE("EP[%08x] did not start.\n", xInfo.xEPID);
+							break;
+						}
+						xInfo.bEnable = FTM_FALSE;
+						xRet = FTOM_CLIENT_EP_set(pClient, &xInfo);
+					}
+
 				}
 				break;
 

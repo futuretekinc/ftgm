@@ -1059,6 +1059,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	while(!bStop)
 	{
 		FTM_ULONG	ulReqCount;
@@ -1118,6 +1119,11 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 			{
 				bStop = FTM_TRUE;	
 			}
+		}
+		else
+		{
+			TRACE("xRet = %x\n", xRet);	
+			bStop = FTM_TRUE;
 		}
 	
 		FTM_MEM_free(pResp);

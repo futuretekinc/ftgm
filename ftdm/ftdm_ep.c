@@ -108,6 +108,64 @@ FTM_RET	FTDM_EP_destroy
 	return	xRet;
 }
 
+FTM_RET	FTDM_EP_get
+(
+	FTDM_EP_PTR		pEP,
+	FTM_EP_PTR		pInfo
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pInfo != NULL);
+
+	memcpy(pInfo, &pEP->xInfo, sizeof(FTM_EP));
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_EP_set
+(
+	FTDM_EP_PTR		pEP,
+	FTM_EP_PTR		pInfo
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTM_EP_isValid(pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (pEP->xInfo.xEPID != pInfo->xEPID)
+	{
+		return	FTM_RET_INVALID_ID;	
+	}
+
+	if (FTM_EP_isStatic(&pEP->xInfo) == FTM_RET_OK)
+	{
+		memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
+
+		if (FTM_EP_isStatic(pInfo) != FTM_RET_OK)
+		{
+			xRet =FTDM_DBIF_EP_del(pEP->xInfo.xEPID);
+		}
+	}
+	else
+	{
+		memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
+
+		if (FTM_EP_isStatic(pInfo) == FTM_RET_OK)
+		{
+			xRet =FTDM_DBIF_EP_append(&pEP->xInfo);
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
 
 FTM_RET	FTDM_EP_DATA_add
 (

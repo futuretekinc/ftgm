@@ -132,6 +132,7 @@ FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppNode);
 
 FTM_RET	FTM_EP_isValid(FTM_EP_PTR pEP);
 FTM_RET	FTM_EP_isValidTimeout(FTM_EP_PTR pEP, FTM_ULONG ulTimeout);
+FTM_RET	FTM_EP_isStatic(FTM_EP_PTR pEP);
 
 FTM_CHAR_PTR FTM_EP_typeString(FTM_EP_TYPE nType);
 
