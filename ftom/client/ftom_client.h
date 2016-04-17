@@ -7,64 +7,62 @@
 #include "ftom_params.h"
 #include "ftom_client_config.h"
 
-typedef	FTM_RET (*FTOM_CLIENT_NOTIFY_CALLBACK)(FTM_VOID_PTR);
+typedef	struct	FTOM_CLIENT_STRUCT _PTR_ FTOM_CLIENT_PTR;
+typedef	union	FTOM_CLIENT_CONFIG_UNION _PTR_ FTOM_CLIENT_CONFIG_PTR;
 
-typedef struct 
+typedef	FTM_RET	(*FTOM_CLIENT_START)
+(
+	FTOM_CLIENT_PTR	pClient
+);
+
+typedef	FTM_RET	(*FTOM_CLIENT_STOP)
+(
+	FTOM_CLIENT_PTR	pClient
+);
+
+typedef FTM_RET	(*FTOM_CLIENT_LOAD_CONFIG)
+(
+	FTOM_CLIENT_PTR			pClient,
+	FTOM_CLIENT_CONFIG_PTR	pConfig
+);
+
+typedef	FTM_RET (*FTOM_CLIENT_NOTIFY_CALLBACK)
+(
+	FTM_VOID_PTR	pData
+);
+
+typedef	FTM_RET	(*FTOM_CLIENT_LOAD_CONFIG_FROM_FILE)
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pFileName
+);
+
+typedef	FTM_RET	(*FTOM_CLIENT_SET_NOTIFY_CALLBACK)
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTOM_CLIENT_NOTIFY_CALLBACK	fCB
+);
+
+typedef	FTM_RET	(*FTOM_CLIENT_REQUEST)
+(
+	FTOM_CLIENT_PTR			pClient, 
+	FTOM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
+	FTOM_RESP_PARAMS_PTR	pRespBuff,
+	FTM_ULONG				ulRespBuffLen,
+	FTM_ULONG_PTR			pulRespLen
+);
+
+typedef	struct	FTOM_CLIENT_STRUCT 
 {
-	FTOM_REQ_PARAMS_PTR		pReq;
-	FTM_ULONG				ulReqLen;
-	FTOM_RESP_PARAMS_PTR	pResp;
-	FTM_ULONG				ulRespLen;
-	sem_t					xDone;
-}	FTOM_CLIENT_TRANS, _PTR_ FTOM_CLIENT_TRANS_PTR;
+	FTOM_CLIENT_START					fStart;
+	FTOM_CLIENT_STOP					fStop;
+	FTOM_CLIENT_LOAD_CONFIG				fLoadConfig;
+	FTOM_CLIENT_LOAD_CONFIG_FROM_FILE	fLoadConfigFromFile;
+	FTOM_CLIENT_SET_NOTIFY_CALLBACK		fSetNotifyCallback;
+	FTOM_CLIENT_REQUEST					fRequest;	
 
-typedef	struct
-{
-	struct
-	{
-		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];
-		FTM_USHORT	usPort;
-	}	xServer;
-}	FTOM_CLIENT_CONFIG, _PTR_ FTOM_CLIENT_CONFIG_PTR;
-
-typedef	struct
-{
-	FTOM_CLIENT_CONFIG	xConfig;
-
-	pthread_t			xThread;
-	FTM_MSG_QUEUE_PTR	pMsgQ;
-
-	FTM_BOOL			bInit;
-	FTM_BOOL			bStop;
-	FTM_BOOL			bConnected;
-	FTM_INT				hSock;
-	FTM_ULONG			ulTimeout;
-	FTM_ULONG			ulReqID;
-	FTM_BOOL			bRequested;
-	sem_t				xReqLock;
-	FTM_LIST			xTransList;
-	FTOM_CLIENT_NOTIFY_CALLBACK 	fNotifyCallback;
 }	FTOM_CLIENT, _PTR_ FTOM_CLIENT_PTR;
-
-FTM_RET	FTOM_CLIENT_init
-(
-	FTOM_CLIENT_PTR	pClient
-);
-
-FTM_RET	FTOM_CLIENT_final
-(
-	FTOM_CLIENT_PTR	pClient
-);
-
-FTM_RET	FTOM_CLIENT_create
-(
-	FTOM_CLIENT_PTR _PTR_ ppClient
-);
-
-FTM_RET	FTOM_CLIENT_destroy
-(
-	FTOM_CLIENT_PTR 	pClient
-);
 
 FTM_RET	FTOM_CLIENT_start
 (
@@ -76,39 +74,24 @@ FTM_RET	FTOM_CLIENT_stop
 	FTOM_CLIENT_PTR	pClient
 );
 
+#if 0
 FTM_RET	FTOM_CLIENT_ReadConfig
 (
 	FTOM_CLIENT_CONFIG_PTR 	pConfig, 
 	FTM_CHAR_PTR 			pFileName
 );
+#endif
 
 FTM_RET	FTOM_CLIENT_loadConfig
 (
 	FTOM_CLIENT_PTR			pClient,
-	FTOM_CLIENT_CONFIG_PTR	pConfig
+	FTM_VOID_PTR			pConfig
 );
-
 
 FTM_RET	FTOM_CLIENT_loadConfigFromFile
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR		pFileName
-);
-
-FTM_RET	FTOM_CLIENT_connect
-(
-	FTOM_CLIENT_PTR	pClient
-);
-
-FTM_RET FTOM_CLIENT_disconnect
-(
-	FTOM_CLIENT_PTR	pClient
-);
-
-FTM_RET FTOM_CLIENT_isConnected
-(
-	FTOM_CLIENT_PTR	pClient,
-	FTM_BOOL_PTR		pbConnected
 );
 
 FTM_RET	FTOM_CLIENT_setNotifyCallback

@@ -9,8 +9,6 @@
 #include "ftom_node.h"
 #include "ftom_service.h"
 
-#define	FTOM_PACKET_LEN					2048
-
 typedef	struct FTOM_STRUCT _PTR_ FTOM_PTR;
 typedef	struct FTOM_SERVER_STRUCT _PTR_ FTOM_SERVER_PTR;
 typedef	struct
@@ -20,11 +18,11 @@ typedef	struct
 	pthread_t			xPThread;
 	FTOM_SERVER_PTR		pServer;
 	FTM_BOOL			bStop;
-	FTM_BYTE			pReqBuff[FTOM_PACKET_LEN];
-	FTM_BYTE			pRespBuff[FTOM_PACKET_LEN];
+	FTM_BYTE			pReqBuff[FTOM_DEFAULT_PACKET_SIZE];
+	FTM_BYTE			pRespBuff[FTOM_DEFAULT_PACKET_SIZE];
 }	FTOM_SESSION, _PTR_ FTOM_SESSION_PTR;
 
-typedef	FTM_RET	(*FTOM_SERVER_CALLBACK)(FTOM_SESSION_PTR pSession, FTOM_REQ_PARAMS_PTR, FTOM_RESP_PARAMS_PTR);
+typedef	FTM_RET	(*FTOM_SERVER_CALLBACK)(FTOM_SERVER_PTR pServer, FTOM_REQ_PARAMS_PTR, FTM_ULONG, FTOM_RESP_PARAMS_PTR, FTM_ULONG);
 
 typedef struct
 {
@@ -39,15 +37,14 @@ typedef	struct
 	FTM_ULONG		ulMaxSession;
 }	FTOM_SERVER_CONFIG, _PTR_ FTOM_SERVER_CONFIG_PTR;
 
-
 typedef	struct FTOM_SERVER_STRUCT
 {
 	FTOM_SERVER_CONFIG	xConfig;
-	pthread_t 				xPThread;
-	sem_t					xLock;
-	FTM_BOOL				bStop;	
-	FTOM_PTR				pOM;
-	FTM_LIST				xSessionList;
+	pthread_t 			xPThread;
+	sem_t				xLock;
+	FTM_BOOL			bStop;	
+	FTOM_PTR			pOM;
+	FTM_LIST			xSessionList;
 	FTM_INT				hSocket;
 	FTOM_SERVICE_ID		xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;

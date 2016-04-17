@@ -28,7 +28,7 @@ extern	char *		program_invocation_short_name;
 int main(int argc , char *argv[])
 {
 	FTM_CHAR		pConfigFileName[FTM_FILE_NAME_LEN];
-	FTOM_CLIENT	xClient;
+	FTOM_CLIENT_PTR	pClient;
 	FTM_SHELL		xShell;
 	FTM_INT			i;
 
@@ -36,27 +36,27 @@ int main(int argc , char *argv[])
 
 	FTM_MEM_init();
 
-	FTOM_CLIENT_init(&xClient);
+	FTOM_CLIENT_NET_create((FTOM_CLIENT_NET_PTR _PTR_)&pClient);
 
 	/* load configuraton */
-	FTOM_CLIENT_loadConfigFromFile(&xClient, pConfigFileName);
-	FTOM_CLIENT_setNotifyCallback(&xClient, FTOM_CLIENT_notifyCallback);
+	FTOM_CLIENT_loadConfigFromFile(pClient, pConfigFileName);
+	FTOM_CLIENT_setNotifyCallback(pClient, FTOM_CLIENT_notifyCallback);
 
 
 	FTM_SHELL_init(&xShell, NULL);
 	FTM_SHELL_setPrompt(&xShell, _strPrompt);
 	for(i = 0 ; i < ulCmds;i++)
 	{
-		_cmds[i].pData = &xClient;
+		_cmds[i].pData = pClient;
 		FTM_SHELL_appendCmd(&xShell, &_cmds[i]);
 	}
 
-	FTOM_CLIENT_start(&xClient);
+	FTOM_CLIENT_start(pClient);
 
 	FTM_SHELL_run(&xShell);
 	FTM_SHELL_final(&xShell);
 
-	FTOM_CLIENT_final(&xClient);
+	FTOM_CLIENT_NET_destroy((FTOM_CLIENT_NET_PTR _PTR_)&pClient);
 
 	FTM_MEM_final();
 

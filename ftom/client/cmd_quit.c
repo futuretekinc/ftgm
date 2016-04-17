@@ -28,7 +28,6 @@ FTM_RET	FTOM_CLIENT_CMD_quit
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 	
-	FTOM_CLIENT_disconnect(pClient);
 
 	return	FTM_RET_SHELL_QUIT;
 }

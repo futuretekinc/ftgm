@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include "libconfig.h"
 #include "ftom.h"
 #include "ftom_params.h"
@@ -20,133 +22,184 @@
 
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTOM_SERVER_CALLBACK)FUN }
 
-static FTM_VOID_PTR FTOM_SERVER_process(FTM_VOID_PTR pData);
-static FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData);
+static 
+FTM_VOID_PTR FTOM_SERVER_process
+(
+	FTM_VOID_PTR 	pData
+);
+
+static 
+FTM_VOID_PTR FTOM_SERVER_serviceHandler
+(
+	FTM_VOID_PTR 	pData
+);
+
+static
+FTM_VOID_PTR	FTOM_SERVER_processPipe
+(
+	FTM_VOID_PTR	pData
+);
 
 static FTM_RET	FTOM_SERVER_serviceCall
 (
-	FTOM_SESSION_PTR		pSession,
+	FTOM_SERVER_PTR			pServer,
 	FTOM_REQ_PARAMS_PTR		pReq,
-	FTOM_RESP_PARAMS_PTR	pResp
+	FTM_ULONG				ulReqLen,
+	FTOM_RESP_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_NODE_create
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
 	FTOM_REQ_NODE_CREATE_PARAMS_PTR		pReq,
-	FTOM_RESP_NODE_CREATE_PARAMS_PTR	pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_CREATE_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_NODE_destroy
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
 	FTOM_REQ_NODE_DESTROY_PARAMS_PTR	pReq,
-	FTOM_RESP_NODE_DESTROY_PARAMS_PTR	presp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_DESTROY_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_NODE_count
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_NODE_COUNT_PARAMS_PTR		pReq,
-	FTOM_RESP_NODE_COUNT_PARAMS_PTR		pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_COUNT_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_NODE_get
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_NODE_GET_PARAMS_PTR		pReq,
-	FTOM_RESP_NODE_GET_PARAMS_PTR		pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_GET_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_NODE_getAt
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_NODE_GET_AT_PARAMS_PTR		pReq,
-	FTOM_RESP_NODE_GET_AT_PARAMS_PTR	pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_GET_AT_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_create
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_CREATE_PARAMS_PTR		pReq,
-	FTOM_RESP_EP_CREATE_PARAMS_PTR		pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_CREATE_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_destroy
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_DESTROY_PARAMS_PTR		pReq,
-	FTOM_RESP_EP_DESTROY_PARAMS_PTR		pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_DESTROY_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_count
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_COUNT_PARAMS_PTR		pReq,
-	FTOM_RESP_EP_COUNT_PARAMS_PTR		pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_COUNT_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_getList
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_GET_LIST_PARAMS_PTR		pReq,
-	FTOM_RESP_EP_GET_LIST_PARAMS_PTR	pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_GET_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_get
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_GET_PARAMS_PTR			pReq,
-	FTOM_RESP_EP_GET_PARAMS_PTR			pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_GET_PARAMS_PTR			pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_getAt
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_GET_AT_PARAMS_PTR		pReq,
-	FTOM_RESP_EP_GET_AT_PARAMS_PTR		pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_GET_AT_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_set
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_SET_PARAMS_PTR			pReq,
-	FTOM_RESP_EP_SET_PARAMS_PTR			pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_SET_PARAMS_PTR			pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
 (
-	FTOM_SESSION_PTR							pSession,
+	FTOM_SERVER_PTR							pServer,
  	FTOM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pReq,
- 	FTOM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pResp
+	FTM_ULONG							ulReqLen,
+ 	FTOM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_DATA_info
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR					pServer,
 	FTOM_REQ_EP_DATA_INFO_PARAMS_PTR 	pReq,
-	FTOM_RESP_EP_DATA_INFO_PARAMS_PTR 	pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_DATA_INFO_PARAMS_PTR 	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_DATA_count
 (
-	FTOM_SESSION_PTR						pSession,
+	FTOM_SERVER_PTR						pServer,
  	FTOM_REQ_EP_DATA_COUNT_PARAMS_PTR		pReq,
-	FTOM_RESP_EP_DATA_COUNT_PARAMS_PTR		pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_DATA_COUNT_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_DATA_getLast
 (
-	FTOM_SESSION_PTR						pSession,
+	FTOM_SERVER_PTR						pServer,
  	FTOM_REQ_EP_DATA_GET_LAST_PARAMS_PTR	pReq,
-	FTOM_RESP_EP_DATA_GET_LAST_PARAMS_PTR	pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_DATA_GET_LAST_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_DATA_getList
 (
-	FTOM_SESSION_PTR						pSession,
+	FTOM_SERVER_PTR						pServer,
  	FTOM_REQ_EP_DATA_GET_LIST_PARAMS_PTR	pReq,
-	FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
 );
 
 static FTOM_SERVER_CMD_SET	pCmdSet[] =
@@ -256,7 +309,6 @@ FTM_RET	FTOM_SERVER_stop
 
 	pServer->bStop = FTM_TRUE;
 	shutdown(pServer->hSocket, SHUT_RD);
-	//pthread_cancel(pServer->xPThread);
 	pthread_join(pServer->xPThread, NULL);
 
 	TRACE("Server finished.\n");
@@ -312,6 +364,7 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 	FTOM_SERVER_PTR 	pServer = (FTOM_SERVER_PTR)pData;
 	FTM_INT				nRet;
+	pthread_t			xThread;
 	struct sockaddr_in	xServerAddr, xClientAddr;
 
 
@@ -343,6 +396,8 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 	pServer->bStop = FTM_FALSE;
 	
+	pthread_create(&xThread, NULL, FTOM_SERVER_processPipe, pServer);
+
 	while(!pServer->bStop)
 	{
 		FTM_INT	hClient;
@@ -412,19 +467,20 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 
 	while(!pSession->bStop)
 	{
-		int	ulLen;
+		FTM_INT	ulReqLen;
+		FTM_INT	ulSendLen;
 
-		ulLen = recv(pSession->hSocket, pReq, sizeof(pSession->pReqBuff), 0);
-		if (ulLen == 0)
+		ulReqLen = recv(pSession->hSocket, pReq, sizeof(pSession->pReqBuff), 0);
+		if (ulReqLen == 0)
 		{
 			TRACE("The connection is terminated.\n");
 			pSession->bStop = FTM_TRUE;
 		}
-		else if (ulLen == -1)
+		else if (ulReqLen == -1)
 		{
-				
+			WARN("Error packet received.\n");	
 		}
-		else if (ulLen > 0)
+		else if (ulReqLen > 0)
 		{
 			FTM_ULONG	ulRetry = 3;
 #if	FTOM_TRACE_IO
@@ -432,7 +488,7 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 #endif
 			pResp->ulReqID = pReq->ulReqID;
 
-			if (FTM_RET_OK != FTOM_SERVER_serviceCall(pSession, pReq, pResp))
+			if (FTM_RET_OK != FTOM_SERVER_serviceCall(pSession->pServer, pReq, ulReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE))
 			{
 				pResp->xCmd = pReq->xCmd;
 				pResp->xRet = FTM_RET_INTERNAL_ERROR;
@@ -444,19 +500,19 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 #endif
 			do
 			{
-				ulLen = send(pSession->hSocket, pResp, pResp->ulLen, MSG_DONTWAIT);
+				ulSendLen = send(pSession->hSocket, pResp, pResp->ulLen, MSG_DONTWAIT);
 			}
-			while ((--ulRetry > 0) && (ulLen < 0));
+			while ((--ulRetry > 0) && (ulSendLen < 0));
 
-			if (ulLen < 0)
+			if (ulSendLen < 0)
 			{
-				ERROR("send failed[%d]\n", -ulLen);	
+				ERROR("send failed[%d]\n", -ulSendLen);	
 				pSession->bStop = FTM_TRUE;
 			}
 		}
-		else if (ulLen < 0)
+		else if (ulReqLen < 0)
 		{
-			ERROR("recv failed.[%d]\n", -ulLen);
+			ERROR("recv failed.[%d]\n", -ulReqLen);
 		}
 	}
 
@@ -469,18 +525,104 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET	FTOM_SERVER_serviceCall
+FTM_VOID_PTR	FTOM_SERVER_processPipe
 (
-	FTOM_SESSION_PTR		pSession,
-	FTOM_REQ_PARAMS_PTR		pReq,
-	FTOM_RESP_PARAMS_PTR	pResp
+	FTM_VOID_PTR	pData
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pData != NULL);
+	FTM_RET				xRet;
+	FTM_INT				nReadFD, nWriteFD;
+	FTOM_SERVER_PTR 	pServer = (FTOM_SERVER_PTR)pData;
+	fd_set				xFDSet;
+	struct timeval		xTimeout;
+	FTOM_REQ_PARAMS_PTR		pReq;
+	FTOM_RESP_PARAMS_PTR	pResp;
+
+	pReq	= (FTOM_REQ_PARAMS_PTR)FTM_MEM_malloc(FTOM_DEFAULT_PACKET_SIZE);
+	if (pReq == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	0;	
+	}
+
+	pResp 	= (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(FTOM_DEFAULT_PACKET_SIZE);
+	if (pResp == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		FTM_MEM_free(pReq);
+		return	0;	
+	}
+
+	mkfifo("/tmp/ftom_in", 0666);
+	mkfifo("/tmp/ftom_out", 0666);
+
+	nReadFD = open("/tmp/ftom_in", O_RDWR);
+	nWriteFD= open("/tmp/ftom_out", O_RDWR);
+
+	FD_ZERO(&xFDSet); 			/* clear the set */
+
+	while(!pServer->bStop)
+	{
+		FTM_INT	nRet;
+		FTM_INT	nReqLen;
+
+    	xTimeout.tv_sec = 1;
+		xTimeout.tv_usec = 00000;
+		
+  		FD_SET(nReadFD, &xFDSet); 	/* add our file descriptor to the set */
+		nRet = select(nReadFD + 1, &xFDSet, NULL, NULL, &xTimeout);
+		if (nRet > 0)
+		{
+			nReqLen = read(nReadFD, pReq, FTOM_DEFAULT_PACKET_SIZE);	
+			if (nReqLen > 0)
+			{
+				FTM_INT	i;
+
+				xRet = FTOM_SERVER_serviceCall(pServer, pReq, nReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE);
+				if (xRet != FTM_RET_OK)
+				{
+					pResp->xCmd = pReq->xCmd;
+					pResp->xRet = xRet;
+					pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
+				}
+
+				write(nWriteFD, pResp, pResp->ulLen);
+				//usleep(1);
+#if 0
+				MESSAGE("WRITE : ");
+				for(i = 0 ; i < pResp->ulLen ; i++)
+				{
+					MESSAGE("%02x ", ((FTM_UINT8_PTR)pResp)[i]);	
+				}
+				MESSAGE("\n");
+#endif
+			}
+		}
+	}
+
+	close(nReadFD);
+	close(nWriteFD);
+
+	FTM_MEM_free(pReq);
+	FTM_MEM_free(pResp);
+
+	return	0;
+}
+
+FTM_RET	FTOM_SERVER_serviceCall
+(
+	FTOM_SERVER_PTR			pServer,
+	FTOM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
+	FTOM_RESP_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	FTM_RET				xRet;
 	FTOM_SERVER_CMD_SET_PTR	pSet = pCmdSet;
 
 	while(pSet->xCmd != FTOM_CMD_UNKNOWN)
@@ -490,11 +632,11 @@ FTM_RET	FTOM_SERVER_serviceCall
 #if	FTOM_TRACE_IO
 			TRACE("CMD : %s\n", pSet->pCmdString);
 #endif
-			xRet = pSet->fService(pSession, pReq, pResp);
+			pSet->fService(pServer, pReq, ulReqLen, pResp, ulRespLen);
 #if	FTOM_TRACE_IO
 			TRACE("RET : %08lx\n", xRet);
 #endif
-			return	xRet;
+			return	FTM_RET_OK;
 		}
 
 		pSet++;
@@ -573,12 +715,14 @@ FTM_RET	FTOM_SERVER_getNodeAt
  ****************************************************************************************************/
 FTM_RET	FTOM_SERVER_NODE_create
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR	pServer,
 	FTOM_REQ_NODE_CREATE_PARAMS_PTR		pReq,
-	FTOM_RESP_NODE_CREATE_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_NODE_CREATE_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
@@ -586,7 +730,7 @@ FTM_RET	FTOM_SERVER_NODE_create
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_createNode(pSession->pServer, &pReq->xNodeInfo, &pNode);
+	pResp->xRet = FTOM_SERVER_createNode(pServer, &pReq->xNodeInfo, &pNode);
 
 	return	pResp->xRet;
 }
@@ -594,12 +738,14 @@ FTM_RET	FTOM_SERVER_NODE_create
 
 FTM_RET	FTOM_SERVER_NODE_destroy
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_NODE_DESTROY_PARAMS_PTR	pReq,
-	FTOM_RESP_NODE_DESTROY_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_NODE_DESTROY_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
@@ -607,7 +753,7 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_getNode(pSession->pServer, pReq->pDID, &pNode);
+	pResp->xRet = FTOM_SERVER_getNode(pServer, pReq->pDID, &pNode);
 	
 	if (pResp->xRet == FTM_RET_OK)
 	{
@@ -619,30 +765,34 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 
 FTM_RET	FTOM_SERVER_NODE_count
 (
-	FTOM_SESSION_PTR					pSession,
- 	FTOM_REQ_NODE_COUNT_PARAMS_PTR		pReq,
-	FTOM_RESP_NODE_COUNT_PARAMS_PTR	pResp
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_NODE_COUNT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_NODE_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_countNode(pSession->pServer, &pResp->ulCount);
+	pResp->xRet = FTOM_SERVER_countNode(pServer, &pResp->ulCount);
 
 	return	pResp->xRet;
 }
 
 FTM_RET	FTOM_SERVER_NODE_get
 (
-	FTOM_SESSION_PTR				pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_NODE_GET_PARAMS_PTR	pReq,
-	FTOM_RESP_NODE_GET_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_NODE_GET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
@@ -650,7 +800,7 @@ FTM_RET	FTOM_SERVER_NODE_get
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_getNode(pSession->pServer, pReq->pDID, &pNode);
+	pResp->xRet = FTOM_SERVER_getNode(pServer, pReq->pDID, &pNode);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
@@ -661,12 +811,14 @@ FTM_RET	FTOM_SERVER_NODE_get
 
 FTM_RET	FTOM_SERVER_NODE_getAt
 (	
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_NODE_GET_AT_PARAMS_PTR		pReq,
-	FTOM_RESP_NODE_GET_AT_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_NODE_GET_AT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
@@ -674,7 +826,7 @@ FTM_RET	FTOM_SERVER_NODE_getAt
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_getNodeAt(pSession->pServer, pReq->ulIndex, &pNode);
+	pResp->xRet = FTOM_SERVER_getNodeAt(pServer, pReq->ulIndex, &pNode);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
@@ -685,29 +837,31 @@ FTM_RET	FTOM_SERVER_NODE_getAt
 
 FTM_RET	FTOM_SERVER_EP_create
 (
-	FTOM_SESSION_PTR				pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_CREATE_PARAMS_PTR	pReq,
-	FTOM_RESP_EP_CREATE_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_CREATE_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
 	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP;
 
-	xRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xInfo.xEPID, &pEP);
+	xRet = FTOM_EPM_getEP(pServer->pOM->pEPM, pReq->xInfo.xEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_RET_ALREADY_EXISTS;
 	}
 	else
 	{
-		xRet = FTOM_EPM_createEP(pSession->pServer->pOM->pEPM, &pReq->xInfo, &pEP);
+		xRet = FTOM_EPM_createEP(pServer->pOM->pEPM, &pReq->xInfo, &pEP);
 		if (xRet == FTM_RET_OK)
 		{
-			xRet = FTOM_createEP(pSession->pServer->pOM, &pReq->xInfo);
+			xRet = FTOM_createEP(pServer->pOM, &pReq->xInfo);
 		}
 	}
 
@@ -720,26 +874,28 @@ FTM_RET	FTOM_SERVER_EP_create
 
 FTM_RET	FTOM_SERVER_EP_destroy
 (		
-	FTOM_SESSION_PTR				pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_DESTROY_PARAMS_PTR	pReq,
-	FTOM_RESP_EP_DESTROY_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DESTROY_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
 	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP;
 
-	xRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTOM_EPM_getEP(pServer->pOM->pEPM, pReq->xEPID, &pEP);
 	
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_EPM_destroyEP(pSession->pServer->pOM->pEPM, pEP);
+		xRet = FTOM_EPM_destroyEP(pServer->pOM->pEPM, pEP);
 		if (xRet == FTM_RET_OK)
 		{
-			xRet = FTOM_destroyEP(pSession->pServer->pOM, pReq->xEPID);
+			xRet = FTOM_destroyEP(pServer->pOM, pReq->xEPID);
 		}
 	}
 
@@ -752,30 +908,34 @@ FTM_RET	FTOM_SERVER_EP_destroy
 
 FTM_RET	FTOM_SERVER_EP_count
 (
-	FTOM_SESSION_PTR				pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_COUNT_PARAMS_PTR	pReq,
-	FTOM_RESP_EP_COUNT_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_EPM_count(pSession->pServer->pOM->pEPM, pReq->xType, &pResp->nCount);
+	pResp->xRet = FTOM_EPM_count(pServer->pOM->pEPM, pReq->xType, &pResp->nCount);
 
 	return	pResp->xRet;
 }
 
 FTM_RET	FTOM_SERVER_EP_get
 (
-	FTOM_SESSION_PTR				pSession,
- 	FTOM_REQ_EP_GET_PARAMS_PTR		pReq,
-	FTOM_RESP_EP_GET_PARAMS_PTR		pResp
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_EP_GET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_GET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
@@ -783,7 +943,7 @@ FTM_RET	FTOM_SERVER_EP_get
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xEPID, &pEP);
+	pResp->xRet = FTOM_EPM_getEP(pServer->pOM->pEPM, pReq->xEPID, &pEP);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
@@ -794,17 +954,19 @@ FTM_RET	FTOM_SERVER_EP_get
 
 FTM_RET	FTOM_SERVER_EP_getList
 (	
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_GET_LIST_PARAMS_PTR		pReq,
-	FTOM_RESP_EP_GET_LIST_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_GET_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
 	pResp->xCmd = pReq->xCmd;
-	pResp->xRet = FTOM_EPM_getIDList(pSession->pServer->pOM->pEPM, pReq->xType, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
+	pResp->xRet = FTOM_EPM_getIDList(pServer->pOM->pEPM, pReq->xType, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_ID) * pResp->ulCount;
 
 	return	pResp->xRet;
@@ -812,12 +974,14 @@ FTM_RET	FTOM_SERVER_EP_getList
 
 FTM_RET	FTOM_SERVER_EP_getAt
 (
-	FTOM_SESSION_PTR				pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_GET_AT_PARAMS_PTR	pReq,
-	FTOM_RESP_EP_GET_AT_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_GET_AT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
@@ -825,7 +989,7 @@ FTM_RET	FTOM_SERVER_EP_getAt
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_EPM_getEPAt(pSession->pServer->pOM->pEPM, pReq->ulIndex, &pEP);
+	pResp->xRet = FTOM_EPM_getEPAt(pServer->pOM->pEPM, pReq->ulIndex, &pEP);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
@@ -836,19 +1000,21 @@ FTM_RET	FTOM_SERVER_EP_getAt
 
 FTM_RET	FTOM_SERVER_EP_set
 (
-	FTOM_SESSION_PTR				pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_SET_PARAMS_PTR		pReq,
-	FTOM_RESP_EP_SET_PARAMS_PTR		pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_SET_PARAMS_PTR		pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
 	FTM_RET			xRet;
 	FTOM_EP_PTR		pEP;
 
-	xRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xInfo.xEPID, &pEP);
+	xRet = FTOM_EPM_getEP(pServer->pOM->pEPM, pReq->xInfo.xEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTOM_EP_setInfo(pEP, &pReq->xInfo);
@@ -862,12 +1028,14 @@ FTM_RET	FTOM_SERVER_EP_set
 
 FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
 (
-	FTOM_SESSION_PTR							pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pReq,
- 	FTOM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+ 	FTOM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
@@ -881,29 +1049,33 @@ FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
 
 FTM_RET	FTOM_SERVER_EP_DATA_info
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR	pServer,
 	FTOM_REQ_EP_DATA_INFO_PARAMS_PTR 	pReq,
-	FTOM_RESP_EP_DATA_INFO_PARAMS_PTR 	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_INFO_PARAMS_PTR 	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_getEPDataInfo(pSession->pServer->pOM, pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
+	pResp->xRet = FTOM_getEPDataInfo(pServer->pOM, pReq->xEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
 
 	return	pResp->xRet;
 }
 FTM_RET	FTOM_SERVER_EP_DATA_getLast
 (	
-	FTOM_SESSION_PTR						pSession,
+	FTOM_SERVER_PTR	pServer,
 	FTOM_REQ_EP_DATA_GET_LAST_PARAMS_PTR 	pReq,
-	FTOM_RESP_EP_DATA_GET_LAST_PARAMS_PTR 	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_GET_LAST_PARAMS_PTR 	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer!= NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
@@ -912,7 +1084,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_getLast
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_EPM_getEP(pSession->pServer->pOM->pEPM, pReq->xEPID, &pEP);
+	pResp->xRet = FTOM_EPM_getEP(pServer->pOM->pEPM, pReq->xEPID, &pEP);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		FTM_EP_DATA_PTR	pData;
@@ -930,18 +1102,20 @@ FTM_RET	FTOM_SERVER_EP_DATA_getLast
 
 FTM_RET	FTOM_SERVER_EP_DATA_getList
 (
-	FTOM_SESSION_PTR						pSession,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_DATA_GET_LIST_PARAMS_PTR	pReq,
-	FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
 	FTM_RET		xRet;
 
-	xRet = FTOM_getEPDataList(pSession->pServer->pOM, pReq->xEPID, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
+	xRet = FTOM_getEPDataList(pServer->pOM, pReq->xEPID, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
 	if (xRet != FTM_RET_OK)
 	{
 		pResp->nCount = 0;
@@ -956,12 +1130,14 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 
 FTM_RET	FTOM_SERVER_EP_DATA_count
 (
-	FTOM_SESSION_PTR					pSession,
+	FTOM_SERVER_PTR	pServer,
 	FTOM_REQ_EP_DATA_COUNT_PARAMS_PTR 	pReq,
-	FTOM_RESP_EP_DATA_COUNT_PARAMS_PTR 	pResp
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_COUNT_PARAMS_PTR 	pResp,
+	FTM_ULONG		ulRespLen
 )
 {
-	ASSERT(pSession != NULL);
+	ASSERT(pServer != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
@@ -969,7 +1145,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_count
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_getEPDataCount(pSession->pServer->pOM, pReq->xEPID, &ulCount);
+	pResp->xRet = FTOM_getEPDataCount(pServer->pOM, pReq->xEPID, &ulCount);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		pResp->ulCount = ulCount;
