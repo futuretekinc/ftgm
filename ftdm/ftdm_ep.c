@@ -48,6 +48,7 @@ FTM_RET	FTDM_EP_create
 
 	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP;
+	FTM_BOOL	bExist = FTM_TRUE;
 
 	pEP = (FTDM_EP_PTR)FTM_MEM_malloc(sizeof(FTDM_EP));
 	if (pEP == NULL)
@@ -58,10 +59,14 @@ FTM_RET	FTDM_EP_create
 	memset(pEP, 0, sizeof(FTDM_EP));
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
 
-	FTM_EP	xTmpInfo;
-
-	xRet = FTDM_DBIF_EP_get(pEP->xInfo.pEPID, &xTmpInfo);
+	xRet = FTDM_DBIF_EP_isExist(pInfo->pEPID, &bExist);
 	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEP);
+		return	xRet;	
+	}
+
+	if (!bExist)
 	{
 		xRet = FTDM_DBIF_EP_append(pInfo);
 		if (xRet != FTM_RET_OK)
@@ -97,15 +102,35 @@ FTM_RET	FTDM_EP_destroy
 
 	FTM_RET		xRet;
 
-	xRet = FTDM_DBIF_EP_del((*ppEP)->xInfo.pEPID);
-	if (xRet != FTM_RET_OK)
+	xRet = FTM_EP_isStatic(&(*ppEP)->xInfo);
+	if (xRet == FTM_RET_OK)
 	{
-		ERROR("The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
+		xRet = FTDM_DBIF_EP_del((*ppEP)->xInfo.pEPID);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
+		}
 	}
 
 	FTM_MEM_free(*ppEP);
 
+	*ppEP = NULL;
+
 	return	xRet;
+}
+
+FTM_RET	FTDM_EP_destroy2
+(
+	FTDM_EP_PTR	_PTR_ ppEP
+)
+{
+	ASSERT(ppEP != NULL);
+
+	FTM_MEM_free(*ppEP);
+
+	*ppEP = NULL;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDM_EP_get
@@ -228,12 +253,12 @@ FTM_RET FTDM_EP_DATA_infoInternal
 	FTM_ULONG_PTR	pulCount
 )
 {
-	FTM_RET		xRet;
+	ASSERT(pEPID != NULL);
+	ASSERT(pulBeginTime != NULL);
+	ASSERT(pulEndTime != NULL);
+	ASSERT(pulCount != NULL);
 
-	if ((pulBeginTime == NULL) || (pulEndTime == NULL) || (pulCount == NULL))
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
-	}
+	FTM_RET		xRet;
 
 	xRet = FTDM_DBIF_EP_DATA_info(pEPID, pulBeginTime, pulEndTime);
 	if (xRet != FTM_RET_OK)

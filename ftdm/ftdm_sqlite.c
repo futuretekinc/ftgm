@@ -399,7 +399,7 @@ FTM_RET	FTDM_DBIF_NODE_destroy
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	sprintf(pSQL, "DELETE FROM node_info WHERE DID = %s", pDID);
+	sprintf(pSQL, "DELETE FROM node_info WHERE DID = \'%s\'", pDID);
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
@@ -445,7 +445,7 @@ FTM_RET	FTDM_DBIF_NODE_get
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(pSQL, "SELECT * FROM node_info WHERE DID = '%s'", pDID);
+    sprintf(pSQL, "SELECT * FROM node_info WHERE DID = \'%s\'", pDID);
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_getCB, pInfo, &strErrMsg);
     if (xRet != SQLITE_OK)
     {
@@ -618,9 +618,7 @@ FTM_RET	FTDM_DBIF_EP_del
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	sprintf(pSQL,
-			"DELETE FROM ep_info WHERE EPID = %s", 
-			pEPID);
+	sprintf(pSQL, "DELETE FROM ep_info WHERE EPID = \'%s\'", pEPID);
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
@@ -642,6 +640,55 @@ FTM_RET	FTDM_DBIF_EP_count
 )
 {
 	return	FTDM_DBIF_count("ep_info", pulCount);
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+static 
+FTM_INT	_FTDM_DBIF_EP_countCB(void *pData, int nArgc, char **pArgv, char **pColName)
+{
+	FTM_ULONG_PTR pnCount = (FTM_ULONG_PTR)pData;
+
+	if (nArgc != 0)
+	{
+		*pnCount = atoi(pArgv[0]);
+	}
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_EP_isExist
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL_PTR	pbExist
+)
+{
+    FTM_INT			nRet;
+    FTM_CHAR		pSQL[1024];
+    FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_ULONG		ulCount = 0;
+
+	if (_pSQLiteDB == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	if (FTDM_DBIF_EP_isTableExist() == FTM_TRUE)
+	{
+    	sprintf(pSQL, "SELECT COUNT(*) FROM ep_info WHERE EPID = \'%s\'", pEPID);
+    	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_countCB, &ulCount, &pErrMsg);
+    	if (nRet != SQLITE_OK)
+    	{
+       		ERROR("SQL error b: %s\n", pErrMsg);
+        	sqlite3_free(pErrMsg);
+
+    		return  FTM_RET_ERROR;
+    	}
+	}
+
+	*pbExist = (ulCount != 0);
+
+	return	FTM_RET_OK;
 }
 
 /***************************************************************
@@ -754,7 +801,7 @@ FTM_RET	FTDM_DBIF_EP_get
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(pSQL, "SELECT * FROM ep_info WHERE EPID = %s", pEPID);
+    sprintf(pSQL, "SELECT * FROM ep_info WHERE EPID = \'%s\'", pEPID);
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getCB, &xEP, &strErrMsg);
     if (xRet != SQLITE_OK)
     {
@@ -949,7 +996,9 @@ FTM_RET	FTDM_DBIF_EP_DATA_info
 {
 	FTM_RET			xRet;
 	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pTableName[64];
 	FTM_CHAR		pSQL[1024];
+	FTM_BOOL		bExist = FTM_FALSE;
 
 	if (_pSQLiteDB == NULL)
 	{
@@ -957,8 +1006,20 @@ FTM_RET	FTDM_DBIF_EP_DATA_info
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	sprintf(pSQL, "SELECT TIME from ep_%s "\
-				  " ORDER BY TIME DESC LIMIT 1", pEPID);
+	sprintf(pTableName, "ep_%s", pEPID);
+
+	xRet = _FTDM_DBIF_isExistTable(pTableName, &bExist);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (bExist != FTM_TRUE)
+	{
+		return	FTM_RET_OBJECT_NOT_FOUND;	
+	}
+
+	sprintf(pSQL, "SELECT TIME from %s ORDER BY TIME DESC LIMIT 1", pTableName);
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulEndTime, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
@@ -968,8 +1029,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_info
 		return	FTM_RET_ERROR;
 	}
 
-	sprintf(pSQL, "SELECT TIME from ep_%s "\
-				  " ORDER BY TIME ASC LIMIT 1", pEPID);
+	sprintf(pSQL, "SELECT TIME from %s  ORDER BY TIME ASC LIMIT 1", pTableName);
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulBeginTime, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{

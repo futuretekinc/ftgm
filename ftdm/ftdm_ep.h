@@ -33,6 +33,11 @@ FTM_RET	FTDM_EP_destroy
 	FTDM_EP_PTR	_PTR_ ppEP
 );
 
+FTM_RET	FTDM_EP_destroy2
+(
+	FTDM_EP_PTR	_PTR_ ppEP
+);
+
 FTM_RET	FTDM_EP_get
 (
 	FTDM_EP_PTR	pEP,

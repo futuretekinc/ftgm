@@ -124,6 +124,12 @@ FTM_RET	FTDM_DBIF_EP_count
 	FTM_ULONG_PTR	pCount
 );
 
+FTM_RET	FTDM_DBIF_EP_isExist
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL_PTR	pbExist
+);
+
 FTM_RET	FTDM_DBIF_EP_getList
 (
 	FTM_EP_PTR		pInfos,

@@ -59,7 +59,10 @@ typedef	struct
 typedef	enum
 {
 	FTM_EP_LIMIT_TYPE_COUNT = 0,
-	FTM_EP_LIMIT_TYPE_TIME
+	FTM_EP_LIMIT_TYPE_TIME,
+	FTM_EP_LIMIT_TYPE_HOURS,
+	FTM_EP_LIMIT_TYPE_DAYS,
+	FTM_EP_LIMIT_TYPE_MONTHS
 }	FTM_EP_LIMIT_TYPE, _PTR_ FTM_EP_LIMIT_TYPE_PTR;
 
 typedef	struct
@@ -86,7 +89,9 @@ typedef	struct
 	{
 		FTM_ULONG			ulCount;
 		FTM_EP_LIMIT_TIME	xTime;
-	
+		FTM_ULONG			ulHours;
+		FTM_ULONG			ulDays;
+		FTM_ULONG			ulMonths;
 	}	xParams;
 }	FTM_EP_LIMIT, _PTR_ FTM_EP_LIMIT_PTR;
 

@@ -91,7 +91,7 @@ FTM_RET	FTDM_NODEM_final
 	FTM_LIST_iteratorStart(pNodeM->pList);
 	while(FTM_LIST_iteratorNext(pNodeM->pList, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
 	{
-		FTDM_NODE_destroy(&pNode);	
+		FTDM_NODE_destroy2(&pNode);	
 	}
 
 	FTM_LIST_destroy(pNodeM->pList);

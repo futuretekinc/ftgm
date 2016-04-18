@@ -41,7 +41,7 @@ FTM_RET FTDM_EPM_final
 	FTM_LIST_iteratorStart(pEPM->pList);
 	while(FTM_LIST_iteratorNext(pEPM->pList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
 	{
-		FTDM_EP_destroy(&pEP);
+		FTDM_EP_destroy2(&pEP);
 	}
 
 	FTM_LIST_destroy(pEPM->pList);
@@ -86,6 +86,9 @@ FTM_RET	FTDM_EPM_destroy
 	ASSERT(ppEPM != NULL);
 
 	FTDM_EPM_final(*ppEPM);
+
+	FTM_MEM_free(*ppEPM);
+
 	*ppEPM = NULL;
 
 	return	FTM_RET_OK;

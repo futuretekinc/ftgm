@@ -59,8 +59,26 @@ FTM_RET 	FTDM_NODE_destroy
 )
 {
 	ASSERT(ppNode != NULL);
+	FTM_RET	xRet;
 
-	FTDM_DBIF_NODE_destroy((*ppNode)->xInfo.pDID);
+	xRet = FTM_NODE_isStatic(&(*ppNode)->xInfo);
+	if (xRet == FTM_RET_OK)
+	{
+		FTDM_DBIF_NODE_destroy((*ppNode)->xInfo.pDID);
+	}
+
+	FTM_MEM_free(*ppNode);
+	*ppNode = NULL;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET 	FTDM_NODE_destroy2
+(
+	FTDM_NODE_PTR _PTR_ ppNode
+)
+{
+	ASSERT(ppNode != NULL);
 
 	FTM_MEM_free(*ppNode);
 	*ppNode = NULL;

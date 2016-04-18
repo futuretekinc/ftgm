@@ -327,10 +327,36 @@ FTM_RET	FTDM_setDebugLevel
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_getServer(FTDM_SERVER_PTR _PTR_ ppServer)
+FTM_RET	FTDM_getServer
+(
+	FTDM_SERVER_PTR _PTR_ ppServer
+)
 {
 	*ppServer = &xServer;
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_removeInvalidData
+(
+	FTDM_CONTEXT_PTR pDM
+)
+{
+	ASSERT(pDM != NULL);
+	FTM_RET		xRet;
+	FTM_ULONG	i, ulCount;
+
+	xRet = FTDM_EPM_count(pDM->pEPM, 0, &ulCount);
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTDM_EP_PTR	pEP;
+
+		xRet = FTDM_EPM_getAt(pDM->pEPM, i, &pEP);
+		if (xRet == FTM_RET_OK)
+		{
+		
+		}
+	}
 	return	FTM_RET_OK;
 }
 
@@ -487,10 +513,10 @@ int main(int nArgc, char *pArgv[])
 		FTDMS_stop(&xServer);
 	}
 
-	FTDM_DBIF_close();
-	
 	FTDM_final(&xFTDM);
 
+	FTDM_DBIF_close();
+	
 	FTM_MEM_final();
 
 	return	0;

@@ -60,5 +60,10 @@ FTM_RET	FTDM_getServer
 (
 	FTDM_SERVER_PTR _PTR_ ppServer
 );
+	
+FTM_RET	FTDM_removeInvalidData
+(
+	FTDM_CONTEXT_PTR	pDM
+);	
 #endif
 

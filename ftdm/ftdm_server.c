@@ -167,6 +167,7 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 	FTM_INT				nRet;
 	struct sockaddr_in	xServer, xClient;
 	FTDM_SERVER_PTR		pServer =(FTDM_SERVER_PTR)pData;
+	time_t				xPrevTime, xCurrentTime;
 
 	ASSERT(pData != NULL);
 
@@ -197,6 +198,7 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 	listen(pServer->hSocket, 3);
 
 
+	xPrevTime = time(NULL) / 3600;
 	while(!pServer->bStop)
 	{
 		FTM_INT	hClient;
@@ -231,6 +233,13 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 				}
 			}
 		}
+		xCurrentTime = time(NULL) / 3600; 
+		if (xPrevTime != xCurrentTime)
+		{
+			FTDM_removeInvalidData(pServer->pDM);	
+		}
+
+		xPrevTime = xCurrentTime;
 		usleep(10000);
 	}
 

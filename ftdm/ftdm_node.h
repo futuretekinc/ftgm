@@ -22,6 +22,11 @@ FTM_RET FTDM_NODE_destroy
 	FTDM_NODE_PTR _PTR_ ppNode
 );
 
+FTM_RET FTDM_NODE_destroy2
+(
+	FTDM_NODE_PTR _PTR_ ppNode
+);
+
 FTM_RET	FTDM_NODE_setInfo
 (
 	FTDM_NODE_PTR	pNode,
