@@ -72,15 +72,15 @@ static FTM_RET	FTOM_SNMPTRAPD_discovery
 static FTM_RET	FTOM_SNMPTRAPD_setEPData
 (
 	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_EP_ID 				xEPID, 
-	FTM_EP_DATA_PTR 		pData
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_DATA_PTR 	pData
 );
 
 static FTM_RET	FTOM_SNMPTRAPD_sendAlert
 (
 	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_EP_ID 				xEPID, 
-	FTM_EP_DATA_PTR 		pData
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_DATA_PTR 	pData
 );
 
 static FTM_RET	FTOM_SNMPTRAPD_receivedDiscovery
@@ -918,7 +918,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 	ASSERT(pMsg != NULL);
 	
 	FTM_RET			xRet;
-	FTM_EP_ID		xEPID = 0;
+	FTM_CHAR_PTR	pEPID;
 	FTOM_EP_PTR		pEP = NULL;
 	FTM_EP_DATA		xData;
 	FTOM_SNMPTRAPD_MSG_TYPE	xMsgType = FTOM_SNMPTRAPD_MSG_TYPE_UNKNOWN;	
@@ -955,9 +955,9 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 			pItem = nx_json_get(pRoot, "id");
 			if (pItem->type != NX_JSON_NULL)
 			{
-				xEPID = strtoul(pItem->text_value, 0, 16);
+				pEPID = pItem->text_value;
 	
-				xRet = FTOM_EPM_getEP(pSNMPTRAPD->pOM->pEPM, xEPID, &pEP);
+				xRet = FTOM_EPM_getEP(pSNMPTRAPD->pOM->pEPM, pEPID, &pEP);
 				if (xRet == FTM_RET_OK)
 				{
 					FTM_EP_DATA_TYPE	xDataType;
@@ -1104,7 +1104,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 							}
 						}
 						
-						xRet = FTOM_SNMPTRAPD_setEPData(pSNMPTRAPD, xEPID, &xData);
+						xRet = FTOM_SNMPTRAPD_setEPData(pSNMPTRAPD, pEPID, &xData);
 						if (xRet != FTM_RET_OK)
 						{
 							ERROR("Notify failed.\n");	
@@ -1120,7 +1120,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 				else
 				{
 					xRet = FTM_RET_OBJECT_NOT_FOUND;
-					ERROR("Can't found EP[%08x]\n", xEPID);	
+					ERROR("Can't found EP[%s]\n", pEPID);	
 				}
 			}
 			else

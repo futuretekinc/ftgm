@@ -270,14 +270,14 @@ FTM_RET	FTOM_NODE_getEPCount
 FTM_RET	FTOM_NODE_getEP
 (
 	FTOM_NODE_PTR pNode, 
-	FTM_EP_ID xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTOM_EP_PTR _PTR_ ppEP
 )
 {
 	ASSERT(pNode != NULL);
 	ASSERT(ppEP != NULL);
 
-	return	FTM_LIST_get(&pNode->xEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEP);
+	return	FTM_LIST_get(&pNode->xEPList, pEPID, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
 FTM_RET	FTOM_NODE_getEPAt

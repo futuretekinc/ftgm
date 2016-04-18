@@ -69,7 +69,7 @@ typedef FTM_VOID (*FTOM_MQTT_CLIENT_TIMER_CB)(struct mosquitto *mosq, void *pObj
 typedef FTM_RET	 (*FTOM_MQTT_CLIENT_PUBLISH_EP_DATA)
 (
 	FTOM_MQTT_CLIENT_PTR	pClient, 
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR			pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount
 );
@@ -158,7 +158,7 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 FTM_RET	FTOM_MQTT_CLIENT_publishEPData
 (
 	FTOM_MQTT_CLIENT_PTR pClient,
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount
 );

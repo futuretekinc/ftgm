@@ -101,9 +101,9 @@ FTM_RET	FTOM_NODE_SNMPC_init
 				continue;
 			}
 
-			if (FTOM_EPM_getClass(pEP->pEPM, (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK), &pEPClassInfo) != FTM_RET_OK)
+			if (FTOM_EPM_getClass(pEP->pEPM, (pEP->xInfo.xType & FTM_EP_TYPE_MASK), &pEPClassInfo) != FTM_RET_OK)
 			{
-				TRACE("EP CLASS[%08lx] information not found\n", pEP->xInfo.xEPID);
+				TRACE("EP CLASS[%s] information not found\n", pEP->xInfo.pEPID);
 				continue;
 			}
 
@@ -116,7 +116,10 @@ FTM_RET	FTOM_NODE_SNMPC_init
 				TRACE("Can't find MIB\n");
 				continue;
 			}
-			pEP->xOption.xSNMP.pOID[pEP->xOption.xSNMP.nOIDLen++] = pEP->xInfo.xDEPID & 0xFF;
+
+			FTM_INT	nIndex;
+			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 3], 0, 16);
+			pEP->xOption.xSNMP.pOID[pEP->xOption.xSNMP.nOIDLen++] = nIndex & 0xFF;
 			FTM_LIST_append(&pNode->xCommon.xEPList, pEP);
 		}
 	}

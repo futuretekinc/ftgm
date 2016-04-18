@@ -183,11 +183,14 @@ FTM_RET	FTOM_EP_attach
 	{
 	case	FTM_NODE_TYPE_SNMP:
 		{
+			FTM_INT	nIndex;
+
+			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 3], 0, 16);
 			pEP->xOption.xSNMP.nOIDLen = MAX_OID_LEN;
 
 			FTOM_NODE_SNMPC_getOID((FTOM_NODE_SNMPC_PTR)pNode, 
-					(pEP->xInfo.xEPID >> 24) & 0xFF, 
-					(pEP->xInfo.xEPID & 0xFF), 
+					(pEP->xInfo.xType >> 24) & 0xFF, 
+					nIndex,
 					pEP->xOption.xSNMP.pOID, 
 					&pEP->xOption.xSNMP.nOIDLen);
 		}
@@ -220,19 +223,19 @@ FTM_RET FTOM_EP_start
 
 	if (pEP->pNode == NULL)
 	{
-		ERROR("EP[%08x] is not attached.\n", pEP->xInfo.xEPID);
+		ERROR("EP[%s] is not attached.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_EP_IS_NOT_ATTACHED;	
 	}
 
 	if (!pEP->xInfo.bEnable)
 	{
-		INFO("EP[%08x] is disabled.\n", pEP->xInfo.xEPID);
+		INFO("EP[%s] is disabled.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_OK;
 	}
 
 	if (!pEP->bStop)
 	{
-		WARN("EP[%08x] already started.\n", pEP->xInfo.xEPID);
+		WARN("EP[%s] already started.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
@@ -256,7 +259,7 @@ FTM_RET	FTOM_EP_stop
 
 	if (pEP->bStop)
 	{
-		WARN("EP[%08x] is stopped.\n", pEP->xInfo.xEPID);
+		WARN("EP[%s] is stopped.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_NOT_START;	
 	}
 
@@ -306,7 +309,7 @@ FTM_VOID_PTR FTOM_EP_process
 
 	pEP->bStop = FTM_FALSE;
 
-	TRACE("EP[%08x] process start.\n", pEP->xInfo.xEPID);
+	TRACE("EP[%s] process start.\n", pEP->xInfo.pEPID);
 
 	FTM_TIME_getCurrent(&xAlignTime);
 	switch(pEP->xInfo.ulInterval)
@@ -350,7 +353,7 @@ FTM_VOID_PTR FTOM_EP_process
 		}
 		else
 		{
-			WARN("It failed to import data from EP[%s-%08x].\n", pEP->pNode->xInfo.pDID, pEP->xInfo.xEPID);
+			WARN("It failed to import data from EP[%s].\n", pEP->xInfo.pEPID);
 		}
 
 		if (FTM_TIMER_isExpired(&xTransTimer))
@@ -370,7 +373,7 @@ FTM_VOID_PTR FTOM_EP_process
 		
 			if (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK)
 			{
-				TRACE("Receive Message : EP[%08x], MSG[%08x]\n", pEP->xInfo.xEPID, pMsg->xType);
+				TRACE("Receive Message : EP[%s], MSG[%08x]\n", pEP->xInfo.pEPID, pMsg->xType);
 				switch(pMsg->xType)
 				{
 				case	FTOM_MSG_TYPE_QUIT:
@@ -422,7 +425,7 @@ FTM_RET	FTOM_EP_pushData
 	xRet = FTOM_NODE_setEPData(pEP->pNode, pEP, pData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%08x] data push error!\n", pEP->xInfo.xEPID);
+		ERROR("EP[%s] data push error!\n", pEP->xInfo.pEPID);
 	}
 
 	return	xRet;
@@ -456,7 +459,7 @@ FTM_RET	FTOM_EP_pullData
 	xRet = FTOM_NODE_getEPData(pEP->pNode, pEP, pData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%08x] data pull error!\n", pEP->xInfo.xEPID);
+		ERROR("EP[%s] data pull error!\n", pEP->xInfo.pEPID);
 	}
 
 	return	xRet;
@@ -501,7 +504,7 @@ FTM_RET	FTOM_EP_setData
 	xRet = FTM_EP_getDataType(&pEP->xInfo, &xDataType);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%08x] data type is unknown.\n", pEP->xInfo.xEPID);
+		ERROR("EP[%s] data type is unknown.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_ERROR;
 	}
 
@@ -542,7 +545,7 @@ FTM_RET	FTOM_EP_setData
 		xRet = FTM_LIST_append(&pEP->xDataList, pNewData);
 		if (xRet == FTM_RET_OK)
 		{
-			FTOM_EPM_saveEPData(pEP->pEPM, pEP->xInfo.xEPID, pData);
+			FTOM_EPM_saveEPData(pEP->pEPM, pEP->xInfo.pEPID, pData);
 		}
 		else
 		{
@@ -597,7 +600,7 @@ FTM_RET	FTOM_EP_sendDataInTime
 		}
 	}
 
-	xRet = FTOM_EPM_sendEPData(pEP->pEPM, pEP->xInfo.xEPID, pDataList, nCount);
+	xRet = FTOM_EPM_sendEPData(pEP->pEPM, pEP->xInfo.pEPID, pDataList, nCount);
 	FTM_MEM_free(pDataList);
 
 	return	xRet;

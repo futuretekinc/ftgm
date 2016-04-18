@@ -665,7 +665,7 @@ FTM_RET	FTOM_TASK_sync
 			FTOM_NODE_linkEP(pNode, pEP);
 		}
 		
-		TRACE("EP[%08lx] creating success.\n", pEP->xInfo.xEPID);
+		TRACE("EP[%s] creating success.\n", pEP->xInfo.pEPID);
 	}
 
 	xRet = FTDMC_TRIGGER_count(&xDMC.xSession, &ulCount);
@@ -898,8 +898,8 @@ FTM_RET FTOM_onSaveEPData
 
 	FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pMsg->xData);
 
-	FTOM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->xEPID, &pMsg->xData);
-	FTOM_DMC_appendEPData(&xDMC, pMsg->xEPID, &pMsg->xData);
+	FTOM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->pEPID, &pMsg->xData);
+	FTOM_DMC_appendEPData(&xDMC, pMsg->pEPID, &pMsg->xData);
 
 	return	FTM_RET_OK;
 }
@@ -914,12 +914,12 @@ FTM_RET	FTOM_onEPCtrl
 	FTOM_EP_PTR				pEP;
 	FTM_EP_DATA					xData;
 
-	TRACE("EP[%08x] Control\n", pMsg->xEPID);
+	TRACE("EP[%s] Control\n", pMsg->pEPID);
 
-	xRet = FTOM_EPM_getEP(pOM->pEPM, pMsg->xEPID, &pEP);
+	xRet = FTOM_EPM_getEP(pOM->pEPM, pMsg->pEPID, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%08x] not found.\n", pMsg->xEPID);
+		ERROR("EP[%s] not found.\n", pMsg->pEPID);
 		return	xRet;
 	}
 
@@ -950,7 +950,7 @@ FTM_RET	FTOM_onEPCtrl
 	xRet = FTOM_EP_pushData(pEP, &xData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%08x] set failed.\n", pMsg->xEPID);
+		ERROR("EP[%s] set failed.\n", pMsg->pEPID);
 	}
 
 	return	xRet;
@@ -965,7 +965,7 @@ FTM_RET	FTOM_onSendEPData
 	ASSERT(pOM != NULL);
 	ASSERT(pMsg != NULL);
 
-	return	FTOM_MQTT_CLIENT_publishEPData(&xMQTTC, pMsg->xEPID, pMsg->pData, pMsg->ulCount);
+	return	FTOM_MQTT_CLIENT_publishEPData(&xMQTTC, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
 }
 
 FTM_RET	FTOM_onRule
@@ -1047,7 +1047,7 @@ FTM_RET	FTOM_onDiscoveryDone
 
 	for(i = 0 ; i < pMsg->ulEPCount ; i++)
 	{
-		TRACE("EP[%d] : %08x\n", pMsg->pEPInfos[i].xEPID);	
+		TRACE("EP[%s] : %08x\n", pMsg->pEPInfos[i].pEPID);	
 	}
 
 	return	FTM_RET_OK;
@@ -1127,18 +1127,18 @@ FTM_RET	FTOM_createEP
 FTM_RET	FTOM_destroyEP
 (
 	FTOM_PTR 	pOM, 
-	FTM_EP_ID 	xEPID
+	FTM_CHAR_PTR	pEPID
 )
 {
 	ASSERT(pOM != NULL);
 
-	return	FTDMC_EP_remove(&xDMC.xSession, xEPID);
+	return	FTDMC_EP_remove(&xDMC.xSession, pEPID);
 }
 
 FTM_RET	FTOM_getEPDataList
 (
 	FTOM_PTR 		pOM, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG 		ulStart, 
 	FTM_EP_DATA_PTR pDataList, 
 	FTM_ULONG 		ulMaxCount, 
@@ -1149,29 +1149,29 @@ FTM_RET	FTOM_getEPDataList
 	ASSERT(pDataList != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_get(&xDMC.xSession, xEPID, ulStart, pDataList, ulMaxCount, pulCount);
+	return	FTDMC_EP_DATA_get(&xDMC.xSession, pEPID, ulStart, pDataList, ulMaxCount, pulCount);
 }
 
 FTM_RET	FTOM_getEPDataInfo
 (
 	FTOM_PTR 		pOM, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG_PTR 	pulBeginTime, 
 	FTM_ULONG_PTR 	pulEndTime, 
 	FTM_ULONG_PTR 	pulCount
 )
 {
-	return	FTDMC_EP_DATA_info(&xDMC.xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
+	return	FTDMC_EP_DATA_info(&xDMC.xSession, pEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
 FTM_RET	FTOM_getEPDataCount
 (
 	FTOM_PTR 		pOM, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG_PTR 	pulCount
 )
 {
-	return	FTDMC_EP_DATA_count(&xDMC.xSession, xEPID, pulCount);
+	return	FTDMC_EP_DATA_count(&xDMC.xSession, pEPID, pulCount);
 }
 
 FTM_RET	FTOM_NOTIFY_rule
@@ -1334,7 +1334,7 @@ FTM_RET	FTOM_getNodeAt
 FTM_RET	FTOM_setEPData
 (
 	FTOM_PTR 		pOM, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR pData
 )
 {
@@ -1344,7 +1344,7 @@ FTM_RET	FTOM_setEPData
 	FTM_RET						xRet;
 	FTOM_MSG_SET_EP_DATA_PTR	pMsg;
 
-	xRet = FTOM_MSG_createSetEPData(xEPID, pData, &pMsg);
+	xRet = FTOM_MSG_createSetEPData(pEPID, pData, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -1364,7 +1364,7 @@ FTM_RET	FTOM_setEPData
 FTM_RET	FTOM_saveEPData
 (
 	FTOM_PTR 		pOM, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR pData
 )
 {
@@ -1374,7 +1374,7 @@ FTM_RET	FTOM_saveEPData
 	FTM_RET						xRet;
 	FTOM_MSG_SAVE_EP_DATA_PTR	pMsg;
 
-	xRet = FTOM_MSG_createSaveEPData(xEPID, pData, &pMsg);
+	xRet = FTOM_MSG_createSaveEPData(pEPID, pData, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		WARN("Save EP data message creation failed[%08x].\n", xRet);
@@ -1395,7 +1395,7 @@ FTM_RET	FTOM_saveEPData
 FTM_RET	FTOM_sendEPData
 (
 	FTOM_PTR		pOM,
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR	pData,
 	FTM_ULONG		ulCount
 )
@@ -1406,7 +1406,7 @@ FTM_RET	FTOM_sendEPData
 	FTM_RET						xRet;
 	FTOM_MSG_SEND_EP_DATA_PTR	pMsg;
 
-	xRet = FTOM_MSG_createSendEPData(xEPID, pData, ulCount, &pMsg);
+	xRet = FTOM_MSG_createSendEPData(pEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		WARN("Send EP data message creation failed[%08x].\n", xRet);
@@ -1428,7 +1428,7 @@ FTM_RET	FTOM_sendEPData
 FTM_RET	FTOM_sendAlert
 (
 	FTOM_PTR		pOM,
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR	pData
 )
 {
@@ -1438,7 +1438,7 @@ FTM_RET	FTOM_sendAlert
 	FTM_RET				xRet;
 	FTOM_MSG_ALERT_PTR	pMsg;
 
-	xRet = FTOM_MSG_createAlert(xEPID, pData, &pMsg);
+	xRet = FTOM_MSG_createAlert(pEPID, pData, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -1559,10 +1559,10 @@ FTM_RET	FTOM_discoveryEP
 	ASSERT(pEPInfo != NULL);
 
 	FTM_RET		xRet;
-	FTM_EP_ID	xEPID;
+	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 	FTM_CHAR	pName[FTM_NAME_LEN + 1];
 
-	xRet = FTOM_SNMPC_getEPID(&xSNMPC, pIP, xType, ulIndex, &xEPID);
+	xRet = FTOM_SNMPC_getEPID(&xSNMPC, pIP, xType, ulIndex, pEPID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP not found!\n");
@@ -1576,7 +1576,7 @@ FTM_RET	FTOM_discoveryEP
 		return	xRet;	
 	}
 
-	pEPInfo->xEPID = xEPID;
+	strncpy(pEPInfo->pEPID, pEPID, FTM_EPID_LEN);
 	strcpy(pEPInfo->pName, pName);
 
 	return	FTM_RET_OK;

@@ -198,14 +198,14 @@ FTM_RET	FTOM_EPM_createEP
 	xRet = FTOM_EP_create(pInfo, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("The EP[%08x] creation failed.\n", pInfo->xEPID);
+		ERROR("The EP[%s] creation failed.\n", pInfo->pEPID);
 		return	xRet;	
 	}
 
 	xRet = FTOM_EPM_attachEP(pEPM, pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't attach the EP[%08x] to the EPM.\n", pInfo->xEPID);
+		ERROR("Can't attach the EP[%s] to the EPM.\n", pInfo->pEPID);
 		return	xRet;	
 	}
 
@@ -230,7 +230,7 @@ FTM_RET	FTOM_EPM_destroyEP
 	xRet = FTOM_EPM_detachEP(pEPM, pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't detach the EP[%08x] from the EPM.\n", pEP->xInfo.xEPID);
+		ERROR("Can't detach the EP[%s] from the EPM.\n", pEP->xInfo.pEPID);
 		return	xRet;	
 	}
 
@@ -253,7 +253,7 @@ FTM_RET	FTOM_EPM_attachEP
 	xRet = FTM_LIST_append(pEPM->pEPList, pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't attach EP[%08x] to EPM.\n", pEP->xInfo.xEPID);
+		ERROR("Can't attach EP[%s] to EPM.\n", pEP->xInfo.pEPID);
 		return	xRet;	
 	}
 
@@ -275,14 +275,14 @@ FTM_RET	FTOM_EPM_detachEP
 
 	if (pEP->pEPM != pEPM)
 	{
-		WARN("EP[%08x] is not attached.\n", pEP->xInfo.xEPID);
+		WARN("EP[%s] is not attached.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_EP_IS_NOT_ATTACHED;
 	}
 
 	xRet = FTM_LIST_remove(pEPM->pEPList, pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("EP[%08x] is not attached.\n", pEP->xInfo.xEPID);
+		WARN("EP[%s] is not attached.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_EP_IS_NOT_ATTACHED;
 	}
 
@@ -315,7 +315,7 @@ FTM_RET	FTOM_EPM_count
 			FTOM_EP_PTR	pEP;
 
 			FTM_LIST_getAt(pEPM->pEPList, i,(FTM_VOID_PTR _PTR_)&pEP);
-			if (xType == (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK))
+			if (xType == (pEP->xInfo.xType & FTM_EP_TYPE_MASK))
 			{
 				ulCount++;
 			}
@@ -332,7 +332,7 @@ FTM_RET FTOM_EPM_getIDList
 (
 	FTOM_EPM_PTR	pEPM,
 	FTM_EP_TYPE 	xType, 
-	FTM_EP_ID_PTR 	pEPIDList, 
+	FTM_CHAR		pEPIDList[][FTM_EPID_LEN+1], 
 	FTM_ULONG 		ulMaxCount, 
 	FTM_ULONG_PTR 	pulCount
 )
@@ -349,9 +349,9 @@ FTM_RET FTOM_EPM_getIDList
 		FTOM_EP_PTR	pEP;
 
 		FTM_LIST_getAt(pEPM->pEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
-		if ((xType == 0) || (xType == (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK)))
+		if ((xType == 0) || (xType == (pEP->xInfo.xType & FTM_EP_TYPE_MASK)))
 		{
-			pEPIDList[ulCount++] = pEP->xInfo.xEPID;
+			strncpy(pEPIDList[ulCount++],pEP->xInfo.pEPID, FTM_EPID_LEN);
 		}
 	}
 
@@ -364,13 +364,13 @@ FTM_RET FTOM_EPM_getIDList
 FTM_RET	FTOM_EPM_getEP
 (
 	FTOM_EPM_PTR		pEPM,
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR		pEPID,
 	FTOM_EP_PTR _PTR_ 	ppEP
 )
 {
 	ASSERT(pEPM != NULL);
 	
-	return	FTM_LIST_get(pEPM->pEPList, &xEPID, (FTM_VOID_PTR _PTR_)ppEP);
+	return	FTM_LIST_get(pEPM->pEPList, pEPID, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
 FTM_RET FTOM_EPM_getEPAt
@@ -388,20 +388,20 @@ FTM_RET FTOM_EPM_getEPAt
 FTM_RET	FTOM_EPM_saveEPData
 (
 	FTOM_EPM_PTR	pEPM,
-	FTM_EP_ID		xEPID,
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR	pData
 )
 {
 	ASSERT(pEPM != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTOM_saveEPData(pEPM->pOM, xEPID, pData);
+	return	FTOM_saveEPData(pEPM->pOM, pEPID, pData);
 }
 
 FTM_RET	FTOM_EPM_sendEPData
 (
 	FTOM_EPM_PTR 	pEPM, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR pData,
 	FTM_ULONG		ulCount
 )
@@ -409,7 +409,7 @@ FTM_RET	FTOM_EPM_sendEPData
 	ASSERT(pEPM != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTOM_sendEPData(pEPM->pOM, xEPID, pData, ulCount);
+	return	FTOM_sendEPData(pEPM->pOM, pEPID, pData, ulCount);
 }
 
 FTM_RET	FTOM_EPM_createClass
@@ -491,9 +491,9 @@ FTM_INT	FTOM_EPM_seekEP
 	ASSERT(pIndicator != NULL);
 
 	FTOM_EP_PTR		pEP = (FTOM_EP_PTR)pElement;
-	FTM_EP_ID_PTR	pEPID=(FTM_EP_ID_PTR)pIndicator;
+	FTM_CHAR_PTR	pEPID=(FTM_CHAR_PTR)pIndicator;
 
-	return	(pEP->xInfo.xEPID == *pEPID);
+	return	strcmp(pEP->xInfo.pEPID,pEPID) == 0;
 }
 
 FTM_INT	FTOM_EPM_compareEP
@@ -508,7 +508,7 @@ FTM_INT	FTOM_EPM_compareEP
 	FTOM_EP_PTR		pEP1 = (FTOM_EP_PTR)pElement1;
 	FTOM_EP_PTR		pEP2 = (FTOM_EP_PTR)pElement2;
 	
-	return	(pEP1->xInfo.xEPID - pEP2->xInfo.xEPID);
+	return	strcmp(pEP1->xInfo.pEPID, pEP2->xInfo.pEPID);
 }
 
 FTM_INT	FTOM_EPM_seekCLASS

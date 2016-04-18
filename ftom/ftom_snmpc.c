@@ -346,7 +346,7 @@ FTM_RET	FTOM_SNMPC_getEPID
 	FTM_CHAR_PTR	pIP,
 	FTM_EP_TYPE		xType,
 	FTM_ULONG		ulIndex,
-	FTM_EP_ID_PTR	pEPID
+	FTM_CHAR_PTR	pEPID
 )
 {
 	ASSERT(pClient != NULL);
@@ -586,7 +586,7 @@ FTM_RET	FTOM_SNMPC_setEPData
 			}
 			else
 			{
-				ERROR("EP[%08x] - %s\n", pEP->xInfo.xEPID, snmp_errstring(pRespPDU->errstat));
+				ERROR("EP[%s] - %s\n", pEP->xInfo.pEPID, snmp_errstring(pRespPDU->errstat));
 				xRet = FTM_RET_SNMP_NOT_SUPPORT_WRITE;
 			}
 		}

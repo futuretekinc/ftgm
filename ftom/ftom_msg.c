@@ -28,11 +28,12 @@ FTM_RET FTOM_MSG_createQuit
 
 FTM_RET	FTOM_MSG_createSetEPData
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTOM_MSG_SET_EP_DATA_PTR _PTR_ ppMsg
 )
 {
+	ASSERT(pEPID != NULL);
 	ASSERT(pData != NULL);
 	ASSERT(ppMsg != NULL);
 
@@ -46,7 +47,7 @@ FTM_RET	FTOM_MSG_createSetEPData
 	}
 
 	pMsg->xType = FTOM_MSG_TYPE_SET_EP_DATA;
-	pMsg->xEPID = xEPID;
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
 
 	*ppMsg = pMsg;
@@ -56,7 +57,7 @@ FTM_RET	FTOM_MSG_createSetEPData
 
 FTM_RET	FTOM_MSG_createSaveEPData
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTOM_MSG_SAVE_EP_DATA_PTR _PTR_ ppMsg
 )
@@ -74,7 +75,7 @@ FTM_RET	FTOM_MSG_createSaveEPData
 	}
 
 	pMsg->xType = FTOM_MSG_TYPE_SAVE_EP_DATA;
-	pMsg->xEPID = xEPID;
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
 
 	*ppMsg = pMsg;
@@ -84,7 +85,7 @@ FTM_RET	FTOM_MSG_createSaveEPData
 
 FTM_RET	FTOM_MSG_createSendEPData
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount,
 	FTOM_MSG_SEND_EP_DATA_PTR _PTR_ ppMsg
@@ -102,7 +103,7 @@ FTM_RET	FTOM_MSG_createSendEPData
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_SEND_EP_DATA;
-	pMsg->xEPID 	= xEPID;
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->ulCount	= ulCount;
 	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
 
@@ -113,7 +114,7 @@ FTM_RET	FTOM_MSG_createSendEPData
 
 FTM_RET	FTOM_MSG_createPublishEPData
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount,
 	FTOM_MSG_PUBLISH_EP_DATA_PTR _PTR_ ppMsg
@@ -131,7 +132,7 @@ FTM_RET	FTOM_MSG_createPublishEPData
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_PUBLISH_EP_DATA;
-	pMsg->xEPID 	= xEPID;
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->ulCount	= ulCount;
 	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
 
@@ -167,7 +168,7 @@ FTM_RET	FTOM_MSG_createTimeSync
 
 FTM_RET FTOM_MSG_createEPCtrl
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_CTRL			xCtrl,
 	FTM_ULONG			ulDuration,
 	FTOM_MSG_EP_CTRL_PTR _PTR_ ppMsg
@@ -185,7 +186,7 @@ FTM_RET FTOM_MSG_createEPCtrl
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_EP_CTRL;
-	pMsg->xEPID 	= xEPID;
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->xCtrl		= xCtrl;
 	pMsg->ulDuration= ulDuration;
 
@@ -251,7 +252,7 @@ FTM_RET FTOM_MSG_createAction
 
 FTM_RET	FTOM_MSG_createAlert
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTOM_MSG_ALERT_PTR _PTR_ ppMsg
 )
@@ -269,7 +270,7 @@ FTM_RET	FTOM_MSG_createAlert
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_ALERT;
-	pMsg->xEPID		= xEPID;
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
 
 	*ppMsg = pMsg;

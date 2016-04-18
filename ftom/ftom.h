@@ -149,13 +149,13 @@ FTM_RET	FTOM_createEP
 FTM_RET	FTOM_destroyEP
 (
 	FTOM_PTR 	pOM, 
-	FTM_EP_ID 	xEPID
+	FTM_CHAR_PTR	pEPID
 );
 
 FTM_RET	FTOM_getEPDataList
 (
 	FTOM_PTR 		pOM, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG 		ulStart, 
 	FTM_EP_DATA_PTR pDataList, 
 	FTM_ULONG 		ulMaxCount, 
@@ -165,7 +165,7 @@ FTM_RET	FTOM_getEPDataList
 FTM_RET	FTOM_getEPDataInfo
 (
 	FTOM_PTR 		pOM, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG_PTR 	pulBeginTime, 
 	FTM_ULONG_PTR 	pulEndTime, 
 	FTM_ULONG_PTR 	pulCount
@@ -174,7 +174,7 @@ FTM_RET	FTOM_getEPDataInfo
 FTM_RET	FTOM_getEPDataCount
 (
 	FTOM_PTR 		pOM, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG_PTR 	ulCount
 );
 
@@ -194,21 +194,21 @@ FTM_RET	FTOM_NOTIFY_SNMPTrap
 FTM_RET	FTOM_setEPData
 (
 	FTOM_PTR 			pOM, 
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR 	pData
 );
 
 FTM_RET	FTOM_saveEPData
 (
 	FTOM_PTR 			pOM, 
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR 	pData
 );
 
 FTM_RET	FTOM_sendEPData
 (
 	FTOM_PTR		pOM,
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR	pData,
 	FTM_ULONG		ulCount
 );
@@ -223,7 +223,7 @@ FTM_RET	FTOM_nodeDiscovery
 FTM_RET	FTOM_sendAlert
 (
 	FTOM_PTR		pOM,
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR	pData
 );
 
