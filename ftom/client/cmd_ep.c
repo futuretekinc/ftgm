@@ -46,7 +46,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 		optind = 2;
 		if ((nOpt = getopt(nArgc, pArgv, "n:u:i:t:")) != -1)
 		{
-			switch(toupper(nOpt))
+			switch(nOpt)
 			{
 			case	'n':	
 				{
@@ -63,6 +63,19 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 			case	'i':
 				{
 					xInfo.ulInterval = strtoul(optarg, NULL, 10);
+				}
+				break;
+
+			case	'T':
+				{
+					if (strcasecmp(optarg, "temperature") == 0)
+					{
+						xInfo.xType = FTM_EP_TYPE_TEMPERATURE;	
+					}
+					else if (strcasecmp(optarg, "humidity") == 0)
+					{
+						xInfo.xType = FTM_EP_TYPE_HUMIDITY;	
+					}
 				}
 				break;
 
@@ -85,8 +98,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		xInfo.xEPID = strtoul(pArgv[2], NULL, 16);
-		xInfo.xType = (xInfo.xEPID & FTM_EP_TYPE_MASK);
+		strncpy(xInfo.pEPID, pArgv[2], FTM_EPID_LEN);
 
 		for(i = 0 ; i < sizeof(xInfo.pDID) - 1 && i < strlen(pArgv[3]); i ++)
 		{

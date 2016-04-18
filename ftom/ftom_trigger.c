@@ -444,7 +444,7 @@ FTM_RET	FTOM_TRIGGERM_getAt
 FTM_RET	FTOM_TRIGGERM_updateEP
 (
 	FTOM_TRIGGERM_PTR	pTriggerM, 
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR 	pData
 )
 {
@@ -463,7 +463,7 @@ FTM_RET	FTOM_TRIGGERM_updateEP
 			return	xRet;	
 		}
 		
-		if (pTrigger->xInfo.xEPID == xEPID)
+		if (strcmp(pTrigger->xInfo.pEPID, pEPID) == 0)
 		{
 			FTM_BOOL	bOccurrence = FTM_FALSE;
 

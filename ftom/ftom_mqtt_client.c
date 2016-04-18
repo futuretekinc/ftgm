@@ -294,7 +294,7 @@ FTM_RET	FTOM_MQTT_CLIENT_onPublishEPData
 
 	if (pCBSet[pClient->xConfig.ulCBSet].fPublishEPData != NULL)
 	{
-		xRet = pCBSet[pClient->xConfig.ulCBSet].fPublishEPData(pClient, pMsg->xEPID, pMsg->pData, pMsg->ulCount);
+		xRet = pCBSet[pClient->xConfig.ulCBSet].fPublishEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
 	}
 	else
 	{
@@ -456,7 +456,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_connector
 FTM_RET	FTOM_MQTT_CLIENT_publishEPData
 (
 	FTOM_MQTT_CLIENT_PTR pClient,
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount
 )
@@ -467,7 +467,7 @@ FTM_RET	FTOM_MQTT_CLIENT_publishEPData
 	FTM_RET	xRet;
 	FTOM_MSG_PUBLISH_EP_DATA_PTR	pMsg;
 
-	xRet = FTOM_MSG_createPublishEPData(xEPID, pData, ulCount, &pMsg);
+	xRet = FTOM_MSG_createPublishEPData(pEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	

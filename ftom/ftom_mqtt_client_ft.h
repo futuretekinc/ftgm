@@ -59,7 +59,7 @@ FTM_RET	FTOM_MQTT_CLIENT_FT_requestMessageParser
 FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataINT
 (
 	FTOM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG 			ulTime, 
 	FTM_INT 			nValue, 
 	FTM_INT 			nAverage, 
@@ -71,7 +71,7 @@ FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataINT
 FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataULONG
 (
 	FTOM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG 			ulTime, 
 	FTM_ULONG 			ulValue, 
 	FTM_ULONG 			nAverage, 
@@ -83,7 +83,7 @@ FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataULONG
 FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataFLOAT
 (
 	FTOM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG 			ulTime, 
 	FTM_FLOAT 			fValue, 
 	FTM_FLOAT 			nAverage, 
@@ -95,7 +95,7 @@ FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataFLOAT
 FTM_RET	FTOM_MQTT_CLIENT_FT_publishEPDataBOOL
 (
 	FTOM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG 			ulTime, 
 	FTM_BOOL 			bValue
 );

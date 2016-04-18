@@ -264,10 +264,9 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 
 	case	FTOM_MQTT_METHOD_REQ_CONTROL_ACTUATOR:
 		{
-			FTM_CHAR	pTemp[128];
-			FTM_EP_ID	xEPID;
-			FTM_EP_CTRL	xEPCtrl;
-			FTM_ULONG	ulDuration = 0;
+			FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+			FTM_EP_CTRL		xEPCtrl;
+			FTM_ULONG		ulDuration = 0;
 
 			const nx_json *pParams = nx_json_get(pJSON, "params");
 			if (pParams== NULL)
@@ -285,26 +284,8 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 				goto error;
 			}
 
-			strncpy(pTemp, pID->text_value, sizeof(pTemp) - 1);
-			pTemp[sizeof(pTemp)-1] = '\0';
-
-			FTM_CHAR_PTR	pDID = strtok(pTemp, "-");
-			if (pDID == NULL)
-			{
-				WARN("MQTT REQ : Invalid ID[%s]\n", pTemp);
-				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
-				goto error;
-			}
-
-			FTM_CHAR_PTR	pEPID = strtok(NULL, "-");
-			if (pEPID == NULL)
-			{
-				WARN("MQTT REQ : Invalid ID[%s]\n", pTemp);
-				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
-				goto error;
-			}
-			
-			xEPID = strtoul(pEPID, 0, 16);
+			memset(pEPID, 0, sizeof(pEPID));
+			strncpy(pEPID, pID->text_value, FTM_EPID_LEN);
 
 			const nx_json *pCMD = nx_json_get(pParams, "cmd");
 			if ((pCMD == NULL) || (pCMD->type != NX_JSON_STRING))
@@ -351,7 +332,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 				}	
 			}
 
-			xRet = FTOM_MSG_createEPCtrl(xEPID, xEPCtrl, ulDuration, (FTOM_MSG_EP_CTRL_PTR _PTR_)ppMsg);
+			xRet = FTOM_MSG_createEPCtrl(pEPID, xEPCtrl, ulDuration, (FTOM_MSG_EP_CTRL_PTR _PTR_)ppMsg);
 
 		}
 		break;
@@ -379,7 +360,7 @@ error:
 FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 (
 	FTOM_MQTT_CLIENT_PTR pClient, 
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount
 )
@@ -394,7 +375,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 
 	pMessage[sizeof(pMessage) - 1] = '\0';
 	
-	sprintf(pTopic, "v/a/g/%s/s/%08lx", pClient->pDID, xEPID);
+	sprintf(pTopic, "v/a/g/%s/s/%s", pClient->pDID, pEPID);
 
 	ulMessageLen = sprintf(pMessage, "[");
 	for(i = 0 ; i < ulCount ; i++)

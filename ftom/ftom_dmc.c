@@ -204,7 +204,7 @@ FTM_RET	FTOM_DMC_onSaveEPData
 	ASSERT(pDMC != NULL);
 	ASSERT(pMsg != NULL);
 	
-	return	FTDMC_EP_DATA_append(&pDMC->xSession, pMsg->xEPID, &pMsg->xData);
+	return	FTDMC_EP_DATA_append(&pDMC->xSession, pMsg->pEPID, &pMsg->xData);
 }
 
 FTM_RET	FTOM_DMC_EP_create
@@ -222,44 +222,44 @@ FTM_RET	FTOM_DMC_EP_create
 FTM_RET	FTOM_DMC_EP_destroy
 (
 	FTOM_DMC_PTR 	pDMC, 
-	FTM_EP_ID 		xEPID
+	FTM_CHAR_PTR	pEPID
 )
 {
 	ASSERT(pDMC != NULL);
 
-	return	FTDMC_EP_remove(&pDMC->xSession, xEPID);
+	return	FTDMC_EP_remove(&pDMC->xSession, pEPID);
 }
 
 FTM_RET	FTOM_DMC_appendEPData
 (
 	FTOM_DMC_PTR 	pDMC, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR pData
 )
 {
 	ASSERT(pDMC != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTDMC_EP_DATA_append(&pDMC->xSession, xEPID, pData);
+	return	FTDMC_EP_DATA_append(&pDMC->xSession, pEPID, pData);
 }
 
 FTM_RET	FTOM_DMC_EP_DATA_count
 (
 	FTOM_DMC_PTR 	pDMC, 
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG_PTR 	pulCount
 )
 {
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_count(&pDMC->xSession, xEPID, pulCount);
+	return	FTDMC_EP_DATA_count(&pDMC->xSession, pEPID, pulCount);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_get
 (
 	FTOM_DMC_PTR	pDMC,
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG		ulStartIndex,
 	FTM_EP_DATA_PTR	pData,
 	FTM_ULONG		ulMaxCount,
@@ -270,13 +270,13 @@ FTM_RET FTOM_DMC_EP_DATA_get
 	ASSERT(pData != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_get(&pDMC->xSession, xEPID, ulStartIndex, pData, ulMaxCount, pulCount);
+	return	FTDMC_EP_DATA_get(&pDMC->xSession, pEPID, ulStartIndex, pData, ulMaxCount, pulCount);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_info
 (
 	FTOM_DMC_PTR	pDMC,
-	FTM_EP_ID 		xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG_PTR 	pulBeginTime, 
 	FTM_ULONG_PTR 	pulEndTime, 
 	FTM_ULONG_PTR 	pulCount
@@ -284,7 +284,7 @@ FTM_RET FTOM_DMC_EP_DATA_info
 {
 	ASSERT(pDMC != NULL);
 
-	return	FTDMC_EP_DATA_info(&pDMC->xSession, xEPID, pulBeginTime, pulEndTime, pulCount);
+	return	FTDMC_EP_DATA_info(&pDMC->xSession, pEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
 FTM_RET FTOM_DMC_loadFromFile(FTOM_DMC_PTR pDMC, FTM_CHAR_PTR pFileName)

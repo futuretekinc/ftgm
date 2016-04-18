@@ -918,7 +918,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 	ASSERT(pMsg != NULL);
 	
 	FTM_RET			xRet;
-	FTM_CHAR_PTR	pEPID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTOM_EP_PTR		pEP = NULL;
 	FTM_EP_DATA		xData;
 	FTOM_SNMPTRAPD_MSG_TYPE	xMsgType = FTOM_SNMPTRAPD_MSG_TYPE_UNKNOWN;	
@@ -955,7 +955,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 			pItem = nx_json_get(pRoot, "id");
 			if (pItem->type != NX_JSON_NULL)
 			{
-				pEPID = pItem->text_value;
+				strcpy(pEPID, pItem->text_value);
 	
 				xRet = FTOM_EPM_getEP(pSNMPTRAPD->pOM->pEPM, pEPID, &pEP);
 				if (xRet == FTM_RET_OK)
@@ -1153,7 +1153,7 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 	ASSERT(pMsg != NULL);
 	
 	FTM_RET			xRet;
-	FTM_EP_ID		xEPID = 0;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTOM_EP_PTR		pEP = NULL;
 	FTM_EP_DATA_TYPE	xDataType;
 	FTM_EP_DATA		xData;
@@ -1175,12 +1175,12 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 		goto error;
 	}
 
-	xEPID = strtoul(pItem->text_value, 0, 16);
+	strncpy(pEPID, pItem->text_value, FTM_EPID_LEN);
 
-	xRet = FTOM_EPM_getEP(pSNMPTRAPD->pOM->pEPM, xEPID, &pEP);
+	xRet = FTOM_EPM_getEP(pSNMPTRAPD->pOM->pEPM, pEPID, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("EP[%08x] does not exist!\n",xEPID);
+		WARN("EP[%s] does not exist!\n",pEPID);
 		return	xRet;
 	}
 
@@ -1324,7 +1324,7 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 			}
 		}
 						
-		xRet = FTOM_SNMPTRAPD_sendAlert(pSNMPTRAPD, xEPID, &xData);
+		xRet = FTOM_SNMPTRAPD_sendAlert(pSNMPTRAPD, pEPID, &xData);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Notify failed.\n");	
@@ -1458,27 +1458,27 @@ error:
 FTM_RET	FTOM_SNMPTRAPD_setEPData
 (
 	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_EP_ID 				xEPID, 
-	FTM_EP_DATA_PTR 		pData
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_DATA_PTR		pData
 )
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTOM_setEPData(pSNMPTRAPD->pOM, xEPID, pData);
+	return	FTOM_setEPData(pSNMPTRAPD->pOM, pEPID, pData);
 }
 
 FTM_RET	FTOM_SNMPTRAPD_sendAlert
 (
 	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_EP_ID 				xEPID, 
-	FTM_EP_DATA_PTR 		pData
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_DATA_PTR 	pData
 )
 {
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTOM_sendAlert(pSNMPTRAPD->pOM, xEPID, pData);
+	return	FTOM_sendAlert(pSNMPTRAPD->pOM, pEPID, pData);
 }
 
 FTM_RET	FTOM_SNMPTRAPD_receivedDiscovery

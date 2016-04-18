@@ -148,7 +148,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 		{
 			if (FTOM_NODE_getEPAt(pNode, j, &pEP) == FTM_RET_OK)
 			{
-				MESSAGE("%08lx ", pEP->xInfo.xEPID);
+				MESSAGE("%16s ", pEP->xInfo.pEPID);
 			}
 		}
 		MESSAGE("]\n");
@@ -172,7 +172,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 				pTimeString[strlen(pTimeString) - 1] = '\0';
 			}
 			
-			MESSAGE("%16lx ", pEP->xInfo.xEPID);
+			MESSAGE("%16s ", pEP->xInfo.pEPID);
 			MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
 			if (pEP->pNode != NULL)
 			{
@@ -194,7 +194,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 	MESSAGE("\n# Trigger Information\n");
 	FTOM_TRIGGERM_count(pOM->pTriggerM, &ulCount);
-	MESSAGE("\t%8s %8s %16s %8s %8s %s\n", "ID", "EPID", "TYPE", "DETECT", "HOLD", "CONDITION");
+	MESSAGE("\t%8s %16s %16s %8s %8s %s\n", "ID", "EPID", "TYPE", "DETECT", "HOLD", "CONDITION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_TRIGGER_PTR	pTrigger;
@@ -206,9 +206,9 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 			FTM_TRIGGER_conditionToString(&pTrigger->xInfo, pCondition, sizeof(pCondition));
 
-			MESSAGE("\t%8d %08x %16s %8.3f %8.3f %s\n", 
+			MESSAGE("\t%8d %16s %16s %8.3f %8.3f %s\n", 
 				pTrigger->xInfo.xID, 
-				pTrigger->xInfo.xEPID, 
+				pTrigger->xInfo.pEPID, 
 				FTM_TRIGGER_typeString(pTrigger->xInfo.xType),
             	(pTrigger->xInfo.xParams.xCommon.xDetectionTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xCommon.xDetectionTime.xTimeval.tv_usec) / 1000000.0,
 				(pTrigger->xInfo.xParams.xCommon.xHoldingTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xCommon.xHoldingTime.xTimeval.tv_usec) / 1000000.0,

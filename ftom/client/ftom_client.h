@@ -128,114 +128,114 @@ FTM_RET FTOM_CLIENT_NODE_getAt
 FTM_RET FTOM_CLIENT_NODE_get
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_CHAR_PTR		pDID,
-	FTM_NODE_PTR		pInfo
+	FTM_CHAR_PTR	pDID,
+	FTM_NODE_PTR	pInfo
 );
 
 FTM_RET FTOM_CLIENT_EP_create
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_PTR			pInfo
+	FTM_EP_PTR		pInfo
 );
 
 FTM_RET FTOM_CLIENT_EP_destroy
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID
+	FTM_CHAR_PTR	pEPID
 );
 
 FTM_RET FTOM_CLIENT_EP_count
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_TYPE			xType,
-	FTM_ULONG_PTR		pnCount
+	FTM_EP_TYPE		xType,
+	FTM_ULONG_PTR	pnCount
 );
 
 FTM_RET	FTOM_CLIENT_EP_getList
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_TYPE			xType,
-	FTM_EP_ID_PTR		pEPIDList,
-	FTM_ULONG			ulMaxCount,
-	FTM_ULONG_PTR		pnCount
+	FTM_EP_TYPE		xType,
+	FTM_CHAR		pEPIDList[][FTM_EPID_LEN+1],
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pnCount
 );
 
 FTM_RET FTOM_CLIENT_EP_get
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID,
-	FTM_EP_PTR			pEPInfo
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_PTR		pEPInfo
 );
 
 FTM_RET FTOM_CLIENT_EP_getAt
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_ULONG			nIndex,
-	FTM_EP_PTR			pEPInfo
+	FTM_ULONG		nIndex,
+	FTM_EP_PTR		pEPInfo
 );
 
 FTM_RET FTOM_CLIENT_EP_set
 (
-	FTOM_CLIENT_PTR		pClient,
-	FTM_EP_PTR			pInfo
+	FTOM_CLIENT_PTR	pClient,
+	FTM_EP_PTR		pInfo
 );
 
 FTM_RET FTOM_CLIENT_EP_DATA_add
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID,
-	FTM_EP_DATA_PTR		pEPData
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pEPData
 );
 
 FTM_RET	FTOM_CLIENT_EP_DATA_getLast
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID,
-	FTM_EP_DATA_PTR		pEPData
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pEPData
 );
 
 FTM_RET FTOM_CLIENT_EP_DATA_getList
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			nStartIndex,
-	FTM_EP_DATA_PTR		pData,
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pnCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nStartIndex,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pnCount
 );
 
 FTM_RET FTOM_CLIENT_EP_DATA_getWithTime
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			nBeginTime,
-	FTM_ULONG			nEndTime,
-	FTM_EP_DATA_PTR		pData,
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pnCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nBeginTime,
+	FTM_ULONG		nEndTime,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pnCount
 );
 
 FTM_RET FTOM_CLIENT_EP_DATA_del
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			nIndex,
-	FTM_ULONG			nCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nIndex,
+	FTM_ULONG		nCount
 );
 
 FTM_RET FTOM_CLIENT_EP_DATA_delWithTime
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			nBeginTime,
-	FTM_ULONG			nEndTime
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nBeginTime,
+	FTM_ULONG		nEndTime
 );
 
 FTM_RET	FTOM_CLIENT_EP_DATA_count
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID,
-	FTM_ULONG_PTR		pCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pCount
 );
 
 #endif
