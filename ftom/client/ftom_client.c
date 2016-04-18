@@ -42,7 +42,7 @@ FTM_RET	FTOM_CLIENT_stop
 FTM_RET	FTOM_CLIENT_loadConfig
 (
 	FTOM_CLIENT_PTR			pClient,
-	FTOM_CLIENT_CONFIG_PTR	pConfig
+	FTM_VOID_PTR			pConfig
 )
 {
 	ASSERT(pClient != NULL);

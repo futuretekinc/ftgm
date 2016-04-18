@@ -6,7 +6,7 @@
 #include <semaphore.h>
 #include <errno.h>
 #include "ftm.h"
-#include "ftom_client.h"
+#include "ftom_client_net.h"
 #include "ftom_params.h"
 
 static 

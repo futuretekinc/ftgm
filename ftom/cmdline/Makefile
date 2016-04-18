@@ -6,7 +6,11 @@ include $(TOPDIR)/Makefile.in
 		-D__need_malloc_and_calloc=1
 CLIENT=ftomc
 CLIENT_SRCS=main.c\
-			ftom_client_cmdline.c
+			ftom_client_cmdline.c\
+			cmd_cgi.c\
+			cmd_node.c\
+			cmd_ep.c\
+			cmd_data.c
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lconfig -lpthread 

@@ -7,5 +7,46 @@
 CLIENT	Makefile	/^CLIENT=ftomc$/;"	m
 CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lconfig -lpthread $/;"	m
 CLIENT_OBJS	Makefile	/^CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)$/;"	m
-CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c$/;"	m
+CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c\\$/;"	m
+FTOM_CLIENT_CL	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL, _PTR_ FTOM_CLIENT_CL_PTR;$/;"	t	typeref:struct:__anon3
+FTOM_CLIENT_CL_CONFIG	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL_CONFIG, _PTR_ FTOM_CLIENT_CL_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
+FTOM_CLIENT_CL_CONFIG_PTR	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL_CONFIG, _PTR_ FTOM_CLIENT_CL_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
+FTOM_CLIENT_CL_PTR	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL, _PTR_ FTOM_CLIENT_CL_PTR;$/;"	t	typeref:struct:__anon3
+FTOM_CLIENT_CL_create	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_create$/;"	f
+FTOM_CLIENT_CL_destroy	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_destroy$/;"	f
+FTOM_CLIENT_CL_final	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_final$/;"	f
+FTOM_CLIENT_CL_init	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_init$/;"	f
+FTOM_CLIENT_CL_loadConfig	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_loadConfig$/;"	f
+FTOM_CLIENT_CL_loadConfigFromFile	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_loadConfigFromFile$/;"	f
+FTOM_CLIENT_CL_request	ftom_client_cmdline.c	/^FTM_RET FTOM_CLIENT_CL_request$/;"	f
+FTOM_CLIENT_CL_start	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_start$/;"	f
+FTOM_CLIENT_CL_stop	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_stop$/;"	f
+FTOM_CL_CMD	main.c	/^}	FTOM_CL_CMD, _PTR_ FTOM_CL_CMD_PTR;$/;"	t	typeref:struct:__anon1	file:
+FTOM_CL_CMD_FUNCTION	main.c	/^typedef	FTM_RET	(*FTOM_CL_CMD_FUNCTION)$/;"	t	file:
+FTOM_CL_CMD_PTR	main.c	/^}	FTOM_CL_CMD, _PTR_ FTOM_CL_CMD_PTR;$/;"	t	typeref:struct:__anon1	file:
+FTOM_CL_EP	main.c	12;"	d	file:
+FTOM_CL_EP_DATA_getLast	main.c	/^FTM_RET	FTOM_CL_EP_DATA_getLast$/;"	f
+FTOM_CL_EP_DATA_getList	main.c	/^FTM_RET	FTOM_CL_EP_DATA_getList$/;"	f
+FTOM_CL_EP_count	main.c	/^FTM_RET	FTOM_CL_EP_count$/;"	f
+FTOM_CL_EP_destroy	main.c	/^FTM_RET	FTOM_CL_EP_destroy$/;"	f
+FTOM_CL_EP_get	main.c	/^FTM_RET	FTOM_CL_EP_get$/;"	f
+FTOM_CL_EP_getAt	main.c	/^FTM_RET	FTOM_CL_EP_getAt$/;"	f
+FTOM_CL_NODE	main.c	11;"	d	file:
+FTOM_CL_NODE_count	main.c	/^FTM_RET	FTOM_CL_NODE_count$/;"	f
+FTOM_CL_NODE_create	main.c	/^FTM_RET	FTOM_CL_NODE_create$/;"	f
+FTOM_CL_NODE_destroy	main.c	/^FTM_RET	FTOM_CL_NODE_destroy$/;"	f
+FTOM_CL_NODE_get	main.c	/^FTM_RET	FTOM_CL_NODE_get$/;"	f
+FTOM_CL_NODE_getAt	main.c	/^FTM_RET	FTOM_CL_NODE_getAt$/;"	f
 TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
+__FTOM_CLIENT_CL_H__	ftom_client_cmdline.h	2;"	d
+fService	main.c	/^	FTOM_CL_CMD_FUNCTION	fService;$/;"	m	struct:__anon1	file:
+main	main.c	/^int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])$/;"	f
+pEPCmds	main.c	/^FTOM_CL_CMD	pEPCmds[] =$/;"	v
+pEPDataCmds	main.c	/^FTOM_CL_CMD	pEPDataCmds[] =$/;"	v
+pName	main.c	/^	FTM_CHAR_PTR			pName;$/;"	m	struct:__anon1	file:
+pNodeCmds	main.c	/^FTOM_CL_CMD	pNodeCmds[] =$/;"	v
+pRead	ftom_client_cmdline.h	/^	FTM_CHAR_PTR		pRead[1024];$/;"	m	struct:__anon2
+pReqBuff	main.c	/^FTM_CHAR	pReqBuff[FTOM_DEFAULT_PACKET_SIZE];$/;"	v
+pRespBuff	main.c	/^FTM_CHAR	pRespBuff[FTOM_DEFAULT_PACKET_SIZE];$/;"	v
+xCommon	ftom_client_cmdline.h	/^	FTOM_CLIENT				xCommon;$/;"	m	struct:__anon3
+xConfig	ftom_client_cmdline.h	/^	FTOM_CLIENT_CL_CONFIG	xConfig;$/;"	m	struct:__anon3

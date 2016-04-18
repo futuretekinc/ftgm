@@ -1,0 +1,36 @@
+#ifndef	_FTOM_CL_CMD_H_
+#define _FTOM_CL_CMD_H_
+
+typedef	FTM_RET	(*FTOM_CL_CMD_FUNCTION)
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[]
+);
+
+typedef	struct
+{
+	FTM_CHAR_PTR			pName;
+	FTOM_CL_CMD_FUNCTION	fService;
+}	FTOM_CL_CMD, _PTR_ FTOM_CL_CMD_PTR;
+
+FTM_RET	FTOM_CL_CGI_getSensingList(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_CGI_getSensorList(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+
+FTM_RET	FTOM_CL_NODE_create(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_NODE_destroy(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_NODE_count(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_NODE_get(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_NODE_getAt(FTOM_CLIENT_PTR	pClient, FTM_INT nArgc, FTM_CHAR_PTR	pArgv[]);
+
+FTM_RET	FTOM_CL_EP_create(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_EP_destroy(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_EP_count(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_EP_get(FTOM_CLIENT_PTR pClient, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_EP_getAt(FTOM_CLIENT_PTR	pClient, FTM_INT nArgc, FTM_CHAR_PTR	pArgv[]);
+
+FTM_RET	FTOM_CL_EP_DATA_getLast(FTOM_CLIENT_PTR	pClient, FTM_INT nArgc, FTM_CHAR_PTR	pArgv[]);
+FTM_RET	FTOM_CL_EP_DATA_getList(FTOM_CLIENT_PTR	pClient, FTM_INT nArgc, FTM_CHAR_PTR	pArgv[]);
+
+#endif
+

@@ -135,7 +135,7 @@ FTM_RET FTOM_CLIENT_CL_request
 )
 {
 	FTM_RET	xRet;
-	FTM_INT	nRet, i;
+	FTM_INT	nRet;
 	FTM_INT	nReadFD, nWriteFD;
 	fd_set	xFDSet;
 	FTM_INT	nRespLen;
