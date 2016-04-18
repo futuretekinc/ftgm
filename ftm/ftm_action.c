@@ -69,8 +69,16 @@ FTM_RET	FTM_ACTION_create(FTM_ACTION_PTR pAction)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_ACTION_createSet(FTM_ACTION_ID xID, FTM_ACTION_TYPE xType, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData, FTM_ACTION_PTR _PTR_ ppAction)
+FTM_RET	FTM_ACTION_createSet
+(
+	FTM_ACTION_ID 	xID, 
+	FTM_ACTION_TYPE xType, 
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR pData, 
+	FTM_ACTION_PTR _PTR_ ppAction
+)
 {
+	ASSERT(pEPID != NULL);
 	ASSERT(pActionList != NULL);
 
 	FTM_RET		xRet;
@@ -85,7 +93,7 @@ FTM_RET	FTM_ACTION_createSet(FTM_ACTION_ID xID, FTM_ACTION_TYPE xType, FTM_EP_ID
 
 	pAction->xID = xID;
 	pAction->xType = xType;
-	pAction->xParams.xSet.xEPID = xEPID;
+	strcpy(pAction->xParams.xSet.pEPID, pEPID);
 	memcpy(&pAction->xParams.xSet.xValue, pData, sizeof(FTM_EP_DATA));
 
 	xRet = FTM_LIST_append(pActionList, pAction);
@@ -102,7 +110,10 @@ FTM_RET	FTM_ACTION_createSet(FTM_ACTION_ID xID, FTM_ACTION_TYPE xType, FTM_EP_ID
 	return	xRet;
 }
 
-FTM_RET	FTM_ACTION_destroy(FTM_ACTION_PTR pAction)
+FTM_RET	FTM_ACTION_destroy
+(
+	FTM_ACTION_PTR pAction
+)
 {
 	ASSERT(pActionList != NULL);
 
@@ -117,7 +128,10 @@ FTM_RET	FTM_ACTION_destroy(FTM_ACTION_PTR pAction)
 	return	xRet;
 }
 
-FTM_RET	FTM_ACTION_append(FTM_ACTION_PTR pAction)
+FTM_RET	FTM_ACTION_append
+(
+	FTM_ACTION_PTR pAction
+)
 {
 	ASSERT(pActionList != NULL);
 	ASSERT(pAction != NULL);
@@ -125,7 +139,10 @@ FTM_RET	FTM_ACTION_append(FTM_ACTION_PTR pAction)
 	return	FTM_LIST_append(pActionList, pAction);
 }
 
-FTM_RET	FTM_ACTION_remove(FTM_ACTION_PTR pAction)
+FTM_RET	FTM_ACTION_remove
+(
+	FTM_ACTION_PTR pAction
+)
 {
 	ASSERT(pActionList != NULL);
 	ASSERT(pAction != NULL);
@@ -133,21 +150,32 @@ FTM_RET	FTM_ACTION_remove(FTM_ACTION_PTR pAction)
 	return	FTM_LIST_remove(pActionList, pAction);
 }
 
-FTM_RET FTM_ACTION_count(FTM_ULONG_PTR pulCount)
+FTM_RET FTM_ACTION_count
+(
+	FTM_ULONG_PTR pulCount
+)
 {
 	ASSERT(pActionList != NULL);
 
 	return	FTM_LIST_count(pActionList, pulCount);
 }
 
-FTM_RET FTM_ACTION_get(FTM_ACTION_ID xID, FTM_ACTION_PTR _PTR_ ppAction)
+FTM_RET FTM_ACTION_get
+(
+	FTM_ACTION_ID xID, 
+	FTM_ACTION_PTR _PTR_ ppAction
+)
 {
 	ASSERT(pActionList != NULL);
 
 	return	FTM_LIST_get(pActionList, (FTM_VOID_PTR)&xID, (FTM_VOID_PTR _PTR_)ppAction);
 }
 
-FTM_RET FTM_ACTION_getAt(FTM_ULONG ulIndex, FTM_ACTION_PTR _PTR_ ppAction)
+FTM_RET FTM_ACTION_getAt
+(
+	FTM_ULONG ulIndex, 
+	FTM_ACTION_PTR _PTR_ ppAction
+)
 {
 	ASSERT(pActionList != NULL);
 
@@ -155,7 +183,11 @@ FTM_RET FTM_ACTION_getAt(FTM_ULONG ulIndex, FTM_ACTION_PTR _PTR_ ppAction)
 
 }
 
-FTM_BOOL	FTM_ACTION_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+FTM_BOOL	FTM_ACTION_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+)
 {
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
@@ -163,7 +195,10 @@ FTM_BOOL	FTM_ACTION_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndi
 	return	((FTM_ACTION_PTR)pElement)->xID == *((FTM_ACTION_ID_PTR)pIndicator);
 }
 
-FTM_CHAR_PTR	FTM_ACTION_typeString(FTM_ACTION_TYPE xType)
+FTM_CHAR_PTR	FTM_ACTION_typeString
+(
+	FTM_ACTION_TYPE xType
+)
 {
 	switch(xType)
 	{

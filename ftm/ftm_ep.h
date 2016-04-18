@@ -3,7 +3,6 @@
 
 #include "ftm_node.h"
 
-typedef	unsigned long	FTM_EP_ID, 		_PTR_ FTM_EP_ID_PTR;
 typedef	unsigned long	FTM_EP_TYPE, 	_PTR_ FTM_EP_TYPE_PTR;
 typedef	unsigned long	FTM_EP_STATE, 	_PTR_ FTM_EP_STATE_PTR;
 
@@ -100,7 +99,7 @@ typedef	enum
 	
 typedef	struct
 {
-	FTM_EP_ID		xEPID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_TYPE		xType;
 	FTM_EP_FLAG		xFlags;
 	FTM_CHAR		pName[FTM_NAME_LEN+1];
@@ -110,9 +109,6 @@ typedef	struct
 	FTM_ULONG		ulInterval;	
 	FTM_ULONG		ulCycle;
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
-	FTM_EP_ID		xDEPID;
-	FTM_CHAR		pPID[FTM_DID_LEN+1];
-	FTM_EP_ID		xPEPID;
 	FTM_EP_LIMIT	xLimit;
 }	FTM_EP, _PTR_ FTM_EP_PTR;
 
@@ -127,7 +123,7 @@ FTM_RET	FTM_EP_append(FTM_EP_PTR pEP);
 FTM_RET	FTM_EP_remove(FTM_EP_PTR pEP);
 
 FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount);
-FTM_RET	FTM_EP_get(FTM_EP_ID xEPID, FTM_EP_PTR _PTR_ ppNode);
+FTM_RET	FTM_EP_get(FTM_CHAR_PTR pEPID, FTM_EP_PTR _PTR_ ppNode);
 FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppNode);
 
 FTM_RET	FTM_EP_isValid(FTM_EP_PTR pEP);

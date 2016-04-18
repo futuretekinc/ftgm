@@ -199,7 +199,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EP_ID 			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 }	FTDM_REQ_EP_DEL_PARAMS, _PTR_	FTDM_REQ_EP_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -228,7 +228,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 }	FTDM_REQ_EP_GET_PARAMS, _PTR_ 	FTDM_REQ_EP_GET_PARAMS_PTR;
 
 typedef	struct
@@ -346,7 +346,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 	FTM_EP_DATA			xData;
 }	FTDM_REQ_EP_DATA_ADD_PARAMS, _PTR_ FTDM_REQ_EP_DATA_ADD_PARAMS_PTR;
 
@@ -361,7 +361,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 }	FTDM_REQ_EP_DATA_INFO_PARAMS, _PTR_ FTDM_REQ_EP_DATA_INFO_PARAMS_PTR;
 
 typedef	struct
@@ -378,7 +378,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG			nStartIndex;
 	FTM_ULONG			nCount; 
 }	FTDM_REQ_EP_DATA_GET_PARAMS, _PTR_	FTDM_REQ_EP_DATA_GET_PARAMS_PTR;
@@ -396,7 +396,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG 			nBeginTime; 
 	FTM_ULONG 			nEndTime; 
 	FTM_ULONG			nCount; 
@@ -415,7 +415,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG 			nIndex; 
 	FTM_ULONG			nCount;
 }	FTDM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTDM_REQ_EP_DATA_DEL_PARAMS_PTR; 
@@ -431,7 +431,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG 			nBeginTime;
 	FTM_ULONG 			nEndTime; 
 }	FTDM_REQ_EP_DATA_DEL_WITH_TIME_PARAMS, _PTR_ FTDM_REQ_EP_DATA_DEL_WITH_TIME_PARAMS_PTR; 
@@ -447,7 +447,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 }	FTDM_REQ_EP_DATA_COUNT_PARAMS, _PTR_ FTDM_REQ_EP_DATA_COUNT_PARAMS_PTR;
 
 typedef	struct
@@ -462,7 +462,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG 			nBeginTime;
 	FTM_ULONG 			nEndTime; 
 }	FTDM_REQ_EP_DATA_COUNT_WITH_TIME_PARAMS, _PTR_ FTDM_REQ_EP_DATA_COUNT_WITH_TIME_PARAMS_PTR;

@@ -799,19 +799,16 @@ FTM_RET	FTM_CONFIG_ITEM_getEP(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_PTR pEP)
 		return	FTM_RET_CONFIG_INVALID_OBJECT;	
 	}
 
-	FTM_CONFIG_ITEM_getItemULONG(pItem, "epid", 	(FTM_ULONG_PTR)&pEP->xEPID);
+	FTM_CONFIG_ITEM_getItemString(pItem,"epid", 	pEP->pEPID, FTM_EPID_LEN);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "type",	 	(FTM_ULONG_PTR)&pEP->xType);
-	FTM_CONFIG_ITEM_getItemString(pItem,"name",		pEP->pName, sizeof(pEP->pName) - 1);
-	FTM_CONFIG_ITEM_getItemString(pItem,"unit",		pEP->pUnit, sizeof(pEP->pUnit) - 1);
+	FTM_CONFIG_ITEM_getItemString(pItem,"name",		pEP->pName, FTM_NAME_LEN);
+	FTM_CONFIG_ITEM_getItemString(pItem,"unit",		pEP->pUnit, FTM_UNIT_LEN);
 	FTM_CONFIG_ITEM_getItemBOOL(pItem, 	"enable",	&pEP->bEnable);
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"interval",	&pEP->ulInterval);
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"cycle",	&pEP->ulCycle);
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"timeout",	&pEP->ulTimeout);
 
 	FTM_CONFIG_ITEM_getItemString(pItem,"did",		pEP->pDID, sizeof(pEP->pDID) - 1);
-	FTM_CONFIG_ITEM_getItemULONG(pItem,"depid",		&pEP->xDEPID);
-	FTM_CONFIG_ITEM_getItemString(pItem,"pid",		pEP->pPID, sizeof(pEP->pPID) - 1);
-	FTM_CONFIG_ITEM_getItemULONG(pItem,"pepid",		&pEP->xPEPID);
 
 	xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "limit", &xLimitItem);
 	if (xRet == FTM_RET_OK)

@@ -61,12 +61,18 @@ FTM_RET	FTM_EP_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_EP_setDefault(FTM_EP_PTR pEP)
+FTM_RET	FTM_EP_setDefault
+(
+	FTM_EP_PTR pEP
+)
 {
 	ASSERT(pEP != NULL);
+	struct timeval	tv;
+
+	gettimeofday(&tv, NULL);
 
 	memset(pEP, 0, sizeof(FTM_EP));
-	pEP->xEPID		=	0;
+	sprintf(pEP->pEPID, "%lu%lu", tv.tv_sec, tv.tv_usec);
 	pEP->xType		=	0;
 	strcpy(pEP->pName, "Unknown");
 	pEP->bEnable	=	FTM_FALSE;
@@ -74,11 +80,14 @@ FTM_RET	FTM_EP_setDefault(FTM_EP_PTR pEP)
 	pEP->ulInterval	=	10;
 	pEP->ulInterval	=	60;
 
-	return	0;
+	return	FTM_RET_OK;
 }
 
-
-FTM_RET	FTM_EP_create(FTM_EP_PTR pSrc, FTM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTM_EP_create
+(
+	FTM_EP_PTR pSrc, 
+	FTM_EP_PTR _PTR_ ppEP
+)
 {
 	ASSERT(pSrc != NULL);
 
@@ -115,7 +124,10 @@ FTM_RET	FTM_EP_create(FTM_EP_PTR pSrc, FTM_EP_PTR _PTR_ ppEP)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_EP_destroy(FTM_EP_PTR pEP)
+FTM_RET	FTM_EP_destroy
+(
+	FTM_EP_PTR pEP
+)
 {
 	ASSERT(pEPList != NULL);
 	ASSERT(pEP != NULL);
@@ -131,7 +143,10 @@ FTM_RET	FTM_EP_destroy(FTM_EP_PTR pEP)
 	return	xRet;
 }
 
-FTM_RET	FTM_EP_append(FTM_EP_PTR pEP)
+FTM_RET	FTM_EP_append
+(
+	FTM_EP_PTR pEP
+)
 {
 	ASSERT(pEP != NULL);
 
@@ -152,7 +167,10 @@ FTM_RET	FTM_EP_append(FTM_EP_PTR pEP)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_EP_remove(FTM_EP_PTR pEP)
+FTM_RET	FTM_EP_remove
+(
+	FTM_EP_PTR pEP
+)
 {
 	ASSERT(pEP != NULL);
 
@@ -165,7 +183,10 @@ FTM_RET	FTM_EP_remove(FTM_EP_PTR pEP)
 	return	FTM_LIST_remove(pEPList, pEP);
 }
 
-FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount)
+FTM_RET	FTM_EP_count
+(
+	FTM_ULONG_PTR pulCount
+)
 {
 	ASSERT(pulCount != NULL);
 
@@ -178,8 +199,13 @@ FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount)
 	return	FTM_LIST_count(pEPList, pulCount);
 }
 
-FTM_RET	FTM_EP_get(FTM_EP_ID xEPID, FTM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTM_EP_get
+(
+	FTM_CHAR_PTR	pEPID, 
+	FTM_EP_PTR _PTR_ ppEP
+)
 {
+	ASSERT(pEPID != NULL);
 	ASSERT(ppEP != NULL);
 
 	if (pEPList == NULL)
@@ -188,10 +214,14 @@ FTM_RET	FTM_EP_get(FTM_EP_ID xEPID, FTM_EP_PTR _PTR_ ppEP)
 		FTM_EP_init();
 	}
 
-	return	FTM_LIST_get(pEPList, (FTM_VOID_PTR)&xEPID, (FTM_VOID_PTR _PTR_)ppEP);
+	return	FTM_LIST_get(pEPList, pEPID, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
-FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppEP)
+FTM_RET	FTM_EP_getAt
+(
+	FTM_ULONG ulIndex, 
+	FTM_EP_PTR _PTR_ ppEP
+)
 {
 	ASSERT(ppEP != NULL);
 
@@ -204,12 +234,16 @@ FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppEP)
 	return	FTM_LIST_getAt(pEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
-FTM_RET	FTM_EP_getDataType(FTM_EP_PTR pEP, FTM_EP_DATA_TYPE_PTR pType)
+FTM_RET	FTM_EP_getDataType
+(
+	FTM_EP_PTR 	pEP, 
+	FTM_EP_DATA_TYPE_PTR pType
+)
 {
 	ASSERT(pEP != NULL);
 	ASSERT(pType != NULL);
 
-	switch(pEP->xEPID & 0x7F000000)
+	switch(pEP->xType)
 	{
 	case	FTM_EP_TYPE_TEMPERATURE:
 	case	FTM_EP_TYPE_HUMIDITY:
@@ -240,9 +274,23 @@ FTM_RET	FTM_EP_getDataType(FTM_EP_PTR pEP, FTM_EP_DATA_TYPE_PTR pType)
 FTM_RET	FTM_EP_isValid(FTM_EP_PTR pEP)
 {
 	ASSERT(pEP != NULL);
-	FTM_RET	xRet;
+	FTM_RET		xRet;
+	FTM_INT		i;
 
-	if ((pEP->xEPID & FTM_EP_TYPE_MASK)	!= pEP->xType)
+	for(i = 0 ; i < FTM_EPID_LEN+1 ; i++)
+	{
+		if (pEP->pEPID[i] == 0)
+		{
+			break;	
+		}
+	}
+
+	if ((i == 0) || (i == (FTM_EPID_LEN+1)))
+	{
+		return	FTM_RET_INVALID_ID;
+	}
+
+	if (pEP->xType == 0)
 	{
 		return	FTM_RET_INVALID_TYPE;	
 	}
@@ -307,9 +355,9 @@ FTM_BOOL		FTM_EP_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator)
 	ASSERT(pIndicator != NULL);
 
 	FTM_EP_PTR		pEP = (FTM_EP_PTR)pItem;
-	FTM_EP_ID_PTR	pEPID = (FTM_EP_ID_PTR)pIndicator;
+	FTM_CHAR_PTR	pEPID = (FTM_CHAR_PTR)pIndicator;
 
-	return	(pEP->xEPID == *pEPID);
+	return	strncpy(pEP->pEPID, pEPID, FTM_EPID_LEN) == 0;
 }
 
 static FTM_LIST_PTR _pEPTypeList = NULL;

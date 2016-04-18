@@ -371,15 +371,23 @@ FTM_RET FTDM_CFG_EP_CLASS_getAt(FTDM_CFG_EP_PTR pConfig, FTM_ULONG ulIndex, FTM_
 /****************************************************************************
  *
  ****************************************************************************/
-int	FTDM_CFG_EP_seeker(const void *pItem, const void *pKey)
+FTM_BOOL	FTDM_CFG_EP_seeker
+(
+	const FTM_VOID_PTR pItem, 
+	const FTM_VOID_PTR pKey
+)
 {
-	FTM_EP_PTR	pInfo = (FTM_EP_PTR)pItem;
-	FTM_EP_ID_PTR	pEPID = (FTM_EP_ID_PTR)pKey;
+	FTM_EP_PTR		pInfo = (FTM_EP_PTR)pItem;
+	FTM_CHAR_PTR	pEPID = (FTM_CHAR_PTR)pKey;
 
-	return	(pInfo->xEPID == *pEPID);
+	return	strncpy(pInfo->pEPID, pEPID, FTM_EPID_LEN) == 0;
 }
 
-int	FTDM_CFG_EP_CLASS_seeker(const void *pItem, const void *pKey)
+FTM_BOOL	FTDM_CFG_EP_CLASS_seeker
+(
+	const FTM_VOID_PTR pItem, 
+	const FTM_VOID_PTR pKey
+)
 {
 	FTM_EP_CLASS_PTR	pInfo = (FTM_EP_CLASS_PTR)pItem;
 	FTM_EP_TYPE_PTR		pClass= (FTM_EP_TYPE_PTR)pKey;
@@ -387,7 +395,10 @@ int	FTDM_CFG_EP_CLASS_seeker(const void *pItem, const void *pKey)
 	return	(pInfo->xType == *pClass);
 }
 
-FTM_CHAR_PTR	FTDM_CFG_SNMP_getVersionString(FTM_ULONG ulVersion)
+FTM_CHAR_PTR	FTDM_CFG_SNMP_getVersionString
+(
+	FTM_ULONG ulVersion
+)
 {
 	switch(ulVersion)
 	{

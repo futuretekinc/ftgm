@@ -142,7 +142,7 @@ FTM_RET	FTDM_EPM_loadFromFile
 							xRet = FTDM_EP_create(&xInfo, &pEP);
 							if (xRet != FTM_RET_OK)
 							{
-								ERROR("Can't not append EP[%08x]\n", xInfo.xEPID);
+								ERROR("Can't not append EP[%s]\n", xInfo.pEPID);
 							}
 							else
 							{
@@ -271,7 +271,7 @@ FTM_RET	FTDM_EPM_saveToDB
 		{
 			FTM_EP	xInfo;
 		
-			xRet = FTDM_DBIF_EP_get(pEP->xInfo.xEPID, &xInfo);
+			xRet = FTDM_DBIF_EP_get(pEP->xInfo.pEPID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
 				xRet = FTDM_DBIF_EP_append(&pEP->xInfo);	
@@ -314,7 +314,7 @@ FTM_RET	FTDM_EPM_count
 	for(i = 0 ; i < ulTotalCount ; i++)
 	{
 		FTDM_EPM_getAt(pEPM, i, &pEP);
-		if (xType == (pEP->xInfo.xEPID & FTM_EP_TYPE_MASK))
+		if (xType == (pEP->xInfo.xType & FTM_EP_TYPE_MASK))
 		{
 			ulCount++;			
 		}
@@ -353,14 +353,14 @@ FTM_RET FTDM_EPM_remove
 FTM_RET	FTDM_EPM_get
 (
 	FTDM_EPM_PTR		pEPM,
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTDM_EP_PTR	_PTR_ 	ppEP
 )
 {
 	ASSERT(pEPM != NULL);
 	ASSERT(ppEP != NULL);
 
-	return	FTM_LIST_get(pEPM->pList, (FTM_VOID_PTR)&xEPID, (FTM_VOID_PTR _PTR_)ppEP);
+	return	FTM_LIST_get(pEPM->pList, pEPID, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
 FTM_RET	FTDM_EPM_getAt
@@ -385,8 +385,9 @@ FTM_RET FTDM_EPM_showList
 	FTM_ULONG	i, ulCount;
 
 	MESSAGE("\n# EP Information\n");
-	MESSAGE("\t%8s %16s %16s %8s %8s %8s %8s %8s %16s %8s %16s %8s %8s %8s\n",
-			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "CYCLE", "TIMEOUT", "DID", "DEPID", "PID", "PEPID", "COUNT", "TIME");
+	MESSAGE("\t%16s %16s %16s %8s %8s %8s %8s %8s %16s %8s %8s\n",
+			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", 
+			"CYCLE", "TIMEOUT", "DID", "COUNT", "TIME");
 	if (FTDM_EPM_count(pEPM, 0, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -394,8 +395,8 @@ FTM_RET FTDM_EPM_showList
 			FTDM_EP_PTR	pEP;
 
 			FTDM_EPM_getAt(pEPM, i, &pEP);
-			MESSAGE("\t%08lx %16s %16s %8s ",
-				pEP->xInfo.xEPID,
+			MESSAGE("\t%16s %16s %16s %8s ",
+				pEP->xInfo.pEPID,
 				FTM_EP_typeString(pEP->xInfo.xType),
 				pEP->xInfo.pName,
 				pEP->xInfo.pUnit);
@@ -409,14 +410,11 @@ FTM_RET FTDM_EPM_showList
 				MESSAGE("%8s ", "DISABLE");
 			}
 
-			MESSAGE("%8lu %8lu %8lu %16s %08lx %16s %08lx %8d %10d %10d\n",
+			MESSAGE("%8lu %8lu %8lu %16s %8d %10d %10d\n",
 				pEP->xInfo.ulInterval,
 				pEP->xInfo.ulCycle,
 				pEP->xInfo.ulTimeout,
 				pEP->xInfo.pDID,
-				pEP->xInfo.xDEPID,
-				pEP->xInfo.pPID,
-				pEP->xInfo.xPEPID,
 				pEP->ulCount,
 				pEP->ulFirstTime,
 				pEP->ulLastTime);
@@ -437,8 +435,8 @@ FTM_BOOL	FTDM_EPM_seekEP
 	ASSERT(pKey != NULL);
 
 	FTDM_EP_PTR		pEP = (FTDM_EP_PTR)pElement;
-	FTM_EP_ID_PTR	pEPID = (FTM_EP_ID_PTR)pKey;
+	FTM_CHAR_PTR	pEPID = (FTM_CHAR_PTR)pKey;
 
-	return	(pEP->xInfo.xEPID == *pEPID);
+	return	strcmp(pEP->xInfo.pEPID, pEPID) == 0;
 
 }

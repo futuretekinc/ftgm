@@ -632,7 +632,7 @@ FTM_RET	FTDMS_EP_add
 
 FTM_RET	FTDMS_EP_del
 (
-	FTDM_SERVER_PTR					pServer,
+	FTDM_SERVER_PTR				pServer,
  	FTDM_REQ_EP_DEL_PARAMS_PTR	pReq,
 	FTDM_RESP_EP_DEL_PARAMS_PTR	pResp
 )
@@ -640,7 +640,7 @@ FTM_RET	FTDMS_EP_del
 	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EPM_remove(pServer->pDM->pEPM, pEP);
@@ -680,7 +680,7 @@ FTM_RET	FTDMS_EP_get
 	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_get(pEP, &pResp->xInfo);
@@ -726,7 +726,7 @@ FTM_RET	FTDMS_EP_set
 	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xInfo.xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xInfo.pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_set(pEP, &pReq->xInfo);
@@ -819,7 +819,7 @@ FTM_RET	FTDMS_EP_DATA_add
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_DATA_add(pEP, &pReq->xData);
@@ -842,7 +842,7 @@ FTM_RET	FTDMS_EP_DATA_info
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_DATA_info(pEP, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
@@ -866,7 +866,7 @@ FTM_RET	FTDMS_EP_DATA_get
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_DATA_get( pEP, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
@@ -896,7 +896,7 @@ FTM_RET	FTDMS_EP_DATA_getWithTime
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_DATA_getWithTime(
@@ -933,7 +933,7 @@ FTM_RET 	FTDMS_EP_DATA_del
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_DATA_del(pEP, pReq->nIndex, pReq->nCount);
@@ -956,7 +956,7 @@ FTM_RET 	FTDMS_EP_DATA_delWithTime
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_DATA_delWithTime( pEP, pReq->nBeginTime, pReq->nEndTime);
@@ -978,7 +978,7 @@ FTM_RET 	FTDMS_EP_DATA_count
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_DATA_count( pEP, &pResp->nCount);
@@ -1000,7 +1000,7 @@ FTM_RET 	FTDMS_EP_DATA_countWithTime
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_DATA_countWithTime(pEP, pReq->nBeginTime, pReq->nEndTime, &pResp->nCount);

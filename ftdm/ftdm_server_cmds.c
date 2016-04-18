@@ -20,7 +20,7 @@ FTM_RET	FTDMS_SHELL_CMD_session(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PT
 FTM_RET	FTDMS_SHELL_CMD_trace(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTDMS_SHELL_CMD_node(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTDMS_SHELL_CMD_ep(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR	pData);
-FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_SHELL_PTR pShell, FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
+FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_SHELL_PTR pShell, FTM_CHAR_PTR pEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
 
 static FTDM_CFG	xConfig;
 FTM_SHELL_CMD	FTDMS_pCmdList[] =
@@ -309,11 +309,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 			}
 			else
 			{
-				FTM_EP_ID 		xEPID;
-
-				xEPID = strtoul(pArgv[1], NULL, 16);
-
-				FTDM_SHELL_showEPInfo(pServer->pDM->pEPM, xEPID);
+				FTDM_SHELL_showEPInfo(pServer->pDM->pEPM, pArgv[1]);
 			}
 		}
 			
@@ -323,11 +319,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 		{
 			if (strcasecmp(pArgv[2], "data") == 0)
 			{
-				FTM_EP_ID 		xEPID;
-
-				xEPID = strtoul(pArgv[1], NULL, 16);
-
-				FTDM_SHELL_showEPData(pServer->pDM->pEPM, xEPID, 0, 100);
+				FTDM_SHELL_showEPData(pServer->pDM->pEPM, pArgv[1], 0, 100);
 			}
 		}
 		break;
@@ -336,10 +328,8 @@ FTM_RET FTDMS_SHELL_CMD_ep
 		{
 			if (strcasecmp(pArgv[2], "data") == 0)
 			{
-				FTM_EP_ID 		xEPID;
 				FTM_ULONG		ulStart = 0, ulCount = 0;
 
-				xEPID 	= strtoul(pArgv[1], NULL, 16);
 				ulStart = strtoul(pArgv[3], NULL, 10);
 				ulCount = strtoul(pArgv[4], NULL, 10);
 
@@ -349,7 +339,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 					break;
 				}
 
-				FTDM_SHELL_showEPData(pServer->pDM->pEPM, xEPID, ulStart - 1, ulCount);
+				FTDM_SHELL_showEPData(pServer->pDM->pEPM, pArgv[1], ulStart - 1, ulCount);
 			}
 		}
 		break;
@@ -360,11 +350,9 @@ FTM_RET FTDMS_SHELL_CMD_ep
 			{
 				if (strcasecmp(pArgv[3], "del") == 0)
 				{
-					FTM_EP_ID 		xEPID;
 					FTM_INT			nIndex;
 					FTM_ULONG		ulCount = 0;
 
-					xEPID 	= strtoul(pArgv[1], NULL, 16);
 					nIndex	= strtol(pArgv[4], NULL, 10);
 					ulCount = strtoul(pArgv[5], NULL, 10);
 
@@ -374,7 +362,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 						break;
 					}
 
-					FTDM_SHELL_delEPData(pServer->pDM->pEPM, xEPID, nIndex, ulCount);
+					FTDM_SHELL_delEPData(pServer->pDM->pEPM, pArgv[1], nIndex, ulCount);
 				}
 			}
 		}

@@ -124,7 +124,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EP_ID 			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 }	FTOM_REQ_EP_DESTROY_PARAMS, _PTR_	FTOM_REQ_EP_DESTROY_PARAMS_PTR;
 
 typedef	struct
@@ -176,7 +176,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EP_ID			xEPID;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 }	FTOM_REQ_EP_GET_PARAMS, _PTR_ 	FTOM_REQ_EP_GET_PARAMS_PTR;
 
 typedef	struct

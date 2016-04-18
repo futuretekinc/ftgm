@@ -278,34 +278,29 @@ FTM_RET	FTDM_saveObjectToDB
 {
 	FTM_RET	xRet;
 
-	TRACE("Objects save to DB\n");
 	xRet = FTDM_NODEM_saveToDB(pDM->pNodeM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to save the node.[%08x]\n");
 	}
 
-		TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTDM_EPM_saveToDB(pDM->pEPM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to save the EP.[%08x]\n");
 	}
 
-		TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTDM_TRIGGER_saveToDB();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to save the trigger.[%08x]\n");
 	}
-		TRACE("%s[%d]\n", __func__, __LINE__);
 
 	xRet = FTDM_ACTION_saveToDB();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to save the action.[%08x]\n");
 	}
-		TRACE("%s[%d]\n", __func__, __LINE__);
 
 	xRet = FTDM_RULE_saveToDB();
 	if (xRet != FTM_RET_OK)

@@ -427,7 +427,7 @@ FTM_RET	FTDMC_EP_append
 FTM_RET	FTDMC_EP_remove
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID
+	FTM_CHAR_PTR			pEPID
 )
 {
 	FTM_RET					nRet;
@@ -441,7 +441,7 @@ FTM_RET	FTDMC_EP_remove
 
 	xReq.xCmd	=	FTDM_CMD_EP_DEL;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xEPID	=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -510,7 +510,7 @@ FTM_RET	FTDMC_EP_count
 FTM_RET	FTDMC_EP_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_EP_PTR		pInfo
 )
 {
@@ -530,7 +530,7 @@ FTM_RET	FTDMC_EP_get
 
 	xReq.xCmd	=	FTDM_CMD_EP_GET;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xEPID	=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -782,7 +782,7 @@ FTM_RET	FTDMC_EP_CLASS_getAt
 FTM_RET	FTDMC_EP_DATA_append
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_EP_DATA_PTR			pEPData
 )
 {
@@ -797,7 +797,7 @@ FTM_RET	FTDMC_EP_DATA_append
 
 	xReq.xCmd	=	FTDM_CMD_EP_DATA_ADD;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xEPID	=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&xReq.xData, pEPData, sizeof(FTM_EP_DATA));
 
 	nRet = FTDMC_request(
@@ -820,7 +820,7 @@ FTM_RET	FTDMC_EP_DATA_append
 FTM_RET FTDMC_EP_DATA_info
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG_PTR			pulBeginTime,
 	FTM_ULONG_PTR			pulEndTime,
 	FTM_ULONG_PTR			pulCount
@@ -837,7 +837,7 @@ FTM_RET FTDMC_EP_DATA_info
 
 	xReq.xCmd		=	FTDM_CMD_EP_DATA_INFO;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -863,7 +863,7 @@ FTM_RET FTDMC_EP_DATA_info
 FTM_RET	FTDMC_EP_DATA_get
 (
 	FTDMC_SESSION_PTR	pSession,
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG			nStartIndex,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			nMaxCount,
@@ -889,7 +889,7 @@ FTM_RET	FTDMC_EP_DATA_get
 
 	xReq.xCmd		=	FTDM_CMD_EP_DATA_GET;
 	xReq.nLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	xReq.nStartIndex=	nStartIndex;
 	xReq.nCount		=	nMaxCount;
 
@@ -930,7 +930,7 @@ FTM_RET	FTDMC_EP_DATA_get
 FTM_RET	FTDMC_EP_DATA_getWithTime
 (
 	FTDMC_SESSION_PTR	pSession,
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG			nBeginTime,
 	FTM_ULONG			nEndTime,
 	FTM_EP_DATA_PTR		pData,
@@ -957,7 +957,7 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 
 	xReq.xCmd		=	FTDM_CMD_EP_DATA_GET_WITH_TIME;
 	xReq.nLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	xReq.nBeginTime=	nBeginTime;
 	xReq.nEndTime	=	nEndTime;
 	xReq.nCount		=	nMaxCount;
@@ -999,7 +999,7 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 FTM_RET	FTDMC_EP_DATA_remove
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				nIndex,
 	FTM_ULONG				nCount
 )
@@ -1015,7 +1015,7 @@ FTM_RET	FTDMC_EP_DATA_remove
 
 	xReq.xCmd		=	FTDM_CMD_EP_DATA_DEL;
 	xReq.nLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	xReq.nIndex		=	nIndex;
 	xReq.nCount		=	nCount;
 
@@ -1039,7 +1039,7 @@ FTM_RET	FTDMC_EP_DATA_remove
 FTM_RET	FTDMC_EP_DATA_removeWithTime
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				nBeginTime,
 	FTM_ULONG				nEndTime
 )
@@ -1055,7 +1055,7 @@ FTM_RET	FTDMC_EP_DATA_removeWithTime
 
 	xReq.xCmd		=	FTDM_CMD_EP_DATA_DEL_WITH_TIME;
 	xReq.nLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	xReq.nBeginTime	=	nBeginTime;
 	xReq.nEndTime	=	nEndTime;
 
@@ -1076,7 +1076,7 @@ FTM_RET	FTDMC_EP_DATA_removeWithTime
 FTM_RET	FTDMC_EP_DATA_count
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG_PTR			pCount
 )
 {
@@ -1091,7 +1091,7 @@ FTM_RET	FTDMC_EP_DATA_count
 
 	xReq.xCmd		=	FTDM_CMD_EP_DATA_COUNT;
 	xReq.nLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -1115,7 +1115,7 @@ FTM_RET	FTDMC_EP_DATA_count
 FTM_RET	FTDMC_EP_DATA_countWithTime
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				nBeginTime,
 	FTM_ULONG				nEndTime,
 	FTM_ULONG_PTR			pCount
@@ -1132,7 +1132,7 @@ FTM_RET	FTDMC_EP_DATA_countWithTime
 
 	xReq.xCmd		=	FTDM_CMD_EP_DATA_COUNT_WITH_TIME;
 	xReq.nLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	xReq.nBeginTime	=	nBeginTime;
 	xReq.nEndTime	=	nEndTime;
 

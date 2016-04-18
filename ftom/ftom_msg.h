@@ -38,7 +38,7 @@ typedef struct
 {
 	FTOM_MSG_TYPE	xType;
 	FTOM_MSG_ID		xMsgID;
-	FTM_EP_ID		xEPID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_DATA		xData;
 }	FTOM_MSG_SET_EP_DATA, _PTR_ FTOM_MSG_SET_EP_DATA_PTR;
 
@@ -46,7 +46,7 @@ typedef struct
 {
 	FTOM_MSG_TYPE	xType;
 	FTOM_MSG_ID		xMsgID;
-	FTM_EP_ID		xEPID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_DATA		xData;
 }	FTOM_MSG_SAVE_EP_DATA, _PTR_ FTOM_MSG_SAVE_EP_DATA_PTR;
 
@@ -54,7 +54,7 @@ typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
 	FTOM_MSG_ID		xMsgID;
-	FTM_EP_ID		xEPID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG		ulCount;
 	FTM_EP_DATA		pData[];
 }	FTOM_MSG_SEND_EP_DATA, _PTR_ FTOM_MSG_SEND_EP_DATA_PTR;
@@ -63,7 +63,7 @@ typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
 	FTOM_MSG_ID		xMsgID;
-	FTM_EP_ID		xEPID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG		ulCount;
 	FTM_EP_DATA		pData[];
 }	FTOM_MSG_PUBLISH_EP_DATA, _PTR_ FTOM_MSG_PUBLISH_EP_DATA_PTR;
@@ -79,7 +79,7 @@ typedef struct
 {
 	FTOM_MSG_TYPE	xType;
 	FTOM_MSG_ID		xMsgID;
-	FTM_EP_ID		xEPID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_CTRL		xCtrl;
 	FTM_ULONG		ulDuration;	
 }	FTOM_MSG_EP_CTRL, _PTR_ FTOM_MSG_EP_CTRL_PTR;
@@ -102,7 +102,7 @@ typedef struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTM_EP_ID		xEPID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_DATA		xData;
 }	FTOM_MSG_ALERT, _PTR_ FTOM_MSG_ALERT_PTR;
 
@@ -144,21 +144,21 @@ FTM_RET FTOM_MSG_createQuit
 
 FTM_RET	FTOM_MSG_createSetEPData
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTOM_MSG_SET_EP_DATA_PTR _PTR_ ppMsg
 );
 
 FTM_RET	FTOM_MSG_createSaveEPData
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTOM_MSG_SAVE_EP_DATA_PTR _PTR_ ppMsg
 );
 
 FTM_RET	FTOM_MSG_createPublishEPData
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount,
 	FTOM_MSG_PUBLISH_EP_DATA_PTR _PTR_ ppMsg
@@ -172,7 +172,7 @@ FTM_RET	FTOM_MSG_createTimeSync
 
 FTM_RET FTOM_MSG_createEPCtrl
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_CTRL			xCtrl,
 	FTM_ULONG			ulDuration,
 	FTOM_MSG_EP_CTRL_PTR _PTR_ ppMsg
@@ -194,7 +194,7 @@ FTM_RET FTOM_MSG_createAction
 
 FTM_RET	FTOM_MSG_createSendEPData
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount,
 	FTOM_MSG_SEND_EP_DATA_PTR _PTR_ ppMsg
@@ -202,7 +202,7 @@ FTM_RET	FTOM_MSG_createSendEPData
 
 FTM_RET	FTOM_MSG_createAlert
 (
-	FTM_EP_ID			xEPID,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTOM_MSG_ALERT_PTR _PTR_ ppMsg
 );

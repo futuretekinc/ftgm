@@ -72,7 +72,7 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 							continue;
 						}
 						
-						xRet = FTM_CONFIG_ITEM_getItemINT(&xTriggerItem, "epid", (FTM_INT_PTR)&xInfo.xEPID);
+						xRet = FTM_CONFIG_ITEM_getItemString(&xTriggerItem, "epid", xInfo.pEPID, FTM_EPID_LEN);
 						if (xRet != FTM_RET_OK)
 						{
 							continue;
@@ -442,7 +442,7 @@ FTM_RET	FTDM_TRIGGER_showList
 		{
 			FTM_CHAR	pBuff[1024];
 
-			MESSAGE("\t%4d %08x ", pTrigger->xInfo.xID, pTrigger->xInfo.xEPID);
+			MESSAGE("\t%4d %16s ", pTrigger->xInfo.xID, pTrigger->xInfo.pEPID);
 
 			switch(pTrigger->xInfo.xType)
 			{

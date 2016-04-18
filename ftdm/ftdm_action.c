@@ -83,7 +83,7 @@ FTM_RET	FTDM_ACTION_loadFromFile
 									continue;
 								}
 	
-								xRet = FTM_CONFIG_ITEM_getItemINT(&xParamsItem, "epid", (FTM_INT_PTR)&xInfo.xParams.xSet.xEPID);
+								xRet = FTM_CONFIG_ITEM_getItemString(&xParamsItem, "epid", xInfo.xParams.xSet.pEPID, FTM_EPID_LEN);
 								if (xRet != FTM_RET_OK)
 								{
 										continue;
@@ -314,7 +314,7 @@ FTM_RET	FTDM_ACTION_showList
 					FTM_CHAR	pBuff[1024];
 
 					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pAction->xParams.xSet.xValue);
-					MESSAGE("%8s %08x %8s\n", "Set", pAction->xParams.xSet.xEPID, pBuff);
+					MESSAGE("%8s %16s %8s\n", "Set", pAction->xParams.xSet.pEPID, pBuff);
 				}
 				break;
 

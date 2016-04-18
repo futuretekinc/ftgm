@@ -88,7 +88,7 @@ FTM_RET FTDMC_EP_append
 FTM_RET FTDMC_EP_remove
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID
+	FTM_CHAR_PTR			pEPID
 );
 
 FTM_RET FTDMC_EP_count
@@ -101,7 +101,7 @@ FTM_RET FTDMC_EP_count
 FTM_RET FTDMC_EP_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_EP_PTR				pEP
 );
 
@@ -141,14 +141,14 @@ FTM_RET	FTDMC_EP_CLASS_getAt
 FTM_RET FTDMC_EP_DATA_append
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_EP_DATA_PTR			pData
 );
 
 FTM_RET FTDMC_EP_DATA_remove
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				ulIndex,
 	FTM_ULONG				nCount
 );
@@ -156,7 +156,7 @@ FTM_RET FTDMC_EP_DATA_remove
 FTM_RET FTDMC_EP_DATA_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				nStartIndex,
 	FTM_EP_DATA_PTR			pData,
 	FTM_ULONG				ulMaxCount,
@@ -166,7 +166,7 @@ FTM_RET FTDMC_EP_DATA_get
 FTM_RET FTDMC_EP_DATA_info
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG_PTR			pulBeginTime,
 	FTM_ULONG_PTR			pulEndTime,
 	FTM_ULONG_PTR			pulCount
@@ -175,7 +175,7 @@ FTM_RET FTDMC_EP_DATA_info
 FTM_RET FTDMC_EP_DATA_getWithTime
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				ulBeginTime,
 	FTM_ULONG				ulEndTime,
 	FTM_EP_DATA_PTR			pData,
@@ -186,7 +186,7 @@ FTM_RET FTDMC_EP_DATA_getWithTime
 FTM_RET FTDMC_EP_DATA_removeWithTime
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				ulBeginTime,
 	FTM_ULONG				ulEndTime
 );
@@ -194,14 +194,14 @@ FTM_RET FTDMC_EP_DATA_removeWithTime
 FTM_RET	FTDMC_EP_DATA_count
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG_PTR			pCount
 );
 
 FTM_RET	FTDMC_EP_DATA_countWithTime
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_EP_ID				xEPID,
+	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				ulBeginTime,
 	FTM_ULONG				ulEndTime,
 	FTM_ULONG_PTR			pCount

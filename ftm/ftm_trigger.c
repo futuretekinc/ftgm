@@ -5,12 +5,30 @@
 #include "ftm_list.h"
 #include "ftm_mem.h"
 
-static	FTM_RET			FTM_TRIGGER_create1(FTM_TRIGGER_TYPE xType, FTM_TRIGGER_ID xTriggerID, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_TRIGGER_PTR _PTR_ ppTrigger);
-static 	FTM_BOOL		FTM_TRIGGER_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator);
+static	
+FTM_RET	FTM_TRIGGER_create1
+(
+	FTM_TRIGGER_TYPE 	xType, 
+	FTM_TRIGGER_ID 		xTriggerID, 
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_DATA_PTR 	pData1, 
+	FTM_EP_DATA_PTR 	pData2, 
+	FTM_TRIGGER_PTR _PTR_ ppTrigger
+);
+
+static 	
+FTM_BOOL FTM_TRIGGER_seeker
+(
+	const FTM_VOID_PTR 	pItem, 
+	const FTM_VOID_PTR 	pIndicator
+);
 
 static	FTM_LIST_PTR	pTriggerList = NULL;
 
-FTM_RET	FTM_TRIGGER_init(FTM_VOID)
+FTM_RET	FTM_TRIGGER_init
+(
+	FTM_VOID
+)
 {
 	FTM_RET	xRet;
 
@@ -33,7 +51,10 @@ FTM_RET	FTM_TRIGGER_init(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRIGGER_final(FTM_VOID)
+FTM_RET	FTM_TRIGGER_final
+(
+	FTM_VOID
+)
 {
 	FTM_TRIGGER_PTR	pTrigger;
 
@@ -54,7 +75,10 @@ FTM_RET	FTM_TRIGGER_final(FTM_VOID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRIGGER_create(FTM_TRIGGER_PTR pTrigger)
+FTM_RET	FTM_TRIGGER_create
+(
+	FTM_TRIGGER_PTR pTrigger
+)
 {
 	ASSERT(pTrigger != NULL);
 
@@ -93,33 +117,78 @@ FTM_RET	FTM_TRIGGER_create(FTM_TRIGGER_PTR pTrigger)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRIGGER_createAbove(FTM_TRIGGER_ID xTriggerID, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData, FTM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTM_TRIGGER_createAbove
+(
+	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR 	pEPID, 
+	FTM_EP_DATA_PTR pData, 
+	FTM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_ABOVE, xTriggerID, xEPID, pData, NULL, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_ABOVE, 
+				xTriggerID, pEPID, pData, NULL, ppTrigger);
 }
 
-FTM_RET	FTM_TRIGGER_createBelow(FTM_TRIGGER_ID xTriggerID, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pData, FTM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTM_TRIGGER_createBelow
+(
+	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR pData, 
+	FTM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_BELOW, xTriggerID, xEPID, pData, NULL, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_BELOW, 
+				xTriggerID, pEPID, pData, NULL, ppTrigger);
 }
 
-FTM_RET	FTM_TRIGGER_createInclude(FTM_TRIGGER_ID xTriggerID, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pUpper, FTM_EP_DATA_PTR pLower, FTM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTM_TRIGGER_createInclude
+(
+	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR	pEPID, 
+	FTM_EP_DATA_PTR pUpper, 
+	FTM_EP_DATA_PTR pLower, 
+	FTM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_INCLUDE, xTriggerID, xEPID, pUpper, pLower, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_INCLUDE, 
+					xTriggerID, pEPID, pUpper, pLower, ppTrigger);
 }
 
-FTM_RET	FTM_TRIGGER_createExcept(FTM_TRIGGER_ID xTriggerID, FTM_EP_ID xEPID, FTM_EP_DATA_PTR pUpper, FTM_EP_DATA_PTR pLower, FTM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTM_TRIGGER_createExcept
+(
+	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR	pEPID, 
+	FTM_EP_DATA_PTR pUpper, 
+	FTM_EP_DATA_PTR pLower, 
+	FTM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_EXCEPT, xTriggerID, xEPID, pUpper, pLower, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_EXCEPT, 
+					xTriggerID, pEPID, pUpper, pLower, ppTrigger);
 }
 
-FTM_RET	FTM_TRIGGER_createChange(FTM_TRIGGER_ID xTriggerID, FTM_EP_ID xEPID, FTM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTM_TRIGGER_createChange
+(
+	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR	pEPID, 
+	FTM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_CHANGE, xTriggerID, xEPID, NULL, NULL, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_CHANGE, 
+				xTriggerID, pEPID, NULL, NULL, ppTrigger);
 }
 
-FTM_RET	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE xType, FTM_TRIGGER_ID xTriggerID, FTM_EP_ID xEPID,  FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTM_TRIGGER_create1
+(
+	FTM_TRIGGER_TYPE 	xType, 
+	FTM_TRIGGER_ID 		xTriggerID, 
+	FTM_CHAR_PTR		pEPID,  
+	FTM_EP_DATA_PTR 	pData1, 
+	FTM_EP_DATA_PTR 	pData2, 
+	FTM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
+	ASSERT(pEPID != NULL);
 	ASSERT(pTriggerList != NULL);
 
 	FTM_RET			xRet;
@@ -191,12 +260,19 @@ FTM_RET	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE xType, FTM_TRIGGER_ID xTriggerID, F
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRIGGER_count(FTM_ULONG_PTR pulCount)
+FTM_RET	FTM_TRIGGER_count
+(
+	FTM_ULONG_PTR pulCount
+)
 {
 	return	FTM_LIST_count(pTriggerList, pulCount);
 }
 
-FTM_RET	FTM_TRIGGER_get(FTM_ULONG ulTriggerID, FTM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTM_TRIGGER_get
+(
+	FTM_ULONG 	ulTriggerID, 
+	FTM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
 	ASSERT(pTriggerList != NULL);
 	ASSERT(ppTrigger != NULL);
@@ -204,7 +280,11 @@ FTM_RET	FTM_TRIGGER_get(FTM_ULONG ulTriggerID, FTM_TRIGGER_PTR _PTR_ ppTrigger)
 	return	FTM_LIST_get(pTriggerList, &ulTriggerID, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
-FTM_RET	FTM_TRIGGER_getAt(FTM_ULONG ulIndex, FTM_TRIGGER_PTR _PTR_ ppTrigger)
+FTM_RET	FTM_TRIGGER_getAt
+(
+	FTM_ULONG 	ulIndex, 
+	FTM_TRIGGER_PTR _PTR_ ppTrigger
+)
 {
 	ASSERT(pTriggerList != NULL);
 	ASSERT(ppTrigger != NULL);
@@ -212,7 +292,10 @@ FTM_RET	FTM_TRIGGER_getAt(FTM_ULONG ulIndex, FTM_TRIGGER_PTR _PTR_ ppTrigger)
 	return	FTM_LIST_getAt(pTriggerList, ulIndex, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
-FTM_RET	FTM_TRIGGER_destroy(FTM_TRIGGER_PTR pTrigger)
+FTM_RET	FTM_TRIGGER_destroy
+(
+	FTM_TRIGGER_PTR 	pTrigger
+)
 {
 	ASSERT(pTriggerList != NULL);
 	ASSERT(pTrigger != NULL);
@@ -228,7 +311,10 @@ FTM_RET	FTM_TRIGGER_destroy(FTM_TRIGGER_PTR pTrigger)
 	return	xRet;
 }
 
-FTM_RET	FTM_TRIGGER_append(FTM_TRIGGER_PTR pTrigger)
+FTM_RET	FTM_TRIGGER_append
+(
+	FTM_TRIGGER_PTR 	pTrigger
+)
 {
 	ASSERT(pTrigger != NULL);
 
@@ -249,7 +335,10 @@ FTM_RET	FTM_TRIGGER_append(FTM_TRIGGER_PTR pTrigger)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRIGGER_remove(FTM_TRIGGER_PTR pTrigger)
+FTM_RET	FTM_TRIGGER_remove
+(
+	FTM_TRIGGER_PTR 	pTrigger
+)
 {
 	ASSERT(pTriggerList != NULL);
 	ASSERT(pTrigger != NULL);
@@ -257,7 +346,12 @@ FTM_RET	FTM_TRIGGER_remove(FTM_TRIGGER_PTR pTrigger)
 	return	FTM_LIST_remove(pTriggerList, pTrigger);
 }
 
-FTM_RET	FTM_TRIGGER_occurred(FTM_TRIGGER_PTR pTrigger, FTM_EP_DATA_PTR pCurrData, FTM_BOOL_PTR pResult)
+FTM_RET	FTM_TRIGGER_occurred
+(
+	FTM_TRIGGER_PTR 	pTrigger, 
+	FTM_EP_DATA_PTR 	pCurrData, 
+	FTM_BOOL_PTR 		pResult
+)
 {
 	ASSERT(pTrigger != NULL);
 	ASSERT(pCurrData != NULL);
@@ -350,7 +444,10 @@ static FTM_CHAR_PTR	pTypeString[] =
 	"CHANGE"
 };
 
-FTM_CHAR_PTR	FTM_TRIGGER_typeString(FTM_TRIGGER_TYPE xType)
+FTM_CHAR_PTR	FTM_TRIGGER_typeString
+(
+	FTM_TRIGGER_TYPE 	xType
+)
 {
 	if (xType < sizeof(pTypeString) / sizeof(FTM_CHAR_PTR))
 	{
@@ -360,7 +457,12 @@ FTM_CHAR_PTR	FTM_TRIGGER_typeString(FTM_TRIGGER_TYPE xType)
 	return	"UNKNOWN";
 }
 
-FTM_RET	FTM_TRIGGER_conditionToString(FTM_TRIGGER_PTR pTrigger, FTM_CHAR_PTR pBuff, FTM_ULONG ulBuffLen)
+FTM_RET	FTM_TRIGGER_conditionToString
+(
+	FTM_TRIGGER_PTR 	pTrigger, 
+	FTM_CHAR_PTR 		pBuff, 
+	FTM_ULONG 			ulBuffLen
+)
 {
 	ASSERT(pTrigger != NULL);
 	ASSERT(pBuff != NULL);
@@ -420,7 +522,11 @@ FTM_RET	FTM_TRIGGER_conditionToString(FTM_TRIGGER_PTR pTrigger, FTM_CHAR_PTR pBu
 
 }
 
-FTM_BOOL		FTM_TRIGGER_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator)
+FTM_BOOL	FTM_TRIGGER_seeker
+(
+	const FTM_VOID_PTR 	pItem, 
+	const FTM_VOID_PTR 	pIndicator
+)
 {
 	ASSERT(pItem != NULL);
 	ASSERT(pIndicator != NULL);

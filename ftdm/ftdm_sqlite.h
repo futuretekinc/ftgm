@@ -88,15 +88,15 @@ FTM_RET	FTDM_DBIF_NODE_getURL
 
 FTM_RET	FTDM_DBIF_NODE_setLocation
 (
-	FTM_CHAR_PTR			pDID,
-	FTM_CHAR_PTR			pLocation
+	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pLocation
 );
 
 FTM_RET	FTDM_DBIF_NODE_getLocation
 (
-	FTM_CHAR_PTR			pDID,
-	FTM_CHAR_PTR			pBuff,
-	FTM_ULONG				nBuffLen
+	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		nBuffLen
 );
 
 FTM_RET	FTDM_DBIF_EP_initTable
@@ -116,141 +116,141 @@ FTM_RET	FTDM_DBIF_EP_append
 
 FTM_RET	FTDM_DBIF_EP_del
 (
-	FTM_EP_ID			xEPID
+	FTM_CHAR_PTR	pEPID
 );
 
 FTM_RET	FTDM_DBIF_EP_count
 (
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR	pCount
 );
 
 FTM_RET	FTDM_DBIF_EP_getList
 (
 	FTM_EP_PTR		pInfos,
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pCount
 );
 
 FTM_RET	FTDM_DBIF_EP_get
 (
-	FTM_EP_ID 			xEPID, 
+	FTM_CHAR_PTR	pEPID,
 	FTM_EP_PTR		pInfo
 );
 
 FTM_RET	FTDM_DBIF_EP_setName
 (
-	FTM_EP_ID			xEPID,
-	FTM_CHAR_PTR		pName,
-	FTM_INT				nNameLen
+	FTM_CHAR_PTR	pEPID,
+	FTM_CHAR_PTR	pName,
+	FTM_INT			nNameLen
 );
 
 FTM_RET	FTDM_DBIF_EP_getName
 (
-	FTM_EP_ID			xEPID,
-	FTM_CHAR_PTR		pName,
-	FTM_INT_PTR			pNameLen
+	FTM_CHAR_PTR	pEPID,
+	FTM_CHAR_PTR	pName,
+	FTM_INT_PTR		pNameLen
 );
 
 FTM_RET	FTDM_DBIF_EP_setInterval
 (
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			nInterval
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nInterval
 );
 
 FTM_RET	FTDM_DBIF_EP_getInterval
 (
-	FTM_EP_ID			xEPID,
-	FTM_ULONG_PTR		pInterval
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pInterval
 );
 
 FTM_RET	FTDM_DBIF_EP_setUnit
 (
-	FTM_EP_ID			xEPID,
-	FTM_CHAR_PTR		pUnit,
-	FTM_INT				nUnitLen
+	FTM_CHAR_PTR	pEPID,
+	FTM_CHAR_PTR	pUnit,
+	FTM_INT			nUnitLen
 );
 
 FTM_RET	FTDM_DBIF_EP_getUnit
 (
-	FTM_EP_ID			xEPID,
-	FTM_CHAR_PTR		pUnit,
-	FTM_INT_PTR			pUnitLen
+	FTM_CHAR_PTR	pEPID,
+	FTM_CHAR_PTR	pUnit,
+	FTM_INT_PTR		pUnitLen
 );
 
 
 FTM_RET	FTDM_DBIF_EP_DATA_initTable
 (
-	FTM_EP_ID			xEPID
+	FTM_CHAR_PTR	pEPID
 );
 
 FTM_RET	FTDM_DBIF_EP_DATA_append
 (
-	FTM_EP_ID			xEPID,
-	FTM_EP_DATA_PTR		pData
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pData
 );
 
 FTM_RET	FTDM_DBIF_EP_DATA_info
 (
-	FTM_EP_ID			xEPID,
-	FTM_ULONG_PTR		pulBeginTime,
-	FTM_ULONG_PTR		pulEndTime
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pulBeginTime,
+	FTM_ULONG_PTR	pulEndTime
 );
 
 FTM_RET	FTDM_DBIF_EP_DATA_get
 (
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			nStartIndex,
-	FTM_EP_DATA_PTR		pEPData,
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nStartIndex,
+	FTM_EP_DATA_PTR	pEPData,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pCount
 );
 
 FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 (
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			xBeginTime,
-	FTM_ULONG			xEndTime,
-	FTM_EP_DATA_PTR		pEPData,
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		xBeginTime,
+	FTM_ULONG		xEndTime,
+	FTM_EP_DATA_PTR	pEPData,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pCount
 );
 
 FTM_RET	FTDM_DBIF_EP_DATA_del
 (
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			nIndex,
-	FTM_ULONG			nCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nIndex,
+	FTM_ULONG		nCount
 );
 
 FTM_RET	FTDM_DBIF_EP_DATA_delWithTime
 (
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			xBeginTime,
-	FTM_ULONG			xEndTime
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		xBeginTime,
+	FTM_ULONG		xEndTime
 );
 
 FTM_RET	FTDM_DBIF_EP_DATA_count
 (
-	FTM_EP_ID			xEPID,
-	FTM_ULONG_PTR		pCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pCount
 );
 
 FTM_RET	FTDM_DBIF_EP_DATA_countWithTime
 (
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			xBeginTime,
-	FTM_ULONG			xEndTime,
-	FTM_ULONG_PTR		pCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		xBeginTime,
+	FTM_ULONG		xEndTime,
+	FTM_ULONG_PTR	pCount
 );
 
 FTM_RET FTDM_DBIF_setTrace
 (
-	FTM_BOOL			bTraceON
+	FTM_BOOL		bTraceON
 );
 
 FTM_RET FTDM_DBIF_getTrace
 (
-	FTM_BOOL_PTR		pbTranceON
+	FTM_BOOL_PTR	pbTranceON
 );
 
 FTM_RET	FTDM_DBIF_TRIGGER_initTable
@@ -260,30 +260,30 @@ FTM_RET	FTDM_DBIF_TRIGGER_initTable
 
 FTM_RET	FTDM_DBIF_TRIGGER_create
 (
- 	FTM_TRIGGER_PTR		pTrigger
+ 	FTM_TRIGGER_PTR	pTrigger
 );
 
 FTM_RET	FTDM_DBIF_TRIGGER_destroy
 (
-	FTM_TRIGGER_ID		xID
+	FTM_TRIGGER_ID	xID
 );
 
 FTM_RET	FTDM_DBIF_TRIGGER_count
 (
-	FTM_ULONG_PTR		pCount
+	FTM_ULONG_PTR	pCount
 );
 
 FTM_RET	FTDM_DBIF_TRIGGER_get
 (
-	FTM_TRIGGER_ID		xID,
- 	FTM_TRIGGER_PTR		pTrigger
+	FTM_TRIGGER_ID	xID,
+ 	FTM_TRIGGER_PTR	pTrigger
 );
 
 FTM_RET	FTDM_DBIF_TRIGGER_getList
 (
-	FTM_TRIGGER_PTR		pTriggers, 
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pulCount
+	FTM_TRIGGER_PTR	pTriggers, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
 );
 
 FTM_RET	FTDM_DBIF_ACTION_initTable
@@ -293,30 +293,30 @@ FTM_RET	FTDM_DBIF_ACTION_initTable
 
 FTM_RET	FTDM_DBIF_ACTION_create
 (
- 	FTM_ACTION_PTR		pInfo
+ 	FTM_ACTION_PTR	pInfo
 );
 
 FTM_RET	FTDM_DBIF_ACTION_destroy
 (
-	FTM_ACTION_ID		xID
+	FTM_ACTION_ID	xID
 );
 
 FTM_RET	FTDM_DBIF_ACTION_count
 (
-	FTM_ULONG_PTR		pulCount
+	FTM_ULONG_PTR	pulCount
 );
 
 FTM_RET	FTDM_DBIF_ACTION_get
 (
-	FTM_ACTION_ID		xID,
- 	FTM_ACTION_PTR		pAction
+	FTM_ACTION_ID	xID,
+ 	FTM_ACTION_PTR	pAction
 );
 
 FTM_RET	FTDM_DBIF_ACTION_getList
 (
-	FTM_ACTION_PTR		pActions, 
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pulCount
+	FTM_ACTION_PTR	pActions, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
 );
 
 FTM_RET	FTDM_DBIF_RULE_initTable
@@ -326,29 +326,29 @@ FTM_RET	FTDM_DBIF_RULE_initTable
 
 FTM_RET	FTDM_DBIF_RULE_create
 (
- 	FTM_RULE_PTR		pInfo
+ 	FTM_RULE_PTR	pInfo
 );
 
 FTM_RET	FTDM_DBIF_RULE_destroy
 (
-	FTM_RULE_ID			xID
+	FTM_RULE_ID		xID
 );
 
 FTM_RET	FTDM_DBIF_RULE_count
 (
-	FTM_ULONG_PTR		pulCount
+	FTM_ULONG_PTR	pulCount
 );
 
 FTM_RET	FTDM_DBIF_RULE_get
 (
-	FTM_RULE_ID			xID,
- 	FTM_RULE_PTR		pAction
+	FTM_RULE_ID		xID,
+ 	FTM_RULE_PTR	pAction
 );
 
 FTM_RET	FTDM_DBIF_RULE_getList
 (
-	FTM_RULE_PTR		pActions, 
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pulCount
+	FTM_RULE_PTR	pActions, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
 );
 #endif

@@ -117,7 +117,7 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTDM_NODEM_PTR pNodeM, FTM_CHAR_PTR pDID)
 							MESSAGE("%16s   %-5d %08lx %-16s %-16s %-8s ",
 								"",
 								++ulIndex,
-								pEP->xInfo.xEPID,
+								pEP->xInfo.pEPID,
 								FTM_EP_typeString(pEP->xInfo.xType),
 								pEP->xInfo.pName,
 								pEP->xInfo.pUnit);
@@ -152,8 +152,9 @@ FTM_RET	FTDM_SHELL_showEPList(FTDM_EPM_PTR pEPM)
 	FTM_ULONG	ulCount;
 
 	MESSAGE("# PRE-REGISTERED ENDPOINT\n");
-	MESSAGE("%-5s %-8s %-16s %-16s %-8s %-8s %-8s %-8s %-16s %-8s\n",
-			"INDEX", "EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID");
+	MESSAGE("%5s %16s %16s %16s %8s %8s %8s %8s %16s %8s\n",
+			"INDEX", "EPID", "TYPE", "NAME", "UNIT", 
+			"STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID");
 	if (FTDM_EPM_count(pEPM, 0, &ulCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
@@ -163,46 +164,49 @@ FTM_RET	FTDM_SHELL_showEPList(FTDM_EPM_PTR pEPM)
 			FTDM_EP_PTR	pEP;
 		
 			FTDM_EPM_getAt(pEPM, i, &pEP);
-			MESSAGE("%5d %08lx %-16s %-16s %-8s ",
+			MESSAGE("%5d %16s %16s %16s %8s ",
 				i+1,
-				pEP->xInfo.xEPID,
+				pEP->xInfo.pEPID,
 				FTM_EP_typeString(pEP->xInfo.xType),
 				pEP->xInfo.pName,
 				pEP->xInfo.pUnit);
 
 			if (pEP->xInfo.bEnable)
 			{
-				MESSAGE("%-8s ", "ENABLE");
+				MESSAGE("%8s ", "ENABLE");
 			}
 			else
 			{
-				MESSAGE("%-8s ", "DISABLE");
+				MESSAGE("%8s ", "DISABLE");
 			}
 	
-			MESSAGE("%-8lu %-8lu %-16s %08lx\n",
+			MESSAGE("%8lu %8lu %16s\n",
 				pEP->xInfo.ulInterval,
 				pEP->xInfo.ulTimeout,
-				pEP->xInfo.pDID,
-				pEP->xInfo.xDEPID);
+				pEP->xInfo.pDID);
 		}
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_SHELL_showEPInfo(FTDM_EPM_PTR pEPM, FTM_EP_ID xEPID)
+FTM_RET	FTDM_SHELL_showEPInfo
+(
+	FTDM_EPM_PTR 	pEPM, 
+	FTM_CHAR_PTR	pEPID
+)
 {
 	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP = NULL;
 	FTM_ULONG	ulDataCount = 0;
 
-	if (FTDM_EPM_get(pEPM, xEPID, &pEP) != FTM_RET_OK)
+	if (FTDM_EPM_get(pEPM, pEPID, &pEP) != FTM_RET_OK)
 	{
-		MESSAGE("Invalid EPID [%08x]\n", xEPID);
+		MESSAGE("Invalid EPID [%s]\n", pEPID);
 		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
 
-	MESSAGE("%-16s : %08x\n", 	"EPID", pEP->xInfo.xEPID);
+	MESSAGE("%-16s : %s\n", 	"EPID", pEP->xInfo.pEPID);
 	MESSAGE("%-16s : %s\n", 	"TYPE", FTM_EP_typeString(pEP->xInfo.xType));
 	MESSAGE("%-16s : %s\n", 	"NAME", pEP->xInfo.pName);
 	MESSAGE("%-16s : %s\n", 	"UNIT", pEP->xInfo.pUnit);
@@ -220,16 +224,14 @@ FTM_RET	FTDM_SHELL_showEPInfo(FTDM_EPM_PTR pEPM, FTM_EP_ID xEPID)
 	MESSAGE("%-16s : %lu\n", 	"INTERVAL", pEP->xInfo.ulInterval);
 	MESSAGE("%-16s : %lu\n", 	"TIMEOUT", 	pEP->xInfo.ulTimeout);
 	MESSAGE("%-16s : %s\n", 	"DID", 		pEP->xInfo.pDID);
-	MESSAGE("%-16s : %08x\n", 	"DEPID", 	pEP->xInfo.xDEPID);
-	MESSAGE("%-16s : %s\n", 	"PID", 		pEP->xInfo.pPID);
-	MESSAGE("%-16s : %08x\n", 	"PEPID", 	pEP->xInfo.xPEPID);
 	if (pEP->xInfo.xLimit.xType == FTM_EP_LIMIT_TYPE_COUNT)
 	{
 		MESSAGE("%-16s : %s(%d)\n", 	"LIMIT", 	"COUNT", pEP->xInfo.xLimit.xParams.ulCount);
 	}
 	else
 	{
-		MESSAGE("%-16s : %s(%d:%d)\n", 	"LIMIT", 	"TIME", pEP->xInfo.xLimit.xParams.xTime.ulStart,pEP->xInfo.xLimit.xParams.xTime.ulEnd);
+		MESSAGE("%-16s : %s(%d:%d)\n", 	"LIMIT", 	"TIME", 
+			pEP->xInfo.xLimit.xParams.xTime.ulStart,pEP->xInfo.xLimit.xParams.xTime.ulEnd);
 	}
 
 	xRet = FTDM_EP_DATA_count(pEP, &ulDataCount);
@@ -245,7 +247,13 @@ FTM_RET	FTDM_SHELL_showEPInfo(FTDM_EPM_PTR pEPM, FTM_EP_ID xEPID)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_SHELL_showEPData(FTDM_EPM_PTR pEPM, FTM_EP_ID	xEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount)
+FTM_RET	FTDM_SHELL_showEPData
+(
+	FTDM_EPM_PTR 	pEPM, 
+	FTM_CHAR_PTR	pEPID, 
+	FTM_ULONG 		ulBegin, 
+	FTM_ULONG 		ulCount
+)
 {
 	FTM_RET			xRet;
 	FTM_ULONG		i, ulTotalCount = 0;
@@ -253,16 +261,16 @@ FTM_RET	FTDM_SHELL_showEPData(FTDM_EPM_PTR pEPM, FTM_EP_ID	xEPID, FTM_ULONG ulBe
 	FTM_EP_DATA_PTR pData;
 
 	TRACE("%s[%d]\n", __func__, __LINE__);
-	if (FTDM_EPM_get(pEPM, xEPID, &pEP) != FTM_RET_OK)
+	if (FTDM_EPM_get(pEPM, pEPID, &pEP) != FTM_RET_OK)
 	{
-		MESSAGE("Invalid EPID [%08x]\n", xEPID);
+		MESSAGE("Invalid EPID [%s]\n", pEPID);
 		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
 	
 	xRet = FTDM_EP_DATA_count(pEP, &ulTotalCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("%08x is not exists.\n", xEPID);
+		ERROR("EP[%s] is not exists.\n", pEPID);
 		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
 
@@ -339,22 +347,28 @@ FTM_RET	FTDM_SHELL_showEPData(FTDM_EPM_PTR pEPM, FTM_EP_ID	xEPID, FTM_ULONG ulBe
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_SHELL_delEPData(FTDM_EPM_PTR pEPM, FTM_EP_ID	xEPID, FTM_INT nIndex, FTM_ULONG ulCount)
+FTM_RET	FTDM_SHELL_delEPData
+(
+	FTDM_EPM_PTR 	pEPM, 
+	FTM_CHAR_PTR	pEPID, 
+	FTM_INT 		nIndex, 
+	FTM_ULONG 		ulCount
+)
 {
 	FTM_RET	xRet;
 	FTM_ULONG	ulTotalCount, ulNewCount;
 	FTDM_EP_PTR	pEP;
 
-	if (FTDM_EPM_get(pEPM, xEPID, &pEP) != FTM_RET_OK)
+	if (FTDM_EPM_get(pEPM, pEPID, &pEP) != FTM_RET_OK)
 	{
-		MESSAGE("Invalid EPID [%08x]\n", xEPID);
+		MESSAGE("Invalid EPID [%s]\n", pEPID);
 		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
 
 	xRet = FTDM_EP_DATA_count(pEP, &ulTotalCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("%08x is not exists.\n", xEPID);
+		ERROR("EP[%s] is not exists.\n", pEPID);
 		return	xRet;
 	}
 
@@ -375,7 +389,7 @@ FTM_RET	FTDM_SHELL_delEPData(FTDM_EPM_PTR pEPM, FTM_EP_ID	xEPID, FTM_INT nIndex,
 	xRet = FTDM_EP_DATA_count(pEP, &ulNewCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("%08x is not exists.\n", xEPID);
+		ERROR("EP[%s] is not exists.\n", pEPID);
 		return	xRet;
 	}
 
