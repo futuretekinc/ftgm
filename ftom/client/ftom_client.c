@@ -341,7 +341,7 @@ FTM_RET FTOM_CLIENT_EP_create
 FTM_RET FTOM_CLIENT_EP_destroy
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID
+	FTM_CHAR_PTR	pEPID
 )
 {
 	ASSERT(pClient != NULL);
@@ -353,7 +353,7 @@ FTM_RET FTOM_CLIENT_EP_destroy
 
 	xReq.xCmd	=	FTOM_CMD_EP_DESTROY;
 	xReq.ulLen	=	sizeof(xReq);
-	xReq.xEPID	=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -413,7 +413,7 @@ FTM_RET	FTOM_CLIENT_EP_getList
 (
 	FTOM_CLIENT_PTR		pClient,
 	FTM_EP_TYPE			xType,
-	FTM_EP_ID_PTR		pEPIDList,
+	FTM_CHAR			pEPIDList[][FTM_EPID_LEN+1],
 	FTM_ULONG			ulMaxCount,
 	FTM_ULONG_PTR		pulCount
 )
@@ -428,7 +428,7 @@ FTM_RET	FTOM_CLIENT_EP_getList
 	FTOM_RESP_EP_GET_LIST_PARAMS_PTR	pResp;
 	FTM_ULONG					ulRespLen;
 
-	nRespSize = sizeof(FTOM_RESP_EP_GET_LIST_PARAMS) + sizeof(FTM_EP_ID) * ulMaxCount;
+	nRespSize = sizeof(FTOM_RESP_EP_GET_LIST_PARAMS) + (FTM_EPID_LEN+1) * ulMaxCount;
 	pResp = (FTOM_RESP_EP_GET_LIST_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
 	if (pResp == NULL)
 	{
@@ -457,7 +457,7 @@ FTM_RET	FTOM_CLIENT_EP_getList
 
 	if (xRet == FTM_RET_OK)
 	{
-		memcpy(pEPIDList, pResp->pEPIDList, sizeof(FTM_EP_ID) * pResp->ulCount);
+		memcpy(pEPIDList, pResp->pEPIDList, (FTM_EPID_LEN+1) * pResp->ulCount);
 		*pulCount = pResp->ulCount;
 	}
 
@@ -468,9 +468,9 @@ FTM_RET	FTOM_CLIENT_EP_getList
 
 FTM_RET FTOM_CLIENT_EP_get
 (
-	FTOM_CLIENT_PTR		pClient,
-	FTM_EP_ID			xEPID,
-	FTM_EP_PTR			pInfo
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_PTR		pInfo
 )
 {
 	ASSERT(pClient != NULL);
@@ -483,7 +483,7 @@ FTM_RET FTOM_CLIENT_EP_get
 
 	xReq.xCmd	=	FTOM_CMD_EP_GET;
 	xReq.ulLen	=	sizeof(xReq);
-	xReq.xEPID	=	xEPID;
+	strncpy(xReq.pEPID,	pEPID, FTM_EPID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -581,9 +581,9 @@ FTM_RET FTOM_CLIENT_EP_set
  *****************************************************************/
 FTM_RET	FTOM_CLIENT_EP_DATA_add
 (
-	FTOM_CLIENT_PTR		pClient,
-	FTM_EP_ID			xEPID,
-	FTM_EP_DATA_PTR		pEPData
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pEPData
 )
 {
 	ASSERT(pClient != NULL);
@@ -596,7 +596,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_add
 
 	xReq.xCmd	=	FTOM_CMD_EP_DATA_ADD;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xEPID	=	xEPID;
+	strncpy(xReq.pEPID,	pEPID, FTM_EPID_LEN);
 	memcpy(&xReq.xData, pEPData, sizeof(FTM_EP_DATA));
 
 	xRet = pClient->fRequest(
@@ -619,11 +619,11 @@ FTM_RET	FTOM_CLIENT_EP_DATA_add
  *****************************************************************/
 FTM_RET	FTOM_CLIENT_EP_DATA_info
 (
-	FTOM_CLIENT_PTR		pClient,
-	FTM_EP_ID				xEPID,
-	FTM_ULONG_PTR			pulBeginTime,
-	FTM_ULONG_PTR			pulEndTime,
-	FTM_ULONG_PTR			pCount
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pulBeginTime,
+	FTM_ULONG_PTR	pulEndTime,
+	FTM_ULONG_PTR	pCount
 )
 {
 	ASSERT(pClient != NULL);
@@ -638,7 +638,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_info
 
 	xReq.xCmd		=	FTOM_CMD_EP_DATA_INFO;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy( xReq.pEPID, pEPID, FTM_EPID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -667,9 +667,9 @@ FTM_RET	FTOM_CLIENT_EP_DATA_info
  *****************************************************************/
 FTM_RET FTOM_CLIENT_EP_DATA_getLast
 (
-	FTOM_CLIENT_PTR		pClient,
-	FTM_EP_ID				xEPID,
-	FTM_EP_DATA_PTR			pData
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pData
 )
 {
 	ASSERT(pClient != NULL);
@@ -682,7 +682,7 @@ FTM_RET FTOM_CLIENT_EP_DATA_getLast
 
 	xReq.xCmd	=	FTOM_CMD_EP_DATA_GET_LAST;
 	xReq.ulLen	=	sizeof(xReq);
-	xReq.xEPID	=	xEPID;
+	strncpy( xReq.pEPID, pEPID, FTM_EPID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -709,11 +709,11 @@ FTM_RET FTOM_CLIENT_EP_DATA_getLast
 FTM_RET	FTOM_CLIENT_EP_DATA_getList
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			nStartIndex,
-	FTM_EP_DATA_PTR		pData,
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pnCount
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nStartIndex,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pnCount
 )
 {
 	ASSERT(pClient != NULL);
@@ -732,13 +732,13 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 	{
 		FTM_ULONG	ulReqCount;
 
-		if (nMaxCount > 100)
+		if (ulMaxCount > 100)
 		{
 			ulReqCount = 100;	
 		}
 		else
 		{
-			ulReqCount = nMaxCount;	
+			ulReqCount = ulMaxCount;	
 		}
 
 		nRespSize = sizeof(FTOM_RESP_EP_DATA_GET_LIST_PARAMS) + sizeof(FTM_EP_DATA) * ulReqCount;
@@ -750,10 +750,10 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 	
 		xReq.xCmd		=	FTOM_CMD_EP_DATA_GET_LIST;
 		xReq.ulLen		=	sizeof(xReq);
-		xReq.xEPID		=	xEPID;
+		strncpy(xReq.pEPID,	pEPID, FTM_EPID_LEN);
 		xReq.nStartIndex=	nStartIndex;
 		xReq.nCount		=	ulReqCount;
-	
+		
 		xRet = pClient->fRequest(
 					pClient, 
 					(FTM_VOID_PTR)&xReq, 
@@ -779,10 +779,10 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 			}
 
 			ulRespCount += pResp->nCount;
-			nMaxCount -= pResp->nCount;
 			nStartIndex += pResp->nCount;
+			ulMaxCount -= pResp->nCount;
 
-			if ((pResp->nCount != ulReqCount) || (nMaxCount == 0))
+			if ((pResp->nCount != ulReqCount) || (ulMaxCount == 0))
 			{
 				bStop = FTM_TRUE;	
 			}
@@ -805,10 +805,10 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
  *****************************************************************/
 FTM_RET	FTDMC_EP_DATA_del
 (
-	FTOM_CLIENT_PTR		pClient,
-	FTM_EP_ID			xEPID,
-	FTM_ULONG			nIndex,
-	FTM_ULONG			nCount
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nIndex,
+	FTM_ULONG		nCount
 )
 {
 	ASSERT(pClient != NULL);
@@ -820,7 +820,7 @@ FTM_RET	FTDMC_EP_DATA_del
 
 	xReq.xCmd		=	FTOM_CMD_EP_DATA_DEL;
 	xReq.nLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	xReq.nIndex		=	nIndex;
 	xReq.nCount		=	nCount;
 
@@ -841,9 +841,9 @@ FTM_RET	FTDMC_EP_DATA_del
 
 FTM_RET	FTOM_CLIENT_EP_DATA_count
 (
-	FTOM_CLIENT_PTR		pClient,
-	FTM_EP_ID			xEPID,
-	FTM_ULONG_PTR		pCount
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pCount
 )
 {
 	ASSERT(pClient != NULL);
@@ -856,7 +856,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_count
 
 	xReq.xCmd		=	FTOM_CMD_EP_DATA_COUNT;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xEPID		=	xEPID;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 

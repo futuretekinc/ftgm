@@ -20,16 +20,16 @@ FTM_RET	FTOM_CL_EP_destroy
 	ASSERT(pArgv != NULL);
 
 	FTM_RET		xRet;
-	FTM_EP_ID	xEPID;
+	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 
 	if (nArgc != 1)
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	xEPID = strtoul(pArgv[0], 0, 16);
+	strncpy(pEPID,pArgv[0], FTM_EPID_LEN);
 
-	xRet = FTOM_CLIENT_EP_destroy(pClient, xEPID);
+	xRet = FTOM_CLIENT_EP_destroy(pClient, pEPID);
 
 	return	xRet;
 }
@@ -66,7 +66,7 @@ FTM_RET	FTOM_CL_EP_get
 	ASSERT(pArgv != NULL);
 
 	FTM_RET		xRet;
-	FTM_EP_ID	xEPID;
+	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 	FTM_EP		xInfo;
 
 	if (nArgc < 1)
@@ -74,12 +74,12 @@ FTM_RET	FTOM_CL_EP_get
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	xEPID = strtoul(pArgv[0], 0, 16);
-	xRet = FTOM_CLIENT_EP_get(pClient, xEPID, &xInfo);
+	strncpy(pEPID, pArgv[0], FTM_EPID_LEN);
+	xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%08x|%s|%08x|%s|%s|%d|%d|%d|%s|%08x|%s|%08x\n", 
-			xInfo.xEPID, 
+		MESSAGE("%s|%s|%08x|%s|%s|%d|%d|%d|%s\n", 
+			xInfo.pEPID, 
 			FTM_EP_typeString(xInfo.xType), 
 			xInfo.xFlags, 
 			xInfo.pName, 
@@ -87,10 +87,7 @@ FTM_RET	FTOM_CL_EP_get
 			xInfo.bEnable,
 			xInfo.ulTimeout,
 			xInfo.ulInterval,
-			xInfo.pDID,
-			xInfo.xDEPID,
-			xInfo.pPID,
-			xInfo.xPEPID);
+			xInfo.pDID);
 	}
 
 	return	xRet;
@@ -119,8 +116,8 @@ FTM_RET	FTOM_CL_EP_getAt
 	xRet = FTOM_CLIENT_EP_getAt(pClient, ulIndex, &xInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%08x|%s|%08x|%s|%s|%d:%d|%d|%s|%08x|%s|%08x\n", 
-			xInfo.xEPID, 
+		MESSAGE("%s|%s|%08x|%s|%s|%d:%d|%d|%s\n", 
+			xInfo.pEPID, 
 			FTM_EP_typeString(xInfo.xType), 
 			xInfo.xFlags, 
 			xInfo.pName, 
@@ -128,10 +125,7 @@ FTM_RET	FTOM_CL_EP_getAt
 			xInfo.bEnable,
 			xInfo.ulTimeout,
 			xInfo.ulInterval,
-			xInfo.pDID,
-			xInfo.xDEPID,
-			xInfo.pPID,
-			xInfo.xPEPID);
+			xInfo.pDID);
 	}
 
 	return	xRet;

@@ -869,7 +869,9 @@ FTM_RET	FTDMS_EP_DATA_get
 	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
+		TRACE("FTDM_EPM_get = %08x\n", xRet);
 		xRet = FTDM_EP_DATA_get( pEP, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
+		TRACE("FTDM_EPM_DATA_get = %08x\n", xRet);
 	}
 	pResp->xCmd = pReq->xCmd;
 	pResp->nCount = pReq->nCount;

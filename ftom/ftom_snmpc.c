@@ -445,7 +445,7 @@ FTM_RET	FTOM_SNMPC_getEPData
 						{
 							FTM_EP_DATA_TYPE	xDataType;
 							FTM_CHAR	pBuff[1024];
-	
+
 							if (pVariable->val_len < 1024)
 							{
 								memcpy(pBuff, pVariable->val.string, pVariable->val_len);
@@ -460,6 +460,7 @@ FTM_RET	FTOM_SNMPC_getEPData
 							xRet = FTOM_EP_getDataType(pEP, &xDataType);
 							if (xRet != FTM_RET_OK)
 							{
+								TRACE("Error! invalid data type\n");
 								break;
 							}
 
@@ -505,7 +506,7 @@ FTM_RET	FTOM_SNMPC_getEPData
 			}
 			else
 			{
-				//ERROR("EP(%08x:%s) is occurred synch response error! - %s\n", pEP->xInfo.xEPID, pEP->pNode->xInfo.pDID, snmp_errstring(nRet));
+				ERROR("EP[%s] is occurred synch response error! - %s\n", pEP->xInfo.pEPID, snmp_errstring(nRet));
 				xRet = FTM_RET_SNMP_ERROR;
 			}
 		}

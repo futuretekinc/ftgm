@@ -105,11 +105,6 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 			xInfo.pDID[i] = toupper(pArgv[3][i]);
 		}
 
-		if (xInfo.pPID[0] == 0)
-		{
-			memcpy(xInfo.pPID, xInfo.pDID, sizeof(xInfo.pPID));	
-		}
-
 		xRet = FTM_EP_isValid(&xInfo);
 		if (xRet != FTM_RET_OK)
 		{
@@ -126,15 +121,15 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 	}
 	else if (strcmp(pArgv[1], "del") == 0)
 	{
-		FTM_EP_ID	xEPID;
+		FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 
 		if (nArgc != 3)
 		{
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		xEPID = strtoul(pArgv[2], 0, 16);
-		xRet = FTOM_CLIENT_EP_destroy(pClient, xEPID);	
+		strncpy(pEPID, pArgv[2], FTM_EPID_LEN);
+		xRet = FTOM_CLIENT_EP_destroy(pClient, pEPID);	
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
@@ -149,37 +144,46 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 			xRet = FTOM_CLIENT_EP_count(pClient, 0, &nCount);
 			if (xRet == FTM_RET_OK)
 			{
-				FTM_EP_ID_PTR	pEPIDs;
+				FTM_CHAR		pEPIDs[50][FTM_EPID_LEN+1];
 				FTM_EP_DATA		xData;
+				FTM_ULONG		ulStart = 0;
 
 				MESSAGE("EP COUNT : %d\n", nCount);
-				pEPIDs = (FTM_EP_ID_PTR)FTM_MEM_calloc(nCount, sizeof(FTM_EP_ID));
-				if (pEPIDs == NULL)
+				MESSAGE("%x16s %16s %16s %8s %8s %16s %16s %8s\n",
+					"EPID", "CLASS", "NAME", "UNIT", "INTERNAL", "DID", "PID", "VALUE");
+				while(nCount > 0)
 				{
-					ERROR("Not enough memory.\n");	
-				}
-				else
-				{
-					MESSAGE("%8s %16s %16s %8s %8s %16s %16s %8s\n",
-						"EPID", "CLASS", "NAME", "UNIT", "INTERNAL", "DID", "PID", "VALUE");
-					FTOM_CLIENT_EP_getList(pClient, 0x00000000, pEPIDs, nCount, &nCount);
-					for(i = 0 ; i< nCount ; i++)
+					FTM_ULONG	ulReadCount = 0;
+					if (nCount > 50)
+					{
+						FTOM_CLIENT_EP_getList(pClient, ulStart, pEPIDs, 50, &ulReadCount);
+					}
+					else
+					{
+						FTOM_CLIENT_EP_getList(pClient, ulStart, pEPIDs, nCount, &ulReadCount);
+					}
+
+					if (ulReadCount == 0)
+					{
+						break;
+					}
+
+					for(i = 0 ; i< ulReadCount ; i++)
 					{
 						FTM_EP	xInfo;
-
+	
 						xRet = FTOM_CLIENT_EP_get(pClient, pEPIDs[i], &xInfo);
 						if (xRet == FTM_RET_OK)
 						{
-							MESSAGE("%08lx %16s %16s %8s %8lu %16s %16s ",
-									xInfo.xEPID,
+							MESSAGE("%16s %16s %16s %8s %8lu %16s ",
+									xInfo.pEPID,
 									FTM_EP_typeString(xInfo.xType),
 									xInfo.pName,
 									xInfo.pUnit,
 									xInfo.ulInterval,
-									xInfo.pDID,
-									xInfo.pPID);
+									xInfo.pDID);
 						}
-
+	
 						xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, pEPIDs[i], &xData);
 						if (xRet == FTM_RET_OK)
 						{
@@ -190,40 +194,39 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 									MESSAGE("%5d", xData.xValue.nValue);
 								}
 								break;
-
+	
 							case	FTM_EP_DATA_TYPE_ULONG:
 								{
 									MESSAGE("%5lu", xData.xValue.ulValue);
 								}
 								break;
-
+	
 							case	FTM_EP_DATA_TYPE_FLOAT:
 								{
 									MESSAGE("%5.2f", xData.xValue.fValue);
 								}
 								break;
-
 							}
-
-						
 						}
 						MESSAGE("\n");
 					}
 
-					FTM_MEM_free(pEPIDs);
+					ulStart += ulReadCount;
+					nCount  -= ulReadCount;
+
 				}
 			}
 		}
 		else if (nArgc == 3)
 		{
 			FTM_EP_TYPE	xEPClass;
-			FTM_EP_ID		pEPID[100];
+			FTM_CHAR 	pEPID[50][FTM_EPID_LEN+1];
 
 			xEPClass = strtoul(pArgv[2], 0, 16);
-			xRet = FTOM_CLIENT_EP_getList(pClient, xEPClass, pEPID, 100, &nCount);
+			xRet = FTOM_CLIENT_EP_getList(pClient, xEPClass, pEPID, 50, &nCount);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
+				MESSAGE("%16s %16s %16s %16s %8s %16s %16s\n",
 						"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
 
 				for(i = 0 ; i< nCount ; i++)
@@ -233,14 +236,13 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 					xRet = FTOM_CLIENT_EP_get(pClient, pEPID[i], &xInfo);
 					if (xRet == FTM_RET_OK)
 					{
-						MESSAGE("%08lx %16s %16s %16s %8lu %16s %16s\n",
-								xInfo.xEPID,
+						MESSAGE("%16s %16s %16s %16s %8lu %16s %16s\n",
+								xInfo.pEPID,
 								FTM_getEPTypeString(xInfo.xType),
 								xInfo.pName,
 								xInfo.pUnit,
 								xInfo.ulInterval,
-								xInfo.pDID,
-								xInfo.pPID);
+								xInfo.pDID);
 					}
 					else
 					{
@@ -252,16 +254,16 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 	}
 	else if (strcasecmp(pArgv[1], "info") == 0)
 	{
-		FTM_EP_ID		xEPID;
+		FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 		FTM_EP			xEPInfo;
 
-		xEPID = strtoul(pArgv[2], 0, 16);
-		xRet = FTOM_CLIENT_EP_get(pClient, xEPID, &xEPInfo);	
+		strncpy(pEPID, pArgv[2], FTM_EPID_LEN);
+		xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xEPInfo);	
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("EP Information\n");
-			MESSAGE("%16s : %08x\n","ID",			xEPInfo.xEPID);
-			MESSAGE("%16s : %s\n",	"Type",			FTM_EP_typeString(xEPInfo.xEPID & FTM_EP_TYPE_MASK));
+			MESSAGE("%16s : %s\n",	"ID",			xEPInfo.pEPID);
+			MESSAGE("%16s : %s\n",	"Type",			FTM_EP_typeString(xEPInfo.xType & FTM_EP_TYPE_MASK));
 			MESSAGE("%16s : %s\n",	"Name",			xEPInfo.pName);
 			MESSAGE("%16s : %s\n",	"Unit",			xEPInfo.pUnit);
 			MESSAGE("%16s : %s\n",	"State",		(xEPInfo.bEnable)?"Enable":"Disable");
@@ -269,9 +271,6 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 			MESSAGE("%16s : %d\n",	"Interval",		xEPInfo.ulInterval);	
 			MESSAGE("%16s : %d\n",	"Report Cycle",	xEPInfo.ulCycle);
 			MESSAGE("%16s : %s\n",	"DID",			xEPInfo.pDID);
-			MESSAGE("%16s : %08x\n","DEPID",		xEPInfo.xDEPID);
-			MESSAGE("%16s : %s\n",	"PID",			xEPInfo.pPID);
-			MESSAGE("%16s : %08x\n","PEPID",		xEPInfo.xPEPID);
 			if (xEPInfo.xLimit.xType == FTM_EP_LIMIT_TYPE_TIME)
 			{
 				MESSAGE("%16s : %s(%d ~ %d)\n",		"Limit","Time", xEPInfo.xLimit.xParams.xTime.ulStart, xEPInfo.xLimit.xParams.xTime.ulEnd);
@@ -300,14 +299,14 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 	}
 	else 
 	{
-		FTM_EP_ID		xEPID;
+		FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 		FTM_EP			xInfo;
 
-		xEPID = strtoul(pArgv[1], 0, 16);
-		xRet = FTOM_CLIENT_EP_get(pClient, xEPID, &xInfo);
+		strncpy(pEPID, pArgv[1], FTM_EPID_LEN);
+		xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			MESSAGE("EP[%08x] not exists.\n", xEPID);
+			MESSAGE("EP[%s] not exists.\n", pEPID);
 		}
 		else	
 		{
@@ -319,21 +318,20 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 					FTM_ULONG	ulCount;
 					FTM_CHAR	pValue[32];
 			
-					MESSAGE("%-8s : %08lx\n", 	"EPID", 	xInfo.xEPID);
+					MESSAGE("%-8s : %s\n", 		"EPID", 	xInfo.pEPID);
 					MESSAGE("%-8s : %s\n",		"TYPE",		FTM_EP_typeString(xInfo.xType));
 					MESSAGE("%-8s : %s\n",		"NAME", 	xInfo.pName);
 					MESSAGE("%-8s : %s\n",		"UNIT", 	xInfo.pUnit);
 					MESSAGE("%-8s : %d\n",		"INTERVAL", xInfo.ulInterval);
 					MESSAGE("%-8s : %s\n",		"DID", 		xInfo.pDID);
-					MESSAGE("%-8s : %s\n",		"PID", 		xInfo.pPID);
 			
-					xRet = FTOM_CLIENT_EP_DATA_count(pClient, xEPID, &ulCount);
+					xRet = FTOM_CLIENT_EP_DATA_count(pClient, pEPID, &ulCount);
 					if (xRet == FTM_RET_OK)
 					{
 						MESSAGE("%-8s : %d\n", "COUNT", ulCount);
 					}
 		
-					xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, xEPID, &xData);
+					xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, pEPID, &xData);
 					if (xRet == FTM_RET_OK)
 					{
 						xRet = FTM_EP_DATA_snprint(pValue, sizeof(pValue), &xData);	
@@ -359,7 +357,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 					{
 						if (xInfo.bEnable)
 						{
-							MESSAGE("EP[%08x] has been already started.\n", xInfo.xEPID);
+							MESSAGE("EP[%s] has been already started.\n", xInfo.pEPID);
 							break;
 						}
 
@@ -370,7 +368,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 					{
 						if (!xInfo.bEnable)
 						{
-							MESSAGE("EP[%08x] did not start.\n", xInfo.xEPID);
+							MESSAGE("EP[%s] did not start.\n", xInfo.pEPID);
 							break;
 						}
 						xInfo.bEnable = FTM_FALSE;
@@ -423,7 +421,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 						}
 						else
 						{
-							xRet = FTOM_CLIENT_EP_DATA_getList(pClient, xEPID, ulStartIndex, pData, ulCount, &ulCount);
+							xRet = FTOM_CLIENT_EP_DATA_getList(pClient, pEPID, ulStartIndex, pData, ulCount, &ulCount);
 							if (xRet != FTM_RET_OK)
 							{
 								MESSAGE("%s : ERROR - %lu\n", pArgv[0], xRet);
@@ -460,7 +458,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 	FTM_INT			nOpt = 0;
 	FTM_ULONG		nBeginTime = 0;
 	FTM_ULONG		nEndTime = 0;
-	FTM_EP_ID		xEPID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_DATA		xData;
 	FTM_EP_DATA_PTR	pEPData;	
 	FTM_ULONG		nStartIndex=0;
@@ -485,7 +483,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		xEPID = strtoul(pArgv[2], NULL, 16);
+		strncpy(pEPID, pArgv[2], FTM_EPID_LEN);
 
 		snprintf(pTemp, sizeof(pTemp), "%s %s", pArgv[3], pArgv[4]);
 		strptime(pTemp, "%Y-%m-%d %H:%M:%S", &xTM);
@@ -532,7 +530,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 			}
 		}
 
-		xRet = FTOM_CLIENT_EP_DATA_add(pClient, xEPID, &xData);
+		xRet = FTOM_CLIENT_EP_DATA_add(pClient, pEPID, &xData);
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("EndPoint data appending done successfully!\n");	
@@ -556,7 +554,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 			{
 				if (nArgc == 4)
 				{
-					xEPID	= strtol(pArgv[3], NULL, 16);
+					strncpy(pEPID, pArgv[3], FTM_EPID_LEN);
 				}	
 				else
 				{
@@ -572,12 +570,12 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 				{
 					nMaxCount 	= strtol(pArgv[5], NULL, 10);
 					nStartIndex = strtol(pArgv[4], NULL, 10);
-					xEPID 		= strtol(pArgv[3], NULL, 16);
+					strncpy(pEPID, pArgv[3], FTM_EPID_LEN);
 				}	
 				else if (nArgc == 5)
 				{
 					nStartIndex = strtol(pArgv[4], NULL, 10);
-					xEPID 		= strtol(pArgv[3], NULL, 16);
+					strncpy(pEPID, pArgv[3], FTM_EPID_LEN);
 				}
 				else
 				{
@@ -595,7 +593,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 
 				if (nArgc == 8)
 				{
-					xEPID 		= strtol(pArgv[3], NULL, 16);
+					strncpy(pEPID, pArgv[3], FTM_EPID_LEN);
 
 					snprintf(pTemp, sizeof(pTemp), "%s %s", pArgv[4], pArgv[5]);
 					strptime(pTemp, "%Y-%m-%d %H:%M:%S", &xTMBegin);
@@ -607,7 +605,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 				}
 				else if (nArgc == 7)
 				{
-					xEPID 		= strtol(pArgv[3], NULL, 16);
+					strncpy(pEPID, pArgv[3], FTM_EPID_LEN);
 
 					snprintf(pTemp, sizeof(pTemp), "%s %s", pArgv[4], pArgv[5]);
 					strptime(pTemp, "%Y-%m-%d %H:%M:%S", &xTMBegin);
@@ -617,7 +615,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 				}
 				else if (nArgc == 6)
 				{
-					xEPID 		= strtol(pArgv[3], NULL, 16);
+					strncpy(pEPID, pArgv[3], FTM_EPID_LEN);
 
 					snprintf(pTemp, sizeof(pTemp), "%s %s", pArgv[4], pArgv[5]);
 					strptime(pTemp, "%Y-%m-%d %H:%M:%S", &xTMBegin);
@@ -629,7 +627,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 					return	FTM_RET_INVALID_ARGUMENTS;
 				}
 /*
-				xRet = FTOM_CLIENT_EP_DATA_delWithTime(pClient, xEPID, nBeginTime, nEndTime);
+				xRet = FTOM_CLIENT_EP_DATA_delWithTime(pClient, pEPID, nBeginTime, nEndTime);
 				if (xRet == FTM_RET_OK)
 				{
 					MESSAGE("EndPoint data deleted successfully!\n");	
@@ -673,13 +671,13 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 					MESSAGE("Invalid arguments\n");	
 					return	FTM_RET_INVALID_ARGUMENTS;
 				}
+				
+				strncpy(pEPID, pArgv[3], FTM_EPID_LEN);
 
-				xEPID	= strtoul(pArgv[3], NULL, 16);
-
-				xRet = FTOM_CLIENT_EP_DATA_info(pClient, xEPID, &ulBeginTime, &ulEndTime, &ulCount);
+				xRet = FTOM_CLIENT_EP_DATA_info(pClient, pEPID, &ulBeginTime, &ulEndTime, &ulCount);
 				if (xRet == FTM_RET_OK)
 				{
-					MESSAGE("      EPID : %08lx\n", xEPID);
+					MESSAGE("      EPID : %s\n", pEPID);
 					MESSAGE("DATA COUNT : %lu\n", ulCount);
 					MESSAGE("BEGIN TIME : %s\n", ctime(&ulBeginTime));
 					MESSAGE("  END TIME : %s\n", ctime(&ulEndTime));
@@ -700,7 +698,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 					return	FTM_RET_INVALID_ARGUMENTS;
 				}
 
-				xEPID	= strtoul(pArgv[3], NULL, 16);
+				strncpy(pEPID, pArgv[3], FTM_EPID_LEN);
 			}
 			break;
 
@@ -738,7 +736,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 					return	FTM_RET_INVALID_ARGUMENTS;
 				}
 
-				xEPID 		= strtol(pArgv[3], NULL, 16);
+				strncpy(pEPID, pArgv[3], FTM_EPID_LEN);
 
 				pEPData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * nMaxCount);
 				if (pEPData == NULL)
@@ -748,13 +746,13 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 				}
 
 				xRet = FTOM_CLIENT_EP_DATA_getList(pClient, 
-						xEPID, 
+						pEPID, 
 						nStartIndex,
 						pEPData, 
 						nMaxCount, 
 						&nCount);
-				TRACE("FTOM_CLIENT_getEPData(hClient, %08lx, %d, %d, pEPData, %d, %d) = %08lx\n",
-						xEPID, nBeginTime, nEndTime, nMaxCount, nCount, xRet);
+				TRACE("FTOM_CLIENT_getEPData(hClient, %s, %d, %d, pEPData, %d, %d) = %08lx\n",
+						pEPID, nBeginTime, nEndTime, nMaxCount, nCount, xRet);
 				if (xRet == FTM_RET_OK)
 				{
 					FTM_INT	i;
@@ -808,7 +806,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 
 				if (nArgc == optind + 4)
 				{
-					xEPID 		= strtol(pArgv[optind++], NULL, 16);
+					strncpy(pEPID, pArgv[optind++], FTM_EPID_LEN);
 
 					snprintf(pTemp, sizeof(pTemp), "%s %s", pArgv[optind], pArgv[optind+1]);
 					optind+= 2;
@@ -817,7 +815,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 				}
 				else if (nArgc == optind + 6)
 				{
-					xEPID 		= strtol(pArgv[optind++], NULL, 16);
+					strncpy(pEPID, pArgv[optind++], FTM_EPID_LEN);
 
 					snprintf(pTemp, sizeof(pTemp), "%s %s", pArgv[optind], pArgv[optind+1]);
 					optind+= 2;

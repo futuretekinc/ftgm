@@ -21,7 +21,7 @@ FTM_RET	FTOM_CL_EP_DATA_getLast
 	ASSERT(pArgv != NULL);
 
 	FTM_RET		xRet;
-	FTM_EP_ID	xEPID;
+	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 	FTM_EP_DATA	xData;
 
 	if (nArgc != 1)
@@ -29,16 +29,16 @@ FTM_RET	FTOM_CL_EP_DATA_getLast
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	xEPID = strtoul(pArgv[0], 0, 16);
+	strncpy(pEPID, pArgv[0], FTM_EPID_LEN);
 
-	xRet = FTOM_CLIENT_EP_DATA_getLast(	pClient, xEPID, &xData);
+	xRet = FTOM_CLIENT_EP_DATA_getLast(	pClient, pEPID, &xData);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_CHAR	pBuff[64];
 
 		FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &xData);
-		MESSAGE("%08x|%lu|%s\n",
-			xEPID,
+		MESSAGE("%s|%lu|%s\n",
+			pEPID,
 			xData.ulTime,
 			pBuff);
 	}
@@ -57,7 +57,7 @@ FTM_RET	FTOM_CL_EP_DATA_getList
 	ASSERT(pArgv != NULL);
 
 	FTM_RET		xRet;
-	FTM_EP_ID	xEPID;
+	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG	ulIndex;
 	FTM_ULONG	ulMaxCount;
 	FTM_ULONG	ulCount;
@@ -68,7 +68,7 @@ FTM_RET	FTOM_CL_EP_DATA_getList
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	xEPID = strtoul(pArgv[0], 0, 16);
+	strncpy(pEPID, pArgv[0], FTM_EPID_LEN);
 	ulIndex=strtoul(pArgv[1], 0, 10);
 	ulMaxCount=strtoul(pArgv[2], 0, 10);
 
@@ -83,7 +83,7 @@ FTM_RET	FTOM_CL_EP_DATA_getList
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	xRet = FTOM_CLIENT_EP_DATA_getList(	pClient, xEPID, ulIndex, pData, ulMaxCount, &ulCount);
+	xRet = FTOM_CLIENT_EP_DATA_getList(	pClient, pEPID, ulIndex, pData, ulMaxCount, &ulCount);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_INT		i;
@@ -92,7 +92,7 @@ FTM_RET	FTOM_CL_EP_DATA_getList
 		for(i = 0 ; i < ulCount ; i++)
 		{
 			FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pData[i]);
-			MESSAGE("%d|%08x|%lu|%s\n", i+1, xEPID, pData[i].ulTime, pBuff);
+			MESSAGE("%d|%08x|%lu|%s\n", i+1, pEPID, pData[i].ulTime, pBuff);
 		}
 	}
 

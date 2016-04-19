@@ -185,7 +185,7 @@ FTM_RET	FTOM_EP_attach
 		{
 			FTM_INT	nIndex;
 
-			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 3], 0, 16);
+			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 2], 0, 16);
 			pEP->xOption.xSNMP.nOIDLen = MAX_OID_LEN;
 
 			FTOM_NODE_SNMPC_getOID((FTOM_NODE_SNMPC_PTR)pNode, 

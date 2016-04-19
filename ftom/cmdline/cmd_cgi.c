@@ -36,9 +36,9 @@ FTM_RET	FTOM_CL_CGI_getSensorList
 		xRet = FTOM_CLIENT_EP_getAt(pClient, i, &xEPInfo);
 		if (xRet == FTM_RET_OK)
 		{
-			MESSAGE("%s|%08x|%s|%s|1\n", 
+			MESSAGE("%s|%s|%s|%s|1\n", 
 				xEPInfo.pDID,
-				xEPInfo.xEPID,
+				xEPInfo.pEPID,
 				FTM_EP_typeString(xEPInfo.xType),
 				xEPInfo.pName);
 		}
@@ -55,13 +55,25 @@ FTM_RET	FTOM_CL_CGI_getSensingList
 )
 {
 	FTM_RET		xRet;
-	FTM_ULONG	ulEPCount;
-	FTM_INT		i;
-	FTM_INT		nIndex;
 	FTM_EP_DATA_PTR	pData;
-	FTM_ULONG	ulMaxCount = 100;
+	FTM_ULONG	ulMaxCount = 10;
+	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 
-	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulEPCount);
+	if (nArgc < 2)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+	else if (nArgc == 3)
+	{
+		ulMaxCount = strtoul(pArgv[2], 0, 10);
+	}
+
+	strncpy(pEPID, pArgv[1], FTM_EPID_LEN+1);
+
+	FTM_EP		xEPInfo;
+	FTM_ULONG	ulIndex = 0;
+
+	xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xEPInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -73,33 +85,38 @@ FTM_RET	FTOM_CL_CGI_getSensingList
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	nIndex = 0;
-	for(i = 0 ; i < ulEPCount ; i++)
+	while(ulMaxCount > 0)
 	{
-		FTM_EP		xEPInfo;
 		FTM_ULONG	ulDataCount = 0;
 
-		xRet = FTOM_CLIENT_EP_getAt(pClient, i, &xEPInfo);
+		xRet = FTOM_CLIENT_EP_DATA_getList(	pClient, pEPID, ulIndex, pData, ulMaxCount, &ulDataCount);
 		if (xRet == FTM_RET_OK)
 		{
-			xRet = FTOM_CLIENT_EP_DATA_getList(	pClient, xEPInfo.xEPID, 0, pData, ulMaxCount, &ulDataCount);
-			if (xRet == FTM_RET_OK)
-			{
-				FTM_INT		j;
-				FTM_CHAR	pBuff[64];
+			FTM_INT		i;
+			FTM_CHAR	pBuff[128];
 
-				for(j = 0 ; j < ulDataCount ; j++)
-				{
-					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pData[i]);
-					MESSAGE("%d|%s|%08x|%s|%s|1234|run|0|1|123456|10|123456|123456|1\n", 
-						++nIndex,
-						xEPInfo.pDID,
-						xEPInfo.xEPID,
-						FTM_EP_typeString(xEPInfo.xType),
-						xEPInfo.pName);
-				}
+			for(i = 0 ; i < ulDataCount ; i++)
+			{
+				FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pData[i]);
+				MESSAGE("%d|%s|%s|%s|\"%s\"|1234|run|0|1|123456|10|123456|123456|1\n", 
+					++ulIndex,
+					xEPInfo.pDID,
+					xEPInfo.pEPID,
+					FTM_EP_typeString(xEPInfo.xType),
+					xEPInfo.pName);
 			}
+
 		}
+		else
+		{
+			MESSAGE("# EP[%s] get list error: %08x\n", xEPInfo.pEPID, xRet);
+		}
+
+		if (ulDataCount == 0)
+		{
+			break;
+		}
+		ulMaxCount -= ulDataCount;
 	}
 
 	FTM_MEM_free(pData);

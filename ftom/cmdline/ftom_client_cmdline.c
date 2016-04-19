@@ -165,6 +165,7 @@ FTM_RET FTOM_CLIENT_CL_request
 	write(nWriteFD, pReq, ulReqLen);
 	usleep(1);
 #if 0
+	FTM_INT	i;
 	MESSAGE("REQ : ");
 	for(i = 0 ; i < ulReqLen ; i++)
 	{

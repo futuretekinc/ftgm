@@ -901,6 +901,7 @@ FTM_RET	FTDMC_EP_DATA_get
 				nRespSize);
 	if (nRet != FTM_RET_OK)
 	{
+		TRACE("FTDMC_request error[%08x]\n", nRet);
 		FTM_MEM_free(pResp);
 		return	FTM_RET_ERROR;	
 	}

@@ -581,6 +581,7 @@ FTM_VOID_PTR	FTOM_SERVER_processPipe
 				xRet = FTOM_SERVER_serviceCall(pServer, pReq, nReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE);
 				if (xRet != FTM_RET_OK)
 				{
+					ERROR("PIPE Service call error[%08x:%08x]\n", pReq->xCmd, xRet);
 					pResp->xCmd = pReq->xCmd;
 					pResp->xRet = xRet;
 					pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
@@ -1119,6 +1120,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 	xRet = FTOM_getEPDataList(pServer->pOM, pReq->pEPID, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
 	if (xRet != FTM_RET_OK)
 	{
+		TRACE("EP[%s] get data list error[%08x]!\n", pReq->pEPID, xRet);
 		pResp->nCount = 0;
 	}
 
