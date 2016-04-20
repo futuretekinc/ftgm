@@ -80,3 +80,11 @@ GTAGS
 \#*#
 
 !*.conf
+
+ftdm/client/ftdmc
+ftom/cgi/ftom.cgi
+ftom/cgi/xmltest
+ftom/ftom
+mxml-2.9/mxmldoc
+mxml-2.9/mxmldoc-static
+mxml-2.9/testmxmli

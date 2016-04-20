@@ -11,6 +11,7 @@
 FTOM_CGI_COMMAND	pCmds[] =
 {
 	{	"ftom",		FTOM_CGI_main	},
+	{	"ftom.cgi",		FTOM_CGI_main	},
 	{	NULL,		NULL			}
 };
 
