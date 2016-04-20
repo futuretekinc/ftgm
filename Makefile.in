@@ -7,17 +7,23 @@ COMMON_CFLAGS=-c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftdm \
 				-I$(TOPDIR)/ftdm/client \
 				-I$(TOPDIR)/ftom/client \
+				-I$(TOPDIR)/ftom/cmdline \
 				-I$(TOPDIR)/libconfig-1.4.9/lib \
 				-I$(TOPDIR)/net-snmp-5.7.2/include \
-				-I$(TOPDIR)/sqlite-3.8.9
+				-I$(TOPDIR)/sqlite-3.8.9\
+				-I$(TOPDIR)/qdecoder-12.0.4/src\
+				-I$(TOPDIR)/mxml-2.9
 COMMON_LDFLAGS=-L. \
 				-L$(TOPDIR)/ftm \
 				-L$(TOPDIR)/ftdm \
 				-L$(TOPDIR)/ftdm/client \
 				-L$(TOPDIR)/ftom \
 				-L$(TOPDIR)/ftom/client \
+				-L$(TOPDIR)/ftom/cmdline \
 				-L$(TOPDIR)/sqlite-3.8.9/.libs \
-				-L$(TOPDIR)/mosquitto-1.4.1/lib
+				-L$(TOPDIR)/mosquitto-1.4.1/lib \
+				-L$(TOPDIR)/qdecoder-12.0.4/src \
+				-L$(TOPDIR)/mxml-2.9
 
 ifeq ($(TARGET),"FTM-50S")
 CC=armv5-linux-gcc

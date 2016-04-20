@@ -576,7 +576,8 @@ FTM_RET	FTOM_TASK_sync
 	{
 		return	xRet;	
 	}
-	
+
+	TRACE("Load Node Object : %lu\n", ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTM_NODE	xNodeInfo;
@@ -586,6 +587,7 @@ FTM_RET	FTOM_TASK_sync
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Can't get node info from DMC!\n");
+			exit(1);
 			continue;	
 		}
 
@@ -610,6 +612,7 @@ FTM_RET	FTOM_TASK_sync
 	xRet = FTDMC_EP_CLASS_count(&xDMC.xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("EP Class count get failed[%08x].\n", xRet);
 		return	xRet;	
 	}
 
@@ -636,8 +639,10 @@ FTM_RET	FTOM_TASK_sync
 	xRet = FTDMC_EP_count(&xDMC.xSession, 0, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("EP count get failed[%08x].\n", xRet);
 		return	xRet;	
 	}
+	TRACE("Load EP Object : %lu\n", ulCount);
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
@@ -648,15 +653,14 @@ FTM_RET	FTOM_TASK_sync
 		xRet = FTDMC_EP_getAt(&xDMC.xSession, i, &xEPInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTDMC_EP_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
-					xDMC.xSession.hSock, i, xRet);
+			ERROR("EP object get at %d failed[%08x]\n", i, xRet);
 			continue;
 		}
 
 		xRet = FTOM_EPM_createEP(pOM->pEPM, &xEPInfo, &pEP);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTOM_EP_create(xEP, &pNode) = %08lx\n", xRet);
+			ERROR("EP[%s] object creation failed[%08x]\n", xEPInfo.pEPID, xRet);
 			continue;	
 		}
 
@@ -671,6 +675,7 @@ FTM_RET	FTOM_TASK_sync
 	xRet = FTDMC_TRIGGER_count(&xDMC.xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Trigger count get failed[%08x].\n", xRet);
 		return	xRet;
 	}
 
@@ -696,6 +701,7 @@ FTM_RET	FTOM_TASK_sync
 	xRet = FTDMC_ACTION_count(&xDMC.xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Action count get failed[%08x].\n", xRet);
 		return	xRet;
 	}
 
@@ -721,6 +727,7 @@ FTM_RET	FTOM_TASK_sync
 	xRet = FTDMC_RULE_count(&xDMC.xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Rule count get failed[%08x].\n", xRet);
 		return	xRet;
 	}
 

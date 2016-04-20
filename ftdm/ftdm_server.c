@@ -713,7 +713,6 @@ FTM_RET	FTDMS_EP_getAt
 	FTDM_EP_PTR	pEP;
 
 	xRet = FTDM_EPM_getAt(pServer->pDM->pEPM, pReq->nIndex, &pEP);
-	
 	if (xRet == FTM_RET_OK)
 	{
 		FTDM_EP_get(pEP, &pResp->xInfo);
