@@ -7,7 +7,6 @@
 #include "ftom.h"
 #include "ftom_shell_cmds.h"
 
-extern char *program_invocation_short_name;
 extern	FTM_SHELL_CMD	FTOM_shellCmds[];
 extern	FTM_ULONG		FTOM_shellCmdCount;
 
@@ -20,7 +19,7 @@ int main(int nArgc, char *pArgv[])
 	FTM_CHAR	pConfigFileName[1024];
 	FTOM_PTR	pOM;
 
-	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
+	sprintf(pConfigFileName, "%s.conf", FTOM_getProgramName());
 
 	while((nOpt = getopt(nArgc, pArgv, "c:Dd:?")) != -1)
 	{

@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include "ftm.h"
+#include "ftm_shared_memory.h"
 #include "ftom_client.h"
 #include "ftom_client_cmdline.h"
 #include "ftom_params.h"
@@ -23,7 +24,7 @@ FTM_RET	FTOM_CLIENT_CL_init
 	pClient->xCommon.fLoadConfig = (FTOM_CLIENT_LOAD_CONFIG)FTOM_CLIENT_CL_loadConfig;
 	pClient->xCommon.fLoadConfigFromFile = (FTOM_CLIENT_LOAD_CONFIG_FROM_FILE)FTOM_CLIENT_CL_loadConfigFromFile;
 	//pClient->xCommon.fSetNotifyCallback = (FTOM_CLIENT_SET_NOTIFY_CALLBACK)FTOM_CLIENT_CL_setNotifyCallback;
-	pClient->xCommon.fRequest = (FTOM_CLIENT_REQUEST)FTOM_CLIENT_CL_request;	
+	pClient->xCommon.fRequest = (FTOM_CLIENT_REQUEST)FTOM_CLIENT_CL_requestSM;	
 
 	return	FTM_RET_OK;
 }
@@ -124,7 +125,7 @@ FTM_RET	FTOM_CLIENT_CL_loadConfigFromFile
 /*****************************************************************
  * Internal Functions
  *****************************************************************/
-FTM_RET FTOM_CLIENT_CL_request
+FTM_RET FTOM_CLIENT_CL_requestPipe
 (
 	FTOM_CLIENT_CL_PTR		pClient, 
 	FTOM_REQ_PARAMS_PTR		pReq,
@@ -207,6 +208,48 @@ FTM_RET FTOM_CLIENT_CL_request
 
 	close(nReadFD);
 	close(nWriteFD);
+
+	return	xRet;
+}
+
+
+/*****************************************************************
+ * Internal Functions
+ *****************************************************************/
+FTM_RET FTOM_CLIENT_CL_requestSM
+(
+	FTOM_CLIENT_CL_PTR		pClient, 
+	FTOM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
+	FTOM_RESP_PARAMS_PTR	pResp,
+	FTM_ULONG				ulMaxRespLen,
+	FTM_ULONG_PTR			pulRespLen
+)
+{
+	FTM_RET	xRet;
+	FTM_SMQ_PTR	pRxQ, pTxQ;
+
+	xRet = FTM_SMQ_create(1234, 2048, 50, &pTxQ);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTM_SMQ_create(1235, 2048, 50, &pRxQ);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_SMQ_destroy(&pTxQ);
+		return	xRet;	
+	}
+
+	xRet = FTM_SMQ_push(pTxQ, pReq, ulReqLen, 1000000);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_SMQ_pop(pRxQ, pResp, ulMaxRespLen, pulRespLen, 1000000);
+	}
+
+	FTM_SMQ_destroy(&pTxQ);
+	FTM_SMQ_destroy(&pRxQ);
 
 	return	xRet;
 }

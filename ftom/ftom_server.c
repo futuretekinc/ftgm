@@ -13,6 +13,7 @@
 #include "ftom_ep.h"
 #include "ftom_ep_management.h"
 #include "ftom_server.h"
+#include "ftm_shared_memory.h"
 #include "ftom_server_cmd.h"
 
 
@@ -36,6 +37,12 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler
 
 static
 FTM_VOID_PTR	FTOM_SERVER_processPipe
+(
+	FTM_VOID_PTR	pData
+);
+
+static
+FTM_VOID_PTR	FTOM_SERVER_processSM
 (
 	FTM_VOID_PTR	pData
 );
@@ -364,7 +371,8 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 	FTOM_SERVER_PTR 	pServer = (FTOM_SERVER_PTR)pData;
 	FTM_INT				nRet;
-	pthread_t			xThread;
+	pthread_t			xProcessPipe;
+	pthread_t			xProcessSM;
 	struct sockaddr_in	xServerAddr, xClientAddr;
 
 
@@ -396,7 +404,8 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 	pServer->bStop = FTM_FALSE;
 	
-	pthread_create(&xThread, NULL, FTOM_SERVER_processPipe, pServer);
+	pthread_create(&xProcessPipe, NULL, FTOM_SERVER_processPipe, pServer);
+	pthread_create(&xProcessSM, NULL, FTOM_SERVER_processSM, pServer);
 
 	while(!pServer->bStop)
 	{
@@ -440,6 +449,9 @@ FTM_VOID_PTR FTOM_SERVER_process
 			}
 		}
 	}
+
+	pthread_join(xProcessPipe, NULL);
+	pthread_join(xProcessSM, NULL);
 
 	return	FTM_RET_OK;
 }
@@ -605,6 +617,83 @@ FTM_VOID_PTR	FTOM_SERVER_processPipe
 
 	close(nReadFD);
 	close(nWriteFD);
+
+	FTM_MEM_free(pReq);
+	FTM_MEM_free(pResp);
+
+	return	0;
+}
+
+FTM_VOID_PTR	FTOM_SERVER_processSM
+(
+	FTM_VOID_PTR	pData
+)
+{
+	ASSERT(pData != NULL);
+	FTM_RET				xRet;
+	FTM_SMQ_PTR			pRxQ;
+	FTM_SMQ_PTR			pTxQ;
+	FTOM_SERVER_PTR 	pServer = (FTOM_SERVER_PTR)pData;
+	FTOM_REQ_PARAMS_PTR		pReq;
+	FTOM_RESP_PARAMS_PTR	pResp;
+
+	pReq	= (FTOM_REQ_PARAMS_PTR)FTM_MEM_malloc(FTOM_DEFAULT_PACKET_SIZE);
+	if (pReq == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	0;	
+	}
+
+	pResp 	= (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(FTOM_DEFAULT_PACKET_SIZE);
+	if (pResp == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		FTM_MEM_free(pReq);
+		return	0;	
+	}
+
+	xRet = FTM_SMQ_create(1234, 2048, 50, &pRxQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("SMQ creation failed.[%08x]\n", xRet);
+		return	0;	
+	}
+
+	xRet = FTM_SMQ_create(1235, 2048, 50, &pTxQ);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_SMQ_destroy(&pRxQ);
+		ERROR("SMQ creation failed.[%08x]\n", xRet);
+		return	0;	
+	}
+
+	
+	while(!pServer->bStop)
+	{
+		FTM_ULONG	ulReqLen = 0;
+
+		xRet = FTM_SMQ_pop(pRxQ, pReq, FTOM_DEFAULT_PACKET_SIZE, &ulReqLen, 100000);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTOM_SERVER_serviceCall(pServer, pReq, ulReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("PIPE Service call error[%08x:%08x]\n", pReq->xCmd, xRet);
+				pResp->xCmd = pReq->xCmd;
+				pResp->xRet = xRet;
+				pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
+			}
+
+			xRet = FTM_SMQ_push(pTxQ, pResp, pResp->ulLen, 100000);
+		}
+		else
+		{
+			TRACE("Timeout!\n");	
+		}
+	}
+
+	FTM_SMQ_destroy(&pTxQ);
+	FTM_SMQ_destroy(&pRxQ);
 
 	FTM_MEM_free(pReq);
 	FTM_MEM_free(pResp);

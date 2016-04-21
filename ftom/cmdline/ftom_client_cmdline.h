@@ -84,5 +84,15 @@ FTM_RET FTOM_CLIENT_CL_request
 	FTM_ULONG_PTR			pulRespLen
 );
 
+FTM_RET FTOM_CLIENT_CL_requestSM
+(
+	FTOM_CLIENT_CL_PTR		pClient, 
+	FTOM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
+	FTOM_RESP_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen,
+	FTM_ULONG_PTR			pulRespLen
+);
+
 #endif
 

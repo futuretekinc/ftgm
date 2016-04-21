@@ -214,7 +214,28 @@ static 	FTOM_SERVICE	pServices[] =
 	},
 };
 
-FTM_RET	FTOM_create(FTOM_PTR _PTR_ ppOM)
+extern char *program_invocation_short_name;
+
+FTM_CHAR_PTR	FTOM_getProgramName
+(
+	FTM_VOID
+)
+{
+	return	program_invocation_short_name;
+}
+
+pid_t	FTOM_getPID
+(
+	FTM_VOID
+)
+{
+	return	getpid();
+}
+
+FTM_RET	FTOM_create
+(
+	FTOM_PTR _PTR_ ppOM
+)
 {
 	ASSERT(ppOM != NULL);
 	
@@ -760,6 +781,7 @@ FTM_RET	FTOM_TASK_start(FTOM_PTR pOM)
 
 	FTM_ULONG	i, ulCount;
 	
+	TRACE("Start FTOM!\n");
 	FTOM_RULEM_start(pOM->pRuleM);
 	FTOM_ACTIONM_start(pOM->pActionM);
 	FTOM_TRIGGERM_start(pOM->pTriggerM);
@@ -800,7 +822,7 @@ FTM_RET	FTOM_TASK_processing
 	while(!pOM->bStop)
 	{
 		FTM_ULONG	ulRemainTime;
-
+		
 		FTM_TIMER_remain(&xLoopTimer, &ulRemainTime);
 		xRet = FTOM_MSGQ_timedPop(pOM->pMsgQ, ulRemainTime, &pMsg);
 		if (xRet == FTM_RET_OK)

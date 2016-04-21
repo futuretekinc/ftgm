@@ -53,6 +53,15 @@ typedef	struct FTOM_STRUCT
 	FTM_VOID_PTR				pOnMessageData[FTOM_MSG_TYPE_MAX];
 }	FTOM, _PTR_ FTOM_PTR;
 
+FTM_CHAR_PTR	FTOM_getProgramName
+(
+	FTM_VOID
+);
+
+pid_t	FTOM_getPID
+(
+	FTM_VOID
+);
 
 FTM_RET	FTOM_create
 (
