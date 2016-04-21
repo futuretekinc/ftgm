@@ -412,8 +412,11 @@ FTM_VOID_PTR FTOM_SERVER_process
 		FTM_INT	hClient;
 		FTM_INT	nValue;
 		FTM_INT	nSockAddrIulLen = sizeof(struct sockaddr_in);	
-		struct timespec			xTimeout = { .tv_sec = 2, .tv_nsec = 0};
+		struct timespec			xTimeout ;
 
+		clock_gettime(CLOCK_REALTIME, &xTimeout);
+
+		xTimeout.tv_sec += 2;
 		if (sem_timedwait(&pServer->xLock, &xTimeout) == 0)
 		{
 			sem_getvalue(&pServer->xLock, &nValue);
@@ -631,8 +634,7 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 {
 	ASSERT(pData != NULL);
 	FTM_RET				xRet;
-	FTM_SMQ_PTR			pRxQ;
-	FTM_SMQ_PTR			pTxQ;
+	FTM_SMP_PTR			pSMP;
 	FTOM_SERVER_PTR 	pServer = (FTOM_SERVER_PTR)pData;
 	FTOM_REQ_PARAMS_PTR		pReq;
 	FTOM_RESP_PARAMS_PTR	pResp;
@@ -652,27 +654,18 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 		return	0;	
 	}
 
-	xRet = FTM_SMQ_create(1234, 2048, 50, &pRxQ);
+	xRet = FTM_SMP_createServer(1234, &pSMP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SMQ creation failed.[%08x]\n", xRet);
+		ERROR("SMP creation failed.[%08x]\n", xRet);
 		return	0;	
 	}
 
-	xRet = FTM_SMQ_create(1235, 2048, 50, &pTxQ);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_SMQ_destroy(&pRxQ);
-		ERROR("SMQ creation failed.[%08x]\n", xRet);
-		return	0;	
-	}
-
-	
 	while(!pServer->bStop)
 	{
 		FTM_ULONG	ulReqLen = 0;
 
-		xRet = FTM_SMQ_pop(pRxQ, pReq, FTOM_DEFAULT_PACKET_SIZE, &ulReqLen, 100000);
+		xRet = FTM_SMP_receiveReq(pSMP, pReq, FTOM_DEFAULT_PACKET_SIZE, &ulReqLen, 1000000);
 		if (xRet == FTM_RET_OK)
 		{
 			xRet = FTOM_SERVER_serviceCall(pServer, pReq, ulReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE);
@@ -684,7 +677,7 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 				pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
 			}
 
-			xRet = FTM_SMQ_push(pTxQ, pResp, pResp->ulLen, 100000);
+			xRet = FTM_SMP_sendResp(pSMP, pResp, pResp->ulLen, 100000);
 		}
 		else
 		{
@@ -692,8 +685,7 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 		}
 	}
 
-	FTM_SMQ_destroy(&pTxQ);
-	FTM_SMQ_destroy(&pRxQ);
+	FTM_SMP_destroy(&pSMP);
 
 	FTM_MEM_free(pReq);
 	FTM_MEM_free(pResp);

@@ -5,48 +5,54 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 CLIENT	Makefile	/^CLIENT=ftomc$/;"	m
-CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lconfig -lpthread $/;"	m
+CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -L.\/ -lftomcl -lftomc -lftm -lconfig -lpthread $/;"	m
 CLIENT_OBJS	Makefile	/^CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)$/;"	m
-CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c\\$/;"	m
-FTOM_CLIENT_CL	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL, _PTR_ FTOM_CLIENT_CL_PTR;$/;"	t	typeref:struct:__anon3
-FTOM_CLIENT_CL_CONFIG	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL_CONFIG, _PTR_ FTOM_CLIENT_CL_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
-FTOM_CLIENT_CL_CONFIG_PTR	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL_CONFIG, _PTR_ FTOM_CLIENT_CL_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
-FTOM_CLIENT_CL_PTR	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL, _PTR_ FTOM_CLIENT_CL_PTR;$/;"	t	typeref:struct:__anon3
+CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c$/;"	m
+FTOM_CLIENT_CL	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL, _PTR_ FTOM_CLIENT_CL_PTR;$/;"	t	typeref:struct:__anon2
+FTOM_CLIENT_CL_CONFIG	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL_CONFIG, _PTR_ FTOM_CLIENT_CL_CONFIG_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_CLIENT_CL_CONFIG_PTR	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL_CONFIG, _PTR_ FTOM_CLIENT_CL_CONFIG_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_CLIENT_CL_PTR	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL, _PTR_ FTOM_CLIENT_CL_PTR;$/;"	t	typeref:struct:__anon2
 FTOM_CLIENT_CL_create	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_create$/;"	f
 FTOM_CLIENT_CL_destroy	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_destroy$/;"	f
 FTOM_CLIENT_CL_final	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_final$/;"	f
 FTOM_CLIENT_CL_init	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_init$/;"	f
 FTOM_CLIENT_CL_loadConfig	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_loadConfig$/;"	f
 FTOM_CLIENT_CL_loadConfigFromFile	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_loadConfigFromFile$/;"	f
-FTOM_CLIENT_CL_request	ftom_client_cmdline.c	/^FTM_RET FTOM_CLIENT_CL_request$/;"	f
+FTOM_CLIENT_CL_requestPipe	ftom_client_cmdline.c	/^FTM_RET FTOM_CLIENT_CL_requestPipe$/;"	f
+FTOM_CLIENT_CL_requestSM	ftom_client_cmdline.c	/^FTM_RET FTOM_CLIENT_CL_requestSM$/;"	f
 FTOM_CLIENT_CL_start	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_start$/;"	f
 FTOM_CLIENT_CL_stop	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_stop$/;"	f
-FTOM_CL_CMD	main.c	/^}	FTOM_CL_CMD, _PTR_ FTOM_CL_CMD_PTR;$/;"	t	typeref:struct:__anon1	file:
-FTOM_CL_CMD_FUNCTION	main.c	/^typedef	FTM_RET	(*FTOM_CL_CMD_FUNCTION)$/;"	t	file:
-FTOM_CL_CMD_PTR	main.c	/^}	FTOM_CL_CMD, _PTR_ FTOM_CL_CMD_PTR;$/;"	t	typeref:struct:__anon1	file:
-FTOM_CL_EP	main.c	12;"	d	file:
-FTOM_CL_EP_DATA_getLast	main.c	/^FTM_RET	FTOM_CL_EP_DATA_getLast$/;"	f
-FTOM_CL_EP_DATA_getList	main.c	/^FTM_RET	FTOM_CL_EP_DATA_getList$/;"	f
-FTOM_CL_EP_count	main.c	/^FTM_RET	FTOM_CL_EP_count$/;"	f
-FTOM_CL_EP_destroy	main.c	/^FTM_RET	FTOM_CL_EP_destroy$/;"	f
-FTOM_CL_EP_get	main.c	/^FTM_RET	FTOM_CL_EP_get$/;"	f
-FTOM_CL_EP_getAt	main.c	/^FTM_RET	FTOM_CL_EP_getAt$/;"	f
-FTOM_CL_NODE	main.c	11;"	d	file:
-FTOM_CL_NODE_count	main.c	/^FTM_RET	FTOM_CL_NODE_count$/;"	f
-FTOM_CL_NODE_create	main.c	/^FTM_RET	FTOM_CL_NODE_create$/;"	f
-FTOM_CL_NODE_destroy	main.c	/^FTM_RET	FTOM_CL_NODE_destroy$/;"	f
-FTOM_CL_NODE_get	main.c	/^FTM_RET	FTOM_CL_NODE_get$/;"	f
-FTOM_CL_NODE_getAt	main.c	/^FTM_RET	FTOM_CL_NODE_getAt$/;"	f
+FTOM_CL_CGI_getSensingList	cmd_cgi.c	/^FTM_RET	FTOM_CL_CGI_getSensingList$/;"	f
+FTOM_CL_CGI_getSensorList	cmd_cgi.c	/^FTM_RET	FTOM_CL_CGI_getSensorList$/;"	f
+FTOM_CL_CMD	ftom_cl_cmd.h	/^}	FTOM_CL_CMD, _PTR_ FTOM_CL_CMD_PTR;$/;"	t	typeref:struct:__anon3
+FTOM_CL_CMD_FUNCTION	ftom_cl_cmd.h	/^typedef	FTM_RET	(*FTOM_CL_CMD_FUNCTION)$/;"	t
+FTOM_CL_CMD_PTR	ftom_cl_cmd.h	/^}	FTOM_CL_CMD, _PTR_ FTOM_CL_CMD_PTR;$/;"	t	typeref:struct:__anon3
+FTOM_CL_EP_DATA_getLast	cmd_data.c	/^FTM_RET	FTOM_CL_EP_DATA_getLast$/;"	f
+FTOM_CL_EP_DATA_getList	cmd_data.c	/^FTM_RET	FTOM_CL_EP_DATA_getList$/;"	f
+FTOM_CL_EP_count	cmd_ep.c	/^FTM_RET	FTOM_CL_EP_count$/;"	f
+FTOM_CL_EP_destroy	cmd_ep.c	/^FTM_RET	FTOM_CL_EP_destroy$/;"	f
+FTOM_CL_EP_get	cmd_ep.c	/^FTM_RET	FTOM_CL_EP_get$/;"	f
+FTOM_CL_EP_getAt	cmd_ep.c	/^FTM_RET	FTOM_CL_EP_getAt$/;"	f
+FTOM_CL_NODE_count	cmd_node.c	/^FTM_RET	FTOM_CL_NODE_count$/;"	f
+FTOM_CL_NODE_create	cmd_node.c	/^FTM_RET	FTOM_CL_NODE_create$/;"	f
+FTOM_CL_NODE_destroy	cmd_node.c	/^FTM_RET	FTOM_CL_NODE_destroy$/;"	f
+FTOM_CL_NODE_get	cmd_node.c	/^FTM_RET	FTOM_CL_NODE_get$/;"	f
+FTOM_CL_NODE_getAt	cmd_node.c	/^FTM_RET	FTOM_CL_NODE_getAt$/;"	f
+LIB_FTOMCL	Makefile	/^LIB_FTOMCL=ftomcl$/;"	m
+LIB_FTOMCL_OBJS	Makefile	/^LIB_FTOMCL_OBJS=$(LIB_FTOMCL_SRCS:.c=.o)$/;"	m
+LIB_FTOMCL_SRCS	Makefile	/^LIB_FTOMCL_SRCS= ftom_client_cmdline.c\\$/;"	m
 TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
+_FTOM_CL_CMD_H_	ftom_cl_cmd.h	2;"	d
 __FTOM_CLIENT_CL_H__	ftom_client_cmdline.h	2;"	d
-fService	main.c	/^	FTOM_CL_CMD_FUNCTION	fService;$/;"	m	struct:__anon1	file:
+fService	ftom_cl_cmd.h	/^	FTOM_CL_CMD_FUNCTION	fService;$/;"	m	struct:__anon3
 main	main.c	/^int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])$/;"	f
+pCGICmds	main.c	/^FTOM_CL_CMD pCGICmds[] = $/;"	v
 pEPCmds	main.c	/^FTOM_CL_CMD	pEPCmds[] =$/;"	v
 pEPDataCmds	main.c	/^FTOM_CL_CMD	pEPDataCmds[] =$/;"	v
-pName	main.c	/^	FTM_CHAR_PTR			pName;$/;"	m	struct:__anon1	file:
+pName	ftom_cl_cmd.h	/^	FTM_CHAR_PTR			pName;$/;"	m	struct:__anon3
 pNodeCmds	main.c	/^FTOM_CL_CMD	pNodeCmds[] =$/;"	v
-pRead	ftom_client_cmdline.h	/^	FTM_CHAR_PTR		pRead[1024];$/;"	m	struct:__anon2
+pRead	ftom_client_cmdline.h	/^	FTM_CHAR_PTR		pRead[1024];$/;"	m	struct:__anon1
 pReqBuff	main.c	/^FTM_CHAR	pReqBuff[FTOM_DEFAULT_PACKET_SIZE];$/;"	v
 pRespBuff	main.c	/^FTM_CHAR	pRespBuff[FTOM_DEFAULT_PACKET_SIZE];$/;"	v
-xCommon	ftom_client_cmdline.h	/^	FTOM_CLIENT				xCommon;$/;"	m	struct:__anon3
-xConfig	ftom_client_cmdline.h	/^	FTOM_CLIENT_CL_CONFIG	xConfig;$/;"	m	struct:__anon3
+xCommon	ftom_client_cmdline.h	/^	FTOM_CLIENT				xCommon;$/;"	m	struct:__anon2
+xConfig	ftom_client_cmdline.h	/^	FTOM_CLIENT_CL_CONFIG	xConfig;$/;"	m	struct:__anon2

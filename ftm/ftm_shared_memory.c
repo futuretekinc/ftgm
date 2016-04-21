@@ -355,21 +355,332 @@ FTM_RET	FTM_SMQ_print
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_SMP_create
+FTM_RET	FTM_SMP_createServer
 (
 	key_t		xKey,
 	FTM_SMP_PTR	_PTR_	ppSMP
 )
 {
+	ASSERT(ppSMP != NULL);
+	
+	FTM_RET			xRet;
+	FTM_SMP_PTR		pSMP;
+
+	pSMP = (FTM_SMP_PTR)FTM_MEM_malloc(sizeof(FTM_SMP));
+	if (pSMP == NULL)
+	{
+		ERROR("Not enouch memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pSMP->xKey = xKey;
+	pSMP->nShmID = shmget(pSMP->xKey, sizeof(FTM_SMP_BLOCK), IPC_CREAT | 0666);
+	if (pSMP->nShmID < 0)
+	{
+		ERROR("shared memory creation failed.\n");	
+		xRet = FTM_RET_CANT_CREATE_SM;
+		goto error;
+	}
+		
+	pSMP->pBlock = (FTM_SMP_BLOCK_PTR)shmat(pSMP->nShmID, NULL, 0);
+	if ((FTM_INT)pSMP->pBlock == -1)
+	{
+		ERROR("Shared memory don't attached the segment to our space.\n");
+		shmctl(pSMP->nShmID, IPC_RMID, (struct shmid_ds *)0);
+		xRet = FTM_RET_CANT_CREATE_SM;
+		goto error;
+	}
+
+	memset(pSMP->pBlock, 0, sizeof(FTM_SMP_BLOCK));
+
+	FTM_INT	i = 0;
+	do 
+	{
+		sprintf(pSMP->pBlock->pLockerName, "ftom.smp.%d", pSMP->xKey + i);
+		pSMP->pLocker = sem_open(pSMP->pBlock->pLockerName, O_CREAT, 0777, 1);
+		i++;
+	} 
+	while (i < 10 && pSMP->pLocker == SEM_FAILED);
+	
+	if (pSMP->pLocker == SEM_FAILED)
+	{
+		shmctl(pSMP->nShmID, IPC_RMID, (struct shmid_ds *)0);
+		ERROR("Locker creation failed.\n");
+		xRet = FTM_RET_CANT_CREATE_SEMAPHORE;
+		goto error;
+	}
+
+	pSMP->pBlock->ulReference = 1;
+	sem_init(&pSMP->pBlock->xNotUse, 1, 1);
+	sem_init(&pSMP->pBlock->xReq, 2, 0);
+	sem_init(&pSMP->pBlock->xResp, 3, 0);
+
+	TRACE("SMP creation done.\n");
+	*ppSMP = pSMP;
 
 	return	FTM_RET_OK;
+
+error:
+	if (pSMP != NULL)
+	{
+		FTM_MEM_free(pSMP);	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTM_SMP_createClient
+(
+	key_t		xKey,
+	FTM_SMP_PTR	_PTR_	ppSMP
+)
+{
+	ASSERT(ppSMP != NULL);
+
+	FTM_RET			xRet;
+	FTM_SMP_PTR		pSMP;
+
+	pSMP = (FTM_SMP_PTR)FTM_MEM_malloc(sizeof(FTM_SMP));
+	if (pSMP == NULL)
+	{
+		ERROR("Not enouch memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pSMP->xKey = xKey;
+	pSMP->nShmID = shmget(pSMP->xKey, sizeof(FTM_SMP_BLOCK), 0666);
+	if (pSMP->nShmID < 0)
+	{
+		ERROR("shared memory creation failed.\n");	
+		xRet = FTM_RET_SM_IS_NOT_EXIST;
+		goto error;
+	}
+		
+	pSMP->pBlock = (FTM_SMP_BLOCK_PTR)shmat(pSMP->nShmID, NULL, 0);
+	if ((FTM_INT)pSMP->pBlock == -1)
+	{
+		ERROR("Shared memory don't attached the segment to our space.\n");
+		xRet = FTM_RET_SM_IS_NOT_EXIST;
+		goto error;
+	}
+
+	sprintf(pSMP->pBlock->pLockerName, "ftom.smp.%d", pSMP->xKey);
+	pSMP->pLocker = sem_open(pSMP->pBlock->pLockerName, 0, 0777, 0);
+	if (pSMP->pLocker == SEM_FAILED)
+	{
+		ERROR("Can't open locker!\n");
+		xRet = FTM_RET_SM_IS_NOT_EXIST;
+		goto error;
+	}
+
+	pSMP->pBlock->ulReference++;
+
+	*ppSMP = pSMP;
+
+	return	FTM_RET_OK;
+
+error:
+	if (pSMP != NULL)
+	{
+		FTM_MEM_free(pSMP);	
+	}
+
+	return	xRet;
 }
 
 
 FTM_RET	FTM_SMP_destroy
 (
+	FTM_SMP_PTR	_PTR_ ppSMP
+)
+{
+	ASSERT(ppSMP != NULL);
+
+	sem_wait((*ppSMP)->pLocker);
+	--(*ppSMP)->pBlock->ulReference;
+	sem_post((*ppSMP)->pLocker);
+
+	if ((*ppSMP)->pBlock->ulReference == 0)
+	{
+		sem_destroy(&(*ppSMP)->pBlock->xReq);
+		sem_destroy(&(*ppSMP)->pBlock->xResp);
+
+		sem_close((*ppSMP)->pLocker);
+		(*ppSMP)->pLocker = NULL;
+
+		shmctl((*ppSMP)->nShmID, IPC_RMID, (struct shmid_ds *)0);
+	}
+
+	FTM_MEM_free(*ppSMP);
+
+	*ppSMP = NULL;
+
+	return	FTM_RET_OK;
+}
+
+
+FTM_RET	FTM_SMP_call
+(
+	FTM_SMP_PTR		pSMP,
+	FTM_VOID_PTR	pReqData,
+	FTM_ULONG		ulReqLen,
+	FTM_VOID_PTR	pRespBuff,
+	FTM_ULONG		ulRespBuffLen,
+	FTM_ULONG_PTR	pulRespLen,
+	FTM_ULONG		ulTimeout
+)
+{
+	ASSERT(pSMP != NULL);
+
+	FTM_RET	xRet = FTM_RET_OK;
+	FTM_INT	nRet;
+	struct timespec	xTimeout;
+
+	
+	clock_gettime(CLOCK_REALTIME, &xTimeout);
+	xTimeout.tv_nsec = xTimeout.tv_nsec + ulTimeout*1000;
+	xTimeout.tv_sec = xTimeout.tv_sec + xTimeout.tv_nsec / 1000000000;
+	xTimeout.tv_nsec = xTimeout.tv_nsec % 1000000000;
+	
+	nRet = sem_timedwait(&pSMP->pBlock->xNotUse, &xTimeout);
+	if (nRet != 0)
+	{
+		xRet = FTM_RET_TIMEOUT;	
+		goto finish;
+	}
+
+	nRet = sem_timedwait(pSMP->pLocker, &xTimeout);
+	if (nRet != 0)
+	{
+		xRet = FTM_RET_TIMEOUT;	
+		goto error;
+	}
+
+	memcpy(pSMP->pBlock->pBuff, pReqData, ulReqLen);
+	pSMP->pBlock->ulReqLen = ulReqLen;
+	sem_post(&pSMP->pBlock->xReq);
+
+	sem_post(pSMP->pLocker);
+
+	nRet = sem_timedwait(&pSMP->pBlock->xResp, &xTimeout);
+	if (nRet != 0)
+	{
+		xRet = FTM_RET_TIMEOUT;	
+		goto error;
+	}
+
+	nRet = sem_timedwait(pSMP->pLocker, &xTimeout);
+	if (nRet != 0)
+	{
+		xRet = FTM_RET_TIMEOUT;	
+		goto error;
+	}
+
+	memcpy(pRespBuff, pSMP->pBlock->pBuff, pSMP->pBlock->ulRespLen);
+	*pulRespLen = pSMP->pBlock->ulRespLen;
+
+	sem_post(pSMP->pLocker);
+
+error:
+	sem_post(&pSMP->pBlock->xNotUse);
+
+finish:
+
+	return	xRet;
+}
+
+FTM_RET	FTM_SMP_receiveReq
+(
+	FTM_SMP_PTR		pSMP,
+	FTM_VOID_PTR	pReqBuff,
+	FTM_ULONG		ulBuffLen,
+	FTM_ULONG_PTR	pulReqLen,
+	FTM_ULONG		ulTimeout
+)
+{
+	ASSERT(pSMP != NULL);
+	
+	struct timespec	xTimeout;
+	FTM_INT	nRet;
+
+	clock_gettime(CLOCK_REALTIME, &xTimeout);
+	xTimeout.tv_nsec = xTimeout.tv_nsec + ulTimeout*1000;
+	xTimeout.tv_sec = xTimeout.tv_sec + xTimeout.tv_nsec / 1000000000;
+	xTimeout.tv_nsec = xTimeout.tv_nsec % 1000000000;
+
+	nRet = sem_timedwait(&pSMP->pBlock->xReq, &xTimeout);
+	if (nRet != 0)
+	{
+		return	FTM_RET_TIMEOUT;	
+	}
+
+	nRet = sem_timedwait(pSMP->pLocker, &xTimeout);
+	if (nRet != 0)
+	{
+		return	FTM_RET_TIMEOUT;	
+	}
+
+	memcpy(pReqBuff, pSMP->pBlock->pBuff, pSMP->pBlock->ulReqLen);
+	*pulReqLen = pSMP->pBlock->ulReqLen;
+
+	sem_post(pSMP->pLocker);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_SMP_sendResp
+(
+	FTM_SMP_PTR		pSMP,
+	FTM_VOID_PTR	pRespData,
+	FTM_ULONG		ulDataLen,
+	FTM_ULONG		ulTimeout
+)
+{
+	ASSERT(pSMP != NULL);
+	
+	struct timespec	xTimeout;
+	FTM_INT	nRet;
+
+	clock_gettime(CLOCK_REALTIME, &xTimeout);
+	xTimeout.tv_nsec = xTimeout.tv_nsec + ulTimeout*1000;
+	xTimeout.tv_sec = xTimeout.tv_sec + xTimeout.tv_nsec / 1000000000;
+	xTimeout.tv_nsec = xTimeout.tv_nsec % 1000000000;
+
+	nRet = sem_timedwait(pSMP->pLocker, &xTimeout);
+	if (nRet != 0)
+	{
+		return	FTM_RET_TIMEOUT;	
+	}
+
+	memcpy(pSMP->pBlock->pBuff, pRespData, ulDataLen);
+	pSMP->pBlock->ulRespLen = ulDataLen;
+	sem_post(&pSMP->pBlock->xResp);
+
+	sem_post(pSMP->pLocker);
+
+	return	FTM_RET_OK;
+}
+
+
+FTM_RET	FTM_SMP_print
+(
 	FTM_SMP_PTR	pSMP
 )
 {
+	FTM_INT	nValue;
+
+	MESSAGE("%16s : %08x\n",	"Key", 	pSMP->xKey);
+	MESSAGE("%16s : %08x\n",	"ID", 	pSMP->nShmID);
+	MESSAGE("%16s : %08x\n",	"Locker", pSMP->pLocker);
+
+	MESSAGE("%16s : %s\n", 		"Name", pSMP->pBlock->pLockerName);
+	sem_getvalue(&pSMP->pBlock->xReq, &nValue);
+	MESSAGE("%16s : %d\n",		"Req",	nValue); 
+	sem_getvalue(&pSMP->pBlock->xResp, &nValue);
+	MESSAGE("%16s : %d\n",		"Resp",	nValue); 
+	MESSAGE("%16s : %d\n", 		"Reference", pSMP->pBlock->ulReference);
+	MESSAGE("%16s : %d\n", 		"Req Length", pSMP->pBlock->ulReqLen);
+	MESSAGE("%16s : %d\n", 		"Resp Length",pSMP->pBlock->ulRespLen);
+
 	return	FTM_RET_OK;
 }

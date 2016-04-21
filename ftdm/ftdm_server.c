@@ -265,8 +265,10 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 	FTDM_SESSION_PTR		pSession= (FTDM_SESSION_PTR)pData;
 	FTDM_REQ_PARAMS_PTR		pReq 	= (FTDM_REQ_PARAMS_PTR)pSession->pReqBuff;
 	FTDM_RESP_PARAMS_PTR	pResp 	= (FTDM_RESP_PARAMS_PTR)pSession->pRespBuff;
-	struct timespec			xTimeout = { .tv_sec = 2, .tv_nsec = 0};
+	struct timespec			xTimeout;
 
+	clock_gettime(CLOCK_REALTIME, &xTimeout);
+	xTimeout.tv_sec += 2;
 	if (sem_timedwait(&pSession->pServer->xSemaphore, &xTimeout) < 0)
 	{
 		TRACE("The session(%08x) was closed\n", pSession->hSocket);

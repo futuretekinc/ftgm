@@ -227,29 +227,18 @@ FTM_RET FTOM_CLIENT_CL_requestSM
 )
 {
 	FTM_RET	xRet;
-	FTM_SMQ_PTR	pRxQ, pTxQ;
+	FTM_SMP_PTR	pSMP;
 
-	xRet = FTM_SMQ_create(1234, 2048, 50, &pTxQ);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	xRet = FTM_SMQ_create(1235, 2048, 50, &pRxQ);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_SMQ_destroy(&pTxQ);
-		return	xRet;	
-	}
-
-	xRet = FTM_SMQ_push(pTxQ, pReq, ulReqLen, 1000000);
+	xRet = FTM_SMP_createClient(1234, &pSMP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTM_SMQ_pop(pRxQ, pResp, ulMaxRespLen, pulRespLen, 1000000);
+		xRet = FTM_SMP_call(pSMP, pReq, ulReqLen, pResp, ulMaxRespLen, pulRespLen, 1000000);
+		FTM_SMP_destroy(&pSMP);
 	}
-
-	FTM_SMQ_destroy(&pTxQ);
-	FTM_SMQ_destroy(&pRxQ);
+	else
+	{
+		TRACE("Can't create SMP!\n");	
+	}
 
 	return	xRet;
 }

@@ -9,34 +9,33 @@ int	nKey = 1235;
 int main(int argc, char *argv[])
 {
 	FTM_RET	xRet;
-	FTM_SMP_PTR	pSMP;
+	FTM_SMQ_PTR	pSMQ;
 
 	FTM_MEM_init();
+
+	xRet = FTM_SMQ_create(nKey, 1024, 10, &pSMQ);
+	if (xRet != FTM_RET_OK)
+	{
+		printf("SMQ creation failed.\n");
+		return	0;	
+	}
+
+	FTM_SMQ_print(pSMQ);
 
 	if (argc == 2)
 	{
 		if (strcasecmp(argv[1], "s") == 0)
 		{
 			MESSAGE("Server Start!\n");	
-			xRet = FTM_SMP_createServer(nKey, &pSMP);
-			if (xRet != FTM_RET_OK)
-			{
-				printf("SMP creation failed.\n");
-				return	0;	
-			}
-
-			FTM_SMP_print(pSMP);
-
 			while(1)
 			{
 				FTM_CHAR	pBuff[1024];
 				FTM_ULONG	ulLen = 0;
 	
-				xRet = FTM_SMP_receiveReq(pSMP, pBuff, sizeof(pBuff), &ulLen, 100000);
+				xRet = FTM_SMQ_pop(pSMQ, pBuff, sizeof(pBuff), &ulLen, 100000);
 				if (xRet == FTM_RET_OK)
 				{
 					printf("Packet received!\n");	
-					FTM_SMP_sendResp(pSMP, pBuff, ulLen, 100000);
 				}
 				else
 				{
@@ -48,15 +47,6 @@ int main(int argc, char *argv[])
 		else if (strcasecmp(argv[1], "c") == 0)
 		{
 			MESSAGE("Client Start!\n");	
-			xRet = FTM_SMP_createClient(nKey, &pSMP);
-			if (xRet != FTM_RET_OK)
-			{
-				printf("SMP creation failed.\n");
-				return	0;	
-			}
-
-			FTM_SMP_print(pSMP);
-
 			while(1)
 			{
 				FTM_CHAR	pBuff[1024];
@@ -70,9 +60,9 @@ int main(int argc, char *argv[])
 					pBuff[i] = '0' + i % 10;
 				}
 	
-	FTM_SMP_print(pSMP);
-				xRet = FTM_SMP_call(pSMP, pBuff, ulLen, pBuff, sizeof(pBuff), &ulLen, 100000);
-	FTM_SMP_print(pSMP);
+	FTM_SMQ_print(pSMQ);
+				xRet = FTM_SMQ_push(pSMQ, pBuff, ulLen, 100000);
+	FTM_SMQ_print(pSMQ);
 				if (xRet == FTM_RET_OK)
 				{
 					printf("Packet send !\n");	
@@ -86,7 +76,7 @@ int main(int argc, char *argv[])
 		}
 	}	
 
-	xRet = FTM_SMP_destroy(&pSMP);
+	xRet = FTM_SMQ_destroy(&pSMQ);
 
 	FTM_MEM_final();
 
