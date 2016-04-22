@@ -397,7 +397,7 @@ FTM_RET	FTM_SMP_createServer
 	do 
 	{
 		sprintf(pSMP->pBlock->pLockerName, "ftom.smp.%d", pSMP->xKey + i);
-		pSMP->pLocker = sem_open(pSMP->pBlock->pLockerName, O_CREAT, 0777, 1);
+		pSMP->pLocker = sem_open(pSMP->pBlock->pLockerName, O_CREAT, 0666, 1);
 		i++;
 	} 
 	while (i < 10 && pSMP->pLocker == SEM_FAILED);
@@ -410,6 +410,7 @@ FTM_RET	FTM_SMP_createServer
 		goto error;
 	}
 
+	TRACE("Locker[%s] created.\n", pSMP->pBlock->pLockerName);
 	pSMP->pBlock->ulReference = 1;
 	sem_init(&pSMP->pBlock->xNotUse, 1, 1);
 	sem_init(&pSMP->pBlock->xReq, 2, 0);
@@ -465,10 +466,10 @@ FTM_RET	FTM_SMP_createClient
 	}
 
 	sprintf(pSMP->pBlock->pLockerName, "ftom.smp.%d", pSMP->xKey);
-	pSMP->pLocker = sem_open(pSMP->pBlock->pLockerName, 0, 0777, 0);
+	pSMP->pLocker = sem_open(pSMP->pBlock->pLockerName, 0, 0666, 0);
 	if (pSMP->pLocker == SEM_FAILED)
 	{
-		ERROR("Can't open locker!\n");
+		ERROR("Locker[%s] open failed[%s].!\n", pSMP->pBlock->pLockerName, strerror(errno));
 		xRet = FTM_RET_SM_IS_NOT_EXIST;
 		goto error;
 	}

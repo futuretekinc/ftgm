@@ -679,10 +679,6 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 
 			xRet = FTM_SMP_sendResp(pSMP, pResp, pResp->ulLen, 100000);
 		}
-		else
-		{
-			TRACE("Timeout!\n");	
-		}
 	}
 
 	FTM_SMP_destroy(&pSMP);

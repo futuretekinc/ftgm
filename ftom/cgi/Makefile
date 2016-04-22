@@ -18,7 +18,9 @@ LIBS:= 	-lftomcl\
 
 TARGET=	ftom.cgi
 SRCS=	main.o\
-		ftom_cgi.o
+		ftom_cgi.o\
+		cmd_ep.o\
+		cmd_node.o
 
 OBJS=$(SRCS:.c=.o)
 

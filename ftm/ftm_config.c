@@ -909,6 +909,8 @@ FTM_RET	FTM_CONFIG_ITEM_getEPLimit(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_LIMIT_PTR p
 			xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "end", &xLimit.xParams.xTime.ulEnd);
 		}
 		break;
+	default:
+		break;
 	}
 
 	memcpy(pLimit, &xLimit, sizeof(FTM_EP_LIMIT));
