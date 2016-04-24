@@ -26,6 +26,7 @@ FTOM_CGI_getEPList	cmd_ep.c	/^FTM_RET	FTOM_CGI_getEPList$/;"	f
 FTOM_CGI_getEPType	ftom_cgi.c	/^FTM_RET FTOM_CGI_getEPType$/;"	f
 FTOM_CGI_getEnable	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getEnable$/;"	f
 FTOM_CGI_getInterval	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getInterval$/;"	f
+FTOM_CGI_getLimit	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getLimit$/;"	f
 FTOM_CGI_getName	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getName$/;"	f
 FTOM_CGI_getNode	cmd_node.c	/^FTM_RET	FTOM_CGI_getNode$/;"	f
 FTOM_CGI_getNodeList	cmd_node.c	/^FTM_RET	FTOM_CGI_getNodeList$/;"	f
@@ -46,8 +47,8 @@ OBJS	Makefile	/^OBJS=$(SRCS:.c=.o)$/;"	m
 SRCS	Makefile	/^SRCS=	main.o\\$/;"	m
 TARGET	Makefile	/^TARGET=	ftom.cgi$/;"	m
 TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
-TRACE	ftom_cgi.h	96;"	d
-TRACE	ftom_cgi.h	97;"	d
+TRACE	ftom_cgi.h	112;"	d
+TRACE	ftom_cgi.h	113;"	d
 _FTOM_CGI_CMD_ACTION_H_	cmd_action.h	2;"	d
 _FTOM_CGI_CMD_EP_H_	cmd_ep.h	2;"	d
 _FTOM_CGI_CMD_NODE_H_	cmd_node.h	2;"	d

@@ -17,36 +17,16 @@ FTM_RET	FTOM_CGI_addTrigger
 	FTM_TRIGGER	xTriggerInfo;	
 	FTM_EP_DATA_TYPE	xDataType;
 
-	pParam = pReq->getstr(pReq, "type", false);
-	if (pParam == NULL)
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;			
-	}
-	xTriggerInfo.xType = strtoul(pParam, 0, 10);
+	xRet = FTOM_CGI_getTriggerType(pReq, &xTriggerInfo.xType, FTM_FALSE);
+	xRet |= FTOM_CGI_getEPID(pReq, xTriggerInfo.pEPID, FTM_FALSE);
+	xRet |= FTOM_CGI_getDetectTime(pReq, &xTriggerInfo.xParams.xCommon.ulDetectionTime, FTM_TRUE);
+	xRet |= FTOM_CGI_getHoldTime(pReq, &xTriggerInfo.xParams.xCommon.ulHoldingTime, FTM_TRUE);
 
-	pParam = pReq->getstr(pReq, "epid", false);
-	if ((pParam == NULL) || (strlen(pParam) > FTM_EPID_LEN))
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;			
-	}
-	strncpy(xTriggerInfo.pEPID, pParam, FTM_EPID_LEN);
 
 	xRet = FTOM_CLIENT_EP_DATA_type(pClient, xTriggerInfo.pEPID, &xDataType);
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_OBJECT_NOT_FOUND;
-	}
-
-	pParam = pReq->getstr(pReq, "detect", false);
-	if (pParam != NULL)
-	{
-		xTriggerInfo.xParams.xCommon.ulDetectionTime = strtoul(pParam, 0, 10);
-	}
-
-	pParam = pReq->getstr(pReq, "hold", false);
-	if (pParam != NULL)
-	{
-		xTriggerInfo.xParams.xCommon.ulHoldingTime = strtoul(pParam, 0, 10);
 	}
 
 	switch(	xTriggerInfo.xType)

@@ -253,17 +253,21 @@ FTM_RET	FTOM_CGI_getEPID
 	FTM_CHAR_PTR	pValue;
 
 	pValue = pReq->getstr(pReq, "epid", false);
-	if(!bAllowEmpty && (pValue == NULL))
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else if((strlen(pValue) > FTM_EPID_LEN))
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
-
-	if((strlen(pValue) > FTM_EPID_LEN))
+	else
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		strcpy(pEPID, pValue);
 	}
-
-	strcpy(pEPID, pValue);
 	
 	return	FTM_RET_OK;
 }
@@ -281,12 +285,14 @@ FTM_RET FTOM_CGI_getEPType
 	FTM_CHAR_PTR	pValue;
 
 	pValue = pReq->getstr(pReq, "eptype", false);
-	if(!bAllowEmpty && (pValue == NULL))
+	if(pValue == NULL)
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
 	}
-
-	if (strcasecmp(pValue, "temperature") == 0)
+	else if (strcasecmp(pValue, "temperature") == 0)
 	{
 		*pType = FTM_EP_TYPE_TEMPERATURE;
 	}
@@ -347,9 +353,12 @@ FTM_RET	FTOM_CGI_getEPFlags
 	FTM_CHAR_PTR	pValue;
 
 	pValue = pReq->getstr(pReq, "flags", false);
-	if(!bAllowEmpty && (pValue == NULL))
+	if(pValue == NULL)
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
 	}
 
 	return	FTM_RET_OK;
@@ -368,17 +377,21 @@ FTM_RET	FTOM_CGI_getName
 	FTM_CHAR_PTR	pValue;
 
 	pValue = pReq->getstr(pReq, "name", false);
-	if(!bAllowEmpty && (pValue == NULL))
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else if((strlen(pValue) > FTM_NAME_LEN))
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
-
-	if((strlen(pValue) > FTM_NAME_LEN))
+	else
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		strcpy(pName, pValue);
 	}
-
-	strcpy(pName, pValue);
 	
 	return	FTM_RET_OK;
 }
@@ -396,17 +409,21 @@ FTM_RET	FTOM_CGI_getUnit
 	FTM_CHAR_PTR	pValue;
 
 	pValue = pReq->getstr(pReq, "unit", false);
-	if(!bAllowEmpty && (pValue == NULL))
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else if(strlen(pValue) > FTM_UNIT_LEN)
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
-
-	if(strlen(pValue) > FTM_UNIT_LEN)
-	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+	else
+	{ 
+		strcpy(pUnit, pValue);
 	}
-
-	strcpy(pUnit, pValue);
 	
 	return	FTM_RET_OK;
 }
@@ -424,12 +441,14 @@ FTM_RET	FTOM_CGI_getEnable
 	FTM_CHAR_PTR	pValue;
 
 	pValue = pReq->getstr(pReq, "enable", false);
-	if(!bAllowEmpty && (pValue == NULL))
+	if(pValue == NULL)
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
 	}
-
-	if(strcasecmp(pValue, "true") == 0)
+	else if(strcasecmp(pValue, "true") == 0)
 	{
 		*pEnable = FTM_TRUE;	
 	}
@@ -458,13 +477,17 @@ FTM_RET	FTOM_CGI_getTimeout
 	FTM_CHAR_PTR	pValue;
 
 	pValue = pReq->getstr(pReq, "timeout", false);
-	if(!bAllowEmpty && (pValue == NULL))
+	if(pValue == NULL)
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
 	}
-
-
-	*pTimeout = strtoul(pValue, 0, 10);
+	else	
+	{
+		*pTimeout = strtoul(pValue, 0, 10);
+	}
 
 	return	FTM_RET_OK;
 }
@@ -482,12 +505,17 @@ FTM_RET	FTOM_CGI_getInterval
 	FTM_CHAR_PTR	pValue;
 
 	pValue = pReq->getstr(pReq, "interval", false);
-	if(!bAllowEmpty && (pValue == NULL))
+	if(pValue == NULL)
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
 	}
-
-	*pInterval = strtoul(pValue, 0, 10);
+	else
+	{
+		*pInterval = strtoul(pValue, 0, 10);
+	}
 
 	return	FTM_RET_OK;
 }
@@ -505,17 +533,21 @@ FTM_RET	FTOM_CGI_getDID
 	FTM_CHAR_PTR	pValue;
 
 	pValue = pReq->getstr(pReq, "did", false);
-	if(!bAllowEmpty && (pValue == NULL))
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else if((strlen(pValue) > FTM_DID_LEN))
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
-
-	if((strlen(pValue) > FTM_DID_LEN))
+	else
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		strcpy(pDID, pValue);
 	}
-
-	strcpy(pDID, pValue);
 	
 	return	FTM_RET_OK;
 }
@@ -562,7 +594,7 @@ FTM_RET	FTOM_CGI_getLimit
 					pLimit->xType = FTM_EP_LIMIT_TYPE_MONTHS;
 					pLimit->xParams.ulMonths = strtoul(pValue, 0, 10);
 				}
-				else
+				else if (!bAllowEmpty)
 				{
 					return	FTM_RET_INVALID_ARGUMENTS;	
 				}
@@ -572,3 +604,173 @@ FTM_RET	FTOM_CGI_getLimit
 	
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTOM_CGI_getCount
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR pulCount,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "count", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		*pulCount = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_CGI_getTriggerID
+(
+	qentry_t *pReq, 
+	FTM_TRIGGER_ID_PTR	pTriggerID,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pTriggerID != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "id", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		*pTriggerID = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+FTM_RET FTOM_CGI_getTriggerType
+(
+	qentry_t *pReq, 
+	FTM_TRIGGER_TYPE_PTR pType,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pType != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "type", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		FTM_TRIGGER_TYPE	xType;
+
+		if (strcasecmp(pValue, "above") == 0)
+		{
+			xType =  FTM_TRIGGER_TYPE_ABOVE;
+		}
+		else if (strcasecmp(pValue, "below") == 0)
+		{
+			xType = FTM_TRIGGER_TYPE_BELOW;
+		}
+		else if (strcasecmp(pValue, "include") == 0)
+		{
+			xType = FTM_TRIGGER_TYPE_INCLUDE;
+		}
+		else if (strcasecmp(pValue, "except") == 0)
+		{
+			xType = FTM_TRIGGER_TYPE_EXCEPT;
+		}
+		else if (strcasecmp(pValue, "change") == 0)
+		{
+			xType = FTM_TRIGGER_TYPE_CHANGE;
+		}
+		else
+		{
+			xType = strtoul(pValue, 0, 10);
+
+			if ((xType < FTM_TRIGGER_TYPE_ABOVE) || (FTM_TRIGGER_TYPE_CHANGE < xType))
+			{
+				return	FTM_RET_INVALID_ARGUMENTS;	
+			}
+		}
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_CGI_getDetectTime
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pulTime,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pulTime != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "detect", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		*pulTime = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_CGI_getHoldTime
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR pulTime,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pulTime != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "hold", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		*pulTime = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+

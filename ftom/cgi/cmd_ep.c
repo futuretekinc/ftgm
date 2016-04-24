@@ -75,7 +75,6 @@ FTM_RET	FTOM_CGI_getEP
 
 	FTM_RET			xRet;
 	FTM_EP			xEPInfo;
-	FTM_CHAR_PTR	pBuff = NULL;
 	cJSON _PTR_ 	pRoot = NULL;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 
@@ -97,11 +96,8 @@ FTM_RET	FTOM_CGI_getEP
 		goto finish;	
 	}
 
-	pBuff = cJSON_Print(pRoot);
-
 	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", pBuff);
-	TRACE("%s", pBuff);
+	printf("%s", cJSON_Print(pRoot));
 
 	xRet = FTM_RET_OK;
 
@@ -125,7 +121,6 @@ FTM_RET	FTOM_CGI_setEP
 
 	FTM_RET			xRet;
 	FTM_EP			xEPInfo;
-	FTM_CHAR_PTR	pBuff = NULL;
 	cJSON _PTR_ 	pRoot = NULL;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_TYPE		xEPType;
@@ -174,11 +169,8 @@ FTM_RET	FTOM_CGI_setEP
 		goto finish;	
 	}
 
-	pBuff = cJSON_Print(pRoot);
-
 	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", pBuff);
-	TRACE("%s", pBuff);
+	printf("%s", cJSON_Print(pRoot));
 
 	xRet = FTM_RET_OK;
 
@@ -191,7 +183,7 @@ finish:
 	return	xRet;
 }
 
-FTM_RET	FTOM_CGI_getEPList
+FTM_RET	FTOM_CGI_getEPCount
 (
 	FTOM_CLIENT_PTR pClient, 
 	qentry_t _PTR_ pReq
@@ -201,16 +193,20 @@ FTM_RET	FTOM_CGI_getEPList
 	ASSERT(pReq != NULL);
 
 	FTM_RET			xRet;
-	FTM_INT			i;
-	FTM_EP_TYPE		xEPType;
-	FTM_CHAR_PTR	pBuff = NULL;
+	FTM_ULONG		ulCount = 0;
 	cJSON _PTR_		pRoot = NULL;
 
-	pBuff = cJSON_Print(pRoot);
+	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;
+	}
+
+	pRoot = cJSON_CreateObject();
+	cJSON_AddNumberToObject(pRoot, "COUNT", ulCount);
 
 	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", pBuff);
-	TRACE("%s", pBuff);
+	printf("%s", cJSON_Print(pRoot));
 
 	xRet = FTM_RET_OK;
 
@@ -235,7 +231,6 @@ FTM_RET	FTOM_CGI_getEPList
 	FTM_RET			xRet;
 	FTM_INT			i;
 	FTM_CHAR_PTR	pValue = NULL;
-	FTM_CHAR_PTR	pBuff = NULL;
 	FTM_ULONG		ulCount = 0;
 	FTM_EP_FIELD_TYPE	xFields = FTM_EP_FIELD_EPID;
 	FTM_EPID		*pEPIDList = NULL;
@@ -328,11 +323,9 @@ FTM_RET	FTOM_CGI_getEPList
 		}
 	}
 
-	pBuff = cJSON_Print(pRoot);
-
 	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", pBuff);
-	TRACE("%s", pBuff);
+	printf("%s", cJSON_Print(pRoot));
+
 	xRet = FTM_RET_OK;
 
 finish:
@@ -360,11 +353,11 @@ FTM_RET	FTOM_CGI_getEPData
 
 	FTM_RET			xRet;
 	FTM_EP_DATA_PTR	pData;
-	FTM_CHAR_PTR	pBuff;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
-	FTM_ULONG		ulCount = pReq->getint(pReq, "cnt");
+	FTM_ULONG		ulCount = 0;
 
-	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
+	xRet = FTOM_CGI_getCount(pReq, &ulCount, FTM_TRUE);
+	xRet |= FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		xRet = FTM_RET_INVALID_ARGUMENTS;
@@ -373,13 +366,15 @@ FTM_RET	FTOM_CGI_getEPData
 
 	if (ulCount > 100)
 	{
-		return	FTM_RET_ERROR;	
+		xRet = FTM_RET_INVALID_ARGUMENTS;
+		goto finish;
 	}
 
 	pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulCount);
 	if (pData == NULL)
 	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		goto finish;
 	}
 
 	xRet = FTOM_CLIENT_EP_DATA_getList(pClient, pEPID, 0, pData, ulCount, &ulCount);
@@ -407,11 +402,8 @@ FTM_RET	FTOM_CGI_getEPData
 		cJSON_AddNumberToObject(pObject, "TIME", pData[i].ulTime);
 	}
 
-	pBuff = cJSON_Print(pRoot);
-
 	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", pBuff);
-	TRACE("%s", pBuff);
+	printf("%s", cJSON_Print(pRoot));
 
 	xRet = FTM_RET_OK;
 
@@ -439,7 +431,6 @@ FTM_RET	FTOM_CGI_getEPDataLast
 	ASSERT(pReq != NULL);
 
 	FTM_RET			xRet;
-	FTM_CHAR_PTR	pBuff = NULL;
 	FTM_ULONG		ulCount = 0;
 	FTM_EPID		*pEPIDList = NULL;
 
@@ -489,11 +480,9 @@ FTM_RET	FTOM_CGI_getEPDataLast
 		cJSON_AddNumberToObject(pObject, "TIME", xEPData.ulTime);
 	}
 
-	pBuff = cJSON_Print(pRoot);
-
 	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", pBuff);
-	TRACE("%s", pBuff);
+	printf("%s", cJSON_Print(pRoot));
+
 	xRet = FTM_RET_OK;
 
 finish:
@@ -534,7 +523,7 @@ FTM_RET	FTOM_CGI_makeEPInfo
 
 	if (xFields & FTM_EP_FIELD_EPTYPE)
 	{
-		cJSON_AddStringToObject(pRoot, "TYPE", FTM_EP_typeString(pEPInfo->xType));
+		cJSON_AddStringToObject(pRoot, "EPTYPE", FTM_EP_typeString(pEPInfo->xType));
 	}
 
 	if (xFields & FTM_EP_FIELD_NAME)

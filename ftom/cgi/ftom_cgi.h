@@ -109,6 +109,41 @@ FTM_RET	FTOM_CGI_getLimit
 	FTM_BOOL	bAllowEmpty
 );
 
+FTM_RET FTOM_CGI_getCount
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR pulCount,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET FTOM_CGI_getTriggerID
+(
+	qentry_t *pReq, 
+	FTM_TRIGGER_ID_PTR pTriggerID,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET FTOM_CGI_getTriggerType
+(
+	qentry_t *pReq, 
+	FTM_TRIGGER_TYPE_PTR pType,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET FTOM_CGI_getDetectTime
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pulTime,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET FTOM_CGI_getHoldTime
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR pulTime,
+	FTM_BOOL	bAllowEmpty
+);
+
 #undef	TRACE
 #define	TRACE(format, ...) 	syslog(LOG_INFO, format, ## __VA_ARGS__)
 
