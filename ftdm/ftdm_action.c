@@ -299,7 +299,7 @@ FTM_RET	FTDM_ACTION_showList
 	FTM_ACTION_PTR	pAction;
 	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# Action Information\n");
-	MESSAGE("\t%4s %8s %8s %8s\n", "ID", "TYPE", "TARGET", "VALUE");
+	MESSAGE("\t%4s %8s %16s %8s\n", "ID", "TYPE", "TARGET", "VALUE");
 
 	FTM_ACTION_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)

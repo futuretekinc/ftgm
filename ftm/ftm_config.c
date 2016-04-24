@@ -326,6 +326,25 @@ FTM_RET	FTM_CONFIG_ITEM_getItemEPData
 	return	FTM_CONFIG_ITEM_getEPData(&xChildItem, pEPData);
 }
 
+FTM_RET	FTM_CONFIG_ITEM_getItemValue
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_VALUE_PTR		pValue
+)
+{
+	FTM_RET			xRet;
+	FTM_CONFIG_ITEM	xChildItem;
+
+	xRet = FTM_CONFIG_ITEM_getChildItem(pItem, pName, &xChildItem);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTM_CONFIG_ITEM_getValue(&xChildItem, pValue);
+}
+
 FTM_RET	FTM_CONFIG_ITEM_getItemEPClass
 (
 	FTM_CONFIG_ITEM_PTR pItem, 
@@ -782,6 +801,84 @@ FTM_RET	FTM_CONFIG_ITEM_getEPData(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_DATA_PTR pEP
 	xData.xState = FTM_EP_DATA_STATE_VALID;
 
 	memcpy(pEPData, &xData, sizeof(FTM_EP_DATA));
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_CONFIG_ITEM_getValue
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_VALUE_PTR 		pValue
+)
+{
+	ASSERT(pItem != NULL);
+	ASSERT(pValue != NULL);
+
+	config_setting_t	*pField;
+	FTM_VALUE			xValue;
+
+	if (pItem->pSetting == NULL)
+	{
+		return	FTM_RET_CONFIG_INVALID_OBJECT;	
+	}
+/*
+ 	if (config_setting_is_list(pSetting) != CONFIG_TRUE)
+  	{
+		return	FTM_RET_CONFIG_INVALID_OBJECT;
+    }
+*/
+	pField = config_setting_get_member(pItem->pSetting, "type");
+	if (pField == NULL)
+	{
+		ERROR("Type is not exist.\n");
+		return	FTM_RET_CONFIG_INVALID_OBJECT;
+	}
+
+	xValue.xType = config_setting_get_int(pField);
+
+	pField = config_setting_get_member(pItem->pSetting, "value");
+	if (pField == NULL)
+	{
+		ERROR("Value is not exist.\n");
+		return	FTM_RET_CONFIG_INVALID_OBJECT;
+	}
+
+	switch(config_setting_type(pField))
+	{
+	case	CONFIG_TYPE_INT:
+		{
+			xValue.xType = FTM_EP_DATA_TYPE_INT;
+			xValue.xValue.nValue = config_setting_get_int(pField);
+		}
+		break;
+
+	case	CONFIG_TYPE_INT64:
+		{
+			xValue.xType = FTM_EP_DATA_TYPE_ULONG;
+			xValue.xValue.ulValue = config_setting_get_int64(pField);
+		}
+		break;
+
+	case	CONFIG_TYPE_FLOAT:
+		{
+			xValue.xType = FTM_EP_DATA_TYPE_FLOAT;
+			xValue.xValue.fValue = config_setting_get_float(pField);
+		}
+		break;
+
+	case	CONFIG_TYPE_BOOL:
+		{
+			xValue.xType = FTM_EP_DATA_TYPE_BOOL;
+			xValue.xValue.bValue = config_setting_get_bool(pField);
+		}
+		break;
+	default:
+		{
+			return	FTM_RET_CONFIG_INVALID_OBJECT;
+		}
+	}
+
+	memcpy(pValue, &xValue, sizeof(FTM_VALUE));
 
 	return	FTM_RET_OK;
 }

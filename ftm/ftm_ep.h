@@ -2,6 +2,7 @@
 #define __FTM_EP_H__
 
 #include "ftm_node.h"
+#include "ftm_value.h"
 
 typedef	FTM_CHAR	FTM_EPID[FTM_EPID_LEN+1];
 typedef FTM_EPID _PTR_ FTM_EPID_PTR;
@@ -28,10 +29,10 @@ typedef	unsigned long	FTM_EP_STATE, 	_PTR_ FTM_EP_STATE_PTR;
 
 typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
 
-#define	FTM_EP_DATA_TYPE_INT	0
-#define	FTM_EP_DATA_TYPE_ULONG	1
-#define	FTM_EP_DATA_TYPE_FLOAT	2
-#define	FTM_EP_DATA_TYPE_BOOL	3
+#define	FTM_EP_DATA_TYPE_INT	FTM_VALUE_TYPE_INT
+#define	FTM_EP_DATA_TYPE_ULONG	FTM_VALUE_TYPE_ULONG
+#define	FTM_EP_DATA_TYPE_FLOAT	FTM_VALUE_TYPE_FLOAT
+#define	FTM_EP_DATA_TYPE_BOOL	FTM_VALUE_TYPE_BOOL
 
 typedef enum
 {
@@ -137,25 +138,93 @@ FTM_RET	FTM_EP_isValid(FTM_EP_PTR pEP);
 FTM_RET	FTM_EP_isValidTimeout(FTM_EP_PTR pEP, FTM_ULONG ulTimeout);
 FTM_RET	FTM_EP_isStatic(FTM_EP_PTR pEP);
 
-FTM_CHAR_PTR FTM_EP_typeString(FTM_EP_TYPE nType);
+FTM_CHAR_PTR FTM_EP_typeString
+(
+	FTM_EP_TYPE nType
+);
 
-FTM_RET	FTM_EP_getDataType(FTM_EP_PTR pEP, FTM_EP_DATA_TYPE_PTR pType);
+FTM_RET	FTM_EP_getDataType
+(
+	FTM_EP_PTR pEP, 
+	FTM_EP_DATA_TYPE_PTR pType
+);
 
-FTM_RET			FTM_initEPTypeString(void);
-FTM_RET			FTM_finalEPTypeString(void);
-FTM_RET			FTM_appendEPTypeString(FTM_EP_TYPE xType, FTM_CHAR_PTR pTypeString);
-FTM_CHAR_PTR 	FTM_getEPTypeString(FTM_EP_TYPE nType);
+FTM_RET			FTM_initEPTypeString
+(
+	FTM_VOID
+);
 
-FTM_RET	FTM_EP_DATA_create(FTM_EP_DATA_PTR pSrcData, FTM_EP_DATA_PTR _PTR_ ppData);
-FTM_RET	FTM_EP_DATA_createInt(FTM_INT nValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
-FTM_RET	FTM_EP_DATA_createUlong(FTM_ULONG ulValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
-FTM_RET	FTM_EP_DATA_createFloat(FTM_DOUBLE fValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
-FTM_RET	FTM_EP_DATA_createBool(FTM_BOOL bValue, FTM_EP_DATA_STATE xState, FTM_ULONG ulTime, FTM_EP_DATA_PTR _PTR_ ppData);
+FTM_RET			FTM_finalEPTypeString
+(
+	FTM_VOID
+);
 
-FTM_RET	FTM_EP_DATA_destroy(FTM_EP_DATA_PTR pData);
+FTM_RET			FTM_appendEPTypeString
+(
+	FTM_EP_TYPE xType, 
+	FTM_CHAR_PTR pTypeString
+);
 
-FTM_RET	FTM_EP_DATA_compare(FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_INT_PTR pResult);
+FTM_CHAR_PTR 	FTM_getEPTypeString
+(
+	FTM_EP_TYPE nType
+);
 
+FTM_RET	FTM_EP_DATA_create
+(
+	FTM_EP_DATA_PTR pSrcData, 
+	FTM_EP_DATA_PTR _PTR_ ppData
+);
+
+FTM_RET	FTM_EP_DATA_createInt
+(
+	FTM_INT nValue, 
+	FTM_EP_DATA_STATE xState, 
+	FTM_ULONG ulTime, 
+	FTM_EP_DATA_PTR _PTR_ ppData
+);
+
+FTM_RET	FTM_EP_DATA_createUlong
+(
+	FTM_ULONG ulValue, 
+	FTM_EP_DATA_STATE xState, 
+	FTM_ULONG ulTime, 
+	FTM_EP_DATA_PTR _PTR_ ppData
+);
+
+FTM_RET	FTM_EP_DATA_createFloat
+(
+	FTM_DOUBLE fValue, 
+	FTM_EP_DATA_STATE xState, 
+	FTM_ULONG ulTime, 
+	FTM_EP_DATA_PTR _PTR_ ppData
+);
+
+FTM_RET	FTM_EP_DATA_createBool
+(	
+	FTM_BOOL bValue, 
+	FTM_EP_DATA_STATE xState, 
+	FTM_ULONG ulTime, 
+	FTM_EP_DATA_PTR _PTR_ ppData
+);
+
+FTM_RET	FTM_EP_DATA_destroy
+(
+	FTM_EP_DATA_PTR pData
+);
+
+FTM_RET	FTM_EP_DATA_compare
+(
+	FTM_EP_DATA_PTR pData1, 
+	FTM_EP_DATA_PTR pData2, 
+	FTM_INT_PTR pResult
+);
+
+FTM_RET	FTM_EP_DATA_toValue
+(
+	FTM_EP_DATA_PTR	pData,
+	FTM_VALUE_PTR	pValue
+);
 
 typedef	struct
 {

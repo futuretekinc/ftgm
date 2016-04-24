@@ -210,8 +210,8 @@ FTM_RET	FTOM_SHELL_CMD_list
 				pTrigger->xInfo.xID, 
 				pTrigger->xInfo.pEPID, 
 				FTM_TRIGGER_typeString(pTrigger->xInfo.xType),
-            	(pTrigger->xInfo.xParams.xCommon.xDetectionTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xCommon.xDetectionTime.xTimeval.tv_usec) / 1000000.0,
-				(pTrigger->xInfo.xParams.xCommon.xHoldingTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xCommon.xHoldingTime.xTimeval.tv_usec) / 1000000.0,
+            	pTrigger->xInfo.xParams.xCommon.ulDetectionTime / 1000000.0,
+				pTrigger->xInfo.xParams.xCommon.ulHoldingTime / 1000000.0,
 				pCondition);
 		}
 

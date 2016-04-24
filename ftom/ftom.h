@@ -222,6 +222,124 @@ FTM_RET	FTOM_sendEPData
 	FTM_ULONG		ulCount
 );
 
+FTM_RET	FTOM_addTrigger
+(
+	FTOM_PTR		pOM,
+	FTM_TRIGGER_PTR	pInfo,
+	FTM_TRIGGER_ID_PTR	pTriggerID
+);
+
+FTM_RET	FTOM_delTrigger
+(
+	FTOM_PTR		pOM,
+	FTM_TRIGGER_ID	xID
+);
+
+FTM_RET	FTOM_getTriggerCount
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_getTriggerInfo
+(
+	FTOM_PTR		pOM,
+	FTM_TRIGGER_ID	xID,
+	FTM_TRIGGER_PTR	pInfo
+);
+
+FTM_RET	FTOM_getTriggerInfoAt
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG		ulIndex,
+	FTM_TRIGGER_PTR	pInfo
+);
+
+FTM_RET	FTOM_setTriggerInfo
+(
+	FTOM_PTR		pOM,
+	FTM_TRIGGER_ID	xID,
+	FTM_TRIGGER_PTR	pInfo
+);
+
+FTM_RET	FTOM_addAction
+(
+	FTOM_PTR		pOM,
+	FTM_ACTION_PTR	pInfo
+);
+
+FTM_RET	FTOM_delAction
+(
+	FTOM_PTR		pOM,
+	FTM_ACTION_ID	xID
+);
+
+FTM_RET	FTOM_getActionCount
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_getActionInfo
+(
+	FTOM_PTR		pOM,
+	FTM_ACTION_ID	xID,
+	FTM_ACTION_PTR	pInfo
+);
+
+FTM_RET	FTOM_getActionInfoAt
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG		ulIndex,
+	FTM_ACTION_PTR	pInfo
+);
+
+FTM_RET	FTOM_setActionInfo
+(
+	FTOM_PTR		pOM,
+	FTM_ACTION_ID	xID,
+	FTM_ACTION_PTR	pInfo
+);
+
+FTM_RET	FTOM_addRule
+(
+	FTOM_PTR		pOM,
+	FTM_RULE_PTR	pInfo
+);
+
+FTM_RET	FTOM_delRule
+(
+	FTOM_PTR		pOM,
+	FTM_RULE_ID	xID
+);
+
+FTM_RET	FTOM_getRuleCount
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_getRuleInfo
+(
+	FTOM_PTR		pOM,
+	FTM_RULE_ID		xID,
+	FTM_RULE_PTR	pInfo
+);
+
+FTM_RET	FTOM_getRuleInfoAt
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG		ulIndex,
+	FTM_RULE_PTR	pInfo
+);
+
+FTM_RET	FTOM_setRuleInfo
+(
+	FTOM_PTR		pOM,
+	FTM_RULE_ID		xID,
+	FTM_RULE_PTR	pInfo
+);
+
 FTM_RET	FTOM_nodeDiscovery
 (
 	FTOM_PTR		pOM,

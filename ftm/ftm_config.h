@@ -6,6 +6,7 @@
 #include "ftm_node.h"
 #include "ftm_ep.h"
 #include "ftm_time.h"
+#include "ftm_value.h"
 
 typedef	struct
 {
@@ -154,6 +155,13 @@ FTM_RET	FTM_CONFIG_ITEM_getItemEPData
 	FTM_EP_DATA_PTR 	pData
 );
 
+FTM_RET	FTM_CONFIG_ITEM_getItemValue
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_CHAR_PTR 		pName, 
+	FTM_VALUE_PTR 		pValue
+);
+
 FTM_RET	FTM_CONFIG_ITEM_getItemEPClass
 (
 	FTM_CONFIG_ITEM_PTR pItem, 
@@ -220,6 +228,12 @@ FTM_RET	FTM_CONFIG_ITEM_getEPData
 (
 	FTM_CONFIG_ITEM_PTR pItem,
 	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getValue
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_VALUE_PTR 		pValue
 );
 
 FTM_RET	FTM_CONFIG_ITEM_getEPLimit

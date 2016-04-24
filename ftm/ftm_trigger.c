@@ -11,8 +11,8 @@ FTM_RET	FTM_TRIGGER_create1
 	FTM_TRIGGER_TYPE 	xType, 
 	FTM_TRIGGER_ID 		xTriggerID, 
 	FTM_CHAR_PTR		pEPID,
-	FTM_EP_DATA_PTR 	pData1, 
-	FTM_EP_DATA_PTR 	pData2, 
+	FTM_VALUE_PTR		pValue1, 
+	FTM_VALUE_PTR		pValue2, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 );
 
@@ -121,32 +121,32 @@ FTM_RET	FTM_TRIGGER_createAbove
 (
 	FTM_TRIGGER_ID 	xTriggerID, 
 	FTM_CHAR_PTR 	pEPID, 
-	FTM_EP_DATA_PTR pData, 
+	FTM_VALUE_PTR	pValue,
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
 	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_ABOVE, 
-				xTriggerID, pEPID, pData, NULL, ppTrigger);
+				xTriggerID, pEPID, pValue, NULL, ppTrigger);
 }
 
 FTM_RET	FTM_TRIGGER_createBelow
 (
 	FTM_TRIGGER_ID 	xTriggerID, 
 	FTM_CHAR_PTR	pEPID,
-	FTM_EP_DATA_PTR pData, 
+	FTM_VALUE_PTR	pValue,
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
 	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_BELOW, 
-				xTriggerID, pEPID, pData, NULL, ppTrigger);
+				xTriggerID, pEPID, pValue, NULL, ppTrigger);
 }
 
 FTM_RET	FTM_TRIGGER_createInclude
 (
 	FTM_TRIGGER_ID 	xTriggerID, 
 	FTM_CHAR_PTR	pEPID, 
-	FTM_EP_DATA_PTR pUpper, 
-	FTM_EP_DATA_PTR pLower, 
+	FTM_VALUE_PTR	pUpper, 
+	FTM_VALUE_PTR	pLower, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
@@ -158,8 +158,8 @@ FTM_RET	FTM_TRIGGER_createExcept
 (
 	FTM_TRIGGER_ID 	xTriggerID, 
 	FTM_CHAR_PTR	pEPID, 
-	FTM_EP_DATA_PTR pUpper, 
-	FTM_EP_DATA_PTR pLower, 
+	FTM_VALUE_PTR	pUpper, 
+	FTM_VALUE_PTR	pLower, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
@@ -183,8 +183,8 @@ FTM_RET	FTM_TRIGGER_create1
 	FTM_TRIGGER_TYPE 	xType, 
 	FTM_TRIGGER_ID 		xTriggerID, 
 	FTM_CHAR_PTR		pEPID,  
-	FTM_EP_DATA_PTR 	pData1, 
-	FTM_EP_DATA_PTR 	pData2, 
+	FTM_VALUE_PTR		pValue1, 
+	FTM_VALUE_PTR		pValue2, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
@@ -219,15 +219,15 @@ FTM_RET	FTM_TRIGGER_create1
 	case	FTM_TRIGGER_TYPE_ABOVE:
 	case	FTM_TRIGGER_TYPE_BELOW:
 		{
-			memcpy(&xTrigger.xParams.xAbove.xValue, pData1, sizeof(FTM_EP_DATA));
+			memcpy(&xTrigger.xParams.xAbove.xValue, pValue1, sizeof(FTM_VALUE));
 		}
 		break;
 
 	case	FTM_TRIGGER_TYPE_INCLUDE:
 	case	FTM_TRIGGER_TYPE_EXCEPT:
 		{
-			memcpy(&xTrigger.xParams.xInclude.xUpper, pData1, sizeof(FTM_EP_DATA));
-			memcpy(&xTrigger.xParams.xInclude.xLower, pData2, sizeof(FTM_EP_DATA));
+			memcpy(&xTrigger.xParams.xInclude.xUpper, pValue1, sizeof(FTM_VALUE));
+			memcpy(&xTrigger.xParams.xInclude.xLower, pValue2, sizeof(FTM_VALUE));
 		}
 		break;
 
@@ -349,12 +349,12 @@ FTM_RET	FTM_TRIGGER_remove
 FTM_RET	FTM_TRIGGER_occurred
 (
 	FTM_TRIGGER_PTR 	pTrigger, 
-	FTM_EP_DATA_PTR 	pCurrData, 
+	FTM_VALUE_PTR 		pValue, 
 	FTM_BOOL_PTR 		pResult
 )
 {
 	ASSERT(pTrigger != NULL);
-	ASSERT(pCurrData != NULL);
+	ASSERT(pValue != NULL);
 
 	FTM_RET	xRet;
 	FTM_INT	nResult;
@@ -369,7 +369,7 @@ FTM_RET	FTM_TRIGGER_occurred
 	{
 	case	FTM_TRIGGER_TYPE_ABOVE:
 		{
-			xRet = FTM_EP_DATA_compare(&pTrigger->xParams.xAbove.xValue, pCurrData, &nResult);
+			xRet = FTM_VALUE_compare(&pTrigger->xParams.xAbove.xValue, pValue, &nResult);
 			if (xRet == FTM_RET_OK)
 			{
 				*pResult = (nResult <= 0);
@@ -379,7 +379,7 @@ FTM_RET	FTM_TRIGGER_occurred
 
 	case	FTM_TRIGGER_TYPE_BELOW:
 		{
-			xRet = FTM_EP_DATA_compare(&pTrigger->xParams.xBelow.xValue, pCurrData, &nResult);
+			xRet = FTM_VALUE_compare(&pTrigger->xParams.xBelow.xValue, pValue, &nResult);
 			if (xRet == FTM_RET_OK)
 			{
 				*pResult = (nResult >= 0);
@@ -389,13 +389,13 @@ FTM_RET	FTM_TRIGGER_occurred
 
 	case	FTM_TRIGGER_TYPE_INCLUDE:
 		{
-			xRet = FTM_EP_DATA_compare(&pTrigger->xParams.xInclude.xUpper, pCurrData, &nResult);
+			xRet = FTM_VALUE_compare(&pTrigger->xParams.xInclude.xUpper, pValue, &nResult);
 			if (xRet == FTM_RET_OK)
 			{
 				*pResult = (nResult >= 0);
 				if (*pResult != FTM_FALSE)
 				{
-					xRet = FTM_EP_DATA_compare(&pTrigger->xParams.xInclude.xLower, pCurrData, &nResult);
+					xRet = FTM_VALUE_compare(&pTrigger->xParams.xInclude.xLower, pValue, &nResult);
 					if (xRet == FTM_RET_OK)
 					{
 						*pResult = (nResult <= 0);
@@ -407,13 +407,13 @@ FTM_RET	FTM_TRIGGER_occurred
 
 	case 	FTM_TRIGGER_TYPE_EXCEPT:
 		{
-			xRet = FTM_EP_DATA_compare(&pTrigger->xParams.xExcept.xUpper, pCurrData, &nResult);
+			xRet = FTM_VALUE_compare(&pTrigger->xParams.xExcept.xUpper, pValue, &nResult);
 			if (xRet == FTM_RET_OK)
 			{
 				*pResult = (nResult < 0);
 				if (*pResult != FTM_TRUE)
 				{
-					xRet = FTM_EP_DATA_compare(&pTrigger->xParams.xExcept.xLower, pCurrData, &nResult);
+					xRet = FTM_VALUE_compare(&pTrigger->xParams.xExcept.xLower, pValue, &nResult);
 					if (xRet == FTM_RET_OK)
 					{
 						*pResult = (nResult > 0);
@@ -425,7 +425,7 @@ FTM_RET	FTM_TRIGGER_occurred
 
 	case	FTM_TRIGGER_TYPE_CHANGE:
 		{
-			xRet = FTM_EP_DATA_compare(&pTrigger->xParams.xAbove.xValue, pCurrData, &nResult);
+			xRet = FTM_VALUE_compare(&pTrigger->xParams.xAbove.xValue, pValue, &nResult);
 			*pResult = (nResult == 0);
 		}
 		break;
@@ -474,34 +474,34 @@ FTM_RET	FTM_TRIGGER_conditionToString
 	{   
 	case    FTM_TRIGGER_TYPE_ABOVE:
 		{   
-			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xAbove.xValue);
+			FTM_VALUE_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xAbove.xValue);
 			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "x >= %s", pTemp);
 		}   
 		break;
 
 	case    FTM_TRIGGER_TYPE_BELOW:
 		{   
-			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xBelow.xValue);
+			FTM_VALUE_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xBelow.xValue);
 			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "x <= %s", pTemp);
 		}   
 		break;
 
 	case    FTM_TRIGGER_TYPE_INCLUDE:
 		{   
-			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xInclude.xLower);
+			FTM_VALUE_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xInclude.xLower);
 			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "%s <= x <= ", pTemp);
 
-			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xInclude.xUpper);
+			FTM_VALUE_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xInclude.xUpper);
 			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "%s)", pTemp);
 		}   
 		break;
 
 	case    FTM_TRIGGER_TYPE_EXCEPT:
 		{   
-			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xExcept.xLower);
+			FTM_VALUE_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xExcept.xLower);
 			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "(x < %s) && ", pTemp);
 
-			FTM_EP_DATA_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xExcept.xUpper);
+			FTM_VALUE_snprint(pTemp, sizeof(pTemp) - 1, &pTrigger->xParams.xExcept.xUpper);
 			ulLen += snprintf(&pBuff[ulLen], ulBuffLen - ulLen, "(%s < x)", pTemp);
 		}   
 		break;

@@ -428,6 +428,17 @@ FTM_RET	FTOM_RULEM_del
 }
 
 
+FTM_RET	FTOM_RULEM_get
+(
+	FTOM_RULEM_PTR 	pRuleM, 
+	FTM_RULE_ID		xID,
+	FTOM_RULE_PTR _PTR_ ppRule
+)
+{
+	TRACE_CALL();
+
+	return	FTM_LIST_get(pRuleM->pRuleList, (FTM_VOID_PTR _PTR_)&xID, (FTM_VOID_PTR _PTR_)ppRule);
+}
 FTM_RET	FTOM_RULEM_getAt
 (
 	FTOM_RULEM_PTR 	pRuleM, 

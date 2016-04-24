@@ -238,5 +238,138 @@ FTM_RET	FTOM_CLIENT_EP_DATA_count
 	FTM_ULONG_PTR	pCount
 );
 
+FTM_RET	FTOM_CLIENT_EP_DATA_type
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_TYPE_PTR pType
+);
+
+/*****************************************************************
+ *
+ *****************************************************************/
+
+FTM_RET	FTOM_CLIENT_TRIGGER_add
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_TRIGGER_PTR	pTrigger
+);
+
+FTM_RET	FTOM_CLIENT_TRIGGER_del
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_TRIGGER_ID	xID
+);
+
+FTM_RET	FTOM_CLIENT_TRIGGER_count
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_CLIENT_TRIGGER_get
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_TRIGGER_ID	xID,
+	FTM_TRIGGER_PTR	pTrigger
+);
+
+FTM_RET	FTOM_CLIENT_TRIGGER_getAt
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_TRIGGER_PTR	pTrigger
+);
+
+FTM_RET	FTOM_CLIENT_TRIGGER_set
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_TRIGGER_PTR	pTrigger
+);
+
+/*****************************************************************
+ *
+ *****************************************************************/
+
+FTM_RET	FTOM_CLIENT_ACTION_add
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ACTION_PTR	pAction
+);
+
+FTM_RET	FTOM_CLIENT_ACTION_del
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ACTION_ID	xID
+);
+
+FTM_RET	FTOM_CLIENT_ACTION_count
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_CLIENT_ACTION_get
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ACTION_ID	xID,
+	FTM_ACTION_PTR	pAction
+);
+
+FTM_RET	FTOM_CLIENT_ACTION_getAt
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_ACTION_PTR	pAction
+);
+
+FTM_RET	FTOM_CLIENT_ACTION_set
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ACTION_PTR	pAction
+);
+
+/*****************************************************************
+ *
+ *****************************************************************/
+
+FTM_RET	FTOM_CLIENT_RULE_add
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_RULE_PTR	pRule
+);
+
+FTM_RET	FTOM_CLIENT_RULE_del
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_RULE_ID	xID
+);
+
+FTM_RET	FTOM_CLIENT_RULE_count
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_CLIENT_RULE_get
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_RULE_ID	xID,
+	FTM_RULE_PTR	pRule
+);
+
+FTM_RET	FTOM_CLIENT_RULE_getAt
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_RULE_PTR	pRule
+);
+
+FTM_RET	FTOM_CLIENT_RULE_set
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_RULE_PTR	pRule
+);
+
 #endif
 

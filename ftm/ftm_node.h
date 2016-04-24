@@ -9,10 +9,9 @@ typedef	unsigned long	FTM_NODE_TYPE, _PTR_ FTM_NODE_TYPE_PTR;
 #define	FTM_NODE_TYPE_MODBUS_OVER_TCP		0x00000102
 #define	FTM_NODE_TYPE_MODBUS_OVER_SERIAL	0x00000202
 
-typedef	enum
-{
-	FTM_NODE_FLAG_STATIC	= (1 << 0)
-}	FTM_NODE_FLAG, _PTR_ FTM_NODE_FLAG_PTR;
+typedef	unsigned long	FTM_NODE_FLAG, _PTR_ FTM_NODE_FLAG_PTR;
+#define	FTM_NODE_FLAG_STATIC	(1 << 0)
+#define	FTM_NODE_FLAG_LAST		(1 << 0)
 
 typedef	struct
 {
@@ -67,5 +66,6 @@ FTM_RET	FTM_NODE_setDefault(FTM_NODE_PTR pNode);
 FTM_RET	FTM_NODE_setDID(FTM_NODE_PTR pNode, FTM_CHAR_PTR pDID);
 
 FTM_CHAR_PTR	FTM_NODE_typeString(FTM_NODE_TYPE xType);
+FTM_CHAR_PTR	FTM_NODE_flagString(FTM_NODE_FLAG xFlag);
 #endif
 

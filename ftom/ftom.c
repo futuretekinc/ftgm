@@ -702,16 +702,17 @@ FTM_RET	FTOM_TASK_sync
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_TRIGGER		xEvent;
+		FTM_TRIGGER		xTrigger;
+		FTM_TRIGGER_ID	xTriggerID;
 
-		xRet = FTDMC_TRIGGER_getAt(&xDMC.xSession, i, &xEvent);
+		xRet = FTDMC_TRIGGER_getAt(&xDMC.xSession, i, &xTrigger);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Event[%d] data load failed.\n", i);	
 			continue;
 		}
 
-		xRet = FTOM_TRIGGERM_add(pOM->pTriggerM, &xEvent);
+		xRet = FTOM_TRIGGERM_add(pOM->pTriggerM, &xTrigger, &xTriggerID);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new event can not registration!\n") ;
@@ -1454,6 +1455,345 @@ FTM_RET	FTOM_sendEPData
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_addTrigger
+(
+	FTOM_PTR			pOM,
+	FTM_TRIGGER_PTR		pInfo,
+	FTM_TRIGGER_ID_PTR	pID
+)
+{
+	ASSERT(pOM != NULL);
+	
+	FTM_RET		xRet;
+	
+	xRet = FTOM_TRIGGERM_add(pOM->pTriggerM, pInfo, pID);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_delTrigger
+(
+	FTOM_PTR		pOM,
+	FTM_TRIGGER_ID	xID
+)
+{
+	ASSERT(pOM != NULL);
+
+	FTM_RET	xRet;
+
+	xRet =  FTOM_TRIGGERM_del(pOM->pTriggerM, xID);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getTriggerCount
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_TRIGGERM_count(pOM->pTriggerM, pulCount);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getTriggerInfo
+(
+	FTOM_PTR		pOM,
+	FTM_TRIGGER_ID	xID,
+	FTM_TRIGGER_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_TRIGGER_PTR	pTrigger;
+
+	xRet = FTOM_TRIGGERM_get(pOM->pTriggerM, xID, &pTrigger);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(pInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getTriggerInfoAt
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG		ulIndex,
+	FTM_TRIGGER_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_TRIGGER_PTR	pTrigger;
+
+	xRet = FTOM_TRIGGERM_getAt(pOM->pTriggerM, ulIndex, &pTrigger);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(pInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_setTriggerInfo
+(
+	FTOM_PTR		pOM,
+	FTM_TRIGGER_ID	xID,
+	FTM_TRIGGER_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_TRIGGER_PTR	pTrigger;
+
+	xRet = FTOM_TRIGGERM_get(pOM->pTriggerM, xID, &pTrigger);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(&pTrigger->xInfo, pInfo, sizeof(FTM_TRIGGER));
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addAction
+(
+	FTOM_PTR		pOM,
+	FTM_ACTION_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_ACTIONM_add(pOM->pActionM, pInfo);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_delAction
+(
+	FTOM_PTR		pOM,
+	FTM_ACTION_ID	xID
+)
+{
+	ASSERT(pOM != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_ACTIONM_del(pOM->pActionM, xID);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getActionCount
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pOM != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_ACTIONM_count(pOM->pActionM, pulCount);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getActionInfo
+(
+	FTOM_PTR		pOM,
+	FTM_ACTION_ID	xID,
+	FTM_ACTION_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_ACTION_PTR	pAction;
+
+	xRet = FTOM_ACTIONM_get(pOM->pActionM, xID, &pAction);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(pInfo, &pAction->xInfo, sizeof(FTM_ACTION));	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getActionInfoAt
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG		ulIndex,
+	FTM_ACTION_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_ACTION_PTR	pAction;
+
+	xRet = FTOM_ACTIONM_getAt(pOM->pActionM, ulIndex, &pAction);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(pInfo, &pAction->xInfo, sizeof(FTM_ACTION));	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_setActionInfo
+(
+	FTOM_PTR		pOM,
+	FTM_ACTION_ID	xID,
+	FTM_ACTION_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_ACTION_PTR	pAction;
+
+	xRet = FTOM_ACTIONM_get(pOM->pActionM, xID, &pAction);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(&pAction->xInfo, pInfo, sizeof(FTM_ACTION));	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addRule
+(
+	FTOM_PTR		pOM,
+	FTM_RULE_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_RULEM_add(pOM->pRuleM, pInfo);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_delRule
+(
+	FTOM_PTR	pOM,
+	FTM_RULE_ID	xID
+)
+{
+	ASSERT(pOM != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_RULEM_del(pOM->pRuleM, xID);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getRuleCount
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_RULEM_count(pOM->pRuleM, pulCount);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getRuleInfo
+(
+	FTOM_PTR		pOM,
+	FTM_RULE_ID		xID,
+	FTM_RULE_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_RULE_PTR	pRule;
+
+	xRet = FTOM_RULEM_get(pOM->pRuleM, xID, &pRule);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(pInfo, &pRule->xInfo, sizeof(FTM_RULE));	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getRuleInfoAt
+(
+	FTOM_PTR		pOM,
+	FTM_ULONG		ulIndex,
+	FTM_RULE_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_RULE_PTR	pRule;
+
+	xRet = FTOM_RULEM_getAt(pOM->pRuleM, ulIndex, &pRule);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(pInfo, &pRule->xInfo, sizeof(FTM_RULE));	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_setRuleInfo
+(
+	FTOM_PTR		pOM,
+	FTM_RULE_ID		xID,
+	FTM_RULE_PTR	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_RULE_PTR	pRule;
+
+	xRet = FTOM_RULEM_get(pOM->pRuleM, xID, &pRule);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(&pRule->xInfo, pInfo, sizeof(FTM_RULE));
+	}
+
+	return	xRet;
+}
+
+
 FTM_RET	FTOM_sendAlert
 (
 	FTOM_PTR		pOM,
@@ -1472,7 +1812,6 @@ FTM_RET	FTOM_sendAlert
 	{
 		return	xRet;	
 	}
-
 
 	xRet = FTOM_MSGQ_push(pOM->pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)

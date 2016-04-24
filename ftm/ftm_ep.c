@@ -11,9 +11,23 @@ typedef struct
 	FTM_CHAR_PTR	pTypeString;
 } FTM_EP_TYPE_STRING, _PTR_ FTM_EP_TYPE_STRING_PTR;
 
-FTM_BOOL	FTM_EP_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator);
-FTM_BOOL	_FTM_EPTypeSeeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
-FTM_BOOL	_FTM_EPOIDInfoSeeker(const FTM_VOID_PTR pElement1, const FTM_VOID_PTR pElement2);
+FTM_BOOL	FTM_EP_seeker
+(
+	const FTM_VOID_PTR pItem, 
+	const FTM_VOID_PTR pIndicator
+);
+
+FTM_BOOL	_FTM_EPTypeSeeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+);
+
+FTM_BOOL	_FTM_EPOIDInfoSeeker
+(
+	const FTM_VOID_PTR pElement1, 
+	const FTM_VOID_PTR pElement2
+);
 
 static FTM_LIST_PTR	pEPList = NULL;
 
@@ -562,7 +576,10 @@ FTM_RET	FTM_EP_DATA_createBool(FTM_BOOL bValue, FTM_EP_DATA_STATE xState, FTM_UL
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_EP_DATA_destroy(FTM_EP_DATA_PTR pData)
+FTM_RET	FTM_EP_DATA_destroy
+(
+	FTM_EP_DATA_PTR pData
+)
 {
 	ASSERT(pData != NULL);
 
@@ -571,7 +588,12 @@ FTM_RET	FTM_EP_DATA_destroy(FTM_EP_DATA_PTR pData)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_EP_DATA_compare(FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_INT_PTR pResult)
+FTM_RET	FTM_EP_DATA_compare
+(
+	FTM_EP_DATA_PTR pData1, 
+	FTM_EP_DATA_PTR pData2, 
+	FTM_INT_PTR pResult
+)
 {
 	ASSERT(pData1 != NULL);
 	ASSERT(pData2 != NULL);
@@ -737,7 +759,58 @@ FTM_RET	FTM_EP_DATA_compare(FTM_EP_DATA_PTR pData1, FTM_EP_DATA_PTR pData2, FTM_
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_EP_DATA_snprint(FTM_CHAR_PTR pBuff, FTM_ULONG ulMaxLen, FTM_EP_DATA_PTR pData)
+FTM_RET	FTM_EP_DATA_toValue
+(
+	FTM_EP_DATA_PTR	pData,
+	FTM_VALUE_PTR	pValue
+)
+{
+	ASSERT(pData != NULL);
+	ASSERT(pValue != NULL);
+
+	switch(pData->xType)
+	{
+	case	FTM_EP_DATA_TYPE_INT:
+		{	
+			pValue->xType = FTM_VALUE_TYPE_INT;
+			pValue->xValue.nValue = pData->xValue.nValue;
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_ULONG:
+		{	
+			pValue->xType = FTM_VALUE_TYPE_ULONG;
+			pValue->xValue.ulValue = pData->xValue.ulValue;
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_FLOAT:
+		{	
+			pValue->xType = FTM_VALUE_TYPE_FLOAT;
+			pValue->xValue.fValue = pData->xValue.fValue;
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_BOOL:
+		{
+			pValue->xType = FTM_VALUE_TYPE_BOOL;
+			pValue->xValue.bValue = pData->xValue.bValue;
+		}
+		break;
+
+	default:
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_DATA_snprint
+(
+	FTM_CHAR_PTR 	pBuff, 
+	FTM_ULONG 		ulMaxLen, 
+	FTM_EP_DATA_PTR pData
+)
 {
 	if ((pBuff == NULL) || (pData == NULL))
 	{
@@ -749,13 +822,16 @@ FTM_RET	FTM_EP_DATA_snprint(FTM_CHAR_PTR pBuff, FTM_ULONG ulMaxLen, FTM_EP_DATA_
 	case	FTM_EP_DATA_TYPE_INT:	snprintf(pBuff, ulMaxLen, "%d", pData->xValue.nValue); break;
 	case	FTM_EP_DATA_TYPE_ULONG:	snprintf(pBuff, ulMaxLen, "%lu", pData->xValue.ulValue); break;
 	case	FTM_EP_DATA_TYPE_FLOAT:	snprintf(pBuff, ulMaxLen, "%4.2lf", pData->xValue.fValue); break;
-	default:	snprintf(pBuff, ulMaxLen, ""); break;
+	default:	pBuff[0] = '\0'; break;
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_CHAR_PTR	FTM_EP_typeString(FTM_EP_TYPE xType)
+FTM_CHAR_PTR	FTM_EP_typeString
+(
+	FTM_EP_TYPE xType
+)
 {
 	switch(xType)
 	{

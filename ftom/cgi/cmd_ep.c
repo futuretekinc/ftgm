@@ -1,28 +1,35 @@
 #include "ftom_cgi.h"
 #include "ftom_client.h"
 #include "ftm_json.h"
-
+#include "cJSON.h"
 
 static 
 FTM_RET	FTOM_CGI_makeEPInfo
 (
 	FTM_EP_PTR		pEPInfo,
-	FTM_JSON_VALUE_PTR _PTR_ ppObject
+	cJSON _PTR_ _PTR_ ppObject
 );
 
-FTM_RET	FTOM_CGI_getEP(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
+FTM_RET	FTOM_CGI_getEP
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
 
 	FTM_RET			xRet;
 	FTM_EP			xEPInfo;
-	FTM_ULONG		ulBuffLen;
 	FTM_CHAR_PTR	pBuff = NULL;
-	FTM_JSON_VALUE_PTR	pObject = NULL;
+	cJSON _PTR_ 	pRoot = NULL;
 
 
 	FTM_CHAR_PTR	pEPID = pReq->getstr(pReq, "id", false);
+	if (pEPID == NULL)
+	{
+		goto finish;
+	}
 
 	xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xEPInfo);
 	if (xRet != FTM_RET_OK)
@@ -30,26 +37,13 @@ FTM_RET	FTOM_CGI_getEP(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 		goto finish;
 	}
 
-	xRet = FTOM_CGI_makeEPInfo(&xEPInfo, &pObject);
+	xRet = FTOM_CGI_makeEPInfo(&xEPInfo, &pRoot);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;	
 	}
 
-	xRet = FTM_JSON_buffSize((FTM_JSON_VALUE_PTR)pObject, &ulBuffLen);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
-	pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(ulBuffLen + 1);
-	if (pBuff == NULL)
-	{
-		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
-		goto finish;
-	}
-
-	FTM_JSON_snprint(pBuff, ulBuffLen + 1, (FTM_JSON_VALUE_PTR)pObject);
+	pBuff = cJSON_Print(pRoot);
 
 	qcgires_setcontenttype(pReq, "text/xml");
 	printf("%s", pBuff);
@@ -58,31 +52,28 @@ FTM_RET	FTOM_CGI_getEP(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 	xRet = FTM_RET_OK;
 
 finish:
-	if (pBuff != NULL)
+	if (pRoot != NULL)
 	{
-		FTM_MEM_free(pBuff);	
-	}
-
-	if (pObject != NULL)
-	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pObject);
+		cJSON_Delete(pRoot);
 	}
 
 	return	xRet;
 }
 
-FTM_RET	FTOM_CGI_getEPList(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
+FTM_RET	FTOM_CGI_getEPList
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
 
-	FTM_JSON_ARRAY_PTR	pJSON;
-	FTM_JSON_VALUE_PTR	pJSONObject;
 	FTM_RET			xRet;
 	FTM_CHAR_PTR	pBuff = NULL;
-	FTM_ULONG		ulBuffLen = 0;
 	FTM_ULONG		ulCount = 0;
 	FTM_EPID		*pEPIDList = NULL;
+	cJSON _PTR_		pRoot = NULL;
 
 	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
 	if (xRet != FTM_RET_OK)
@@ -101,16 +92,12 @@ FTM_RET	FTOM_CGI_getEPList(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 	{
 		goto finish;
 	}
-
-	xRet = FTM_JSON_createArray(ulCount, &pJSON);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;
-	}
-
+	
+	pRoot = cJSON_CreateArray();
 	for(int i = 0 ; i < ulCount ; i++)
 	{
 		FTM_EP	xEPInfo;
+		cJSON _PTR_ pObject;
 
 		xRet = FTOM_CLIENT_EP_get(pClient, pEPIDList[i], &xEPInfo);
 		if (xRet != FTM_RET_OK)
@@ -118,36 +105,14 @@ FTM_RET	FTOM_CGI_getEPList(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 			continue;
 		}
 
-		xRet = FTOM_CGI_makeEPInfo(&xEPInfo, &pJSONObject);
+		xRet = FTOM_CGI_makeEPInfo(&xEPInfo, &pObject);
 		if (xRet == FTM_RET_OK)
 		{
-			xRet = FTM_JSON_ARRAY_setElement(pJSON, pJSONObject);	
-			if (xRet != FTM_RET_OK)
-			{
-				FTM_JSON_destroy(&pJSONObject);	
-			}
-			pJSONObject = NULL;	
+			cJSON_AddItemToArray(pRoot, pObject);
 		}
 	}
 
-	xRet = FTM_JSON_buffSize((FTM_JSON_VALUE_PTR)pJSON, &ulBuffLen);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
-	pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(ulBuffLen + 1);
-	if (pBuff == NULL)
-	{
-		goto finish;	
-	}
-
-	xRet = FTM_JSON_snprint(pBuff, ulBuffLen + 1, (FTM_JSON_VALUE_PTR)pJSON);
-	if (pBuff == NULL)
-	{
-		goto finish;	
-	}
-
+	pBuff = cJSON_Print(pRoot);
 
 	qcgires_setcontenttype(pReq, "text/xml");
 	printf("%s", pBuff);
@@ -155,9 +120,9 @@ FTM_RET	FTOM_CGI_getEPList(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 	xRet = FTM_RET_OK;
 
 finish:
-	if (pBuff != NULL)
+	if (pRoot != NULL)
 	{
-		free(pBuff);	
+		cJSON_Delete(pRoot);
 	}
 
 	if (pEPIDList != NULL)
@@ -165,15 +130,14 @@ finish:
 		FTM_MEM_free(pEPIDList);
 	}
 
-	if (pJSON != NULL)
-	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSON);
-	}
-
 	return	xRet;
 }
 
-FTM_RET	FTOM_CGI_getEPData(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
+FTM_RET	FTOM_CGI_getEPData
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
@@ -201,113 +165,26 @@ FTM_RET	FTOM_CGI_getEPData(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 		goto finish;
 	}
 
-	FTM_JSON_OBJECT_PTR	pJSON = NULL;
-	FTM_JSON_ARRAY_PTR	pJSONArray = NULL;
-	FTM_JSON_VALUE_PTR	pJSONValue = NULL;
-	FTM_JSON_OBJECT_PTR	pJSONData = NULL;
+	cJSON _PTR_ pRoot, _PTR_ pDataList;
 
-	xRet = FTM_JSON_createObject(2, &pJSON);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;
-	}
-
-	xRet = FTM_JSON_createString(pEPID, &pJSONValue);	
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;			
-	}
-
-	xRet = FTM_JSON_OBJECT_setPair(pJSON, "ID", pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;			
-	}
-	pJSONValue = NULL;
-
-	xRet = FTM_JSON_createArray(ulCount, &pJSONArray);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
+	pRoot = cJSON_CreateObject();
+	cJSON_AddStringToObject(pRoot, "ID", pEPID);
+	cJSON_AddItemToObject(pRoot, "DATA", pDataList = cJSON_CreateArray());
 
 	for(FTM_INT i = 0 ; i < ulCount ; i++)
 	{
-		xRet = FTM_JSON_createObject(2, &pJSONData);
-		if (xRet != FTM_RET_OK)
-		{
-			continue;
-		}
+		cJSON _PTR_ pObject;
+
+		cJSON_AddItemToArray(pDataList, pObject = cJSON_CreateObject());
 
 		FTM_CHAR	pValueString[64];
 		FTM_EP_DATA_snprint(pValueString, sizeof(pValueString), &pData[i]);
-	
-		xRet = FTM_JSON_createString(pValueString, &pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONData);
-			continue;
-		}
 
-
-		xRet = FTM_JSON_OBJECT_setPair(pJSONData, "VALUE", pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONData);
-			FTM_JSON_destroy(&pJSONValue);
-			continue;
-		}
-		pJSONValue = NULL;
-		
-
-		xRet = FTM_JSON_createNumber(pData[i].ulTime, &pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONData);
-			continue;
-		}
-
-		xRet = FTM_JSON_OBJECT_setPair(pJSONData, "TIME", pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONData);
-			FTM_JSON_destroy(&pJSONValue);
-			continue;
-		}
-		pJSONValue = NULL;
-
-		xRet = FTM_JSON_ARRAY_setElement(pJSONArray, (FTM_JSON_VALUE_PTR)pJSONData);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONData);
-			continue;
-		}
-		pJSONData = NULL;
+		cJSON_AddStringToObject(pObject, "VALUE", pValueString);
+		cJSON_AddNumberToObject(pObject, "TIME", pData[i].ulTime);
 	}
 
-	xRet = FTM_JSON_OBJECT_setPair(pJSON, "DATA", (FTM_JSON_VALUE_PTR)pJSONArray);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONArray);
-		goto finish;	
-	}
-	pJSONArray = NULL;
-
-	FTM_ULONG	ulBuffLen;
-
-	xRet = FTM_JSON_buffSize((FTM_JSON_VALUE_PTR)pJSON, &ulBuffLen);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-	
-	pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(ulBuffLen + 1);
-	if (pBuff == NULL)
-	{
-		goto finish;	
-	}
-
-	FTM_JSON_snprint(pBuff, ulBuffLen + 1, (FTM_JSON_VALUE_PTR)pJSON);
+	pBuff = cJSON_Print(pRoot);
 
 	qcgires_setcontenttype(pReq, "text/xml");
 	printf("%s", pBuff);
@@ -316,29 +193,9 @@ FTM_RET	FTOM_CGI_getEPData(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 	xRet = FTM_RET_OK;
 
 finish:
-	if (pJSON != NULL)
+	if (pRoot != NULL)
 	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSON);	
-	}
-
-	if (pJSONArray != NULL)
-	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONArray);	
-	}
-
-	if (pJSONValue != NULL)
-	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONValue);	
-	}
-
-	if (pJSONData != NULL)
-	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONData);	
-	}
-
-	if (pBuff != NULL)
-	{
-		FTM_MEM_free(pBuff);
+		cJSON_Delete(pRoot);
 	}
 
 	if (pData != NULL)
@@ -349,19 +206,19 @@ finish:
 	return	xRet;
 }
 
-FTM_RET	FTOM_CGI_getEPDataLast(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
+FTM_RET	FTOM_CGI_getEPDataLast
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
 
 	FTM_RET			xRet;
 	FTM_CHAR_PTR	pBuff = NULL;
-	FTM_ULONG		ulBuffLen;
 	FTM_ULONG		ulCount = 0;
 	FTM_EPID		*pEPIDList = NULL;
-	FTM_JSON_ARRAY_PTR	pJSON = NULL;
-	FTM_JSON_VALUE_PTR	pJSONObject = NULL;
-	FTM_JSON_VALUE_PTR	pJSONValue = NULL;
 
 	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
 	if (xRet != FTM_RET_OK)
@@ -381,17 +238,16 @@ FTM_RET	FTOM_CGI_getEPDataLast(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 		goto finish;
 	}
 
-	xRet = FTM_JSON_createArray(ulCount, &pJSON);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;
-	}
+	cJSON _PTR_ pRoot;
+
+	pRoot = cJSON_CreateArray();
 	
 	for(int i = 0 ; i < ulCount ; i++)
 	{
 		FTM_EP_DATA	xEPData;
 		FTM_CHAR	pValueString[64];
-		
+		cJSON _PTR_ pObject;
+
 		xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, pEPIDList[i], &xEPData);
 		if (xRet != FTM_RET_OK)
 		{
@@ -404,83 +260,13 @@ FTM_RET	FTOM_CGI_getEPDataLast(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 			continue;
 		}
 
-		xRet = FTM_JSON_createObject(3, (FTM_JSON_OBJECT_PTR _PTR_)&pJSONObject);
-		if (xRet != FTM_RET_OK)
-		{
-			continue;
-		}
-
-		xRet = FTM_JSON_createString(pEPIDList[i], &pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONObject);
-			continue;
-		}
-		
-		xRet = FTM_JSON_OBJECT_setPair((FTM_JSON_OBJECT_PTR)pJSONObject, "ID", pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONObject);
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONValue);
-			continue;
-		}
-
-		xRet = FTM_JSON_createString(pValueString, &pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONObject);
-			continue;
-		}
-		
-		xRet = FTM_JSON_OBJECT_setPair((FTM_JSON_OBJECT_PTR)pJSONObject, "VALUE", pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONObject);
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONValue);
-			continue;
-		}
-
-		xRet = FTM_JSON_createNumber(xEPData.ulTime, &pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONObject);
-			continue;
-		}
-		
-		xRet = FTM_JSON_OBJECT_setPair((FTM_JSON_OBJECT_PTR)pJSONObject, "TIME", pJSONValue);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONObject);
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONValue);
-			continue;
-		}
-		
-		xRet = FTM_JSON_ARRAY_setElement(pJSON, pJSONObject);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONObject);
-			continue;
-		}
+		cJSON_AddItemToArray(pRoot, pObject = cJSON_CreateObject());
+		cJSON_AddStringToObject(pObject, "ID", pEPIDList[i]);
+		cJSON_AddStringToObject(pObject, "VALUE", pValueString);
+		cJSON_AddNumberToObject(pObject, "TIME", xEPData.ulTime);
 	}
 
-	xRet = FTM_JSON_buffSize((FTM_JSON_VALUE_PTR)pJSON, &ulBuffLen);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
-	pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(ulBuffLen + 1);
-	if (pBuff == NULL)
-	{
-		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
-		goto finish;
-	}
-
-	xRet = FTM_JSON_snprint(pBuff, ulBuffLen + 1, (FTM_JSON_VALUE_PTR)pJSON);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
+	pBuff = cJSON_Print(pRoot);
 
 	qcgires_setcontenttype(pReq, "text/xml");
 	printf("%s", pBuff);
@@ -488,19 +274,14 @@ FTM_RET	FTOM_CGI_getEPDataLast(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 	xRet = FTM_RET_OK;
 
 finish:
-	if (pBuff != NULL)
+	if (pRoot != NULL)
 	{
-		free(pBuff);	
+		cJSON_Delete(pRoot);
 	}
 
 	if (pEPIDList != NULL)
 	{
 		FTM_MEM_free(pEPIDList);
-	}
-
-	if (pJSON != NULL)
-	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSON);
 	}
 
 	return	xRet;
@@ -509,245 +290,73 @@ finish:
 FTM_RET	FTOM_CGI_makeEPInfo
 (
 	FTM_EP_PTR		pEPInfo,
-	FTM_JSON_VALUE_PTR _PTR_ ppObject
+	cJSON _PTR_ _PTR_ ppObject
 )
 {
 	FTM_RET	xRet;
-	FTM_JSON_OBJECT_PTR	pJSON = NULL;
-	FTM_JSON_OBJECT_PTR	pJSONObject = NULL;
-	FTM_JSON_VALUE_PTR	pJSONValue = NULL;
-	FTM_JSON_OBJECT_PTR	pJSONData = NULL;
+	cJSON _PTR_	pRoot, _PTR_ pLimit;
 
-	xRet = FTM_JSON_createObject(7, &pJSON);
-	if (xRet != FTM_RET_OK)
+	pRoot = cJSON_CreateObject();
+	if (pRoot == NULL)
 	{
-		goto finish;	
+		goto finish;
 	}
 
-	xRet = FTM_JSON_createString(pEPInfo->pEPID, &pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
-	xRet = FTM_JSON_OBJECT_setPair(pJSON, "ID", pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-	pJSONValue = NULL;
-
-	xRet = FTM_JSON_createString(FTM_EP_typeString(pEPInfo->xType), &pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
-	xRet = FTM_JSON_OBJECT_setPair(pJSON, "TYPE", pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-	pJSONValue = NULL;
-
-	xRet = FTM_JSON_createString(pEPInfo->pName, &pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
-	xRet = FTM_JSON_OBJECT_setPair(pJSON, "NAME", pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-	pJSONValue = NULL;
-
-	xRet = FTM_JSON_createString(pEPInfo->pUnit, &pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
-	xRet = FTM_JSON_OBJECT_setPair(pJSON, "UNIT", pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-	pJSONValue = NULL;
-
-
-	xRet = FTM_JSON_createNumber(pEPInfo->ulInterval, &pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
-	xRet = FTM_JSON_OBJECT_setPair(pJSON, "INTERVAL", pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-	pJSONValue = NULL;
-
-	xRet = FTM_JSON_createString(pEPInfo->pDID, &pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
-	xRet = FTM_JSON_OBJECT_setPair(pJSON, "DID", pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-	pJSONValue = NULL;
-
-	xRet = FTM_JSON_createObject(4, &pJSONObject);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-
+	cJSON_AddStringToObject(pRoot, "ID", pEPInfo->pEPID);
+	cJSON_AddStringToObject(pRoot, "TYPE", FTM_EP_typeString(pEPInfo->xType));
+	cJSON_AddStringToObject(pRoot, "NAME", pEPInfo->pName);
+	cJSON_AddStringToObject(pRoot, "UNIT", pEPInfo->pUnit);
+	cJSON_AddNumberToObject(pRoot, "INTERVAL", pEPInfo->ulInterval);
+	cJSON_AddStringToObject(pRoot, "DID", pEPInfo->pDID);
+	cJSON_AddItemToObject(pRoot, "LIMIT", pLimit = cJSON_CreateObject());
+	
 	switch(pEPInfo->xLimit.xType)
 	{
 	case	FTM_EP_LIMIT_TYPE_COUNT:
 		{
-			xRet = FTM_JSON_createString("COUNT", &pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
+			cJSON_AddStringToObject(pLimit, "TYPE", "COUNT");
+			cJSON_AddNumberToObject(pLimit, "COUNT", pEPInfo->xLimit.xParams.ulCount);
 		}
 		break;
 
 	case	FTM_EP_LIMIT_TYPE_TIME:
 		{
-			xRet = FTM_JSON_createString("TIME", &pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
+			cJSON _PTR_ pTime;
+
+			cJSON_AddStringToObject(pLimit, "TYPE", "TIME");
+			cJSON_AddItemToObject(pLimit, "TIME", pTime = cJSON_CreateObject());
+			cJSON_AddNumberToObject(pTime, "START", pEPInfo->xLimit.xParams.xTime.ulStart);
+			cJSON_AddNumberToObject(pTime, "END", pEPInfo->xLimit.xParams.xTime.ulEnd);
 		}
 		break;
 
 	case	FTM_EP_LIMIT_TYPE_HOURS:
 		{
-			xRet = FTM_JSON_createString("HOURS", &pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
+			cJSON_AddStringToObject(pLimit, "TYPE", "HOURS");
 		}
 		break;
 
 	case	FTM_EP_LIMIT_TYPE_DAYS:
 		{
-			xRet = FTM_JSON_createString("DAYS", &pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
+			cJSON_AddStringToObject(pLimit, "TYPE", "DAYS");
 		}
 		break;
 
 	case	FTM_EP_LIMIT_TYPE_MONTHS:
 		{
-			xRet = FTM_JSON_createString("MONTHS", &pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
+			cJSON_AddStringToObject(pLimit, "TYPE", "MONTHS");
 		}
 		break;
 	}
 
-	xRet = FTM_JSON_OBJECT_setPair(pJSONObject, "TYPE", pJSONValue);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-	pJSONValue = NULL;
-
-	switch(pEPInfo->xLimit.xType)
-	{
-	case	FTM_EP_LIMIT_TYPE_COUNT:
-		{
-			xRet = FTM_JSON_createNumber(pEPInfo->xLimit.xParams.ulCount, &pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
-
-			xRet = FTM_JSON_OBJECT_setPair(pJSONObject, "COUNT", pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
-			pJSONValue = NULL;
-
-		}
-		break;
-
-	case	FTM_EP_LIMIT_TYPE_TIME:
-		{
-			xRet = FTM_JSON_createNumber(pEPInfo->xLimit.xParams.xTime.ulStart, &pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
-
-			xRet = FTM_JSON_OBJECT_setPair(pJSONObject, "START", pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
-			pJSONValue = NULL;
-
-			xRet = FTM_JSON_createNumber(pEPInfo->xLimit.xParams.xTime.ulEnd, &pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
-
-			xRet = FTM_JSON_OBJECT_setPair(pJSONObject, "END", pJSONValue);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
-			pJSONValue = NULL;
-		}
-		break;
-
-	default:
-		break;
-	}
-
-	xRet = FTM_JSON_OBJECT_setPair(pJSON, "LIMIT", (FTM_JSON_VALUE_PTR)pJSONObject);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;	
-	}
-	pJSONObject = NULL;
-
-	*ppObject = (FTM_JSON_VALUE_PTR)pJSON;
+	*ppObject = pRoot;
 
 	return	FTM_RET_OK;
 
 finish:
-	if (pJSON != NULL)
+	if (pRoot != NULL)
 	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSON);
-	}
-
-	if (pJSONData != NULL)
-	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONData);
-	}
-
-	if (pJSONValue != NULL)
-	{
-		FTM_JSON_destroy((FTM_JSON_VALUE_PTR _PTR_)&pJSONValue);
+		cJSON_Delete(pRoot);
 	}
 
 	return	xRet;

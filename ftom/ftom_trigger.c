@@ -126,15 +126,15 @@ FTM_RET	FTOM_TRIGGERM_init
 		return	xRet;	
 	}
 
-	xRet = FTM_LIST_init(&pTriggerM->xEventList);
+	xRet = FTM_LIST_init(&pTriggerM->xTriggerList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Event list creation failed[%08x].\n", xRet);
+		ERROR("Trigger list creation failed[%08x].\n", xRet);
 		FTM_MSGQ_destroy(pTriggerM->pMsgQ);
 		return	xRet;	
 	}
 
-	FTM_LIST_setSeeker(&pTriggerM->xEventList, FTOM_TRIGGERM_seeker);
+	FTM_LIST_setSeeker(&pTriggerM->xTriggerList, FTOM_TRIGGERM_seeker);
 
 
 	TRACE("Trigger management initialized.\n");
@@ -155,17 +155,17 @@ FTM_RET	FTOM_TRIGGERM_final
 	pTriggerM->pMsgQ = NULL;
 
 
-	FTM_LIST_iteratorStart(&pTriggerM->xEventList);
-	while(FTM_LIST_iteratorNext(&pTriggerM->xEventList, (FTM_VOID_PTR _PTR_)&pTrigger) == FTM_RET_OK)
+	FTM_LIST_iteratorStart(&pTriggerM->xTriggerList);
+	while(FTM_LIST_iteratorNext(&pTriggerM->xTriggerList, (FTM_VOID_PTR _PTR_)&pTrigger) == FTM_RET_OK)
 	{
-		xRet = FTM_LIST_remove(&pTriggerM->xEventList, pTrigger);
+		xRet = FTM_LIST_remove(&pTriggerM->xTriggerList, pTrigger);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_MEM_free(pTrigger);	
 		}
 	}
 
-	FTM_LIST_final(&pTriggerM->xEventList);
+	FTM_LIST_final(&pTriggerM->xTriggerList);
 
 	FTM_TRIGGER_final();
 
@@ -250,10 +250,10 @@ FTM_RET	FTOM_TRIGGERM_start
 		return	FTM_RET_ALREADY_STARTED;	
 	}
 
-	nRet = pthread_create(&pTriggerM->xEventThread, NULL, FTOM_TRIGGERM_process, pTriggerM);
+	nRet = pthread_create(&pTriggerM->xTriggerThread, NULL, FTOM_TRIGGERM_process, pTriggerM);
 	if (nRet < 0)
 	{
-		ERROR("Can't start Event Manager!\n");
+		ERROR("Can't start Trigger Manager!\n");
 		return	FTM_RET_ERROR;
 	}
 
@@ -274,7 +274,7 @@ FTM_RET	FTOM_TRIGGERM_stop
 	}
 
 	pTriggerM->bStop = FTM_TRUE;
-	pthread_join(pTriggerM->xEventThread, NULL);
+	pthread_join(pTriggerM->xTriggerThread, NULL);
 
 	return	FTM_RET_OK;
 }
@@ -299,7 +299,7 @@ FTM_VOID_PTR FTOM_TRIGGERM_process
 
 		FTM_TIMER_add(&xTimer, FTOM_TRIGGER_LOOP_INTERVAL);
 	
-		FTM_LIST_count(&pTriggerM->xEventList, &ulCount);
+		FTM_LIST_count(&pTriggerM->xTriggerList, &ulCount);
 		for(i = 0 ; i < ulCount ; i++)
 		{
 			xRet = FTOM_TRIGGERM_getAt(pTriggerM, i, &pTrigger);
@@ -314,7 +314,7 @@ FTM_VOID_PTR FTOM_TRIGGERM_process
 						INFO("Trigger[%d] occurred!\n", pTrigger->xInfo.xID);
 						pTrigger->xState = FTOM_TRIGGER_STATE_SET;
 						FTM_TIME_getCurrent(&pTrigger->xOccurrenceTime);
-						FTM_TIMER_initTime(&pTrigger->xHoldingTimer, &pTrigger->xInfo.xParams.xCommon.xHoldingTime);
+						FTM_TIMER_init(&pTrigger->xHoldingTimer, pTrigger->xInfo.xParams.xCommon.ulHoldingTime);
 
 						FTOM_RULEM_notifyChanged(pTrigger->xInfo.xID);
 					}
@@ -357,17 +357,19 @@ FTM_RET FTOM_TRIGGERM_count
 {
 	ASSERT(pTriggerM != NULL);
 
-	return	FTM_LIST_count(&pTriggerM->xEventList, pulCount);
+	return	FTM_LIST_count(&pTriggerM->xTriggerList, pulCount);
 }
 
 FTM_RET	FTOM_TRIGGERM_add
 (
 	FTOM_TRIGGERM_PTR 	pTriggerM, 
-	FTM_TRIGGER_PTR 	pInfo
+	FTM_TRIGGER_PTR 	pInfo,
+	FTM_TRIGGER_ID_PTR	pID
 )
 {
 	ASSERT(pTriggerM != NULL);
 	ASSERT(pInfo != NULL);
+	ASSERT(pID != NULL);
 
 	FTM_RET			xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
@@ -384,10 +386,14 @@ FTM_RET	FTOM_TRIGGERM_add
 	
 	FTM_LOCK_init(&pTrigger->xLock);
 
-	xRet = FTM_LIST_append(&pTriggerM->xEventList, pTrigger);
+	xRet = FTM_LIST_append(&pTriggerM->xTriggerList, pTrigger);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pTrigger);	
+	}
+	else
+	{
+		*pID = pTrigger->xInfo.xID;	
 	}
 
 	return	xRet;
@@ -396,7 +402,7 @@ FTM_RET	FTOM_TRIGGERM_add
 FTM_RET	FTOM_TRIGGERM_del
 (
 	FTOM_TRIGGERM_PTR 	pTriggerM, 
-	FTOM_TRIGGER_ID  	xEventID
+	FTOM_TRIGGER_ID  	xTriggerID
 )
 {
 	ASSERT(pTriggerM != NULL);
@@ -404,10 +410,10 @@ FTM_RET	FTOM_TRIGGERM_del
 	FTM_RET			xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
 
-	xRet = FTM_LIST_get(&pTriggerM->xEventList, (FTM_VOID_PTR)&xEventID, (FTM_VOID_PTR _PTR_)&pTrigger);
+	xRet = FTM_LIST_get(&pTriggerM->xTriggerList, (FTM_VOID_PTR)&xTriggerID, (FTM_VOID_PTR _PTR_)&pTrigger);
 	if (xRet == FTM_RET_OK)
 	{
-		FTM_LIST_remove(&pTriggerM->xEventList, pTrigger);
+		FTM_LIST_remove(&pTriggerM->xTriggerList, pTrigger);
 
 		FTM_LOCK_final(&pTrigger->xLock);
 		FTM_MEM_free(pTrigger);
@@ -419,13 +425,13 @@ FTM_RET	FTOM_TRIGGERM_del
 FTM_RET	FTOM_TRIGGERM_get
 (
 	FTOM_TRIGGERM_PTR 	pTriggerM, 
-	FTOM_TRIGGER_ID 	xEventID, 
+	FTOM_TRIGGER_ID 	xTriggerID, 
 	FTOM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
 	ASSERT(pTriggerM != NULL);
 
-	return	FTM_LIST_get(&pTriggerM->xEventList, (FTM_VOID_PTR)&xEventID, (FTM_VOID_PTR _PTR_)ppTrigger);
+	return	FTM_LIST_get(&pTriggerM->xTriggerList, (FTM_VOID_PTR)&xTriggerID, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
 FTM_RET	FTOM_TRIGGERM_getAt
@@ -437,7 +443,7 @@ FTM_RET	FTOM_TRIGGERM_getAt
 {
 	ASSERT(pTriggerM != NULL);
 
-	return	FTM_LIST_getAt(&pTriggerM->xEventList, ulIndex, (FTM_VOID_PTR _PTR_)ppTrigger);
+	return	FTM_LIST_getAt(&pTriggerM->xTriggerList, ulIndex, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
 
@@ -451,10 +457,13 @@ FTM_RET	FTOM_TRIGGERM_updateEP
 	ASSERT(pTriggerM != NULL);
 
 	FTM_RET				xRet;
-	FTOM_TRIGGER_PTR		pTrigger;
+	FTOM_TRIGGER_PTR	pTrigger;
 	FTM_ULONG			i, ulCount;
+	FTM_VALUE			xValue;
 
-	FTM_LIST_count(&pTriggerM->xEventList, &ulCount);
+	FTM_EP_DATA_toValue(pData, &xValue);
+
+	FTM_LIST_count(&pTriggerM->xTriggerList, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		xRet = FTOM_TRIGGERM_getAt(pTriggerM, i, &pTrigger);
@@ -466,8 +475,8 @@ FTM_RET	FTOM_TRIGGERM_updateEP
 		if (strcmp(pTrigger->xInfo.pEPID, pEPID) == 0)
 		{
 			FTM_BOOL	bOccurrence = FTM_FALSE;
-
-			xRet = FTM_TRIGGER_occurred(&pTrigger->xInfo, pData, &bOccurrence);
+			
+			xRet = FTM_TRIGGER_occurred(&pTrigger->xInfo, &xValue, &bOccurrence);
 			if (xRet == FTM_RET_OK)
 			{
 				FTM_LOCK_set(&pTrigger->xLock);
@@ -478,7 +487,7 @@ FTM_RET	FTOM_TRIGGERM_updateEP
 					{
 						if (bOccurrence)
 						{
-							FTM_TIMER_initTime(&pTrigger->xDetectionTimer, &pTrigger->xInfo.xParams.xCommon.xDetectionTime);
+							FTM_TIMER_init(&pTrigger->xDetectionTimer, pTrigger->xInfo.xParams.xCommon.ulDetectionTime);
 							pTrigger->xState = FTOM_TRIGGER_STATE_PRESET;
 						}
 					}

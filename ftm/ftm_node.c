@@ -144,7 +144,11 @@ FTM_RET	FTM_NODE_isValidSNMPOpt(FTM_NODE_PTR pNode, FTM_NODE_OPT_SNMP_PTR pOpts)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_NODE_isValidTimeout(FTM_NODE_PTR pNode, FTM_ULONG	ulTimeout)
+FTM_RET	FTM_NODE_isValidTimeout
+(
+	FTM_NODE_PTR pNode, 
+	FTM_ULONG	ulTimeout
+)
 {
 	ASSERT(pNode != NULL);
 
@@ -156,7 +160,10 @@ FTM_RET	FTM_NODE_isValidTimeout(FTM_NODE_PTR pNode, FTM_ULONG	ulTimeout)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_NODE_isStatic(FTM_NODE_PTR pNode)
+FTM_RET	FTM_NODE_isStatic
+(
+	FTM_NODE_PTR pNode
+)
 {
 	ASSERT(pNode != NULL);
 
@@ -168,7 +175,11 @@ FTM_RET	FTM_NODE_isStatic(FTM_NODE_PTR pNode)
 	return	FTM_RET_FALSE;
 }
 
-FTM_RET	FTM_NODE_setDID(FTM_NODE_PTR pNode, FTM_CHAR_PTR pDID)
+FTM_RET	FTM_NODE_setDID
+(
+	FTM_NODE_PTR pNode, 
+	FTM_CHAR_PTR pDID
+)
 {
 	ASSERT(pNode != NULL);
 
@@ -182,7 +193,10 @@ FTM_RET	FTM_NODE_setDID(FTM_NODE_PTR pNode, FTM_CHAR_PTR pDID)
 	return	FTM_RET_OK;
 }
 
-FTM_CHAR_PTR FTM_NODE_typeString(FTM_NODE_TYPE xType)
+FTM_CHAR_PTR FTM_NODE_typeString
+(
+	FTM_NODE_TYPE xType
+)
 {
 	switch(xType)
 	{
@@ -194,3 +208,26 @@ FTM_CHAR_PTR FTM_NODE_typeString(FTM_NODE_TYPE xType)
 	return	"UNKNOWN";
 }
 
+static	FTM_CHAR_PTR	pFlagName[] =
+{
+	"STATIC",
+	NULL
+};
+
+FTM_CHAR_PTR	FTM_NODE_flagString
+(
+	FTM_NODE_FLAG xFlag
+)
+{
+	FTM_INT	i;
+
+	for(i = 0 ; pFlagName[i] != NULL ; i++)
+	{
+		if (xFlag & (1 << i))
+		{
+			return	pFlagName[i];
+		}
+	}
+
+	return	"";
+}

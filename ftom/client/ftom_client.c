@@ -878,6 +878,700 @@ FTM_RET	FTOM_CLIENT_EP_DATA_count
 	return	xResp.xRet;
 }
 
+FTM_RET	FTOM_CLIENT_EP_DATA_type
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_TYPE_PTR	pType
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pType != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_EP_DATA_TYPE_PARAMS	xReq;
+	FTOM_RESP_EP_DATA_TYPE_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_EP_DATA_TYPE;
+	xReq.ulLen		=	sizeof(xReq);
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		*pType = xResp.xType;
+	}
+
+	return	xResp.xRet;
+}
+
+
+/*****************************************************************
+ *
+ *****************************************************************/
+
+FTM_RET	FTOM_CLIENT_TRIGGER_add
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_TRIGGER_PTR	pTrigger
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pTrigger != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_TRIGGER_ADD_PARAMS	xReq;
+	FTOM_RESP_TRIGGER_ADD_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_TRIG_ADD;
+	xReq.ulLen		=	sizeof(xReq);
+	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_TRIGGER_del
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_TRIGGER_ID	xID
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_TRIGGER_DEL_PARAMS	xReq;
+	FTOM_RESP_TRIGGER_DEL_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_TRIG_DEL;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.xID		=	xID;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_TRIGGER_count
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_TRIGGER_COUNT_PARAMS	xReq;
+	FTOM_RESP_TRIGGER_COUNT_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_TRIG_COUNT;
+	xReq.ulLen		=	sizeof(xReq);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		*pulCount = xResp.ulCount;
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_TRIGGER_get
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_TRIGGER_ID	xID,
+	FTM_TRIGGER_PTR	pTrigger
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pTrigger != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_TRIGGER_GET_PARAMS	xReq;
+	FTOM_RESP_TRIGGER_GET_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_TRIG_GET;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.xID		=	xID;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		memcpy(pTrigger, &xResp.xTrigger, sizeof(FTM_TRIGGER));
+	}	
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_TRIGGER_getAt
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_TRIGGER_PTR	pTrigger
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pTrigger != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_TRIGGER_GET_AT_PARAMS	xReq;
+	FTOM_RESP_TRIGGER_GET_AT_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_TRIG_GET_AT;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.ulIndex	=	ulIndex;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		memcpy(pTrigger, &xResp.xTrigger, sizeof(FTM_TRIGGER));
+	}	
+
+	return	xResp.xRet;
+}
+
+
+FTM_RET	FTOM_CLIENT_TRIGGER_set
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_TRIGGER_PTR	pTrigger
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pTrigger != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_TRIGGER_SET_PARAMS	xReq;
+	FTOM_RESP_TRIGGER_SET_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_TRIG_SET;
+	xReq.ulLen		=	sizeof(xReq);
+	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+
+FTM_RET	FTOM_CLIENT_ACTION_add
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ACTION_PTR	pAction
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pAction != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_ACTION_ADD_PARAMS	xReq;
+	FTOM_RESP_ACTION_ADD_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_ACTION_ADD;
+	xReq.ulLen		=	sizeof(xReq);
+	memcpy(&xReq.xAction, pAction, sizeof(FTM_ACTION));
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_ACTION_del
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ACTION_ID	xID
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_ACTION_DEL_PARAMS	xReq;
+	FTOM_RESP_ACTION_DEL_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_ACTION_DEL;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.xID		=	xID;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_ACTION_count
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_ACTION_COUNT_PARAMS	xReq;
+	FTOM_RESP_ACTION_COUNT_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_ACTION_COUNT;
+	xReq.ulLen		=	sizeof(xReq);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		*pulCount = xResp.ulCount;
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_ACTION_get
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ACTION_ID	xID,
+	FTM_ACTION_PTR	pAction
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pAction != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_ACTION_GET_PARAMS	xReq;
+	FTOM_RESP_ACTION_GET_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_ACTION_GET;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.xID		=	xID;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		memcpy(pAction, &xResp.xAction, sizeof(FTM_ACTION));
+	}	
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_ACTION_getAt
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_ACTION_PTR	pAction
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pAction != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_ACTION_GET_AT_PARAMS	xReq;
+	FTOM_RESP_ACTION_GET_AT_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_ACTION_GET_AT;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.ulIndex	=	ulIndex;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		memcpy(pAction, &xResp.xAction, sizeof(FTM_ACTION));
+	}	
+
+	return	xResp.xRet;
+}
+
+
+FTM_RET	FTOM_CLIENT_ACTION_set
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ACTION_PTR	pAction
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pAction != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_ACTION_SET_PARAMS	xReq;
+	FTOM_RESP_ACTION_SET_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_ACTION_SET;
+	xReq.ulLen		=	sizeof(xReq);
+	memcpy(&xReq.xAction, pAction, sizeof(FTM_ACTION));
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+
+FTM_RET	FTOM_CLIENT_RULE_add
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_RULE_PTR	pRule
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pRule != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_RULE_ADD_PARAMS	xReq;
+	FTOM_RESP_RULE_ADD_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_RULE_ADD;
+	xReq.ulLen		=	sizeof(xReq);
+	memcpy(&xReq.xRule, pRule, sizeof(FTM_RULE));
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_RULE_del
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_RULE_ID	xID
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_RULE_DEL_PARAMS	xReq;
+	FTOM_RESP_RULE_DEL_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_RULE_DEL;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.xID		=	xID;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_RULE_count
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_RULE_COUNT_PARAMS	xReq;
+	FTOM_RESP_RULE_COUNT_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_RULE_COUNT;
+	xReq.ulLen		=	sizeof(xReq);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		*pulCount = xResp.ulCount;
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_RULE_get
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_RULE_ID	xID,
+	FTM_RULE_PTR	pRule
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pRule != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_RULE_GET_PARAMS	xReq;
+	FTOM_RESP_RULE_GET_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_RULE_GET;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.xID		=	xID;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		memcpy(pRule, &xResp.xRule, sizeof(FTM_RULE));
+	}	
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_RULE_getAt
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_RULE_PTR	pRule
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pRule != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_RULE_GET_AT_PARAMS	xReq;
+	FTOM_RESP_RULE_GET_AT_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_RULE_GET_AT;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.ulIndex	=	ulIndex;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		memcpy(pRule, &xResp.xRule, sizeof(FTM_RULE));
+	}	
+
+	return	xResp.xRet;
+}
+
+
+FTM_RET	FTOM_CLIENT_RULE_set
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_RULE_PTR	pRule
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pRule != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_RULE_SET_PARAMS	xReq;
+	FTOM_RESP_RULE_SET_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	xReq.xCmd		=	FTOM_CMD_RULE_SET;
+	xReq.ulLen		=	sizeof(xReq);
+	memcpy(&xReq.xRule, pRule, sizeof(FTM_RULE));
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
 /*****************************************************************
  * Internal Functions
  *****************************************************************/

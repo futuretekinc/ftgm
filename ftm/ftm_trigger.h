@@ -6,6 +6,7 @@
 #include "ftm_action.h"
 #include "ftm_time.h"
 #include "ftm_list.h"
+#include "ftm_value.h"
 
 typedef	enum
 {
@@ -27,21 +28,21 @@ typedef	struct
 	{
 		struct
 		{
-			FTM_TIME		xDetectionTime;
-			FTM_TIME		xHoldingTime;
+			FTM_ULONG		ulDetectionTime;
+			FTM_ULONG		ulHoldingTime;
 		} xCommon;
 		struct
 		{
-			FTM_TIME		xDetectionTime;
-			FTM_TIME		xHoldingTime;
-			FTM_EP_DATA		xValue;		
+			FTM_ULONG		ulDetectionTime;
+			FTM_ULONG		ulHoldingTime;
+			FTM_VALUE		xValue;		
 		} xAbove, xBelow;
 		struct
 		{
-			FTM_TIME		xDetectionTime;
-			FTM_TIME		xHoldingTime;
-			FTM_EP_DATA		xUpper;		
-			FTM_EP_DATA		xLower;		
+			FTM_ULONG		ulDetectionTime;
+			FTM_ULONG		ulHoldingTime;
+			FTM_VALUE		xUpper;		
+			FTM_VALUE		xLower;		
 		} xInclude, xExcept;
 	}	xParams;
 }	FTM_TRIGGER, _PTR_ FTM_TRIGGER_PTR;
@@ -65,7 +66,7 @@ FTM_RET	FTM_TRIGGER_createAbove
 (
 	FTM_TRIGGER_ID 	xID, 
 	FTM_CHAR_PTR	pEPID,
-	FTM_EP_DATA_PTR pData, 
+	FTM_VALUE_PTR	pValue, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 ); 
 
@@ -73,7 +74,7 @@ FTM_RET	FTM_TRIGGER_createBelow
 (
 	FTM_TRIGGER_ID 	xID, 
 	FTM_CHAR_PTR	pEPID,
-	FTM_EP_DATA_PTR pData, 
+	FTM_VALUE_PTR	pValue, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 ); 
 
@@ -81,8 +82,8 @@ FTM_RET	FTM_TRIGGER_createInclude
 (
 	FTM_TRIGGER_ID 	xID, 
 	FTM_CHAR_PTR	pEPID,
-	FTM_EP_DATA_PTR pUpper, 
-	FTM_EP_DATA_PTR pLower, 
+	FTM_VALUE_PTR	pUppder, 
+	FTM_VALUE_PTR	pLower, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 ); 
 
@@ -90,8 +91,8 @@ FTM_RET	FTM_TRIGGER_createExcept
 (
 	FTM_TRIGGER_ID 	xID, 
 	FTM_CHAR_PTR	pEPID,
-	FTM_EP_DATA_PTR pUpper, 
-	FTM_EP_DATA_PTR pLower, 
+	FTM_VALUE_PTR	pUppder, 
+	FTM_VALUE_PTR	pLower, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 ); 
 
@@ -137,7 +138,7 @@ FTM_RET	FTM_TRIGGER_getAt
 FTM_RET	FTM_TRIGGER_occurred
 (
 	FTM_TRIGGER_PTR pTrigger, 
-	FTM_EP_DATA_PTR pCurrData, 
+	FTM_VALUE_PTR	pCurrData, 
 	FTM_BOOL_PTR 	pResult
 );
 

@@ -18,7 +18,7 @@
 
 
 #ifndef	FTOM_TRACE_IO
-#define	FTOM_TRACE_IO		0
+#define	FTOM_TRACE_IO		1
 #endif
 
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTOM_SERVER_CALLBACK)FUN }
@@ -130,83 +130,273 @@ static FTM_RET	FTOM_SERVER_EP_count
 
 static FTM_RET	FTOM_SERVER_EP_getList
 (
-	FTOM_SERVER_PTR					pServer,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_GET_LIST_PARAMS_PTR		pReq,
-	FTM_ULONG							ulReqLen,
+	FTM_ULONG		ulReqLen,
 	FTOM_RESP_EP_GET_LIST_PARAMS_PTR	pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG		ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_get
 (
-	FTOM_SERVER_PTR					pServer,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_GET_PARAMS_PTR			pReq,
-	FTM_ULONG							ulReqLen,
+	FTM_ULONG		ulReqLen,
 	FTOM_RESP_EP_GET_PARAMS_PTR			pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG		ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_getAt
 (
-	FTOM_SERVER_PTR					pServer,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_GET_AT_PARAMS_PTR		pReq,
-	FTM_ULONG							ulReqLen,
+	FTM_ULONG		ulReqLen,
 	FTOM_RESP_EP_GET_AT_PARAMS_PTR		pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG		ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_set
 (
-	FTOM_SERVER_PTR					pServer,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_SET_PARAMS_PTR			pReq,
-	FTM_ULONG							ulReqLen,
+	FTM_ULONG		ulReqLen,
 	FTOM_RESP_EP_SET_PARAMS_PTR			pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG		ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
 (
-	FTOM_SERVER_PTR							pServer,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pReq,
-	FTM_ULONG							ulReqLen,
+	FTM_ULONG		ulReqLen,
  	FTOM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG		ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_DATA_info
 (
-	FTOM_SERVER_PTR					pServer,
+	FTOM_SERVER_PTR	pServer,
 	FTOM_REQ_EP_DATA_INFO_PARAMS_PTR 	pReq,
-	FTM_ULONG							ulReqLen,
+	FTM_ULONG		ulReqLen,
 	FTOM_RESP_EP_DATA_INFO_PARAMS_PTR 	pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG		ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_DATA_count
 (
-	FTOM_SERVER_PTR						pServer,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_DATA_COUNT_PARAMS_PTR		pReq,
-	FTM_ULONG							ulReqLen,
+	FTM_ULONG		ulReqLen,
 	FTOM_RESP_EP_DATA_COUNT_PARAMS_PTR		pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG		ulRespLen
+);
+
+static FTM_RET	FTOM_SERVER_EP_DATA_type
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_EP_DATA_TYPE_PARAMS_PTR		pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_TYPE_PARAMS_PTR		pResp,
+	FTM_ULONG		ulRespLen
 );
 
 static FTM_RET	FTOM_SERVER_EP_DATA_getLast
 (
-	FTOM_SERVER_PTR						pServer,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_DATA_GET_LAST_PARAMS_PTR	pReq,
-	FTM_ULONG							ulReqLen,
+	FTM_ULONG		ulReqLen,
 	FTOM_RESP_EP_DATA_GET_LAST_PARAMS_PTR	pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_DATA_getList
+static 
+FTM_RET	FTOM_SERVER_EP_DATA_getList
 (
-	FTOM_SERVER_PTR						pServer,
+	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_DATA_GET_LIST_PARAMS_PTR	pReq,
-	FTM_ULONG							ulReqLen,
+	FTM_ULONG		ulReqLen,
 	FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR	pResp,
-	FTM_ULONG				ulRespLen
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_add
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_ADD_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_ADD_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_del
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_DEL_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_DEL_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_count
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_COUNT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_get
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_GET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_GET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_getAt
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_GET_AT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_GET_AT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_set
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_SET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_SET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_add
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_ADD_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_ADD_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_del
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_DEL_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_DEL_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_count
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_COUNT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_get
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_GET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_GET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_getAt
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_GET_AT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_GET_AT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_set
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_SET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_SET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_RULE_add
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_ADD_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_ADD_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_RULE_del
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_DEL_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_DEL_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_RULE_count
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_COUNT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_RULE_get
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_GET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_GET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_RULE_getAt
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_GET_AT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_GET_AT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_RULE_set
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_SET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_SET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
 );
 
 static FTOM_SERVER_CMD_SET	pCmdSet[] =
@@ -228,6 +418,29 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_DATA_GET_LAST,		FTOM_SERVER_EP_DATA_getLast),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_GET_LIST,		FTOM_SERVER_EP_DATA_getList),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_COUNT,			FTOM_SERVER_EP_DATA_count),
+	MK_CMD_SET(FTOM_CMD_EP_DATA_TYPE,			FTOM_SERVER_EP_DATA_type),
+
+	MK_CMD_SET(FTOM_CMD_TRIG_ADD,				FTOM_SERVER_TRIGGER_add),
+	MK_CMD_SET(FTOM_CMD_TRIG_DEL,				FTOM_SERVER_TRIGGER_del),
+	MK_CMD_SET(FTOM_CMD_TRIG_COUNT,				FTOM_SERVER_TRIGGER_count),
+	MK_CMD_SET(FTOM_CMD_TRIG_GET,				FTOM_SERVER_TRIGGER_get),
+	MK_CMD_SET(FTOM_CMD_TRIG_GET_AT,			FTOM_SERVER_TRIGGER_getAt),
+	MK_CMD_SET(FTOM_CMD_TRIG_SET,				FTOM_SERVER_TRIGGER_set),
+	
+	MK_CMD_SET(FTOM_CMD_ACTION_ADD,				FTOM_SERVER_ACTION_add),
+	MK_CMD_SET(FTOM_CMD_ACTION_DEL,				FTOM_SERVER_ACTION_del),
+	MK_CMD_SET(FTOM_CMD_ACTION_COUNT,			FTOM_SERVER_ACTION_count),
+	MK_CMD_SET(FTOM_CMD_ACTION_GET,				FTOM_SERVER_ACTION_get),
+	MK_CMD_SET(FTOM_CMD_ACTION_GET_AT,			FTOM_SERVER_ACTION_getAt),
+	MK_CMD_SET(FTOM_CMD_ACTION_SET,				FTOM_SERVER_ACTION_set),
+	
+	MK_CMD_SET(FTOM_CMD_RULE_ADD,				FTOM_SERVER_RULE_add),
+	MK_CMD_SET(FTOM_CMD_RULE_DEL,				FTOM_SERVER_RULE_del),
+	MK_CMD_SET(FTOM_CMD_RULE_COUNT,				FTOM_SERVER_RULE_count),
+	MK_CMD_SET(FTOM_CMD_RULE_GET,				FTOM_SERVER_RULE_get),
+	MK_CMD_SET(FTOM_CMD_RULE_GET_AT,			FTOM_SERVER_RULE_getAt),
+	MK_CMD_SET(FTOM_CMD_RULE_SET,				FTOM_SERVER_RULE_set),
+	
 	MK_CMD_SET(FTOM_CMD_UNKNOWN, 		NULL)
 };
 
@@ -709,7 +922,10 @@ FTM_RET	FTOM_SERVER_serviceCall
 		if (pSet->xCmd == pReq->xCmd)
 		{
 #if	FTOM_TRACE_IO
+			FTM_RET	xRet;
+
 			TRACE("CMD : %s\n", pSet->pCmdString);
+			xRet = 
 #endif
 			pSet->fService(pServer, pReq, ulReqLen, pResp, ulRespLen);
 #if	FTOM_TRACE_IO
@@ -1230,6 +1446,412 @@ FTM_RET	FTOM_SERVER_EP_DATA_count
 	{
 		pResp->ulCount = ulCount;
 	}
+
+	return	pResp->xRet;
+}
+
+FTM_RET	FTOM_SERVER_EP_DATA_type
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_EP_DATA_TYPE_PARAMS_PTR 	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_TYPE_PARAMS_PTR 	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTOM_EP_PTR		pEP;
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = FTOM_EPM_getEP(pServer->pOM->pEPM, pReq->pEPID, &pEP);
+	if (pResp->xRet == FTM_RET_OK)
+	{
+		pResp->xRet = FTOM_EP_getDataType(pEP, &pResp->xType);
+	}
+
+	return	pResp->xRet;
+}
+
+/********************************************************************
+ *
+ ********************************************************************/
+FTM_RET	FTOM_SERVER_TRIGGER_add
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_ADD_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_ADD_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+	
+	pResp->xRet = FTOM_addTrigger(pServer->pOM, &pReq->xTrigger, &pResp->xID);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_del
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_DEL_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_DEL_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_delTrigger(pServer->pOM, pReq->xID);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_count
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_COUNT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getTriggerCount(pServer->pOM, &pResp->ulCount);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_get
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_GET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_GET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getTriggerInfo(pServer->pOM, pReq->xID, &pResp->xTrigger);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_getAt
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_GET_AT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_GET_AT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getTriggerInfoAt(pServer->pOM, pReq->ulIndex, &pResp->xTrigger);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_TRIGGER_set
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_TRIGGER_SET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_TRIGGER_SET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_setTriggerInfo(pServer->pOM, pReq->xID, &pReq->xTrigger);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_add
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_ADD_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_ADD_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_addAction(pServer->pOM, &pReq->xAction);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_del
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_DEL_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_DEL_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_delAction(pServer->pOM, pReq->xID);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_count
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_COUNT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getActionCount(pServer->pOM, &pResp->ulCount);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_get
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_GET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_GET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getActionInfo(pServer->pOM, pReq->xID, &pResp->xAction);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_getAt
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_GET_AT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_GET_AT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getActionInfoAt(pServer->pOM, pReq->ulIndex, &pResp->xAction);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_ACTION_set
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_ACTION_SET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_ACTION_SET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getActionInfo(pServer->pOM, pReq->xID, &pReq->xAction);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_RULE_add
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_ADD_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_ADD_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_addRule(pServer->pOM, &pReq->xRule);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xCmd;
+}
+
+static 
+FTM_RET	FTOM_SERVER_RULE_del
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_DEL_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_DEL_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_delRule(pServer->pOM, pReq->xID);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xCmd;
+}
+
+static 
+FTM_RET	FTOM_SERVER_RULE_count
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_COUNT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getRuleCount(pServer->pOM, &pResp->ulCount);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_RULE_get
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_GET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_GET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getRuleInfo(pServer->pOM, pReq->xID, &pResp->xRule);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_RULE_getAt
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_GET_AT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_GET_AT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getRuleInfoAt(pServer->pOM, pReq->ulIndex, &pResp->xRule);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_RULE_set
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_RULE_SET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_RULE_SET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xRet = FTOM_getRuleInfo(pServer->pOM, pReq->xID, &pReq->xRule);
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
 
 	return	pResp->xRet;
 }

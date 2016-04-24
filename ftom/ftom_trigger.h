@@ -37,8 +37,8 @@ typedef	struct FTOM_TRIGGERM_STRUCT
 	FTOM_PTR				pOM;
 	FTM_MSG_QUEUE_PTR		pMsgQ;
 	FTM_BOOL				bStop;
-	FTM_LIST				xEventList;
-	pthread_t				xEventThread;
+	FTM_LIST				xTriggerList;
+	pthread_t				xTriggerThread;
 }	FTOM_TRIGGERM, _PTR_ FTOM_TRIGGERM_PTR;
 	
 FTM_RET	FTOM_TRIGGERM_create
@@ -81,13 +81,14 @@ FTM_RET	FTOM_TRIGGERM_stop
 FTM_RET	FTOM_TRIGGERM_add
 (
 	FTOM_TRIGGERM_PTR pTriggerM, 
-	FTM_TRIGGER_PTR pEvent
+	FTM_TRIGGER_PTR pTrigger,
+	FTM_TRIGGER_ID_PTR	pTriggerID
 );
 
 FTM_RET	FTOM_TRIGGERM_del
 (
 	FTOM_TRIGGERM_PTR pTriggerM, 
-	FTOM_TRIGGER_ID  xEventID
+	FTOM_TRIGGER_ID  xTriggerID
 );
 
 FTM_RET	FTOM_TRIGGERM_count
@@ -99,15 +100,15 @@ FTM_RET	FTOM_TRIGGERM_count
 FTM_RET	FTOM_TRIGGERM_get
 (
 	FTOM_TRIGGERM_PTR pTriggerM, 
-	FTOM_TRIGGER_ID 	xEventID, 
-	FTOM_TRIGGER_PTR _PTR_ ppEvent
+	FTOM_TRIGGER_ID 	xTriggerID, 
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger
 );
 
 FTM_RET	FTOM_TRIGGERM_getAt
 (
 	FTOM_TRIGGERM_PTR pTriggerM, 
 	FTM_ULONG ulIndex, 
-	FTOM_TRIGGER_PTR _PTR_ ppEvent
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger
 );
 
 FTM_RET	FTOM_TRIGGERM_updateEP

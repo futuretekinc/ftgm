@@ -13,14 +13,19 @@ LIBS:= 	-lftomcl\
 		-lftm\
 		-lconfig\
 		$(TOPDIR)/mxml-2.9/libmxml.a \
+		$(TOPDIR)/cjson/libcjson.a \
 		-lpthread \
+		-lm\
 		$(TOPDIR)/qdecoder-12.0.4/src/libqdecoder.a
 
 TARGET=	ftom.cgi
 SRCS=	main.o\
 		ftom_cgi.o\
 		cmd_ep.o\
-		cmd_node.o
+		cmd_node.o\
+		cmd_trigger.o\
+		cmd_action.o\
+		cmd_rule.o
 
 OBJS=$(SRCS:.c=.o)
 

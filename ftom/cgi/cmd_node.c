@@ -1,77 +1,108 @@
 #include "ftom_cgi.h"
 #include "ftom_client.h"
-#include "mxml.h"
+#include "cJSON.h"
 
-FTM_RET	FTOM_CGI_getNodeList(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
+FTM_RET	FTOM_CGI_getNode
+(
+	FTOM_CLIENT_PTR pClient,
+	qentry_t _PTR_ pReq
+)
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
-
-	mxml_node_t	*pXML = NULL;
-	mxml_node_t	*pSensorNode = NULL;
-	mxml_node_t	*pIndexNode = NULL;
-	mxml_node_t	*pFieldNode = NULL;
-	mxml_node_t	*pValueListNode = NULL;
+	
 	FTM_RET		xRet;
-	FTM_CHAR	pBuff[1024];
-	FTM_EP		xEPInfo;
-	FTM_EP_DATA_PTR	pData;
-	FTM_ULONG	ulCount = 0;
-
-	FTM_CHAR_PTR	pMAC  = pReq->getstr(pReq, "mac", false);
-	FTM_CHAR_PTR	pEPID = pReq->getstr(pReq, "id", false);
-
-
-	xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xEPInfo);
-	if (xRet != FTM_RET_OK)
+	FTM_NODE	xNodeInfo;
+	cJSON _PTR_ pRoot, _PTR_ pFlags;
+	FTM_CHAR_PTR	pDID = pReq->getstr(pReq, "id", false);
+	if (pDID == NULL)
 	{
 		goto finish;
 	}
-
-	pXML = mxmlNewXML("1.0");
-	pSensorNode = mxmlNewElement(pXML, "SENSOR");
-	pFieldNode = mxmlNewElement(pSensorNode, "MAC");
-	mxmlNewText(pFieldNode, 0, pMAC);
-	pFieldNode = mxmlNewElement(pSensorNode, "ID");
-	mxmlNewText(pFieldNode, 0, pEPID);
-	pFieldNode = mxmlNewElement(pSensorNode, "TYPED");
-	mxmlNewTextf(pFieldNode, 0, "%s", FTM_EP_typeString(xEPInfo.xType));
-	pFieldNode = mxmlNewElement(pSensorNode, "NAME");
-	mxmlNewTextf(pFieldNode, 0, "%s", xEPInfo.pName);
-	pFieldNode = mxmlNewElement(pSensorNode, "SN");
-	mxmlNewTextf(pFieldNode, 0, "%s", xEPInfo.pUnit);
-
-	pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * 10);
-	xRet = FTOM_CLIENT_EP_DATA_getList(pClient, pEPID, 0, pData, 10, &ulCount);
+	
+	xRet = FTOM_CLIENT_NODE_get(pClient, pDID, &xNodeInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;	
 	}
 
-	pValueListNode = mxmlNewElement(pSensorNode, "VALUES");
+	pRoot = cJSON_CreateObject();
+	cJSON_AddStringToObject(pRoot,	"DID", 		xNodeInfo.pDID);
+	cJSON_AddStringToObject(pRoot,	"TYPE", 	FTM_NODE_typeString(xNodeInfo.xType));
+	cJSON_AddStringToObject(pRoot,	"LOCATION", xNodeInfo.pLocation);
+	cJSON_AddNumberToObject(pRoot,	"INTERVAL", xNodeInfo.ulInterval);
+	cJSON_AddNumberToObject(pRoot,	"TIMEOUT", 	xNodeInfo.ulTimeout);
+	cJSON_AddItemToObject(pRoot, 	"FLAGS", 	pFlags = cJSON_CreateArray());
 
-	FTM_INT	i;
-	for(i = 0 ; i < ulCount ; i++)
+	for(FTM_INT j = 0; FTM_NODE_FLAG_LAST < (1 << j) ; j++)
 	{
-		FTM_CHAR	pValueString[64];
-
-		pIndexNode = mxmlNewElement(pValueListNode, "INDEX");
-		pFieldNode = mxmlNewElement(pIndexNode, "NUMBER");
-		mxmlNewInteger(pFieldNode, 1);
-		pFieldNode = mxmlNewElement(pIndexNode, "STATE");
-		mxmlNewInteger(pFieldNode, 1);
-		FTM_EP_DATA_snprint(pValueString, sizeof(pValueString), &pData[i]);
-		pFieldNode = mxmlNewElement(pIndexNode, "VALUE");
-		mxmlNewTextf(pFieldNode, 0, "%s", pValueString);
-		pFieldNode = mxmlNewElement(pIndexNode, "LASTVALUE");
-		mxmlNewTextf(pFieldNode, 0, "%s", pValueString);
-		pFieldNode = mxmlNewElement(pIndexNode, "INTERVAL");
-		mxmlNewInteger(pFieldNode, 1);
-		pFieldNode = mxmlNewElement(pIndexNode, "TIME");
-		mxmlNewInteger(pFieldNode, 1);
+		if (xNodeInfo.xFlags & (1 << j))
+		{
+			cJSON_AddItemToArray(pFlags, cJSON_CreateString(FTM_NODE_flagString(1 << j)));	
+		}
 	}
 
-	mxmlSaveString(pXML, pBuff, sizeof(pBuff), FTOM_CGI_whitespaceCB);
+finish:
+
+	if (pRoot != NULL)
+	{
+		cJSON_Delete(pRoot);
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getNodeList
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+
+	FTM_RET			xRet;
+	FTM_ULONG		ulCount = 0;
+	FTM_CHAR_PTR	pBuff = NULL;
+	FTM_NODE		xNodeInfo;
+	cJSON _PTR_ pRoot;
+
+	xRet = FTOM_CLIENT_NODE_count(pClient, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	pRoot = cJSON_CreateArray();
+
+	for(FTM_INT i = 0 ; i < ulCount ; i++)
+	{
+		cJSON _PTR_ pObject, _PTR_ pFlags;
+
+		xRet = FTOM_CLIENT_NODE_getAt(pClient, i, &xNodeInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			continue;	
+		}
+		
+		cJSON_AddItemToArray(pRoot, pObject = cJSON_CreateObject());
+		cJSON_AddStringToObject(pObject,"DID", 		xNodeInfo.pDID);
+		cJSON_AddStringToObject(pObject,"TYPE", 	FTM_NODE_typeString(xNodeInfo.xType));
+		cJSON_AddStringToObject(pObject,"LOCATION", xNodeInfo.pLocation);
+		cJSON_AddNumberToObject(pObject,"INTERVAL", xNodeInfo.ulInterval);
+		cJSON_AddNumberToObject(pObject,"TIMEOUT", 	xNodeInfo.ulTimeout);
+		cJSON_AddItemToObject(pObject, 	"FLAGS", 	pFlags = cJSON_CreateArray());
+
+		for(FTM_INT j = 0; FTM_NODE_FLAG_LAST < (1 << j) ; j++)
+		{
+			if (xNodeInfo.xFlags & (1 << j))
+			{
+				cJSON_AddItemToArray(pFlags, cJSON_CreateString(FTM_NODE_flagString(1 << j)));	
+			}
+		}
+	}
+
+	pBuff = cJSON_Print(pRoot);
 
 	qcgires_setcontenttype(pReq, "text/xml");
 	printf("%s", pBuff);
@@ -79,14 +110,9 @@ FTM_RET	FTOM_CGI_getNodeList(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
 	xRet = FTM_RET_OK;
 
 finish:
-	if (pData != NULL)
+	if (pRoot != NULL)
 	{
-		FTM_MEM_free(pData);
-	}
-
-	if (pXML)
-	{
-		mxmlRelease(pXML);
+		cJSON_Delete(pRoot);
 	}
 
 	return	xRet;

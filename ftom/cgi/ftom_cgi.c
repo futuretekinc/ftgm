@@ -7,15 +7,22 @@
 #include "ftom_cgi.h"
 #include "cmd_ep.h"
 #include "cmd_node.h"
+#include "cmd_trigger.h"
+#include "cmd_action.h"
+#include "cmd_rule.h"
 
 static FTOM_CGI_COMMAND	pCmds[] =
 {
-	{	"ep",		FTOM_CGI_getEP			},
-	{	"eplist",	FTOM_CGI_getEPList		},
-	{	"data",		FTOM_CGI_getEPData		},
-	{	"datalast",	FTOM_CGI_getEPDataLast	},
-	{	"nodelist",	FTOM_CGI_getNodeList	},
-	{	NULL,		NULL			}
+	{	"ep",			FTOM_CGI_getEP			},
+	{	"eplist",		FTOM_CGI_getEPList		},
+	{	"data",			FTOM_CGI_getEPData		},
+	{	"datalast",		FTOM_CGI_getEPDataLast	},
+	{	"node",			FTOM_CGI_getNode		},
+	{	"nodelist",		FTOM_CGI_getNodeList	},
+	{	"triggerlist",	FTOM_CGI_getTriggerList	},
+	{	"actionlist",	FTOM_CGI_getActionList	},
+	{	"rulelist",		FTOM_CGI_getRuleList	},
+	{	NULL,		NULL					}
 };
 
 

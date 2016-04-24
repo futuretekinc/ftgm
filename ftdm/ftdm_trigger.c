@@ -69,18 +69,21 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 						xRet = FTM_CONFIG_ITEM_getItemINT(&xTriggerItem, "id", (FTM_INT_PTR)&xInfo.xID);
 						if (xRet != FTM_RET_OK)
 						{
+							TRACE("Trigger id get failed.\n");
 							continue;
 						}
 						
 						xRet = FTM_CONFIG_ITEM_getItemString(&xTriggerItem, "epid", xInfo.pEPID, FTM_EPID_LEN);
 						if (xRet != FTM_RET_OK)
 						{
+							TRACE("Trigger epid get failed.\n");
 							continue;
 						}
 
 						xRet = FTM_CONFIG_ITEM_getItemINT(&xTriggerItem, "type", (FTM_INT_PTR)&xInfo.xType);
 						if (xRet != FTM_RET_OK)
 						{
+							TRACE("Trigger type get failed.\n");
 							continue;
 						}
 
@@ -88,19 +91,19 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 						{
 						case	FTM_TRIGGER_TYPE_ABOVE:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "detect",&xInfo.xParams.xAbove.xDetectionTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "detect",&xInfo.xParams.xAbove.ulDetectionTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "hold",&xInfo.xParams.xAbove.xHoldingTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "hold",&xInfo.xParams.xAbove.ulHoldingTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "value", &xInfo.xParams.xAbove.xValue);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "value", &xInfo.xParams.xAbove.xValue);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
@@ -111,19 +114,19 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 
 						case	FTM_TRIGGER_TYPE_BELOW:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "detect",&xInfo.xParams.xBelow.xDetectionTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "detect",&xInfo.xParams.xBelow.ulDetectionTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "hold",&xInfo.xParams.xBelow.xHoldingTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "hold",&xInfo.xParams.xBelow.ulHoldingTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "value", &xInfo.xParams.xBelow.xValue);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "value", &xInfo.xParams.xBelow.xValue);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
@@ -134,25 +137,25 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 
 						case	FTM_TRIGGER_TYPE_INCLUDE:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "detect",&xInfo.xParams.xInclude.xDetectionTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "detect",&xInfo.xParams.xInclude.ulDetectionTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "hold",&xInfo.xParams.xInclude.xHoldingTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "hold",&xInfo.xParams.xInclude.ulHoldingTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "upper", &xInfo.xParams.xInclude.xUpper);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "upper", &xInfo.xParams.xInclude.xUpper);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "lower", &xInfo.xParams.xInclude.xLower);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "lower", &xInfo.xParams.xInclude.xLower);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
@@ -163,25 +166,25 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 
 						case	FTM_TRIGGER_TYPE_EXCEPT:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "detect",&xInfo.xParams.xExcept.xDetectionTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "detect",&xInfo.xParams.xExcept.ulDetectionTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemTime(&xTriggerItem, "hold",&xInfo.xParams.xExcept.xHoldingTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "hold",&xInfo.xParams.xExcept.ulHoldingTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "upper", &xInfo.xParams.xExcept.xUpper);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "upper", &xInfo.xParams.xExcept.xUpper);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xTriggerItem, "lower", &xInfo.xParams.xExcept.xLower);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "lower", &xInfo.xParams.xExcept.xLower);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
@@ -201,10 +204,13 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 						{
 							ERROR("The new event can not creation.\n");
 						}
-					
 					}
 				}
 			}
+		}
+		else
+		{
+			TRACE("Triggers not found.\n");	
 		}
 
 		xRet = FTM_CONFIG_ITEM_getChildItem(&xTrigger, "rules", &xRules);
@@ -433,58 +439,48 @@ FTM_RET	FTDM_TRIGGER_showList
 	FTDM_TRIGGER_PTR	pTrigger;
 	FTM_ULONG			i, ulCount;
 	MESSAGE("\n# Trigger Information\n");
-	MESSAGE("\t%4s %8s %8s %8s %s\n", "ID", "EPID", "DETECT", "HOLD", "CONDITION");
+	MESSAGE("\t%4s %16s %8s %8s %s\n", "ID", "EPID", "DETECT", "HOLD", "CONDITION");
 
 	FTM_TRIGGER_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		if (FTDM_TRIGGER_getAt(i, &pTrigger) == FTM_RET_OK)
 		{
-			FTM_CHAR	pBuff[1024];
-
 			MESSAGE("\t%4d %16s ", pTrigger->xInfo.xID, pTrigger->xInfo.pEPID);
 
 			switch(pTrigger->xInfo.xType)
 			{
 			case	FTM_TRIGGER_TYPE_ABOVE:
 				{
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xAbove.xDetectionTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xAbove.xDetectionTime.xTimeval.tv_usec) / 1000000.0);
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xAbove.xHoldingTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xAbove.xHoldingTime.xTimeval.tv_usec) / 1000000.0); 
-					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pTrigger->xInfo.xParams.xAbove.xValue);
-					MESSAGE("x >= %s ", pBuff);
+					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xAbove.ulDetectionTime) / 1000000.0);
+					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xAbove.ulHoldingTime) / 1000000.0); 
+					MESSAGE("x >= %s ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xAbove.xValue));
 				}
 				break;
 
 			case	FTM_TRIGGER_TYPE_BELOW:
 				{
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xBelow.xDetectionTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xBelow.xDetectionTime.xTimeval.tv_usec) / 1000000.0);
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xBelow.xHoldingTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xBelow.xHoldingTime.xTimeval.tv_usec) / 1000000.0); 
-					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pTrigger->xInfo.xParams.xBelow.xValue);
-					MESSAGE("x <= %s ", pBuff);
+					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xBelow.ulDetectionTime) / 1000000.0);
+					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xBelow.ulHoldingTime) / 1000000.0); 
+					MESSAGE("x <= %s ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xBelow.xValue));
 				}
 				break;
 
 			case	FTM_TRIGGER_TYPE_INCLUDE:
 				{
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xInclude.xDetectionTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xInclude.xDetectionTime.xTimeval.tv_usec) / 1000000.0);
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xInclude.xHoldingTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xInclude.xHoldingTime.xTimeval.tv_usec) / 1000000.0); 
-					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pTrigger->xInfo.xParams.xInclude.xLower);
-					MESSAGE("(%s <= x <= ", pBuff);
-
-					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pTrigger->xInfo.xParams.xInclude.xUpper);
-					MESSAGE("%s) ", pBuff);
+					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xInclude.ulDetectionTime) / 1000000.0);
+					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xInclude.ulHoldingTime) / 1000000.0); 
+					MESSAGE("(%s <= x <= ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xInclude.xLower));
+					MESSAGE("%s) ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xInclude.xUpper));
 				}
 				break;
 
 			case	FTM_TRIGGER_TYPE_EXCEPT:
 				{
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xExcept.xDetectionTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xExcept.xDetectionTime.xTimeval.tv_usec) / 1000000.0);
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xExcept.xHoldingTime.xTimeval.tv_sec * 1000000 +  pTrigger->xInfo.xParams.xExcept.xHoldingTime.xTimeval.tv_usec) / 1000000.0); 
-					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pTrigger->xInfo.xParams.xExcept.xLower);
-					MESSAGE("(x < %s) && ", pBuff);
-
-					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pTrigger->xInfo.xParams.xExcept.xUpper);
-					MESSAGE("(%s < x) ", pBuff);
+					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xExcept.ulDetectionTime) / 1000000.0);
+					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xExcept.ulHoldingTime) / 1000000.0); 
+					MESSAGE("(x < %s) && ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xExcept.xLower));
+					MESSAGE("(%s < x) ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xExcept.xUpper));
 				}
 				break;
 
