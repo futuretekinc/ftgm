@@ -941,8 +941,8 @@ FTM_RET	FTOM_onEPCtrl
 )
 {
 	FTM_RET			xRet;
-	FTOM_EP_PTR				pEP;
-	FTM_EP_DATA					xData;
+	FTOM_EP_PTR		pEP;
+	FTM_EP_DATA		xData;
 
 	TRACE("EP[%s] Control\n", pMsg->pEPID);
 
@@ -953,29 +953,7 @@ FTM_RET	FTOM_onEPCtrl
 		return	xRet;
 	}
 
-	switch(pMsg->xCtrl)
-	{
-	case FTM_EP_CTRL_OFF:
-		{
-			xData.xType = FTM_EP_DATA_TYPE_INT;
-			xData.xValue.nValue = 0;
-		}
-		break;
-
-	case FTM_EP_CTRL_ON:
-		{
-			xData.xType = FTM_EP_DATA_TYPE_INT;
-			xData.xValue.nValue = 1;
-		}
-		break;
-
-	case FTM_EP_CTRL_BLINK:
-		{
-			xData.xType = FTM_EP_DATA_TYPE_INT;
-			xData.xValue.nValue = 2;
-		}
-		break;
-	}
+	FTM_EP_DATA_initINT(&xData, pMsg->xCtrl);
 
 	xRet = FTOM_EP_pushData(pEP, &xData);
 	if (xRet != FTM_RET_OK)

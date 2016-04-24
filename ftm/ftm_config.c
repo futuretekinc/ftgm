@@ -734,8 +734,9 @@ FTM_RET	FTM_CONFIG_ITEM_getEPData(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_DATA_PTR pEP
 	ASSERT(pItem != NULL);
 	ASSERT(pEPData != NULL);
 
-	config_setting_t	*pField;
+	FTM_RET				xRet;
 	FTM_EP_DATA			xData;
+	FTM_CONFIG_ITEM		xValueItem;
 
 	if (pItem->pSetting == NULL)
 	{
@@ -747,55 +748,38 @@ FTM_RET	FTM_CONFIG_ITEM_getEPData(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_DATA_PTR pEP
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
     }
 */
-	pField = config_setting_get_member(pItem->pSetting, "type");
-	if (pField == NULL)
+	xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "type", 	&xData.xType);
+	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Type is not exist.\n");
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
 	}
 
-	xData.xType = config_setting_get_int(pField);
-
-	pField = config_setting_get_member(pItem->pSetting, "value");
-	if (pField == NULL)
+	xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "time", 	&xData.ulTime);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Value is not exist.\n");
+		ERROR("Type is not exist.\n");
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
 	}
 
-	switch(config_setting_type(pField))
+	xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "state", (FTM_ULONG_PTR)&xData.xState);
+	if (xRet != FTM_RET_OK)
 	{
-	case	CONFIG_TYPE_INT:
-		{
-			xData.xType = FTM_EP_DATA_TYPE_INT;
-			xData.xValue.nValue = config_setting_get_int(pField);
-		}
-		break;
+		ERROR("Type is not exist.\n");
+		return	FTM_RET_CONFIG_INVALID_OBJECT;
+	}
 
-	case	CONFIG_TYPE_INT64:
-		{
-			xData.xType = FTM_EP_DATA_TYPE_INT;
-			xData.xValue.nValue = config_setting_get_int64(pField);
-		}
-		break;
+	xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "value", &xValueItem);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Type is not exist.\n");
+		return	FTM_RET_CONFIG_INVALID_OBJECT;
+	}
 
-	case	CONFIG_TYPE_FLOAT:
-		{
-			xData.xType = FTM_EP_DATA_TYPE_FLOAT;
-			xData.xValue.nValue = config_setting_get_float(pField);
-		}
-		break;
-
-	case	CONFIG_TYPE_BOOL:
-		{
-			xData.xType = FTM_EP_DATA_TYPE_BOOL;
-			xData.xValue.nValue = config_setting_get_bool(pField);
-		}
-		break;
-	default:
-		{
-			return	FTM_RET_CONFIG_INVALID_OBJECT;
-		}
+	xRet = FTM_CONFIG_ITEM_getValue(&xValueItem, &xData.xValue);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
 	}
 
 	xData.xState = FTM_EP_DATA_STATE_VALID;
@@ -814,7 +798,7 @@ FTM_RET	FTM_CONFIG_ITEM_getValue
 	ASSERT(pItem != NULL);
 	ASSERT(pValue != NULL);
 
-	config_setting_t	*pField;
+	FTM_RET				xRet;
 	FTM_VALUE			xValue;
 
 	if (pItem->pSetting == NULL)
@@ -827,49 +811,36 @@ FTM_RET	FTM_CONFIG_ITEM_getValue
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
     }
 */
-	pField = config_setting_get_member(pItem->pSetting, "type");
-	if (pField == NULL)
+	xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "type", &xValue.xType);
+	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Type is not exist.\n");
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
 	}
 
-	xValue.xType = config_setting_get_int(pField);
-
-	pField = config_setting_get_member(pItem->pSetting, "value");
-	if (pField == NULL)
+	switch(xValue.xType)
 	{
-		ERROR("Value is not exist.\n");
-		return	FTM_RET_CONFIG_INVALID_OBJECT;
-	}
-
-	switch(config_setting_type(pField))
-	{
-	case	CONFIG_TYPE_INT:
+	case	FTM_VALUE_TYPE_INT:
 		{
-			xValue.xType = FTM_EP_DATA_TYPE_INT;
-			xValue.xValue.nValue = config_setting_get_int(pField);
+			xRet = FTM_CONFIG_ITEM_getItemINT(pItem, "value", &xValue.xValue.nValue);
 		}
 		break;
 
-	case	CONFIG_TYPE_INT64:
+	case	FTM_VALUE_TYPE_ULONG:
 		{
-			xValue.xType = FTM_EP_DATA_TYPE_ULONG;
-			xValue.xValue.ulValue = config_setting_get_int64(pField);
+			xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "value", &xValue.xValue.ulValue);
 		}
 		break;
 
-	case	CONFIG_TYPE_FLOAT:
+	case	FTM_VALUE_TYPE_FLOAT:
 		{
-			xValue.xType = FTM_EP_DATA_TYPE_FLOAT;
-			xValue.xValue.fValue = config_setting_get_float(pField);
+			xRet = FTM_CONFIG_ITEM_getItemFLOAT(pItem, "value", &xValue.xValue.fValue);
 		}
 		break;
 
-	case	CONFIG_TYPE_BOOL:
+	case	FTM_VALUE_TYPE_BOOL:
 		{
-			xValue.xType = FTM_EP_DATA_TYPE_BOOL;
-			xValue.xValue.bValue = config_setting_get_bool(pField);
+			xRet = FTM_CONFIG_ITEM_getItemBOOL(pItem, "value", &xValue.xValue.bValue);
 		}
 		break;
 	default:

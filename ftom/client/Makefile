@@ -17,25 +17,14 @@ CLIENT_SRCS=main.c\
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lconfig -lpthread 
 
-LIB_FTOMC=libftomc
-LIB_FTOMC_INCS= ftom_client.h 
-LIB_FTOMC_SRCS= ftom_client.c \
-				ftom_client_net.c
-LIB_FTOMC_OBJS=$(LIB_FTOMC_SRCS:.c=.o)
-
-all: tags $(CLIENT) $(LIB_FTOMC) 
+all: tags $(CLIENT) 
 
 tags:
 	ctags -R
 	
-$(CLIENT): $(CLIENT_OBJS) $(LIB_FTOMC)
+$(CLIENT): $(CLIENT_OBJS)
 	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)
 
-$(LIB_FTOMC): $(LIB_FTOMC_OBJS)
-	$(AR) rcs $(LIB_FTOMC).a $(LIB_FTOMC_OBJS)
-	$(CC) -shared -o $(LIB_FTOMC).so.1.0.1 $(LIB_FTOMC_OBJS) $(LDFLAGS)
-
-.c.o:  $(CLIENT_SRC) $(LIB_FTOMC_OBJS) *.h
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:

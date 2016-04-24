@@ -369,62 +369,31 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 	ASSERT(pData != NULL);
 
 	FTM_CHAR	pTopic[FTOM_MQTT_CLIENT_TOPIC_LENGTH+1];
-	FTM_CHAR	pMessage[FTOM_MQTT_CLIENT_MESSAGE_LENGTH+1];
-	FTM_ULONG	ulMessageLen = 0;
+	FTM_CHAR	pBuff[FTOM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulLen = 0;
 	FTM_INT		i;
 
-	pMessage[sizeof(pMessage) - 1] = '\0';
+	pBuff[sizeof(pBuff) - 1] = '\0';
 	
 	sprintf(pTopic, "v/a/g/%s/s/%s", pClient->pDID, pEPID);
 
-	ulMessageLen = sprintf(pMessage, "[");
+	ulLen = sprintf(pBuff, "[");
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		if (i == 0)
 		{
-			ulMessageLen += snprintf(&pMessage[ulMessageLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, "%lu", pData[i].ulTime);
+			ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "%lu", pData[i].ulTime);
 		}
 		else
 		{
-			ulMessageLen += snprintf(&pMessage[ulMessageLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%lu", pData[i].ulTime);
+			ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, ",%lu", pData[i].ulTime);
 		}
 
-		switch(pData[i].xType)
-		{
-		case	FTM_EP_DATA_TYPE_INT:
-			{
-				ulMessageLen += snprintf(&pMessage[ulMessageLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%d", pData[i].xValue.nValue);
-			}
-			break;
-
-		case	FTM_EP_DATA_TYPE_ULONG:
-			{
-				ulMessageLen += snprintf(&pMessage[ulMessageLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%lu", pData[i].xValue.ulValue);
-			}
-			break;
-
-		case	FTM_EP_DATA_TYPE_FLOAT:
-			{
-				ulMessageLen += snprintf(&pMessage[ulMessageLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%5.3f", pData[i].xValue.fValue);
-			}
-			break;
-
-		case	FTM_EP_DATA_TYPE_BOOL:
-			{
-				ulMessageLen += snprintf(&pMessage[ulMessageLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, ",%d", pData[i].xValue.bValue);
-			}
-			break;
-
-		default:
-			{
-				FATAL("Invalid EP data type.!\n");	
-				return	FTM_RET_ERROR;
-			}
-		}
+		ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, ",%s", FTM_VALUE_print(&pData[i].xValue));
 	}
 
-	ulMessageLen += snprintf(&pMessage[ulMessageLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulMessageLen, "]");
+	ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "]");
 
-	return	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
+	return	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen);
 }
 

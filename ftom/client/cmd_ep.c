@@ -187,26 +187,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 						xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, pEPIDs[i], &xData);
 						if (xRet == FTM_RET_OK)
 						{
-							switch(xData.xType)
-							{
-							case	FTM_EP_DATA_TYPE_INT:
-								{
-									MESSAGE("%5d", xData.xValue.nValue);
-								}
-								break;
-	
-							case	FTM_EP_DATA_TYPE_ULONG:
-								{
-									MESSAGE("%5lu", xData.xValue.ulValue);
-								}
-								break;
-	
-							case	FTM_EP_DATA_TYPE_FLOAT:
-								{
-									MESSAGE("%5.2f", xData.xValue.fValue);
-								}
-								break;
-							}
+							MESSAGE("%5s", FTM_VALUE_print(&xData.xValue));
 						}
 						MESSAGE("\n");
 					}
@@ -485,31 +466,24 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 
 		strncpy(pEPID, pArgv[2], FTM_EPID_LEN);
 
-		snprintf(pTemp, sizeof(pTemp), "%s %s", pArgv[3], pArgv[4]);
-		strptime(pTemp, "%Y-%m-%d %H:%M:%S", &xTM);
-		xData.ulTime	= (FTM_ULONG)mktime(&xTM);
-
 		switch(toupper(pArgv[5][0]))
 		{
 		case	'I':	
 			{
-				xData.xType = FTM_EP_DATA_TYPE_INT;
-				xData.xValue.nValue = strtol(&pArgv[5][1], NULL, 10); 
+				FTM_EP_DATA_init(&xData, FTM_EP_DATA_TYPE_INT, &pArgv[5][1]);
 			}
 
 			break;
 
 		case	'F':	
 			{
-				xData.xType = FTM_EP_DATA_TYPE_FLOAT;
-				xData.xValue.fValue = strtod(&pArgv[5][1], NULL); 
+				FTM_EP_DATA_init(&xData, FTM_EP_DATA_TYPE_FLOAT, &pArgv[5][1]);
 			} 
 			break;
 
 		case	'U':	
 			{	
-				xData.xType = FTM_EP_DATA_TYPE_ULONG;
-				xData.xValue.ulValue = strtoul(&pArgv[5][1], NULL, 10); 
+				FTM_EP_DATA_init(&xData, FTM_EP_DATA_TYPE_ULONG, &pArgv[5][1]);
 			}	
 			break;
 
@@ -518,8 +492,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 		case	'8':	
 		case	'9':	
 			{
-				xData.xType = FTM_EP_DATA_TYPE_INT;
-				xData.xValue.nValue = strtol(pArgv[4], NULL, 10); 
+				FTM_EP_DATA_init(&xData, FTM_EP_DATA_TYPE_ULONG, pArgv[5]);
 			}
 			break;
 
@@ -529,6 +502,10 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 				return	FTM_RET_INVALID_ARGUMENTS;
 			}
 		}
+
+		snprintf(pTemp, sizeof(pTemp), "%s %s", pArgv[3], pArgv[4]);
+		strptime(pTemp, "%Y-%m-%d %H:%M:%S", &xTM);
+		xData.ulTime	= (FTM_ULONG)mktime(&xTM);
 
 		xRet = FTOM_CLIENT_EP_DATA_add(pClient, pEPID, &xData);
 		if (xRet == FTM_RET_OK)
@@ -764,29 +741,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 						time_t		xTime = pEPData[i].ulTime;
 
 						strftime(pTime, sizeof(pTime), "%Y-%m-%d %H:%M:%S", gmtime(&xTime));
-						switch(pEPData[i].xType)
-						{
-						case	FTM_EP_DATA_TYPE_ULONG:
-							{
-								MESSAGE("%8d %32s %8lu\n", 
-										nStartIndex + i, pTime, pEPData[i].xValue.ulValue);	
-							}
-							break;
-
-						case	FTM_EP_DATA_TYPE_FLOAT:
-							{
-								MESSAGE("%8d %32s %8.3lf\n", 
-										nStartIndex + i, pTime, pEPData[i].xValue.fValue);	
-							}
-							break;
-						case	FTM_EP_DATA_TYPE_INT:
-						default:
-							{
-								MESSAGE("%8d %32s %8d\n", 
-										nStartIndex + i, pTime, pEPData[i].xValue.nValue);	
-							}
-							break;
-						}
+						MESSAGE("%8d %32s %8s\n", nStartIndex + i, pTime, FTM_VALUE_print(&pEPData[i].xValue));	
 					}
 				}
 				else

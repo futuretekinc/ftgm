@@ -104,6 +104,23 @@ FTM_RET	FTOM_CGI_delTrigger
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
 
+	FTM_RET			xRet;
+	FTM_CHAR_PTR	pParam;
+	FTM_TRIGGER_ID	xTriggerID;
+
+	pParam = pReq->getstr(pReq, "id", false);
+	if (pParam == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;			
+	}
+	
+	xTriggerID = strtoul(pParam, 0, 10);
+	xRet = FTOM_CLIENT_TRIGGER_del(pClient, xTriggerID);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_OBJECT_NOT_FOUND;
+	}
+
 	return	FTM_RET_OK;
 }
 

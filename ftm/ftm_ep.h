@@ -50,13 +50,7 @@ typedef	struct
 	FTM_ULONG			ulTime;
 	FTM_EP_DATA_TYPE	xType;
 	FTM_EP_DATA_STATE	xState;
-	union 
-	{
-		FTM_INT		nValue;
-		FTM_ULONG	ulValue;
-		FTM_DOUBLE	fValue;
-		FTM_BOOL	bValue;
-	}	xValue;
+	FTM_VALUE			xValue;
 }	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
 
 typedef	enum
@@ -120,23 +114,74 @@ typedef	struct
 	FTM_EP_LIMIT	xLimit;
 }	FTM_EP, _PTR_ FTM_EP_PTR;
 
-FTM_RET	FTM_EP_init(FTM_VOID);
-FTM_RET	FTM_EP_final(FTM_VOID);
+FTM_RET	FTM_EP_init
+(
+	FTM_VOID
+);
 
-FTM_RET	FTM_EP_setDefault(FTM_EP_PTR pEP);
+FTM_RET	FTM_EP_final
+(
+	FTM_VOID
+);
 
-FTM_RET	FTM_EP_create(FTM_EP_PTR pSrc, FTM_EP_PTR _PTR_ ppEP);
-FTM_RET	FTM_EP_destroy(FTM_EP_PTR pNode);
-FTM_RET	FTM_EP_append(FTM_EP_PTR pEP);
-FTM_RET	FTM_EP_remove(FTM_EP_PTR pEP);
+FTM_RET	FTM_EP_setDefault
+(
+	FTM_EP_PTR 	pEP
+);
 
-FTM_RET	FTM_EP_count(FTM_ULONG_PTR pulCount);
-FTM_RET	FTM_EP_get(FTM_CHAR_PTR pEPID, FTM_EP_PTR _PTR_ ppNode);
-FTM_RET	FTM_EP_getAt(FTM_ULONG ulIndex, FTM_EP_PTR _PTR_ ppNode);
+FTM_RET	FTM_EP_create
+(
+	FTM_EP_PTR 	pSrc, 
+	FTM_EP_PTR _PTR_ ppEP
+);
 
-FTM_RET	FTM_EP_isValid(FTM_EP_PTR pEP);
-FTM_RET	FTM_EP_isValidTimeout(FTM_EP_PTR pEP, FTM_ULONG ulTimeout);
-FTM_RET	FTM_EP_isStatic(FTM_EP_PTR pEP);
+FTM_RET	FTM_EP_destroy
+(
+	FTM_EP_PTR 	pNode
+);
+
+FTM_RET	FTM_EP_append
+(
+	FTM_EP_PTR 	pEP
+);
+
+FTM_RET	FTM_EP_remove
+(
+	FTM_EP_PTR 	pEP
+);
+
+FTM_RET	FTM_EP_count
+(
+	FTM_ULONG_PTR 	pulCount
+);
+
+FTM_RET	FTM_EP_get
+(
+	FTM_CHAR_PTR 	pEPID, 
+	FTM_EP_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTM_EP_getAt
+(
+	FTM_ULONG 	ulIndex, 
+	FTM_EP_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTM_EP_isValid
+(
+	FTM_EP_PTR 	pEP
+);
+
+FTM_RET	FTM_EP_isValidTimeout
+(
+	FTM_EP_PTR 	pEP, 
+	FTM_ULONG 	ulTimeout
+);
+
+FTM_RET	FTM_EP_isStatic
+(
+	FTM_EP_PTR 	pEP
+);
 
 FTM_CHAR_PTR FTM_EP_typeString
 (
@@ -206,6 +251,37 @@ FTM_RET	FTM_EP_DATA_createBool
 	FTM_EP_DATA_STATE xState, 
 	FTM_ULONG ulTime, 
 	FTM_EP_DATA_PTR _PTR_ ppData
+);
+
+FTM_RET	FTM_EP_DATA_init
+(
+	FTM_EP_DATA_PTR	pData,
+	FTM_EP_DATA_TYPE	xType,
+	FTM_CHAR_PTR	pValue
+);
+
+FTM_RET	FTM_EP_DATA_initINT
+(
+	FTM_EP_DATA_PTR pData,
+	FTM_INT 		nValue 
+);
+
+FTM_RET	FTM_EP_DATA_initULONG
+(
+	FTM_EP_DATA_PTR pData,
+	FTM_ULONG 		ulValue 
+);
+
+FTM_RET	FTM_EP_DATA_initFLOAT
+(
+	FTM_EP_DATA_PTR pData,
+	FTM_DOUBLE 		fValue
+);
+
+FTM_RET	FTM_EP_DATA_initBOOL
+(	
+	FTM_EP_DATA_PTR pData,
+	FTM_BOOL 		bValue 
 );
 
 FTM_RET	FTM_EP_DATA_destroy

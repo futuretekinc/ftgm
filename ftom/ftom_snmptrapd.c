@@ -972,34 +972,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 						case	NX_JSON_STRING:
 							{
 								TRACE("VALUE : %s\n", pItem->text_value);
-								xData.xType = xDataType;
-								switch(xData.xType)
-								{
-								case	FTM_EP_DATA_TYPE_INT:
-									{
-										xData.xValue.nValue = strtol(pItem->text_value, NULL, 10);
-									}
-									break;
-		
-								case	FTM_EP_DATA_TYPE_ULONG:
-									{
-										xData.xValue.ulValue = strtoul(pItem->text_value, NULL, 10);
-									}
-									break;
-		
-								case	FTM_EP_DATA_TYPE_FLOAT:
-									{
-										xData.xValue.fValue = atof(pItem->text_value);
-									}
-									break;
-
-								case	FTM_EP_DATA_TYPE_BOOL:
-									{
-										xData.xValue.bValue = (strtoul(pItem->text_value, NULL, 10) != 0);
-									}
-									break;
-								}
-		
+								FTM_EP_DATA_init(&xData, xDataType, (FTM_CHAR_PTR)pItem->text_value);
 							}
 							break;
 		
@@ -1007,30 +980,31 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 						case	NX_JSON_BOOL:
 							{
 								TRACE("VALUE : %d\n", pItem->int_value);
-								xData.xType = xDataType;
+								FTM_EP_DATA_init(&xData, xDataType, NULL);
+
 								switch(xData.xType)
 								{
 								case	FTM_EP_DATA_TYPE_INT:
 									{
-										xData.xValue.nValue = pItem->int_value;
+										FTM_EP_DATA_initINT(&xData, pItem->int_value);
 									}
 									break;
-		
+
 								case	FTM_EP_DATA_TYPE_ULONG:
 									{
-										xData.xValue.ulValue = pItem->int_value;
+										FTM_EP_DATA_initULONG(&xData, pItem->int_value);
 									}
 									break;
 		
 								case	FTM_EP_DATA_TYPE_FLOAT:
 									{
-										xData.xValue.fValue = pItem->int_value;
+										FTM_EP_DATA_initFLOAT(&xData, pItem->int_value);
 									}
 									break;
 								
 								case	FTM_EP_DATA_TYPE_BOOL:
 									{
-										xData.xValue.bValue = pItem->int_value;
+										FTM_EP_DATA_initBOOL(&xData, pItem->int_value);
 									}
 									break;
 								}
@@ -1046,25 +1020,25 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 								{
 								case	FTM_EP_DATA_TYPE_INT:
 									{
-										xData.xValue.nValue = (FTM_INT)pItem->dbl_value;
+										FTM_EP_DATA_initINT(&xData, pItem->dbl_value);
 									}
 									break;
-		
+
 								case	FTM_EP_DATA_TYPE_ULONG:
 									{
-										xData.xValue.ulValue = (FTM_ULONG)pItem->dbl_value;
+										FTM_EP_DATA_initULONG(&xData, pItem->dbl_value);
 									}
 									break;
 		
 								case	FTM_EP_DATA_TYPE_FLOAT:
 									{
-										xData.xValue.fValue = pItem->dbl_value;
+										FTM_EP_DATA_initFLOAT(&xData, pItem->dbl_value);
 									}
 									break;
-
+								
 								case	FTM_EP_DATA_TYPE_BOOL:
 									{
-										xData.xValue.bValue = (pItem->dbl_value != 0);
+										FTM_EP_DATA_initBOOL(&xData, pItem->dbl_value);
 									}
 									break;
 								}
@@ -1194,33 +1168,7 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 		case	NX_JSON_STRING:
 			{
 				TRACE("VALUE : %s\n", pItem->text_value);
-				xData.xType = xDataType;
-				switch(xData.xType)
-				{
-				case	FTM_EP_DATA_TYPE_INT:
-					{
-						xData.xValue.nValue = strtol(pItem->text_value, NULL, 10);
-					}
-					break;
-		
-				case	FTM_EP_DATA_TYPE_ULONG:
-					{
-						xData.xValue.ulValue = strtoul(pItem->text_value, NULL, 10);
-					}
-					break;
-		
-				case	FTM_EP_DATA_TYPE_FLOAT:
-					{
-						xData.xValue.fValue = atof(pItem->text_value);
-					}
-					break;
-
-				case	FTM_EP_DATA_TYPE_BOOL:
-					{
-						xData.xValue.bValue = (strtoul(pItem->text_value, NULL, 10) != 0);
-					}
-					break;
-				}
+				FTM_EP_DATA_init(&xData, xDataType, (FTM_CHAR_PTR)pItem->text_value);
 			}
 			break;
 		
@@ -1228,30 +1176,29 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 		case	NX_JSON_BOOL:
 			{
 				TRACE("VALUE : %d\n", pItem->int_value);
-				xData.xType = xDataType;
-				switch(xData.xType)
+				switch(xDataType)
 				{
 				case	FTM_EP_DATA_TYPE_INT:
 					{
-						xData.xValue.nValue = pItem->int_value;
+						FTM_EP_DATA_initINT(&xData, pItem->int_value);
 					}
 					break;
 		
 				case	FTM_EP_DATA_TYPE_ULONG:
 					{
-						xData.xValue.ulValue = pItem->int_value;
+						FTM_EP_DATA_initULONG(&xData, pItem->int_value);
 					}
 					break;
 		
 				case	FTM_EP_DATA_TYPE_FLOAT:
 					{
-						xData.xValue.fValue = pItem->int_value;
+						FTM_EP_DATA_initFLOAT(&xData, pItem->int_value);
 					}
 					break;
 								
 				case	FTM_EP_DATA_TYPE_BOOL:
 					{
-						xData.xValue.bValue = pItem->int_value;
+						FTM_EP_DATA_initBOOL(&xData, pItem->int_value);
 					}
 					break;
 				}
@@ -1261,30 +1208,29 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 		case	NX_JSON_DOUBLE:
 			{
 				TRACE("VALUE : %lu\n", pItem->dbl_value);
-				xData.xType = xDataType;
-				switch(xData.xType)
+				switch(xDataType)
 				{
 				case	FTM_EP_DATA_TYPE_INT:
 					{
-						xData.xValue.nValue = (FTM_INT)pItem->dbl_value;
+						FTM_EP_DATA_initINT(&xData, pItem->dbl_value);
 					}
 					break;
 		
 				case	FTM_EP_DATA_TYPE_ULONG:
 					{
-						xData.xValue.ulValue = (FTM_ULONG)pItem->dbl_value;
+						FTM_EP_DATA_initULONG(&xData, pItem->dbl_value);
 					}
 					break;
 		
 				case	FTM_EP_DATA_TYPE_FLOAT:
 					{
-						xData.xValue.fValue = pItem->dbl_value;
+						FTM_EP_DATA_initFLOAT(&xData, pItem->dbl_value);
 					}
 					break;
 
 				case	FTM_EP_DATA_TYPE_BOOL:
 					{
-						xData.xValue.bValue = (pItem->dbl_value != 0);
+						FTM_EP_DATA_initBOOL(&xData, pItem->dbl_value);
 					}
 					break;
 				}

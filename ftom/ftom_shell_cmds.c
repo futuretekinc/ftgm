@@ -180,14 +180,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 			}
 	
 			MESSAGE("%16s ", (!pEP->bStop)?"RUN":"STOP");
-
-			switch(xData.xType)
-			{
-			case	FTM_EP_DATA_TYPE_INT: 	MESSAGE("%8d ", xData.xValue.nValue); break;
-			case	FTM_EP_DATA_TYPE_ULONG:	MESSAGE("%8lu ", xData.xValue.ulValue); break;
-			case	FTM_EP_DATA_TYPE_FLOAT:	MESSAGE("%8.2lf ", xData.xValue.fValue); break;
-			default: 						MESSAGE("%8s ", "UNKNOWN"); break;
-			}
+			MESSAGE("%8s ", FTM_VALUE_print(&xData.xValue));
 			MESSAGE("%24s\n", pTimeString);
 		}
 	}

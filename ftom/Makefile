@@ -34,12 +34,16 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_service.c\
 			   ftom_shell.c\
 			   ftom_discovery.c
-
 LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)
 
+LIB_FTOMC=libftomc
+LIB_FTOMC_INCS= ftom_client.h 
+LIB_FTOMC_SRCS= ftom_client.c \
+				ftom_client_net.c
+LIB_FTOMC_OBJS=$(LIB_FTOMC_SRCS:.c=.o)
 
-all: tags $(LIB_FTOM) $(FTOM)
 
+all: tags $(LIB_FTOM) $(FTOM) $(LIB_FTOMC) 
 tags:
 	ctags -R
 	
@@ -53,6 +57,11 @@ $(LIB_FTOM): $(LIB_FTOM_OBJS)
 	$(AR) rcs $(LIB_FTOM).a $(LIB_FTOM_OBJS)
 	$(CC) -shared -o $(LIB_FTOM).so.1.0.1 $(LIB_FTOM_OBJS) $(LDFLAGS)
 
+$(LIB_FTOMC): $(LIB_FTOMC_OBJS)
+	$(AR) rcs $(LIB_FTOMC).a $(LIB_FTOMC_OBJS)
+	$(CC) -shared -o $(LIB_FTOMC).so.1.0.1 $(LIB_FTOMC_OBJS) $(LDFLAGS)
+
+.c.o:  $(CLIENT_SRC) $(LIB_FTOMC_OBJS) *.h
 .c.o:  $(SERVER_SRC) *.h
 	$(CC) $(CFLAGS) $< -o $@
 

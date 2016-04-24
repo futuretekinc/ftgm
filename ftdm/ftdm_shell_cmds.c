@@ -326,20 +326,7 @@ FTM_RET	FTDM_SHELL_showEPData
 			}
 		}
 
-		switch(pData[i].xType)
-		{
-		case	FTM_EP_DATA_TYPE_INT:
-			MESSAGE("%d\n", pData[i].xValue.nValue);
-			break;
-
-		case	FTM_EP_DATA_TYPE_ULONG:
-			MESSAGE("%lu\n", pData[i].xValue.ulValue);
-			break;
-
-		case	FTM_EP_DATA_TYPE_FLOAT:
-			MESSAGE("%5.2f\n", pData[i].xValue.fValue);
-			break;
-		}
+		MESSAGE("%s\n", FTM_VALUE_print(&pData[i].xValue));
 	}
 
 	FTM_MEM_free(pData);

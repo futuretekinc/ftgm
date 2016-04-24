@@ -23,8 +23,6 @@ FTM_RET	FTOM_CGI_getRuleList
 		goto finish;
 	}
 
-	TRACE("rule count : %d\n", ulCount);
-
 	pRoot = cJSON_CreateObject();
 	for(FTM_INT i = 0 ; i < ulCount ; i++)
 	{
@@ -39,7 +37,6 @@ FTM_RET	FTOM_CGI_getRuleList
 		}
 
 		cJSON_AddNumberToObject(pRoot, "ID", xRuleInfo.xID);	
-		TRACE("RULE ID : %d\n", xRuleInfo.xID);
 		if (xRuleInfo.xState == FTM_RULE_STATE_ACTIVATE)
 		{
 			cJSON_AddStringToObject(pRoot, "STATE", "ACTIVATE");

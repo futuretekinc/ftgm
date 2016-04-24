@@ -886,9 +886,9 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 
 	gettimeofday(&tv, NULL);
 
-	switch (pData->xType)
+	switch (pData->xValue.xType)
 	{
-	case	FTM_EP_DATA_TYPE_INT:
+	case	FTM_VALUE_TYPE_INT:
 		{
 			if (FTDM_DBIF_EP_DATA_bIOTrace)
 			{
@@ -897,7 +897,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 						tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 						pData->ulTime, 
 						(FTM_ULONG)pData->xState,
-						pData->xValue.nValue);
+						pData->xValue.xValue.nValue);
 			}
 
 			sprintf(pSQL, "INSERT INTO ep_%s VALUES (%llu, %lu, %lu, 'i%d')", 
@@ -905,11 +905,11 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
 					(FTM_ULONG)pData->xState,
-					pData->xValue.nValue);
+					pData->xValue.xValue.nValue);
 		}
 		break;
 
-	case	FTM_EP_DATA_TYPE_ULONG:
+	case	FTM_VALUE_TYPE_ULONG:
 		{
 			if (FTDM_DBIF_EP_DATA_bIOTrace)
 			{
@@ -918,18 +918,18 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 						tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 						pData->ulTime, 
 						(FTM_ULONG)pData->xState,
-						pData->xValue.ulValue);
+						pData->xValue.xValue.ulValue);
 			}
 			sprintf(pSQL, "INSERT INTO ep_%s VALUES (%llu, %lu, %lu, 'u%lu')", 
 					pEPID,
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
 					(FTM_ULONG)pData->xState,
-					pData->xValue.ulValue);
+					pData->xValue.xValue.ulValue);
 		}
 		break;
 
-	case	FTM_EP_DATA_TYPE_FLOAT:
+	case	FTM_VALUE_TYPE_FLOAT:
 		{
 			if (FTDM_DBIF_EP_DATA_bIOTrace)
 			{
@@ -938,14 +938,14 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 						tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 						pData->ulTime, 
 						(FTM_ULONG)pData->xState,
-						pData->xValue.fValue);
+						pData->xValue.xValue.fValue);
 			}
 			sprintf(pSQL, "INSERT INTO ep_%s VALUES (%llu, %lu, %lu, 'f%8.3lf')", 
 					pEPID, 
 					tv.tv_sec * (long long)1000000 + tv.tv_usec, 
 					pData->ulTime, 
 					(FTM_ULONG)pData->xState,
-					pData->xValue.fValue);
+					pData->xValue.xValue.fValue);
 		}
 		break;
 
@@ -1166,18 +1166,18 @@ int _FTDM_DBIF_EP_DATA_getCB(void *pData, int nArgc, char **pArgv, char **pColNa
 				{
 					if (pArgv[i][0] == 'i')
 					{
-						pParams->pEPData[pParams->nCount-1].xType = FTM_EP_DATA_TYPE_INT;
-						pParams->pEPData[pParams->nCount-1].xValue.nValue = strtol(&pArgv[i][1], NULL, 10);
+						pParams->pEPData[pParams->nCount-1].xType = FTM_VALUE_TYPE_INT;
+						pParams->pEPData[pParams->nCount-1].xValue.xValue.nValue = strtol(&pArgv[i][1], NULL, 10);
 					}
 					else if (pArgv[i][0] == 'u')
 					{
-						pParams->pEPData[pParams->nCount-1].xType = FTM_EP_DATA_TYPE_ULONG;
-						pParams->pEPData[pParams->nCount-1].xValue.ulValue = strtoul(&pArgv[i][1], NULL, 10);
+						pParams->pEPData[pParams->nCount-1].xType = FTM_VALUE_TYPE_ULONG;
+						pParams->pEPData[pParams->nCount-1].xValue.xValue.ulValue = strtoul(&pArgv[i][1], NULL, 10);
 					}
 					else if (pArgv[i][0] == 'f')
 					{
-						pParams->pEPData[pParams->nCount-1].xType = FTM_EP_DATA_TYPE_FLOAT;
-						pParams->pEPData[pParams->nCount-1].xValue.fValue = strtod(&pArgv[i][1], NULL);
+						pParams->pEPData[pParams->nCount-1].xType = FTM_VALUE_TYPE_FLOAT;
+						pParams->pEPData[pParams->nCount-1].xValue.xValue.fValue = strtod(&pArgv[i][1], NULL);
 					}
 				}
 			}
