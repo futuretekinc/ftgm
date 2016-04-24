@@ -34,6 +34,20 @@ typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
 #define	FTM_EP_DATA_TYPE_FLOAT	FTM_VALUE_TYPE_FLOAT
 #define	FTM_EP_DATA_TYPE_BOOL	FTM_VALUE_TYPE_BOOL
 
+typedef	unsigned long	FTM_EP_FIELD_TYPE, _PTR_ FTM_EP_FIELD_TYPE_PTR;
+
+#define	FTM_EP_FIELD_ALL		(0xFFFFFFFF)
+#define	FTM_EP_FIELD_EPID		(1 << 0)
+#define	FTM_EP_FIELD_EPTYPE		(1 << 1)
+#define	FTM_EP_FIELD_FLAGS		(1 << 2)
+#define	FTM_EP_FIELD_NAME		(1 << 3)
+#define	FTM_EP_FIELD_UNIT		(1 << 4)
+#define	FTM_EP_FIELD_ENABLE		(1 << 5)
+#define	FTM_EP_FIELD_TIMEOUT	(1 << 6)
+#define	FTM_EP_FIELD_INTERVAL	(1 << 7)
+#define	FTM_EP_FIELD_DID		(1 << 9)
+#define	FTM_EP_FIELD_LIMIT		(1 << 10)
+
 typedef enum
 {
 	FTM_EP_FLAG_STATIC = (1 << 0)

@@ -42,55 +42,71 @@ char *FTOM_CGI_whitespaceCB
 FTM_RET	FTOM_CGI_getEPID
 (
 	qentry_t *pReq, 
-	FTM_CHAR_PTR pEPID
+	FTM_CHAR_PTR pEPID,
+	FTM_BOOL	bAllowEmpty
 );
 
-FTM_RET FOTM_CGI_getEPType
+FTM_RET FTOM_CGI_getEPType
 (
 	qentry_t *pReq, 
-	FTM_EP_TYPE_PTR pType
+	FTM_EP_TYPE_PTR pType,
+	FTM_BOOL	bAllowEmpty
 );
 
 FTM_RET	FTOM_CGI_getEPFlags
 (
 	qentry_t *pReq, 
-	FTM_EP_FLAG_PTR	pFlags
+	FTM_EP_FLAG_PTR	pFlags,
+	FTM_BOOL	bAllowEmpty
 );
 
 FTM_RET	FTOM_CGI_getName
 (
 	qentry_t *pReq, 
-	FTM_CHAR_PTR	pName
+	FTM_CHAR_PTR	pName,
+	FTM_BOOL	bAllowEmpty
 );
 
 FTM_RET	FTOM_CGI_getUnit
 (
 	qentry_t *pReq, 
-	FTM_CHAR_PTR	pUnit
+	FTM_CHAR_PTR	pUnit,
+	FTM_BOOL	bAllowEmpty
 );
 
 FTM_RET	FTOM_CGI_getEnable
 (
 	qentry_t *pReq, 
-	FTM_BOOL_PTR	pEnable	
+	FTM_BOOL_PTR	pEnable	,
+	FTM_BOOL	bAllowEmpty
 );
 
 FTM_RET	FTOM_CGI_getTimeout
 (
 	qentry_t *pReq, 
-	FTM_ULONG_PTR	pTimeout
+	FTM_ULONG_PTR	pTimeout,
+	FTM_BOOL	bAllowEmpty
 );
 
 FTM_RET	FTOM_CGI_getInterval
 (
 	qentry_t *pReq, 
-	FTM_ULONG_PTR	pInterval
+	FTM_ULONG_PTR	pInterval,
+	FTM_BOOL	bAllowEmpty
 );
 
 FTM_RET	FTOM_CGI_getDID
 (
 	qentry_t *pReq, 
-	FTM_CHAR_PTR	pDID
+	FTM_CHAR_PTR	pDID,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET	FTOM_CGI_getLimit
+(
+	qentry_t *pReq,
+	FTM_EP_LIMIT_PTR pLimit,
+	FTM_BOOL	bAllowEmpty
 );
 
 #undef	TRACE
