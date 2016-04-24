@@ -10,7 +10,112 @@ FTM_RET	FTOM_CGI_makeEPInfo
 	cJSON _PTR_ _PTR_ ppObject
 );
 
+FTM_RET	FTOM_CGI_addEP
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+
+	FTM_RET			xRet;
+	FTM_EP			xEPInfo;
+	FTM_CHAR_PTR	pValue;
+
+	FTM_EP_setDefault(&xEPInfo);
+
+	xRet = FTOM_CGI_getEPID(pReq, xEPInfo.pEPID);
+	xRet |= FTOM_CGI_getEPType(pReq, &xEPInfo.xType);
+	xRet |= FTOM_CGI_getDID(pReq, xEPInfo.pDID);
+
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	FTOM_CGI_getEPFlags(pReq, 	&xEPInfo.xFlags);
+	FTOM_CGI_getName(pReq, 	xEPInfo.pName);
+	FTOM_CGI_getUnit(pReq, 	xEPInfo.pUnit);
+	FTOM_CGI_getEnable(pReq, &xEPInfo.bEnable);
+	FTOM_CGI_getTimeout(pReq,&xEPInfo.ulTimeout);
+	FTOM_CGI_getInterval(pReq, &xEPInfo.ulInterval);
+
+	return	FTOM_CLIENT_EP_create(pClient, &xEPInfo);
+}
+
+FTM_RET	FTOM_CGI_delEP
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+
+	FTM_RET			xRet;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+
+	xRet = FTOM_CGI_getEPID(pReq, pEPID);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTOM_CLIENT_EP_destroy(pClient, pEPID);
+}
+
 FTM_RET	FTOM_CGI_getEP
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+
+	FTM_RET			xRet;
+	FTM_EP			xEPInfo;
+	FTM_CHAR_PTR	pBuff = NULL;
+	cJSON _PTR_ 	pRoot = NULL;
+
+
+	FTM_CHAR_PTR	pEPID = pReq->getstr(pReq, "id", false);
+	if (pEPID == NULL)
+	{
+		goto finish;
+	}
+
+	xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xEPInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;
+	}
+
+	xRet = FTOM_CGI_makeEPInfo(&xEPInfo, &pRoot);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	pBuff = cJSON_Print(pRoot);
+
+	qcgires_setcontenttype(pReq, "text/xml");
+	printf("%s", pBuff);
+	TRACE("%s", pBuff);
+
+	xRet = FTM_RET_OK;
+
+finish:
+	if (pRoot != NULL)
+	{
+		cJSON_Delete(pRoot);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_CGI_setEP
 (
 	FTOM_CLIENT_PTR pClient, 
 	qentry_t _PTR_ pReq

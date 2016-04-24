@@ -11,22 +11,119 @@
 #include "cmd_action.h"
 #include "cmd_rule.h"
 
-static FTOM_CGI_COMMAND	pCmds[] =
+static 
+FTM_RET	FTOM_CGI_service
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq,
+	FTOM_CGI_COMMAND_PTR	pCmds
+);
+
+static 
+FTOM_CGI_COMMAND	pEPCmds[] =
 {
-	{	"ep",			FTOM_CGI_getEP			},
-	{	"eplist",		FTOM_CGI_getEPList		},
-	{	"data",			FTOM_CGI_getEPData		},
-	{	"datalast",		FTOM_CGI_getEPDataLast	},
-	{	"node",			FTOM_CGI_getNode		},
-	{	"nodelist",		FTOM_CGI_getNodeList	},
-	{	"triggerlist",	FTOM_CGI_getTriggerList	},
-	{	"actionlist",	FTOM_CGI_getActionList	},
-	{	"rulelist",		FTOM_CGI_getRuleList	},
+	{	"get",		FTOM_CGI_getEP			},
+	{	"list",		FTOM_CGI_getEPList		},
 	{	NULL,		NULL					}
 };
 
+static 
+FTOM_CGI_COMMAND	pDataCmds[] =
+{
+	{	"get",		FTOM_CGI_getEPData		},
+	{	"last",		FTOM_CGI_getEPDataLast	},
+	{	NULL,		NULL					}
+};
 
-FTM_RET	FTOM_CGI_main(FTOM_CLIENT_PTR pClient, qentry_t *pReq)
+static 
+FTOM_CGI_COMMAND	pNodeCmds[] =
+{
+	{	"get",		FTOM_CGI_getNode		},
+	{	"list",		FTOM_CGI_getNodeList	},
+	{	NULL,		NULL					}
+};
+
+static 
+FTOM_CGI_COMMAND	pTriggerCmds[] =
+{
+	{	"list",	FTOM_CGI_getTriggerList	},
+	{	NULL,		NULL					}
+};
+
+static 
+FTOM_CGI_COMMAND	pActionCmds[] =
+{
+	{	"list",	FTOM_CGI_getActionList	},
+	{	NULL,		NULL					}
+};
+
+static 
+FTOM_CGI_COMMAND	pRuleCmds[] =
+{
+	{	"list",		FTOM_CGI_getRuleList	},
+	{	NULL,		NULL					}
+};
+
+FTM_RET	FTOM_CGI_node
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+)
+{
+	return	FTOM_CGI_service(pClient, pReq, pNodeCmds);
+}
+
+FTM_RET	FTOM_CGI_ep
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+)
+{
+	return	FTOM_CGI_service(pClient, pReq, pEPCmds);
+}
+
+FTM_RET	FTOM_CGI_data
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+)
+{
+	return	FTOM_CGI_service(pClient, pReq, pDataCmds);
+}
+
+FTM_RET	FTOM_CGI_trigger
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+)
+{
+	return	FTOM_CGI_service(pClient, pReq, pTriggerCmds);
+}
+
+FTM_RET	FTOM_CGI_acton
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+)
+{
+	return	FTOM_CGI_service(pClient, pReq, pActionCmds);
+}
+
+FTM_RET	FTOM_CGI_rule
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+)
+{
+	return	FTOM_CGI_service(pClient, pReq, pRuleCmds);
+}
+
+FTM_RET	FTOM_CGI_service
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq,
+	FTOM_CGI_COMMAND_PTR	pCmds
+)
 {
 	ASSERT(pReq != NULL);
 
@@ -139,3 +236,246 @@ char *FTOM_CGI_whitespaceCB
 
 	return (NULL);
 }
+
+FTM_RET	FTOM_CGI_getEPID
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR pEPID
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pEPID != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "id", false);
+	if((pValue == NULL) || (strlen(pValue) > FTM_EPID_LEN))
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	strcpy(pEPID, pValue);
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_CGI_getEPType
+(
+	qentry_t *pReq, 
+	FTM_EP_TYPE_PTR pType
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pType != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "type", false);
+	if (pValue == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	if (strcasecmp(pValue, "temperature") == 0)
+	{
+		*pType = FTM_EP_TYPE_TEMPERATURE;
+	}
+	else if (strcasecmp(pValue, "humidity" ) == 0)
+	{
+		*pType = FTM_EP_TYPE_HUMIDITY;
+	}
+	else if (strcasecmp(pValue, "voltage") == 0)
+	{
+		*pType = FTM_EP_TYPE_VOLTAGE;
+	}
+	else if (strcasecmp(pValue, "current") == 0)
+	{
+		*pType = FTM_EP_TYPE_CURRENT;
+	}
+	else if (strcasecmp(pValue, "di") == 0)
+	{
+		*pType = FTM_EP_TYPE_DI;
+	}
+	else if (strcasecmp(pValue, "do") == 0)
+	{
+		*pType = FTM_EP_TYPE_DO;
+	}
+	else if (strcasecmp(pValue, "gas") == 0)
+	{
+		*pType = FTM_EP_TYPE_GAS;
+	}
+	else if (strcasecmp(pValue, "power") == 0)
+	{
+		*pType = FTM_EP_TYPE_POWER;
+	}
+	else if (strcasecmp(pValue, "count") == 0)
+	{
+		*pType = FTM_EP_TYPE_COUNT;
+	}
+	else if (strcasecmp(pValue, "multi") == 0)
+	{
+		*pType = FTM_EP_TYPE_MULTI;
+	}
+	else
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getEPFlags
+(
+	qentry_t *pReq, 
+	FTM_EP_FLAG_PTR	pFlags
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pFlags != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getName
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pName
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pName != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "name", false);
+	if((pValue == NULL) || (strlen(pValue) > FTM_NAME_LEN))
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	strcpy(pName, pValue);
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getUnit
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pUnit
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pUnit != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "unit", false);
+	if((pValue == NULL) || (strlen(pValue) > FTM_UNIT_LEN))
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	strcpy(pUnit, pValue);
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getEnable
+(
+	qentry_t *pReq, 
+	FTM_BOOL_PTR		pEnable	
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pEnable != NULL);
+	
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "enable", false);
+	if (pValue == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	if(strcasecmp(pValue, "true") == 0)
+	{
+		*pEnable = FTM_TRUE;	
+	}
+	else if(strcasecmp(pValue, "false") == 0)
+	{
+		*pEnable = FTM_FALSE;	
+	}
+	else
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getTimeout
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pTimeout
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pTimeout != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "timeout", false);
+	if (pValue == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	*pTimeout = strtoul(pValue, 0, 10);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getInterval
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pInterval
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pInterval != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "interval", false);
+	if (pValue == NULL)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	*pInterval = strtoul(pValue, 0, 10);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getDID
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pDID
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pDID != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "did", false);
+	if((pValue == NULL) || (strlen(pValue) > FTM_DID_LEN))
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	strcpy(pDID, pValue);
+	
+	return	FTM_RET_OK;
+}
+

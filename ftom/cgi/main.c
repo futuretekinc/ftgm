@@ -10,8 +10,9 @@
 
 FTOM_CGI_COMMAND	pCmds[] =
 {
-	{	"ftom",		FTOM_CGI_main	},
-	{	"ftom.cgi",		FTOM_CGI_main	},
+	{	"node",		FTOM_CGI_node	},
+	{	"ep",		FTOM_CGI_ep		},
+	{	"data",		FTOM_CGI_data	},
 	{	NULL,		NULL			}
 };
 
