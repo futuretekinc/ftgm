@@ -71,13 +71,14 @@ FTM_RET	FTM_ACTION_create(FTM_ACTION_PTR pAction)
 
 FTM_RET	FTM_ACTION_createSet
 (
-	FTM_ACTION_ID 	xID, 
+	FTM_CHAR_PTR	pActionID,
 	FTM_ACTION_TYPE xType, 
 	FTM_CHAR_PTR	pEPID,
 	FTM_VALUE_PTR	pValue, 
 	FTM_ACTION_PTR _PTR_ ppAction
 )
 {
+	ASSERT(pActionID != NULL);
 	ASSERT(pEPID != NULL);
 	ASSERT(pValue != NULL);
 	ASSERT(pActionList != NULL);
@@ -92,7 +93,7 @@ FTM_RET	FTM_ACTION_createSet
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	pAction->xID = xID;
+	strncpy(pAction->pID, pActionID, FTM_ID_LEN);
 	pAction->xType = xType;
 	strcpy(pAction->xParams.xSet.pEPID, pEPID);
 	memcpy(&pAction->xParams.xSet.xValue, pValue, sizeof(FTM_EP_DATA));
@@ -177,13 +178,13 @@ FTM_RET FTM_ACTION_count
 
 FTM_RET FTM_ACTION_get
 (
-	FTM_ACTION_ID xID, 
+	FTM_CHAR_PTR	pActionID,
 	FTM_ACTION_PTR _PTR_ ppAction
 )
 {
 	ASSERT(pActionList != NULL);
 
-	return	FTM_LIST_get(pActionList, (FTM_VOID_PTR)&xID, (FTM_VOID_PTR _PTR_)ppAction);
+	return	FTM_LIST_get(pActionList, (FTM_VOID_PTR)pActionID, (FTM_VOID_PTR _PTR_)ppAction);
 }
 
 FTM_RET FTM_ACTION_getAt
@@ -206,8 +207,10 @@ FTM_BOOL	FTM_ACTION_seeker
 {
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
-
-	return	((FTM_ACTION_PTR)pElement)->xID == *((FTM_ACTION_ID_PTR)pIndicator);
+	FTM_ACTION_PTR 	pAction = (FTM_ACTION_PTR)pElement;
+	FTM_CHAR_PTR	pActionID = (FTM_CHAR_PTR)pIndicator;
+	
+	return	strcasecmp(pAction->pID, pActionID) == 0;
 }
 
 FTM_CHAR_PTR	FTM_ACTION_typeString

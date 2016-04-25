@@ -479,7 +479,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_TRIGGER     		xTrigger;
+	FTM_TRIGGER    		xTrigger;
 }	FTDM_REQ_TRIGGER_ADD_PARAMS, _PTR_ FTDM_REQ_TRIGGER_ADD_PARAMS_PTR;
 
 typedef	struct
@@ -487,20 +487,21 @@ typedef	struct
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				nRet;
+	FTM_CHAR			pTriggerID[FTM_ID_LEN+1];
 }	FTDM_RESP_TRIGGER_ADD_PARAMS, _PTR_	FTDM_RESP_TRIGGER_ADD_PARAMS_PTR;
 
 typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_TRIGGER_ID		xID;
+	FTM_CHAR			pTriggerID[FTM_ID_LEN+1];
 }	FTDM_REQ_TRIGGER_DEL_PARAMS, _PTR_	FTDM_REQ_TRIGGER_DEL_PARAMS_PTR;
 
 typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_RET			nRet;
+	FTM_RET				nRet;
 }	FTDM_RESP_TRIGGER_DEL_PARAMS, _PTR_ 	FTDM_RESP_TRIGGER_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -521,7 +522,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_TRIGGER_ID		xID;
+	FTM_CHAR_PTR		pID;
 }	FTDM_REQ_TRIGGER_GET_PARAMS, _PTR_ 	FTDM_REQ_TRIGGER_GET_PARAMS_PTR;
 
 typedef	struct
@@ -565,7 +566,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_ACTION_ID			xID;
+	FTM_CHAR			pActionID[FTM_ID_LEN+1];
 }	FTDM_REQ_ACTION_DEL_PARAMS, _PTR_	FTDM_REQ_ACTION_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -593,7 +594,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_ACTION_ID		xID;
+	FTM_CHAR			pActionID[FTM_ID_LEN+1];
 }	FTDM_REQ_ACTION_GET_PARAMS, _PTR_ 	FTDM_REQ_ACTION_GET_PARAMS_PTR;
 
 typedef	struct
@@ -637,7 +638,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_RULE_ID			xID;
+	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
 }	FTDM_REQ_RULE_DEL_PARAMS, _PTR_	FTDM_REQ_RULE_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -665,7 +666,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_RULE_ID		xID;
+	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
 }	FTDM_REQ_RULE_GET_PARAMS, _PTR_ 	FTDM_REQ_RULE_GET_PARAMS_PTR;
 
 typedef	struct

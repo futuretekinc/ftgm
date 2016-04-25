@@ -3,6 +3,7 @@
 #include "ftm.h"
 #include "ftdm_rule.h"
 #include "ftdm_action.h"
+#include "ftdm_trigger.h"
 #include "ftdm_sqlite.h"
 
 FTM_RET	FTDM_RULE_init
@@ -62,13 +63,10 @@ FTM_RET	FTDM_RULE_loadFromFile
 						FTM_CONFIG_ITEM	xRulesItem;
 						FTM_CONFIG_ITEM	xActionsItem;
 
-						xRet = FTM_CONFIG_ITEM_getItemINT(&xRuleItem, "id", (FTM_INT_PTR)&xInfo.xID);
-						if (xRet != FTM_RET_OK)
-						{
-							ERROR("Get trigger id error!\n");
-							continue;
-						}
-			
+						FTM_RULE_setDefault(&xInfo);
+
+						FTM_CONFIG_ITEM_getItemString(&xRuleItem, "id", xInfo.pID, FTM_ID_LEN);
+						FTM_CONFIG_ITEM_getItemString(&xRuleItem, "name", xInfo.pName, FTM_NAME_LEN);
 						xInfo.xParams.ulTriggers = 0;
 
 						xRet = FTM_CONFIG_ITEM_getChildItem(&xRuleItem, "triggers", &xRulesItem);
@@ -78,7 +76,6 @@ FTM_RET	FTDM_RULE_loadFromFile
 							continue;
 						}
 				
-						FTM_INT		nRuleIndex;
 						FTM_ULONG	j, ulRuleCount;
 
 						xRet = FTM_CONFIG_LIST_getItemCount(&xRulesItem, &ulRuleCount);
@@ -95,13 +92,28 @@ FTM_RET	FTDM_RULE_loadFromFile
 							xRet = FTM_CONFIG_LIST_getItemAt(&xRulesItem, j, &xRuleItem);	
 							if (xRet == FTM_RET_OK)
 							{
-								xRet = FTM_CONFIG_ITEM_getINT(&xRuleItem, (FTM_INT_PTR)&nRuleIndex);
+								FTM_ULONG	ulIndex;
+								FTDM_TRIGGER_PTR	pTrigger;
+
+								xRet = FTM_CONFIG_ITEM_getULONG(&xRuleItem, &ulIndex);
 								if (xRet != FTM_RET_OK)
 								{
 									ERROR("Get trigger index error!\n");
 									continue;	
 								}
-								xInfo.xParams.pTriggers[xInfo.xParams.ulTriggers++] = nRuleIndex;
+
+								xRet = FTDM_TRIGGER_getByIndex(ulIndex, &pTrigger);
+								if (xRet != FTM_RET_OK)
+								{
+									ERROR("Get trigger index error!\n");
+									continue;	
+								}
+
+								strcpy(xInfo.xParams.pTriggers[xInfo.xParams.ulTriggers++], pTrigger->xInfo.pID);
+							}
+							else
+							{
+								ERROR("Get rule[%d] load failed.\n", j);	
 							}
 						
 						}
@@ -112,7 +124,6 @@ FTM_RET	FTDM_RULE_loadFromFile
 						{
 							continue;
 						}
-						FTM_INT		nActionIndex;
 						FTM_ULONG	ulActionCount;
 
 						xRet = FTM_CONFIG_LIST_getItemCount(&xActionsItem, &ulActionCount);
@@ -128,13 +139,24 @@ FTM_RET	FTDM_RULE_loadFromFile
 							xRet = FTM_CONFIG_LIST_getItemAt(&xActionsItem, j, &xActionItem);	
 							if (xRet == FTM_RET_OK)
 							{
-								xRet = FTM_CONFIG_ITEM_getINT(&xActionItem, (FTM_INT_PTR)&nActionIndex);
+								FTM_ULONG	ulIndex;
+								FTDM_ACTION_PTR	pAction;
+
+								xRet = FTM_CONFIG_ITEM_getULONG(&xActionItem, &ulIndex);
 								if (xRet != FTM_RET_OK)
 								{
+									ERROR("Action index get failed.\n");
 									continue;	
 								}
 
-								xInfo.xParams.pActions[xInfo.xParams.ulActions++] = nActionIndex;
+								xRet = FTDM_ACTION_getByIndex(ulIndex, &pAction);
+								if (xRet != FTM_RET_OK)
+								{
+									ERROR("Action[%d] get failed.\n");
+									continue;	
+								}
+
+								strcpy(xInfo.xParams.pActions[xInfo.xParams.ulActions++], pAction->xInfo.pID);
 							}
 						
 						}
@@ -214,7 +236,7 @@ FTM_RET	FTDM_RULE_saveToDB
 		{
 			FTM_RULE	xInfo;
 
-			xRet = FTDM_DBIF_RULE_get(pRule->xID, &xInfo);
+			xRet = FTDM_DBIF_RULE_get(pRule->pID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
 				xRet = FTDM_DBIF_RULE_create(&xInfo);	
@@ -242,9 +264,23 @@ FTM_RET	FTDM_RULE_create
 	FTM_RET				xRet;
 	FTDM_RULE_PTR	pRule;
 
-	if (FTDM_RULE_get(pInfo->xID, &pRule) == FTM_RET_OK)
+	if (FTDM_RULE_get(pInfo->pID, &pRule) == FTM_RET_OK)
 	{
+		ERROR("Rule[%s] already exist.\n", pInfo->pID);
 		return	FTM_RET_ALREADY_EXIST_OBJECT;
+	}
+
+	if (strlen(pInfo->pID) == 0)
+	{
+		do 
+		{	
+			struct timeval	xTime;
+
+			gettimeofday(&xTime, NULL);
+			sprintf(pInfo->pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
+			usleep(10);
+		}
+		while (FTDM_RULE_get(pInfo->pID, &pRule) == FTM_RET_OK);
 	}
 
 	xRet = FTDM_DBIF_RULE_create(pInfo);
@@ -254,7 +290,7 @@ FTM_RET	FTDM_RULE_create
 		if (pRule == NULL)
 		{
 			ERROR("Not enough memory!\n");
-			FTDM_DBIF_RULE_destroy(pInfo->xID);
+			FTDM_DBIF_RULE_destroy(pInfo->pID);
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 
@@ -263,9 +299,14 @@ FTM_RET	FTDM_RULE_create
 		xRet = FTM_RULE_append((FTM_RULE_PTR)pRule);
 		if (xRet != FTM_RET_OK)
 		{
-			FTDM_DBIF_RULE_destroy(pInfo->xID);
+			ERROR("Rule[%s] append failed.\n", pRule->xInfo.pID);
+			FTDM_DBIF_RULE_destroy(pInfo->pID);
 			FTM_MEM_free(pRule);
 		}
+	}
+	else
+	{
+		ERROR("Rule[%s] DB append failed.\n", pInfo->pID);	
 	}
 
 	return	xRet;
@@ -273,19 +314,19 @@ FTM_RET	FTDM_RULE_create
 
 FTM_RET	FTDM_RULE_destroy
 (
-	FTM_RULE_ID	xID
+	FTM_CHAR_PTR	pRuleID
 )
 {
 	FTM_RET				xRet;
 	FTDM_RULE_PTR	pRule = NULL;
 
-	xRet = FTDM_RULE_get(xID, &pRule);
+	xRet = FTDM_RULE_get(pRuleID, &pRule);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	FTDM_DBIF_RULE_destroy(xID);
+	FTDM_DBIF_RULE_destroy(pRuleID);
 	FTM_RULE_remove((FTM_RULE_PTR)pRule);
 
 	FTM_MEM_free(pRule);
@@ -305,11 +346,11 @@ FTM_RET	FTDM_RULE_count
 
 FTM_RET	FTDM_RULE_get
 (
-	FTM_RULE_ID	xID,
+	FTM_CHAR_PTR	pRuleID,
 	FTDM_RULE_PTR	_PTR_ 	ppRule
 )
 {
-	return	FTM_RULE_get(xID, (FTM_RULE_PTR _PTR_)ppRule);
+	return	FTM_RULE_get(pRuleID, (FTM_RULE_PTR _PTR_)ppRule);
 }
 
 FTM_RET	FTDM_RULE_getAt
@@ -329,7 +370,7 @@ FTM_RET	FTDM_RULE_showList
 	FTM_RULE_PTR	pRule;
 	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# Rule Information\n");
-	MESSAGE("\t%4s %8s %8s\n", "ID", "RULE", "ACTION");
+	MESSAGE("\t%16s %8s %8s\n", "ID", "RULE", "ACTION");
 
 	FTM_RULE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -340,7 +381,7 @@ FTM_RET	FTDM_RULE_showList
 			FTM_ULONG	ulLen = 0;
 			FTM_ULONG	j;
 
-			MESSAGE("\t%4d ", pRule->xID);
+			MESSAGE("\t%16s ", pRule->pID);
 			for(j = 0 ; j < pRule->xParams.ulTriggers; j++)
 			{
 				if (pRule->xParams.pTriggers[j] == 0)
@@ -349,11 +390,11 @@ FTM_RET	FTDM_RULE_showList
 				}
 				if (ulLen != 0)
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %lu", pRule->xParams.pTriggers[j]);
+					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %s", pRule->xParams.pTriggers[j]);
 				}
 				else
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%lu", pRule->xParams.pTriggers[j]);
+					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%s", pRule->xParams.pTriggers[j]);
 				}
 			}
 			MESSAGE("%8s ", pBuff);
@@ -367,11 +408,11 @@ FTM_RET	FTDM_RULE_showList
 				}
 				if (ulLen != 0)
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %lu", pRule->xParams.pActions[j]);
+					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %s", pRule->xParams.pActions[j]);
 				}
 				else
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%lu", pRule->xParams.pActions[j]);
+					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%s", pRule->xParams.pActions[j]);
 				}
 			}
 			MESSAGE("%8s\n", pBuff);
@@ -386,8 +427,8 @@ FTM_BOOL	FTDM_RULE_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndic
 {
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
-	FTM_RULE_PTR	pRule = (FTM_RULE_PTR)pElement;
-	FTM_RULE_ID_PTR	pRuleID = (FTM_RULE_ID_PTR)pIndicator;
+	FTDM_RULE_PTR	pRule = (FTDM_RULE_PTR)pElement;
+	FTM_CHAR_PTR	pRuleID = (FTM_CHAR_PTR)pIndicator;
 
-	return	(pRule->xID == *pRuleID);
+	return	strcasecmp(pRule->xInfo.pID, pRuleID) == 0;
 }

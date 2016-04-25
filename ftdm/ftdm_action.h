@@ -6,6 +6,7 @@
 typedef	struct
 {
 	FTM_ACTION	xInfo;
+	FTM_ULONG	ulIndex;
 }	FTDM_ACTION, _PTR_ FTDM_ACTION_PTR;
 
 FTM_RET	FTDM_ACTION_init
@@ -40,12 +41,13 @@ FTM_RET	FTDM_ACTION_saveToDB
 
 FTM_RET	FTDM_ACTION_create
 (
-	FTM_ACTION_PTR pInfo
+	FTM_ACTION_PTR pInfo,
+	FTDM_ACTION_PTR	_PTR_ ppAction
 );
 
 FTM_RET	FTDM_ACTION_destroy
 (
-	FTM_ACTION_ID	xID
+	FTM_CHAR_PTR	pActionID
 );
 
 FTM_RET	FTDM_ACTION_count
@@ -55,7 +57,7 @@ FTM_RET	FTDM_ACTION_count
 
 FTM_RET	FTDM_ACTION_get
 (
-	FTM_ACTION_ID	xID, 
+	FTM_CHAR_PTR			pActionID,
 	FTDM_ACTION_PTR _PTR_ 	ppAction
 );
 
@@ -65,4 +67,9 @@ FTM_RET	FTDM_ACTION_getAt
 	FTDM_ACTION_PTR _PTR_	ppAction
 );
 
+FTM_RET	FTDM_ACTION_getByIndex
+(
+	FTM_ULONG				ulIndex,
+	FTDM_ACTION_PTR _PTR_ 	ppAction
+);
 #endif

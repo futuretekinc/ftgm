@@ -136,7 +136,7 @@ FTM_RET	FTOM_EP_getTriggerAt
 (
 	FTOM_EP_PTR 	pEP, 
 	FTM_ULONG 		ulIndex, 
-	FTM_TRIGGER_ID_PTR pTriggerID
+	FTM_CHAR_PTR	pTriggerID
 );
 
 FTM_RET FTOM_EP_trap

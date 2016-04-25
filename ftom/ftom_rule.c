@@ -283,7 +283,7 @@ FTM_VOID_PTR FTOM_RULEM_process
 
 				case	FTOM_MSG_TYPE_RULE:
 					{
-						TRACE("Rule [%08x] is updated.\n",	pMsg->xRuleID);
+						TRACE("Rule [%s] is updated.\n",	pMsg->pRuleID);
 					}
 					break;
 
@@ -305,7 +305,7 @@ FTM_VOID_PTR FTOM_RULEM_process
 
 FTM_RET	FTOM_RULEM_notifyChanged
 (
-	FTM_TRIGGER_ID xTriggerID
+	FTM_CHAR_PTR	pTriggerID
 )
 {
 	FTOM_RULEM_PTR	pRuleM = NULL;
@@ -327,7 +327,7 @@ FTM_RET	FTOM_RULEM_notifyChanged
 	
 				for(i = 0 ; i < pRule->xInfo.xParams.ulTriggers; i++)
 				{
-					if (pRule->xInfo.xParams.pTriggers[i] == xTriggerID)
+					if (strcasecmp(pRule->xInfo.xParams.pTriggers[i], pTriggerID) == 0)
 					{
 						FTM_BOOL		bActive = FTM_TRUE;
 						FTM_INT			j;
@@ -346,11 +346,11 @@ FTM_RET	FTOM_RULEM_notifyChanged
 
 						if (bActive)
 						{
-							FTOM_RULEM_activate(pRuleM, pRule->xInfo.xID);
+							FTOM_RULEM_activate(pRuleM, pRule->xInfo.pID);
 						}
 						else
 						{
-							FTOM_RULEM_deactivate(pRuleM, pRule->xInfo.xID);
+							FTOM_RULEM_deactivate(pRuleM, pRule->xInfo.pID);
 						}
 					}
 				}
@@ -413,7 +413,7 @@ FTM_RET	FTOM_RULEM_add
 FTM_RET	FTOM_RULEM_del
 (
 	FTOM_RULEM_PTR 	pRuleM, 
-	FTOM_RULE_ID  	xEventID
+	FTM_CHAR_PTR	pRuleID
 )
 {
 	ASSERT(pRuleM != NULL);
@@ -423,7 +423,7 @@ FTM_RET	FTOM_RULEM_del
 
 	TRACE_CALL();
 
-	xRet = FTM_LIST_get(pRuleM->pRuleList, (FTM_VOID_PTR)&xEventID, (FTM_VOID_PTR _PTR_)&pRule);
+	xRet = FTM_LIST_get(pRuleM->pRuleList, (FTM_VOID_PTR)&pRuleID, (FTM_VOID_PTR _PTR_)&pRule);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_LIST_remove(pRuleM->pRuleList, pRule);
@@ -439,13 +439,13 @@ FTM_RET	FTOM_RULEM_del
 FTM_RET	FTOM_RULEM_get
 (
 	FTOM_RULEM_PTR 	pRuleM, 
-	FTM_RULE_ID		xID,
+	FTM_CHAR_PTR	pRuleID,
 	FTOM_RULE_PTR _PTR_ ppRule
 )
 {
 	TRACE_CALL();
 
-	return	FTM_LIST_get(pRuleM->pRuleList, (FTM_VOID_PTR _PTR_)&xID, (FTM_VOID_PTR _PTR_)ppRule);
+	return	FTM_LIST_get(pRuleM->pRuleList, (FTM_VOID_PTR)pRuleID, (FTM_VOID_PTR _PTR_)ppRule);
 }
 FTM_RET	FTOM_RULEM_getAt
 (
@@ -491,7 +491,7 @@ FTM_RET	FTOM_RULEM_setActionM
 FTM_RET	FTOM_RULEM_activate
 (
 	FTOM_RULEM_PTR 	pRuleM, 
-	FTM_RULE_ID 	xRuleID
+	FTM_CHAR_PTR	pRuleID
 )
 {
 	ASSERT(pRuleM != NULL);
@@ -499,7 +499,7 @@ FTM_RET	FTOM_RULEM_activate
 	FTM_RET				xRet;
 	FTOM_MSG_RULE_PTR	pMsg;
 
-	xRet = FTOM_MSG_createRule(xRuleID, FTM_TRUE, &pMsg);
+	xRet = FTOM_MSG_createRule(pRuleID, FTM_TRUE, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -517,7 +517,7 @@ FTM_RET	FTOM_RULEM_activate
 FTM_RET	FTOM_RULEM_deactivate
 (
 	FTOM_RULEM_PTR 	pRuleM, 
-	FTM_RULE_ID 	xRuleID
+	FTM_CHAR_PTR	pRuleID
 )
 {
 	ASSERT(pRuleM != NULL);
@@ -525,7 +525,7 @@ FTM_RET	FTOM_RULEM_deactivate
 	FTM_RET				xRet;
 	FTOM_MSG_RULE_PTR	pMsg;
 
-	xRet = FTOM_MSG_createRule(xRuleID, FTM_FALSE, &pMsg);
+	xRet = FTOM_MSG_createRule(pRuleID, FTM_FALSE, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -551,7 +551,7 @@ FTM_BOOL	FTOM_RULEM_seeker
 	ASSERT(pKey != NULL);
 	
 	FTOM_RULE_PTR	pRule = (FTOM_RULE_PTR)pElement;
-	FTM_RULE_ID_PTR	pID = (FTM_RULE_ID_PTR)pKey ;
+	FTM_CHAR_PTR	pRuleID = (FTM_CHAR_PTR)pKey ;
 
-	return	(pRule->xInfo.xID == *pID);
+	return	strcasecmp(pRule->xInfo.pID, pRuleID) == 0;
 }

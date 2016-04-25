@@ -187,7 +187,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 	MESSAGE("\n# Trigger Information\n");
 	FTOM_TRIGGERM_count(pOM->pTriggerM, &ulCount);
-	MESSAGE("\t%8s %16s %16s %8s %8s %s\n", "ID", "EPID", "TYPE", "DETECT", "HOLD", "CONDITION");
+	MESSAGE("\t%16s %16s %16s %8s %8s %s\n", "ID", "EPID", "TYPE", "DETECT", "HOLD", "CONDITION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_TRIGGER_PTR	pTrigger;
@@ -199,8 +199,8 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 			FTM_TRIGGER_conditionToString(&pTrigger->xInfo, pCondition, sizeof(pCondition));
 
-			MESSAGE("\t%8d %16s %16s %8.3f %8.3f %s\n", 
-				pTrigger->xInfo.xID, 
+			MESSAGE("\t%16s %16s %16s %8.3f %8.3f %s\n", 
+				pTrigger->xInfo.pID, 
 				pTrigger->xInfo.pEPID, 
 				FTM_TRIGGER_typeString(pTrigger->xInfo.xType),
             	pTrigger->xInfo.xParams.xCommon.ulDetectionTime / 1000000.0,
@@ -212,7 +212,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 	MESSAGE("\n# Action Information\n");
 	FTOM_ACTIONM_count(pOM->pActionM, &ulCount);
-	MESSAGE("\t%8s %16s\n", "ID","TYPE");
+	MESSAGE("\t%16s %16s\n", "ID","TYPE");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_ACTION_PTR	pAction;
@@ -220,8 +220,8 @@ FTM_RET	FTOM_SHELL_CMD_list
 		xRet = FTOM_ACTIONM_getAt(pOM->pActionM, i, &pAction);
 		if (xRet == FTM_RET_OK)
 		{
-			MESSAGE("\t%8d %16s\n", 
-				pAction->xInfo.xID, 
+			MESSAGE("\t%16s %16s\n", 
+				pAction->xInfo.pID, 
 				FTM_ACTION_typeString(pAction->xInfo.xType));
 		}
 
@@ -229,7 +229,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 	
 	MESSAGE("\n# Rule Information\n");
 	FTOM_RULEM_count(pOM->pRuleM, &ulCount);
-	MESSAGE("\t%8s %24s %24s\n", "ID","TRIGGER", "ACTION");
+	MESSAGE("\t%16s %24s %24s\n", "ID","TRIGGER", "ACTION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_RULE_PTR	pRule;
@@ -237,9 +237,9 @@ FTM_RET	FTOM_SHELL_CMD_list
 		xRet = FTOM_RULEM_getAt(pOM->pRuleM, i, &pRule);
 		if (xRet == FTM_RET_OK)
 		{
-			MESSAGE("\t%8d", pRule->xInfo.xID);
+			MESSAGE("\t%16s", pRule->xInfo.pID);
 			
-			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pTriggers) / sizeof(FTM_TRIGGER_ID) ; j++)
+			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pTriggers) / (FTM_ID_LEN+1) ; j++)
 			{
 				if (j < pRule->xInfo.xParams.ulTriggers)
 				{
@@ -251,7 +251,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 				}
 			}
 
-			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pActions) / sizeof(FTM_ACTION_ID) ; j++)
+			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pActions) / (FTM_ID_LEN+1) ; j++)
 			{
 				if (j < pRule->xInfo.xParams.ulActions)
 				{

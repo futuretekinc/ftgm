@@ -6,6 +6,7 @@
 typedef	struct
 {
 	FTM_TRIGGER		xInfo;
+	FTM_ULONG		ulIndex;
 }	FTDM_TRIGGER, _PTR_ FTDM_TRIGGER_PTR;
 
 FTM_RET	FTDM_TRIGGER_init
@@ -40,12 +41,13 @@ FTM_RET	FTDM_TRIGGER_saveToDB
 
 FTM_RET	FTDM_TRIGGER_create
 (
-	FTM_TRIGGER_PTR pInfo
+	FTM_TRIGGER_PTR pInfo,
+	FTDM_TRIGGER_PTR _PTR_ ppTrigger
 );
 
 FTM_RET	FTDM_TRIGGER_destroy
 (
-	FTM_TRIGGER_ID	xID
+	FTM_CHAR_PTR	pID
 );
 
 FTM_RET	FTDM_TRIGGER_count
@@ -55,14 +57,19 @@ FTM_RET	FTDM_TRIGGER_count
 
 FTM_RET	FTDM_TRIGGER_get
 (
-	FTM_TRIGGER_ID			xID, 
+	FTM_CHAR_PTR	pID,
 	FTDM_TRIGGER_PTR _PTR_ 	ppTrigger
 );
 
 FTM_RET	FTDM_TRIGGER_getAt
 (
-	FTM_ULONG				nIndex, 
+	FTM_ULONG				ulIndex, 
 	FTDM_TRIGGER_PTR _PTR_	ppTrigger
 );
 
+FTM_RET	FTDM_TRIGGER_getByIndex
+(
+	FTM_ULONG				ulIndex, 
+	FTDM_TRIGGER_PTR _PTR_	ppTrigger
+);
 #endif

@@ -198,7 +198,7 @@ FTM_RET FTOM_MSG_createEPCtrl
 
 FTM_RET FTOM_MSG_createRule
 (
-	FTM_RULE_ID			xRuleID,
+	FTM_CHAR_PTR		pRuleID,
 	FTM_RULE_STATE		xRuleState,
 	FTOM_MSG_RULE_PTR _PTR_ ppMsg
 )
@@ -215,7 +215,7 @@ FTM_RET FTOM_MSG_createRule
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_RULE;
-	pMsg->xRuleID	= xRuleID;
+	strncpy(pMsg->pRuleID, pRuleID, FTM_ID_LEN);
 	pMsg->xRuleState= xRuleState;
 
 	*ppMsg = pMsg;
@@ -225,7 +225,7 @@ FTM_RET FTOM_MSG_createRule
 
 FTM_RET FTOM_MSG_createAction
 (
-	FTM_ACTION_ID		xActionID,
+	FTM_CHAR_PTR		pActionID,
 	FTM_BOOL			bActivate,
 	FTOM_MSG_ACTION_PTR _PTR_ ppMsg
 )
@@ -242,7 +242,7 @@ FTM_RET FTOM_MSG_createAction
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_ACTION;
-	pMsg->xActionID	= xActionID;
+	strncpy(pMsg->pActionID, pActionID, FTM_ID_LEN);
 	pMsg->bActivate = bActivate;
 
 	*ppMsg = pMsg;

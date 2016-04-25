@@ -12,7 +12,7 @@ static FTM_RET FTDMC_request
 	FTDMC_SESSION_PTR	pSession, 
 	FTDM_REQ_PARAMS_PTR	pReq,
 	FTM_INT				nReqLen,
-	FTDM_REQ_PARAMS_PTR	pResp,
+	FTDM_RESP_PARAMS_PTR	pResp,
 	FTM_INT				nRespLen
 );
 
@@ -1190,7 +1190,7 @@ FTM_RET	FTDMC_TRIGGER_add
 FTM_RET	FTDMC_TRIGGER_del
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_TRIGGER_ID     		xTriggerID
+	FTM_CHAR_PTR			pTriggerID
 )
 {
 	ASSERT(pSession != NULL);
@@ -1201,7 +1201,7 @@ FTM_RET	FTDMC_TRIGGER_del
 
 	xReq.xCmd	=	FTDM_CMD_TRIGGER_DEL;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xID	=	xTriggerID;
+	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -1255,7 +1255,7 @@ FTM_RET	FTDMC_TRIGGER_count
 FTM_RET	FTDMC_TRIGGER_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_TRIGGER_ID     		xTriggerID,
+	FTM_CHAR_PTR			pTriggerID,
 	FTM_TRIGGER_PTR			pTrigger
 )
 {
@@ -1268,7 +1268,7 @@ FTM_RET	FTDMC_TRIGGER_get
 
 	xReq.xCmd	=	FTDM_CMD_TRIGGER_GET;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xID	=	xTriggerID;
+	strncpy(xReq.pID, pTriggerID, FTM_ID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -1365,7 +1365,7 @@ FTM_RET	FTDMC_ACTION_add
 FTM_RET	FTDMC_ACTION_del
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_ACTION_ID     		xActionionID
+	FTM_CHAR_PTR			pActionID
 )
 {
 	ASSERT(pSession != NULL);
@@ -1376,7 +1376,7 @@ FTM_RET	FTDMC_ACTION_del
 
 	xReq.xCmd	=	FTDM_CMD_ACTION_DEL;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xID	=	xActionionID;
+	strncpy(xReq.pActionID, pActionID, FTM_ID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -1430,7 +1430,7 @@ FTM_RET	FTDMC_ACTION_count
 FTM_RET	FTDMC_ACTION_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_ACTION_ID     		xActionionID,
+	FTM_CHAR_PTR			pActionID,
 	FTM_ACTION_PTR			pAct
 )
 {
@@ -1443,7 +1443,7 @@ FTM_RET	FTDMC_ACTION_get
 
 	xReq.xCmd	=	FTDM_CMD_ACTION_GET;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xID	=	xActionionID;
+	strncpy(xReq.pActionID, pActionID, FTM_ID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -1540,7 +1540,7 @@ FTM_RET	FTDMC_RULE_add
 FTM_RET	FTDMC_RULE_del
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_RULE_ID     		xRuleionID
+	FTM_CHAR_PTR			pRuleID
 )
 {
 	ASSERT(pSession != NULL);
@@ -1551,7 +1551,7 @@ FTM_RET	FTDMC_RULE_del
 
 	xReq.xCmd	=	FTDM_CMD_RULE_DEL;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xID	=	xRuleionID;
+	strncpy(xReq.pRuleID, pRuleID, FTM_ID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -1605,7 +1605,7 @@ FTM_RET	FTDMC_RULE_count
 FTM_RET	FTDMC_RULE_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_RULE_ID     		xRuleionID,
+	FTM_CHAR_PTR			pRuleID,
 	FTM_RULE_PTR			pAct
 )
 {
@@ -1618,7 +1618,7 @@ FTM_RET	FTDMC_RULE_get
 
 	xReq.xCmd	=	FTDM_CMD_RULE_GET;
 	xReq.nLen	=	sizeof(xReq);
-	xReq.xID	=	xRuleionID;
+	strncpy(xReq.pRuleID, pRuleID, FTM_ID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -1685,7 +1685,7 @@ FTM_RET FTDMC_request
 	FTDMC_SESSION_PTR 	pSession, 
 	FTDM_REQ_PARAMS_PTR	pReq,
 	FTM_INT			nReqLen,
-	FTDM_REQ_PARAMS_PTR	pResp,
+	FTDM_RESP_PARAMS_PTR	pResp,
 	FTM_INT			nRespLen
 )
 {

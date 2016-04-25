@@ -1,3 +1,4 @@
+TOPDIR=..
 include ../Makefile.in
 
 LIB_FTM=libftm

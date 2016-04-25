@@ -952,13 +952,17 @@ FTM_RET	FTOM_CLIENT_TRIGGER_add
 		return	FTM_RET_ERROR;	
 	}
 
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		strncpy(pTrigger->pID, xResp.pTriggerID, FTM_ID_LEN);
+	}
 	return	xResp.xRet;
 }
 
 FTM_RET	FTOM_CLIENT_TRIGGER_del
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_TRIGGER_ID	xID
+	FTM_CHAR_PTR	pTriggerID
 )
 {
 	ASSERT(pClient != NULL);
@@ -970,7 +974,7 @@ FTM_RET	FTOM_CLIENT_TRIGGER_del
 
 	xReq.xCmd		=	FTOM_CMD_TRIG_DEL;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xID		=	xID;
+	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -1027,7 +1031,7 @@ FTM_RET	FTOM_CLIENT_TRIGGER_count
 FTM_RET	FTOM_CLIENT_TRIGGER_get
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_TRIGGER_ID	xID,
+	FTM_CHAR_PTR	pID,
 	FTM_TRIGGER_PTR	pTrigger
 )
 {
@@ -1041,7 +1045,7 @@ FTM_RET	FTOM_CLIENT_TRIGGER_get
 
 	xReq.xCmd		=	FTOM_CMD_TRIG_GET;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xID		=	xID;
+	strncpy(xReq.pTriggerID, pID, FTM_ID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -1170,13 +1174,18 @@ FTM_RET	FTOM_CLIENT_ACTION_add
 		return	FTM_RET_ERROR;	
 	}
 
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		strcpy(pAction->pID, xResp.pActionID);
+	}
+
 	return	xResp.xRet;
 }
 
 FTM_RET	FTOM_CLIENT_ACTION_del
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_ACTION_ID	xID
+	FTM_CHAR_PTR	pActionID
 )
 {
 	ASSERT(pClient != NULL);
@@ -1188,7 +1197,7 @@ FTM_RET	FTOM_CLIENT_ACTION_del
 
 	xReq.xCmd		=	FTOM_CMD_ACTION_DEL;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xID		=	xID;
+	strncpy(xReq.pActionID, pActionID, FTM_ID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -1245,7 +1254,7 @@ FTM_RET	FTOM_CLIENT_ACTION_count
 FTM_RET	FTOM_CLIENT_ACTION_get
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_ACTION_ID	xID,
+	FTM_CHAR_PTR	pActionID,
 	FTM_ACTION_PTR	pAction
 )
 {
@@ -1259,7 +1268,7 @@ FTM_RET	FTOM_CLIENT_ACTION_get
 
 	xReq.xCmd		=	FTOM_CMD_ACTION_GET;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xID		=	xID;
+	strncpy(xReq.pActionID, pActionID, FTM_ID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -1388,13 +1397,18 @@ FTM_RET	FTOM_CLIENT_RULE_add
 		return	FTM_RET_ERROR;	
 	}
 
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		strcpy(pRule->pID, xResp.pRuleID);
+	}
+
 	return	xResp.xRet;
 }
 
 FTM_RET	FTOM_CLIENT_RULE_del
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_RULE_ID	xID
+	FTM_CHAR_PTR	pRuleID
 )
 {
 	ASSERT(pClient != NULL);
@@ -1406,7 +1420,7 @@ FTM_RET	FTOM_CLIENT_RULE_del
 
 	xReq.xCmd		=	FTOM_CMD_RULE_DEL;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xID		=	xID;
+	strncpy(xReq.pRuleID, pRuleID, FTM_ID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -1463,7 +1477,7 @@ FTM_RET	FTOM_CLIENT_RULE_count
 FTM_RET	FTOM_CLIENT_RULE_get
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_RULE_ID	xID,
+	FTM_CHAR_PTR	pRuleID,
 	FTM_RULE_PTR	pRule
 )
 {
@@ -1477,7 +1491,7 @@ FTM_RET	FTOM_CLIENT_RULE_get
 
 	xReq.xCmd		=	FTOM_CMD_RULE_GET;
 	xReq.ulLen		=	sizeof(xReq);
-	xReq.xID		=	xID;
+	strncpy(xReq.pRuleID, pRuleID, FTM_ID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 

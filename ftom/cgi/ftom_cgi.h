@@ -145,7 +145,7 @@ FTM_RET FTOM_CGI_getCount
 FTM_RET FTOM_CGI_getTriggerID
 (
 	qentry_t *pReq, 
-	FTM_TRIGGER_ID_PTR pTriggerID,
+	FTM_CHAR_PTR	pTriggerID,
 	FTM_BOOL	bAllowEmpty
 );
 
@@ -197,7 +197,7 @@ FTM_RET FTOM_CGI_getUpperValue
 FTM_RET	FTOM_CGI_getActionID
 (
 	qentry_t *pReq,
-	FTM_ACTION_ID_PTR	pID,
+	FTM_CHAR_PTR	pActionID,
 	FTM_BOOL	bAllowEmpry
 );
 
@@ -219,7 +219,7 @@ FTM_RET	FTOM_CGI_getActionParams
 FTM_RET	FTOM_CGI_getRuleID
 (
 	qentry_t *pReq,
-	FTM_RULE_ID_PTR	pID,
+	FTM_CHAR_PTR	pRuleID,
 	FTM_BOOL	bAllowEmpry
 );
 

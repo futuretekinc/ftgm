@@ -49,9 +49,10 @@ FTOM_CGI_COMMAND	pNodeCmds[] =
 static 
 FTOM_CGI_COMMAND	pTriggerCmds[] =
 {
-	{	"get",	FTOM_CGI_getTrigger			},
 	{	"add",	FTOM_CGI_addTrigger			},
 	{	"del",	FTOM_CGI_delTrigger			},
+	{	"get",	FTOM_CGI_getTrigger			},
+	{	"set",	FTOM_CGI_setTrigger			},
 	{	"list",	FTOM_CGI_getTriggerList		},
 	{	NULL,		NULL					}
 };
@@ -665,7 +666,7 @@ FTM_RET	FTOM_CGI_getCount
 FTM_RET FTOM_CGI_getTriggerID
 (
 	qentry_t *pReq, 
-	FTM_TRIGGER_ID_PTR	pTriggerID,
+	FTM_CHAR_PTR	pTriggerID,
 	FTM_BOOL	bAllowEmpty
 )
 {
@@ -682,9 +683,14 @@ FTM_RET FTOM_CGI_getTriggerID
 			return	FTM_RET_INVALID_ARGUMENTS;	
 		}
 	}
+	else if (strlen(pValue) > FTM_ID_LEN)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	
+	}
 	else
 	{
-		*pTriggerID = strtoul(pValue, 0, 10);
+		strcpy(pTriggerID, pValue);
 	}
 	
 	return	FTM_RET_OK;
@@ -889,12 +895,12 @@ FTM_RET FTOM_CGI_getUpperValue
 FTM_RET	FTOM_CGI_getActionID
 (
 	qentry_t *pReq,
-	FTM_ACTION_ID_PTR	pID,
+	FTM_CHAR_PTR	pActionID,
 	FTM_BOOL	bAllowEmpty
 )
 {
 	ASSERT(pReq != NULL);
-	ASSERT(pID != NULL);
+	ASSERT(pActionID != NULL);
 
 	FTM_CHAR_PTR	pValue;
 
@@ -906,9 +912,13 @@ FTM_RET	FTOM_CGI_getActionID
 			return	FTM_RET_INVALID_ARGUMENTS;	
 		}
 	}
+	else if (strlen(pValue) > FTM_ID_LEN)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
 	else
 	{
-		*pID = strtoul(pValue, 0, 10);
+		strncpy(pActionID, pValue, FTM_ID_LEN);	
 	}
 	
 	return	FTM_RET_OK;
@@ -974,12 +984,12 @@ FTM_RET	FTOM_CGI_getActionType
 FTM_RET	FTOM_CGI_getRuleID
 (
 	qentry_t *pReq,
-	FTM_RULE_ID_PTR	pID,
+	FTM_CHAR_PTR	pRuleID,
 	FTM_BOOL	bAllowEmpty
 )
 {
 	ASSERT(pReq != NULL);
-	ASSERT(pID != NULL);
+	ASSERT(pRuleID != NULL);
 
 	FTM_CHAR_PTR	pValue;
 
@@ -991,9 +1001,13 @@ FTM_RET	FTOM_CGI_getRuleID
 			return	FTM_RET_INVALID_ARGUMENTS;	
 		}
 	}
+	else if (strlen(pValue) > FTM_ID_LEN)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
 	else
 	{
-		*pID = strtoul(pValue, 0, 10);
+		strcpy(pRuleID, pValue);
 	}
 	
 	return	FTM_RET_OK;

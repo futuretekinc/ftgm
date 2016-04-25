@@ -1031,10 +1031,16 @@ FTM_RET	FTDMS_TRIGGER_add
 	FTDM_RESP_TRIGGER_ADD_PARAMS_PTR	pResp
 )
 {
+	FTDM_TRIGGER_PTR	pTrigger = NULL;
+
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_TRIGGER_create(&pReq->xTrigger);
-
+	pResp->nRet = FTDM_TRIGGER_create(&pReq->xTrigger, &pTrigger);
+	
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		strncpy(pResp->pTriggerID, pTrigger->xInfo.pID, FTM_ID_LEN);
+	}
 	return	pResp->nRet;
 }
 
@@ -1048,7 +1054,7 @@ FTM_RET	FTDMS_TRIGGER_del
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_TRIGGER_destroy(pReq->xID);
+	pResp->nRet = FTDM_TRIGGER_destroy(pReq->pTriggerID);
 
 	return	pResp->nRet;
 }
@@ -1078,7 +1084,7 @@ FTM_RET	FTDMS_TRIGGER_get
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_TRIGGER_get(pReq->xID, &pTrigger);
+	pResp->nRet = FTDM_TRIGGER_get(pReq->pID, &pTrigger);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
@@ -1115,9 +1121,11 @@ FTM_RET	FTDMS_ACTION_add
 	FTDM_RESP_ACTION_ADD_PARAMS_PTR	pResp
 )
 {
+	FTDM_ACTION_PTR	pAction;
+
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACTION_create(&pReq->xAction);
+	pResp->nRet = FTDM_ACTION_create(&pReq->xAction, &pAction);
 
 	return	pResp->nRet;
 }
@@ -1132,7 +1140,7 @@ FTM_RET	FTDMS_ACTION_del
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACTION_destroy(pReq->xID);
+	pResp->nRet = FTDM_ACTION_destroy(pReq->pActionID);
 
 	return	pResp->nRet;
 }
@@ -1162,7 +1170,7 @@ FTM_RET	FTDMS_ACTION_get
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_ACTION_get(pReq->xID, &pAction);
+	pResp->nRet = FTDM_ACTION_get(pReq->pActionID, &pAction);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xAction, &pAction->xInfo, sizeof(FTM_ACTION));
@@ -1216,7 +1224,7 @@ FTM_RET	FTDMS_RULE_del
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_RULE_destroy(pReq->xID);
+	pResp->nRet = FTDM_RULE_destroy(pReq->pRuleID);
 
 	return	pResp->nRet;
 }
@@ -1246,7 +1254,7 @@ FTM_RET	FTDMS_RULE_get
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_RULE_get(pReq->xID, &pRule);
+	pResp->nRet = FTDM_RULE_get(pReq->pRuleID, &pRule);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_RULE));

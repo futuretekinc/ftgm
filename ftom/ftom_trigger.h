@@ -5,8 +5,6 @@
 #include "ftm.h"
 #include "ftom.h"
 
-typedef	FTM_TRIGGER_ID	FTOM_TRIGGER_ID;
-
 typedef	enum
 {
 	FTOM_TRIGGER_STATE_RESET,
@@ -81,14 +79,14 @@ FTM_RET	FTOM_TRIGGERM_stop
 FTM_RET	FTOM_TRIGGERM_add
 (
 	FTOM_TRIGGERM_PTR pTriggerM, 
-	FTM_TRIGGER_PTR pTrigger,
-	FTM_TRIGGER_ID_PTR	pTriggerID
+	FTM_TRIGGER_PTR pTriggerInfo,
+	FTOM_TRIGGER_PTR _PTR_	ppTrigger	
 );
 
 FTM_RET	FTOM_TRIGGERM_del
 (
 	FTOM_TRIGGERM_PTR pTriggerM, 
-	FTOM_TRIGGER_ID  xTriggerID
+	FTM_CHAR_PTR	pTriggerID
 );
 
 FTM_RET	FTOM_TRIGGERM_count
@@ -100,7 +98,7 @@ FTM_RET	FTOM_TRIGGERM_count
 FTM_RET	FTOM_TRIGGERM_get
 (
 	FTOM_TRIGGERM_PTR pTriggerM, 
-	FTOM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR		pTriggerID,
 	FTOM_TRIGGER_PTR _PTR_ ppTrigger
 );
 

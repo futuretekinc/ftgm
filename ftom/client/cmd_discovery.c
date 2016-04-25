@@ -21,7 +21,7 @@ FTM_RET	FTOM_CLIENT_CMD_discovery
 	FTM_VOID_PTR 	pData
 )
 {
-	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
+//	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 
 	if (nArgc != 1)
 	{

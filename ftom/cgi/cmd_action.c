@@ -42,7 +42,7 @@ FTM_RET	FTOM_CGI_addAction
 
 	FTM_ACTION_setDefault(&xActionInfo);
 
-	xRet = FTOM_CGI_getActionID(pReq, &xActionInfo.xID, FTM_TRUE);
+	xRet = FTOM_CGI_getActionID(pReq, xActionInfo.pID, FTM_TRUE);
 	xRet |= FTOM_CGI_getActionType(pReq, &xActionInfo.xType, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
@@ -85,7 +85,7 @@ FTM_RET	FTOM_CGI_addAction
 	xRet = FTOM_CLIENT_ACTION_add(pClient, &xActionInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		cJSON_AddNumberToObject(pRoot, "id", xActionInfo.xID);
+		cJSON_AddStringToObject(pRoot, "id", xActionInfo.pID);
 	}
 
 finish:
@@ -104,17 +104,17 @@ FTM_RET	FTOM_CGI_delAction
 
 	FTM_RET			xRet;
 	cJSON _PTR_		pRoot = NULL;
-	FTM_ACTION_ID	xID;
+	FTM_CHAR		pActionID[FTM_ID_LEN+1];
 
 	pRoot = cJSON_CreateObject();
 
-	xRet =FTOM_CGI_getActionID(pReq, &xID, FTM_FALSE);
+	xRet =FTOM_CGI_getActionID(pReq, pActionID, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;
 	}
 
-	FTOM_CLIENT_ACTION_del(pClient, xID);
+	FTOM_CLIENT_ACTION_del(pClient, pActionID);
 
 finish:
 
@@ -131,19 +131,19 @@ FTM_RET	FTOM_CGI_getAction
 	ASSERT(pReq != NULL);
 
 	FTM_RET			xRet;
-	FTM_ACTION_ID	xID;
+	FTM_CHAR		pActionID[FTM_ID_LEN+1];
 	FTM_ACTION		xActionInfo;
 	cJSON _PTR_		pRoot = NULL;
 	
 	pRoot = cJSON_CreateObject();
 	
-	xRet = FTOM_CGI_getActionID(pReq, &xID, FTM_FALSE);
+	xRet = FTOM_CGI_getActionID(pReq, pActionID, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;	
 	}
 
-	xRet = FTOM_CLIENT_ACTION_get(pClient, xID, &xActionInfo);
+	xRet = FTOM_CLIENT_ACTION_get(pClient, pActionID, &xActionInfo);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTOM_CGI_addActionToObject(pRoot, "action", &xActionInfo);	
@@ -182,7 +182,7 @@ FTM_RET	FTOM_CGI_getActionList
 	{
 		FTM_ACTION	xActionInfo;
 
-		xRet = FTOM_CLIENT_ACTION_get(pClient, i, &xActionInfo);
+		xRet = FTOM_CLIENT_ACTION_getAt(pClient, i, &xActionInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			continue;
@@ -253,7 +253,7 @@ FTM_RET	FTOM_CGI_createActionObject
 	
 	pObject = cJSON_CreateObject();
 
-	cJSON_AddNumberToObject(pObject, "id", pActionInfo->xID);	
+	cJSON_AddStringToObject(pObject, "id", pActionInfo->pID);	
 	cJSON_AddStringToObject(pObject, "type", FTM_ACTION_typeString(pActionInfo->xType));	
 	cJSON_AddItemToObject(pObject, "action", pAction = cJSON_CreateObject());
 	switch(pActionInfo->xType)

@@ -45,7 +45,7 @@ FTM_RET	FTDM_RULE_create
 
 FTM_RET	FTDM_RULE_destroy
 (
-	FTM_RULE_ID xID
+	FTM_CHAR_PTR	pRuleID
 );
 
 FTM_RET	FTDM_RULE_count
@@ -55,7 +55,7 @@ FTM_RET	FTDM_RULE_count
 
 FTM_RET	FTDM_RULE_get
 (
-	FTM_RULE_ID xID, 
+	FTM_CHAR_PTR	pRuleID, 
 	FTDM_RULE_PTR _PTR_ 	ppRule
 );
 

@@ -87,7 +87,7 @@ typedef struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
-	FTM_ACTION_ID	xActionID;
+	FTM_CHAR		pActionID[FTM_ID_LEN+1];
 	FTM_BOOL		bActivate;
 }	FTOM_MSG_ACTION, _PTR_ FTOM_MSG_ACTION_PTR;
 
@@ -95,7 +95,7 @@ typedef struct
 {
 	FTOM_MSG_TYPE	xType;
 	FTOM_MSG_ID		xMsgID;
-	FTM_RULE_ID		xRuleID;
+	FTM_CHAR		pRuleID[FTM_ID_LEN+1];
 	FTM_RULE_STATE	xRuleState;
 }	FTOM_MSG_RULE, _PTR_ FTOM_MSG_RULE_PTR;
 
@@ -180,14 +180,14 @@ FTM_RET FTOM_MSG_createEPCtrl
 
 FTM_RET FTOM_MSG_createRule
 (
-	FTM_RULE_ID			xRuleID,
+	FTM_CHAR_PTR		pRuleID,
 	FTM_RULE_STATE		xRuleState,
 	FTOM_MSG_RULE_PTR _PTR_ ppMsg
 );
 
 FTM_RET FTOM_MSG_createAction
 (
-	FTM_ACTION_ID		xActionID,
+	FTM_CHAR_PTR		pActionID,
 	FTM_BOOL			bActivate,
 	FTOM_MSG_ACTION_PTR _PTR_ ppMsg
 );

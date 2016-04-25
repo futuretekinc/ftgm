@@ -702,17 +702,17 @@ FTM_RET	FTOM_TASK_sync
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_TRIGGER		xTrigger;
-		FTM_TRIGGER_ID	xTriggerID;
+		FTM_TRIGGER		xTriggerInfo;
+		FTOM_TRIGGER_PTR	pTrigger = NULL;
 
-		xRet = FTDMC_TRIGGER_getAt(&xDMC.xSession, i, &xTrigger);
+		xRet = FTDMC_TRIGGER_getAt(&xDMC.xSession, i, &xTriggerInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Event[%d] data load failed.\n", i);	
 			continue;
 		}
 
-		xRet = FTOM_TRIGGERM_add(pOM->pTriggerM, &xTrigger, &xTriggerID);
+		xRet = FTOM_TRIGGERM_add(pOM->pTriggerM, &xTriggerInfo, &pTrigger);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new event can not registration!\n") ;
@@ -729,16 +729,17 @@ FTM_RET	FTOM_TASK_sync
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_ACTION	xAction;
+		FTM_ACTION	xActionInfo;
+		FTOM_ACTION_PTR pAction = NULL;
 
-		xRet = FTDMC_ACTION_getAt(&xDMC.xSession, i, &xAction);
+		xRet = FTDMC_ACTION_getAt(&xDMC.xSession, i, &xActionInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Action[%d] data load failed.\n", i);	
 			continue;
 		}
 
-		xRet = FTOM_ACTIONM_add(pOM->pActionM, &xAction);
+		xRet = FTOM_ACTIONM_add(pOM->pActionM, &xActionInfo, &pAction);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new action event can not registration!\n") ;
@@ -755,16 +756,17 @@ FTM_RET	FTOM_TASK_sync
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_RULE	xRule;
+		FTM_RULE	xRuleInfo;
+		FTOM_RULE_PTR	pRule = NULL;
 
-		xRet = FTDMC_RULE_getAt(&xDMC.xSession, i, &xRule);
+		xRet = FTDMC_RULE_getAt(&xDMC.xSession, i, &xRuleInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Rule[%d] data load failed.\n", i);	
 			continue;
 		}
 
-		xRet = FTOM_RULEM_add(pOM->pRuleM, &xRule);
+		xRet = FTOM_RULEM_add(pOM->pRuleM, &xRuleInfo, &pRule);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new action event can not registration!\n") ;
@@ -985,7 +987,7 @@ FTM_RET	FTOM_onRule
 	ASSERT(pOM != NULL);
 	ASSERT(pMsg != NULL);
 
-	TRACE("RULE[%d] is %s\n", pMsg->xRuleID, (pMsg->xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
+	TRACE("RULE[%s] is %s\n", pMsg->pRuleID, (pMsg->xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
 
 	return	FTM_RET_OK;
 }
@@ -1185,7 +1187,7 @@ FTM_RET	FTOM_getEPDataCount
 FTM_RET	FTOM_NOTIFY_rule
 (
 	FTOM_PTR 		pOM,
-	FTM_RULE_ID		xRuleID,
+	FTM_CHAR_PTR	pRuleID,
 	FTM_RULE_STATE	xRuleState
 )
 {
@@ -1194,7 +1196,7 @@ FTM_RET	FTOM_NOTIFY_rule
 	FTM_RET			xRet;
 	FTOM_MSG_RULE_PTR	pMsg;
 
-	xRet = FTOM_MSG_createRule(xRuleID, xRuleState, &pMsg);
+	xRet = FTOM_MSG_createRule(pRuleID, xRuleState, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Message creation failed.\n");
@@ -1437,29 +1439,38 @@ FTM_RET	FTOM_addTrigger
 (
 	FTOM_PTR			pOM,
 	FTM_TRIGGER_PTR		pInfo,
-	FTM_TRIGGER_ID_PTR	pID
+	FTM_CHAR_PTR		pTriggerID
 )
 {
 	ASSERT(pOM != NULL);
 	
 	FTM_RET		xRet;
-	
-	xRet = FTOM_TRIGGERM_add(pOM->pTriggerM, pInfo, pID);
+	FTOM_TRIGGER_PTR	pTrigger;
 
+	xRet = FTOM_TRIGGERM_add(pOM->pTriggerM, pInfo, &pTrigger);
+	if (xRet == FTM_RET_OK)
+	{
+		strncpy(pTriggerID, pTrigger->xInfo.pID, FTM_ID_LEN);
+		xRet = FTDMC_TRIGGER_add(&xDMC.xSession, &pTrigger->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			FTOM_TRIGGERM_del(pOM->pTriggerM, pTriggerID);
+		}
+	}
 	return	xRet;
 }
 
 FTM_RET	FTOM_delTrigger
 (
 	FTOM_PTR		pOM,
-	FTM_TRIGGER_ID	xID
+	FTM_CHAR_PTR	pTriggerID
 )
 {
 	ASSERT(pOM != NULL);
 
 	FTM_RET	xRet;
 
-	xRet =  FTOM_TRIGGERM_del(pOM->pTriggerM, xID);
+	xRet =  FTOM_TRIGGERM_del(pOM->pTriggerM, pTriggerID);
 
 	return	xRet;
 }
@@ -1483,17 +1494,18 @@ FTM_RET	FTOM_getTriggerCount
 FTM_RET	FTOM_getTriggerInfo
 (
 	FTOM_PTR		pOM,
-	FTM_TRIGGER_ID	xID,
+	FTM_CHAR_PTR	pTriggerID,
 	FTM_TRIGGER_PTR	pInfo
 )
 {
 	ASSERT(pOM != NULL);
+	ASSERT(pTriggerID != NULL);
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
 
-	xRet = FTOM_TRIGGERM_get(pOM->pTriggerM, xID, &pTrigger);
+	xRet = FTOM_TRIGGERM_get(pOM->pTriggerM, pTriggerID, &pTrigger);
 	if (xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
@@ -1527,17 +1539,18 @@ FTM_RET	FTOM_getTriggerInfoAt
 FTM_RET	FTOM_setTriggerInfo
 (
 	FTOM_PTR		pOM,
-	FTM_TRIGGER_ID	xID,
+	FTM_CHAR_PTR	pTriggerID,
 	FTM_TRIGGER_PTR	pInfo
 )
 {
 	ASSERT(pOM != NULL);
+	ASSERT(pTriggerID != NULL);
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
 
-	xRet = FTOM_TRIGGERM_get(pOM->pTriggerM, xID, &pTrigger);
+	xRet = FTOM_TRIGGERM_get(pOM->pTriggerM, pTriggerID, &pTrigger);
 	if (xRet == FTM_RET_OK)
 	{
 		memcpy(&pTrigger->xInfo, pInfo, sizeof(FTM_TRIGGER));
@@ -1549,15 +1562,27 @@ FTM_RET	FTOM_setTriggerInfo
 FTM_RET	FTOM_addAction
 (
 	FTOM_PTR		pOM,
-	FTM_ACTION_PTR	pInfo
+	FTM_ACTION_PTR	pInfo,
+	FTM_CHAR_PTR	pActionID
 )
 {
 	ASSERT(pOM != NULL);
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
+	FTOM_ACTION_PTR	pAction = NULL;
 
-	xRet = FTOM_ACTIONM_add(pOM->pActionM, pInfo);
+	xRet = FTOM_ACTIONM_add(pOM->pActionM, pInfo, &pAction);
+	if (xRet == FTM_RET_OK)
+	{
+		strncpy(pActionID, pAction->xInfo.pID, FTM_ID_LEN);
+		xRet = FTDMC_ACTION_add(&xDMC.xSession, &pAction->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			FTOM_ACTIONM_del(pOM->pActionM, pActionID);
+		}
+	}
+	return	xRet;
 
 	return	xRet;
 }
@@ -1565,14 +1590,14 @@ FTM_RET	FTOM_addAction
 FTM_RET	FTOM_delAction
 (
 	FTOM_PTR		pOM,
-	FTM_ACTION_ID	xID
+	FTM_CHAR_PTR	pActionID
 )
 {
 	ASSERT(pOM != NULL);
 
 	FTM_RET	xRet;
 
-	xRet = FTOM_ACTIONM_del(pOM->pActionM, xID);
+	xRet = FTOM_ACTIONM_del(pOM->pActionM, pActionID);
 
 	return	xRet;
 }
@@ -1595,7 +1620,7 @@ FTM_RET	FTOM_getActionCount
 FTM_RET	FTOM_getActionInfo
 (
 	FTOM_PTR		pOM,
-	FTM_ACTION_ID	xID,
+	FTM_CHAR_PTR	pActionID,
 	FTM_ACTION_PTR	pInfo
 )
 {
@@ -1605,7 +1630,7 @@ FTM_RET	FTOM_getActionInfo
 	FTM_RET	xRet;
 	FTOM_ACTION_PTR	pAction;
 
-	xRet = FTOM_ACTIONM_get(pOM->pActionM, xID, &pAction);
+	xRet = FTOM_ACTIONM_get(pOM->pActionM, pActionID, &pAction);
 	if (xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &pAction->xInfo, sizeof(FTM_ACTION));	
@@ -1639,7 +1664,7 @@ FTM_RET	FTOM_getActionInfoAt
 FTM_RET	FTOM_setActionInfo
 (
 	FTOM_PTR		pOM,
-	FTM_ACTION_ID	xID,
+	FTM_CHAR_PTR	pActionID,
 	FTM_ACTION_PTR	pInfo
 )
 {
@@ -1649,7 +1674,7 @@ FTM_RET	FTOM_setActionInfo
 	FTM_RET	xRet;
 	FTOM_ACTION_PTR	pAction;
 
-	xRet = FTOM_ACTIONM_get(pOM->pActionM, xID, &pAction);
+	xRet = FTOM_ACTIONM_get(pOM->pActionM, pActionID, &pAction);
 	if (xRet == FTM_RET_OK)
 	{
 		memcpy(&pAction->xInfo, pInfo, sizeof(FTM_ACTION));	
@@ -1661,30 +1686,40 @@ FTM_RET	FTOM_setActionInfo
 FTM_RET	FTOM_addRule
 (
 	FTOM_PTR		pOM,
-	FTM_RULE_PTR	pInfo
+	FTM_RULE_PTR	pInfo,
+	FTM_CHAR_PTR	pRuleID
 )
 {
 	ASSERT(pOM != NULL);
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
+	FTOM_RULE_PTR pRule;
 
-	xRet = FTOM_RULEM_add(pOM->pRuleM, pInfo);
-
+	xRet = FTOM_RULEM_add(pOM->pRuleM, pInfo, &pRule);
+	if (xRet == FTM_RET_OK)
+	{
+		strncpy(pRuleID, pRule->xInfo.pID, FTM_ID_LEN);
+		xRet = FTDMC_RULE_add(&xDMC.xSession, &pRule->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			FTOM_RULEM_del(pOM->pRuleM, pRuleID);
+		}
+	}
 	return	xRet;
 }
 
 FTM_RET	FTOM_delRule
 (
 	FTOM_PTR	pOM,
-	FTM_RULE_ID	xID
+	FTM_CHAR_PTR	pRuleID
 )
 {
 	ASSERT(pOM != NULL);
 
 	FTM_RET	xRet;
 
-	xRet = FTOM_RULEM_del(pOM->pRuleM, xID);
+	xRet = FTOM_RULEM_del(pOM->pRuleM, pRuleID);
 
 	return	xRet;
 }
@@ -1708,7 +1743,7 @@ FTM_RET	FTOM_getRuleCount
 FTM_RET	FTOM_getRuleInfo
 (
 	FTOM_PTR		pOM,
-	FTM_RULE_ID		xID,
+	FTM_CHAR_PTR	pRuleID,
 	FTM_RULE_PTR	pInfo
 )
 {
@@ -1718,7 +1753,7 @@ FTM_RET	FTOM_getRuleInfo
 	FTM_RET	xRet;
 	FTOM_RULE_PTR	pRule;
 
-	xRet = FTOM_RULEM_get(pOM->pRuleM, xID, &pRule);
+	xRet = FTOM_RULEM_get(pOM->pRuleM, pRuleID, &pRule);
 	if (xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &pRule->xInfo, sizeof(FTM_RULE));	
@@ -1752,7 +1787,7 @@ FTM_RET	FTOM_getRuleInfoAt
 FTM_RET	FTOM_setRuleInfo
 (
 	FTOM_PTR		pOM,
-	FTM_RULE_ID		xID,
+	FTM_CHAR_PTR	pRuleID,
 	FTM_RULE_PTR	pInfo
 )
 {
@@ -1762,7 +1797,7 @@ FTM_RET	FTOM_setRuleInfo
 	FTM_RET	xRet;
 	FTOM_RULE_PTR	pRule;
 
-	xRet = FTOM_RULEM_get(pOM->pRuleM, xID, &pRule);
+	xRet = FTOM_RULEM_get(pOM->pRuleM, pRuleID, &pRule);
 	if (xRet == FTM_RET_OK)
 	{
 		memcpy(&pRule->xInfo, pInfo, sizeof(FTM_RULE));

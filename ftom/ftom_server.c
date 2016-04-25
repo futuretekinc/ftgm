@@ -12,6 +12,7 @@
 #include "ftom_node.h"
 #include "ftom_ep.h"
 #include "ftom_ep_management.h"
+#include "ftom_action.h"
 #include "ftom_server.h"
 #include "ftm_shared_memory.h"
 #include "ftom_server_cmd.h"
@@ -1492,7 +1493,7 @@ FTM_RET	FTOM_SERVER_TRIGGER_add
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 	
-	pResp->xRet = FTOM_addTrigger(pServer->pOM, &pReq->xTrigger, &pResp->xID);
+	pResp->xRet = FTOM_addTrigger(pServer->pOM, &pReq->xTrigger, pResp->pTriggerID);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -1513,7 +1514,7 @@ FTM_RET	FTOM_SERVER_TRIGGER_del
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_delTrigger(pServer->pOM, pReq->xID);
+	pResp->xRet = FTOM_delTrigger(pServer->pOM, pReq->pTriggerID);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -1555,7 +1556,7 @@ FTM_RET	FTOM_SERVER_TRIGGER_get
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_getTriggerInfo(pServer->pOM, pReq->xID, &pResp->xTrigger);
+	pResp->xRet = FTOM_getTriggerInfo(pServer->pOM, pReq->pTriggerID, &pResp->xTrigger);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -1597,7 +1598,7 @@ FTM_RET	FTOM_SERVER_TRIGGER_set
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_setTriggerInfo(pServer->pOM, pReq->xID, &pReq->xTrigger);
+	pResp->xRet = FTOM_setTriggerInfo(pServer->pOM, pReq->pTriggerID, &pReq->xTrigger);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -1618,9 +1619,16 @@ FTM_RET	FTOM_SERVER_ACTION_add
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_addAction(pServer->pOM, &pReq->xAction);
+	FTM_CHAR	pActionID[FTM_ID_LEN+1];
+	
+	pResp->xRet = FTOM_addAction(pServer->pOM, &pReq->xAction, pActionID);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
+	
+	if (pResp->xRet == FTM_RET_OK)
+	{
+		strcpy(pResp->pActionID, pActionID);
+	}
 
 	return	pResp->xRet;
 }
@@ -1639,7 +1647,7 @@ FTM_RET	FTOM_SERVER_ACTION_del
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_delAction(pServer->pOM, pReq->xID);
+	pResp->xRet = FTOM_delAction(pServer->pOM, pReq->pActionID);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -1681,7 +1689,7 @@ FTM_RET	FTOM_SERVER_ACTION_get
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_getActionInfo(pServer->pOM, pReq->xID, &pResp->xAction);
+	pResp->xRet = FTOM_getActionInfo(pServer->pOM, pReq->pActionID, &pResp->xAction);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -1723,7 +1731,7 @@ FTM_RET	FTOM_SERVER_ACTION_set
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_getActionInfo(pServer->pOM, pReq->xID, &pReq->xAction);
+	pResp->xRet = FTOM_getActionInfo(pServer->pOM, pReq->pActionID, &pReq->xAction);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -1744,11 +1752,18 @@ FTM_RET	FTOM_SERVER_RULE_add
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_addRule(pServer->pOM, &pReq->xRule);
+	FTM_CHAR	pRuleID[FTM_ID_LEN+1];
+
+	pResp->xRet = FTOM_addRule(pServer->pOM, &pReq->xRule, pRuleID);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
-	return	pResp->xCmd;
+	if (pResp->xRet == FTM_RET_OK)
+	{
+		strcpy(pResp->pRuleID, pRuleID);	
+	}
+
+	return	pResp->xRet;
 }
 
 static 
@@ -1765,11 +1780,11 @@ FTM_RET	FTOM_SERVER_RULE_del
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_delRule(pServer->pOM, pReq->xID);
+	pResp->xRet = FTOM_delRule(pServer->pOM, pReq->pRuleID);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
-	return	pResp->xCmd;
+	return	pResp->xRet;
 }
 
 static 
@@ -1807,7 +1822,7 @@ FTM_RET	FTOM_SERVER_RULE_get
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_getRuleInfo(pServer->pOM, pReq->xID, &pResp->xRule);
+	pResp->xRet = FTOM_getRuleInfo(pServer->pOM, pReq->pRuleID, &pResp->xRule);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -1849,7 +1864,7 @@ FTM_RET	FTOM_SERVER_RULE_set
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_getRuleInfo(pServer->pOM, pReq->xID, &pReq->xRule);
+	pResp->xRet = FTOM_getRuleInfo(pServer->pOM, pReq->pRuleID, &pReq->xRule);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 

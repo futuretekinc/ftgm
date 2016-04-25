@@ -311,23 +311,23 @@ FTM_VOID_PTR FTOM_TRIGGERM_process
 				{
 					if (FTM_TIMER_isExpired(&pTrigger->xDetectionTimer))
 					{
-						INFO("Trigger[%d] occurred!\n", pTrigger->xInfo.xID);
+						INFO("Trigger[%s] occurred!\n", pTrigger->xInfo.pID);
 						pTrigger->xState = FTOM_TRIGGER_STATE_SET;
 						FTM_TIME_getCurrent(&pTrigger->xOccurrenceTime);
 						FTM_TIMER_init(&pTrigger->xHoldingTimer, pTrigger->xInfo.xParams.xCommon.ulHoldingTime);
 
-						FTOM_RULEM_notifyChanged(pTrigger->xInfo.xID);
+						FTOM_RULEM_notifyChanged(pTrigger->xInfo.pID);
 					}
 				}
 				else if (pTrigger->xState == FTOM_TRIGGER_STATE_PRERESET)
 				{
 					if (FTM_TIMER_isExpired(&pTrigger->xHoldingTimer))
 					{
-						INFO("Trigger[%d] clrean!\n", pTrigger->xInfo.xID);
+						INFO("Trigger[%s] clrean!\n", pTrigger->xInfo.pID);
 						pTrigger->xState = FTOM_TRIGGER_STATE_RESET;
 						FTM_TIME_getCurrent(&pTrigger->xReleaseTime);
 
-						FTOM_RULEM_notifyChanged(pTrigger->xInfo.xID);
+						FTOM_RULEM_notifyChanged(pTrigger->xInfo.pID);
 					}
 				}
 
@@ -364,12 +364,12 @@ FTM_RET	FTOM_TRIGGERM_add
 (
 	FTOM_TRIGGERM_PTR 	pTriggerM, 
 	FTM_TRIGGER_PTR 	pInfo,
-	FTM_TRIGGER_ID_PTR	pID
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
 	ASSERT(pTriggerM != NULL);
 	ASSERT(pInfo != NULL);
-	ASSERT(pID != NULL);
+	ASSERT(ppTrigger != NULL);
 
 	FTM_RET			xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
@@ -383,7 +383,21 @@ FTM_RET	FTOM_TRIGGERM_add
 
 	memset(pTrigger, 0, sizeof(FTOM_TRIGGER));
 	memcpy(&pTrigger->xInfo, pInfo, sizeof(FTM_TRIGGER));
-	
+
+	if (strlen(pTrigger->xInfo.pID) == 0)
+	{
+		FTOM_TRIGGER_PTR pTmpTrigger = NULL;
+		do 
+		{	
+			struct timeval	xTime;
+
+			gettimeofday(&xTime, NULL);
+			sprintf(pTrigger->xInfo.pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
+			usleep(10);
+		}
+		while(FTOM_TRIGGERM_get(pTriggerM, pTrigger->xInfo.pID, &pTmpTrigger) == FTM_RET_OK);
+	}
+
 	FTM_LOCK_init(&pTrigger->xLock);
 
 	xRet = FTM_LIST_append(&pTriggerM->xTriggerList, pTrigger);
@@ -393,7 +407,7 @@ FTM_RET	FTOM_TRIGGERM_add
 	}
 	else
 	{
-		*pID = pTrigger->xInfo.xID;	
+		*ppTrigger = pTrigger;
 	}
 
 	return	xRet;
@@ -402,7 +416,7 @@ FTM_RET	FTOM_TRIGGERM_add
 FTM_RET	FTOM_TRIGGERM_del
 (
 	FTOM_TRIGGERM_PTR 	pTriggerM, 
-	FTOM_TRIGGER_ID  	xTriggerID
+	FTM_CHAR_PTR		pTriggerID
 )
 {
 	ASSERT(pTriggerM != NULL);
@@ -410,7 +424,7 @@ FTM_RET	FTOM_TRIGGERM_del
 	FTM_RET			xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
 
-	xRet = FTM_LIST_get(&pTriggerM->xTriggerList, (FTM_VOID_PTR)&xTriggerID, (FTM_VOID_PTR _PTR_)&pTrigger);
+	xRet = FTM_LIST_get(&pTriggerM->xTriggerList, pTriggerID, (FTM_VOID_PTR _PTR_)&pTrigger);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_LIST_remove(&pTriggerM->xTriggerList, pTrigger);
@@ -425,13 +439,13 @@ FTM_RET	FTOM_TRIGGERM_del
 FTM_RET	FTOM_TRIGGERM_get
 (
 	FTOM_TRIGGERM_PTR 	pTriggerM, 
-	FTOM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR		pTriggerID,
 	FTOM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
 	ASSERT(pTriggerM != NULL);
 
-	return	FTM_LIST_get(&pTriggerM->xTriggerList, (FTM_VOID_PTR)&xTriggerID, (FTM_VOID_PTR _PTR_)ppTrigger);
+	return	FTM_LIST_get(&pTriggerM->xTriggerList, pTriggerID, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
 FTM_RET	FTOM_TRIGGERM_getAt
@@ -539,6 +553,9 @@ FTM_BOOL	FTOM_TRIGGERM_seeker
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
 
-	return	((FTOM_TRIGGER_PTR)pElement)->xInfo.xID == *((FTM_TRIGGER_ID_PTR)pIndicator);
+	FTOM_TRIGGER_PTR	pTrigger = (FTOM_TRIGGER_PTR)pElement;
+	FTM_CHAR_PTR		pTriggerID = (FTM_CHAR_PTR)pIndicator;
+	
+	return	strcasecmp(pTrigger->xInfo.pID, pTriggerID) == 0;
 }
 

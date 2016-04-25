@@ -284,7 +284,7 @@ FTM_VOID_PTR FTOM_ACTIONM_process
 
 				case	FTOM_MSG_TYPE_ACTION:
 					{
-						TRACE("Actor[%08x] is updated.\n",	pMsg->xActionID);
+						TRACE("Actor[%s] is updated.\n",	pMsg->pActionID);
 					}
 					break;
 
@@ -347,7 +347,7 @@ FTM_RET	FTOM_ACTIONM_add
 FTM_RET	FTOM_ACTIONM_del
 (
 	FTOM_ACTIONM_PTR	pActionM, 
-	FTM_ACTION_ID  		xActionID
+	FTM_CHAR_PTR		pActionID
 )
 {
 	FTM_RET			xRet;
@@ -355,7 +355,7 @@ FTM_RET	FTOM_ACTIONM_del
 
 	TRACE_CALL();
 
-	xRet = FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)&xActionID, (FTM_VOID_PTR _PTR_)&pAction);
+	xRet = FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)&pActionID, (FTM_VOID_PTR _PTR_)&pAction);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_LIST_remove(pActionM->pActionList, pAction);
@@ -368,13 +368,13 @@ FTM_RET	FTOM_ACTIONM_del
 FTM_RET	FTOM_ACTIONM_get
 (
 	FTOM_ACTIONM_PTR 	pActionM, 
-	FTM_ACTION_ID 		xActionID, 
+	FTM_CHAR_PTR		pActionID,
 	FTOM_ACTION_PTR _PTR_ ppAction
 )
 {
 	TRACE_CALL();
 
-	return	FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)&xActionID, (FTM_VOID_PTR _PTR_)ppAction);
+	return	FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)&pActionID, (FTM_VOID_PTR _PTR_)ppAction);
 }
 
 FTM_RET	FTOM_ACTIONM_getAt
@@ -392,14 +392,14 @@ FTM_RET	FTOM_ACTIONM_getAt
 FTM_RET	FTOM_ACTIONM_active
 (
 	FTOM_ACTIONM_PTR pActionM, 
-	FTM_ACTION_ID 	xActionID,
+	FTM_CHAR_PTR	pActionID,
 	FTM_BOOL		bActivate
 )
 {
 	FTM_RET				xRet;
 	FTOM_MSG_ACTION_PTR	pMsg;
 
-	xRet = FTOM_MSG_createAction(xActionID, bActivate, &pMsg);
+	xRet = FTOM_MSG_createAction(pActionID, bActivate, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action message creation failed[%08x].\n", xRet);
@@ -420,6 +420,9 @@ FTM_BOOL	FTOM_ACTIONM_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIn
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
 
-	return	((FTOM_ACTION_PTR)pElement)->xInfo.xID == *((FTM_ACTION_ID_PTR)pIndicator);
+	FTOM_ACTION_PTR	pAction = (FTOM_ACTION_PTR)pElement;
+	FTM_CHAR_PTR	pActionID = (FTM_CHAR_PTR)pIndicator;
+
+	return	strcasecmp(pAction->xInfo.pID, pActionID) == 0;
 }
 

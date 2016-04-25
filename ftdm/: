@@ -1738,7 +1738,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_destroy
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	sprintf(pSQL, "DELETE FROM trigger WHERE ID = '%s'", pID);
+	sprintf(pSQL, "DELETE FROM trigger WHERE ID = %s", pID);
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
@@ -2013,7 +2013,7 @@ FTM_RET	FTDM_DBIF_ACTION_destroy
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	sprintf(pSQL, "DELETE FROM action WHERE ID = '%s'", pActionID);
+	sprintf(pSQL, "DELETE FROM action WHERE ID = %s", pActionID);
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
@@ -2380,7 +2380,7 @@ FTM_RET	FTDM_DBIF_RULE_destroy
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	sprintf(pSQL, "DELETE FROM rule WHERE ID = '%s'", pRuleID);
+	sprintf(pSQL, "DELETE FROM rule WHERE ID = %s", pRuleID);
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
@@ -2410,7 +2410,7 @@ FTM_RET	FTDM_DBIF_RULE_get
 
 	memset(&xRule, 0, sizeof(xRule));
 
-    sprintf(pSQL, "SELECT * FROM rule WHERE ID = '%s'", pRuleID);
+    sprintf(pSQL, "SELECT * FROM rule WHERE ID = %s", pRuleID);
     nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_RULE_getCB, &xRule, &strErrMsg);
     if (nRet != SQLITE_OK)
     {

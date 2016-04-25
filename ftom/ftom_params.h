@@ -385,7 +385,7 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
-	FTM_TRIGGER_ID		xID;
+	FTM_CHAR			pTriggerID[FTM_ID_LEN+1];
 }	FTOM_RESP_TRIGGER_ADD_PARAMS, _PTR_ FTOM_RESP_TRIGGER_ADD_PARAMS_PTR;
 
 typedef	struct
@@ -393,7 +393,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_TRIGGER_ID		xID;
+	FTM_CHAR			pTriggerID[FTM_ID_LEN+1];
 }	FTOM_REQ_TRIGGER_DEL_PARAMS, _PTR_ FTOM_REQ_TRIGGER_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -425,7 +425,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_TRIGGER_ID		xID;
+	FTM_CHAR			pTriggerID[FTM_ID_LEN+1];
 }	FTOM_REQ_TRIGGER_GET_PARAMS, _PTR_ FTOM_REQ_TRIGGER_GET_PARAMS_PTR;
 
 typedef	struct
@@ -459,7 +459,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_TRIGGER_ID		xID;
+	FTM_CHAR			pTriggerID[FTM_ID_LEN+1];
 	FTM_TRIGGER			xTrigger;
 }	FTOM_REQ_TRIGGER_SET_PARAMS, _PTR_ FTOM_REQ_TRIGGER_SET_PARAMS_PTR;
 
@@ -485,7 +485,7 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
-	FTM_ACTION_ID		xID;
+	FTM_CHAR			pActionID[FTM_ID_LEN+1];
 }	FTOM_RESP_ACTION_ADD_PARAMS, _PTR_ FTOM_RESP_ACTION_ADD_PARAMS_PTR;
 
 typedef	struct
@@ -493,7 +493,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_ACTION_ID		xID;
+	FTM_CHAR			pActionID[FTM_ID_LEN+1];
 }	FTOM_REQ_ACTION_DEL_PARAMS, _PTR_ FTOM_REQ_ACTION_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -525,7 +525,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_ACTION_ID		xID;
+	FTM_CHAR			pActionID[FTM_ID_LEN+1];
 }	FTOM_REQ_ACTION_GET_PARAMS, _PTR_ FTOM_REQ_ACTION_GET_PARAMS_PTR;
 
 typedef	struct
@@ -559,7 +559,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_ACTION_ID		xID;
+	FTM_CHAR			pActionID[FTM_ID_LEN+1];
 	FTM_ACTION			xAction;
 }	FTOM_REQ_ACTION_SET_PARAMS, _PTR_ FTOM_REQ_ACTION_SET_PARAMS_PTR;
 
@@ -585,7 +585,7 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
-	FTM_ACTION_ID		xID;
+	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
 }	FTOM_RESP_RULE_ADD_PARAMS, _PTR_ FTOM_RESP_RULE_ADD_PARAMS_PTR;
 
 typedef	struct
@@ -593,7 +593,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RULE_ID		xID;
+	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
 }	FTOM_REQ_RULE_DEL_PARAMS, _PTR_ FTOM_REQ_RULE_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -625,7 +625,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RULE_ID			xID;
+	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
 }	FTOM_REQ_RULE_GET_PARAMS, _PTR_ FTOM_REQ_RULE_GET_PARAMS_PTR;
 
 typedef	struct
@@ -659,7 +659,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_RULE_ID			xID;
+	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
 	FTM_RULE			xRule;
 }	FTOM_REQ_RULE_SET_PARAMS, _PTR_ FTOM_REQ_RULE_SET_PARAMS_PTR;
 

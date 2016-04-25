@@ -4,8 +4,6 @@
 #include "ftm_types.h"
 #include "ftm_ep.h"
 
-typedef	FTM_ULONG	FTM_ACTION_ID, _PTR_ FTM_ACTION_ID_PTR;
-
 typedef	enum
 {
 	FTM_ACTION_TYPE_NONE,
@@ -26,11 +24,11 @@ typedef	union
 
 typedef	struct
 {
-	FTM_ACTION_ID		xID;
+	FTM_CHAR			pID[FTM_ID_LEN+1];
 	FTM_ACTION_TYPE		xType;
+	FTM_CHAR			pName[FTM_NAME_LEN+1];
 	FTM_ACTION_PARAMS	xParams;
 }	FTM_ACTION, _PTR_ FTM_ACTION_PTR;
-typedef	FTM_ULONG	FTM_ACTION_ID, _PTR_ FTM_ACTION_ID_PTR;
 
 FTM_RET	FTM_ACTION_init
 (
@@ -49,7 +47,7 @@ FTM_RET	FTM_ACTION_create
 
 FTM_RET	FTM_ACTION_createSet
 (
-	FTM_ACTION_ID 	xID, 
+	FTM_CHAR_PTR	pID,
 	FTM_ACTION_TYPE xType, 
 	FTM_CHAR_PTR 	pTargetID, 
 	FTM_VALUE_PTR	pValue, 
@@ -83,7 +81,7 @@ FTM_RET FTM_ACTION_count
 
 FTM_RET FTM_ACTION_get
 (
-	FTM_ACTION_ID 	xID, 
+	FTM_CHAR_PTR	pID,
 	FTM_ACTION_PTR _PTR_ ppAction
 );
 

@@ -8,8 +8,6 @@
 #include "ftm_time.h"
 #include "ftm_list.h"
 
-typedef	FTM_ULONG	FTM_RULE_ID, _PTR_ FTM_RULE_ID_PTR;
-
 typedef	enum FTM_RULE_ENUM
 {
 	FTM_RULE_STATE_PRESET,
@@ -22,14 +20,15 @@ typedef	enum FTM_RULE_ENUM
 
 typedef	struct
 {
-	FTM_RULE_ID		xID;
+	FTM_CHAR		pID[FTM_ID_LEN+1];
+	FTM_CHAR		pName[FTM_NAME_LEN+1];
 	FTM_RULE_STATE	xState;
 	struct 
 	{
 		FTM_ULONG		ulTriggers;
-		FTM_TRIGGER_ID	pTriggers[8];
+		FTM_CHAR		pTriggers[8][FTM_ID_LEN+1];
 		FTM_ULONG		ulActions;
-		FTM_ACTION_ID	pActions[8];
+		FTM_CHAR		pActions[8][FTM_ID_LEN+1];
 	}	xParams;
 }	FTM_RULE, _PTR_ FTM_RULE_PTR;
 
@@ -46,7 +45,7 @@ FTM_RET	FTM_RULE_append(FTM_RULE_PTR pRule);
 FTM_RET	FTM_RULE_remove(FTM_RULE_PTR pRule);
 
 FTM_RET FTM_RULE_count(FTM_ULONG_PTR pulCount);
-FTM_RET FTM_RULE_get(FTM_RULE_ID xID, FTM_RULE_PTR _PTR_ ppRule);
+FTM_RET FTM_RULE_get(FTM_CHAR_PTR pID, FTM_RULE_PTR _PTR_ ppRule);
 FTM_RET FTM_RULE_getAt(FTM_ULONG ulIndex, FTM_RULE_PTR _PTR_ ppRule);
 
 #endif

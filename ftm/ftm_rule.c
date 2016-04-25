@@ -150,11 +150,11 @@ FTM_RET FTM_RULE_count(FTM_ULONG_PTR pulCount)
 	return	FTM_LIST_count(pRuleList, pulCount);
 }
 
-FTM_RET FTM_RULE_get(FTM_RULE_ID xID, FTM_RULE_PTR _PTR_ ppRule)
+FTM_RET FTM_RULE_get(FTM_CHAR_PTR pID, FTM_RULE_PTR _PTR_ ppRule)
 {
 	ASSERT(pRuleList != NULL);
 
-	return	FTM_LIST_get(pRuleList, (FTM_VOID_PTR)&xID, (FTM_VOID_PTR _PTR_)ppRule);
+	return	FTM_LIST_get(pRuleList, (FTM_VOID_PTR)pID, (FTM_VOID_PTR _PTR_)ppRule);
 }
 
 FTM_RET FTM_RULE_getAt(FTM_ULONG ulIndex, FTM_RULE_PTR _PTR_ ppRule)
@@ -170,5 +170,8 @@ FTM_BOOL	FTM_RULE_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndica
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);
 
-	return	((FTM_RULE_PTR)pElement)->xID == *((FTM_RULE_ID_PTR)pIndicator);
+	FTM_RULE_PTR	pRule = (FTM_RULE_PTR)pElement;
+	FTM_CHAR_PTR	pRuleID = (FTM_CHAR_PTR)pIndicator;
+
+	return	(strcasecmp(pRule->pID, pRuleID) == 0);
 }

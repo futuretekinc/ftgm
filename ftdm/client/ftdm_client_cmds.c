@@ -707,7 +707,7 @@ FTM_RET	FTDMC_EP_DATA_cmd
 		case	'I':	
 			{
 				xData.xType = FTM_EP_DATA_TYPE_INT;
-				xData.xValue.nValue = strtol(&pArgv[5][1], NULL, 10); 
+				xData.xValue.xValue.nValue = strtol(&pArgv[5][1], NULL, 10); 
 			}
 
 			break;
@@ -715,14 +715,14 @@ FTM_RET	FTDMC_EP_DATA_cmd
 		case	'F':	
 			{
 				xData.xType = FTM_EP_DATA_TYPE_FLOAT;
-				xData.xValue.fValue = strtod(&pArgv[5][1], NULL); 
+				xData.xValue.xValue.fValue = strtod(&pArgv[5][1], NULL); 
 			} 
 			break;
 
 		case	'U':	
 			{	
 				xData.xType = FTM_EP_DATA_TYPE_ULONG;
-				xData.xValue.ulValue = strtoul(&pArgv[5][1], NULL, 10); 
+				xData.xValue.xValue.ulValue = strtoul(&pArgv[5][1], NULL, 10); 
 			}	
 			break;
 
@@ -732,7 +732,7 @@ FTM_RET	FTDMC_EP_DATA_cmd
 		case	'9':	
 			{
 				xData.xType = FTM_EP_DATA_TYPE_INT;
-				xData.xValue.nValue = strtol(pArgv[4], NULL, 10); 
+				xData.xValue.xValue.nValue = strtol(pArgv[4], NULL, 10); 
 			}
 			break;
 
@@ -965,21 +965,21 @@ FTM_RET	FTDMC_EP_DATA_cmd
 						case	FTM_EP_DATA_TYPE_ULONG:
 							{
 								MESSAGE("%8d %32s %8lu\n", 
-										nStartIndex + i, pTime, pEPData[i].xValue.ulValue);	
+										nStartIndex + i, pTime, pEPData[i].xValue.xValue.ulValue);	
 							}
 							break;
 
 						case	FTM_EP_DATA_TYPE_FLOAT:
 							{
 								MESSAGE("%8d %32s %8.3lf\n", 
-										nStartIndex + i, pTime, pEPData[i].xValue.fValue);	
+										nStartIndex + i, pTime, pEPData[i].xValue.xValue.fValue);	
 							}
 							break;
 						case	FTM_EP_DATA_TYPE_INT:
 						default:
 							{
 								MESSAGE("%8d %32s %8d\n", 
-										nStartIndex + i, pTime, pEPData[i].xValue.nValue);	
+										nStartIndex + i, pTime, pEPData[i].xValue.xValue.nValue);	
 							}
 							break;
 						}
@@ -1064,7 +1064,7 @@ FTM_RET	FTDMC_EP_DATA_cmd
 			{
 				xData.xType = FTM_EP_DATA_TYPE_INT;
 				xData.ulTime = _startTime + rand() % (_endTime - _startTime);
-				xData.xValue.nValue = rand();
+				xData.xValue.xValue.nValue = rand();
 
 				FTDMC_EP_DATA_append(&_xSession, pEPID, &xData);
 			}
@@ -1104,7 +1104,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 			return	xRet;
 		}
 
-		MESSAGE("\t%-8s %-8s %-16s %s\n", "ID", "EPID", "TYPE", "CONDITION");
+		MESSAGE("\t%16s %8s %16s %s\n", "ID", "EPID", "TYPE", "CONDITION");
 		for(i = 0 ; i < ulCount ; i++)
 		{
 			FTM_TRIGGER	xTrigger;
@@ -1114,16 +1114,16 @@ FTM_RET	FTDMC_TRIGGER_cmd
 				FTM_CHAR	pBuff[1024];
 
 				FTM_TRIGGER_conditionToString(&xTrigger, pBuff, sizeof(pBuff) );
-				MESSAGE("\t%08x %08x %-16s %s\n", xTrigger.xID, xTrigger.pEPID, FTM_TRIGGER_typeString(xTrigger.xType), pBuff);
+				MESSAGE("\t%16s %08x %16s %s\n", xTrigger.pID, xTrigger.pEPID, FTM_TRIGGER_typeString(xTrigger.xType), pBuff);
 			}
 		}
 	}
 	else if ((nArgc == 3) && (strcasecmp(pArgv[1], "del") == 0))
 	{
-		FTM_TRIGGER_ID	xTriggerID;
+		FTM_CHAR	pTriggerID[FTM_ID_LEN+1];
 
-		xTriggerID 	= (FTM_TRIGGER_ID)strtoul(pArgv[2], 0, 10);
-		xRet = FTDMC_TRIGGER_del(&_xSession, xTriggerID);
+		strncpy(pTriggerID,pArgv[2], FTM_ID_LEN);
+		xRet = FTDMC_TRIGGER_del(&_xSession, pTriggerID);
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("The event deleted successfully.\n");	

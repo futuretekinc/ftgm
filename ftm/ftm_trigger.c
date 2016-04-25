@@ -9,7 +9,7 @@ static
 FTM_RET	FTM_TRIGGER_create1
 (
 	FTM_TRIGGER_TYPE 	xType, 
-	FTM_TRIGGER_ID 		xTriggerID, 
+	FTM_CHAR_PTR		pID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_VALUE_PTR		pValue1, 
 	FTM_VALUE_PTR		pValue2, 
@@ -122,10 +122,10 @@ FTM_RET	FTM_TRIGGER_create
 		return	xRet;
 	}
 
-	if (pNew->xID == 0)
+	if (strlen(pNew->pID) == 0)
 	{
 		gettimeofday(&xTime, NULL);
-		pNew->xID = xTime.tv_sec * 1000000 + xTime.tv_usec;
+		sprintf(pNew->pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
 	}
 
 	return	FTM_RET_OK;
@@ -133,69 +133,64 @@ FTM_RET	FTM_TRIGGER_create
 
 FTM_RET	FTM_TRIGGER_createAbove
 (
-	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR	pID,
 	FTM_CHAR_PTR 	pEPID, 
 	FTM_VALUE_PTR	pValue,
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_ABOVE, 
-				xTriggerID, pEPID, pValue, NULL, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_ABOVE, pID, pEPID, pValue, NULL, ppTrigger);
 }
 
 FTM_RET	FTM_TRIGGER_createBelow
 (
-	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR	pID,
 	FTM_CHAR_PTR	pEPID,
 	FTM_VALUE_PTR	pValue,
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_BELOW, 
-				xTriggerID, pEPID, pValue, NULL, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_BELOW, pID, pEPID, pValue, NULL, ppTrigger);
 }
 
 FTM_RET	FTM_TRIGGER_createInclude
 (
-	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR	pID,
 	FTM_CHAR_PTR	pEPID, 
 	FTM_VALUE_PTR	pUpper, 
 	FTM_VALUE_PTR	pLower, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_INCLUDE, 
-					xTriggerID, pEPID, pUpper, pLower, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_INCLUDE, pID, pEPID, pUpper, pLower, ppTrigger);
 }
 
 FTM_RET	FTM_TRIGGER_createExcept
 (
-	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR	pID,
 	FTM_CHAR_PTR	pEPID, 
 	FTM_VALUE_PTR	pUpper, 
 	FTM_VALUE_PTR	pLower, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_EXCEPT, 
-					xTriggerID, pEPID, pUpper, pLower, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_EXCEPT, pID, pEPID, pUpper, pLower, ppTrigger);
 }
 
 FTM_RET	FTM_TRIGGER_createChange
 (
-	FTM_TRIGGER_ID 	xTriggerID, 
+	FTM_CHAR_PTR	pID,
 	FTM_CHAR_PTR	pEPID, 
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
-	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_CHANGE, 
-				xTriggerID, pEPID, NULL, NULL, ppTrigger);
+	return	FTM_TRIGGER_create1(FTM_TRIGGER_TYPE_CHANGE, pID, pEPID, NULL, NULL, ppTrigger);
 }
 
 FTM_RET	FTM_TRIGGER_create1
 (
 	FTM_TRIGGER_TYPE 	xType, 
-	FTM_TRIGGER_ID 		xTriggerID, 
+	FTM_CHAR_PTR		pID,
 	FTM_CHAR_PTR		pEPID,  
 	FTM_VALUE_PTR		pValue1, 
 	FTM_VALUE_PTR		pValue2, 
@@ -216,16 +211,22 @@ FTM_RET	FTM_TRIGGER_create1
 		FTM_TRIGGER_init();
 	}
 
-	if (xTriggerID == 0)
+	if ((pID != NULL) && (strlen(pID) > FTM_ID_LEN))
+	{
+		return	FTM_RET_INVALID_ID;	
+	}
+
+	if ((pID == NULL) || (strlen(pID) == 0))
 	{
 		gettimeofday(&xTime, NULL);
-	
-		xTrigger.xID = xTime.tv_sec * 1000000 + xTime.tv_usec;
+
+		sprintf(xTrigger.pID, "%08lx%08lx", xTime.tv_sec, xTime.tv_usec);
 	}
 	else
 	{
-		xTrigger.xID = xTriggerID;	
+		strcpy(xTrigger.pID, pID);	
 	}
+
 	xTrigger.xType = xType;
 	
 	switch(xType)
@@ -284,14 +285,14 @@ FTM_RET	FTM_TRIGGER_count
 
 FTM_RET	FTM_TRIGGER_get
 (
-	FTM_ULONG 	ulTriggerID, 
+	FTM_CHAR_PTR	pID,
 	FTM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
 	ASSERT(pTriggerList != NULL);
 	ASSERT(ppTrigger != NULL);
 
-	return	FTM_LIST_get(pTriggerList, &ulTriggerID, (FTM_VOID_PTR _PTR_)ppTrigger);
+	return	FTM_LIST_get(pTriggerList, pID, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
 FTM_RET	FTM_TRIGGER_getAt
@@ -456,6 +457,7 @@ FTM_RET	FTM_TRIGGER_occurred
 
 static FTM_CHAR_PTR	pTypeString[] =
 {
+	"NONE",
 	"ABOVE",
 	"BELOW",
 	"INCLUDE",
@@ -551,7 +553,7 @@ FTM_BOOL	FTM_TRIGGER_seeker
 	ASSERT(pIndicator != NULL);
 
 	FTM_TRIGGER_PTR		pTrigger = (FTM_TRIGGER_PTR)pItem;
-	FTM_TRIGGER_ID_PTR	pTriggerID = (FTM_TRIGGER_ID_PTR)pIndicator;
+	FTM_CHAR_PTR		pID = (FTM_CHAR_PTR)pIndicator;
 
-	return	(pTrigger->xID == *pTriggerID);
+	return	strcasecmp(pTrigger->pID, pID) == 0;
 }

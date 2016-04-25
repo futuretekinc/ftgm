@@ -37,6 +37,7 @@ typedef	unsigned long	FTM_CMD, _PTR_ FTM_CMD_PTR;
 
 typedef	unsigned long	FTM_RET, _PTR_ FTM_RET_PTR;
 
+#define	FTM_ID_LEN							32
 #define	FTM_DID_LEN							32
 #define	FTM_EPID_LEN						32
 #define	FTM_URL_LEN							256

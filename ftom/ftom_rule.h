@@ -4,7 +4,6 @@
 #include <pthread.h>
 #include "ftm.h"
 
-typedef	FTM_RULE_ID	FTOM_RULE_ID;
 typedef	struct FTOM_STRUCT _PTR_ FTOM_PTR;
 typedef	struct	FTOM_RULEM_STRUCT _PTR_ FTOM_RULEM_PTR;
 
@@ -94,13 +93,14 @@ FTM_RET	FTOM_RULEM_setActionM
 FTM_RET	FTOM_RULEM_add
 (
 	FTOM_RULEM_PTR pRuleM, 
-	FTM_RULE_PTR pRule
+	FTM_RULE_PTR pInfo,
+	FTOM_RULE_PTR _PTR_ ppRule
 );
 
 FTM_RET	FTOM_RULEM_del
 (
-	FTOM_RULEM_PTR pRuleM, 
-	FTOM_RULE_ID  xRuleID
+	FTOM_RULEM_PTR 	pRuleM, 
+	FTM_CHAR_PTR	pRuleID
 );
 
 FTM_RET	FTOM_RULEM_count
@@ -112,7 +112,7 @@ FTM_RET	FTOM_RULEM_count
 FTM_RET	FTOM_RULEM_get
 (
 	FTOM_RULEM_PTR pRuleM, 
-	FTOM_RULE_ID xRuleID, 
+	FTM_CHAR_PTR	pRuleID,
 	FTOM_RULE_PTR _PTR_ ppRule
 );
 
@@ -125,18 +125,18 @@ FTM_RET	FTOM_RULEM_getAt
 
 FTM_RET	FTOM_RULEM_notifyChanged
 (
-	FTM_TRIGGER_ID xTrigger
+	FTM_CHAR_PTR	pTriggerID
 );
 
 FTM_RET	FTOM_RULEM_activate
 (
 	FTOM_RULEM_PTR 	pRuleM, 
-	FTM_RULE_ID 	xRuleID
+	FTM_CHAR_PTR	pRuleID
 );
 
 FTM_RET	FTOM_RULEM_deactivate
 (
 	FTOM_RULEM_PTR 	pRuleM, 
-	FTM_RULE_ID 	xRuleID
+	FTM_CHAR_PTR	pRuleID
 );
 #endif
