@@ -40,6 +40,7 @@ FTM_RET	FTOM_CGI_addEP
 	FTOM_CGI_getEnable(pReq, &xEPInfo.bEnable);
 	FTOM_CGI_getTimeout(pReq,&xEPInfo.ulTimeout);
 	FTOM_CGI_getInterval(pReq, &xEPInfo.ulInterval);
+	FTOM_CGI_getLimit(pReq, &xEPInfo.xLimit);
 
 	return	FTOM_CLIENT_EP_create(pClient, &xEPInfo);
 }
@@ -80,7 +81,7 @@ FTM_RET	FTOM_CGI_getEP
 	cJSON _PTR_ 	pRoot = NULL;
 
 
-	FTM_CHAR_PTR	pEPID = pReq->getstr(pReq, "id", false);
+	FTM_CHAR_PTR	pEPID = pReq->getstr(pReq, "epid", false);
 	if (pEPID == NULL)
 	{
 		goto finish;
@@ -130,7 +131,7 @@ FTM_RET	FTOM_CGI_setEP
 	cJSON _PTR_ 	pRoot = NULL;
 
 
-	FTM_CHAR_PTR	pEPID = pReq->getstr(pReq, "id", false);
+	FTM_CHAR_PTR	pEPID = pReq->getstr(pReq, "epid", false);
 	if (pEPID == NULL)
 	{
 		goto finish;
@@ -250,7 +251,7 @@ FTM_RET	FTOM_CGI_getEPData
 	FTM_RET			xRet;
 	FTM_EP_DATA_PTR	pData;
 	FTM_CHAR_PTR	pBuff;
-	FTM_CHAR_PTR	pEPID = pReq->getstr(pReq, "id", false);
+	FTM_CHAR_PTR	pEPID = pReq->getstr(pReq, "epid", false);
 	FTM_ULONG		ulCount = pReq->getint(pReq, "cnt");
 
 	if (ulCount > 100)
@@ -407,7 +408,7 @@ FTM_RET	FTOM_CGI_makeEPInfo
 		goto finish;
 	}
 
-	cJSON_AddStringToObject(pRoot, "ID", pEPInfo->pEPID);
+	cJSON_AddStringToObject(pRoot, "EPID", pEPInfo->pEPID);
 	cJSON_AddStringToObject(pRoot, "TYPE", FTM_EP_typeString(pEPInfo->xType));
 	cJSON_AddStringToObject(pRoot, "NAME", pEPInfo->pName);
 	cJSON_AddStringToObject(pRoot, "UNIT", pEPInfo->pUnit);

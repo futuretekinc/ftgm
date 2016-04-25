@@ -4,375 +4,66 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-BOM_NONE	sxmlc/src/sxmlc.h	/^	BOM_NONE = 0x00,$/;"	e	enum:_BOM_TYPE
-BOM_TYPE	sxmlc/src/sxmlc.h	/^} BOM_TYPE;$/;"	t	typeref:enum:_BOM_TYPE
-BOM_UTF_16BE	sxmlc/src/sxmlc.h	/^	BOM_UTF_16BE = 0xfeff,$/;"	e	enum:_BOM_TYPE
-BOM_UTF_16LE	sxmlc/src/sxmlc.h	/^	BOM_UTF_16LE = 0xfffe,$/;"	e	enum:_BOM_TYPE
-BOM_UTF_32BE	sxmlc/src/sxmlc.h	/^	BOM_UTF_32BE = 0x0000feff,$/;"	e	enum:_BOM_TYPE
-BOM_UTF_32LE	sxmlc/src/sxmlc.h	/^	BOM_UTF_32LE = 0xfffe0000$/;"	e	enum:_BOM_TYPE
-BOM_UTF_8	sxmlc/src/sxmlc.h	/^	BOM_UTF_8 = 0xefbbbf,$/;"	e	enum:_BOM_TYPE
-C2SX	sxmlc/src/sxmlc.h	43;"	d
-C2SX	sxmlc/src/sxmlc.h	68;"	d
-CEOF	sxmlc/src/sxmlc.h	44;"	d
-CEOF	sxmlc/src/sxmlc.h	69;"	d
 CFLAGS	Makefile	/^CFLAGS:=${CFLAGS}\\$/;"	m
-DATA_SOURCE_BUFFER	sxmlc/src/sxmlc.h	/^	DATA_SOURCE_BUFFER,$/;"	e	enum:_DataSourceType
-DATA_SOURCE_FILE	sxmlc/src/sxmlc.h	/^	DATA_SOURCE_FILE = 0,$/;"	e	enum:_DataSourceType
-DATA_SOURCE_MAX	sxmlc/src/sxmlc.h	/^	DATA_SOURCE_MAX$/;"	e	enum:_DataSourceType
-DE	sxmlc/src/examples/test.c	/^int DE(SAX_Data* sd)$/;"	f
-DOMXMLDoc_doc_end	sxmlc/src/sxmlc.c	/^int DOMXMLDoc_doc_end(SAX_Data* sd)$/;"	f
-DOMXMLDoc_doc_start	sxmlc/src/sxmlc.c	/^int DOMXMLDoc_doc_start(SAX_Data* sd)$/;"	f
-DOMXMLDoc_node_end	sxmlc/src/sxmlc.c	/^int DOMXMLDoc_node_end(const XMLNode* node, SAX_Data* sd)$/;"	f
-DOMXMLDoc_node_start	sxmlc/src/sxmlc.c	/^int DOMXMLDoc_node_start(const XMLNode* node, SAX_Data* sd)$/;"	f
-DOMXMLDoc_node_text	sxmlc/src/sxmlc.c	/^int DOMXMLDoc_node_text(SXML_CHAR* text, SAX_Data* sd)$/;"	f
-DOMXMLDoc_parse_error	sxmlc/src/sxmlc.c	/^int DOMXMLDoc_parse_error(ParseError error_num, int line_number, SAX_Data* sd)$/;"	f
-DOM_through_SAX	sxmlc/src/sxmlc.h	/^} DOM_through_SAX;$/;"	t	typeref:struct:_DOM_through_SAX
-DS	sxmlc/src/examples/test.c	/^int DS(SAX_Data* sd)$/;"	f
-DataSourceBuffer	sxmlc/src/sxmlc.h	/^} DataSourceBuffer;$/;"	t	typeref:struct:_DataSourceBuffer
-DataSourceFile	sxmlc/src/sxmlc.h	/^typedef FILE* DataSourceFile;$/;"	t
-DataSourceType	sxmlc/src/sxmlc.h	/^} DataSourceType;$/;"	t	typeref:enum:_DataSourceType
-ER	sxmlc/src/examples/test.c	/^int ER(ParseError err_num, int line_num, SAX_Data* sd)$/;"	f
-FTOM_CGI_COMMAND	main.c	/^} FTOM_CGI_COMMAND, _PTR_ FTOM_CGI_COMMAND_PTR;$/;"	t	typeref:struct:FTOM_CGI_COMMAND_STRUCT	file:
-FTOM_CGI_COMMAND_PTR	main.c	/^} FTOM_CGI_COMMAND, _PTR_ FTOM_CGI_COMMAND_PTR;$/;"	t	typeref:struct:FTOM_CGI_COMMAND_STRUCT	file:
-FTOM_CGI_COMMAND_STRUCT	main.c	/^typedef	struct FTOM_CGI_COMMAND_STRUCT$/;"	s	file:
-FTOM_CGI_main	ftom_cgi.c	/^FTM_RET	FTOM_CGI_main(qentry_t *pReq)$/;"	f
-HTMLContext	sxmlc/src/examples/htmlstrip.c	/^} HTMLContext;$/;"	t	typeref:struct:_HTMLContext	file:
-HTML_SPECIAL_DICT	sxmlc/src/sxmlc.c	/^} HTML_SPECIAL_DICT[] = {$/;"	v	typeref:struct:_html_special_dict	file:
-INVALID_XMLNODE_POINTER	sxmlc/src/sxmlsearch.c	39;"	d	file:
+FTOM_CGI_COMMAND	ftom_cgi.h	/^} FTOM_CGI_COMMAND, _PTR_ FTOM_CGI_COMMAND_PTR;$/;"	t	typeref:struct:FTOM_CGI_COMMAND_STRUCT
+FTOM_CGI_COMMAND_PTR	ftom_cgi.h	/^} FTOM_CGI_COMMAND, _PTR_ FTOM_CGI_COMMAND_PTR;$/;"	t	typeref:struct:FTOM_CGI_COMMAND_STRUCT
+FTOM_CGI_COMMAND_STRUCT	ftom_cgi.h	/^typedef	struct FTOM_CGI_COMMAND_STRUCT$/;"	s
+FTOM_CGI_acton	ftom_cgi.c	/^FTM_RET	FTOM_CGI_acton$/;"	f
+FTOM_CGI_addEP	cmd_ep.c	/^FTM_RET	FTOM_CGI_addEP$/;"	f
+FTOM_CGI_addTrigger	cmd_trigger.c	/^FTM_RET	FTOM_CGI_addTrigger$/;"	f
+FTOM_CGI_data	ftom_cgi.c	/^FTM_RET	FTOM_CGI_data$/;"	f
+FTOM_CGI_delEP	cmd_ep.c	/^FTM_RET	FTOM_CGI_delEP$/;"	f
+FTOM_CGI_delTrigger	cmd_trigger.c	/^FTM_RET	FTOM_CGI_delTrigger$/;"	f
+FTOM_CGI_ep	ftom_cgi.c	/^FTM_RET	FTOM_CGI_ep$/;"	f
+FTOM_CGI_getActionList	cmd_action.c	/^FTM_RET	FTOM_CGI_getActionList$/;"	f
+FTOM_CGI_getDID	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getDID$/;"	f
+FTOM_CGI_getEP	cmd_ep.c	/^FTM_RET	FTOM_CGI_getEP$/;"	f
+FTOM_CGI_getEPData	cmd_ep.c	/^FTM_RET	FTOM_CGI_getEPData$/;"	f
+FTOM_CGI_getEPDataLast	cmd_ep.c	/^FTM_RET	FTOM_CGI_getEPDataLast$/;"	f
+FTOM_CGI_getEPFlags	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getEPFlags$/;"	f
+FTOM_CGI_getEPID	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getEPID$/;"	f
+FTOM_CGI_getEPList	cmd_ep.c	/^FTM_RET	FTOM_CGI_getEPList$/;"	f
+FTOM_CGI_getEPType	ftom_cgi.c	/^FTM_RET FTOM_CGI_getEPType$/;"	f
+FTOM_CGI_getEnable	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getEnable$/;"	f
+FTOM_CGI_getInterval	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getInterval$/;"	f
+FTOM_CGI_getName	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getName$/;"	f
+FTOM_CGI_getNode	cmd_node.c	/^FTM_RET	FTOM_CGI_getNode$/;"	f
+FTOM_CGI_getNodeList	cmd_node.c	/^FTM_RET	FTOM_CGI_getNodeList$/;"	f
+FTOM_CGI_getRuleList	cmd_rule.c	/^FTM_RET	FTOM_CGI_getRuleList$/;"	f
+FTOM_CGI_getTimeout	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getTimeout$/;"	f
+FTOM_CGI_getTriggerList	cmd_trigger.c	/^FTM_RET	FTOM_CGI_getTriggerList$/;"	f
+FTOM_CGI_getUnit	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getUnit$/;"	f
+FTOM_CGI_makeEPInfo	cmd_ep.c	/^FTM_RET	FTOM_CGI_makeEPInfo$/;"	f
+FTOM_CGI_node	ftom_cgi.c	/^FTM_RET	FTOM_CGI_node$/;"	f
+FTOM_CGI_rule	ftom_cgi.c	/^FTM_RET	FTOM_CGI_rule$/;"	f
+FTOM_CGI_service	ftom_cgi.c	/^FTM_RET	FTOM_CGI_service$/;"	f
+FTOM_CGI_setEP	cmd_ep.c	/^FTM_RET	FTOM_CGI_setEP$/;"	f
+FTOM_CGI_trigger	ftom_cgi.c	/^FTM_RET	FTOM_CGI_trigger$/;"	f
+FTOM_CGI_whitespaceCB	ftom_cgi.c	/^char *FTOM_CGI_whitespaceCB$/;"	f
 LDFLAGS	Makefile	/^LDFLAGS:=$(LDFLAGS)$/;"	m
 LIBS	Makefile	/^LIBS:= 	-lftomcl\\$/;"	m
-MEM_INCR_RLA	sxmlc/src/sxmlc.h	104;"	d
-N	sxmlc/src/examples/test.c	349;"	d	file:
-NB_SPECIAL_TAGS	sxmlc/src/sxmlc.c	/^static int NB_SPECIAL_TAGS = (int)(sizeof(_spec) \/ sizeof(_TAG)); \/* Auto computation of number of special tags *\/$/;"	v	file:
-NE	sxmlc/src/examples/test.c	/^int NE(const XMLNode* node, SAX_Data* sd)$/;"	f
-NS	sxmlc/src/examples/test.c	/^int NS(const XMLNode* node, SAX_Data* sd)$/;"	f
-NT	sxmlc/src/examples/test.c	/^int NT(SXML_CHAR* text, SAX_Data* sd)$/;"	f
-NULC	sxmlc/src/sxmlc.h	115;"	d
-N_LIST_INTRIC	sxmlc/src/examples/htmlstrip.c	24;"	d	file:
 OBJS	Makefile	/^OBJS=$(SRCS:.c=.o)$/;"	m
-PARSE_ERR_EOF	sxmlc/src/sxmlc.h	/^	PARSE_ERR_EOF = -4,$/;"	e	enum:_ParseError
-PARSE_ERR_MEMORY	sxmlc/src/sxmlc.h	/^	PARSE_ERR_MEMORY = -1,$/;"	e	enum:_ParseError
-PARSE_ERR_NONE	sxmlc/src/sxmlc.h	/^	PARSE_ERR_NONE = 0,$/;"	e	enum:_ParseError
-PARSE_ERR_SYNTAX	sxmlc/src/sxmlc.h	/^	PARSE_ERR_SYNTAX = -3,$/;"	e	enum:_ParseError
-PARSE_ERR_TEXT_OUTSIDE_NODE	sxmlc/src/sxmlc.h	/^	PARSE_ERR_TEXT_OUTSIDE_NODE = -5, \/* During DOM loading *\/$/;"	e	enum:_ParseError
-PARSE_ERR_UNEXPECTED_NODE_END	sxmlc/src/sxmlc.h	/^	PARSE_ERR_UNEXPECTED_NODE_END = -6 \/* During DOM loading *\/$/;"	e	enum:_ParseError
-PARSE_ERR_UNEXPECTED_TAG_END	sxmlc/src/sxmlc.h	/^	PARSE_ERR_UNEXPECTED_TAG_END = -2,$/;"	e	enum:_ParseError
-ParseError	sxmlc/src/sxmlc.h	/^} ParseError;$/;"	t	typeref:enum:_ParseError
-REGEXPR_COMPARE	sxmlc/src/sxmlsearch.h	/^typedef int (*REGEXPR_COMPARE)(SXML_CHAR* str, SXML_CHAR* pattern);$/;"	t
-SAX_Callbacks	sxmlc/src/sxmlc.h	/^} SAX_Callbacks;$/;"	t	typeref:struct:_SAX_Callbacks
-SAX_Callbacks_init	sxmlc/src/sxmlc.c	/^int SAX_Callbacks_init(SAX_Callbacks* sax)$/;"	f
-SAX_Callbacks_init_DOM	sxmlc/src/sxmlc.c	/^int SAX_Callbacks_init_DOM(SAX_Callbacks* sax)$/;"	f
-SAX_Data	sxmlc/src/sxmlc.h	/^} SAX_Data;$/;"	t	typeref:struct:_SAX_Data
-SPECIAL_TAG	sxmlc/src/sxmlc.c	/^} SPECIAL_TAG;$/;"	t	typeref:struct:_SpecialTag	file:
 SRCS	Makefile	/^SRCS=	main.o\\$/;"	m
-SXMLC_MAX_PATH	sxmlc/src/sxmlc.h	197;"	d
-SXMLC_VERSION	sxmlc/src/sxmlc.h	33;"	d
-SXML_CHAR	sxmlc/src/sxmlc.h	/^	typedef char SXML_CHAR;$/;"	t
-SXML_CHAR	sxmlc/src/sxmlc.h	/^	typedef wchar_t SXML_CHAR;$/;"	t
-SXS	sxmlc/src/examples/test.c	/^} SXS;$/;"	t	typeref:struct:_sxs	file:
-TAG_CDATA	sxmlc/src/sxmlc.h	/^	TAG_CDATA,		\/* <![CDATA[ ]]> - CDATA node *\/$/;"	e	enum:_TagType
-TAG_COMMENT	sxmlc/src/sxmlc.h	/^	TAG_COMMENT,	\/* <!--comment--> *\/$/;"	e	enum:_TagType
-TAG_DOCTYPE	sxmlc/src/sxmlc.h	/^	TAG_DOCTYPE,	\/* <!DOCTYPE [ ]> - DOCTYPE node *\/$/;"	e	enum:_TagType
-TAG_END	sxmlc/src/sxmlc.h	/^	TAG_END,		\/* <\/tag> - End of father node. *\/$/;"	e	enum:_TagType
-TAG_ERROR	sxmlc/src/sxmlc.h	/^	TAG_ERROR = -1,$/;"	e	enum:_TagType
-TAG_FATHER	sxmlc/src/sxmlc.h	/^	TAG_FATHER,		\/* <tag> - Next nodes will be children of this one. *\/$/;"	e	enum:_TagType
-TAG_INSTR	sxmlc/src/sxmlc.h	/^	TAG_INSTR,		\/* <?prolog?> - Processing instructions, or prolog node. *\/$/;"	e	enum:_TagType
-TAG_NONE	sxmlc/src/sxmlc.h	/^	TAG_NONE = 0,$/;"	e	enum:_TagType
-TAG_PARTIAL	sxmlc/src/sxmlc.h	/^	TAG_PARTIAL,	\/* Node containing a legal '>' that stopped file reading *\/$/;"	e	enum:_TagType
-TAG_SELF	sxmlc/src/sxmlc.h	/^	TAG_SELF,		\/* <tag\/> - Standalone node. *\/$/;"	e	enum:_TagType
-TAG_TEXT	sxmlc/src/sxmlc.h	/^	TAG_TEXT,		\/* text node*\/$/;"	e	enum:_TagType
-TAG_USER	sxmlc/src/sxmlc.h	/^	TAG_USER = 100	\/* User-defined tag start *\/$/;"	e	enum:_TagType
-TARGET	Makefile	/^TARGET=	req.cgi$/;"	m
+TARGET	Makefile	/^TARGET=	ftom.cgi$/;"	m
 TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
-TagType	sxmlc/src/sxmlc.h	/^} TagType;$/;"	t	typeref:enum:_TagType
-XMLAttribute	sxmlc/src/sxmlc.h	/^} XMLAttribute;$/;"	t	typeref:struct:_XMLAttribute
-XMLDoc	sxmlc/src/sxmlc.h	/^} XMLDoc;$/;"	t	typeref:struct:_XMLDoc
-XMLDoc_add_child_root	sxmlc/src/sxmlc.h	604;"	d
-XMLDoc_add_node	sxmlc/src/sxmlc.c	/^int XMLDoc_add_node(XMLDoc* doc, XMLNode* node)$/;"	f
-XMLDoc_free	sxmlc/src/sxmlc.c	/^int XMLDoc_free(XMLDoc* doc)$/;"	f
-XMLDoc_init	sxmlc/src/sxmlc.c	/^int XMLDoc_init(XMLDoc* doc)$/;"	f
-XMLDoc_parse_buffer_DOM	sxmlc/src/sxmlc.h	668;"	d
-XMLDoc_parse_buffer_DOM_text_as_nodes	sxmlc/src/sxmlc.c	/^int XMLDoc_parse_buffer_DOM_text_as_nodes(const SXML_CHAR* buffer, const SXML_CHAR* name, XMLDoc* doc, int text_as_nodes)$/;"	f
-XMLDoc_parse_buffer_SAX	sxmlc/src/sxmlc.c	/^int XMLDoc_parse_buffer_SAX(const SXML_CHAR* buffer, const SXML_CHAR* name, const SAX_Callbacks* sax, void* user)$/;"	f
-XMLDoc_parse_file	sxmlc/src/sxmlc.h	688;"	d
-XMLDoc_parse_file_DOM	sxmlc/src/sxmlc.h	657;"	d
-XMLDoc_parse_file_DOM_text_as_nodes	sxmlc/src/sxmlc.c	/^int XMLDoc_parse_file_DOM_text_as_nodes(const SXML_CHAR* filename, XMLDoc* doc, int text_as_nodes)$/;"	f
-XMLDoc_parse_file_SAX	sxmlc/src/sxmlc.c	/^int XMLDoc_parse_file_SAX(const SXML_CHAR* filename, const SAX_Callbacks* sax, void* user)$/;"	f
-XMLDoc_print	sxmlc/src/sxmlc.h	647;"	d
-XMLDoc_print_attr_sep	sxmlc/src/sxmlc.c	/^int XMLDoc_print_attr_sep(const XMLDoc* doc, FILE* f, const SXML_CHAR* tag_sep, const SXML_CHAR* child_sep, const SXML_CHAR* attr_sep, int keep_text_spaces, int sz_line, int nb_char_tab)$/;"	f
-XMLDoc_remove_node	sxmlc/src/sxmlc.c	/^int XMLDoc_remove_node(XMLDoc* doc, int i_node, int free_node)$/;"	f
-XMLDoc_root	sxmlc/src/sxmlc.h	597;"	d
-XMLDoc_set_root	sxmlc/src/sxmlc.c	/^int XMLDoc_set_root(XMLDoc* doc, int i_root)$/;"	f
-XMLEvent	sxmlc/src/sxmlc.h	/^} XMLEvent;$/;"	t	typeref:enum:_XMLEvent
-XMLNode	sxmlc/src/sxmlc.h	/^} XMLNode;$/;"	t	typeref:struct:_XMLNode
-XMLNode_add_child	sxmlc/src/sxmlc.c	/^int XMLNode_add_child(XMLNode* node, XMLNode* child)$/;"	f
-XMLNode_alloc	sxmlc/src/sxmlc.h	415;"	d
-XMLNode_allocN	sxmlc/src/sxmlc.c	/^XMLNode* XMLNode_allocN(int n)$/;"	f
-XMLNode_copy	sxmlc/src/sxmlc.c	/^int XMLNode_copy(XMLNode* dst, const XMLNode* src, int copy_children)$/;"	f
-XMLNode_dup	sxmlc/src/sxmlc.c	/^XMLNode* XMLNode_dup(const XMLNode* node, int copy_children)$/;"	f
-XMLNode_equal	sxmlc/src/sxmlc.c	/^int XMLNode_equal(const XMLNode* node1, const XMLNode* node2)$/;"	f
-XMLNode_free	sxmlc/src/sxmlc.c	/^int XMLNode_free(XMLNode* node)$/;"	f
-XMLNode_get_XPath	sxmlc/src/sxmlsearch.c	/^SXML_CHAR* XMLNode_get_XPath(XMLNode* node, SXML_CHAR** xpath, int incl_parents)$/;"	f
-XMLNode_get_attribute	sxmlc/src/sxmlc.h	478;"	d
-XMLNode_get_attribute_with_default	sxmlc/src/sxmlc.c	/^int XMLNode_get_attribute_with_default(XMLNode* node, const SXML_CHAR* attr_name, const SXML_CHAR** attr_value, const SXML_CHAR* default_attr_value)$/;"	f
-XMLNode_get_child	sxmlc/src/sxmlc.c	/^XMLNode* XMLNode_get_child(const XMLNode* node, int i_child)$/;"	f
-XMLNode_get_children_count	sxmlc/src/sxmlc.c	/^int XMLNode_get_children_count(const XMLNode* node)$/;"	f
-XMLNode_init	sxmlc/src/sxmlc.c	/^int XMLNode_init(XMLNode* node)$/;"	f
-XMLNode_next	sxmlc/src/sxmlc.c	/^XMLNode* XMLNode_next(const XMLNode* node)$/;"	f
-XMLNode_next_sibling	sxmlc/src/sxmlc.c	/^XMLNode* XMLNode_next_sibling(const XMLNode* node)$/;"	f
-XMLNode_print	sxmlc/src/sxmlc.h	633;"	d
-XMLNode_print_attr_sep	sxmlc/src/sxmlc.c	/^int XMLNode_print_attr_sep(const XMLNode* node, FILE* f, const SXML_CHAR* tag_sep, const SXML_CHAR* child_sep, const SXML_CHAR* attr_sep, int keep_text_spaces, int sz_line, int nb_char_tab)$/;"	f
-XMLNode_print_header	sxmlc/src/sxmlc.c	/^int XMLNode_print_header(const XMLNode* node, FILE* f, int sz_line, int nb_char_tab)$/;"	f
-XMLNode_remove_all_attributes	sxmlc/src/sxmlc.c	/^int XMLNode_remove_all_attributes(XMLNode* node)$/;"	f
-XMLNode_remove_attribute	sxmlc/src/sxmlc.c	/^int XMLNode_remove_attribute(XMLNode* node, int i_attr)$/;"	f
-XMLNode_remove_child	sxmlc/src/sxmlc.c	/^int XMLNode_remove_child(XMLNode* node, int i_child, int free_child)$/;"	f
-XMLNode_remove_children	sxmlc/src/sxmlc.c	/^int XMLNode_remove_children(XMLNode* node)$/;"	f
-XMLNode_remove_text	sxmlc/src/sxmlc.h	506;"	d
-XMLNode_search_attribute	sxmlc/src/sxmlc.c	/^int XMLNode_search_attribute(const XMLNode* node, const SXML_CHAR* attr_name, int i_search)$/;"	f
-XMLNode_set_active	sxmlc/src/sxmlc.c	/^int XMLNode_set_active(XMLNode* node, int active)$/;"	f
-XMLNode_set_attribute	sxmlc/src/sxmlc.c	/^int XMLNode_set_attribute(XMLNode* node, const SXML_CHAR* attr_name, const SXML_CHAR* attr_value)$/;"	f
-XMLNode_set_tag	sxmlc/src/sxmlc.c	/^int XMLNode_set_tag(XMLNode* node, const SXML_CHAR* tag)$/;"	f
-XMLNode_set_text	sxmlc/src/sxmlc.c	/^int XMLNode_set_text(XMLNode* node, const SXML_CHAR* text)$/;"	f
-XMLNode_set_type	sxmlc/src/sxmlc.c	/^int XMLNode_set_type(XMLNode* node, const TagType tag_type)$/;"	f
-XMLSearch	sxmlc/src/sxmlsearch.h	/^} XMLSearch;$/;"	t	typeref:struct:_XMLSearch
-XMLSearch_free	sxmlc/src/sxmlsearch.c	/^int XMLSearch_free(XMLSearch* search, int free_next)$/;"	f
-XMLSearch_get_XPath_string	sxmlc/src/sxmlsearch.c	/^SXML_CHAR* XMLSearch_get_XPath_string(const XMLSearch* search, SXML_CHAR** xpath, SXML_CHAR quote)$/;"	f
-XMLSearch_init	sxmlc/src/sxmlsearch.c	/^int XMLSearch_init(XMLSearch* search)$/;"	f
-XMLSearch_init_from_XPath	sxmlc/src/sxmlsearch.c	/^int XMLSearch_init_from_XPath(const SXML_CHAR* xpath, XMLSearch* search)$/;"	f
-XMLSearch_next	sxmlc/src/sxmlsearch.c	/^XMLNode* XMLSearch_next(const XMLNode* from, XMLSearch* search)$/;"	f
-XMLSearch_node_matches	sxmlc/src/sxmlsearch.c	/^int XMLSearch_node_matches(const XMLNode* node, const XMLSearch* search)$/;"	f
-XMLSearch_search_add_attribute	sxmlc/src/sxmlsearch.c	/^int XMLSearch_search_add_attribute(XMLSearch* search, const SXML_CHAR* attr_name, const SXML_CHAR* attr_value, int value_equal)$/;"	f
-XMLSearch_search_get_attribute_index	sxmlc/src/sxmlsearch.c	/^int XMLSearch_search_get_attribute_index(const XMLSearch* search, const SXML_CHAR* attr_name)$/;"	f
-XMLSearch_search_remove_attribute	sxmlc/src/sxmlsearch.c	/^int XMLSearch_search_remove_attribute(XMLSearch* search, int i_attr)$/;"	f
-XMLSearch_search_set_children_search	sxmlc/src/sxmlsearch.c	/^int XMLSearch_search_set_children_search(XMLSearch* search, XMLSearch* children_search)$/;"	f
-XMLSearch_search_set_tag	sxmlc/src/sxmlsearch.c	/^int XMLSearch_search_set_tag(XMLSearch* search, const SXML_CHAR* tag)$/;"	f
-XMLSearch_search_set_text	sxmlc/src/sxmlsearch.c	/^int XMLSearch_search_set_text(XMLSearch* search, const SXML_CHAR* text)$/;"	f
-XMLSearch_set_regexpr_compare	sxmlc/src/sxmlsearch.c	/^REGEXPR_COMPARE XMLSearch_set_regexpr_compare(REGEXPR_COMPARE fct)$/;"	f
-XML_DEFAULT_QUOTE	sxmlc/src/sxmlc.h	612;"	d
-XML_EVENT_END_DOC	sxmlc/src/sxmlc.h	/^	XML_EVENT_END_DOC$/;"	e	enum:_XMLEvent
-XML_EVENT_END_NODE	sxmlc/src/sxmlc.h	/^	XML_EVENT_END_NODE,$/;"	e	enum:_XMLEvent
-XML_EVENT_ERROR	sxmlc/src/sxmlc.h	/^	XML_EVENT_ERROR,$/;"	e	enum:_XMLEvent
-XML_EVENT_START_DOC	sxmlc/src/sxmlc.h	/^	XML_EVENT_START_DOC,$/;"	e	enum:_XMLEvent
-XML_EVENT_START_NODE	sxmlc/src/sxmlc.h	/^	XML_EVENT_START_NODE,$/;"	e	enum:_XMLEvent
-XML_EVENT_TEXT	sxmlc/src/sxmlc.h	/^	XML_EVENT_TEXT,$/;"	e	enum:_XMLEvent
-XML_INIT_DONE	sxmlc/src/sxmlc.h	169;"	d
-XML_PutError	xml.c	/^void XML_PutError(qentry_t *pReq, char *lpszCmd, char *lpszMsg)$/;"	f
-XML_PutHeader	xml.c	/^void XML_PutHeader(qentry_t *pReq)$/;"	f
-XML_PutOK	xml.c	/^void XML_PutOK(qentry_t *pReq, char *lpszCmd)$/;"	f
-XML_get_nb_registered_user_tags	sxmlc/src/sxmlc.c	/^int XML_get_nb_registered_user_tags(void)$/;"	f
-XML_get_registered_user_tag	sxmlc/src/sxmlc.c	/^int XML_get_registered_user_tag(TagType tag_type)$/;"	f
-XML_parse_1string	sxmlc/src/sxmlc.c	/^TagType XML_parse_1string(const SXML_CHAR* str, XMLNode* xmlnode)$/;"	f
-XML_parse_attribute	sxmlc/src/sxmlc.h	396;"	d
-XML_parse_attribute_to	sxmlc/src/sxmlc.c	/^int XML_parse_attribute_to(const SXML_CHAR* str, int to, XMLAttribute* xmlattr)$/;"	f
-XML_register_user_tag	sxmlc/src/sxmlc.c	/^int XML_register_user_tag(TagType tag_type, SXML_CHAR* start, SXML_CHAR* end)$/;"	f
-XML_unregister_user_tag	sxmlc/src/sxmlc.c	/^int XML_unregister_user_tag(int i_tag)$/;"	f
-_BOM_TYPE	sxmlc/src/sxmlc.h	/^typedef enum _BOM_TYPE {$/;"	g
-_DOM_through_SAX	sxmlc/src/sxmlc.h	/^typedef struct _DOM_through_SAX {$/;"	s
-_DataSourceBuffer	sxmlc/src/sxmlc.h	/^typedef struct _DataSourceBuffer {$/;"	s
-_DataSourceType	sxmlc/src/sxmlc.h	/^typedef enum _DataSourceType {$/;"	g
-_HTMLContext	sxmlc/src/examples/htmlstrip.c	/^typedef struct _HTMLContext {$/;"	s	file:
-_ParseError	sxmlc/src/sxmlc.h	/^typedef enum _ParseError {$/;"	g
-_SAX_Callbacks	sxmlc/src/sxmlc.h	/^typedef struct _SAX_Callbacks {$/;"	s
-_SAX_Data	sxmlc/src/sxmlc.h	/^typedef struct _SAX_Data {$/;"	s
-_SXMLCSEARCH_H_	sxmlc/src/sxmlsearch.h	31;"	d
-_SXML_H_	sxmlc/src/sxmlc.h	31;"	d
-_SpecialTag	sxmlc/src/sxmlc.c	/^typedef struct _SpecialTag {$/;"	s	file:
-_TAG	sxmlc/src/sxmlc.c	/^} _TAG;$/;"	t	typeref:struct:_Tag	file:
-_Tag	sxmlc/src/sxmlc.c	/^typedef struct _Tag {$/;"	s	file:
-_TagType	sxmlc/src/sxmlc.h	/^typedef enum _TagType {$/;"	g
-_XMLAttribute	sxmlc/src/sxmlc.h	/^typedef struct _XMLAttribute {$/;"	s
-_XMLDoc	sxmlc/src/sxmlc.h	/^typedef struct _XMLDoc {$/;"	s
-_XMLEvent	sxmlc/src/sxmlc.h	/^typedef enum _XMLEvent {$/;"	g
-_XMLNode	sxmlc/src/sxmlc.h	/^typedef struct _XMLNode {$/;"	s
-_XMLNode_next	sxmlc/src/sxmlc.c	/^static XMLNode* _XMLNode_next(const XMLNode* node, int in_children)$/;"	f	file:
-_XMLNode_print	sxmlc/src/sxmlc.c	/^static int _XMLNode_print(const XMLNode* node, FILE* f, const SXML_CHAR* tag_sep, const SXML_CHAR* child_sep, const SXML_CHAR* attr_sep, int keep_text_spaces, int sz_line, int cur_sz_line, int nb_char_tab, int depth)$/;"	f	file:
-_XMLNode_print_header	sxmlc/src/sxmlc.c	/^static int _XMLNode_print_header(const XMLNode* node, FILE* f, const SXML_CHAR* tag_sep, const SXML_CHAR* child_sep, const SXML_CHAR* attr_sep, int sz_line, int cur_sz_line, int nb_char_tab)$/;"	f	file:
-_XMLSearch	sxmlc/src/sxmlsearch.h	/^typedef struct _XMLSearch {$/;"	s
-__XML_H__	xml.h	2;"	d
-__calloc	sxmlc/src/sxmlc.c	/^void* __calloc(size_t count, size_t sz)$/;"	f
-__calloc	sxmlc/src/sxmlc.h	97;"	d
-__free	sxmlc/src/sxmlc.c	/^void __free(void* mem)$/;"	f
-__free	sxmlc/src/sxmlc.h	99;"	d
-__malloc	sxmlc/src/sxmlc.c	/^void* __malloc(size_t sz)$/;"	f
-__malloc	sxmlc/src/sxmlc.h	96;"	d
-__realloc	sxmlc/src/sxmlc.c	/^void* __realloc(void* mem, size_t sz)$/;"	f
-__realloc	sxmlc/src/sxmlc.h	98;"	d
-__strdup	sxmlc/src/sxmlc.c	/^char* __strdup(const char* s)$/;"	f
-__strdup	sxmlc/src/sxmlc.h	100;"	d
-_add_node	sxmlc/src/sxmlc.c	/^static int _add_node(XMLNode*** children_array, int* len_array, XMLNode* node)$/;"	f	file:
-_attribute_matches	sxmlc/src/sxmlsearch.c	/^static int _attribute_matches(XMLAttribute* to_test, XMLAttribute* pattern)$/;"	f	file:
-_beob	sxmlc/src/sxmlc.c	/^int _beob(DataSourceBuffer* ds)$/;"	f
-_bgetc	sxmlc/src/sxmlc.c	/^int _bgetc(DataSourceBuffer* ds)$/;"	f
-_count_new_char_line	sxmlc/src/sxmlc.c	/^static int _count_new_char_line(const SXML_CHAR* str, int nb_char_tab, int cur_sz_line)$/;"	f	file:
-_get_XPath	sxmlc/src/sxmlsearch.c	/^static SXML_CHAR* _get_XPath(const XMLNode* node, SXML_CHAR** xpath)$/;"	f	file:
-_html_special_dict	sxmlc/src/sxmlc.c	/^static struct _html_special_dict {$/;"	s	file:
-_init_search_from_1XPath	sxmlc/src/sxmlsearch.c	/^static int _init_search_from_1XPath(SXML_CHAR* xpath, XMLSearch* search)$/;"	f	file:
-_parse_data_SAX	sxmlc/src/sxmlc.c	/^static int _parse_data_SAX(void* in, const DataSourceType in_type, const SAX_Callbacks* sax, SAX_Data* sd)$/;"	f	file:
-_parse_special_tag	sxmlc/src/sxmlc.c	/^static TagType _parse_special_tag(const SXML_CHAR* str, int len, _TAG* tag, XMLNode* node)$/;"	f	file:
-_print_formatting	sxmlc/src/sxmlc.c	/^static int _print_formatting(const XMLNode* node, FILE* f, const SXML_CHAR* tag_sep, const SXML_CHAR* child_sep, int nb_char_tab, int cur_sz_line)$/;"	f	file:
-_spec	sxmlc/src/sxmlc.c	/^static _TAG _spec[] = {$/;"	v	file:
-_sxs	sxmlc/src/examples/test.c	/^typedef struct _sxs {$/;"	s	file:
-_user_tags	sxmlc/src/sxmlc.c	/^static SPECIAL_TAG _user_tags = { NULL, 0 };$/;"	v	file:
-active	sxmlc/src/sxmlc.h	/^	int active;		\/* 'true' to tell that node is active and should be displayed by 'XMLDoc_print' *\/$/;"	m	struct:_XMLNode
-active	sxmlc/src/sxmlc.h	/^	int active;$/;"	m	struct:_XMLAttribute
-all_event	sxmlc/src/sxmlc.h	/^	int (*all_event)(XMLEvent event, const XMLNode* node, SXML_CHAR* text, const int n, SAX_Data* sd);$/;"	m	struct:_SAX_Callbacks
-allin1	sxmlc/src/examples/test.c	/^int allin1(XMLEvent event, const XMLNode* node, SXML_CHAR* text, const int n, SAX_Data* sd)$/;"	f
-attributes	sxmlc/src/sxmlc.h	/^	XMLAttribute* attributes;$/;"	m	struct:_XMLNode
-attributes	sxmlc/src/sxmlsearch.h	/^	XMLAttribute* attributes;$/;"	m	struct:_XMLSearch
-bom	sxmlc/src/sxmlc.h	/^	unsigned char bom[5];	\/* First characters read that might be a BOM when unicode is used *\/$/;"	m	struct:_XMLDoc
-bom_type	sxmlc/src/sxmlc.h	/^	BOM_TYPE bom_type;$/;"	m	struct:_XMLDoc
-buf	sxmlc/src/sxmlc.h	/^	const SXML_CHAR* buf;$/;"	m	struct:_DataSourceBuffer
-children	sxmlc/src/sxmlc.h	/^	struct _XMLNode** children;$/;"	m	struct:_XMLNode	typeref:struct:_XMLNode::_XMLNode
-chr	sxmlc/src/sxmlc.c	/^	SXML_CHAR chr;		\/* Original character *\/$/;"	m	struct:_html_special_dict	file:
-cur_pos	sxmlc/src/sxmlc.h	/^	int cur_pos;$/;"	m	struct:_DataSourceBuffer
-current	sxmlc/src/sxmlc.h	/^	XMLNode* current;	\/* For internal use (current father node) *\/$/;"	m	struct:_DOM_through_SAX
-depth	sxmlc/src/examples/test.c	/^int depth, max_depth;$/;"	v
-doc	sxmlc/src/sxmlc.h	/^	XMLDoc* doc;		\/* Document to fill up *\/$/;"	m	struct:_DOM_through_SAX
-end	sxmlc/src/sxmlc.c	/^	SXML_CHAR* end;$/;"	m	struct:_Tag	file:
-end_doc	sxmlc/src/sxmlc.h	/^	int (*end_doc)(SAX_Data* sd);$/;"	m	struct:_SAX_Callbacks
-end_node	sxmlc/src/examples/test.c	/^int end_node(const XMLNode* node, SAX_Data* sd)$/;"	f
-end_node	sxmlc/src/sxmlc.h	/^	int (*end_node)(const XMLNode* node, SAX_Data* sd);$/;"	m	struct:_SAX_Callbacks
-error	sxmlc/src/sxmlc.h	/^	ParseError error;	\/* For internal use (parse status) *\/$/;"	m	struct:_DOM_through_SAX
-fService	main.c	/^	FTM_RET			(*fService)(qentry_t *req);$/;"	m	struct:FTOM_CGI_COMMAND_STRUCT	file:
-false	sxmlc/src/sxmlc.h	108;"	d
-false	sxmlc/src/sxmlc.h	136;"	d
-father	sxmlc/src/sxmlc.h	/^	struct _XMLNode* father;	\/* NULL if root *\/$/;"	m	struct:_XMLNode	typeref:struct:_XMLNode::_XMLNode
-filename	sxmlc/src/sxmlc.h	/^	SXML_CHAR filename[SXMLC_MAX_PATH];$/;"	m	struct:_XMLDoc
-fprintHTML	sxmlc/src/sxmlc.c	/^int fprintHTML(FILE* f, SXML_CHAR* str)$/;"	f
-freadBOM	sxmlc/src/sxmlc.c	/^BOM_TYPE freadBOM(FILE* f, unsigned char* bom, int* sz_bom)$/;"	f
-html	sxmlc/src/sxmlc.c	/^	SXML_CHAR* html;	\/* Equivalent HTML string *\/$/;"	m	struct:_html_special_dict	file:
-html2str	sxmlc/src/sxmlc.c	/^SXML_CHAR* html2str(SXML_CHAR* html, SXML_CHAR* str)$/;"	f
-html_len	sxmlc/src/sxmlc.c	/^	int html_len;	\/* 'sx_strlen(html)' *\/$/;"	m	struct:_html_special_dict	file:
-html_strip	sxmlc/src/examples/htmlstrip.c	/^int html_strip(XMLEvent evt, const XMLNode* node, SXML_CHAR* text, const int n, SAX_Data* sd)$/;"	f
-i_list	sxmlc/src/examples/htmlstrip.c	/^	int i_list;$/;"	m	struct:_HTMLContext	file:
-i_root	sxmlc/src/sxmlc.h	/^	int i_root;				\/* Index of first root node in 'nodes', -1 if document is empty *\/$/;"	m	struct:_XMLDoc
-in_body	sxmlc/src/examples/htmlstrip.c	/^	int in_body;$/;"	m	struct:_HTMLContext	file:
-in_list_type	sxmlc/src/examples/htmlstrip.c	/^	int in_list_type[N_LIST_INTRIC];$/;"	m	struct:_HTMLContext	file:
-in_pre	sxmlc/src/examples/htmlstrip.c	/^	int in_pre;$/;"	m	struct:_HTMLContext	file:
-inc_node	sxmlc/src/examples/test.c	/^int inc_node(const XMLNode* node, SAX_Data* sd)$/;"	f
-init_value	sxmlc/src/sxmlc.h	/^	int init_value;	\/* Initialized to 'XML_INIT_DONE' to indicate that document has been initialized properly *\/$/;"	m	struct:_XMLDoc
-init_value	sxmlc/src/sxmlc.h	/^	int init_value;	\/* Initialized to 'XML_INIT_DONE' to indicate that node has been initialized properly *\/$/;"	m	struct:_XMLNode
-init_value	sxmlc/src/sxmlsearch.h	/^	int init_value;	\/* Initialized to 'XML_INIT_DONE' to indicate that document has been initialized properly *\/$/;"	m	struct:_XMLSearch
-isquote	sxmlc/src/sxmlc.h	116;"	d
-len_end	sxmlc/src/sxmlc.c	/^	int len_end;$/;"	m	struct:_Tag	file:
-len_start	sxmlc/src/sxmlc.c	/^	int len_start;$/;"	m	struct:_Tag	file:
-line_error	sxmlc/src/sxmlc.h	/^	int line_error;		\/* For internal use (line number when error occurred) *\/$/;"	m	struct:_DOM_through_SAX
-line_num	sxmlc/src/sxmlc.h	/^	int line_num;$/;"	m	struct:_SAX_Data
+TRACE	ftom_cgi.h	96;"	d
+TRACE	ftom_cgi.h	97;"	d
+_FTOM_CGI_CMD_ACTION_H_	cmd_action.h	2;"	d
+_FTOM_CGI_CMD_EP_H_	cmd_ep.h	2;"	d
+_FTOM_CGI_CMD_NODE_H_	cmd_node.h	2;"	d
+_FTOM_CGI_CMD_RULE_H_	cmd_rule.h	2;"	d
+_FTOM_CGI_CMD_TRIGGER_H_	cmd_trigger.h	2;"	d
+_FTOM_CGI_H_	ftom_cgi.h	2;"	d
+fService	ftom_cgi.h	/^	FTM_RET			(*fService)(FTOM_CLIENT_PTR pClient, qentry_t *req);$/;"	m	struct:FTOM_CGI_COMMAND_STRUCT
 main	main.c	/^FTM_INT	main(FTM_INT	nArgc, FTM_CHAR_PTR pArgv[])$/;"	f
-main	sxmlc/src/examples/test.c	/^int main(int argc, char** argv)$/;"	f
-max_depth	sxmlc/src/examples/test.c	/^int depth, max_depth;$/;"	v
-my_end	sxmlc/src/examples/test.c	/^int my_end(const XMLNode* node, SAX_Data* sd)$/;"	f
-my_start	sxmlc/src/examples/test.c	/^int my_start(const XMLNode* node, SAX_Data* sd)$/;"	f
-n_attributes	sxmlc/src/sxmlc.h	/^	int n_attributes;$/;"	m	struct:_XMLNode
-n_attributes	sxmlc/src/sxmlsearch.h	/^	int n_attributes;$/;"	m	struct:_XMLSearch
-n_children	sxmlc/src/sxmlc.h	/^	int n_children;$/;"	m	struct:_XMLNode
-n_match	sxmlc/src/examples/test.c	/^	int n_match;$/;"	m	struct:_sxs	file:
-n_nodes	sxmlc/src/examples/test.c	/^	int n_nodes;$/;"	m	struct:_sxs	file:
-n_nodes	sxmlc/src/sxmlc.h	/^	int n_nodes;			\/* Number of nodes in 'nodes' *\/$/;"	m	struct:_XMLDoc
-n_tags	sxmlc/src/sxmlc.c	/^	int n_tags;$/;"	m	struct:_SpecialTag	file:
-name	sxmlc/src/sxmlc.h	/^	SXML_CHAR* name;$/;"	m	struct:_XMLAttribute
-name	sxmlc/src/sxmlc.h	/^	const SXML_CHAR* name;$/;"	m	struct:_SAX_Data
-nb_alloc	sxmlc/src/sxmlc.c	/^static int nb_alloc = 0, nb_free = 0;$/;"	v	file:
-nb_free	sxmlc/src/sxmlc.c	/^static int nb_alloc = 0, nb_free = 0;$/;"	v	file:
-new_text	sxmlc/src/examples/test.c	/^int new_text(const SXML_CHAR* text, SAX_Data* sd)$/;"	f
-new_text	sxmlc/src/sxmlc.h	/^	int (*new_text)(SXML_CHAR* text, SAX_Data* sd);$/;"	m	struct:_SAX_Callbacks
-next	sxmlc/src/sxmlsearch.h	/^	struct _XMLSearch* next;$/;"	m	struct:_XMLSearch	typeref:struct:_XMLSearch::_XMLSearch
-next_list_item	sxmlc/src/examples/htmlstrip.c	/^	int next_list_item[N_LIST_INTRIC];$/;"	m	struct:_HTMLContext	file:
-nodes	sxmlc/src/sxmlc.h	/^	XMLNode** nodes;		\/* Nodes of the document, including prolog, comments and root nodes *\/$/;"	m	struct:_XMLDoc
-on_error	sxmlc/src/sxmlc.h	/^	int (*on_error)(ParseError error_num, int line_number, SAX_Data* sd);$/;"	m	struct:_SAX_Callbacks
+main	test.c	/^int main(int argc, char *argv[])$/;"	f
+main	xmltest.c	/^int main(int argc, char* argv[])$/;"	f
+pActionCmds	ftom_cgi.c	/^FTOM_CGI_COMMAND	pActionCmds[] =$/;"	v	file:
 pCmds	main.c	/^FTOM_CGI_COMMAND	pCmds[] =$/;"	v
-pName	main.c	/^	FTM_CHAR_PTR	pName;$/;"	m	struct:FTOM_CGI_COMMAND_STRUCT	file:
-prev	sxmlc/src/sxmlsearch.h	/^	struct _XMLSearch* prev;$/;"	m	struct:_XMLSearch	typeref:struct:_XMLSearch::_XMLSearch
-print_split	sxmlc/src/examples/test.c	/^void print_split(SXML_CHAR* str)$/;"	f
-read_line_alloc	sxmlc/src/sxmlc.c	/^int read_line_alloc(void* in, DataSourceType in_type, SXML_CHAR** line, int* sz_line, int i0, SXML_CHAR from, SXML_CHAR to, int keep_fromto, SXML_CHAR interest, int* interest_count)$/;"	f
-regstrcmp	sxmlc/src/sxmlc.c	/^int regstrcmp(SXML_CHAR* str, SXML_CHAR* pattern)$/;"	f
-regstrcmp_search	sxmlc/src/sxmlsearch.c	/^static REGEXPR_COMPARE regstrcmp_search = regstrcmp;$/;"	v	file:
-search	sxmlc/src/examples/test.c	/^	XMLSearch search;$/;"	m	struct:_sxs	file:
-split_left_right	sxmlc/src/sxmlc.c	/^int split_left_right(SXML_CHAR* str, SXML_CHAR sep, int* l0, int* l1, int* i_sep, int* r0, int* r1, int ignore_spaces, int ignore_quotes)$/;"	f
-start	sxmlc/src/sxmlc.c	/^	SXML_CHAR* start;$/;"	m	struct:_Tag	file:
-start_doc	sxmlc/src/sxmlc.h	/^	int (*start_doc)(SAX_Data* sd);$/;"	m	struct:_SAX_Callbacks
-start_node	sxmlc/src/examples/test.c	/^int start_node(const XMLNode* node, SAX_Data* sd)$/;"	f
-start_node	sxmlc/src/sxmlc.h	/^	int (*start_node)(const XMLNode* node, SAX_Data* sd);$/;"	m	struct:_SAX_Callbacks
-stop_at	sxmlc/src/sxmlsearch.h	/^	XMLNode* stop_at;$/;"	m	struct:_XMLSearch
-str2html	sxmlc/src/sxmlc.c	/^SXML_CHAR* str2html(SXML_CHAR* str, SXML_CHAR* html)$/;"	f
-str_unescape	sxmlc/src/sxmlc.c	/^SXML_CHAR* str_unescape(SXML_CHAR* str)$/;"	f
-strcasecmp	sxmlc/src/examples/htmlstrip.c	17;"	d	file:
-strcasecmp	sxmlc/src/examples/htmlstrip.c	19;"	d	file:
-strcat_alloc	sxmlc/src/sxmlc.c	/^SXML_CHAR* strcat_alloc(SXML_CHAR** src1, const SXML_CHAR* src2)$/;"	f
-strip_spaces	sxmlc/src/sxmlc.c	/^SXML_CHAR* strip_spaces(SXML_CHAR* str, SXML_CHAR repl_sq)$/;"	f
-strlen_html	sxmlc/src/sxmlc.c	/^int strlen_html(SXML_CHAR* str)$/;"	f
-sx_fclose	sxmlc/src/sxmlc.h	65;"	d
-sx_fclose	sxmlc/src/sxmlc.h	86;"	d
-sx_fgetc	sxmlc/src/sxmlc.h	57;"	d
-sx_fgetc	sxmlc/src/sxmlc.h	82;"	d
-sx_fopen	sxmlc/src/sxmlc.h	61;"	d
-sx_fopen	sxmlc/src/sxmlc.h	63;"	d
-sx_fopen	sxmlc/src/sxmlc.h	85;"	d
-sx_fprintf	sxmlc/src/sxmlc.h	55;"	d
-sx_fprintf	sxmlc/src/sxmlc.h	80;"	d
-sx_fputc	sxmlc/src/sxmlc.h	58;"	d
-sx_fputc	sxmlc/src/sxmlc.h	83;"	d
-sx_isspace	sxmlc/src/sxmlc.h	59;"	d
-sx_isspace	sxmlc/src/sxmlc.h	84;"	d
-sx_printf	sxmlc/src/sxmlc.h	54;"	d
-sx_printf	sxmlc/src/sxmlc.h	79;"	d
-sx_sprintf	sxmlc/src/sxmlc.h	56;"	d
-sx_sprintf	sxmlc/src/sxmlc.h	81;"	d
-sx_strcat	sxmlc/src/sxmlc.h	53;"	d
-sx_strcat	sxmlc/src/sxmlc.h	78;"	d
-sx_strchr	sxmlc/src/sxmlc.h	49;"	d
-sx_strchr	sxmlc/src/sxmlc.h	74;"	d
-sx_strcmp	sxmlc/src/sxmlc.h	45;"	d
-sx_strcmp	sxmlc/src/sxmlc.h	70;"	d
-sx_strcpy	sxmlc/src/sxmlc.h	51;"	d
-sx_strcpy	sxmlc/src/sxmlc.h	76;"	d
-sx_strdup	sxmlc/src/sxmlc.h	48;"	d
-sx_strdup	sxmlc/src/sxmlc.h	73;"	d
-sx_strlen	sxmlc/src/sxmlc.h	47;"	d
-sx_strlen	sxmlc/src/sxmlc.h	72;"	d
-sx_strncmp	sxmlc/src/sxmlc.h	46;"	d
-sx_strncmp	sxmlc/src/sxmlc.h	71;"	d
-sx_strncpy	sxmlc/src/sxmlc.h	52;"	d
-sx_strncpy	sxmlc/src/sxmlc.h	77;"	d
-sx_strrchr	sxmlc/src/sxmlc.h	50;"	d
-sx_strrchr	sxmlc/src/sxmlc.h	75;"	d
-sz_bom	sxmlc/src/sxmlc.h	/^	int sz_bom;				\/* Number of bytes in BOM *\/$/;"	m	struct:_XMLDoc
-tag	sxmlc/src/sxmlc.h	/^	SXML_CHAR* tag;				\/* Tag name *\/$/;"	m	struct:_XMLNode
-tag	sxmlc/src/sxmlsearch.h	/^	SXML_CHAR* tag;$/;"	m	struct:_XMLSearch
-tag_type	sxmlc/src/sxmlc.c	/^	TagType tag_type;$/;"	m	struct:_Tag	file:
-tag_type	sxmlc/src/sxmlc.h	/^	TagType tag_type;	\/* Node type ('TAG_FATHER', 'TAG_SELF' or 'TAG_END') *\/$/;"	m	struct:_XMLNode
-tag_type_names	sxmlc/src/examples/test.c	/^static const char* tag_type_names[] = {$/;"	v	file:
-tags	sxmlc/src/sxmlc.c	/^	_TAG *tags;$/;"	m	struct:_SpecialTag	file:
-test_DOM	sxmlc/src/examples/test.c	/^void test_DOM(void)$/;"	f
-test_DOM_from_SAX	sxmlc/src/examples/test.c	/^void test_DOM_from_SAX(void)$/;"	f
-test_NodeXPath	sxmlc/src/examples/test.c	/^void test_NodeXPath(void)$/;"	f
-test_SAX	sxmlc/src/examples/test.c	/^void test_SAX(void)$/;"	f
-test_SAX_buffer	sxmlc/src/examples/test.c	/^void test_SAX_buffer(void)$/;"	f
-test_backslash	sxmlc/src/examples/test.c	/^void test_backslash(void)$/;"	f
-test_escape	sxmlc/src/examples/test.c	/^void test_escape(void)$/;"	f
-test_escape1	sxmlc/src/examples/test.c	/^void test_escape1(void)$/;"	f
-test_gen	sxmlc/src/examples/test.c	/^void test_gen(void)$/;"	f
-test_mem	sxmlc/src/examples/test.c	/^void test_mem(void)$/;"	f
-test_mem2	sxmlc/src/examples/test.c	/^void test_mem2(void)$/;"	f
-test_mem3	sxmlc/src/examples/test.c	/^void test_mem3(void)$/;"	f
-test_regexp	sxmlc/src/examples/test.c	/^void test_regexp(void)$/;"	f
-test_search	sxmlc/src/examples/test.c	/^void test_search(void)$/;"	f
-test_search_attribute	sxmlc/src/examples/test.c	/^void test_search_attribute(void)$/;"	f
-test_speed_DOM	sxmlc/src/examples/test.c	/^void test_speed_DOM(void)$/;"	f
-test_speed_SAX	sxmlc/src/examples/test.c	/^void test_speed_SAX(void)$/;"	f
-test_split	sxmlc/src/examples/test.c	/^void test_split(void)$/;"	f
-test_text_node	sxmlc/src/examples/test.c	/^void test_text_node(void)$/;"	f
-test_unicode	sxmlc/src/examples/test.c	/^void test_unicode(void)$/;"	f
-test_xpath	sxmlc/src/examples/test.c	/^void test_xpath(void)$/;"	f
-test_xpath2	sxmlc/src/examples/test.c	/^void test_xpath2(void)$/;"	f
-test_xpath3	sxmlc/src/examples/test.c	/^void test_xpath3(void)$/;"	f
-text	sxmlc/src/sxmlc.h	/^	SXML_CHAR* text;			\/* Text inside the node *\/$/;"	m	struct:_XMLNode
-text	sxmlc/src/sxmlsearch.h	/^	SXML_CHAR* text;$/;"	m	struct:_XMLSearch
-text_as_nodes	sxmlc/src/sxmlc.h	/^	int text_as_nodes;	\/* For internal use (store text inside nodes as sequential TAG_TEXT nodes) *\/$/;"	m	struct:_DOM_through_SAX
-true	sxmlc/src/sxmlc.h	112;"	d
-true	sxmlc/src/sxmlc.h	140;"	d
-tstre	sxmlc/src/examples/test.c	/^static void tstre(SXML_CHAR* s, SXML_CHAR* p)$/;"	f	file:
-usage	sxmlc/src/examples/htmlstrip.c	/^int usage(char* progname)$/;"	f
-user	sxmlc/src/sxmlc.h	/^	void* user;	\/* Pointer for user data associated to the node *\/$/;"	m	struct:_XMLNode
-user	sxmlc/src/sxmlc.h	/^	void* user;$/;"	m	struct:_SAX_Data
-value	sxmlc/src/sxmlc.h	/^	SXML_CHAR* value;$/;"	m	struct:_XMLAttribute
+pDataCmds	ftom_cgi.c	/^FTOM_CGI_COMMAND	pDataCmds[] =$/;"	v	file:
+pEPCmds	ftom_cgi.c	/^FTOM_CGI_COMMAND	pEPCmds[] =$/;"	v	file:
+pName	ftom_cgi.h	/^	FTM_CHAR_PTR	pName;$/;"	m	struct:FTOM_CGI_COMMAND_STRUCT
+pNodeCmds	ftom_cgi.c	/^FTOM_CGI_COMMAND	pNodeCmds[] =$/;"	v	file:
+pRuleCmds	ftom_cgi.c	/^FTOM_CGI_COMMAND	pRuleCmds[] =$/;"	v	file:
+pTriggerCmds	ftom_cgi.c	/^FTOM_CGI_COMMAND	pTriggerCmds[] =$/;"	v	file:
+whitespace_cb	xmltest.c	/^whitespace_cb(mxml_node_t *node,	\/* I - Element node *\/$/;"	f

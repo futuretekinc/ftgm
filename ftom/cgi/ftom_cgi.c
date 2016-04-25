@@ -248,7 +248,7 @@ FTM_RET	FTOM_CGI_getEPID
 
 	FTM_CHAR_PTR	pValue;
 
-	pValue = pReq->getstr(pReq, "id", false);
+	pValue = pReq->getstr(pReq, "epid", false);
 	if((pValue == NULL) || (strlen(pValue) > FTM_EPID_LEN))
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
@@ -270,7 +270,7 @@ FTM_RET FTOM_CGI_getEPType
 
 	FTM_CHAR_PTR	pValue;
 
-	pValue = pReq->getstr(pReq, "type", false);
+	pValue = pReq->getstr(pReq, "eptype", false);
 	if (pValue == NULL)
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
@@ -479,3 +479,11 @@ FTM_RET	FTOM_CGI_getDID
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_CGI_getLimit
+(
+	qentry_t *pReq,
+	FTOM_LIMIT_PTR pLimit
+)
+{
+
+}
