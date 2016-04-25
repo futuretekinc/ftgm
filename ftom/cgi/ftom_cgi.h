@@ -65,6 +65,13 @@ char *FTOM_CGI_whitespaceCB
 	int			where
 );
 
+FTM_RET FTOM_CGI_getNodeType
+(
+	qentry_t *pReq, 
+	FTM_NODE_TYPE_PTR pType,
+	FTM_BOOL	bAllowEmpty
+);
+
 FTM_RET	FTOM_CGI_getEPID
 (
 	qentry_t *pReq, 
@@ -97,6 +104,13 @@ FTM_RET	FTOM_CGI_getUnit
 (
 	qentry_t *pReq, 
 	FTM_CHAR_PTR	pUnit,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET	FTOM_CGI_getLocation
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pLocation,
 	FTM_BOOL	bAllowEmpty
 );
 

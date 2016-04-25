@@ -1126,7 +1126,7 @@ FTM_RET	FTDMS_TRIGGER_set
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_TRIGGER_set(pReq->pTriggerID, &pReq->xTrigger);
+	pResp->nRet = FTDM_TRIGGER_set(pReq->pTriggerID, pReq->xFields, &pReq->xTrigger);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		pResp->nRet = FTDM_TRIGGER_get(pReq->pTriggerID, &pTrigger);

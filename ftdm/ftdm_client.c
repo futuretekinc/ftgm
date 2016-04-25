@@ -605,6 +605,7 @@ FTM_RET	FTDMC_EP_getAt
 FTM_RET	FTDMC_EP_set
 (
 	FTDMC_SESSION_PTR	pSession,
+	FTM_CHAR_PTR		pEPID,
 	FTM_EP_FIELD		xFields,
 	FTM_EP_PTR			pInfo
 )
@@ -626,6 +627,7 @@ FTM_RET	FTDMC_EP_set
 	xReq.xCmd	=	FTDM_CMD_EP_SET;
 	xReq.nLen	=	sizeof(xReq);
 	xReq.xFields=	xFields;
+	strncpy(xReq.pEPID, pEPID, FTM_ID_LEN);
 	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
 
 	nRet = FTDMC_request(

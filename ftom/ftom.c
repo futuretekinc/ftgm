@@ -1207,67 +1207,47 @@ FTM_RET	FTOM_setEPInfo
 		strcpy(pEP->xInfo.pDID, pInfo->pDID);
 	}
 
-	if (xFields & FTM_EP_FIELD_LIMIT_TYPE)
+	if (xFields & FTM_EP_FIELD_LIMIT)
 	{
 		if (pEP->xInfo.xLimit.xType != pInfo->xLimit.xType)
 		{
 			memset(&pEP->xInfo.xLimit, 0, sizeof(FTM_EP_LIMIT));
 		}
 		pEP->xInfo.xLimit.xType = pInfo->xLimit.xType;
-	}
 
-	switch(pEP->xInfo.xLimit.xType)
-	{
-	case	FTM_EP_LIMIT_TYPE_COUNT:	
+		switch(pEP->xInfo.xLimit.xType)
 		{
-			if (xFields & FTM_EP_FIELD_LIMIT_VALUE)
+		case	FTM_EP_LIMIT_TYPE_COUNT:	
 			{
 				pEP->xInfo.xLimit.xParams.ulCount = pInfo->xLimit.xParams.ulCount;
 			}
-		}
-		break;
-
-	case	FTM_EP_LIMIT_TYPE_TIME:	
-		{
-			if (xFields & FTM_EP_FIELD_LIMIT_START)
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_TIME:	
 			{
 				pEP->xInfo.xLimit.xParams.xTime.ulStart = pInfo->xLimit.xParams.xTime.ulStart;
-			}
-
-			if (xFields & FTM_EP_FIELD_LIMIT_END)
-			{
 				pEP->xInfo.xLimit.xParams.xTime.ulEnd = pInfo->xLimit.xParams.xTime.ulEnd;
 			}
-		}
-		break;
-
-	case	FTM_EP_LIMIT_TYPE_HOURS:	
-		{
-			if (xFields & FTM_EP_FIELD_LIMIT_VALUE)
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_HOURS:	
 			{
 				pEP->xInfo.xLimit.xParams.ulHours= pInfo->xLimit.xParams.ulCount;
 			}
-		}
-		break;
-
-	case	FTM_EP_LIMIT_TYPE_DAYS:	
-		{
-			if (xFields & FTM_EP_FIELD_LIMIT_VALUE)
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_DAYS:	
 			{
 				pEP->xInfo.xLimit.xParams.ulDays = pInfo->xLimit.xParams.ulCount;
 			}
-		}
-		break;
-
-	case	FTM_EP_LIMIT_TYPE_MONTHS:	
-		{
-			if (xFields & FTM_EP_FIELD_LIMIT_VALUE)
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_MONTHS:	
 			{
 				pEP->xInfo.xLimit.xParams.ulMonths = pInfo->xLimit.xParams.ulCount;
 			}
+			break;
 		}
-		break;
-
 	}
 
 	return	FTM_RET_OK;

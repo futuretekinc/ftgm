@@ -343,7 +343,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 						}
 
 						xInfo.bEnable = FTM_TRUE;
-						xRet = FTOM_CLIENT_EP_set(pClient, &xInfo);
+						xRet = FTOM_CLIENT_EP_set(pClient, xInfo.pEPID, FTM_EP_FIELD_ENABLE, &xInfo);
 					}
 					else if (strcasecmp(pArgv[2], "stop") == 0)
 					{
@@ -353,7 +353,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 							break;
 						}
 						xInfo.bEnable = FTM_FALSE;
-						xRet = FTOM_CLIENT_EP_set(pClient, &xInfo);
+						xRet = FTOM_CLIENT_EP_set(pClient, xInfo.pEPID, FTM_EP_FIELD_ENABLE, &xInfo);
 					}
 
 				}
@@ -372,7 +372,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 							strcpy(xInfo.pName, pArgv[3]);	
 						}
 
-						xRet = FTOM_CLIENT_EP_set(pClient, &xInfo);
+						xRet = FTOM_CLIENT_EP_set(pClient, xInfo.pEPID, FTM_EP_FIELD_NAME, &xInfo);
 					}
 				}
 				break;

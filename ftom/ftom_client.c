@@ -1151,6 +1151,7 @@ FTM_RET	FTOM_CLIENT_TRIGGER_getAt
 FTM_RET	FTOM_CLIENT_TRIGGER_set
 (
 	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pTriggerID,
 	FTM_TRIGGER_FIELD	xFields,
 	FTM_TRIGGER_PTR		pTrigger
 )
@@ -1166,7 +1167,7 @@ FTM_RET	FTOM_CLIENT_TRIGGER_set
 	xReq.xCmd		=	FTOM_CMD_TRIG_SET;
 	xReq.ulLen		=	sizeof(xReq);
 	xReq.xFields	=	xFields;
-	strcpy(xReq.pTriggerID, pTrigger->pID);
+	strcpy(xReq.pTriggerID, pTriggerID);
 	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
 
 	xRet = pClient->fRequest(
@@ -1377,6 +1378,7 @@ FTM_RET	FTOM_CLIENT_ACTION_getAt
 FTM_RET	FTOM_CLIENT_ACTION_set
 (
 	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pActionID,
 	FTM_ACTION_FIELD	xFields,
 	FTM_ACTION_PTR		pAction
 )
@@ -1392,6 +1394,7 @@ FTM_RET	FTOM_CLIENT_ACTION_set
 	xReq.xCmd		=	FTOM_CMD_ACTION_SET;
 	xReq.ulLen		=	sizeof(xReq);
 	xReq.xFields	=	xFields;
+	strncpy(xReq.pActionID, pActionID, FTM_ID_LEN);
 	memcpy(&xReq.xAction, pAction, sizeof(FTM_ACTION));
 
 	xRet = pClient->fRequest(
@@ -1602,6 +1605,7 @@ FTM_RET	FTOM_CLIENT_RULE_getAt
 FTM_RET	FTOM_CLIENT_RULE_set
 (
 	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pRuleID,
 	FTM_RULE_FIELD	xFields,
 	FTM_RULE_PTR	pRule
 )
@@ -1617,6 +1621,7 @@ FTM_RET	FTOM_CLIENT_RULE_set
 	xReq.xCmd		=	FTOM_CMD_RULE_SET;
 	xReq.ulLen		=	sizeof(xReq);
 	xReq.xFields	=	xFields;
+	strncpy(xReq.pRuleID, pRuleID, FTM_ID_LEN);
 	memcpy(&xReq.xRule, pRule, sizeof(FTM_RULE));
 
 	xRet = pClient->fRequest(

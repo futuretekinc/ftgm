@@ -259,6 +259,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
+	FTM_CHAR			pEPID[FTM_ID_LEN+1];
 	FTM_EP_FIELD		xFields;
 	FTM_EP				xInfo;
 }	FTDM_REQ_EP_SET_PARAMS, _PTR_ 	FTDM_REQ_EP_SET_PARAMS_PTR;

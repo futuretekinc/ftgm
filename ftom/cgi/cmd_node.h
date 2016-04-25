@@ -13,4 +13,9 @@ FTM_RET	FTOM_CGI_getNodeList
 	qentry_t _PTR_ pReq
 );
 
+FTM_RET	FTOM_CGI_setNode
+(
+	FTOM_CLIENT_PTR pClient,
+	qentry_t _PTR_ pReq
+);
 #endif

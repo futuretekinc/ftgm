@@ -42,6 +42,7 @@ static
 FTOM_CGI_COMMAND	pNodeCmds[] =
 {
 	{	"get",		FTOM_CGI_getNode		},
+	{	"set",		FTOM_CGI_setNode		},
 	{	"list",		FTOM_CGI_getNodeList	},
 	{	NULL,		NULL					}
 };
@@ -270,6 +271,39 @@ char *FTOM_CGI_whitespaceCB
 	return (NULL);
 }
 
+FTM_RET FTOM_CGI_getNodeType
+(
+	qentry_t *pReq, 
+	FTM_NODE_TYPE_PTR pType,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pType != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "type", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else if (strcasecmp(pValue, "snmp") == 0)
+	{
+		*pType = FTM_NODE_TYPE_SNMP;
+	}
+	else
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	return	FTM_RET_OK;
+}
+
+	
 FTM_RET	FTOM_CGI_getEPID
 (
 	qentry_t *pReq, 
@@ -453,6 +487,38 @@ FTM_RET	FTOM_CGI_getUnit
 	else
 	{ 
 		strcpy(pUnit, pValue);
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getLocation
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pLocation,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pLocation != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "location", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else if(strlen(pValue) > FTM_LOCATION_LEN)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+	else
+	{ 
+		strcpy(pLocation, pValue);
 	}
 	
 	return	FTM_RET_OK;
