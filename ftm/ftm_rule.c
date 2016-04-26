@@ -117,6 +117,16 @@ FTM_RET	FTM_RULE_destroy(FTM_RULE_PTR pRule)
 	return	xRet;
 }
 
+FTM_RET	FTM_RULE_setDefault(FTM_RULE_PTR pRule)
+{
+	ASSERT(pRule != NULL);
+
+	memset(pRule, 0, sizeof(FTM_RULE));
+	pRule->xState = FTM_RULE_STATE_DEACTIVATE;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_RULE_append(FTM_RULE_PTR pRule)
 {
 	ASSERT(pRuleList != NULL);

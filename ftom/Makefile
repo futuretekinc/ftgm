@@ -61,8 +61,7 @@ $(LIB_FTOMC): $(LIB_FTOMC_OBJS)
 	$(AR) rcs $(LIB_FTOMC).a $(LIB_FTOMC_OBJS)
 	$(CC) -shared -o $(LIB_FTOMC).so.1.0.1 $(LIB_FTOMC_OBJS) $(LDFLAGS)
 
-.c.o:  $(CLIENT_SRC) $(LIB_FTOMC_OBJS) *.h
-.c.o:  $(SERVER_SRC) *.h
+.c.o:  $(CLIENT_SRC) $(LIB_FTOMC_OBJS) *.h $(SERVER_SRC)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:

@@ -75,6 +75,20 @@ FTM_RET	FTM_TRIGGER_final
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_TRIGGER_setDefault
+(
+	FTM_TRIGGER_PTR pTrigger
+)
+{
+	ASSERT(pTrigger != NULL);
+
+	memset(pTrigger, 0, sizeof(FTM_TRIGGER));
+
+	pTrigger->xType = FTM_TRIGGER_TYPE_NONE;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_TRIGGER_create
 (
 	FTM_TRIGGER_PTR pTrigger
@@ -367,6 +381,11 @@ FTM_RET	FTM_TRIGGER_occurred
 
 	switch(pTrigger->xType)
 	{
+	case	FTM_TRIGGER_TYPE_NONE:
+		{
+		}
+		break;
+
 	case	FTM_TRIGGER_TYPE_ABOVE:
 		{
 			xRet = FTM_VALUE_compare(&pTrigger->xParams.xAbove.xValue, pValue, &nResult);
@@ -429,7 +448,7 @@ FTM_RET	FTM_TRIGGER_occurred
 			*pResult = (nResult == 0);
 		}
 		break;
-	
+
 	}
 
 	return	xRet;

@@ -13,6 +13,9 @@ FTOM_CGI_COMMAND	pCmds[] =
 	{	"node",		FTOM_CGI_node	},
 	{	"ep",		FTOM_CGI_ep		},
 	{	"data",		FTOM_CGI_data	},
+	{	"trigger",	FTOM_CGI_trigger},
+	{	"action",	FTOM_CGI_action	},
+	{	"rule",		FTOM_CGI_rule	},
 	{	NULL,		NULL			}
 };
 

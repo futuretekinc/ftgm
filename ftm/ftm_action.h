@@ -8,24 +8,27 @@ typedef	FTM_ULONG	FTM_ACTION_ID, _PTR_ FTM_ACTION_ID_PTR;
 
 typedef	enum
 {
+	FTM_ACTION_TYPE_NONE,
 	FTM_ACTION_TYPE_SET,
 	FTM_ACTION_TYPE_SMS,
 	FTM_ACTION_TYPE_PUSH,
 	FTM_ACTION_TYPE_MAIL
 }	FTM_ACTION_TYPE, _PTR_ FTM_ACTION_TYPE_PTR;
-	
+
+typedef	union
+{
+	struct
+	{
+		FTM_CHAR	pEPID[FTM_EPID_LEN+1];
+		FTM_VALUE	xValue;
+	}	xSet;
+}	FTM_ACTION_PARAMS, _PTR_ FTM_ACTION_PARAMS_PTR;
+
 typedef	struct
 {
-	FTM_ACTION_ID	xID;
-	FTM_ACTION_TYPE	xType;
-	union
-	{
-		struct
-		{
-			FTM_CHAR	pEPID[FTM_EPID_LEN+1];
-			FTM_EP_DATA	xValue;
-		}	xSet;
-	}	xParams;
+	FTM_ACTION_ID		xID;
+	FTM_ACTION_TYPE		xType;
+	FTM_ACTION_PARAMS	xParams;
 }	FTM_ACTION, _PTR_ FTM_ACTION_PTR;
 typedef	FTM_ULONG	FTM_ACTION_ID, _PTR_ FTM_ACTION_ID_PTR;
 
@@ -49,13 +52,18 @@ FTM_RET	FTM_ACTION_createSet
 	FTM_ACTION_ID 	xID, 
 	FTM_ACTION_TYPE xType, 
 	FTM_CHAR_PTR 	pTargetID, 
-	FTM_EP_DATA_PTR pValue, 
+	FTM_VALUE_PTR	pValue, 
 	FTM_ACTION_PTR _PTR_ ppAction
 );
 
 FTM_RET	FTM_ACTION_destroy
 (
 	FTM_ACTION_PTR 	ppAction
+);
+
+FTM_RET	FTM_ACTION_setDefault
+(
+	FTM_ACTION_PTR	pAction
 );
 
 FTM_RET	FTM_ACTION_append

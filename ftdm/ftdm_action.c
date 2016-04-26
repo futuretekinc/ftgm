@@ -86,12 +86,14 @@ FTM_RET	FTDM_ACTION_loadFromFile
 								xRet = FTM_CONFIG_ITEM_getItemString(&xParamsItem, "epid", xInfo.xParams.xSet.pEPID, FTM_EPID_LEN);
 								if (xRet != FTM_RET_OK)
 								{
+									ERROR("EPID invalid!\n");
 										continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemEPData(&xParamsItem, "value", &xInfo.xParams.xSet.xValue);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xParamsItem, "value", &xInfo.xParams.xSet.xValue);
 								if (xRet != FTM_RET_OK)
 								{
+									ERROR("Action value invalid!\n");
 										continue;
 								}
 
@@ -311,10 +313,9 @@ FTM_RET	FTDM_ACTION_showList
 			{
 			case	FTM_ACTION_TYPE_SET:
 				{
-					FTM_CHAR	pBuff[1024];
-
-					FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pAction->xParams.xSet.xValue);
-					MESSAGE("%8s %16s %8s\n", "Set", pAction->xParams.xSet.pEPID, pBuff);
+					MESSAGE("%8s %16s %8s\n", "Set", 
+						pAction->xParams.xSet.pEPID,
+						FTM_VALUE_print(&pAction->xParams.xSet.xValue));
 				}
 				break;
 

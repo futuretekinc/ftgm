@@ -74,11 +74,12 @@ FTM_RET	FTM_ACTION_createSet
 	FTM_ACTION_ID 	xID, 
 	FTM_ACTION_TYPE xType, 
 	FTM_CHAR_PTR	pEPID,
-	FTM_EP_DATA_PTR pData, 
+	FTM_VALUE_PTR	pValue, 
 	FTM_ACTION_PTR _PTR_ ppAction
 )
 {
 	ASSERT(pEPID != NULL);
+	ASSERT(pValue != NULL);
 	ASSERT(pActionList != NULL);
 
 	FTM_RET		xRet;
@@ -94,7 +95,7 @@ FTM_RET	FTM_ACTION_createSet
 	pAction->xID = xID;
 	pAction->xType = xType;
 	strcpy(pAction->xParams.xSet.pEPID, pEPID);
-	memcpy(&pAction->xParams.xSet.xValue, pData, sizeof(FTM_EP_DATA));
+	memcpy(&pAction->xParams.xSet.xValue, pValue, sizeof(FTM_EP_DATA));
 
 	xRet = FTM_LIST_append(pActionList, pAction);
 	if (xRet != FTM_RET_OK)
@@ -126,6 +127,20 @@ FTM_RET	FTM_ACTION_destroy
 	}
 
 	return	xRet;
+}
+
+FTM_RET	FTM_ACTION_setDefault
+(
+	FTM_ACTION_PTR	pAction
+)
+{
+	ASSERT(pAction != NULL);
+
+	memset(pAction, 0, sizeof(FTM_ACTION));
+
+	pAction->xType = FTM_ACTION_TYPE_NONE;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_ACTION_append
@@ -202,6 +217,7 @@ FTM_CHAR_PTR	FTM_ACTION_typeString
 {
 	switch(xType)
 	{
+	case	FTM_ACTION_TYPE_NONE: 	return	"NONE";
 	case	FTM_ACTION_TYPE_SET: 	return	"SET";
 	case	FTM_ACTION_TYPE_SMS:	return	"SMS";
 	case	FTM_ACTION_TYPE_PUSH:	return	"PUSH";

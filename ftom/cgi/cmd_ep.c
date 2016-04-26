@@ -4,11 +4,26 @@
 #include "cJSON.h"
 
 static 
-FTM_RET	FTOM_CGI_makeEPInfo
+FTM_RET	FTOM_CGI_addEPInfoToObject
+(
+	cJSON _PTR_ 		pObject,
+	FTM_EP_PTR			pEPInfo,
+	FTM_EP_FIELD_TYPE	xFields
+);
+
+static 
+FTM_RET	FTOM_CGI_addEPInfoToArray
+(
+	cJSON _PTR_ 		pObject,
+	FTM_EP_PTR			pEPInfo,
+	FTM_EP_FIELD_TYPE	xFields
+);
+static
+FTM_RET	FTOM_CGI_createEPInfoObject
 (
 	FTM_EP_PTR			pEPInfo,
-	cJSON _PTR_ _PTR_ 	ppObject,
-	FTM_EP_FIELD_TYPE	xFields
+	FTM_EP_FIELD_TYPE	xFields,
+	cJSON _PTR_ _PTR_	ppObject
 );
 
 FTM_RET	FTOM_CGI_addEP
@@ -22,6 +37,9 @@ FTM_RET	FTOM_CGI_addEP
 
 	FTM_RET			xRet;
 	FTM_EP			xEPInfo;
+	cJSON _PTR_	pRoot;
+
+	pRoot = cJSON_CreateObject();
 
 	FTM_EP_setDefault(&xEPInfo);
 
@@ -37,10 +55,18 @@ FTM_RET	FTOM_CGI_addEP
 	xRet |= FTOM_CGI_getLimit(pReq, &xEPInfo.xLimit, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;
+		goto finish;
 	}
 
-	return	FTOM_CLIENT_EP_create(pClient, &xEPInfo);
+	xRet = FTOM_CLIENT_EP_create(pClient, &xEPInfo);
+	if (xRet == FTM_RET_OK)
+	{
+		cJSON_AddStringToObject(pRoot, "id", xEPInfo.pEPID);
+	}
+
+finish:
+
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
 FTM_RET	FTOM_CGI_delEP
@@ -54,14 +80,21 @@ FTM_RET	FTOM_CGI_delEP
 
 	FTM_RET			xRet;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	cJSON _PTR_	pRoot;
+
+	pRoot = cJSON_CreateObject();
 
 	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
+		goto finish;	
 	}
 
-	return	FTOM_CLIENT_EP_destroy(pClient, pEPID);
+	xRet = FTOM_CLIENT_EP_destroy(pClient, pEPID);
+
+finish:
+
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
 FTM_RET	FTOM_CGI_getEP
@@ -73,10 +106,12 @@ FTM_RET	FTOM_CGI_getEP
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
 
-	FTM_RET			xRet;
-	FTM_EP			xEPInfo;
-	cJSON _PTR_ 	pRoot = NULL;
-	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	FTM_RET		xRet;
+	FTM_EP		xEPInfo;
+	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
+	cJSON _PTR_	pRoot;
+
+	pRoot = cJSON_CreateObject();
 
 	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
@@ -90,24 +125,15 @@ FTM_RET	FTOM_CGI_getEP
 		goto finish;
 	}
 
-	xRet = FTOM_CGI_makeEPInfo(&xEPInfo, &pRoot, FTM_EP_FIELD_ALL);
+	xRet = FTOM_CGI_addEPInfoToObject(pRoot, &xEPInfo, FTM_EP_FIELD_ALL);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;	
 	}
 
-	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", cJSON_Print(pRoot));
-
-	xRet = FTM_RET_OK;
-
 finish:
-	if (pRoot != NULL)
-	{
-		cJSON_Delete(pRoot);
-	}
 
-	return	xRet;
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
 FTM_RET	FTOM_CGI_setEP
@@ -121,10 +147,12 @@ FTM_RET	FTOM_CGI_setEP
 
 	FTM_RET			xRet;
 	FTM_EP			xEPInfo;
-	cJSON _PTR_ 	pRoot = NULL;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_TYPE		xEPType;
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
+	cJSON _PTR_	pRoot;
+
+	pRoot = cJSON_CreateObject();
 
 	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
@@ -169,18 +197,9 @@ FTM_RET	FTOM_CGI_setEP
 		goto finish;	
 	}
 
-	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", cJSON_Print(pRoot));
-
-	xRet = FTM_RET_OK;
-
 finish:
-	if (pRoot != NULL)
-	{
-		cJSON_Delete(pRoot);
-	}
 
-	return	xRet;
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
 FTM_RET	FTOM_CGI_getEPCount
@@ -192,9 +211,11 @@ FTM_RET	FTOM_CGI_getEPCount
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
 
-	FTM_RET			xRet;
-	FTM_ULONG		ulCount = 0;
-	cJSON _PTR_		pRoot = NULL;
+	FTM_RET		xRet;
+	FTM_ULONG	ulCount = 0;
+	cJSON _PTR_	pRoot;
+
+	pRoot = cJSON_CreateObject();
 
 	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
 	if (xRet != FTM_RET_OK)
@@ -202,21 +223,11 @@ FTM_RET	FTOM_CGI_getEPCount
 		goto finish;
 	}
 
-	pRoot = cJSON_CreateObject();
-	cJSON_AddNumberToObject(pRoot, "COUNT", ulCount);
-
-	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", cJSON_Print(pRoot));
-
-	xRet = FTM_RET_OK;
+	cJSON_AddNumberToObject(pRoot, "count", ulCount);
 
 finish:
-	if (pRoot != NULL)
-	{
-		cJSON_Delete(pRoot);
-	}
 
-	return	xRet;
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
 FTM_RET	FTOM_CGI_getEPList
@@ -234,7 +245,9 @@ FTM_RET	FTOM_CGI_getEPList
 	FTM_ULONG		ulCount = 0;
 	FTM_EP_FIELD_TYPE	xFields = FTM_EP_FIELD_EPID;
 	FTM_EPID		*pEPIDList = NULL;
-	cJSON _PTR_		pRoot = NULL;
+	cJSON _PTR_	pRoot;
+
+	pRoot = cJSON_CreateObject();
 
 	for(i = 0; i < 10 ; i++)
 	{
@@ -248,7 +261,11 @@ FTM_RET	FTOM_CGI_getEPList
 			break;	
 		}
 
-		if (strcasecmp(pValue, "eptype") == 0)
+		if (strcasecmp(pValue, "all") == 0)
+		{
+			xFields |= FTM_EP_FIELD_ALL;
+		}
+		else if (strcasecmp(pValue, "type") == 0)
 		{
 			xFields |= FTM_EP_FIELD_EPTYPE;
 		}
@@ -303,12 +320,12 @@ FTM_RET	FTOM_CGI_getEPList
 	{
 		goto finish;
 	}
-	
-	pRoot = cJSON_CreateArray();
+
+	cJSON _PTR_ pEPList = cJSON_CreateArray();
+
 	for(int i = 0 ; i < ulCount ; i++)
 	{
 		FTM_EP	xEPInfo;
-		cJSON _PTR_ pObject;
 
 		xRet = FTOM_CLIENT_EP_get(pClient, pEPIDList[i], &xEPInfo);
 		if (xRet != FTM_RET_OK)
@@ -316,30 +333,19 @@ FTM_RET	FTOM_CGI_getEPList
 			continue;
 		}
 
-		xRet = FTOM_CGI_makeEPInfo(&xEPInfo, &pObject, xFields);
-		if (xRet == FTM_RET_OK)
-		{
-			cJSON_AddItemToArray(pRoot, pObject);
-		}
+		FTOM_CGI_addEPInfoToArray(pEPList, &xEPInfo, xFields);
 	}
-
-	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", cJSON_Print(pRoot));
-
+	
+	cJSON_AddItemToObject(pRoot, "eps", pEPList);
 	xRet = FTM_RET_OK;
 
 finish:
-	if (pRoot != NULL)
-	{
-		cJSON_Delete(pRoot);
-	}
-
 	if (pEPIDList != NULL)
 	{
 		FTM_MEM_free(pEPIDList);
 	}
 
-	return	xRet;
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
 FTM_RET	FTOM_CGI_getEPData
@@ -355,6 +361,9 @@ FTM_RET	FTOM_CGI_getEPData
 	FTM_EP_DATA_PTR	pData;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG		ulCount = 0;
+	cJSON _PTR_		pRoot;
+
+	pRoot = cJSON_CreateObject();
 
 	xRet = FTOM_CGI_getCount(pReq, &ulCount, FTM_TRUE);
 	xRet |= FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
@@ -383,11 +392,10 @@ FTM_RET	FTOM_CGI_getEPData
 		goto finish;
 	}
 
-	cJSON _PTR_ pRoot, _PTR_ pDataList;
+	cJSON _PTR_ pDataList;
 
-	pRoot = cJSON_CreateObject();
-	cJSON_AddStringToObject(pRoot, "ID", pEPID);
-	cJSON_AddItemToObject(pRoot, "DATA", pDataList = cJSON_CreateArray());
+	cJSON_AddStringToObject(pRoot, "id", pEPID);
+	cJSON_AddItemToObject(pRoot, "data", pDataList = cJSON_CreateArray());
 
 	for(FTM_INT i = 0 ; i < ulCount ; i++)
 	{
@@ -398,27 +406,17 @@ FTM_RET	FTOM_CGI_getEPData
 		FTM_CHAR	pValueString[64];
 		FTM_EP_DATA_snprint(pValueString, sizeof(pValueString), &pData[i]);
 
-		cJSON_AddStringToObject(pObject, "VALUE", pValueString);
-		cJSON_AddNumberToObject(pObject, "TIME", pData[i].ulTime);
+		cJSON_AddStringToObject(pObject, "value", pValueString);
+		cJSON_AddNumberToObject(pObject, "time", pData[i].ulTime);
 	}
-
-	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", cJSON_Print(pRoot));
-
-	xRet = FTM_RET_OK;
 
 finish:
-	if (pRoot != NULL)
-	{
-		cJSON_Delete(pRoot);
-	}
-
 	if (pData != NULL)
 	{
 		FTM_MEM_free(pData);
 	}
 
-	return	xRet;
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
 FTM_RET	FTOM_CGI_getEPDataLast
@@ -433,6 +431,9 @@ FTM_RET	FTOM_CGI_getEPDataLast
 	FTM_RET			xRet;
 	FTM_ULONG		ulCount = 0;
 	FTM_EPID		*pEPIDList = NULL;
+	cJSON _PTR_	pRoot;
+
+	pRoot = cJSON_CreateObject();
 
 	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
 	if (xRet != FTM_RET_OK)
@@ -452,10 +453,6 @@ FTM_RET	FTOM_CGI_getEPDataLast
 		goto finish;
 	}
 
-	cJSON _PTR_ pRoot;
-
-	pRoot = cJSON_CreateArray();
-	
 	for(int i = 0 ; i < ulCount ; i++)
 	{
 		FTM_EP_DATA	xEPData;
@@ -475,87 +472,122 @@ FTM_RET	FTOM_CGI_getEPDataLast
 		}
 
 		cJSON_AddItemToArray(pRoot, pObject = cJSON_CreateObject());
-		cJSON_AddStringToObject(pObject, "ID", pEPIDList[i]);
-		cJSON_AddStringToObject(pObject, "VALUE", pValueString);
-		cJSON_AddNumberToObject(pObject, "TIME", xEPData.ulTime);
+		cJSON_AddStringToObject(pObject, "id", pEPIDList[i]);
+		cJSON_AddStringToObject(pObject, "value", pValueString);
+		cJSON_AddNumberToObject(pObject, "time", xEPData.ulTime);
 	}
-
-	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", cJSON_Print(pRoot));
-
-	xRet = FTM_RET_OK;
 
 finish:
-	if (pRoot != NULL)
-	{
-		cJSON_Delete(pRoot);
-	}
-
 	if (pEPIDList != NULL)
 	{
 		FTM_MEM_free(pEPIDList);
 	}
 
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
+}
+
+FTM_RET	FTOM_CGI_addEPInfoToObject
+(
+	cJSON _PTR_	pObject,
+	FTM_EP_PTR			pEPInfo,
+	FTM_EP_FIELD_TYPE	xFields
+
+)
+{
+	ASSERT(pObject != NULL);
+	ASSERT(pEPInfo != NULL);
+	
+	FTM_RET	xRet;
+	cJSON _PTR_ pNewObject = NULL;
+
+	xRet = FTOM_CGI_createEPInfoObject(pEPInfo, xFields, &pNewObject);
+	if (xRet == FTM_RET_OK)
+	{
+		cJSON_AddItemToObject(pObject, "ep", pNewObject);
+	}
+
 	return	xRet;
 }
 
-FTM_RET	FTOM_CGI_makeEPInfo
+FTM_RET	FTOM_CGI_addEPInfoToArray
 (
+	cJSON _PTR_	pObject,
 	FTM_EP_PTR			pEPInfo,
-	cJSON _PTR_ _PTR_ 	ppObject,
 	FTM_EP_FIELD_TYPE	xFields
+
 )
 {
+	ASSERT(pObject != NULL);
+	ASSERT(pEPInfo != NULL);
+	
 	FTM_RET	xRet;
-	cJSON _PTR_	pRoot, _PTR_ pLimit;
+	cJSON _PTR_ pNewObject = NULL;
 
-	pRoot = cJSON_CreateObject();
-	if (pRoot == NULL)
+	xRet = FTOM_CGI_createEPInfoObject(pEPInfo, xFields, &pNewObject);
+	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
-		goto finish;
+		cJSON_AddItemToArray(pObject, pNewObject);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_CGI_createEPInfoObject
+(
+	FTM_EP_PTR			pEPInfo,
+	FTM_EP_FIELD_TYPE	xFields,
+	cJSON _PTR_ _PTR_	ppObject
+)
+{
+	cJSON _PTR_	pObject, _PTR_ pLimit;
+
+
+	pObject = cJSON_CreateObject();
+	if (pObject == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
 	if (xFields & FTM_EP_FIELD_EPID)
 	{
-		cJSON_AddStringToObject(pRoot, "EPID", pEPInfo->pEPID);
+		cJSON_AddStringToObject(pObject, "id", pEPInfo->pEPID);
 	}
 
 	if (xFields & FTM_EP_FIELD_EPTYPE)
 	{
-		cJSON_AddStringToObject(pRoot, "EPTYPE", FTM_EP_typeString(pEPInfo->xType));
+		cJSON_AddStringToObject(pObject, "type", FTM_EP_typeString(pEPInfo->xType));
 	}
 
 	if (xFields & FTM_EP_FIELD_NAME)
 	{
-		cJSON_AddStringToObject(pRoot, "NAME", pEPInfo->pName);
+		cJSON_AddStringToObject(pObject, "name", pEPInfo->pName);
 	}
 
 	if (xFields & FTM_EP_FIELD_UNIT)
 	{
-		cJSON_AddStringToObject(pRoot, "UNIT", pEPInfo->pUnit);
+		cJSON_AddStringToObject(pObject, "unit", pEPInfo->pUnit);
 	}
 
 	if (xFields & FTM_EP_FIELD_INTERVAL)
 	{
-		cJSON_AddNumberToObject(pRoot, "INTERVAL", pEPInfo->ulInterval);
+		cJSON_AddNumberToObject(pObject, "interval", pEPInfo->ulInterval);
 	}
 
 	if (xFields & FTM_EP_FIELD_DID)
 	{
-		cJSON_AddStringToObject(pRoot, "DID", pEPInfo->pDID);
+		cJSON_AddStringToObject(pObject, "did", pEPInfo->pDID);
 	}
 
 	if (xFields & FTM_EP_FIELD_LIMIT)
 	{
-		cJSON_AddItemToObject(pRoot, "LIMIT", pLimit = cJSON_CreateObject());
+		cJSON_AddItemToObject(pObject, "limit", pLimit = cJSON_CreateObject());
 		
 		switch(pEPInfo->xLimit.xType)
 		{
 		case	FTM_EP_LIMIT_TYPE_COUNT:
 			{
-				cJSON_AddStringToObject(pLimit, "TYPE", "COUNT");
-				cJSON_AddNumberToObject(pLimit, "COUNT", pEPInfo->xLimit.xParams.ulCount);
+				cJSON_AddStringToObject(pLimit, "type", "count");
+				cJSON_AddNumberToObject(pLimit, "count", pEPInfo->xLimit.xParams.ulCount);
 			}
 			break;
 	
@@ -563,43 +595,35 @@ FTM_RET	FTOM_CGI_makeEPInfo
 			{
 				cJSON _PTR_ pTime;
 	
-				cJSON_AddStringToObject(pLimit, "TYPE", "TIME");
-				cJSON_AddItemToObject(pLimit, "TIME", pTime = cJSON_CreateObject());
-				cJSON_AddNumberToObject(pTime, "START", pEPInfo->xLimit.xParams.xTime.ulStart);
-				cJSON_AddNumberToObject(pTime, "END", pEPInfo->xLimit.xParams.xTime.ulEnd);
+				cJSON_AddStringToObject(pLimit, "type", "time");
+				cJSON_AddItemToObject(pLimit, "time", pTime = cJSON_CreateObject());
+				cJSON_AddNumberToObject(pTime, "start", pEPInfo->xLimit.xParams.xTime.ulStart);
+				cJSON_AddNumberToObject(pTime, "end", pEPInfo->xLimit.xParams.xTime.ulEnd);
 			}
 			break;
 	
 		case	FTM_EP_LIMIT_TYPE_HOURS:
 			{
-				cJSON_AddStringToObject(pLimit, "TYPE", "HOURS");
+				cJSON_AddStringToObject(pLimit, "type", "hours");
 			}
 			break;
 	
 		case	FTM_EP_LIMIT_TYPE_DAYS:
 			{
-				cJSON_AddStringToObject(pLimit, "TYPE", "DAYS");
+				cJSON_AddStringToObject(pLimit, "type", "days");
 			}
 			break;
 	
 		case	FTM_EP_LIMIT_TYPE_MONTHS:
 			{
-				cJSON_AddStringToObject(pLimit, "TYPE", "MONTHS");
+				cJSON_AddStringToObject(pLimit, "type", "months");
 			}
 			break;
 		}
 	}
 
-	*ppObject = pRoot;
+	*ppObject = pObject;
 
 	return	FTM_RET_OK;
-
-finish:
-	if (pRoot != NULL)
-	{
-		cJSON_Delete(pRoot);
-	}
-
-	return	xRet;
 }
 

@@ -7,6 +7,18 @@ FTM_RET	FTOM_CGI_getTrigger
 	qentry_t _PTR_ pReq
 );
 
+FTM_RET	FTOM_CGI_addTrigger
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+);
+
+FTM_RET	FTOM_CGI_delTrigger
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+);
+
 FTM_RET	FTOM_CGI_getTriggerList
 (
 	FTOM_CLIENT_PTR pClient, 

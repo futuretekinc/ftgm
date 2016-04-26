@@ -14,6 +14,12 @@
 #endif
 
 static FTM_VOID_PTR FTOM_RULEM_process(FTM_VOID_PTR pData);
+static 
+FTM_BOOL	FTOM_RULEM_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pKey
+);
 
 static FTM_BOOL	bInit = FTM_FALSE;
 static FTM_LIST	xList;
@@ -122,7 +128,9 @@ FTM_RET	FTOM_RULEM_init
 
 		return	xRet;	
 	}
-	
+
+	FTM_LIST_setSeeker(pRuleM->pRuleList, FTOM_RULEM_seeker);
+
 	pRuleM->bStop = FTM_TRUE;
 
 	return	FTM_RET_OK;
@@ -530,4 +538,20 @@ FTM_RET	FTOM_RULEM_deactivate
 	}
 
 	return	xRet;
+}
+
+static
+FTM_BOOL	FTOM_RULEM_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pKey
+)
+{
+	ASSERT(pElement != NULL);
+	ASSERT(pKey != NULL);
+	
+	FTOM_RULE_PTR	pRule = (FTOM_RULE_PTR)pElement;
+	FTM_RULE_ID_PTR	pID = (FTM_RULE_ID_PTR)pKey ;
+
+	return	(pRule->xInfo.xID == *pID);
 }

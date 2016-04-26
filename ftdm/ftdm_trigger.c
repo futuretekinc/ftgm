@@ -194,6 +194,7 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 							break;
 
 						case	FTM_TRIGGER_TYPE_CHANGE:
+						default:
 							{
 							}
 							break;
@@ -485,6 +486,7 @@ FTM_RET	FTDM_TRIGGER_showList
 				break;
 
 			case	FTM_TRIGGER_TYPE_CHANGE:
+			default:
 				{
 				}
 				break;

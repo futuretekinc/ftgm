@@ -49,23 +49,52 @@ FTOM_CGI_COMMAND	pNodeCmds[] =
 static 
 FTOM_CGI_COMMAND	pTriggerCmds[] =
 {
-	{	"list",	FTOM_CGI_getTriggerList	},
+	{	"get",	FTOM_CGI_getTrigger			},
+	{	"add",	FTOM_CGI_addTrigger			},
+	{	"del",	FTOM_CGI_delTrigger			},
+	{	"list",	FTOM_CGI_getTriggerList		},
 	{	NULL,		NULL					}
 };
 
 static 
 FTOM_CGI_COMMAND	pActionCmds[] =
 {
-	{	"list",	FTOM_CGI_getActionList	},
+	{	"get",	FTOM_CGI_getAction			},
+	{	"add",	FTOM_CGI_addAction			},
+	{	"del",	FTOM_CGI_delAction			},
+	{	"list",	FTOM_CGI_getActionList		},
 	{	NULL,		NULL					}
 };
 
 static 
 FTOM_CGI_COMMAND	pRuleCmds[] =
 {
-	{	"list",		FTOM_CGI_getRuleList	},
+	{	"get",	FTOM_CGI_getRule			},
+	{	"add",	FTOM_CGI_addRule			},
+	{	"del",	FTOM_CGI_delRule			},
+	{	"list",	FTOM_CGI_getRuleList		},
 	{	NULL,		NULL					}
 };
+
+FTM_RET	FTOM_CGI_finish
+(
+	qentry_t _PTR_ pReq,
+	cJSON _PTR_ pRoot, 
+	FTM_RET xRet
+)
+{
+	cJSON_AddStringToObject(pRoot, "result", (xRet == FTM_RET_OK)?"success":"failed");	
+
+	qcgires_setcontenttype(pReq, "text/xml");
+	printf("%s", cJSON_Print(pRoot));
+
+	if (pRoot != NULL)
+	{
+		cJSON_Delete(pRoot);
+	}
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTOM_CGI_node
 (
@@ -103,7 +132,7 @@ FTM_RET	FTOM_CGI_trigger
 	return	FTOM_CGI_service(pClient, pReq, pTriggerCmds);
 }
 
-FTM_RET	FTOM_CGI_acton
+FTM_RET	FTOM_CGI_action
 (
 	FTOM_CLIENT_PTR pClient, 
 	qentry_t *pReq
@@ -284,7 +313,7 @@ FTM_RET FTOM_CGI_getEPType
 
 	FTM_CHAR_PTR	pValue;
 
-	pValue = pReq->getstr(pReq, "eptype", false);
+	pValue = pReq->getstr(pReq, "type", false);
 	if(pValue == NULL)
 	{
 		if(!bAllowEmpty)
@@ -660,6 +689,7 @@ FTM_RET FTOM_CGI_getTriggerID
 	
 	return	FTM_RET_OK;
 }
+
 FTM_RET FTOM_CGI_getTriggerType
 (
 	qentry_t *pReq, 
@@ -670,7 +700,9 @@ FTM_RET FTOM_CGI_getTriggerType
 	ASSERT(pReq != NULL);
 	ASSERT(pType != NULL);
 
-	FTM_CHAR_PTR	pValue;
+	FTM_CHAR_PTR		pValue;
+	FTM_TRIGGER_TYPE	xType;
+
 
 	pValue = pReq->getstr(pReq, "type", false);
 	if(pValue == NULL)
@@ -682,8 +714,6 @@ FTM_RET FTOM_CGI_getTriggerType
 	}
 	else
 	{
-		FTM_TRIGGER_TYPE	xType;
-
 		if (strcasecmp(pValue, "above") == 0)
 		{
 			xType =  FTM_TRIGGER_TYPE_ABOVE;
@@ -715,6 +745,8 @@ FTM_RET FTOM_CGI_getTriggerType
 		}
 	}
 	
+	*pType = xType;
+
 	return	FTM_RET_OK;
 }
 
@@ -769,6 +801,234 @@ FTM_RET FTOM_CGI_getHoldTime
 	else
 	{
 		*pulTime = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_CGI_getValue
+(
+	qentry_t *pReq, 
+	FTM_VALUE_TYPE	xType,
+	FTM_VALUE_PTR	pValue,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	FTM_CHAR_PTR	pItem;
+
+	pItem = pReq->getstr(pReq, "value", false);
+		
+	if (pItem == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		return	FTM_VALUE_init(pValue, xType, pItem);
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_CGI_getLowerValue
+(
+	qentry_t *pReq, 
+	FTM_VALUE_TYPE	xType,
+	FTM_VALUE_PTR	pValue,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	FTM_CHAR_PTR	pItem;
+
+	pItem = pReq->getstr(pReq, "lower", false);
+		
+	if (pItem == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		return	FTM_VALUE_init(pValue, xType, pItem);
+	}
+
+	return	FTM_RET_OK;
+}
+FTM_RET FTOM_CGI_getUpperValue
+(
+	qentry_t *pReq, 
+	FTM_VALUE_TYPE	xType,
+	FTM_VALUE_PTR	pValue,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	FTM_CHAR_PTR	pItem;
+
+	pItem = pReq->getstr(pReq, "upper", false);
+		
+	if (pItem == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		return	FTM_VALUE_init(pValue, xType, pItem);
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getActionID
+(
+	qentry_t *pReq,
+	FTM_ACTION_ID_PTR	pID,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pID != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "id", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		*pID = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+
+
+FTM_RET	FTOM_CGI_getActionType
+(
+	qentry_t *pReq,
+	FTM_ACTION_TYPE_PTR	pType,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pType != NULL);
+
+	FTM_CHAR_PTR	pValue;
+	FTM_ACTION_TYPE	xType;
+
+
+	pValue = pReq->getstr(pReq, "type", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		if (strcasecmp(pValue, "set") == 0)
+		{
+			xType =  FTM_ACTION_TYPE_SET;
+		}
+		else if (strcasecmp(pValue, "sms") == 0)
+		{
+			xType =  FTM_ACTION_TYPE_SMS;
+		}
+		else if (strcasecmp(pValue, "push") == 0)
+		{
+			xType =  FTM_ACTION_TYPE_PUSH;
+		}
+		else if (strcasecmp(pValue, "email") == 0)
+		{
+			xType =  FTM_ACTION_TYPE_MAIL;
+		}
+		else
+		{
+			xType = strtoul(pValue, 0, 10);
+
+			if ((xType < FTM_ACTION_TYPE_SET) || (FTM_ACTION_TYPE_MAIL < xType))
+			{
+				return	FTM_RET_INVALID_ARGUMENTS;	
+			}
+		}
+	}
+
+	*pType = xType;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getRuleID
+(
+	qentry_t *pReq,
+	FTM_RULE_ID_PTR	pID,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pID != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "id", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		*pID = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getRuleState
+(
+	qentry_t *pReq,
+	FTM_RULE_STATE_PTR	pState,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pState != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "state", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+	else
+	{
+		if (strcasecmp(pValue, "activate") == 0)
+		{
+			*pState = FTM_RULE_STATE_ACTIVATE;
+		}
+		else if (strcasecmp(pValue, "deactivate") == 0)
+		{
+			*pState = FTM_RULE_STATE_DEACTIVATE;
+		}
 	}
 	
 	return	FTM_RET_OK;

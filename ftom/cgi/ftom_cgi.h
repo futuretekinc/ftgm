@@ -7,12 +7,20 @@
 #include "ftom_client.h"
 #include "qdecoder.h"
 #include "mxml.h"
+#include "cJSON.h"
 
 typedef	struct FTOM_CGI_COMMAND_STRUCT
 {
 	FTM_CHAR_PTR	pName;
 	FTM_RET			(*fService)(FTOM_CLIENT_PTR pClient, qentry_t *req);
 } FTOM_CGI_COMMAND, _PTR_ FTOM_CGI_COMMAND_PTR;
+
+FTM_RET	FTOM_CGI_finish
+(
+	qentry_t _PTR_ pReq,
+	cJSON _PTR_ pRoot, 
+	FTM_RET xRet
+);
 
 FTM_RET	FTOM_CGI_node
 (
@@ -27,6 +35,24 @@ FTM_RET	FTOM_CGI_ep
 );
 
 FTM_RET	FTOM_CGI_data
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+);
+
+FTM_RET	FTOM_CGI_trigger
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+);
+
+FTM_RET	FTOM_CGI_action
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+);
+
+FTM_RET	FTOM_CGI_rule
 (
 	FTOM_CLIENT_PTR pClient, 
 	qentry_t *pReq
@@ -141,6 +167,66 @@ FTM_RET FTOM_CGI_getHoldTime
 (
 	qentry_t *pReq, 
 	FTM_ULONG_PTR pulTime,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET FTOM_CGI_getValue
+(
+	qentry_t *pReq, 
+	FTM_VALUE_TYPE	xType,
+	FTM_VALUE_PTR	pValue,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET FTOM_CGI_getLowerValue
+(
+	qentry_t *pReq, 
+	FTM_VALUE_TYPE	xType,
+	FTM_VALUE_PTR	pValue,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET FTOM_CGI_getUpperValue
+(
+	qentry_t *pReq, 
+	FTM_VALUE_TYPE	xType,
+	FTM_VALUE_PTR	pValue,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET	FTOM_CGI_getActionID
+(
+	qentry_t *pReq,
+	FTM_ACTION_ID_PTR	pID,
+	FTM_BOOL	bAllowEmpry
+);
+
+FTM_RET	FTOM_CGI_getActionType
+(
+	qentry_t *pReq,
+	FTM_ACTION_TYPE_PTR	pType,
+	FTM_BOOL	bAllowEmpry
+);
+
+FTM_RET	FTOM_CGI_getActionParams
+(
+	qentry_t *pReq,
+	FTM_ACTION_TYPE	xType,
+	FTM_ACTION_PARAMS_PTR	pParams,
+	FTM_BOOL	bAllowEmpry
+);
+
+FTM_RET	FTOM_CGI_getRuleID
+(
+	qentry_t *pReq,
+	FTM_RULE_ID_PTR	pID,
+	FTM_BOOL	bAllowEmpry
+);
+
+FTM_RET	FTOM_CGI_getRuleState
+(
+	qentry_t *pReq,
+	FTM_RULE_STATE_PTR	pState,
 	FTM_BOOL	bAllowEmpty
 );
 

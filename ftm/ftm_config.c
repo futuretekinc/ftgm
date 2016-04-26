@@ -845,6 +845,7 @@ FTM_RET	FTM_CONFIG_ITEM_getValue
 		break;
 	default:
 		{
+			ERROR("Type[%d] is not exist.\n", xValue.xType);
 			return	FTM_RET_CONFIG_INVALID_OBJECT;
 		}
 	}
