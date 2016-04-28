@@ -138,7 +138,7 @@ FTM_RET	FTOM_countNode
 FTM_RET	FTOM_getNode
 (
 	FTOM_PTR		pOM,
-	FTM_CHAR		pDID[FTM_DID_LEN + 1],
+	FTM_CHAR_PTR	pDID,
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 
@@ -147,6 +147,14 @@ FTM_RET	FTOM_getNodeAt
 	FTOM_PTR		pOM,
 	FTM_ULONG		ulIndex,
 	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTOM_setNode
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pDID,
+	FTM_NODE_FIELD	xFields,
+	FTM_NODE_PTR 	pInfo
 );
 
 FTM_RET	FTOM_createEP
@@ -159,6 +167,14 @@ FTM_RET	FTOM_destroyEP
 (
 	FTOM_PTR 	pOM, 
 	FTM_CHAR_PTR	pEPID
+);
+
+FTM_RET	FTOM_setEPInfo
+(
+	FTOM_PTR 		pOM, 
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_FIELD	xFields,
+	FTM_EP_PTR		pInfo
 );
 
 FTM_RET	FTOM_getEPDataList
@@ -257,9 +273,10 @@ FTM_RET	FTOM_getTriggerInfoAt
 
 FTM_RET	FTOM_setTriggerInfo
 (
-	FTOM_PTR		pOM,
-	FTM_CHAR_PTR	pTriggerID,
-	FTM_TRIGGER_PTR	pInfo
+	FTOM_PTR			pOM,
+	FTM_CHAR_PTR		pTriggerID,
+	FTM_TRIGGER_FIELD	xFields,
+	FTM_TRIGGER_PTR		pInfo
 );
 
 FTM_RET	FTOM_addAction
@@ -299,7 +316,8 @@ FTM_RET	FTOM_setActionInfo
 (
 	FTOM_PTR		pOM,
 	FTM_CHAR_PTR	pActionID,
-	FTM_ACTION_PTR	pInfo
+	FTM_ACTION_FIELD	xField,
+	FTM_ACTION_PTR		pInfo
 );
 
 FTM_RET	FTOM_addRule
@@ -339,6 +357,7 @@ FTM_RET	FTOM_setRuleInfo
 (
 	FTOM_PTR		pOM,
 	FTM_CHAR_PTR	pRuleID,
+	FTM_RULE_FIELD	xFields,
 	FTM_RULE_PTR	pInfo
 );
 

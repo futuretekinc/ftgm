@@ -171,6 +171,100 @@ FTM_RET FTOM_NODEM_getNodeAt
 	return	xRet;
 }
 
+FTM_RET FTOM_NODEM_setNode
+(
+	FTOM_NODEM_PTR	pNodeM,
+	FTM_CHAR_PTR 	pDID, 
+	FTM_NODE_FIELD	xFields,
+	FTM_NODE_PTR 	pInfo
+)
+{
+	ASSERT(pNodeM != NULL);
+	ASSERT(pDID != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+	
+	xRet = FTM_LIST_get(pNodeM->pList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_OBJECT_NOT_FOUND;
+	}
+
+	if (xFields & FTM_NODE_FIELD_FLAGS)
+	{
+		pNode->xInfo.xFlags = pInfo->xFlags;
+	}
+
+	if (xFields & FTM_NODE_FIELD_LOCATION)
+	{
+		strcpy(pNode->xInfo.pLocation, pInfo->pLocation);
+	}
+
+	if (xFields & FTM_NODE_FIELD_INTERVAL)
+	{
+		pNode->xInfo.ulInterval = pInfo->ulInterval;
+	}
+
+	if (xFields & FTM_NODE_FIELD_TIMEOUT)
+	{
+		pNode->xInfo.ulTimeout = pInfo->ulTimeout;
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_VERSION)
+	{
+		pNode->xInfo.xOption.xSNMP.ulVersion = pInfo->xOption.xSNMP.ulVersion ;
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_URL)
+	{
+		strcpy(pNode->xInfo.xOption.xSNMP.pURL, pInfo->xOption.xSNMP.pURL);
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_COMMUNITY)
+	{
+		strcpy(pNode->xInfo.xOption.xSNMP.pCommunity, pInfo->xOption.xSNMP.pCommunity);
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_MIB)
+	{
+		strcpy(pNode->xInfo.xOption.xSNMP.pMIB, pInfo->xOption.xSNMP.pMIB);
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_MAX_RETRY)
+	{
+		pNode->xInfo.xOption.xSNMP.ulMaxRetryCount = pInfo->xOption.xSNMP.ulMaxRetryCount;
+	}
+
+	if (xFields & FTM_NODE_FIELD_MQTT_VERSION)
+	{
+		pNode->xInfo.xOption.xMQTT.ulVersion = pInfo->xOption.xMQTT.ulVersion;
+	}
+
+	if (xFields & FTM_NODE_FIELD_MQTT_URL)
+	{
+		strcpy(pNode->xInfo.xOption.xMQTT.pURL, pInfo->xOption.xMQTT.pURL);
+	}
+
+	if (xFields & FTM_NODE_FIELD_MQTT_TOPIC)
+	{
+		strcpy(pNode->xInfo.xOption.xMQTT.pTopic, pInfo->xOption.xMQTT.pTopic);
+	}
+
+	if (xFields & FTM_NODE_FIELD_LORA_VERION)
+	{
+		pNode->xInfo.xOption.xLoRa.ulVersion = pInfo->xOption.xLoRa.ulVersion;
+	}
+
+	if (xFields & FTM_NODE_FIELD_LORA_DEVICE)
+	{
+		strcpy(pNode->xInfo.xOption.xLoRa.pDevice, pInfo->xOption.xLoRa.pDevice);
+	}
+
+
+	return	xRet;
+}
 FTM_RET	FTOM_NODEM_countNode
 (	
 	FTOM_NODEM_PTR	pNodeM,

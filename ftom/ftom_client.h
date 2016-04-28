@@ -132,6 +132,14 @@ FTM_RET FTOM_CLIENT_NODE_get
 	FTM_NODE_PTR	pInfo
 );
 
+FTM_RET FTOM_CLIENT_NODE_set
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID,
+	FTM_NODE_FIELD	xFields,
+	FTM_NODE_PTR	pInfo
+);
+
 FTM_RET FTOM_CLIENT_EP_create
 (
 	FTOM_CLIENT_PTR	pClient,
@@ -177,6 +185,8 @@ FTM_RET FTOM_CLIENT_EP_getAt
 FTM_RET FTOM_CLIENT_EP_set
 (
 	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_FIELD	xFields,
 	FTM_EP_PTR		pInfo
 );
 
@@ -271,20 +281,22 @@ FTM_RET	FTOM_CLIENT_TRIGGER_get
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR	pTriggerID,
-	FTM_TRIGGER_PTR	pTrigger
+	FTM_TRIGGER_PTR	pTriggerInfo
 );
 
 FTM_RET	FTOM_CLIENT_TRIGGER_getAt
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_ULONG		ulIndex,
-	FTM_TRIGGER_PTR	pTrigger
+	FTM_TRIGGER_PTR	pTriggerInfo
 );
 
 FTM_RET	FTOM_CLIENT_TRIGGER_set
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_TRIGGER_PTR	pTrigger
+	FTM_CHAR_PTR	pTriggerID,
+	FTM_TRIGGER_FIELD xFields,
+	FTM_TRIGGER_PTR	pTriggerInfo
 );
 
 /*****************************************************************
@@ -326,7 +338,9 @@ FTM_RET	FTOM_CLIENT_ACTION_getAt
 FTM_RET	FTOM_CLIENT_ACTION_set
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_ACTION_PTR	pAction
+	FTM_CHAR_PTR	pActionID,
+	FTM_ACTION_FIELD	xFields,
+	FTM_ACTION_PTR	pActionInfo
 );
 
 /*****************************************************************
@@ -355,20 +369,22 @@ FTM_RET	FTOM_CLIENT_RULE_get
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR	pRuleID,
-	FTM_RULE_PTR	pRule
+	FTM_RULE_PTR	pRuleInfo
 );
 
 FTM_RET	FTOM_CLIENT_RULE_getAt
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_ULONG		ulIndex,
-	FTM_RULE_PTR	pRule
+	FTM_RULE_PTR	pRuleInfo
 );
 
 FTM_RET	FTOM_CLIENT_RULE_set
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_RULE_PTR	pRule
+	FTM_CHAR_PTR	pRuleID,
+	FTM_RULE_FIELD	xFields,
+	FTM_RULE_PTR	pRuleInfo
 );
 
 #endif

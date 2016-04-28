@@ -355,6 +355,57 @@ FTM_RET	FTDM_ACTION_getByIndex
 	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
+FTM_RET	FTDM_ACTION_set
+(
+	FTM_CHAR_PTR		pID,
+	FTM_ACTION_FIELD	xFields,
+	FTM_ACTION_PTR		pInfo
+)
+{
+	ASSERT(pID != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTDM_ACTION_PTR	pAction;
+
+	xRet = FTM_ACTION_get(pID, (FTM_ACTION_PTR _PTR_)&pAction);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	switch(pAction->xInfo.xType)
+	{
+	case	FTM_ACTION_TYPE_SET:
+		{
+			if (xFields & FTM_ACTION_FIELD_NAME)
+			{
+				strcpy(pAction->xInfo.pName, pInfo->pName);
+			}
+
+			if (xFields & FTM_ACTION_FIELD_EPID)
+			{
+				strcpy(pAction->xInfo.xParams.xSet.pEPID, pInfo->xParams.xSet.pEPID);
+			}
+			
+			if (xFields & FTM_ACTION_FIELD_VALUE)
+			{
+				memcpy(&pAction->xInfo.xParams.xSet.xValue, &pInfo->xParams.xSet.xValue, sizeof(FTM_VALUE));
+			}
+		}
+		break;
+
+	default:
+		{
+			return	FTM_RET_ERROR;	
+		}
+	}
+
+	FTDM_DBIF_ACTION_set(pID, &pAction->xInfo);
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTDM_ACTION_showList
 (
 	FTM_VOID
@@ -363,7 +414,7 @@ FTM_RET	FTDM_ACTION_showList
 	FTM_ACTION_PTR	pAction;
 	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# Action Information\n");
-	MESSAGE("\t%16s %8s %16s %8s\n", "ID", "TYPE", "TARGET", "VALUE");
+	MESSAGE("\t%16s %16s %8s %16s %8s\n", "ID", "NAME", "TYPE", "TARGET", "VALUE");
 
 	FTM_ACTION_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -371,6 +422,7 @@ FTM_RET	FTDM_ACTION_showList
 		if (FTM_ACTION_getAt(i, &pAction) == FTM_RET_OK)
 		{
 			MESSAGE("\t%16s ", pAction->pID);
+			MESSAGE("%16s ", pAction->pName);
 			switch(pAction->xType)
 			{
 			case	FTM_ACTION_TYPE_SET:

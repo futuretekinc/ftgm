@@ -304,6 +304,43 @@ FTM_RET FTOM_CLIENT_NODE_get
 	return	xResp.xRet;
 }
 
+FTM_RET FTOM_CLIENT_NODE_set
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pDID,
+	FTM_NODE_FIELD		xFields,
+	FTM_NODE_PTR		pInfo
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_NODE_SET_PARAMS	xReq;
+	FTOM_RESP_NODE_SET_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
+
+	xReq.xCmd	=	FTOM_CMD_NODE_SET;
+	xReq.ulLen	=	sizeof(xReq);
+	xReq.xFields=	xFields;
+	strncpy(xReq.pDID, pDID, FTM_ID_LEN);
+	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_NODE));
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
 FTM_RET FTOM_CLIENT_EP_create
 (
 	FTOM_CLIENT_PTR	pClient,
@@ -546,6 +583,8 @@ FTM_RET FTOM_CLIENT_EP_getAt
 FTM_RET FTOM_CLIENT_EP_set
 (
 	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_FIELD		xFields,
 	FTM_EP_PTR			pInfo
 )
 {
@@ -559,6 +598,8 @@ FTM_RET FTOM_CLIENT_EP_set
 
 	xReq.xCmd	=	FTOM_CMD_EP_SET;
 	xReq.ulLen	=	sizeof(xReq);
+	xReq.xFields=	xFields;
+	strncpy(xReq.pEPID, pEPID, FTM_ID_LEN);
 	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
 
 	xRet = pClient->fRequest(
@@ -1109,8 +1150,9 @@ FTM_RET	FTOM_CLIENT_TRIGGER_getAt
 
 FTM_RET	FTOM_CLIENT_TRIGGER_set
 (
-	FTOM_CLIENT_PTR	pClient,
-	FTM_TRIGGER_PTR	pTrigger
+	FTOM_CLIENT_PTR		pClient,
+	FTM_TRIGGER_FIELD	xFields,
+	FTM_TRIGGER_PTR		pTrigger
 )
 {
 	ASSERT(pClient != NULL);
@@ -1123,6 +1165,8 @@ FTM_RET	FTOM_CLIENT_TRIGGER_set
 
 	xReq.xCmd		=	FTOM_CMD_TRIG_SET;
 	xReq.ulLen		=	sizeof(xReq);
+	xReq.xFields	=	xFields;
+	strcpy(xReq.pTriggerID, pTrigger->pID);
 	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
 
 	xRet = pClient->fRequest(
@@ -1332,8 +1376,9 @@ FTM_RET	FTOM_CLIENT_ACTION_getAt
 
 FTM_RET	FTOM_CLIENT_ACTION_set
 (
-	FTOM_CLIENT_PTR	pClient,
-	FTM_ACTION_PTR	pAction
+	FTOM_CLIENT_PTR		pClient,
+	FTM_ACTION_FIELD	xFields,
+	FTM_ACTION_PTR		pAction
 )
 {
 	ASSERT(pClient != NULL);
@@ -1346,6 +1391,7 @@ FTM_RET	FTOM_CLIENT_ACTION_set
 
 	xReq.xCmd		=	FTOM_CMD_ACTION_SET;
 	xReq.ulLen		=	sizeof(xReq);
+	xReq.xFields	=	xFields;
 	memcpy(&xReq.xAction, pAction, sizeof(FTM_ACTION));
 
 	xRet = pClient->fRequest(
@@ -1556,6 +1602,7 @@ FTM_RET	FTOM_CLIENT_RULE_getAt
 FTM_RET	FTOM_CLIENT_RULE_set
 (
 	FTOM_CLIENT_PTR	pClient,
+	FTM_RULE_FIELD	xFields,
 	FTM_RULE_PTR	pRule
 )
 {
@@ -1569,6 +1616,7 @@ FTM_RET	FTOM_CLIENT_RULE_set
 
 	xReq.xCmd		=	FTOM_CMD_RULE_SET;
 	xReq.ulLen		=	sizeof(xReq);
+	xReq.xFields	=	xFields;
 	memcpy(&xReq.xRule, pRule, sizeof(FTM_RULE));
 
 	xRet = pClient->fRequest(

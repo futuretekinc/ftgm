@@ -379,11 +379,13 @@ FTM_RET FTOM_RULEM_count
 FTM_RET	FTOM_RULEM_add
 (
 	FTOM_RULEM_PTR	pRuleM, 
-	FTM_RULE_PTR 	pInfo
+	FTM_RULE_PTR 	pInfo,
+	FTOM_RULE_PTR _PTR_ ppRule
 )
 {
 	ASSERT(pRuleM != NULL);
 	ASSERT(pInfo != NULL);
+	ASSERT(ppRule != NULL);
 
 	FTM_RET			xRet;
 	FTOM_RULE_PTR	pRule;
@@ -405,6 +407,10 @@ FTM_RET	FTOM_RULEM_add
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pRule);	
+	}
+	else
+	{
+		*ppRule = pRule;	
 	}
 
 	return	xRet;

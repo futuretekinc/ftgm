@@ -76,6 +76,7 @@ FTM_RET FTDMC_NODE_get
 FTM_RET FTDMC_NODE_set
 (
 	FTDMC_SESSION_PTR		pSession,
+	FTM_NODE_FIELD			xFields,
 	FTM_NODE_PTR			pNode
 );
 
@@ -115,6 +116,8 @@ FTM_RET FTDMC_EP_getAt
 FTM_RET	FTDMC_EP_set
 (
 	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pEPID,
+	FTM_NODE_FIELD			xFields,
 	FTM_EP_PTR				pEP
 );
 
@@ -239,6 +242,14 @@ FTM_RET	FTDMC_TRIGGER_getAt
 	FTM_TRIGGER_PTR			pTrigger
 );
 
+FTM_RET	FTDMC_TRIGGER_set
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pTriggerID,
+	FTM_TRIGGER_FIELD		xFields,
+	FTM_TRIGGER_PTR			pTrigger
+);
+
 FTM_RET	FTDMC_ACTION_add
 (
 	FTDMC_SESSION_PTR		pSession,
@@ -271,6 +282,14 @@ FTM_RET	FTDMC_ACTION_getAt
 	FTM_ACTION_PTR				pAction
 );
 
+FTM_RET	FTDMC_ACTION_set
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pActionID,
+	FTM_ACTION_FIELD		xFields,
+	FTM_ACTION_PTR			pInfo
+);
+
 FTM_RET	FTDMC_RULE_add
 (
 	FTDMC_SESSION_PTR		pSession,
@@ -301,6 +320,14 @@ FTM_RET	FTDMC_RULE_getAt
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				ulIndex,
 	FTM_RULE_PTR				pRule
+);
+
+FTM_RET	FTDMC_RULE_set
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pRuleID,
+	FTM_RULE_FIELD			xFields,
+	FTM_RULE_PTR			pInfo
 );
 
 #endif

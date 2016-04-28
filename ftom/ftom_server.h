@@ -117,7 +117,7 @@ FTM_RET	FTOM_SERVER_countNode
 FTM_RET	FTOM_SERVER_getNode
 (
 	FTOM_SERVER_PTR		pServer,
-	FTM_CHAR			pDID[FTM_DID_LEN + 1],
+	FTM_CHAR_PTR		pDID,
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 
@@ -128,4 +128,11 @@ FTM_RET	FTOM_SERVER_getNodeAt
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 
+FTM_RET	FTOM_SERVER_setNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_CHAR_PTR		pDID,
+	FTM_NODE_FIELD		xFields,
+	FTM_NODE_PTR 		pInfo
+);
 #endif

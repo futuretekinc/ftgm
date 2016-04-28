@@ -1910,6 +1910,45 @@ FTM_RET	FTDM_DBIF_TRIGGER_getList
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_DBIF_TRIGGER_set
+(
+	FTM_CHAR_PTR	pTriggerID,
+ 	FTM_TRIGGER_PTR	pInfo
+)
+{
+	ASSERT(pInfo != NULL);
+
+	FTM_INT			nRet;
+	FTM_CHAR		pSQL[1024];
+	sqlite3_stmt 	*pStmt;
+
+	if (_pSQLiteDB == NULL)
+	{
+		TRACE("DB is not initialize.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "UPDATE trigger set VALUE = ? where ID= ?");
+
+	do 
+	{
+		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRet !=SQLITE_OK )
+		{
+			return FTM_RET_ERROR;
+		}
+
+		sqlite3_bind_blob(pStmt, 1, pInfo, sizeof(FTM_TRIGGER), SQLITE_STATIC);
+		sqlite3_bind_text(pStmt, 2, pInfo->pID, strlen(pInfo->pID), 0);
+
+		nRet = sqlite3_step(pStmt);
+		ASSERT( nRet != SQLITE_ROW);
+
+		nRet = sqlite3_finalize(pStmt);
+	}  while (nRet == SQLITE_SCHEMA);
+
+	return FTM_RET_OK;
+}
 /***************************************************************
  *
  ***************************************************************/
@@ -1985,6 +2024,46 @@ FTM_RET	FTDM_DBIF_ACTION_create
 
 		sqlite3_bind_text(pStmt, 1, pInfo->pID, strlen(pInfo->pID), 0);
 		sqlite3_bind_blob(pStmt, 2, pInfo, sizeof(FTM_ACTION), SQLITE_STATIC);
+
+		nRet = sqlite3_step(pStmt);
+		ASSERT( nRet != SQLITE_ROW);
+
+		nRet = sqlite3_finalize(pStmt);
+	}  while (nRet == SQLITE_SCHEMA);
+
+	return FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_ACTION_set
+(
+	FTM_CHAR_PTR	pActionID,
+ 	FTM_ACTION_PTR	pInfo
+)
+{
+	ASSERT(pInfo != NULL);
+
+	FTM_INT			nRet;
+	FTM_CHAR		pSQL[1024];
+	sqlite3_stmt 	*pStmt;
+
+	if (_pSQLiteDB == NULL)
+	{
+		TRACE("DB is not initialize.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "UPDATE action set VALUE = ? where ID= ?");
+
+	do 
+	{
+		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRet !=SQLITE_OK )
+		{
+			return FTM_RET_ERROR;
+		}
+
+		sqlite3_bind_blob(pStmt, 1, pInfo, sizeof(FTM_ACTION), SQLITE_STATIC);
+		sqlite3_bind_text(pStmt, 2, pInfo->pID, strlen(pInfo->pID), 0);
 
 		nRet = sqlite3_step(pStmt);
 		ASSERT( nRet != SQLITE_ROW);
@@ -2506,6 +2585,46 @@ int _FTDM_DBIF_countCB(void *pData, int nArgc, char **pArgv, char **pColName)
 		*pnCount = atoi(pArgv[0]);
 	}
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_RULE_set
+(
+	FTM_CHAR_PTR	pRuleID,
+ 	FTM_RULE_PTR	pInfo
+)
+{
+	ASSERT(pInfo != NULL);
+
+	FTM_INT			nRet;
+	FTM_CHAR		pSQL[1024];
+	sqlite3_stmt 	*pStmt;
+
+	if (_pSQLiteDB == NULL)
+	{
+		TRACE("DB is not initialize.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "UPDATE rule set VALUE = ? where ID= ?");
+
+	do 
+	{
+		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRet !=SQLITE_OK )
+		{
+			return FTM_RET_ERROR;
+		}
+
+		sqlite3_bind_blob(pStmt, 1, pInfo, sizeof(FTM_RULE), SQLITE_STATIC);
+		sqlite3_bind_text(pStmt, 2, pInfo->pID, strlen(pInfo->pID), 0);
+
+		nRet = sqlite3_step(pStmt);
+		ASSERT( nRet != SQLITE_ROW);
+
+		nRet = sqlite3_finalize(pStmt);
+	}  while (nRet == SQLITE_SCHEMA);
+
+	return FTM_RET_OK;
 }
 
 FTM_RET	FTDM_DBIF_count

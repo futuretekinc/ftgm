@@ -65,6 +65,7 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 					{
 						FTM_TRIGGER		xInfo;
 						FTM_ULONG		ulIndex = 0;
+						FTM_CHAR		pTypeString[64];
 
 						FTM_TRIGGER_setDefault(&xInfo);
 
@@ -79,10 +80,17 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 							continue;
 						}
 
-						xRet = FTM_CONFIG_ITEM_getItemINT(&xTriggerItem, "type", (FTM_INT_PTR)&xInfo.xType);
+						xRet = FTM_CONFIG_ITEM_getItemString(&xTriggerItem, "type", pTypeString, sizeof(pTypeString) - 1);
 						if (xRet != FTM_RET_OK)
 						{
 							TRACE("Trigger type get failed.\n");
+							continue;
+						}
+
+						xRet = FTM_TRIGGER_strToType(pTypeString, &xInfo.xType);
+						if (xRet != FTM_RET_OK)
+						{
+							TRACE("Trigger type[%s] is invalid.\n", pTypeString);
 							continue;
 						}
 
@@ -472,6 +480,65 @@ FTM_RET	FTDM_TRIGGER_getByIndex
 	}
 
 	return	FTM_RET_OBJECT_NOT_FOUND;
+}
+
+FTM_RET	FTDM_TRIGGER_set
+(
+	FTM_CHAR_PTR		pID,
+	FTM_TRIGGER_FIELD	xFields,
+	FTM_TRIGGER_PTR		pInfo
+)
+{
+	ASSERT(pID != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTDM_TRIGGER_PTR	pTrigger;
+
+	xRet = FTM_TRIGGER_get(pID, (FTM_TRIGGER_PTR _PTR_)&pTrigger);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_NAME)
+	{
+		strcpy(pTrigger->xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_EPID)
+	{
+		strcpy(pTrigger->xInfo.pEPID, pInfo->pEPID);
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_DETECT_TIME)
+	{
+		pTrigger->xInfo.xParams.xCommon.ulDetectionTime = pInfo->xParams.xCommon.ulDetectionTime;
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_HOLD_TIME)
+	{
+		pTrigger->xInfo.xParams.xCommon.ulHoldingTime = pInfo->xParams.xCommon.ulHoldingTime;
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_VALUE)
+	{
+		memcpy(&pTrigger->xInfo.xParams.xAbove.xValue, &pInfo->xParams.xAbove.xValue, sizeof(FTM_VALUE));
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_LOWER)
+	{
+		memcpy(&pTrigger->xInfo.xParams.xInclude.xLower, &pInfo->xParams.xInclude.xLower, sizeof(FTM_VALUE));
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_UPPER)
+	{
+		memcpy(&pTrigger->xInfo.xParams.xInclude.xUpper, &pInfo->xParams.xInclude.xUpper, sizeof(FTM_VALUE));
+	}
+
+	FTDM_DBIF_TRIGGER_set(pID, &pTrigger->xInfo);
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDM_TRIGGER_showList

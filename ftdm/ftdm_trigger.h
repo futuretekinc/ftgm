@@ -72,4 +72,12 @@ FTM_RET	FTDM_TRIGGER_getByIndex
 	FTM_ULONG				ulIndex, 
 	FTDM_TRIGGER_PTR _PTR_	ppTrigger
 );
+
+FTM_RET	FTDM_TRIGGER_set
+(
+	FTM_CHAR_PTR		pID,
+	FTM_TRIGGER_FIELD	xFields,
+	FTM_TRIGGER_PTR		pInfo
+);
+
 #endif

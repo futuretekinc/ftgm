@@ -4,6 +4,15 @@
 #include "ftm_types.h"
 #include "ftm_ep.h"
 
+typedef	FTM_ULONG	FTM_ACTION_FIELD, _PTR_ FTM_ACTION_FIELD_PTR;
+
+#define	FTM_ACTION_FIELD_ID				(1 << 0)
+#define	FTM_ACTION_FIELD_TYPE			(1 << 1)
+#define	FTM_ACTION_FIELD_NAME			(1 << 2)
+#define	FTM_ACTION_FIELD_EPID			(1 << 3)
+#define	FTM_ACTION_FIELD_VALUE			(1 << 4)
+#define	FTM_ACTION_FIELD_ALL			(0xFFFF)
+
 typedef	enum
 {
 	FTM_ACTION_TYPE_NONE,

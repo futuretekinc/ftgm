@@ -42,6 +42,14 @@ FTM_RET FTOM_NODEM_getNodeAt
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 
+FTM_RET	FTOM_NODEM_setNode
+(
+	FTOM_NODEM_PTR	pNodeM,
+	FTM_CHAR_PTR	pDID, 
+	FTM_NODE_FIELD	xFields, 
+	FTM_NODE_PTR	pInfo
+);
+
 FTM_RET	FTOM_NODEM_attachNode
 (
 	FTOM_NODEM_PTR	pNodeM,

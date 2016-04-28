@@ -60,6 +60,7 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_TRIGGER_COUNT,			FTDMS_TRIGGER_count ),
 	MK_CMD_SET(FTDM_CMD_TRIGGER_GET,			FTDMS_TRIGGER_get ),
 	MK_CMD_SET(FTDM_CMD_TRIGGER_GET_AT,			FTDMS_TRIGGER_getAt ),
+	MK_CMD_SET(FTDM_CMD_TRIGGER_SET,			FTDMS_TRIGGER_set ),
 	MK_CMD_SET(FTDM_CMD_ACTION_ADD,				FTDMS_ACTION_add ),
 	MK_CMD_SET(FTDM_CMD_ACTION_DEL,				FTDMS_ACTION_del ),
 	MK_CMD_SET(FTDM_CMD_ACTION_COUNT,			FTDMS_ACTION_count ),
@@ -1084,7 +1085,7 @@ FTM_RET	FTDMS_TRIGGER_get
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_TRIGGER_get(pReq->pID, &pTrigger);
+	pResp->nRet = FTDM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
@@ -1114,6 +1115,30 @@ FTM_RET	FTDMS_TRIGGER_getAt
 	return	pResp->nRet;
 }
 
+FTM_RET	FTDMS_TRIGGER_set
+(
+	FTDM_SERVER_PTR					pServer,
+ 	FTDM_REQ_TRIGGER_SET_PARAMS_PTR		pReq,
+	FTDM_RESP_TRIGGER_SET_PARAMS_PTR	pResp
+)
+{
+	FTDM_TRIGGER_PTR	pTrigger;
+ 
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTDM_TRIGGER_set(pReq->pTriggerID, &pReq->xTrigger);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		pResp->nRet = FTDM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
+		if (pResp->nRet == FTM_RET_OK)
+		{
+			memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+		}
+	}
+
+	return	pResp->nRet;
+}
+
 FTM_RET	FTDMS_ACTION_add
 (
 	FTDM_SERVER_PTR					pServer,
@@ -1129,7 +1154,6 @@ FTM_RET	FTDMS_ACTION_add
 
 	return	pResp->nRet;
 }
-
 
 FTM_RET	FTDMS_ACTION_del
 (
@@ -1283,3 +1307,4 @@ FTM_RET	FTDMS_RULE_getAt
 
 	return	pResp->nRet;
 }
+

@@ -316,10 +316,12 @@ FTM_RET FTOM_ACTIONM_count
 FTM_RET	FTOM_ACTIONM_add
 (
 	FTOM_ACTIONM_PTR	pActionM, 
-	FTM_ACTION_PTR 		pInfo
+	FTM_ACTION_PTR 		pInfo,
+	FTOM_ACTION_PTR _PTR_ ppAction
 )
 {
 	ASSERT(pInfo != NULL);
+	ASSERT(ppAction != NULL);
 
 	FTM_RET			xRet;
 	FTOM_ACTION_PTR	pAction;
@@ -339,6 +341,10 @@ FTM_RET	FTOM_ACTIONM_add
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pAction);	
+	}
+	else
+	{
+		*ppAction = pAction;	
 	}
 
 	return	xRet;

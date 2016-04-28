@@ -8,7 +8,7 @@ FTM_RET	FTOM_CGI_addEPInfoToObject
 (
 	cJSON _PTR_ 		pObject,
 	FTM_EP_PTR			pEPInfo,
-	FTM_EP_FIELD_TYPE	xFields
+	FTM_EP_FIELD		xFields
 );
 
 static 
@@ -16,13 +16,13 @@ FTM_RET	FTOM_CGI_addEPInfoToArray
 (
 	cJSON _PTR_ 		pObject,
 	FTM_EP_PTR			pEPInfo,
-	FTM_EP_FIELD_TYPE	xFields
+	FTM_EP_FIELD		xFields
 );
 static
 FTM_RET	FTOM_CGI_createEPInfoObject
 (
 	FTM_EP_PTR			pEPInfo,
-	FTM_EP_FIELD_TYPE	xFields,
+	FTM_EP_FIELD		xFields,
 	cJSON _PTR_ _PTR_	ppObject
 );
 
@@ -148,25 +148,12 @@ FTM_RET	FTOM_CGI_setEP
 	FTM_RET			xRet;
 	FTM_EP			xEPInfo;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
-	FTM_EP_TYPE		xEPType;
-	FTM_CHAR		pDID[FTM_DID_LEN+1];
+	FTM_EP_FIELD	xFields = 0;
 	cJSON _PTR_	pRoot;
 
 	pRoot = cJSON_CreateObject();
 
 	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;
-	}
-
-	xRet = FTOM_CGI_getEPType(pReq, &xEPType, FTM_FALSE);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;
-	}
-
-	xRet = FTOM_CGI_getDID(pReq, pDID, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;
@@ -179,19 +166,77 @@ FTM_RET	FTOM_CGI_setEP
 	}
 
 	
-	xRet =	FTOM_CGI_getEPFlags(pReq, &xEPInfo.xFlags, FTM_TRUE);
-	xRet |=	FTOM_CGI_getName(pReq, xEPInfo.pName, FTM_TRUE);
-	xRet |=	FTOM_CGI_getUnit(pReq, xEPInfo.pUnit, FTM_TRUE);
-	xRet |=	FTOM_CGI_getEnable(pReq, &xEPInfo.bEnable, FTM_TRUE);
-	xRet |= FTOM_CGI_getTimeout(pReq, &xEPInfo.ulTimeout, FTM_TRUE); 
-	xRet |= FTOM_CGI_getInterval(pReq, &xEPInfo.ulInterval, FTM_TRUE); 
-	xRet |= FTOM_CGI_getLimit(pReq, &xEPInfo.xLimit, FTM_TRUE); 
-	if (xRet != FTM_RET_OK)
+	xRet = FTOM_CGI_getEPFlags(pReq, &xEPInfo.xFlags, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_EP_FIELD_FLAGS;	
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
 	{
 		goto finish;	
 	}
 
-	xRet = FTOM_CLIENT_EP_set(pClient, &xEPInfo);
+	xRet = FTOM_CGI_getName(pReq, xEPInfo.pName, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_EP_FIELD_NAME;	
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getUnit(pReq, xEPInfo.pUnit, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_EP_FIELD_UNIT;	
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getEnable(pReq, &xEPInfo.bEnable, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_EP_FIELD_ENABLE;	
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getTimeout(pReq, &xEPInfo.ulTimeout, FTM_FALSE); 
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_EP_FIELD_TIMEOUT;	
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getInterval(pReq, &xEPInfo.ulInterval, FTM_FALSE); 
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_EP_FIELD_INTERVAL;	
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getLimit(pReq, &xEPInfo.xLimit, FTM_FALSE); 
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_EP_FIELD_INTERVAL;	
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CLIENT_EP_set(pClient, pEPID, xFields, &xEPInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;	
@@ -243,7 +288,7 @@ FTM_RET	FTOM_CGI_getEPList
 	FTM_INT			i;
 	FTM_CHAR_PTR	pValue = NULL;
 	FTM_ULONG		ulCount = 0;
-	FTM_EP_FIELD_TYPE	xFields = FTM_EP_FIELD_EPID;
+	FTM_EP_FIELD	xFields = FTM_EP_FIELD_EPID;
 	FTM_EPID		*pEPIDList = NULL;
 	cJSON _PTR_	pRoot;
 
@@ -490,7 +535,7 @@ FTM_RET	FTOM_CGI_addEPInfoToObject
 (
 	cJSON _PTR_	pObject,
 	FTM_EP_PTR			pEPInfo,
-	FTM_EP_FIELD_TYPE	xFields
+	FTM_EP_FIELD		xFields
 
 )
 {
@@ -511,9 +556,9 @@ FTM_RET	FTOM_CGI_addEPInfoToObject
 
 FTM_RET	FTOM_CGI_addEPInfoToArray
 (
-	cJSON _PTR_	pObject,
-	FTM_EP_PTR			pEPInfo,
-	FTM_EP_FIELD_TYPE	xFields
+	cJSON _PTR_		pObject,
+	FTM_EP_PTR		pEPInfo,
+	FTM_EP_FIELD	xFields
 
 )
 {
@@ -534,8 +579,8 @@ FTM_RET	FTOM_CGI_addEPInfoToArray
 
 FTM_RET	FTOM_CGI_createEPInfoObject
 (
-	FTM_EP_PTR			pEPInfo,
-	FTM_EP_FIELD_TYPE	xFields,
+	FTM_EP_PTR		pEPInfo,
+	FTM_EP_FIELD	xFields,
 	cJSON _PTR_ _PTR_	ppObject
 )
 {

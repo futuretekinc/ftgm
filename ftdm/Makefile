@@ -29,7 +29,13 @@ LIB_FTDM_SRCS= 	ftdm_config.c\
 				ftdm_rule.c 
 LIB_FTDM_OBJS=$(LIB_FTDM_SRCS:.c=.o)
 
-all: $(LIB_FTDM) $(SERVER)
+LIB_FTDMC=libftdmc
+LIB_FTDMC_INCS=ftdm_client.h
+LIB_FTDMC_SRCS=ftdm_client.c 
+LIB_FTDMC_OBJS=$(LIB_FTDMC_SRCS:.c=.o)
+
+
+all: $(LIB_FTDMC) $(LIB_FTDM) $(SERVER)
 
 $(SERVER): $(SERVER_OBJS) $(LIB_FTDM)
 	$(CC) -o $@ $(SERVER_OBJS) $(SERVER_LDFLAGS)
@@ -38,8 +44,12 @@ $(LIB_FTDM): $(LIB_FTDM_OBJS)
 	$(AR) rcs $(LIB_FTDM).a $(LIB_FTDM_OBJS)
 	$(CC) -shared -o $(LIB_FTDM).so.1.0.1 $(LIB_FTDM_OBJS) 
 
+$(LIB_FTDMC): $(LIB_FTDMC_OBJS)
+	$(AR) rcs $(LIB_FTDMC).a $(LIB_FTDMC_OBJS)
+	$(CC) -shared -o $(LIB_FTDMC).so.1.0.1 $(LIB_FTDMC_OBJS)
+
 .c.o:  *.c *.h
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f $(SERVER) *.a *.o $(LIB_FTDM)
+	rm -f $(SERVER) *.a *.o $(LIB_FTDM) $(LIB_FTDMC)

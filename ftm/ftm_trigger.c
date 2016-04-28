@@ -383,6 +383,7 @@ FTM_RET	FTM_TRIGGER_occurred
 	switch(pTrigger->xType)
 	{
 	case	FTM_TRIGGER_TYPE_NONE:
+	case	FTM_TRIGGER_TYPE_UNKNOWN:
 		{
 		}
 		break;
@@ -455,24 +456,54 @@ FTM_RET	FTM_TRIGGER_occurred
 	return	xRet;
 }
 
-static FTM_CHAR_PTR	pTypeString[] =
+struct	
 {
-	"NONE",
-	"ABOVE",
-	"BELOW",
-	"INCLUDE",
-	"EXCEPT",
-	"CHANGE"
+	FTM_TRIGGER_TYPE	xType;
+	FTM_CHAR_PTR		pName;
+} pTypeString[] =
+{
+	{	.xType = FTM_TRIGGER_TYPE_NONE, 	.pName = "NONE"		},
+	{	.xType = FTM_TRIGGER_TYPE_ABOVE, 	.pName = "ABOVE"	},
+	{	.xType = FTM_TRIGGER_TYPE_BELOW, 	.pName = "BELOW"	},
+	{	.xType = FTM_TRIGGER_TYPE_INCLUDE, 	.pName = "INCLUDE"	},
+	{	.xType = FTM_TRIGGER_TYPE_EXCEPT, 	.pName = "EXCEPT"	},
+	{	.xType = FTM_TRIGGER_TYPE_CHANGE,	.pName = "CHANGE"	},
+	{	.xType = FTM_TRIGGER_TYPE_UNKNOWN, 	.pName = "UNKNOWN"	}
 };
+
+FTM_RET	FTM_TRIGGER_strToType
+(
+	FTM_CHAR_PTR	pString,
+	FTM_TRIGGER_TYPE_PTR pType
+)
+{
+	FTM_INT	i;
+
+	for(i = 0; pTypeString[i].xType != FTM_TRIGGER_TYPE_UNKNOWN ; i++)
+	{
+		if (strcasecmp(pString, pTypeString[i].pName) == 0)
+		{
+			*pType = pTypeString[i].xType;	
+			return	FTM_RET_OK;
+		}
+	}
+
+	return	FTM_RET_INVALID_TYPE;
+}
 
 FTM_CHAR_PTR	FTM_TRIGGER_typeString
 (
 	FTM_TRIGGER_TYPE 	xType
 )
 {
-	if (xType < sizeof(pTypeString) / sizeof(FTM_CHAR_PTR))
+	FTM_INT	i;
+
+	for(i = 0; pTypeString[i].xType != FTM_TRIGGER_TYPE_UNKNOWN ; i++)
 	{
-		return	pTypeString[xType];
+		if (pTypeString[i].xType == xType)
+		{
+			return	pTypeString[i].pName;	
+		}
 	}
 
 	return	"UNKNOWN";

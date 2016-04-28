@@ -1145,6 +1145,134 @@ FTM_RET	FTOM_destroyEP
 	return	FTDMC_EP_remove(&xDMC.xSession, pEPID);
 }
 
+FTM_RET	FTOM_setEPInfo
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_FIELD	xFields,
+	FTM_EP_PTR		pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pEPID != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTOM_EP_PTR	pEP;
+
+	xRet = FTOM_EPM_getEP(pOM->pEPM, pEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+	
+	xRet = FTDMC_EP_set(&xDMC.xSession, pEPID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (xFields & FTM_EP_FIELD_FLAGS)
+	{
+		pEP->xInfo.xFlags = pInfo->xFlags;
+	}
+
+	if (xFields & FTM_EP_FIELD_NAME)
+	{
+		strcpy(pEP->xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_EP_FIELD_UNIT)
+	{
+		strcpy(pEP->xInfo.pUnit, pInfo->pUnit);
+	}
+
+	if (xFields & FTM_EP_FIELD_ENABLE)
+	{
+		pEP->xInfo.bEnable = pInfo->bEnable;
+	}
+
+	if (xFields & FTM_EP_FIELD_TIMEOUT)
+	{
+		pEP->xInfo.ulTimeout = pInfo->ulTimeout;
+	}
+
+	if (xFields & FTM_EP_FIELD_INTERVAL)
+	{
+		pEP->xInfo.ulInterval = pInfo->ulInterval;
+	}
+
+	if (xFields & FTM_EP_FIELD_DID)
+	{
+		strcpy(pEP->xInfo.pDID, pInfo->pDID);
+	}
+
+	if (xFields & FTM_EP_FIELD_LIMIT_TYPE)
+	{
+		if (pEP->xInfo.xLimit.xType != pInfo->xLimit.xType)
+		{
+			memset(&pEP->xInfo.xLimit, 0, sizeof(FTM_EP_LIMIT));
+		}
+		pEP->xInfo.xLimit.xType = pInfo->xLimit.xType;
+	}
+
+	switch(pEP->xInfo.xLimit.xType)
+	{
+	case	FTM_EP_LIMIT_TYPE_COUNT:	
+		{
+			if (xFields & FTM_EP_FIELD_LIMIT_VALUE)
+			{
+				pEP->xInfo.xLimit.xParams.ulCount = pInfo->xLimit.xParams.ulCount;
+			}
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_TIME:	
+		{
+			if (xFields & FTM_EP_FIELD_LIMIT_START)
+			{
+				pEP->xInfo.xLimit.xParams.xTime.ulStart = pInfo->xLimit.xParams.xTime.ulStart;
+			}
+
+			if (xFields & FTM_EP_FIELD_LIMIT_END)
+			{
+				pEP->xInfo.xLimit.xParams.xTime.ulEnd = pInfo->xLimit.xParams.xTime.ulEnd;
+			}
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_HOURS:	
+		{
+			if (xFields & FTM_EP_FIELD_LIMIT_VALUE)
+			{
+				pEP->xInfo.xLimit.xParams.ulHours= pInfo->xLimit.xParams.ulCount;
+			}
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_DAYS:	
+		{
+			if (xFields & FTM_EP_FIELD_LIMIT_VALUE)
+			{
+				pEP->xInfo.xLimit.xParams.ulDays = pInfo->xLimit.xParams.ulCount;
+			}
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_MONTHS:	
+		{
+			if (xFields & FTM_EP_FIELD_LIMIT_VALUE)
+			{
+				pEP->xInfo.xLimit.xParams.ulMonths = pInfo->xLimit.xParams.ulCount;
+			}
+		}
+		break;
+
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_getEPDataList
 (
 	FTOM_PTR 		pOM, 
@@ -1183,6 +1311,7 @@ FTM_RET	FTOM_getEPDataCount
 {
 	return	FTDMC_EP_DATA_count(&xDMC.xSession, pEPID, pulCount);
 }
+
 
 FTM_RET	FTOM_NOTIFY_rule
 (
@@ -1339,6 +1468,21 @@ FTM_RET	FTOM_getNodeAt
 	ASSERT(ppNode != NULL);
 
 	return	FTOM_NODEM_getNodeAt(pOM->pNodeM, ulIndex, ppNode);
+}
+
+FTM_RET	FTOM_setNode
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pDID,
+	FTM_NODE_FIELD	xFields,
+	FTM_NODE_PTR 	pInfo
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pDID != NULL);
+	ASSERT(pInfo != NULL);
+
+	return	FTOM_NODEM_setNode(pOM->pNodeM, pDID, xFields, pInfo);
 }
 
 FTM_RET	FTOM_setEPData
@@ -1538,9 +1682,10 @@ FTM_RET	FTOM_getTriggerInfoAt
 
 FTM_RET	FTOM_setTriggerInfo
 (
-	FTOM_PTR		pOM,
-	FTM_CHAR_PTR	pTriggerID,
-	FTM_TRIGGER_PTR	pInfo
+	FTOM_PTR			pOM,
+	FTM_CHAR_PTR		pTriggerID,
+	FTM_TRIGGER_FIELD	xFields,
+	FTM_TRIGGER_PTR		pInfo
 )
 {
 	ASSERT(pOM != NULL);
@@ -1551,9 +1696,52 @@ FTM_RET	FTOM_setTriggerInfo
 	FTOM_TRIGGER_PTR	pTrigger;
 
 	xRet = FTOM_TRIGGERM_get(pOM->pTriggerM, pTriggerID, &pTrigger);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		memcpy(&pTrigger->xInfo, pInfo, sizeof(FTM_TRIGGER));
+		ERROR("Trigger[%s] set failed.\n", pTriggerID);
+		return	xRet;
+	}
+
+	xRet = FTDMC_TRIGGER_set(&xDMC.xSession, pTriggerID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Trigger[%s] DB update failed.\n", pTriggerID);	
+		return	xRet;
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_NAME)
+	{
+		strcpy(pTrigger->xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_EPID)
+	{
+		strcpy(pTrigger->xInfo.pEPID, pInfo->pEPID);
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_DETECT_TIME)
+	{
+		pTrigger->xInfo.xParams.xCommon.ulDetectionTime = pInfo->xParams.xCommon.ulDetectionTime;
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_HOLD_TIME)
+	{
+		pTrigger->xInfo.xParams.xCommon.ulHoldingTime = pInfo->xParams.xCommon.ulHoldingTime;
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_VALUE)
+	{
+		memcpy(&pTrigger->xInfo.xParams.xAbove.xValue, &pInfo->xParams.xAbove.xValue, sizeof(FTM_VALUE));
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_LOWER)
+	{
+		memcpy(&pTrigger->xInfo.xParams.xInclude.xLower, &pInfo->xParams.xInclude.xLower, sizeof(FTM_VALUE));
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_UPPER)
+	{
+		memcpy(&pTrigger->xInfo.xParams.xInclude.xUpper, &pInfo->xParams.xInclude.xUpper, sizeof(FTM_VALUE));
 	}
 
 	return	xRet;
@@ -1663,21 +1851,58 @@ FTM_RET	FTOM_getActionInfoAt
 
 FTM_RET	FTOM_setActionInfo
 (
-	FTOM_PTR		pOM,
-	FTM_CHAR_PTR	pActionID,
-	FTM_ACTION_PTR	pInfo
+	FTOM_PTR			pOM,
+	FTM_CHAR_PTR		pActionID,
+	FTM_ACTION_FIELD	xFields,
+	FTM_ACTION_PTR		pInfo
 )
 {
 	ASSERT(pOM != NULL);
+	ASSERT(pActionID != NULL);
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
 	FTOM_ACTION_PTR	pAction;
 
 	xRet = FTOM_ACTIONM_get(pOM->pActionM, pActionID, &pAction);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		memcpy(&pAction->xInfo, pInfo, sizeof(FTM_ACTION));	
+		ERROR("Action[%s] get failed[%08x].\n", pActionID, xRet);
+		return	xRet;
+	}
+
+	xRet = FTDMC_ACTION_set(&xDMC.xSession, pActionID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Action[%s] DB update failed.\n", pActionID);	
+		return	xRet;
+	}
+
+	switch(pAction->xInfo.xType)
+	{
+	case	FTM_ACTION_TYPE_SET:
+		{
+			if (xFields & FTM_ACTION_FIELD_NAME)
+			{
+				strcpy(pAction->xInfo.pName, pInfo->pName);
+			}
+
+			if (xFields & FTM_ACTION_FIELD_EPID)
+			{
+				strcpy(pAction->xInfo.xParams.xSet.pEPID, pInfo->xParams.xSet.pEPID);
+			}
+			
+			if (xFields & FTM_ACTION_FIELD_VALUE)
+			{
+				memcpy(&pAction->xInfo.xParams.xSet.xValue, &pInfo->xParams.xSet.xValue, sizeof(FTM_VALUE));
+			}
+		}
+		break;
+
+	default:
+		{
+			return	FTM_RET_ERROR;	
+		}
 	}
 
 	return	xRet;
@@ -1788,19 +2013,51 @@ FTM_RET	FTOM_setRuleInfo
 (
 	FTOM_PTR		pOM,
 	FTM_CHAR_PTR	pRuleID,
+	FTM_RULE_FIELD	xFields,
 	FTM_RULE_PTR	pInfo
 )
 {
 	ASSERT(pOM != NULL);
+	ASSERT(pRuleID != NULL);
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
 	FTOM_RULE_PTR	pRule;
 
 	xRet = FTOM_RULEM_get(pOM->pRuleM, pRuleID, &pRule);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		memcpy(&pRule->xInfo, pInfo, sizeof(FTM_RULE));
+		ERROR("Rule[%s] not found!\n", pRuleID);
+		return	xRet;
+	}
+
+	xRet = FTDMC_RULE_set(&xDMC.xSession, pRuleID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Rule[%s] DB update failed.\n", pRuleID);	
+		return	xRet;
+	}
+
+	if (xFields & FTM_RULE_FIELD_NAME)
+	{
+		strcpy(pRule->xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_RULE_FIELD_STATE)
+	{
+		pRule->xInfo.xState = pInfo->xState;
+	}
+	
+	if (xFields & FTM_RULE_FIELD_TRIGGERS)
+	{
+		pRule->xInfo.xParams.ulTriggers = pInfo->xParams.ulTriggers;
+		memcpy(pRule->xInfo.xParams.pTriggers, pInfo->xParams.pTriggers, sizeof(pInfo->xParams.pTriggers));
+	}
+
+	if (xFields & FTM_RULE_FIELD_ACTIONS)
+	{
+		pRule->xInfo.xParams.ulActions = pInfo->xParams.ulActions;
+		memcpy(pRule->xInfo.xParams.pActions, pInfo->xParams.pActions, sizeof(pInfo->xParams.pActions));
 	}
 
 	return	xRet;

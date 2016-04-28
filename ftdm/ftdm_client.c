@@ -348,6 +348,7 @@ FTM_RET FTDMC_NODE_get
 FTM_RET FTDMC_NODE_set
 (
  	FTDMC_SESSION_PTR		pSession,
+	FTM_NODE_FIELD	xFields,
 	FTM_NODE_PTR	pInfo
 )
 {
@@ -364,6 +365,7 @@ FTM_RET FTDMC_NODE_set
 
 	xReq.xCmd 	=	FTDM_CMD_NODE_SET;
 	xReq.nLen	=	sizeof(xReq);
+	xReq.xFields=	xFields;
 	memcpy(&xReq.xNodeInfo, pInfo, sizeof(FTM_NODE));
 	
 	nRet = FTDMC_request(
@@ -603,6 +605,7 @@ FTM_RET	FTDMC_EP_getAt
 FTM_RET	FTDMC_EP_set
 (
 	FTDMC_SESSION_PTR	pSession,
+	FTM_EP_FIELD		xFields,
 	FTM_EP_PTR			pInfo
 )
 {
@@ -622,6 +625,7 @@ FTM_RET	FTDMC_EP_set
 
 	xReq.xCmd	=	FTDM_CMD_EP_SET;
 	xReq.nLen	=	sizeof(xReq);
+	xReq.xFields=	xFields;
 	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
 
 	nRet = FTDMC_request(
@@ -1268,7 +1272,7 @@ FTM_RET	FTDMC_TRIGGER_get
 
 	xReq.xCmd	=	FTDM_CMD_TRIGGER_GET;
 	xReq.nLen	=	sizeof(xReq);
-	strncpy(xReq.pID, pTriggerID, FTM_ID_LEN);
+	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
 
 	nRet = FTDMC_request(
 				pSession, 
@@ -1327,6 +1331,40 @@ FTM_RET	FTDMC_TRIGGER_getAt
 	return	xResp.nRet;
 }
 
+FTM_RET	FTDMC_TRIGGER_set
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pTriggerID,
+	FTM_TRIGGER_FIELD		xFields,
+	FTM_TRIGGER_PTR			pTrigger
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pTrigger != NULL);
+
+	FTM_RET							nRet;
+ 	FTDM_REQ_TRIGGER_SET_PARAMS		xReq;
+	FTDM_RESP_TRIGGER_SET_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_TRIGGER_GET;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.xFields=	xFields;
+	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
+	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
 /////////////////////////////////////////////////////////////////////
 //
 //
@@ -1497,6 +1535,41 @@ FTM_RET	FTDMC_ACTION_getAt
 	if (xResp.nRet == FTM_RET_OK)
 	{
 		memcpy(pAct, &xResp.xAction, sizeof(FTM_ACTION));
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_ACTION_set
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pActionID,
+	FTM_ACTION_FIELD		xFields,
+	FTM_ACTION_PTR			pInfo
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET						nRet;
+ 	FTDM_REQ_ACTION_SET_PARAMS	xReq;
+	FTDM_RESP_ACTION_SET_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_ACTION_GET;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.xFields= 	xFields;
+	strncpy(xReq.pActionID, pActionID, FTM_ID_LEN);
+	memcpy(&xReq.xAction, pInfo, sizeof(FTM_ACTION));
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
 	}
 
 	return	xResp.nRet;
@@ -1677,6 +1750,41 @@ FTM_RET	FTDMC_RULE_getAt
 	return	xResp.nRet;
 }
 
+FTM_RET	FTDMC_RULE_set
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pRuleID,
+	FTM_RULE_FIELD			xFields,
+	FTM_RULE_PTR			pInfo
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pRuleID != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET						nRet;
+ 	FTDM_REQ_RULE_SET_PARAMS	xReq;
+	FTDM_RESP_RULE_SET_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_RULE_GET;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.xFields=	xFields;
+	strncpy(xReq.pRuleID, pRuleID, FTM_ID_LEN);
+	memcpy(&xReq.xRule, pInfo, sizeof(FTM_RULE));
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
 /*****************************************************************
  * Internal Functions
  *****************************************************************/

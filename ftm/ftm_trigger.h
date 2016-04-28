@@ -8,6 +8,19 @@
 #include "ftm_list.h"
 #include "ftm_value.h"
 
+typedef	FTM_ULONG	FTM_TRIGGER_FIELD, _PTR_ FTM_TRIGGER_FIELD_PTR;
+
+#define	FTM_TRIGGER_FIELD_ID			(1 << 0)
+#define	FTM_TRIGGER_FIELD_TYPE			(1 << 1)
+#define	FTM_TRIGGER_FIELD_NAME			(1 << 2)
+#define	FTM_TRIGGER_FIELD_EPID			(1 << 3)
+#define	FTM_TRIGGER_FIELD_DETECT_TIME	(1 << 4)
+#define	FTM_TRIGGER_FIELD_HOLD_TIME		(1 << 5)
+#define	FTM_TRIGGER_FIELD_VALUE			(1 << 6)
+#define	FTM_TRIGGER_FIELD_LOWER			(1 << 7)
+#define	FTM_TRIGGER_FIELD_UPPER			(1 << 8)
+#define	FTM_TRIGGER_FIELD_ALL			(0xFFFF)
+
 typedef	enum
 {
 	FTM_TRIGGER_TYPE_NONE	= 0,
@@ -16,6 +29,7 @@ typedef	enum
 	FTM_TRIGGER_TYPE_INCLUDE,
 	FTM_TRIGGER_TYPE_EXCEPT,
 	FTM_TRIGGER_TYPE_CHANGE,
+	FTM_TRIGGER_TYPE_UNKNOWN
 }	FTM_TRIGGER_TYPE, _PTR_ FTM_TRIGGER_TYPE_PTR;
 
 typedef	struct
@@ -145,6 +159,12 @@ FTM_RET	FTM_TRIGGER_occurred
 	FTM_TRIGGER_PTR pTrigger, 
 	FTM_VALUE_PTR	pCurrData, 
 	FTM_BOOL_PTR 	pResult
+);
+
+FTM_RET	FTM_TRIGGER_strToType
+(
+	FTM_CHAR_PTR	pString,
+	FTM_TRIGGER_TYPE_PTR pType
 );
 
 FTM_CHAR_PTR	FTM_TRIGGER_typeString

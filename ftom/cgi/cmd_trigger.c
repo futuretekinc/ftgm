@@ -179,7 +179,8 @@ FTM_RET	FTOM_CGI_setTrigger
 
 	FTM_RET			xRet;
 	FTM_CHAR		pTriggerID[FTM_ID_LEN+1];
-	FTM_TRIGGER		xTriggerInfo;
+	FTM_TRIGGER		xInfo;
+	FTM_TRIGGER_FIELD	xFields = 0;
 	cJSON _PTR_	pRoot = NULL;
 
 	pRoot = cJSON_CreateObject();
@@ -190,29 +191,87 @@ FTM_RET	FTOM_CGI_setTrigger
 		goto finish;
 	}
 	
-	xRet = FTOM_CLIENT_TRIGGER_get(pClient, pTriggerID, &xTriggerInfo);
+	xRet = FTOM_CLIENT_TRIGGER_get(pClient, pTriggerID, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;
 	}
 
-	xRet = FTOM_CGI_getName(pReq, xTriggerInfo.pName, FTM_TRUE);
-	xRet |= FTOM_CGI_getDetectTime(pReq, &xTriggerInfo.xParams.xCommon.ulDetectionTime, FTM_TRUE);
-	xRet |= FTOM_CGI_getHoldTime(pReq, &xTriggerInfo.xParams.xCommon.ulHoldingTime, FTM_TRUE);
-	switch(xTriggerInfo.xType)
+	xRet = FTOM_CGI_getName(pReq, xInfo.pName, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_TRIGGER_FIELD_NAME;
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;
+	}
+
+	xRet |= FTOM_CGI_getDetectTime(pReq, &xInfo.xParams.xCommon.ulDetectionTime, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_TRIGGER_FIELD_DETECT_TIME;
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;
+	}
+
+	xRet |= FTOM_CGI_getHoldTime(pReq, &xInfo.xParams.xCommon.ulHoldingTime, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_TRIGGER_FIELD_HOLD_TIME;
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;
+	}
+
+	switch(xInfo.xType)
 	{
 	case FTM_TRIGGER_TYPE_ABOVE:
 	case FTM_TRIGGER_TYPE_BELOW:
 		{
-			xRet |= FTOM_CGI_getValue(pReq, xTriggerInfo.xParams.xAbove.xValue.xType, &xTriggerInfo.xParams.xAbove.xValue, FTM_TRUE);
+			xRet |= FTOM_CGI_getValue(pReq, 
+						xInfo.xParams.xAbove.xValue.xType, 
+						&xInfo.xParams.xAbove.xValue, FTM_FALSE);
+			if (xRet == FTM_RET_OK)
+			{
+				xFields |= FTM_TRIGGER_FIELD_VALUE;
+			}
+			else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+			{
+				goto finish;
+			}
 		}
 		break;
 	
 	case FTM_TRIGGER_TYPE_INCLUDE:
 	case FTM_TRIGGER_TYPE_EXCEPT:
 		{
-			xRet |= FTOM_CGI_getLowerValue(pReq, xTriggerInfo.xParams.xInclude.xLower.xType, &xTriggerInfo.xParams.xInclude.xLower, FTM_TRUE);
-			xRet |= FTOM_CGI_getUpperValue(pReq, xTriggerInfo.xParams.xInclude.xUpper.xType, &xTriggerInfo.xParams.xInclude.xUpper, FTM_TRUE);
+			xRet |= FTOM_CGI_getLowerValue(pReq, 
+						xInfo.xParams.xInclude.xLower.xType, 
+						&xInfo.xParams.xInclude.xLower, FTM_FALSE);
+			if (xRet == FTM_RET_OK)
+			{
+				xFields |= FTM_TRIGGER_FIELD_LOWER;
+			}
+			else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+			{
+				goto finish;
+			}
+		
+			xRet |= FTOM_CGI_getUpperValue(pReq, 
+						xInfo.xParams.xInclude.xUpper.xType, 
+						&xInfo.xParams.xInclude.xUpper, FTM_FALSE);
+			if (xRet == FTM_RET_OK)
+			{
+				xFields |= FTM_TRIGGER_FIELD_UPPER;
+			}
+			else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+			{
+				goto finish;
+			}
 		}
 		break;
 
@@ -221,16 +280,13 @@ FTM_RET	FTOM_CGI_setTrigger
 		}
 	}
 
-	if (xRet == FTM_RET_OK)
+	xRet = FTOM_CLIENT_TRIGGER_set(pClient, pTriggerID, xFields, &xInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_CLIENT_TRIGGER_set(pClient, &xTriggerInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			goto finish;
-		}
+		goto finish;
 	}
 
-	xRet = FTOM_CGI_addTriggerToObject(pRoot, "trigger", &xTriggerInfo);
+	xRet = FTOM_CGI_addTriggerToObject(pRoot, "trigger", &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;	
@@ -342,6 +398,7 @@ FTM_RET FTOM_CGI_createTriggerObject
 
 	cJSON_AddStringToObject(pObject, "id", pTriggerInfo->pID);	
 	cJSON_AddStringToObject(pObject, "type", FTM_TRIGGER_typeString(pTriggerInfo->xType));	
+	cJSON_AddStringToObject(pObject, "name", pTriggerInfo->pName);	
 	cJSON_AddStringToObject(pObject, "epid", pTriggerInfo->pEPID);	
 	cJSON_AddItemToObject(pObject, "contidion", pCondition = cJSON_CreateObject());
 	cJSON_AddNumberToObject(pCondition, "detectTime", pTriggerInfo->xParams.xCommon.ulDetectionTime);

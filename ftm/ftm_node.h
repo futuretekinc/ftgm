@@ -13,6 +13,24 @@ typedef	unsigned long	FTM_NODE_FLAG, _PTR_ FTM_NODE_FLAG_PTR;
 #define	FTM_NODE_FLAG_STATIC	(1 << 0)
 #define	FTM_NODE_FLAG_LAST		(1 << 0)
 
+typedef	FTM_ULONG	FTM_NODE_FIELD, _PTR_ FTM_NODE_FIELD_PTR;
+#define	FTM_NODE_FIELD_DID				(1 << 0)	
+#define	FTM_NODE_FIELD_TYPE				(1 << 1)	
+#define	FTM_NODE_FIELD_FLAGS			(1 << 2)	
+#define	FTM_NODE_FIELD_LOCATION			(1 << 3)	
+#define	FTM_NODE_FIELD_INTERVAL			(1 << 4)	
+#define	FTM_NODE_FIELD_TIMEOUT			(1 << 5)	
+#define	FTM_NODE_FIELD_SNMP_VERSION		(1 << 6)	
+#define	FTM_NODE_FIELD_SNMP_URL			(1 << 7)	
+#define	FTM_NODE_FIELD_SNMP_COMMUNITY	(1 << 8)	
+#define	FTM_NODE_FIELD_SNMP_MIB			(1 << 9)	
+#define	FTM_NODE_FIELD_SNMP_MAX_RETRY	(1 << 10)	
+#define	FTM_NODE_FIELD_MQTT_VERSION		(1 << 11)	
+#define	FTM_NODE_FIELD_MQTT_URL			(1 << 12)	
+#define	FTM_NODE_FIELD_MQTT_TOPIC		(1 << 13)	
+#define	FTM_NODE_FIELD_LORA_VERION		(1 << 14)	
+#define	FTM_NODE_FIELD_LORA_DEVICE		(1 << 15)	
+
 typedef	struct
 {
 	FTM_ULONG	ulVersion;

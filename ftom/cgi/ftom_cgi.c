@@ -287,7 +287,7 @@ FTM_RET	FTOM_CGI_getEPID
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else if((strlen(pValue) > FTM_EPID_LEN))
@@ -319,7 +319,7 @@ FTM_RET FTOM_CGI_getEPType
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else if (strcasecmp(pValue, "temperature") == 0)
@@ -387,7 +387,7 @@ FTM_RET	FTOM_CGI_getEPFlags
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 
@@ -411,7 +411,7 @@ FTM_RET	FTOM_CGI_getName
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else if((strlen(pValue) > FTM_NAME_LEN))
@@ -443,7 +443,7 @@ FTM_RET	FTOM_CGI_getUnit
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else if(strlen(pValue) > FTM_UNIT_LEN)
@@ -475,7 +475,7 @@ FTM_RET	FTOM_CGI_getEnable
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else if(strcasecmp(pValue, "true") == 0)
@@ -511,7 +511,7 @@ FTM_RET	FTOM_CGI_getTimeout
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else	
@@ -539,7 +539,7 @@ FTM_RET	FTOM_CGI_getInterval
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else
@@ -567,7 +567,7 @@ FTM_RET	FTOM_CGI_getDID
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else if((strlen(pValue) > FTM_DID_LEN))
@@ -626,7 +626,7 @@ FTM_RET	FTOM_CGI_getLimit
 				}
 				else if (!bAllowEmpty)
 				{
-					return	FTM_RET_INVALID_ARGUMENTS;	
+					return	FTM_RET_OBJECT_NOT_FOUND;	
 				}
 			}
 		}
@@ -652,7 +652,7 @@ FTM_RET	FTOM_CGI_getCount
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else
@@ -680,7 +680,7 @@ FTM_RET FTOM_CGI_getTriggerID
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else if (strlen(pValue) > FTM_ID_LEN)
@@ -715,7 +715,7 @@ FTM_RET FTOM_CGI_getTriggerType
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else
@@ -773,7 +773,7 @@ FTM_RET FTOM_CGI_getDetectTime
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else
@@ -801,7 +801,7 @@ FTM_RET FTOM_CGI_getHoldTime
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else
@@ -828,7 +828,7 @@ FTM_RET FTOM_CGI_getValue
 	{
 		if (!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else
@@ -855,7 +855,7 @@ FTM_RET FTOM_CGI_getLowerValue
 	{
 		if (!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else
@@ -881,7 +881,7 @@ FTM_RET FTOM_CGI_getUpperValue
 	{
 		if (!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else
@@ -909,7 +909,7 @@ FTM_RET	FTOM_CGI_getActionID
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else if (strlen(pValue) > FTM_ID_LEN)
@@ -944,7 +944,7 @@ FTM_RET	FTOM_CGI_getActionType
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else
@@ -998,7 +998,7 @@ FTM_RET	FTOM_CGI_getRuleID
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else if (strlen(pValue) > FTM_ID_LEN)
@@ -1030,7 +1030,7 @@ FTM_RET	FTOM_CGI_getRuleState
 	{
 		if(!bAllowEmpty)
 		{
-			return	FTM_RET_INVALID_ARGUMENTS;	
+			return	FTM_RET_OBJECT_NOT_FOUND;	
 		}
 	}
 	else

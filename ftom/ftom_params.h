@@ -103,6 +103,24 @@ typedef	struct
 	FTM_NODE		xNodeInfo;
 }	FTOM_RESP_NODE_GET_AT_PARAMS, _PTR_ FTOM_RESP_NODE_GET_AT_PARAMS_PTR;
 
+typedef struct	
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pDID[FTM_DID_LEN+1];
+	FTM_NODE_FIELD		xFields;
+	FTM_NODE			xInfo;
+}	FTOM_REQ_NODE_SET_PARAMS, _PTR_ FTOM_REQ_NODE_SET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTOM_RESP_NODE_SET_PARAMS, _PTR_ FTOM_RESP_NODE_SET_PARAMS_PTR;
+
 typedef	struct
 {
 	FTM_ULONG			ulReqID;
@@ -210,6 +228,8 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
+	FTM_CHAR			pEPID[FTM_ID_LEN+1];
+	FTM_EP_FIELD		xFields;
 	FTM_EP				xInfo;
 }	FTOM_REQ_EP_SET_PARAMS, _PTR_ 	FTOM_REQ_EP_SET_PARAMS_PTR;
 
@@ -460,6 +480,7 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_CHAR			pTriggerID[FTM_ID_LEN+1];
+	FTM_TRIGGER_FIELD	xFields;
 	FTM_TRIGGER			xTrigger;
 }	FTOM_REQ_TRIGGER_SET_PARAMS, _PTR_ FTOM_REQ_TRIGGER_SET_PARAMS_PTR;
 
@@ -560,6 +581,7 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_CHAR			pActionID[FTM_ID_LEN+1];
+	FTM_ACTION_FIELD	xFields;
 	FTM_ACTION			xAction;
 }	FTOM_REQ_ACTION_SET_PARAMS, _PTR_ FTOM_REQ_ACTION_SET_PARAMS_PTR;
 
@@ -660,6 +682,7 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
+	FTM_RULE_FIELD		xFields;
 	FTM_RULE			xRule;
 }	FTOM_REQ_RULE_SET_PARAMS, _PTR_ FTOM_REQ_RULE_SET_PARAMS_PTR;
 

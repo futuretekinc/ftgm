@@ -431,20 +431,6 @@ FTM_RET	FTOM_EP_pushData
 	return	xRet;
 }
 
-FTM_RET	FTOM_EP_setInfo
-(
-	FTOM_EP_PTR		pEP,
-	FTM_EP_PTR		pInfo
-)
-{
-	ASSERT(pEP != NULL);
-	ASSERT(pInfo != NULL);
-
-	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
-
-	return	FTM_RET_OK;
-}
-
 FTM_RET	FTOM_EP_pullData
 (
 	FTOM_EP_PTR 	pEP, 

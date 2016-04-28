@@ -102,6 +102,15 @@ static FTM_RET	FTOM_SERVER_NODE_getAt
 	FTM_ULONG				ulRespLen
 );
 
+static FTM_RET	FTOM_SERVER_NODE_set
+(
+	FTOM_SERVER_PTR					pServer,
+ 	FTOM_REQ_NODE_SET_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_SET_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+);
+
 static FTM_RET	FTOM_SERVER_EP_create
 (
 	FTOM_SERVER_PTR					pServer,
@@ -407,6 +416,8 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_NODE_COUNT,				FTOM_SERVER_NODE_count),
 	MK_CMD_SET(FTOM_CMD_NODE_GET,				FTOM_SERVER_NODE_get),
 	MK_CMD_SET(FTOM_CMD_NODE_GET_AT,			FTOM_SERVER_NODE_getAt),
+	MK_CMD_SET(FTOM_CMD_NODE_SET,				FTOM_SERVER_NODE_set),
+
 	MK_CMD_SET(FTOM_CMD_EP_CREATE,				FTOM_SERVER_EP_create),
 	MK_CMD_SET(FTOM_CMD_EP_DESTROY,				FTOM_SERVER_EP_destroy),
 	MK_CMD_SET(FTOM_CMD_EP_COUNT,				FTOM_SERVER_EP_count),
@@ -414,6 +425,7 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_GET,					FTOM_SERVER_EP_get),
 	MK_CMD_SET(FTOM_CMD_EP_GET_AT,				FTOM_SERVER_EP_getAt),
 	MK_CMD_SET(FTOM_CMD_EP_SET,					FTOM_SERVER_EP_set),
+
 	MK_CMD_SET(FTOM_CMD_EP_REG_NOTIFY_RECEIVER, FTOM_SERVER_EP_registrationNotifyReceiver),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_INFO,			FTOM_SERVER_EP_DATA_info),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_GET_LAST,		FTOM_SERVER_EP_DATA_getLast),
@@ -983,11 +995,12 @@ FTM_RET	FTOM_SERVER_countNode
 FTM_RET	FTOM_SERVER_getNode
 (
 	FTOM_SERVER_PTR		pServer,
-	FTM_CHAR			pDID[FTM_DID_LEN + 1],
+	FTM_CHAR_PTR		pDID,
 	FTOM_NODE_PTR _PTR_ ppNode
 )
 {
 	ASSERT(pServer != NULL);
+	ASSERT(pDID != NULL);
 	ASSERT(ppNode != NULL);
 	
 	return	FTOM_getNode(pServer->pOM, pDID, ppNode);
@@ -1004,6 +1017,21 @@ FTM_RET	FTOM_SERVER_getNodeAt
 	ASSERT(ppNode != NULL);
 	
 	return	FTOM_getNodeAt(pServer->pOM, ulIndex, ppNode);
+}
+
+FTM_RET	FTOM_SERVER_setNode
+(
+	FTOM_SERVER_PTR		pServer,
+	FTM_CHAR_PTR		pDID,
+	FTM_NODE_FIELD		xFields,
+	FTM_NODE_PTR 		pInfo
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pDID != NULL);
+	ASSERT(pInfo != NULL);
+	
+	return	FTOM_setNode(pServer->pOM, pDID, xFields, pInfo);
 }
 
 /****************************************************************************************************
@@ -1026,7 +1054,7 @@ FTM_RET	FTOM_SERVER_NODE_create
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_createNode(pServer, &pReq->xNodeInfo, &pNode);
+	pResp->xRet = FTOM_createNode(pServer->pOM, &pReq->xNodeInfo, &pNode);
 
 	return	pResp->xRet;
 }
@@ -1049,7 +1077,7 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_getNode(pServer, pReq->pDID, &pNode);
+	pResp->xRet = FTOM_getNode(pServer->pOM, pReq->pDID, &pNode);
 	
 	if (pResp->xRet == FTM_RET_OK)
 	{
@@ -1074,7 +1102,7 @@ FTM_RET	FTOM_SERVER_NODE_count
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_countNode(pServer, &pResp->ulCount);
+	pResp->xRet = FTOM_countNode(pServer->pOM, &pResp->ulCount);
 
 	return	pResp->xRet;
 }
@@ -1096,7 +1124,7 @@ FTM_RET	FTOM_SERVER_NODE_get
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_getNode(pServer, pReq->pDID, &pNode);
+	pResp->xRet = FTOM_getNode(pServer->pOM, pReq->pDID, &pNode);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
@@ -1122,11 +1150,32 @@ FTM_RET	FTOM_SERVER_NODE_getAt
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_SERVER_getNodeAt(pServer, pReq->ulIndex, &pNode);
+	pResp->xRet = FTOM_getNodeAt(pServer->pOM, pReq->ulIndex, &pNode);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
 	}
+
+	return	pResp->xRet;
+}
+
+FTM_RET	FTOM_SERVER_NODE_set
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_NODE_SET_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_NODE_SET_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	pResp->xRet = FTOM_setNode(pServer->pOM, pReq->pDID, pReq->xFields, &pReq->xInfo);
 
 	return	pResp->xRet;
 }
@@ -1307,17 +1356,13 @@ FTM_RET	FTOM_SERVER_EP_set
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	FTM_RET			xRet;
-	FTOM_EP_PTR		pEP;
 
-	xRet = FTOM_EPM_getEP(pServer->pOM->pEPM, pReq->xInfo.pEPID, &pEP);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_EP_setInfo(pEP, &pReq->xInfo);
-	}
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = xRet;
+	pResp->xRet = FTOM_setEPInfo(pServer->pOM, 
+					pReq->pEPID, 
+					pReq->xFields, 
+					&pReq->xInfo);
 
 	return	pResp->xRet;
 }
@@ -1598,7 +1643,10 @@ FTM_RET	FTOM_SERVER_TRIGGER_set
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_setTriggerInfo(pServer->pOM, pReq->pTriggerID, &pReq->xTrigger);
+	pResp->xRet = FTOM_setTriggerInfo(pServer->pOM, 
+					pReq->pTriggerID, 
+					pReq->xFields, 
+					&pReq->xTrigger);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 

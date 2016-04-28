@@ -92,6 +92,7 @@ typedef struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
+	FTM_NODE_FIELD		xFields;
 	FTM_NODE			xNodeInfo;
 }	FTDM_REQ_NODE_SET_PARAMS, _PTR_ 	FTDM_REQ_NODE_SET_PARAMS_PTR;
 
@@ -258,6 +259,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
+	FTM_EP_FIELD		xFields;
 	FTM_EP				xInfo;
 }	FTDM_REQ_EP_SET_PARAMS, _PTR_ 	FTDM_REQ_EP_SET_PARAMS_PTR;
 
@@ -522,7 +524,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_CHAR_PTR		pID;
+	FTM_CHAR			pTriggerID[FTM_ID_LEN+1];
 }	FTDM_REQ_TRIGGER_GET_PARAMS, _PTR_ 	FTDM_REQ_TRIGGER_GET_PARAMS_PTR;
 
 typedef	struct
@@ -547,6 +549,23 @@ typedef	struct
 	FTM_RET				nRet;
 	FTM_TRIGGER			xTrigger;
 }	FTDM_RESP_TRIGGER_GET_AT_PARAMS, _PTR_	FTDM_RESP_TRIGGER_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_CHAR			pTriggerID[FTM_ID_LEN+1];
+	FTM_TRIGGER_FIELD	xFields;
+	FTM_TRIGGER			xTrigger;
+}	FTDM_REQ_TRIGGER_SET_PARAMS, _PTR_ 	FTDM_REQ_TRIGGER_SET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_TRIGGER			xTrigger;
+}	FTDM_RESP_TRIGGER_SET_PARAMS, _PTR_	FTDM_RESP_TRIGGER_SET_PARAMS_PTR;
 
 typedef	struct
 {
@@ -624,6 +643,23 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
+	FTM_CHAR			pActionID[FTM_ID_LEN+1];
+	FTM_ACTION_FIELD	xFields;
+	FTM_ACTION			xAction;
+}	FTDM_REQ_ACTION_SET_PARAMS, _PTR_ 	FTDM_REQ_ACTION_SET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ACTION			xAction;
+}	FTDM_RESP_ACTION_SET_PARAMS, _PTR_	FTDM_RESP_ACTION_SET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
 	FTM_RULE     		xRule;
 }	FTDM_REQ_RULE_ADD_PARAMS, _PTR_ FTDM_REQ_RULE_ADD_PARAMS_PTR;
 
@@ -691,5 +727,22 @@ typedef	struct
 	FTM_RET				nRet;
 	FTM_RULE			xRule;
 }	FTDM_RESP_RULE_GET_AT_PARAMS, _PTR_	FTDM_RESP_RULE_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
+	FTM_RULE_FIELD		xFields;
+	FTM_RULE			xRule;
+}	FTDM_REQ_RULE_SET_PARAMS, _PTR_ 	FTDM_REQ_RULE_SET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_RULE			xRule;
+}	FTDM_RESP_RULE_SET_PARAMS, _PTR_	FTDM_RESP_RULE_SET_PARAMS_PTR;
 
 #endif

@@ -187,7 +187,7 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 	MESSAGE("\n# Trigger Information\n");
 	FTOM_TRIGGERM_count(pOM->pTriggerM, &ulCount);
-	MESSAGE("\t%16s %16s %16s %8s %8s %s\n", "ID", "EPID", "TYPE", "DETECT", "HOLD", "CONDITION");
+	MESSAGE("\t%16s %16s %16s %8s %8s %32s %16s\n", "ID", "NAME", "TYPE", "DETECT", "HOLD", "CONDITION", "EPID");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_TRIGGER_PTR	pTrigger;
@@ -199,13 +199,14 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 			FTM_TRIGGER_conditionToString(&pTrigger->xInfo, pCondition, sizeof(pCondition));
 
-			MESSAGE("\t%16s %16s %16s %8.3f %8.3f %s\n", 
+			MESSAGE("\t%16s %16s %16s %8.3f %8.3f %32s %16s\n", 
 				pTrigger->xInfo.pID, 
-				pTrigger->xInfo.pEPID, 
+				pTrigger->xInfo.pName, 
 				FTM_TRIGGER_typeString(pTrigger->xInfo.xType),
             	pTrigger->xInfo.xParams.xCommon.ulDetectionTime / 1000000.0,
 				pTrigger->xInfo.xParams.xCommon.ulHoldingTime / 1000000.0,
-				pCondition);
+				pCondition,
+				pTrigger->xInfo.pEPID);
 		}
 
 	}

@@ -194,6 +194,94 @@ finish:
 	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
+FTM_RET	FTOM_CGI_setRule
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+
+	FTM_RET			xRet;
+	FTM_RULE		xRuleInfo;
+	FTM_CHAR		pRuleID[FTM_ID_LEN+1];
+	FTM_RULE_FIELD	xFields = 0;
+	cJSON _PTR_		pRoot = NULL;
+
+	pRoot = cJSON_CreateObject();
+	
+	FTM_RULE_setDefault(&xRuleInfo);
+
+	xRet = FTOM_CGI_getRuleID(pReq, pRuleID, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;
+	}
+
+	xRet = FTOM_CLIENT_RULE_get(pClient, pRuleID, &xRuleInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	for(FTM_INT i = 0 ; i < 8 ; i++)
+	{
+		FTM_CHAR		pTitle[32];
+		FTM_CHAR_PTR	pValue;
+
+		sprintf(pTitle, "trig%d", i+1);
+		pValue = pReq->getstr(pReq, pTitle, false);
+		if (pValue == NULL)
+		{
+			break;	
+		}
+	
+		if (strlen(pValue) > FTM_ID_LEN)
+		{
+			xRet = FTM_RET_INVALID_ARGUMENTS;
+		}
+
+		strncpy(xRuleInfo.xParams.pTriggers[xRuleInfo.xParams.ulTriggers++], pValue, FTM_ID_LEN);
+		xFields |= FTM_RULE_FIELD_TRIGGERS;
+	}
+
+	for(FTM_INT i = 0 ; i < 8 ; i++)
+	{
+		FTM_CHAR		pTitle[32];
+		FTM_CHAR_PTR	pValue;
+
+		sprintf(pTitle, "act%d", i+1);
+		pValue = pReq->getstr(pReq, pTitle, false);
+		if (pValue == NULL)
+		{
+			break;	
+		}
+		
+		if (strlen(pValue) > FTM_ID_LEN)
+		{
+			xRet = FTM_RET_INVALID_ARGUMENTS;
+		}
+
+		strncpy(xRuleInfo.xParams.pActions[xRuleInfo.xParams.ulActions++], pValue, FTM_ID_LEN);
+		xFields |= FTM_RULE_FIELD_ACTIONS;
+	}
+
+	xRet = FTOM_CLIENT_RULE_set(pClient, pRuleID, xFields, &xRuleInfo);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_CLIENT_RULE_get(pClient, pRuleID, &xRuleInfo);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTOM_CGI_addRuleToObject(pRoot, "rule", &xRuleInfo);
+		}
+	}
+
+finish:
+
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
+}
+
 FTM_RET	FTOM_CGI_addRuleToObject
 (
 	cJSON _PTR_ pObject,

@@ -71,6 +71,7 @@ FTOM_CGI_node	ftom_cgi.c	/^FTM_RET	FTOM_CGI_node$/;"	f
 FTOM_CGI_rule	ftom_cgi.c	/^FTM_RET	FTOM_CGI_rule$/;"	f
 FTOM_CGI_service	ftom_cgi.c	/^FTM_RET	FTOM_CGI_service$/;"	f
 FTOM_CGI_setEP	cmd_ep.c	/^FTM_RET	FTOM_CGI_setEP$/;"	f
+FTOM_CGI_setTrigger	cmd_trigger.c	/^FTM_RET	FTOM_CGI_setTrigger$/;"	f
 FTOM_CGI_trigger	ftom_cgi.c	/^FTM_RET	FTOM_CGI_trigger$/;"	f
 FTOM_CGI_whitespaceCB	ftom_cgi.c	/^char *FTOM_CGI_whitespaceCB$/;"	f
 LDFLAGS	Makefile	/^LDFLAGS:=$(LDFLAGS)$/;"	m

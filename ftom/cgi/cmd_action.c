@@ -196,6 +196,88 @@ finish:
 	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
+FTM_RET	FTOM_CGI_setAction
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+
+	FTM_RET			xRet;
+	FTM_CHAR		pActionID[FTM_ID_LEN+1];
+	FTM_ACTION		xActionInfo;
+	FTM_ACTION_FIELD xFields = 0;
+	cJSON _PTR_		pRoot = NULL;
+
+	pRoot = cJSON_CreateObject();
+
+
+	xRet = FTOM_CGI_getActionID(pReq, pActionID, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CLIENT_ACTION_get(pClient, pActionID, &xActionInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	switch(xActionInfo.xType)
+	{
+	case	FTM_ACTION_TYPE_SET:
+		{
+			FTM_EP_DATA_TYPE	xType;
+
+			xRet = FTOM_CGI_getEPID(pReq, xActionInfo.xParams.xSet.pEPID, FTM_FALSE);
+			if (xRet == FTM_RET_OK)
+			{
+				xFields |= FTM_ACTION_FIELD_EPID;
+			}
+			else if (xRet == FTM_RET_OBJECT_NOT_FOUND)
+			{
+				goto finish;
+			}
+
+			xRet = FTOM_CLIENT_EP_DATA_type(pClient, xActionInfo.xParams.xSet.pEPID, &xType);
+			if (xRet != FTM_RET_OK)
+			{
+				goto finish;
+			}
+
+			xRet = FTOM_CGI_getValue(pReq, xType, &xActionInfo.xParams.xSet.xValue, FTM_FALSE);
+			if (xRet == FTM_RET_OK)
+			{
+				xFields |= FTM_ACTION_FIELD_VALUE;
+			}
+			else if (xRet == FTM_RET_OBJECT_NOT_FOUND)
+			{
+				goto finish;
+			}
+		}
+		break;
+
+	default:
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
+	}
+
+
+	xRet = FTOM_CLIENT_ACTION_set(pClient, pActionID, xFields, &xActionInfo);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_CGI_addActionToObject(pRoot, "action", &xActionInfo);	
+	}
+
+finish:
+
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
+}
+
 FTM_RET	FTOM_CGI_addActionToObject
 (
 	cJSON _PTR_ pObject,

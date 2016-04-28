@@ -54,7 +54,6 @@ FTM_RET	FTOM_TRIGGERM_create
 		}
 	}
 
-
 	pTriggerM = (FTOM_TRIGGERM_PTR)FTM_MEM_malloc(sizeof(FTOM_TRIGGERM));
 	if (pTriggerM == NULL)
 	{
