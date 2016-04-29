@@ -5,6 +5,7 @@
 
 typedef	unsigned long	FTM_NODE_TYPE, _PTR_ FTM_NODE_TYPE_PTR;
 
+#define	FTM_NODE_TYPE_NONE					0x00000000
 #define	FTM_NODE_TYPE_SNMP 		 			0x00000001
 #define	FTM_NODE_TYPE_MODBUS_OVER_TCP		0x00000002
 #define	FTM_NODE_TYPE_MQTT					0x00000003
@@ -73,20 +74,68 @@ typedef	struct
 	}					xOption;
 }	FTM_NODE, _PTR_ FTM_NODE_PTR;
 
-FTM_RET	FTM_NODE_create(FTM_NODE_PTR _PTR_ ppNode);
-FTM_RET	FTM_NODE_destroy(FTM_NODE_PTR _PTR_ ppNode);
+FTM_RET	FTM_NODE_create
+(
+	FTM_NODE_PTR _PTR_ ppNode
+);
 
-FTM_RET	FTM_NODE_isValid(FTM_NODE_PTR pNode);
-FTM_RET FTM_NODE_isValidType(FTM_ULONG	xType);
-FTM_RET	FTM_NODE_isValidTimeout(FTM_NODE_PTR pNode, FTM_ULONG ulTimeout);
-FTM_RET	FTM_NODE_isValidSNMPOpt(FTM_NODE_PTR pNode, FTM_NODE_OPT_SNMP_PTR pOpts);
+FTM_RET	FTM_NODE_destroy
+(
+	FTM_NODE_PTR _PTR_ ppNode
+);
 
-FTM_RET	FTM_NODE_isStatic(FTM_NODE_PTR pNode);
+FTM_RET	FTM_NODE_isValid
+(
+	FTM_NODE_PTR pNode
+);
 
-FTM_RET	FTM_NODE_setDefault(FTM_NODE_PTR pNode);
-FTM_RET	FTM_NODE_setDID(FTM_NODE_PTR pNode, FTM_CHAR_PTR pDID);
+FTM_RET FTM_NODE_isValidType
+(
+	FTM_ULONG	xType
+);
 
-FTM_CHAR_PTR	FTM_NODE_typeString(FTM_NODE_TYPE xType);
-FTM_CHAR_PTR	FTM_NODE_flagString(FTM_NODE_FLAG xFlag);
+FTM_RET	FTM_NODE_isValidTimeout
+(
+	FTM_NODE_PTR pNode, 
+	FTM_ULONG 	ulTimeout
+);
+
+FTM_RET	FTM_NODE_isValidSNMPOpt
+(
+	FTM_NODE_PTR pNode, 
+	FTM_NODE_OPT_SNMP_PTR pOpts
+);
+
+FTM_RET	FTM_NODE_isStatic
+(
+	FTM_NODE_PTR pNode
+);
+
+FTM_RET	FTM_NODE_setDefault
+(
+	FTM_NODE_PTR pNode
+);
+
+FTM_RET	FTM_NODE_setDID
+(
+	FTM_NODE_PTR	pNode, 
+	FTM_CHAR_PTR 	pDID
+);
+
+FTM_RET	FTM_NODE_strToType
+(
+	FTM_CHAR_PTR 		pTypeString, 
+	FTM_NODE_TYPE_PTR 	pType
+);
+
+FTM_CHAR_PTR	FTM_NODE_typeString
+(
+	FTM_NODE_TYPE 	xType
+);
+
+FTM_CHAR_PTR	FTM_NODE_flagString
+(
+	FTM_NODE_FLAG 	xFlag
+);
 #endif
 

@@ -41,6 +41,8 @@ FTOM_CGI_COMMAND	pDataCmds[] =
 static 
 FTOM_CGI_COMMAND	pNodeCmds[] =
 {
+	{	"add",		FTOM_CGI_addNode		},
+	{	"del",		FTOM_CGI_delNode		},
 	{	"get",		FTOM_CGI_getNode		},
 	{	"set",		FTOM_CGI_setNode		},
 	{	"list",		FTOM_CGI_getNodeList	},
@@ -727,6 +729,103 @@ FTM_RET	FTOM_CGI_getCount
 	}
 	
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getNodeOptSNMP
+(
+	qentry_t *pReq,
+	FTM_NODE_OPT_SNMP_PTR pSNMP,
+	FTM_BOOL bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pSNMP != NULL);
+
+	FTM_CHAR_PTR		pValue;
+	FTM_NODE_OPT_SNMP	xSNMP;
+
+	pValue = pReq->getstr(pReq, "version", false);
+	if (pValue == NULL)
+	{
+		xSNMP.ulVersion = FTM_SNMP_VERSION_2;	
+	}
+	else
+	{
+		xSNMP.ulVersion = strtoul(pValue, 0, 10);
+		if(xSNMP.ulVersion > FTM_SNMP_VERSION_3)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+
+	pValue = pReq->getstr(pReq, "url", false);
+	if (pValue == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else if (strlen(pValue) > FTM_URL_LEN)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+	else
+	{
+		strcpy(xSNMP.pURL, pValue);	
+	}
+
+	pValue = pReq->getstr(pReq, "community", false);
+	if (pValue == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else if (strlen(pValue) > FTM_SNMP_COMMUNITY_LEN)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+	else
+	{
+		strcpy(xSNMP.pCommunity, pValue);	
+	}
+
+	pValue = pReq->getstr(pReq, "mib", false);
+	if (pValue == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else if (strlen(pValue) > FTM_SNMP_MIB_LEN)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+	else
+	{
+		strcpy(xSNMP.pMIB, pValue);	
+	}
+
+	pValue = pReq->getstr(pReq, "retry", false);
+	if (pValue == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else 
+	{
+		xSNMP.ulMaxRetryCount = strtoul(pValue, 0, 10);
+	}
+
+	memcpy(pSNMP, &xSNMP, sizeof(FTM_NODE_OPT_SNMP));
+
+	return	FTM_RET_OK;
+
 }
 
 FTM_RET FTOM_CGI_getTriggerID

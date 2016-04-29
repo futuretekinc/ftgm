@@ -535,8 +535,13 @@ FTM_RET	FTOM_EP_setData
 		}
 		else
 		{
+			ERROR("Data append failed.\n");
 			FTM_EP_DATA_destroy(pNewData);	
 		}
+	}
+	else
+	{
+		ERROR("List count get failed.\n");
 	}
 
 	return	xRet;

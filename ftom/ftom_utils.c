@@ -17,6 +17,35 @@ static	FTM_CHAR_PTR	pIFList[] =
 	"eth2"
 };
 
+FTM_RET	FTOM_genNewID
+(
+	FTM_CHAR_PTR	pID,
+	FTM_ULONG		ulIDLen
+)
+{
+	FTM_CHAR	pNewID[FTM_ID_LEN+1];
+	struct timeval	xTime;
+
+	gettimeofday(&xTime, NULL);
+	sprintf(pNewID, "%08lx%08lx%08lx%08lx", 
+		(FTM_ULONG)xTime.tv_sec, 
+		(FTM_ULONG)xTime.tv_usec,
+		(FTM_ULONG)rand(), 
+		(FTM_ULONG)rand());
+	usleep(10);
+
+	if (ulIDLen > FTM_ID_LEN)
+	{
+		strncpy(pID, pNewID, FTM_ID_LEN);	
+	}
+	else
+	{
+		strncpy(pID, pNewID, ulIDLen);	
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_getDefaultDeviceID(FTM_CHAR	pDID[FTM_DID_LEN + 1])
 {
 	FTM_INT		i;

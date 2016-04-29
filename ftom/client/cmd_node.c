@@ -94,7 +94,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 				xNodeInfo.pDID[i] = toupper(pArgv[2][i]);	
 			}
 
-			xRet = FTOM_CLIENT_NODE_create(pClient, &xNodeInfo);
+			xRet = FTOM_CLIENT_NODE_create(pClient, &xNodeInfo, pDID, FTM_ID_LEN);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR("%s : ERROR - %lx\n", pArgv[0], xRet);

@@ -112,7 +112,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 			return	xRet;
 		}
 
-		xRet = FTOM_CLIENT_EP_create(pClient, &xInfo);
+		xRet = FTOM_CLIENT_EP_create(pClient, &xInfo, &xInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);

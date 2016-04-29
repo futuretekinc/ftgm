@@ -7,6 +7,7 @@
 #include "ftom_node_management.h"
 #include "ftom_ep.h"
 #include "ftom_node_snmpc.h"
+#include "ftom_utils.h"
 
 static FTM_RET	FTOM_NODE_lock
 (
@@ -38,6 +39,11 @@ FTM_RET	FTOM_NODE_create
 
 	FTM_RET			xRet;
 	FTOM_NODE_PTR	pNode;
+
+	if (strlen(pInfo->pDID) == 0)
+	{
+		FTOM_genNewID(pInfo->pDID, FTM_ID_LEN);
+	}
 
 	switch(pInfo->xType)
 	{

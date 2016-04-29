@@ -15,6 +15,8 @@ FTOM_CGI_addActionToObject	cmd_action.c	/^FTM_RET	FTOM_CGI_addActionToObject$/;"
 FTOM_CGI_addEP	cmd_ep.c	/^FTM_RET	FTOM_CGI_addEP$/;"	f
 FTOM_CGI_addEPInfoToArray	cmd_ep.c	/^FTM_RET	FTOM_CGI_addEPInfoToArray$/;"	f
 FTOM_CGI_addEPInfoToObject	cmd_ep.c	/^FTM_RET	FTOM_CGI_addEPInfoToObject$/;"	f
+FTOM_CGI_addNode	cmd_node.c	/^FTM_RET	FTOM_CGI_addNode$/;"	f
+FTOM_CGI_addNodeInfoToObject	cmd_node.c	/^FTM_RET	FTOM_CGI_addNodeInfoToObject$/;"	f
 FTOM_CGI_addRule	cmd_rule.c	/^FTM_RET	FTOM_CGI_addRule$/;"	f
 FTOM_CGI_addRuleToArray	cmd_rule.c	/^FTM_RET	FTOM_CGI_addRuleToArray$/;"	f
 FTOM_CGI_addRuleToObject	cmd_rule.c	/^FTM_RET	FTOM_CGI_addRuleToObject$/;"	f
@@ -51,10 +53,13 @@ FTOM_CGI_getEnable	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getEnable$/;"	f
 FTOM_CGI_getHoldTime	ftom_cgi.c	/^FTM_RET FTOM_CGI_getHoldTime$/;"	f
 FTOM_CGI_getInterval	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getInterval$/;"	f
 FTOM_CGI_getLimit	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getLimit$/;"	f
+FTOM_CGI_getLocation	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getLocation$/;"	f
 FTOM_CGI_getLowerValue	ftom_cgi.c	/^FTM_RET FTOM_CGI_getLowerValue$/;"	f
 FTOM_CGI_getName	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getName$/;"	f
 FTOM_CGI_getNode	cmd_node.c	/^FTM_RET	FTOM_CGI_getNode$/;"	f
 FTOM_CGI_getNodeList	cmd_node.c	/^FTM_RET	FTOM_CGI_getNodeList$/;"	f
+FTOM_CGI_getNodeOptSNMP	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getNodeOptSNMP$/;"	f
+FTOM_CGI_getNodeType	ftom_cgi.c	/^FTM_RET FTOM_CGI_getNodeType$/;"	f
 FTOM_CGI_getRule	cmd_rule.c	/^FTM_RET	FTOM_CGI_getRule$/;"	f
 FTOM_CGI_getRuleID	ftom_cgi.c	/^FTM_RET	FTOM_CGI_getRuleID$/;"	f
 FTOM_CGI_getRuleList	cmd_rule.c	/^FTM_RET	FTOM_CGI_getRuleList$/;"	f
@@ -70,7 +75,10 @@ FTOM_CGI_getValue	ftom_cgi.c	/^FTM_RET FTOM_CGI_getValue$/;"	f
 FTOM_CGI_node	ftom_cgi.c	/^FTM_RET	FTOM_CGI_node$/;"	f
 FTOM_CGI_rule	ftom_cgi.c	/^FTM_RET	FTOM_CGI_rule$/;"	f
 FTOM_CGI_service	ftom_cgi.c	/^FTM_RET	FTOM_CGI_service$/;"	f
+FTOM_CGI_setAction	cmd_action.c	/^FTM_RET	FTOM_CGI_setAction$/;"	f
 FTOM_CGI_setEP	cmd_ep.c	/^FTM_RET	FTOM_CGI_setEP$/;"	f
+FTOM_CGI_setNode	cmd_node.c	/^FTM_RET	FTOM_CGI_setNode$/;"	f
+FTOM_CGI_setRule	cmd_rule.c	/^FTM_RET	FTOM_CGI_setRule$/;"	f
 FTOM_CGI_setTrigger	cmd_trigger.c	/^FTM_RET	FTOM_CGI_setTrigger$/;"	f
 FTOM_CGI_trigger	ftom_cgi.c	/^FTM_RET	FTOM_CGI_trigger$/;"	f
 FTOM_CGI_whitespaceCB	ftom_cgi.c	/^char *FTOM_CGI_whitespaceCB$/;"	f
@@ -80,8 +88,8 @@ OBJS	Makefile	/^OBJS=$(SRCS:.c=.o)$/;"	m
 SRCS	Makefile	/^SRCS=	main.o\\$/;"	m
 TARGET	Makefile	/^TARGET=	ftom.cgi$/;"	m
 TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
-TRACE	ftom_cgi.h	233;"	d
-TRACE	ftom_cgi.h	234;"	d
+TRACE	ftom_cgi.h	254;"	d
+TRACE	ftom_cgi.h	255;"	d
 _FTOM_CGI_CMD_ACTION_H_	cmd_action.h	2;"	d
 _FTOM_CGI_CMD_EP_H_	cmd_ep.h	2;"	d
 _FTOM_CGI_CMD_NODE_H_	cmd_node.h	2;"	d

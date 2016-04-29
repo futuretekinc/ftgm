@@ -471,28 +471,29 @@ FTM_RET	FTOM_SNMPC_getEPData
 							{
 							case	FTM_EP_DATA_TYPE_BOOL:
 								{
-									pData->xValue.xValue.bValue = (strtol(pBuff, NULL, 10) == 1);
+									FTM_VALUE_initBOOL(&pData->xValue, (strtol(pBuff, NULL, 10) == 1));
 								}
 								break;
 
 							case	FTM_EP_DATA_TYPE_INT:
 								{
-									pData->xValue.xValue.nValue = strtol(pBuff, NULL, 10);
+									FTM_VALUE_initINT(&pData->xValue, strtol(pBuff, NULL, 10));
 								}
 								break;
 
 							case	FTM_EP_DATA_TYPE_ULONG:
 								{
-									pData->xValue.xValue.ulValue = strtoul(pBuff, NULL, 10);
+									FTM_VALUE_initULONG(&pData->xValue, strtoul(pBuff, NULL, 10));
 								}
 								break;
 
 							case	FTM_EP_DATA_TYPE_FLOAT:
 								{
-									pData->xValue.xValue.fValue = strtod(pBuff, NULL);
+									FTM_VALUE_initFLOAT(&pData->xValue, strtod(pBuff, NULL));
 								}
 								break;
 							}
+
 
 							xRet = FTM_RET_OK;
 						}

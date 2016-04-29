@@ -31,7 +31,7 @@ FTM_RET	FTM_isValidName(FTM_CHAR_PTR pName)
 		return	FTM_RET_INVALID_NAME;	
 	}
 
-	for(i = 1 ; i < FTM_NAME_LEN + 1 ; i++)
+	for(i = 0 ; i < FTM_NAME_LEN ; i++)
 	{
 		if (pName[i] == '\0')
 		{
@@ -51,7 +51,7 @@ FTM_RET	FTM_isValidUnit(FTM_CHAR_PTR pUnit)
 		return	FTM_RET_INVALID_UNIT;	
 	}
 
-	for(i = 1 ; i < FTM_UNIT_LEN + 1 ; i++)
+	for(i = 1 ; i < FTM_UNIT_LEN ; i++)
 	{
 		if (pUnit[i] == '\0')
 		{
@@ -71,7 +71,7 @@ FTM_RET	FTM_isValidLocation(FTM_CHAR_PTR pLocation)
 		return	FTM_RET_INVALID_LOCATION;	
 	}
 
-	for(i = 1 ; i < FTM_LOCATION_LEN + 1 ; i++)
+	for(i = 0 ; i < FTM_LOCATION_LEN ; i++)
 	{
 		if (pLocation[i] == '\0')
 		{
@@ -91,7 +91,7 @@ FTM_RET	FTM_isValidURL(FTM_CHAR_PTR pURL)
 		return	FTM_RET_INVALID_URL;	
 	}
 
-	for(i = 1 ; i < FTM_URL_LEN + 1 ; i++)
+	for(i = 0 ; i < FTM_URL_LEN ; i++)
 	{
 		if (pURL[i] == '\0')
 		{
@@ -111,7 +111,7 @@ FTM_RET	FTM_isValidCommunity(FTM_CHAR_PTR pCommunity)
 		return	FTM_RET_INVALID_COMMUNITY;	
 	}
 
-	for(i = 1 ; i < FTM_SNMP_COMMUNITY_LEN + 1 ; i++)
+	for(i = 0 ; i < FTM_SNMP_COMMUNITY_LEN ; i++)
 	{
 		if (pCommunity[i] == '\0')
 		{

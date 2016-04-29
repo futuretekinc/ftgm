@@ -5,6 +5,12 @@
 #include "ftm_list.h"
 #include "ftm_mem.h"
 
+typedef struct
+{
+	FTM_NODE_TYPE	xType;
+	FTM_CHAR_PTR	pName;
+} 	FTM_NODE_TYPE_INFO, _PTR_ FTM_NODE_TYPE_INFO_PTR;
+
 FTM_RET	FTM_NODE_create(FTM_NODE_PTR _PTR_ ppNode)
 {
 	ASSERT(ppNode != NULL);
@@ -193,16 +199,48 @@ FTM_RET	FTM_NODE_setDID
 	return	FTM_RET_OK;
 }
 
+FTM_NODE_TYPE_INFO	pNodeTypeInfo[] =
+{
+	{	.xType = FTM_NODE_TYPE_SNMP, .pName = "SNMP"	},
+	{	.xType = FTM_NODE_TYPE_MQTT, .pName = "MQTT"	},
+	{	.xType = FTM_NODE_TYPE_MODBUS_OVER_SERIAL, .pName = "MODBUS"	},
+	{	.xType = FTM_NODE_TYPE_MODBUS_OVER_TCP, .pName = "MODBUSTCP"	},
+	{	.xType = FTM_NODE_TYPE_NONE, .pName = "NONE"	},
+};
+
+FTM_RET	FTM_NODE_strToType
+(
+	FTM_CHAR_PTR 		pTypeString, 
+	FTM_NODE_TYPE_PTR 	pType
+)
+{
+	FTM_INT	i;
+
+	for(i = 0 ; i < sizeof(pNodeTypeInfo) / sizeof(FTM_NODE_TYPE_INFO) ; i++)
+	{
+		if (strcasecmp(pTypeString, pNodeTypeInfo[i].pName) == 0)
+		{
+			*pType = pNodeTypeInfo[i].xType;
+			return	FTM_RET_OK;
+		}
+	}
+
+	return	FTM_RET_INVALID_TYPE;
+}
+
 FTM_CHAR_PTR FTM_NODE_typeString
 (
 	FTM_NODE_TYPE xType
 )
 {
-	switch(xType)
+	FTM_INT	i;
+
+	for(i = 0 ; i < sizeof(pNodeTypeInfo) / sizeof(FTM_NODE_TYPE_INFO) ; i++)
 	{
-	case	FTM_NODE_TYPE_SNMP: 				return	"SNMP";
-	case	FTM_NODE_TYPE_MODBUS_OVER_TCP: 		return	"MODBUS/TCP";
-	case	FTM_NODE_TYPE_MODBUS_OVER_SERIAL: 	return	"MODBUS/SERIAL";
+		if (xType == pNodeTypeInfo[i].xType)
+		{
+			return	pNodeTypeInfo[i].pName;
+		}
 	}
 
 	return	"UNKNOWN";

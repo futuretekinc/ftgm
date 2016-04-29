@@ -119,6 +119,7 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
+	FTM_NODE			xInfo;
 }	FTOM_RESP_NODE_SET_PARAMS, _PTR_ FTOM_RESP_NODE_SET_PARAMS_PTR;
 
 typedef	struct
@@ -126,7 +127,7 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EP     	xInfo;
+	FTM_EP     			xInfo;
 }	FTOM_REQ_EP_CREATE_PARAMS, _PTR_ FTOM_REQ_EP_CREATE_PARAMS_PTR;
 
 typedef	struct
@@ -135,6 +136,7 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
+	FTM_EP     			xInfo;
 }	FTOM_RESP_EP_CREATE_PARAMS, _PTR_	FTOM_RESP_EP_CREATE_PARAMS_PTR;
 
 typedef	struct

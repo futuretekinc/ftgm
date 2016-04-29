@@ -659,7 +659,19 @@ FTM_RET	FTDMS_EP_del
 		if (xRet == FTM_RET_OK)
 		{
 			xRet = FTDM_EP_destroy(&pEP);
+			if (xRet != FTM_RET_OK)
+			{
+				TRACE("EP[%s] destroy falled!\n", pReq->pEPID);
+			}
 		}
+		else
+		{
+			TRACE("EP[%s] remove falled!\n", pReq->pEPID);
+		}
+	}
+	else
+	{
+		TRACE("EP[%s] not found!\n", pReq->pEPID);
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -878,16 +890,16 @@ FTM_RET	FTDMS_EP_DATA_get
 	FTDM_EP_PTR	pEP;
 
 	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+	TRACE("REQ COUNT : %d\n", pReq->nCount);
 	if (xRet == FTM_RET_OK)
 	{
-		TRACE("FTDM_EPM_get = %08x\n", xRet);
 		xRet = FTDM_EP_DATA_get( pEP, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
-		TRACE("FTDM_EPM_DATA_get = %08x\n", xRet);
 	}
 	pResp->xCmd = pReq->xCmd;
 	pResp->nCount = pReq->nCount;
 	pResp->nRet = xRet;
 
+		TRACE("RESP COUNT : %d\n", pResp->nCount);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		pResp->nLen = sizeof(FTDM_RESP_EP_DATA_GET_PARAMS) + pResp->nCount * sizeof(FTM_EP_DATA);

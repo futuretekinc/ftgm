@@ -72,6 +72,13 @@ FTM_RET FTOM_CGI_getNodeType
 	FTM_BOOL	bAllowEmpty
 );
 
+FTM_RET	FTOM_CGI_getNodeOptSNMP
+(
+	qentry_t *pReq,
+	FTM_NODE_OPT_SNMP_PTR pSNMP,
+	FTM_BOOL bAllowEmpty
+);
+
 FTM_RET	FTOM_CGI_getEPID
 (
 	qentry_t *pReq, 

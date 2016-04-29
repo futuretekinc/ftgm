@@ -111,6 +111,10 @@ FTM_RET	FTDM_EP_destroy
 			ERROR("The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
 		}
 	}
+	else
+	{
+		xRet = FTM_RET_OK;	
+	}
 
 	FTM_MEM_free(*ppEP);
 

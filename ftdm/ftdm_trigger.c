@@ -58,6 +58,7 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 				FTM_ULONG	i;
 				FTDM_TRIGGER_PTR	pTrigger;
 
+				TRACE("Trigger count : %d\n", ulCount);
 				for(i = 0 ; i < ulCount ; i++)
 				{
 					xRet = FTM_CONFIG_LIST_getItemAt(&xTriggers, i, &xTriggerItem);	
@@ -261,6 +262,7 @@ FTM_RET	FTDM_TRIGGER_loadFromDB
 		{
 			FTM_INT	i;
 
+			TRACE("Trigger Count : %d\n", nTriggerCount);
 			for(i = 0 ; i < nTriggerCount ; i++)
 			{
 				FTDM_TRIGGER_PTR	pTrigger;

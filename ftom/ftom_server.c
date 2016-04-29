@@ -1055,7 +1055,11 @@ FTM_RET	FTOM_SERVER_NODE_create
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->xRet = FTOM_createNode(pServer->pOM, &pReq->xNodeInfo, &pNode);
-
+	
+	if (pResp->xRet == FTM_RET_OK)
+	{
+		strcpy(pResp->pDID, pNode->xInfo.pDID);
+	}
 	return	pResp->xRet;
 }
 
@@ -1177,6 +1181,16 @@ FTM_RET	FTOM_SERVER_NODE_set
 
 	pResp->xRet = FTOM_setNode(pServer->pOM, pReq->pDID, pReq->xFields, &pReq->xInfo);
 
+	if (pResp->xRet == FTM_RET_OK)
+	{
+		FTOM_NODE_PTR	pNode = NULL;
+		pResp->xRet = FTOM_getNode(pServer->pOM, pReq->pDID, &pNode);
+		if (pResp->xRet == FTM_RET_OK)
+		{
+			memcpy(&pResp->xInfo, &pNode->xInfo, sizeof(FTM_NODE));
+		}
+	}
+
 	return	pResp->xRet;
 }
 
@@ -1213,6 +1227,19 @@ FTM_RET	FTOM_SERVER_EP_create
 	pResp->xCmd 	= pReq->xCmd;
 	pResp->ulLen 	= sizeof(*pResp);
 	pResp->xRet 	= xRet;
+
+	if (xRet == FTM_RET_OK)
+	{
+		FTOM_NODE_PTR	pNode;
+
+		xRet = FTOM_NODEM_getNode(pServer->pOM->pNodeM, pEP->xInfo.pDID, &pNode);
+		if (xRet == FTM_RET_OK)
+		{
+			FTOM_EP_attach(pEP, pNode);
+		}
+
+		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
+	}
 
 	return	pResp->xRet;
 }
@@ -1463,6 +1490,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 		pResp->nCount = 0;
 	}
 
+	TRACE("Data Count : %d\n", pResp->nCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_DATA) * pResp->nCount;
 	pResp->xCmd = pReq->xCmd;
 	pResp->xRet = xRet;

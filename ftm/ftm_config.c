@@ -678,6 +678,7 @@ FTM_RET	FTM_CONFIG_ITEM_getNode(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_PTR pNode)
 
 	FTM_RET			xRet;
 	FTM_NODE		xNode;
+	FTM_CHAR		pTypeString[128];
 	FTM_CONFIG_ITEM	xSNMPItem;
 
 	if (pItem->pSetting == NULL)
@@ -688,15 +689,24 @@ FTM_RET	FTM_CONFIG_ITEM_getNode(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_PTR pNode)
 	xRet = FTM_CONFIG_ITEM_getItemString(pItem, "id", xNode.pDID, sizeof(xNode.pDID) - 1);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Node id object invalid!\n");
 		return	FTM_RET_CONFIG_INVALID_OBJECT;	
 	}
 
-	FTM_CONFIG_ITEM_getItemULONG(pItem, "type", &xNode.xType);
+	FTM_CONFIG_ITEM_getItemString(pItem, "type", pTypeString, sizeof(pTypeString));
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Node type object invalid!\n");
 		return	FTM_RET_CONFIG_INVALID_OBJECT;	
 	}
 
+	xRet = FTM_NODE_strToType(pTypeString, &xNode.xType);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node type invalid!\n");
+		return	xRet;	
+	}
+	
 	FTM_CONFIG_ITEM_getItemString(pItem,"location",	xNode.pLocation, sizeof(xNode.pLocation) - 1);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "interval", &xNode.ulInterval);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "timeout",  &xNode.ulTimeout);

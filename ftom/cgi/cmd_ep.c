@@ -37,13 +37,14 @@ FTM_RET	FTOM_CGI_addEP
 
 	FTM_RET			xRet;
 	FTM_EP			xEPInfo;
+	FTM_EP			xNewEPInfo;
 	cJSON _PTR_	pRoot;
 
 	pRoot = cJSON_CreateObject();
 
 	FTM_EP_setDefault(&xEPInfo);
 
-	xRet = FTOM_CGI_getEPID(pReq, xEPInfo.pEPID, FTM_FALSE);
+	xRet = FTOM_CGI_getEPID(pReq, xEPInfo.pEPID, FTM_TRUE);
 	xRet |= FTOM_CGI_getEPType(pReq, &xEPInfo.xType, FTM_FALSE);
 	xRet |= FTOM_CGI_getDID(pReq, xEPInfo.pDID, FTM_FALSE);
 	xRet |= FTOM_CGI_getEPFlags(pReq, &xEPInfo.xFlags, FTM_TRUE);
@@ -58,11 +59,14 @@ FTM_RET	FTOM_CGI_addEP
 		goto finish;
 	}
 
-	xRet = FTOM_CLIENT_EP_create(pClient, &xEPInfo);
-	if (xRet == FTM_RET_OK)
+	xRet = FTOM_CLIENT_EP_create(pClient, &xEPInfo, &xNewEPInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		cJSON_AddStringToObject(pRoot, "id", xEPInfo.pEPID);
+		goto finish;
 	}
+
+
+	FTOM_CGI_addEPInfoToObject(pRoot, &xNewEPInfo, FTM_EP_FIELD_ALL);
 
 finish:
 
@@ -241,6 +245,14 @@ FTM_RET	FTOM_CGI_setEP
 	{
 		goto finish;	
 	}
+
+	xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xEPInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;
+	}
+
+	xRet = FTOM_CGI_addEPInfoToObject(pRoot, &xEPInfo, FTM_EP_FIELD_ALL);
 
 finish:
 
@@ -439,7 +451,7 @@ FTM_RET	FTOM_CGI_getEPData
 
 	cJSON _PTR_ pDataList;
 
-	cJSON_AddStringToObject(pRoot, "id", pEPID);
+	cJSON_AddStringToObject(pRoot, "epid", pEPID);
 	cJSON_AddItemToObject(pRoot, "data", pDataList = cJSON_CreateArray());
 
 	for(FTM_INT i = 0 ; i < ulCount ; i++)
@@ -517,7 +529,7 @@ FTM_RET	FTOM_CGI_getEPDataLast
 		}
 
 		cJSON_AddItemToArray(pRoot, pObject = cJSON_CreateObject());
-		cJSON_AddStringToObject(pObject, "id", pEPIDList[i]);
+		cJSON_AddStringToObject(pObject, "epid", pEPIDList[i]);
 		cJSON_AddStringToObject(pObject, "value", pValueString);
 		cJSON_AddNumberToObject(pObject, "time", xEPData.ulTime);
 	}
@@ -595,7 +607,7 @@ FTM_RET	FTOM_CGI_createEPInfoObject
 
 	if (xFields & FTM_EP_FIELD_EPID)
 	{
-		cJSON_AddStringToObject(pObject, "id", pEPInfo->pEPID);
+		cJSON_AddStringToObject(pObject, "epid", pEPInfo->pEPID);
 	}
 
 	if (xFields & FTM_EP_FIELD_EPTYPE)

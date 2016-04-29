@@ -189,6 +189,7 @@ FTM_RET FTOM_NODEM_setNode
 	xRet = FTM_LIST_get(pNodeM->pList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Node[%s] not found.[%08x]\n", pDID, xRet);
 		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
 

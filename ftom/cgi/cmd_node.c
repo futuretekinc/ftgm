@@ -21,7 +21,6 @@ FTM_RET	FTOM_CGI_addNode
 	FTM_RET		xRet;
 	FTM_NODE	xInfo;
 	FTM_CHAR	pDID[FTM_ID_LEN+1];
-	FTM_NODE_FIELD	xFields = 0;
 	cJSON _PTR_ pRoot;
 
 	pRoot= cJSON_CreateObject();
@@ -38,6 +37,7 @@ FTM_RET	FTOM_CGI_addNode
 	{
 	case	FTM_NODE_TYPE_SNMP:
 		{
+			xRet |= FTOM_CGI_getNodeOptSNMP(pReq, &xInfo.xOption.xSNMP, FTM_TRUE);
 		}
 		break;
 
@@ -45,12 +45,56 @@ FTM_RET	FTOM_CGI_addNode
 		goto finish;
 	}
 
-	xRet = FTOM_CLIENT_NODE_create(pClient, &xInfo, pDID);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;	
 	}
 
+	xRet = FTOM_CLIENT_NODE_create(pClient, &xInfo, pDID, sizeof(pDID));
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CLIENT_NODE_get(pClient, pDID, &xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;
+	}
+
+	xRet = FTOM_CGI_addNodeInfoToObject(pRoot, &xInfo, FTM_NODE_FIELD_ALL);
+
+finish:
+
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
+}
+
+FTM_RET	FTOM_CGI_delNode
+(
+	FTOM_CLIENT_PTR pClient,
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+	
+	FTM_RET		xRet;
+	FTM_CHAR	pDID[FTM_ID_LEN+1];
+	cJSON _PTR_ pRoot;
+
+	pRoot= cJSON_CreateObject();
+
+	xRet = FTOM_CGI_getDID(pReq, pDID, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CLIENT_NODE_destroy(pClient, pDID);
+	if (xRet == FTM_RET_OK)
+	{
+		cJSON_AddStringToObject(pRoot, "did", pDID);
+	}
 finish:
 
 	return	FTOM_CGI_finish(pReq, pRoot, xRet);
@@ -173,7 +217,7 @@ FTM_RET	FTOM_CGI_setNode
 		goto finish;	
 	}
 
-	xRet = FTOM_CGI_getLocation(pReq, xInfo.pLocation, FTM_FALSE);
+	xRet = FTOM_CGI_getLocation(pReq, xInfo.pLocation, FTM_TRUE);
 	if (xRet == FTM_RET_OK)
 	{
 		xFields |= FTM_NODE_FIELD_LOCATION;
@@ -183,7 +227,7 @@ FTM_RET	FTOM_CGI_setNode
 		goto finish;
 	}
 
-	xRet = FTOM_CGI_getInterval(pReq, &xInfo.ulInterval, FTM_FALSE);
+	xRet = FTOM_CGI_getInterval(pReq, &xInfo.ulInterval, FTM_TRUE);
 	if (xRet == FTM_RET_OK)
 	{
 		xFields |= FTM_NODE_FIELD_INTERVAL;
@@ -193,7 +237,7 @@ FTM_RET	FTOM_CGI_setNode
 		goto finish;
 	}
 
-	xRet = FTOM_CGI_getTimeout(pReq, &xInfo.ulTimeout, FTM_FALSE);
+	xRet = FTOM_CGI_getTimeout(pReq, &xInfo.ulTimeout, FTM_TRUE);
 	if (xRet == FTM_RET_OK)
 	{
 		xFields |= FTM_NODE_FIELD_TIMEOUT;
@@ -208,6 +252,14 @@ FTM_RET	FTOM_CGI_setNode
 	{
 		goto finish;	
 	}
+	
+	xRet = FTOM_CLIENT_NODE_get(pClient, pDID, &xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	FTOM_CGI_addNodeInfoToObject(pRoot, &xInfo, FTM_NODE_FIELD_ALL);
 
 finish:
 

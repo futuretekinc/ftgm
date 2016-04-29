@@ -1166,18 +1166,27 @@ int _FTDM_DBIF_EP_DATA_getCB(void *pData, int nArgc, char **pArgv, char **pColNa
 				{
 					if (pArgv[i][0] == 'i')
 					{
-						pParams->pEPData[pParams->nCount-1].xType = FTM_VALUE_TYPE_INT;
-						pParams->pEPData[pParams->nCount-1].xValue.xValue.nValue = strtol(&pArgv[i][1], NULL, 10);
+						FTM_INT	nValue;
+						
+						nValue  = strtol(&pArgv[i][1], NULL, 10);
+						pParams->pEPData[pParams->nCount-1].xType = FTM_EP_DATA_TYPE_INT;
+						FTM_VALUE_initINT(&pParams->pEPData[pParams->nCount-1].xValue, nValue);
 					}
 					else if (pArgv[i][0] == 'u')
 					{
+						FTM_ULONG	ulValue;
+						
+						ulValue = strtoul(&pArgv[i][1], NULL, 10);
 						pParams->pEPData[pParams->nCount-1].xType = FTM_VALUE_TYPE_ULONG;
-						pParams->pEPData[pParams->nCount-1].xValue.xValue.ulValue = strtoul(&pArgv[i][1], NULL, 10);
+						FTM_VALUE_initULONG(&pParams->pEPData[pParams->nCount-1].xValue, ulValue);
 					}
 					else if (pArgv[i][0] == 'f')
 					{
+						FTM_FLOAT	fValue;
+
+						fValue = strtod(&pArgv[i][1], NULL);
 						pParams->pEPData[pParams->nCount-1].xType = FTM_VALUE_TYPE_FLOAT;
-						pParams->pEPData[pParams->nCount-1].xValue.xValue.fValue = strtod(&pArgv[i][1], NULL);
+						FTM_VALUE_initFLOAT(&pParams->pEPData[pParams->nCount-1].xValue, fValue);
 					}
 				}
 			}
@@ -1699,6 +1708,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_create
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
+	TRACE("New Trigger[%s] add!\n", pTrigger->pID);
 	sprintf(pSQL, "INSERT INTO trigger (ID,VALUE) VALUES (?,?)");
 	do 
 	{

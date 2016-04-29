@@ -171,6 +171,7 @@ FTM_RET	FTDM_NODEM_loadFromFile
 	xRet = FTM_CONFIG_init(&xConfig, pFileName);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Config initialize failed[%08x].\n", xRet);
 		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
@@ -200,6 +201,7 @@ FTM_RET	FTDM_NODEM_loadFromFile
 						xRet = FTM_CONFIG_ITEM_getNode(&xNodeItem, &xInfo);
 						if (xRet != FTM_RET_OK)
 						{
+							ERROR("Node info read failed.[%08x]\n", xRet);
 							continue;
 						}
 				
@@ -208,9 +210,22 @@ FTM_RET	FTDM_NODEM_loadFromFile
 						{
 							FTM_LIST_append(pNodeM->pList, pNode);
 						}
+						else
+						{
+							ERROR("Node[%s] creation failed[%08x].\n", xInfo.pDID, xRet);	
+						
+						}
 					}
 				}
 			}
+			else
+			{
+				ERROR("Node count read failed[%08x].\n", xRet);	
+			}
+		}
+		else
+		{
+			TRACE("Node list not found!\n");	
 		}
 	}
 	else
