@@ -18,5 +18,6 @@
 #include "ftm_value.h"
 #include "ftm_lock.h"
 #include "ftm_log.h"
+#include "ftm_util.h"
 #endif
 

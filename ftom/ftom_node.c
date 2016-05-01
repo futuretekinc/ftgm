@@ -7,19 +7,21 @@
 #include "ftom_node_management.h"
 #include "ftom_ep.h"
 #include "ftom_node_snmpc.h"
-#include "ftom_utils.h"
 
-static FTM_RET	FTOM_NODE_lock
+static 
+FTM_RET	FTOM_NODE_lock
 (
 	FTOM_NODE_PTR pNode
 );
 
-static FTM_RET	FTOM_NODE_unlock
+static 
+FTM_RET	FTOM_NODE_unlock
 (
 	FTOM_NODE_PTR pNode
 );
 
-static FTM_VOID_PTR FTOM_NODE_process
+static 
+FTM_VOID_PTR FTOM_NODE_process
 (
 	FTM_VOID_PTR pData
 );
@@ -42,7 +44,7 @@ FTM_RET	FTOM_NODE_create
 
 	if (strlen(pInfo->pDID) == 0)
 	{
-		FTOM_genNewID(pInfo->pDID, FTM_ID_LEN);
+		FTM_makeID(pInfo->pDID, FTM_ID_LEN);
 	}
 
 	switch(pInfo->xType)
