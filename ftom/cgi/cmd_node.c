@@ -26,7 +26,6 @@ FTM_RET	FTOM_CGI_addNode
 	pRoot= cJSON_CreateObject();
 
 	FTM_NODE_setDefault(&xInfo);
-	TRACE("xINOF URL : %s\n", xInfo.xOption.xSNMP.pURL);
 
 	xRet = FTOM_CGI_getDID(pReq, xInfo.pDID, FTM_TRUE);
 	xRet |= FTOM_CGI_getNodeType(pReq, &xInfo.xType, FTM_FALSE);
@@ -57,7 +56,6 @@ FTM_RET	FTOM_CGI_addNode
 		goto finish;	
 	}
 
-	TRACE("xINOF URL : %s\n", xInfo.xOption.xSNMP.pURL);
 	xRet = FTOM_CLIENT_NODE_get(pClient, pDID, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
