@@ -1940,7 +1940,7 @@ FTM_RET	FTOM_SERVER_RULE_set
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_getRuleInfo(pServer->pOM, pReq->pRuleID, &pReq->xRule);
+	pResp->xRet = FTOM_setRuleInfo(pServer->pOM, pReq->pRuleID, pReq->xFields, &pReq->xRule);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 

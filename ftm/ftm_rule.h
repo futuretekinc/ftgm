@@ -15,6 +15,7 @@ typedef	FTM_ULONG	FTM_RULE_FIELD, _PTR_ FTM_RULE_FIELD_PTR;
 #define	FTM_RULE_FIELD_STATE		(1 << 2)
 #define	FTM_RULE_FIELD_TRIGGERS		(1 << 3)
 #define	FTM_RULE_FIELD_ACTIONS		(1 << 4)
+#define	FTM_RULE_FIELD_RULE			(1 << 5)
 #define	FTM_RULE_FIELD_ALL			(0xFFFF)
 
 typedef	enum FTM_RULE_ENUM

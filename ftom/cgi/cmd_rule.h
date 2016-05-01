@@ -7,6 +7,12 @@ FTM_RET	FTOM_CGI_getRule
 	qentry_t _PTR_ pReq
 );
 
+FTM_RET	FTOM_CGI_setRule
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+);
+
 FTM_RET	FTOM_CGI_addRule
 (
 	FTOM_CLIENT_PTR pClient, 

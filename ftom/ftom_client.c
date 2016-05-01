@@ -1250,7 +1250,9 @@ FTM_RET	FTOM_CLIENT_TRIGGER_set
 FTM_RET	FTOM_CLIENT_ACTION_add
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_ACTION_PTR	pAction
+	FTM_ACTION_PTR	pAction,
+	FTM_CHAR_PTR	pActionID,
+	FTM_ULONG		ulIDLen
 )
 {
 	ASSERT(pClient != NULL);
@@ -1281,7 +1283,7 @@ FTM_RET	FTOM_CLIENT_ACTION_add
 
 	if (xResp.xRet == FTM_RET_OK)
 	{
-		strcpy(pAction->pID, xResp.pActionID);
+		strncpy(pActionID, xResp.pActionID, ulIDLen);
 	}
 
 	return	xResp.xRet;
@@ -1489,7 +1491,9 @@ FTM_RET	FTOM_CLIENT_ACTION_set
 FTM_RET	FTOM_CLIENT_RULE_add
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_RULE_PTR	pRule
+	FTM_RULE_PTR	pRule,
+	FTM_CHAR_PTR	pRuleID,
+	FTM_ULONG		ulIDLen
 )
 {
 	ASSERT(pClient != NULL);
@@ -1520,7 +1524,7 @@ FTM_RET	FTOM_CLIENT_RULE_add
 
 	if (xResp.xRet == FTM_RET_OK)
 	{
-		strcpy(pRule->pID, xResp.pRuleID);
+		strncpy(pRuleID, xResp.pRuleID, ulIDLen);
 	}
 
 	return	xResp.xRet;

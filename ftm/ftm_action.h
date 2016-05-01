@@ -11,6 +11,7 @@ typedef	FTM_ULONG	FTM_ACTION_FIELD, _PTR_ FTM_ACTION_FIELD_PTR;
 #define	FTM_ACTION_FIELD_NAME			(1 << 2)
 #define	FTM_ACTION_FIELD_EPID			(1 << 3)
 #define	FTM_ACTION_FIELD_VALUE			(1 << 4)
+#define	FTM_ACTION_FIELD_ACTION			(1 << 5)
 #define	FTM_ACTION_FIELD_ALL			(0xFFFF)
 
 typedef	enum

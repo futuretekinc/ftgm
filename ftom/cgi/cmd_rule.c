@@ -1,6 +1,7 @@
 #include "ftom_cgi.h"
 #include "ftom_client.h"
 #include "ftm_json.h"
+#include "ftm_rule.h"
 #include "cJSON.h"
 
 static
@@ -8,6 +9,7 @@ FTM_RET	FTOM_CGI_addRuleToObject
 (
 	cJSON _PTR_ pObject,
 	FTM_CHAR_PTR	pName,
+	FTM_RULE_FIELD	xFields,
 	FTM_RULE_PTR	pRuleInfo
 );
 
@@ -15,6 +17,7 @@ static
 FTM_RET	FTOM_CGI_addRuleToArray
 (
 	cJSON _PTR_ pObject,
+	FTM_RULE_FIELD	xFields,
 	FTM_RULE_PTR	pRuleInfo
 );
 
@@ -22,6 +25,7 @@ static
 FTM_RET	FTOM_CGI_createRuleObject
 (
 	FTM_RULE_PTR	pRuleInfo,
+	FTM_RULE_FIELD	xFields,
 	cJSON _PTR_ _PTR_ ppObject
 );
 
@@ -53,7 +57,7 @@ FTM_RET	FTOM_CGI_getRule
 		goto finish;	
 	}
 
-	xRet = FTOM_CGI_addRuleToObject(pRoot, "rule", &xRuleInfo);
+	xRet = FTOM_CGI_addRuleToObject(pRoot, "rule", FTM_RULE_FIELD_ALL, &xRuleInfo);
 
 finish:
 
@@ -71,48 +75,78 @@ FTM_RET	FTOM_CGI_addRule
 
 	FTM_RET			xRet;
 	FTM_RULE		xRuleInfo;
+	FTM_RULE_FIELD	xFields = 0;
+	FTM_CHAR		pRuleID[FTM_ID_LEN+1];
 	cJSON _PTR_		pRoot = NULL;
 
 	pRoot = cJSON_CreateObject();
 	
 	FTM_RULE_setDefault(&xRuleInfo);
 
-	xRet = FTOM_CGI_getRuleID(pReq, xRuleInfo.pID, FTM_TRUE);
-	xRet |= FTOM_CGI_getRuleState(pReq, &xRuleInfo.xState, FTM_TRUE);
-	for(FTM_INT i = 0 ; i < 8 ; i++)
+	xRet = FTOM_CGI_getRuleID(pReq, xRuleInfo.pID, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
 	{
-		FTM_CHAR		pTitle[32];
-		FTM_CHAR_PTR	pValue;
-
-		sprintf(pTitle, "trig%d", i+1);
-		pValue = pReq->getstr(pReq, pTitle, false);
-		if (pValue == NULL)
-		{
-			break;	
-		}
-		
-		strncpy(xRuleInfo.xParams.pTriggers[xRuleInfo.xParams.ulTriggers++], pValue, FTM_ID_LEN);
+		xFields |= FTM_RULE_FIELD_ID;	
 	}
-
-	for(FTM_INT i = 0 ; i < 8 ; i++)
-	{
-		FTM_CHAR		pTitle[32];
-		FTM_CHAR_PTR	pValue;
-
-		sprintf(pTitle, "act%d", i+1);
-		pValue = pReq->getstr(pReq, pTitle, false);
-		if (pValue == NULL)
-		{
-			break;	
-		}
-		
-		strncpy(xRuleInfo.xParams.pActions[xRuleInfo.xParams.ulActions++], pValue, FTM_ID_LEN);
-	}
-
-	xRet = FTOM_CLIENT_RULE_add(pClient, &xRuleInfo);
-	if (xRet != FTM_RET_OK)
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
 	{
 		goto finish;	
+	}
+	
+	xRet = FTOM_CGI_getName(pReq, xRuleInfo.pName, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_RULE_FIELD_NAME;	
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;	
+	}
+	
+	for(FTM_INT i = 0 ; i < 8 ; i++)
+	{
+		xRet = FTOM_CGI_getRuleTrigger(pReq, i, xRuleInfo.xParams.pTriggers[i], FTM_ID_LEN, FTM_FALSE);
+		if (xRet == FTM_RET_OK)
+		{
+			xFields |= FTM_RULE_FIELD_TRIGGERS;	
+			xRuleInfo.xParams.ulTriggers++;
+		}
+		else if (xRet == FTM_RET_OBJECT_NOT_FOUND)
+		{
+			break;
+		}
+		else
+		{
+			goto finish;
+		}
+	}
+
+	for(FTM_INT i = 0 ; i < 8 ; i++)
+	{
+		xRet = FTOM_CGI_getRuleAction(pReq, i, xRuleInfo.xParams.pActions[i], FTM_ID_LEN, FTM_FALSE);
+		if (xRet == FTM_RET_OK)
+		{
+			xFields |= FTM_RULE_FIELD_ACTIONS;	
+			xRuleInfo.xParams.ulActions++;
+		}
+		else if (xRet == FTM_RET_OBJECT_NOT_FOUND)
+		{
+			break;
+		}
+		else 
+		{
+			goto finish;
+		}
+	}
+
+	xRet = FTOM_CLIENT_RULE_add(pClient, &xRuleInfo, pRuleID, FTM_ID_LEN);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_CLIENT_RULE_get(pClient, pRuleID, &xRuleInfo);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTOM_CGI_addRuleToObject(pRoot, "rule", xFields, &xRuleInfo);
+		}
 	}
 
 finish:
@@ -162,9 +196,40 @@ FTM_RET	FTOM_CGI_getRuleList
 	ASSERT(pReq != NULL);
 
 	FTM_RET			xRet;
+	FTM_INT			i;
 	FTM_ULONG		ulCount = 0;
+	FTM_CHAR_PTR	pValue = NULL;
+	FTM_RULE_FIELD	xFields = FTM_RULE_FIELD_ID;
 	cJSON _PTR_		pRoot = NULL;
 	cJSON _PTR_		pRules = NULL;
+
+	pRoot = cJSON_CreateObject();
+	for(i = 0 ; ; i++)
+	{
+		FTM_CHAR	pTitle[32];
+
+		sprintf(pTitle,"field%d", i+1);
+
+		pValue = pReq->getstr(pReq, pTitle, false);
+		if (pValue == NULL)
+		{
+			break;	
+		}
+
+		if (strcasecmp(pValue, "all") == 0)
+		{
+			xFields = FTM_RULE_FIELD_ALL;
+			break;
+		}
+		else if (strcasecmp(pValue, "name") == 0)
+		{
+			xFields |= FTM_RULE_FIELD_NAME;	
+		}
+		else if (strcasecmp(pValue, "rule") == 0)
+		{
+			xFields |= FTM_RULE_FIELD_RULE;	
+		}
+	}
 
 	xRet = FTOM_CLIENT_RULE_count(pClient, &ulCount);
 	if (xRet != FTM_RET_OK)
@@ -172,7 +237,6 @@ FTM_RET	FTOM_CGI_getRuleList
 		goto finish;
 	}
 
-	pRoot = cJSON_CreateObject();
 	cJSON_AddItemToObject(pRoot, "rules", pRules = cJSON_CreateArray());
 
 	for(FTM_INT i = 0 ; i < ulCount ; i++)
@@ -186,7 +250,7 @@ FTM_RET	FTOM_CGI_getRuleList
 			continue;
 		}
 
-		FTOM_CGI_addRuleToArray(pRules, &xRuleInfo);
+		FTOM_CGI_addRuleToArray(pRules, xFields, &xRuleInfo);
 	}
 
 finish:
@@ -225,6 +289,16 @@ FTM_RET	FTOM_CGI_setRule
 		goto finish;	
 	}
 
+	xRet = FTOM_CGI_getName(pReq, xRuleInfo.pName, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_RULE_FIELD_NAME;
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;
+	}
+
 	for(FTM_INT i = 0 ; i < 8 ; i++)
 	{
 		FTM_CHAR		pTitle[32];
@@ -236,7 +310,12 @@ FTM_RET	FTOM_CGI_setRule
 		{
 			break;	
 		}
-	
+
+		if (i == 0)
+		{
+			xRuleInfo.xParams.ulTriggers = 0;	
+		}
+
 		if (strlen(pValue) > FTM_ID_LEN)
 		{
 			xRet = FTM_RET_INVALID_ARGUMENTS;
@@ -258,6 +337,11 @@ FTM_RET	FTOM_CGI_setRule
 			break;	
 		}
 		
+		if (i == 0)
+		{
+			xRuleInfo.xParams.ulActions = 0;	
+		}
+
 		if (strlen(pValue) > FTM_ID_LEN)
 		{
 			xRet = FTM_RET_INVALID_ARGUMENTS;
@@ -273,7 +357,7 @@ FTM_RET	FTOM_CGI_setRule
 		xRet = FTOM_CLIENT_RULE_get(pClient, pRuleID, &xRuleInfo);
 		if (xRet == FTM_RET_OK)
 		{
-			xRet = FTOM_CGI_addRuleToObject(pRoot, "rule", &xRuleInfo);
+			xRet = FTOM_CGI_addRuleToObject(pRoot, "rule", FTM_RULE_FIELD_ALL, &xRuleInfo);
 		}
 	}
 
@@ -286,6 +370,7 @@ FTM_RET	FTOM_CGI_addRuleToObject
 (
 	cJSON _PTR_ pObject,
 	FTM_CHAR_PTR	pName,
+	FTM_RULE_FIELD	xFields,
 	FTM_RULE_PTR	pRuleInfo
 )
 {
@@ -295,7 +380,7 @@ FTM_RET	FTOM_CGI_addRuleToObject
 	FTM_RET	xRet;
 	cJSON _PTR_ pNewObject;
 
-	xRet = FTOM_CGI_createRuleObject(pRuleInfo, &pNewObject);
+	xRet = FTOM_CGI_createRuleObject(pRuleInfo, xFields, &pNewObject);
 	if(xRet == FTM_RET_OK)
 	{
 		cJSON_AddItemToObject(pObject, pName, pNewObject);
@@ -307,6 +392,7 @@ FTM_RET	FTOM_CGI_addRuleToObject
 FTM_RET	FTOM_CGI_addRuleToArray
 (
 	cJSON _PTR_ pObject,
+	FTM_RULE_FIELD	xFields,
 	FTM_RULE_PTR	pRuleInfo
 )
 
@@ -317,7 +403,7 @@ FTM_RET	FTOM_CGI_addRuleToArray
 	FTM_RET	xRet;
 	cJSON _PTR_ pNewObject;
 
-	xRet = FTOM_CGI_createRuleObject(pRuleInfo, &pNewObject);
+	xRet = FTOM_CGI_createRuleObject(pRuleInfo, xFields, &pNewObject);
 	if(xRet == FTM_RET_OK)
 	{
 		cJSON_AddItemToArray(pObject, pNewObject);
@@ -329,6 +415,7 @@ FTM_RET	FTOM_CGI_addRuleToArray
 FTM_RET	FTOM_CGI_createRuleObject
 (
 	FTM_RULE_PTR	pRuleInfo,
+	FTM_RULE_FIELD	xFields,
 	cJSON _PTR_ _PTR_ ppObject
 )
 {
@@ -343,26 +430,42 @@ FTM_RET	FTOM_CGI_createRuleObject
 
 	pObject = cJSON_CreateObject();
 
-	cJSON_AddStringToObject(pObject, "id", pRuleInfo->pID);	
-	if (pRuleInfo->xState == FTM_RULE_STATE_ACTIVATE)
+	if (xFields & FTM_RULE_FIELD_ID)
 	{
-		cJSON_AddStringToObject(pObject, "state", "ACTIVATE");
-	}
-	else
-	{
-		cJSON_AddStringToObject(pObject, "state", "DEACTIVATE");
-	}
-	cJSON_AddItemToObject(pObject, "params", pParams = cJSON_CreateObject());
-	cJSON_AddItemToObject(pParams, "triggers", pTriggers = cJSON_CreateArray());
-	for(FTM_INT i = 0 ; i < pRuleInfo->xParams.ulTriggers ; i++)
-	{
-		cJSON_AddItemToArray(pTriggers, cJSON_CreateString(pRuleInfo->xParams.pTriggers[i]));
+		cJSON_AddStringToObject(pObject, "id", pRuleInfo->pID);	
 	}
 
-	cJSON_AddItemToObject(pParams, "actions", pActions = cJSON_CreateArray());
-	for(FTM_INT i = 0 ; i < pRuleInfo->xParams.ulActions ; i++)
+	if (xFields & FTM_RULE_FIELD_NAME)
 	{
-		cJSON_AddItemToArray(pActions, cJSON_CreateString(pRuleInfo->xParams.pActions[i]));
+		cJSON_AddStringToObject(pObject, "name", pRuleInfo->pName);
+	}
+
+	if (xFields & FTM_RULE_FIELD_STATE)
+	{
+		if (pRuleInfo->xState == FTM_RULE_STATE_ACTIVATE)
+		{
+			cJSON_AddStringToObject(pObject, "state", "ACTIVATE");
+		}
+		else
+		{
+			cJSON_AddStringToObject(pObject, "state", "DEACTIVATE");
+		}
+	}
+
+	if (xFields & FTM_RULE_FIELD_RULE)
+	{
+		cJSON_AddItemToObject(pObject, "params", pParams = cJSON_CreateObject());
+		cJSON_AddItemToObject(pParams, "triggers", pTriggers = cJSON_CreateArray());
+		for(FTM_INT i = 0 ; i < pRuleInfo->xParams.ulTriggers ; i++)
+		{
+			cJSON_AddItemToArray(pTriggers, cJSON_CreateString(pRuleInfo->xParams.pTriggers[i]));
+		}
+	
+		cJSON_AddItemToObject(pParams, "actions", pActions = cJSON_CreateArray());
+		for(FTM_INT i = 0 ; i < pRuleInfo->xParams.ulActions ; i++)
+		{
+			cJSON_AddItemToArray(pActions, cJSON_CreateString(pRuleInfo->xParams.pActions[i]));
+		}
 	}
 
 	*ppObject = pObject;

@@ -486,8 +486,7 @@ int main(int nArgc, char *pArgv[])
 			ERROR("File Name : %s\n", pObjectFileName);
 			return	0;	
 		}
-
-		FTDM_saveObjectToDB(&xFTDM);
+	//	FTDM_saveObjectToDB(&xFTDM);
 	}
 
 	if (bDaemon)

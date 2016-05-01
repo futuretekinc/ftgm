@@ -120,7 +120,7 @@ FTM_RET	FTDM_NODEM_loadFromDB
 	if ((FTDM_DBIF_NODE_count(&nMaxNodeCount) == FTM_RET_OK) &&
 		(nMaxNodeCount > 0))
 	{
-
+	
 		FTM_NODE_PTR	pInfos;
 		FTM_ULONG		nNodeCount = 0;
 		

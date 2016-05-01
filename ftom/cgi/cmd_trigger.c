@@ -14,12 +14,14 @@ static
 FTM_RET FTOM_CGI_addTriggerToArray
 (
 	cJSON _PTR_ pObject,
+	FTM_TRIGGER_FIELD	xFiels,
 	FTM_TRIGGER_PTR	pTriggerInfo
 );
 static
 FTM_RET FTOM_CGI_createTriggerObject
 (
 	FTM_TRIGGER_PTR	pTriggerInfo,
+	FTM_TRIGGER_FIELD	xFiels,
 	cJSON _PTR_ _PTR_ ppObject
 );
 
@@ -306,10 +308,54 @@ FTM_RET	FTOM_CGI_getTriggerList
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
 
-	FTM_RET			xRet;
-	FTM_ULONG		ulCount = 0;
-	cJSON _PTR_		pRoot = NULL;
-	cJSON _PTR_		pTriggers = NULL;
+	FTM_RET				xRet;
+	FTM_INT				i;
+	FTM_ULONG			ulCount = 0;
+	FTM_CHAR_PTR		pValue = NULL;
+	FTM_TRIGGER_FIELD	xFields = FTM_TRIGGER_FIELD_ID;
+	cJSON _PTR_			pRoot = NULL;
+	cJSON _PTR_			pTriggers = NULL;
+
+	pRoot = cJSON_CreateObject();
+
+	for(i = 0 ; ; i++)
+	{
+		FTM_CHAR	pTitle[32];
+
+		sprintf(pTitle,"field%d", i+1);
+
+		pValue = pReq->getstr(pReq, pTitle, false);
+		if (pValue == NULL)
+		{
+			break;	
+		}
+
+		if (strcasecmp(pValue, "all") == 0)
+		{
+			xFields |= FTM_TRIGGER_FIELD_ALL;
+			break;
+		}
+		else if (strcasecmp(pValue, "type") == 0)
+		{
+			xFields |= FTM_TRIGGER_FIELD_TYPE;	
+		}
+		else if (strcasecmp(pValue, "name") == 0)
+		{
+			xFields |= FTM_TRIGGER_FIELD_NAME;	
+		}
+		else if (strcasecmp(pValue, "epid") == 0)
+		{
+			xFields |= FTM_TRIGGER_FIELD_EPID;	
+		}
+		else if (strcasecmp(pValue, "condition") == 0)
+		{
+			xFields |= FTM_TRIGGER_FIELD_CONDITION;	
+		}
+		else
+		{
+			xRet = FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
 
 	xRet = FTOM_CLIENT_TRIGGER_count(pClient, &ulCount);
 	if (xRet != FTM_RET_OK)
@@ -317,7 +363,6 @@ FTM_RET	FTOM_CGI_getTriggerList
 		goto finish;
 	}
 
-	pRoot = cJSON_CreateObject();
 	cJSON_AddItemToObject(pRoot, "triggers", pTriggers = cJSON_CreateArray());
 
 	for(int i = 0 ; i < ulCount ; i++)
@@ -330,7 +375,7 @@ FTM_RET	FTOM_CGI_getTriggerList
 			continue;
 		}
 
-		FTOM_CGI_addTriggerToArray(pTriggers, &xTriggerInfo);
+		FTOM_CGI_addTriggerToArray(pTriggers, xFields, &xTriggerInfo);
 	}
 
 finish:
@@ -352,7 +397,7 @@ FTM_RET FTOM_CGI_addTriggerToObject
 	FTM_RET	xRet;
 	cJSON _PTR_ pNewObject;
 
-	xRet = FTOM_CGI_createTriggerObject(pTriggerInfo, &pNewObject);
+	xRet = FTOM_CGI_createTriggerObject(pTriggerInfo, FTM_TRIGGER_FIELD_ALL, &pNewObject);
 	if (xRet == FTM_RET_OK)
 	{
 		cJSON_AddItemToObject(pObject, pName, pNewObject);	
@@ -364,6 +409,7 @@ FTM_RET FTOM_CGI_addTriggerToObject
 FTM_RET FTOM_CGI_addTriggerToArray
 (
 	cJSON _PTR_ pObject,
+	FTM_TRIGGER_FIELD xFields,
 	FTM_TRIGGER_PTR	pTriggerInfo
 )
 {
@@ -373,7 +419,7 @@ FTM_RET FTOM_CGI_addTriggerToArray
 	FTM_RET	xRet;
 	cJSON _PTR_ pNewObject;
 
-	xRet = FTOM_CGI_createTriggerObject(pTriggerInfo, &pNewObject);
+	xRet = FTOM_CGI_createTriggerObject(pTriggerInfo, xFields, &pNewObject);
 	if (xRet == FTM_RET_OK)
 	{
 		cJSON_AddItemToArray(pObject, pNewObject);	
@@ -385,6 +431,7 @@ FTM_RET FTOM_CGI_addTriggerToArray
 FTM_RET FTOM_CGI_createTriggerObject
 (
 	FTM_TRIGGER_PTR	pTriggerInfo,
+	FTM_TRIGGER_FIELD	xFields,
 	cJSON _PTR_ _PTR_ ppObject
 )
 {
@@ -396,38 +443,57 @@ FTM_RET FTOM_CGI_createTriggerObject
 
 	pObject = cJSON_CreateObject();
 
-	cJSON_AddStringToObject(pObject, "id", pTriggerInfo->pID);	
-	cJSON_AddStringToObject(pObject, "type", FTM_TRIGGER_typeString(pTriggerInfo->xType));	
-	cJSON_AddStringToObject(pObject, "name", pTriggerInfo->pName);	
-	cJSON_AddStringToObject(pObject, "epid", pTriggerInfo->pEPID);	
-	cJSON_AddItemToObject(pObject, "contidion", pCondition = cJSON_CreateObject());
-	cJSON_AddNumberToObject(pCondition, "detectTime", pTriggerInfo->xParams.xCommon.ulDetectionTime);
-	cJSON_AddNumberToObject(pCondition, "holdTime", pTriggerInfo->xParams.xCommon.ulHoldingTime);
-	switch(pTriggerInfo->xType)
+	if (xFields & FTM_TRIGGER_FIELD_ID)
 	{
-	case	FTM_TRIGGER_TYPE_ABOVE:
-		{
-			cJSON_AddStringToObject(pCondition, "value2", FTM_VALUE_print(&pTriggerInfo->xParams.xAbove.xValue));
-		}
-		break;
+		cJSON_AddStringToObject(pObject, "id", pTriggerInfo->pID);	
+	}
 
-	case	FTM_TRIGGER_TYPE_BELOW:
-		{
-			cJSON_AddStringToObject(pCondition, "value", FTM_VALUE_print(&pTriggerInfo->xParams.xAbove.xValue));
-		}
-		break;
+	if (xFields & FTM_TRIGGER_FIELD_TYPE)
+	{
+		cJSON_AddStringToObject(pObject, "type", FTM_TRIGGER_typeString(pTriggerInfo->xType));	
+	}
 
-	case	FTM_TRIGGER_TYPE_INCLUDE:
-	case	FTM_TRIGGER_TYPE_EXCEPT:
-		{
-			cJSON_AddStringToObject(pCondition, "upper", FTM_VALUE_print(&pTriggerInfo->xParams.xInclude.xUpper));
-			cJSON_AddStringToObject(pCondition, "lower", FTM_VALUE_print(&pTriggerInfo->xParams.xInclude.xLower));
-		}
-		break;
+	if (xFields & FTM_TRIGGER_FIELD_NAME)
+	{
+		cJSON_AddStringToObject(pObject, "name", pTriggerInfo->pName);	
+	}
 
-	default:
-		break;
-	};
+	if (xFields & FTM_TRIGGER_FIELD_EPID)
+	{
+	cJSON_AddStringToObject(pObject, "epid", pTriggerInfo->pEPID);	
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_CONDITION)
+	{
+		cJSON_AddItemToObject(pObject, "contidion", pCondition = cJSON_CreateObject());
+		cJSON_AddNumberToObject(pCondition, "detectTime", pTriggerInfo->xParams.xCommon.ulDetectionTime);
+		cJSON_AddNumberToObject(pCondition, "holdTime", pTriggerInfo->xParams.xCommon.ulHoldingTime);
+		switch(pTriggerInfo->xType)
+		{
+		case	FTM_TRIGGER_TYPE_ABOVE:
+			{
+				cJSON_AddStringToObject(pCondition, "value2", FTM_VALUE_print(&pTriggerInfo->xParams.xAbove.xValue));
+			}
+			break;
+	
+		case	FTM_TRIGGER_TYPE_BELOW:
+			{
+				cJSON_AddStringToObject(pCondition, "value", FTM_VALUE_print(&pTriggerInfo->xParams.xAbove.xValue));
+			}
+			break;
+	
+		case	FTM_TRIGGER_TYPE_INCLUDE:
+		case	FTM_TRIGGER_TYPE_EXCEPT:
+			{
+				cJSON_AddStringToObject(pCondition, "upper", FTM_VALUE_print(&pTriggerInfo->xParams.xInclude.xUpper));
+				cJSON_AddStringToObject(pCondition, "lower", FTM_VALUE_print(&pTriggerInfo->xParams.xInclude.xLower));
+			}
+			break;
+	
+		default:
+			break;
+		};
+	}
 
 	*ppObject =pObject;
 

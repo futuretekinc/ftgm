@@ -9,9 +9,9 @@
 #include <net-snmp/library/oid.h>
 #include "ftm_types.h"
 
-#define	FTM_SNMP_VERSION_1	0 
-#define	FTM_SNMP_VERSION_2	1
-#define	FTM_SNMP_VERSION_3	2
+#define	FTM_SNMP_VERSION_1	1 
+#define	FTM_SNMP_VERSION_2	2
+#define	FTM_SNMP_VERSION_3	3
 	
 #define	FTM_SNMP_OID_LENGTH	32
 

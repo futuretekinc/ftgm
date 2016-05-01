@@ -400,6 +400,20 @@ FTM_RET	FTOM_RULEM_add
 	memset(pRule, 0, sizeof(FTOM_RULE));
 	memcpy(&pRule->xInfo, pInfo, sizeof(FTM_RULE));
 	
+	if (strlen(pRule->xInfo.pID) == 0)
+	{
+		FTOM_RULE_PTR pTmpRule = NULL;
+		do 
+		{	
+			struct timeval	xTime;
+
+			gettimeofday(&xTime, NULL);
+			sprintf(pRule->xInfo.pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
+			usleep(10);
+		}
+		while(FTOM_RULEM_get(pRuleM, pRule->xInfo.pID, &pTmpRule) == FTM_RET_OK);
+	}
+
 	FTM_LOCK_init(&pRule->xLock);
 	pRule->pRuleM = pRuleM;
 
@@ -429,7 +443,7 @@ FTM_RET	FTOM_RULEM_del
 
 	TRACE_CALL();
 
-	xRet = FTM_LIST_get(pRuleM->pRuleList, (FTM_VOID_PTR)&pRuleID, (FTM_VOID_PTR _PTR_)&pRule);
+	xRet = FTM_LIST_get(pRuleM->pRuleList, (FTM_VOID_PTR)pRuleID, (FTM_VOID_PTR _PTR_)&pRule);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_LIST_remove(pRuleM->pRuleList, pRule);

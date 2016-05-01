@@ -19,11 +19,6 @@ FTM_RET FTDM_TRIGGER_final
 	FTM_VOID
 );
 
-FTM_RET	FTDM_TRIGGER_showList
-(
-	FTM_VOID
-);
-
 FTM_RET	FTDM_TRIGGER_loadFromFile
 (
 	FTM_CHAR_PTR pFileName
@@ -78,6 +73,16 @@ FTM_RET	FTDM_TRIGGER_set
 	FTM_CHAR_PTR		pID,
 	FTM_TRIGGER_FIELD	xFields,
 	FTM_TRIGGER_PTR		pInfo
+);
+
+FTM_RET	FTDM_RULE_show
+(
+	FTDM_RULE_PTR	pRule	
+);
+
+FTM_RET	FTDM_TRIGGER_showList
+(
+	FTM_VOID
 );
 
 #endif

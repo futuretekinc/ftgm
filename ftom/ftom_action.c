@@ -336,7 +336,19 @@ FTM_RET	FTOM_ACTIONM_add
 	}
 
 	memcpy(&pAction->xInfo, pInfo, sizeof(FTM_ACTION));
+	if (strlen(pAction->xInfo.pID) == 0)
+	{
+		FTOM_ACTION_PTR pTmpAction = NULL;
+		do 
+		{	
+			struct timeval	xTime;
 
+			gettimeofday(&xTime, NULL);
+			sprintf(pAction->xInfo.pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
+			usleep(10);
+		}
+		while(FTOM_ACTIONM_get(pActionM, pAction->xInfo.pID, &pTmpAction) == FTM_RET_OK);
+	}
 	xRet = FTM_LIST_append(pActionM->pActionList, pAction);
 	if (xRet != FTM_RET_OK)
 	{
@@ -361,7 +373,7 @@ FTM_RET	FTOM_ACTIONM_del
 
 	TRACE_CALL();
 
-	xRet = FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)&pActionID, (FTM_VOID_PTR _PTR_)&pAction);
+	xRet = FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)pActionID, (FTM_VOID_PTR _PTR_)&pAction);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_LIST_remove(pActionM->pActionList, pAction);
@@ -380,7 +392,7 @@ FTM_RET	FTOM_ACTIONM_get
 {
 	TRACE_CALL();
 
-	return	FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)&pActionID, (FTM_VOID_PTR _PTR_)ppAction);
+	return	FTM_LIST_get(pActionM->pActionList, (FTM_VOID_PTR)pActionID, (FTM_VOID_PTR _PTR_)ppAction);
 }
 
 FTM_RET	FTOM_ACTIONM_getAt

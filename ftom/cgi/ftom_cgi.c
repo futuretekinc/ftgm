@@ -64,6 +64,7 @@ static
 FTOM_CGI_COMMAND	pActionCmds[] =
 {
 	{	"get",	FTOM_CGI_getAction			},
+	{	"set",	FTOM_CGI_setAction			},
 	{	"add",	FTOM_CGI_addAction			},
 	{	"del",	FTOM_CGI_delAction			},
 	{	"list",	FTOM_CGI_getActionList		},
@@ -74,6 +75,7 @@ static
 FTOM_CGI_COMMAND	pRuleCmds[] =
 {
 	{	"get",	FTOM_CGI_getRule			},
+	{	"set",	FTOM_CGI_setRule			},
 	{	"add",	FTOM_CGI_addRule			},
 	{	"del",	FTOM_CGI_delRule			},
 	{	"list",	FTOM_CGI_getRuleList		},
@@ -744,21 +746,24 @@ FTM_RET	FTOM_CGI_getNodeOptSNMP
 	FTM_CHAR_PTR		pValue;
 	FTM_NODE_OPT_SNMP	xSNMP;
 
+	memcpy(&xSNMP, pSNMP, sizeof(FTM_NODE_OPT_SNMP));
+
 	pValue = pReq->getstr(pReq, "version", false);
 	if (pValue == NULL)
 	{
 		xSNMP.ulVersion = FTM_SNMP_VERSION_2;	
 	}
-	else
+	else 
 	{
 		xSNMP.ulVersion = strtoul(pValue, 0, 10);
-		if(xSNMP.ulVersion > FTM_SNMP_VERSION_3)
+		if ((xSNMP.ulVersion < FTM_SNMP_VERSION_1) || (xSNMP.ulVersion > FTM_SNMP_VERSION_3))
 		{
 			return	FTM_RET_INVALID_ARGUMENTS;	
 		}
 	}
 
 	pValue = pReq->getstr(pReq, "url", false);
+
 	if (pValue == NULL)
 	{
 		if (!bAllowEmpty)
@@ -1213,3 +1218,70 @@ FTM_RET	FTOM_CGI_getRuleState
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_CGI_getRuleTrigger
+(
+	qentry_t 	*pReq,
+	FTM_INT		nIndex,
+	FTM_CHAR_PTR pTriggerID,
+	FTM_ULONG	ulIDLen,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	FTM_CHAR		pTitle[32];
+	FTM_CHAR_PTR	pValue;
+
+	if (nIndex >= 8)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	sprintf(pTitle, "trigger%d", nIndex+1);
+	pValue = pReq->getstr(pReq, pTitle, false);
+	if (pValue == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;
+		}
+	}
+	else
+	{
+		strncpy(pTriggerID, pValue, ulIDLen);
+	}	
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getRuleAction
+(
+	qentry_t 	*pReq,
+	FTM_INT		nIndex,
+	FTM_CHAR_PTR pActionID,
+	FTM_ULONG	ulIDLen,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	FTM_CHAR		pTitle[32];
+	FTM_CHAR_PTR	pValue;
+
+	if (nIndex > 8)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	sprintf(pTitle, "action%d", nIndex+1);
+	pValue = pReq->getstr(pReq, pTitle, false);
+	if (pValue == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;
+		}
+	}
+	else
+	{
+		strncpy(pActionID, pValue, ulIDLen);
+	}	
+
+	return	FTM_RET_OK;
+}

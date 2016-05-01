@@ -19,6 +19,12 @@ FTM_RET	FTOM_CGI_getAction
 	qentry_t _PTR_ pReq
 );
 
+FTM_RET	FTOM_CGI_setAction
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+);
+
 FTM_RET	FTOM_CGI_getActionList
 (
 	FTOM_CLIENT_PTR pClient, 

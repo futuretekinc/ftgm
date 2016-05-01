@@ -407,60 +407,95 @@ FTM_RET	FTDM_RULE_set
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTDM_RULE_show
+(
+	FTDM_RULE_PTR	pRule	
+)
+{
+	ASSERT(pRule != NULL);
+	FTM_INT	j;
+
+	MESSAGE("# Rule Information\n");
+
+	MESSAGE("%16s : %s\n", "ID", pRule->xInfo.pID);
+	MESSAGE("%16s : %s\n", "Name", pRule->xInfo.pName);
+	if (pRule->xInfo.xState == FTM_RULE_STATE_ACTIVATE)
+	{
+		MESSAGE("%16s : %s\n", "State", "Active");
+	}
+	else
+	{
+		MESSAGE("%16s : %s\n", "State", "Deactive");
+	}
+	MESSAGE("%16s : ", "Triggres");
+	for(j = 0 ; j < pRule->xInfo.xParams.ulTriggers ; j++)
+	{
+		MESSAGE(" %16s", pRule->xInfo.xParams.pTriggers[j]);
+	}
+	MESSAGE("\n");
+
+	MESSAGE("%16s : ", "Actions");
+	for(j = 0 ; j < pRule->xInfo.xParams.ulActions ; j++)
+	{
+		MESSAGE(" %16s", pRule->xInfo.xParams.pActions[j]);
+	}
+	MESSAGE("\n");
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTDM_RULE_showList
 (
 	FTM_VOID
 )
 {
 	FTM_RULE_PTR	pRule;
+	FTM_CHAR		pSpace[17];
 	FTM_ULONG		i, ulCount;
+
+	memset(pSpace, ' ', 16);
+	pSpace[16] = 0;
+
 	MESSAGE("\n# Rule Information\n");
-	MESSAGE("\t%16s %8s %8s\n", "ID", "RULE", "ACTION");
+	MESSAGE("\t%16s %16s %16s %16s %16s\n", "ID", "NAME", "STATE", "RULE", "ACTION");
 
 	FTM_RULE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		if (FTM_RULE_getAt(i, &pRule) == FTM_RET_OK)
 		{
-			FTM_CHAR	pBuff[64];
-			FTM_ULONG	ulLen = 0;
 			FTM_ULONG	j;
 
-			MESSAGE("\t%16s ", pRule->pID);
-			for(j = 0 ; j < pRule->xParams.ulTriggers; j++)
+			for(j = 0 ; j < pRule->xParams.ulTriggers || j < pRule->xParams.ulActions ; j++)
 			{
-				if (pRule->xParams.pTriggers[j] == 0)
+				if (j == 0)
 				{
-					break;
-				}
-				if (ulLen != 0)
-				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %s", pRule->xParams.pTriggers[j]);
+					MESSAGE("\t%16s %16s %16s", pRule->pID, pRule->pName, (pRule->xState == FTM_RULE_STATE_ACTIVATE)?"Active":"Deactive");
 				}
 				else
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%s", pRule->xParams.pTriggers[j]);
+					MESSAGE("\t%16s %16s %16s", pSpace, pSpace, pSpace);
 				}
-			}
-			MESSAGE("%8s ", pBuff);
-			
-			ulLen = 0;
-			for(j = 0 ; j < pRule->xParams.ulActions ; j++)
-			{
-				if (pRule->xParams.pActions[j] == 0)
+				if (pRule->xParams.pTriggers[j] != 0)
 				{
-					break;
-				}
-				if (ulLen != 0)
-				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, " & %s", pRule->xParams.pActions[j]);
+					MESSAGE(" %16s", pRule->xParams.pTriggers[j]);
 				}
 				else
 				{
-					ulLen += snprintf(pBuff, sizeof(pBuff) - ulLen, "%s", pRule->xParams.pActions[j]);
+					MESSAGE(" %16s", pSpace);
 				}
+
+				if (pRule->xParams.pActions[j] != 0)
+				{
+					MESSAGE(" %16s", pRule->xParams.pActions[j]);
+				}
+				else
+				{
+					MESSAGE(" %16s", pSpace);
+				}
+				MESSAGE("\n");
 			}
-			MESSAGE("%8s\n", pBuff);
 
 		}
 	}

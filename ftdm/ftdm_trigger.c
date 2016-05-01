@@ -58,7 +58,6 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 				FTM_ULONG	i;
 				FTDM_TRIGGER_PTR	pTrigger;
 
-				TRACE("Trigger count : %d\n", ulCount);
 				for(i = 0 ; i < ulCount ; i++)
 				{
 					xRet = FTM_CONFIG_LIST_getItemAt(&xTriggers, i, &xTriggerItem);	
@@ -262,7 +261,6 @@ FTM_RET	FTDM_TRIGGER_loadFromDB
 		{
 			FTM_INT	i;
 
-			TRACE("Trigger Count : %d\n", nTriggerCount);
 			for(i = 0 ; i < nTriggerCount ; i++)
 			{
 				FTDM_TRIGGER_PTR	pTrigger;
@@ -307,29 +305,24 @@ FTM_RET	FTDM_TRIGGER_saveToDB
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		xRet = FTM_TRIGGER_getAt(i, &pTrigger);
-		if (xRet == FTM_RET_OK)
-		{
-			FTM_TRIGGER	xInfo;
+		FTM_TRIGGER	xInfo;
 
-			xRet = FTDM_DBIF_TRIGGER_get(pTrigger->pID, &xInfo);
-			if (xRet != FTM_RET_OK)
-			{
-				xRet = FTDM_DBIF_TRIGGER_create(&xInfo);	
-				if (xRet != FTM_RET_OK)
-				{
-					ERROR("Failed to save the new trigger.[%08x]\n", xRet);
-				}
-				else
-				{
-					ERROR("The trigger[%s] has been saved.\n", pTrigger->pID);
-				
-				}
-			}
-		}
-		else
+		xRet = FTM_TRIGGER_getAt(i, &pTrigger);
+		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Failed to get trigger information[%08x]\n", xRet);
+			continue;
+		}
+		
+
+		xRet = FTDM_DBIF_TRIGGER_get(pTrigger->pID, &xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			xRet = FTDM_DBIF_TRIGGER_create(pTrigger);	
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to save the new trigger.[%08x]\n", xRet);
+			}
 		}
 	}
 

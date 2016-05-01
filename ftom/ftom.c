@@ -1751,8 +1751,6 @@ FTM_RET	FTOM_addAction
 		}
 	}
 	return	xRet;
-
-	return	xRet;
 }
 
 FTM_RET	FTOM_delAction
@@ -1802,6 +1800,10 @@ FTM_RET	FTOM_getActionInfo
 	if (xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &pAction->xInfo, sizeof(FTM_ACTION));	
+	}
+	else
+	{
+		ERROR("Action[%s] get failed.[%08x]\n", pActionID, xRet);	
 	}
 
 	return	xRet;

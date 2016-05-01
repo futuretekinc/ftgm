@@ -251,6 +251,24 @@ FTM_RET	FTOM_CGI_getRuleState
 	FTM_BOOL	bAllowEmpty
 );
 
+FTM_RET	FTOM_CGI_getRuleTrigger
+(
+	qentry_t 	*pReq,
+	FTM_INT		nIndex,
+	FTM_CHAR_PTR pTriggerID,
+	FTM_ULONG	ulIDLen,
+	FTM_BOOL	bAllowEmpty
+);
+ 
+FTM_RET	FTOM_CGI_getRuleAction
+(
+	qentry_t 	*pReq,
+	FTM_INT		nIndex,
+	FTM_CHAR_PTR pActionID,
+	FTM_ULONG	ulIDLen,
+	FTM_BOOL	bAllowEmpty
+);
+ 
 #undef	TRACE
 #define	TRACE(format, ...) 	syslog(LOG_INFO, format, ## __VA_ARGS__)
 

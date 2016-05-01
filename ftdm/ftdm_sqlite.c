@@ -1708,7 +1708,6 @@ FTM_RET	FTDM_DBIF_TRIGGER_create
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	TRACE("New Trigger[%s] add!\n", pTrigger->pID);
 	sprintf(pSQL, "INSERT INTO trigger (ID,VALUE) VALUES (?,?)");
 	do 
 	{

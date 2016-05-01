@@ -20,6 +20,7 @@ FTM_RET	FTOM_CL_NODE_create
 	FTM_RET		xRet;
 	FTM_NODE	xInfo;
 	FTM_INT		nOpt;
+	FTM_CHAR	pDID[FTM_ID_LEN+1];
 
 	if (nArgc < 2)
 	{
@@ -113,7 +114,7 @@ FTM_RET	FTOM_CL_NODE_create
 		return	FTM_RET_INVALID_TYPE;	
 	}
 
-	xRet = FTOM_CLIENT_NODE_create(pClient, &xInfo);
+	xRet = FTOM_CLIENT_NODE_create(pClient, &xInfo, pDID, FTM_ID_LEN);
 
 	return	xRet;
 }

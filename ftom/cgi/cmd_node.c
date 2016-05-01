@@ -26,6 +26,7 @@ FTM_RET	FTOM_CGI_addNode
 	pRoot= cJSON_CreateObject();
 
 	FTM_NODE_setDefault(&xInfo);
+	TRACE("xINOF URL : %s\n", xInfo.xOption.xSNMP.pURL);
 
 	xRet = FTOM_CGI_getDID(pReq, xInfo.pDID, FTM_TRUE);
 	xRet |= FTOM_CGI_getNodeType(pReq, &xInfo.xType, FTM_FALSE);
@@ -56,6 +57,7 @@ FTM_RET	FTOM_CGI_addNode
 		goto finish;	
 	}
 
+	TRACE("xINOF URL : %s\n", xInfo.xOption.xSNMP.pURL);
 	xRet = FTOM_CLIENT_NODE_get(pClient, pDID, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
@@ -146,17 +148,61 @@ FTM_RET	FTOM_CGI_getNodeList
 
 	FTM_RET			xRet;
 	FTM_ULONG		ulCount = 0;
-	FTM_CHAR_PTR	pBuff = NULL;
 	FTM_NODE		xNodeInfo;
+	FTM_CHAR_PTR	pValue;
+	FTM_NODE_FIELD	xFields = FTM_NODE_FIELD_DID;
+	FTM_INT			i;
 	cJSON _PTR_ pRoot;
+
+	pRoot = cJSON_CreateArray();
+
+	for(i = 0; i < 10 ; i++)
+	{
+		FTM_CHAR	pTitle[32];
+
+		sprintf(pTitle, "field%d", (i+1)); 
+
+		pValue = pReq->getstr(pReq, pTitle, false);
+		if (pValue == NULL)
+		{
+			break;	
+		}
+
+		if (strcasecmp(pValue, "all") == 0)
+		{
+			xFields |= FTM_NODE_FIELD_ALL;
+		}
+		else if (strcasecmp(pValue, "type") == 0)
+		{
+			xFields |= FTM_NODE_FIELD_TYPE;
+		}
+		else if (strcasecmp(pValue, "flags") == 0)
+		{
+			xFields |= FTM_NODE_FIELD_FLAGS;
+		}
+		else if (strcasecmp(pValue, "location") == 0)
+		{
+			xFields |= FTM_NODE_FIELD_LOCATION;
+		}
+		else if (strcasecmp(pValue, "timeout") == 0)
+		{
+			xFields |= FTM_NODE_FIELD_TIMEOUT;
+		}
+		else if (strcasecmp(pValue, "interval") == 0)
+		{
+			xFields |= FTM_NODE_FIELD_INTERVAL;
+		}
+		else if (strcasecmp(pValue, "snmp") == 0)
+		{
+			xFields |= FTM_NODE_FIELD_SNMP;
+		}
+	}
 
 	xRet = FTOM_CLIENT_NODE_count(pClient, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;	
 	}
-
-	pRoot = cJSON_CreateArray();
 
 	for(FTM_INT i = 0 ; i < ulCount ; i++)
 	{
@@ -169,23 +215,12 @@ FTM_RET	FTOM_CGI_getNodeList
 		}
 		
 		cJSON_AddItemToArray(pRoot, pObject = cJSON_CreateObject());
-		FTOM_CGI_addNodeInfoToObject(pObject, &xNodeInfo, FTM_NODE_FIELD_ALL);
+		FTOM_CGI_addNodeInfoToObject(pObject, &xNodeInfo, xFields);
 	}
-
-	pBuff = cJSON_Print(pRoot);
-
-	qcgires_setcontenttype(pReq, "text/xml");
-	printf("%s", pBuff);
-
-	xRet = FTM_RET_OK;
 
 finish:
-	if (pRoot != NULL)
-	{
-		cJSON_Delete(pRoot);
-	}
 
-	return	xRet;
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
 FTM_RET	FTOM_CGI_setNode
@@ -317,26 +352,45 @@ FTM_RET	FTOM_CGI_addNodeInfoToObject
 	
 	}
 	
-	if (xFields & FTM_NODE_FIELD_OPTION)
+	switch(pNodeInfo->xType)
 	{
-		switch(pNodeInfo->xType)
+	case	FTM_NODE_TYPE_SNMP:
 		{
-		case	FTM_NODE_TYPE_SNMP:
+			if (xFields & FTM_NODE_FIELD_SNMP) 
 			{
 				cJSON _PTR_ pSNMP;
 	
 				cJSON_AddItemToObject(pRoot, "snmp", pSNMP = cJSON_CreateObject());
-				cJSON_AddStringToObject(pSNMP, "version", 	FTM_SNMP_versionString(pNodeInfo->xOption.xSNMP.ulVersion));
-				cJSON_AddStringToObject(pSNMP, "url", 		pNodeInfo->xOption.xSNMP.pURL);
-				cJSON_AddStringToObject(pSNMP, "community", pNodeInfo->xOption.xSNMP.pCommunity);
-				cJSON_AddStringToObject(pSNMP, "mib", 		pNodeInfo->xOption.xSNMP.pMIB);
-				cJSON_AddNumberToObject(pSNMP, "retry",	pNodeInfo->xOption.xSNMP.ulMaxRetryCount);
+				if (xFields & FTM_NODE_FIELD_SNMP_VERSION)
+				{
+					cJSON_AddStringToObject(pSNMP, "version", 	FTM_SNMP_versionString(pNodeInfo->xOption.xSNMP.ulVersion));
+				}
+
+				if (xFields & FTM_NODE_FIELD_SNMP_URL)
+				{
+					cJSON_AddStringToObject(pSNMP, "url", 		pNodeInfo->xOption.xSNMP.pURL);
+				}
+
+				if (xFields & FTM_NODE_FIELD_SNMP_COMMUNITY)
+				{
+					cJSON_AddStringToObject(pSNMP, "community", pNodeInfo->xOption.xSNMP.pCommunity);
+				}
+
+				if (xFields & FTM_NODE_FIELD_SNMP_MIB)
+				{
+					cJSON_AddStringToObject(pSNMP, "mib", 		pNodeInfo->xOption.xSNMP.pMIB);
+				}
+
+				if (xFields & FTM_NODE_FIELD_SNMP_MAX_RETRY)
+				{
+					cJSON_AddNumberToObject(pSNMP, "retry",	pNodeInfo->xOption.xSNMP.ulMaxRetryCount);
+				}
 			}
-			break;
+		}
+		break;
 	
-		default:
-			{
-			}
+	default:
+		{
 		}
 	}
 
