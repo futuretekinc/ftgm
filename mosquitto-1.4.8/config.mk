@@ -120,15 +120,15 @@ ifneq ($(or $(findstring $(UNAME),FreeBSD), $(findstring $(UNAME),OpenBSD)),)
 else
 	BROKER_LIBS:=-ldl -lm
 endif
-LIB_LIBS:=
-PASSWD_LIBS:=
+LIB_LIBS:= -ldl
+PASSWD_LIBS:= -ldl
 
 ifeq ($(UNAME),Linux)
-	BROKER_LIBS:=$(BROKER_LIBS) -lrt -Wl,--dynamic-list=linker.syms
+	BROKER_LIBS:=$(BROKER_LIBS) -lrt -Wl,--dynamic-list=linker.syms -ldl
 	LIB_LIBS:=$(LIB_LIBS) -lrt
 endif
 
-CLIENT_LDFLAGS:=$(LDFLAGS) -L../lib ../lib/libmosquitto.so.${SOVERSION}
+CLIENT_LDFLAGS:=$(LDFLAGS) -L../lib ../lib/libmosquitto.so.${SOVERSION} -ldl
 
 ifeq ($(UNAME),SunOS)
 	ifeq ($(CC),cc)
@@ -166,7 +166,7 @@ ifeq ($(WITH_TLS),yes)
 	LIB_LIBS:=$(LIB_LIBS) -lssl -lcrypto
 	BROKER_CFLAGS:=$(BROKER_CFLAGS) -DWITH_TLS
 	LIB_CFLAGS:=$(LIB_CFLAGS) -DWITH_TLS
-	PASSWD_LIBS:=-lcrypto
+	PASSWD_LIBS:=-lcrypto -ldl
 	CLIENT_CFLAGS:=$(CLIENT_CFLAGS) -DWITH_TLS
 
 	ifeq ($(WITH_TLS_PSK),yes)
