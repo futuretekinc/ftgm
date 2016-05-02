@@ -20,6 +20,12 @@ typedef	struct
 	FTOM_SERVICE_CALLBACK	fServiceCB;
 }	FTOM_DMC, _PTR_	FTOM_DMC_PTR;
 
+FTM_RET	FTOM_DMC_create
+(
+	FTOM_PTR pOM,
+	FTOM_DMC_PTR _PTR_ 	ppDMC
+);
+
 FTM_RET FTOM_DMC_init
 (
 	FTOM_DMC_PTR 	pDMC,

@@ -23,7 +23,7 @@ typedef	struct
 	FTM_EP		xInfo;
 }	FTOM_DISCOVERY_EP, _PTR_ FTOM_DISCOVERY_EP_PTR;
 
-typedef	struct
+typedef	struct FTOM_DISCOVERY_STRUCT
 {
 	FTOM_PTR			pOM;
 	pthread_t			xThread;
@@ -42,6 +42,12 @@ typedef	struct
 	FTOM_ON_MESSAGE_CALLBACK	fOldCB;
 	FTM_VOID_PTR				pOldData;
 }	FTOM_DISCOVERY, _PTR_ FTOM_DISCOVERY_PTR;
+
+FTM_RET	FTOM_DISCOVERY_create
+(
+	FTOM_PTR pOM,
+	FTOM_DISCOVERY_PTR _PTR_ 	ppDiscovery
+);
 
 FTM_RET	FTOM_DISCOVERY_init
 (

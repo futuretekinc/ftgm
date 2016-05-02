@@ -30,6 +30,36 @@ FTM_BOOL	FTOM_DISCOVERY_seekNode
 	const FTM_VOID_PTR	pKey
 );
 
+FTM_RET	FTOM_DISCOVERY_create
+(
+	FTOM_PTR pOM,
+	FTOM_DISCOVERY_PTR _PTR_ 	ppDiscovery
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(ppDiscovery != NULL);
+
+	FTM_RET	xRet;
+	FTOM_DISCOVERY_PTR	pDiscovery;
+
+	pDiscovery = (FTOM_DISCOVERY_PTR)FTM_MEM_malloc(sizeof(FTOM_DISCOVERY));
+	if (pDiscovery == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = FTOM_DISCOVERY_init(pDiscovery, pOM);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pDiscovery);
+		return	xRet;	
+	}
+
+	*ppDiscovery = pDiscovery;
+
+	return	FTM_RET_OK;
+}
+	
 FTM_RET	FTOM_DISCOVERY_init
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,

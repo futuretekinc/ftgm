@@ -25,8 +25,11 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_shell_cmds.c\
 			   ftom_dmc.c\
 			   ftom_trigger.c\
+			   ftom_trigger_management.c\
 			   ftom_action.c\
+			   ftom_action_management.c\
 			   ftom_rule.c\
+			   ftom_rule_management.c\
 			   ftom_mqtt_client.c\
 			   ftom_mqtt_client_ft.c\
 			   ftom_mqtt_client_tpgw.c\

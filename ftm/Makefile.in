@@ -1,0 +1,94 @@
+include ${TOPDIR}/.config
+
+export PLATFORM=${CONFIG_PLATFORM}
+export MODEL=${CONFIG_MODEL}
+export CROSS=${CONFIG_CROSS_COMPILE}
+export HOST=${CONFIG_HOST}
+export TARGETMACH=arm-linux
+export CC=${CROSS}gcc
+export CXX=${CROSS}g++
+export AR=${CROSS}ar
+export LD=${CROSS}ld
+export AS=${CROSS}as
+export STRIP=${CROSS}strip
+export RANLIB=${CROSS}ranlib
+
+export PKGDIR=${TOPDIR}/pkg
+export BUILDDIR=${TOPDIR}/build
+export DESTDIR=${BUILDDIR}/_root
+export PREFIX=/usr
+
+CONFIGDIR=/etc/config
+INITDDIR=/etc/init.d
+RCDDIR=/etc/rc.d
+
+CONFIGURED_FILE=${BUILDDIR}/.configured	
+
+define init_package
+	$(eval FILE_NAME := $1)
+	if [ ! -d ${FILE_NAME} ]; then \
+		case $(shell ls ${PKGDIR}/ | grep "${FILE_NAME}\." | sed "s/${FILE_NAME}.//") in \
+			tar.gz) tar xvfz ${PKGDIR}/${FILE_NAME}.tar.gz;; \
+			tar.bz2) tar xvfj ${PKGDIR}/${FILE_NAME}.tar.bz2;; \
+			tar.xz) tar xvfJ ${PKGDIR}/${FILE_NAME}.tar.xz;; \
+			zip) unzip ${PKGDIR}/${FILE_NAME}.zip;; \
+			*) echo "Unknown file type";; \
+		esac ; \
+		if [ -d patch ]; then \
+			patch -p0 < patch/$1.diff ; \
+		fi; \
+	fi; 
+endef
+
+define reinit_package
+	[ -d $1 ] && rm -rf $1; \
+	$(call init_package,$1)
+endef
+
+define config_package
+	if [ $(shell ${TOPDIR}/tools/search_string ${CONFIGURED_FILE} $1) -eq 0 ]; then \
+		if [ -f $1/configure ]; then \
+			( cd $1;./configure $2); \
+		else \
+			(cd $1;./Configure $2); \
+		fi; \
+		echo $1 >> ${CONFIGURED_FILE};\
+	fi	
+endef
+
+define reconfig_package
+	(cd $1;./configure $2)
+	if [ $(shell ${TOPDIR}/tools/search_string ${CONFIGURED_FILE} $1) -eq 0 ]; then \
+		echo $1 >> ${CONFIGURED_FILE};\
+	else \
+	fi	
+endef
+
+define set_configured_package
+	echo $1 >> ${CONFIGURED_FILE}
+endef
+
+define clear_config_package
+	$(shell ${TOPDIR}/tools/remove_string ${CONFIGURED_FILE} $1)
+endef
+
+define build_package
+	make -C $1 ${BUILD_OPTIONS} 
+endef
+
+define install_package
+	make -C $1 install  ${INSTALL_OPTIONS} 
+endef
+
+define copy_package
+	[ -d $2 ] || mkdir -p $2
+	cp -r $1/* $2/
+endef
+
+define clean_package
+	rm -rf $1 
+endef
+
+define distclean_package
+	rm -rf $1 
+endef

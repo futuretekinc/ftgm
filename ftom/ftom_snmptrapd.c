@@ -117,7 +117,11 @@ FTM_RET	FTOM_SNMPTRAPD_create
 	{
 		FTM_MEM_free(pSNMPTRAPD);	
 		ERROR("Initialize failed[%08x].\n", xRet);
+		return	xRet;
 	}
+
+	*ppSNMPTRAPD = pSNMPTRAPD;
+
 	return	xRet;
 }
 

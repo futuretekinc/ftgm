@@ -1,13 +1,11 @@
 #include "ftom.h"
 #include "ftom_shell_cmds.h"
-#include "ftom_node.h"
-#include "ftom_node_management.h"
-#include "ftom_ep.h"
-#include "ftom_ep_management.h"
 #include "ftom_msg.h"
-#include "ftom_trigger.h"
-#include "ftom_action.h"
-#include "ftom_rule.h"
+#include "ftom_node_management.h"
+#include "ftom_ep_management.h"
+#include "ftom_trigger_management.h"
+#include "ftom_action_management.h"
+#include "ftom_rule_management.h"
 #include "ftom_discovery.h"
 
 FTM_ULONG	ulGetheringTime = 3;

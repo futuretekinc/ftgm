@@ -9,8 +9,7 @@
 #include "libconfig.h"
 #include "ftom.h"
 #include "ftom_params.h"
-#include "ftom_node.h"
-#include "ftom_ep.h"
+#include "ftom_node_management.h"
 #include "ftom_ep_management.h"
 #include "ftom_action.h"
 #include "ftom_server.h"
@@ -457,6 +456,36 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_UNKNOWN, 		NULL)
 };
 
+FTM_RET	FTOM_SERVER_create
+(
+	FTOM_PTR pOM,
+	FTOM_SERVER_PTR _PTR_ 	ppServer
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(ppServer != NULL);
+
+	FTM_RET	xRet;
+	FTOM_SERVER_PTR	pServer;
+
+	pServer = (FTOM_SERVER_PTR)FTM_MEM_malloc(sizeof(FTOM_SERVER));
+	if (pServer == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = FTOM_SERVER_init(pServer, pOM);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pServer);
+		return	xRet;	
+	}
+
+	*ppServer = pServer;
+
+	return	FTM_RET_OK;
+}
+	
 FTM_RET	FTOM_SERVER_init
 (
 	FTOM_SERVER_PTR	pServer,

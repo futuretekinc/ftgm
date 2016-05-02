@@ -1,0 +1,5 @@
+#!/bin/sh
+
+CODE=`cat $1 | grep "$2=" | sed "s/$2=//"`
+echo $CODE
+

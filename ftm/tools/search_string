@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cat $1 2>&1 | awk -v val=$2 'BEGIN{ found=0 }{ if ($1 ~ val) { found=1 }}END{ print found }'
+

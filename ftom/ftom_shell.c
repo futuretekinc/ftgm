@@ -6,6 +6,36 @@ static FTM_VOID_PTR	FTOM_SHELL_process
 	FTM_VOID_PTR	pData
 );
 
+FTM_RET	FTOM_SHELL_create
+(
+	FTOM_PTR pOM,
+	FTOM_SHELL_PTR _PTR_ 	ppShell
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(ppShell != NULL);
+
+	FTM_RET	xRet;
+	FTOM_SHELL_PTR	pShell;
+
+	pShell = (FTOM_SHELL_PTR)FTM_MEM_malloc(sizeof(FTOM_SHELL));
+	if (pShell == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = FTOM_SHELL_init(pShell, pOM);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pShell);
+		return	xRet;	
+	}
+
+	*ppShell = pShell;
+
+	return	FTM_RET_OK;
+}
+	
 FTM_RET	FTOM_SHELL_init
 (
 	FTOM_SHELL_PTR 	pShell,

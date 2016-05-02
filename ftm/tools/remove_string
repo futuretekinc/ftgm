@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cat $1 2>&1 | awk -v val=$2 '{if ($1 !~ val) { print $1}}' > /tmp/.remove_string_result
+cp /tmp/.remove_string_result $1
+

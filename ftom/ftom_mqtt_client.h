@@ -39,7 +39,7 @@ typedef	struct
 	FTM_ULONG	ulCBSet;
 }	FTOM_MQTT_CLIENT_CONFIG, _PTR_ FTOM_MQTT_CLIENT_CONFIG_PTR;
 
-typedef	struct
+typedef	struct FTOM_MQTT_CLIENT_STRUCT
 {
 	FTOM_MQTT_CLIENT_CONFIG	xConfig;
 

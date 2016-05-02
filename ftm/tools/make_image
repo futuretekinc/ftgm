@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if [ ! -d $1 ]; then
+	exit 1
+fi
+
+mksquashfs $1 root.squashfs -nopad -noappend -root-owned -b 256k -processors 8
+
+dd if=root.squashfs of=tmpfile.0 bs=4k conv=sync
+echo -ne '\xde\xad\xc0\xde' >> tmpfile.0
+dd if=tmpfile.0 of=tmpfile.1 bs=4k conv=sync
+echo -ne '\xde\xad\xc0\xde' >> tmpfile.1
+dd if=tmpfile.1 of=tmpfile.2 bs=64k conv=sync
+echo -ne '\xde\xad\xc0\xde' >> tmpfile.2
+dd if=tmpfile.2 of=root.squashfs bs=64k conv=sync
+echo -ne '\xde\xad\xc0\xde' >> root.squashfs
+
+mkimage -n 'RootFS-1.0.0.5-FTM-100S' -A arm -O linux -T filesystem -C gzip -d root.squashfs $2
+rm tmpfile.* root.*
+
+

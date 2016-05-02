@@ -16,11 +16,11 @@
 #include "ftom_shell.h"
 #include "ftom_mqtt_client.h"
 #include "ftom_msg.h"
-#include "ftom_utils.h"
-#include "ftom_trigger.h"
-#include "ftom_action.h"
-#include "ftom_rule.h"
+#include "ftom_trigger_management.h"
+#include "ftom_action_management.h"
+#include "ftom_rule_management.h"
 #include "ftom_discovery.h"
+#include "ftom_utils.h"
 
 FTM_VOID_PTR	FTOM_process(FTM_VOID_PTR pData);
 FTM_RET			FTOM_TASK_startService(FTOM_PTR pOM);
@@ -98,15 +98,6 @@ static 	FTM_RET	FTOM_callback
 	FTM_VOID_PTR 	pData
 );
 
-//static	FTM_RET	FTOM_SNMPTrapCB(FTM_CHAR_PTR pTrapMsg);
-static	FTOM_SERVER		xServer;
-static	FTOM_SNMPC		xSNMPC;
-static	FTOM_SNMPTRAPD	xSNMPTRAPD;
-static	FTOM_DMC		xDMC;
-static	FTOM_SHELL		xShell;
-static	FTOM_MQTT_CLIENT	xMQTTC;
-static 	FTOM_DISCOVERY	xDiscovery;
-
 static 	FTOM_SERVICE	pServices[] =
 {
 	{
@@ -122,7 +113,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SERVER_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_SERVER_showConfig,
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_SERVER_notify,
-		.pData		= 	(FTM_VOID_PTR)&xServer
+		.pData		= 	NULL
 	},
 	{
 		.xType		=	FTOM_SERVICE_SNMP_CLIENT,
@@ -136,7 +127,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fCallback	=	FTOM_callback,
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SNMPC_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_SNMPC_showConfig,
-		.pData		=	(FTM_VOID_PTR)&xSNMPC
+		.pData		= 	NULL
 	},
 	{
 		.xType		=	FTOM_SERVICE_SNMPTRAPD,
@@ -150,7 +141,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fCallback	=	FTOM_callback,
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SNMPTRAPD_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_SNMPTRAPD_showConfig,
-		.pData		=	(FTM_VOID_PTR)&xSNMPTRAPD
+		.pData		= 	NULL
 	},
 	{
 		.xType		=	FTOM_SERVICE_DBM,
@@ -165,7 +156,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_DMC_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_DMC_showConfig,
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_DMC_notify,
-		.pData		=	(FTM_VOID_PTR)&xDMC
+		.pData		= 	NULL
 	},
 	{
 		.xType		=	FTOM_SERVICE_MQTT_CLIENT,
@@ -180,7 +171,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_MQTT_CLIENT_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_MQTT_CLIENT_showConfig,
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_MQTT_CLIENT_notify,
-		.pData		= 	(FTM_VOID_PTR)&xMQTTC
+		.pData		= 	NULL
 	},
 	{
 		.xType		=	FTOM_SERVICE_SHELL,
@@ -195,7 +186,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SHELL_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_SHELL_showConfig,
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_SHELL_notify,
-		.pData		= 	(FTM_VOID_PTR)&xShell
+		.pData		= 	NULL
 	},
 	{
 		.xType		=	FTOM_SERVICE_DISCOVERY,
@@ -210,7 +201,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fLoadFromFile=	NULL,
 		.fShowConfig=	NULL,
 		.fNotify	=	NULL,
-		.pData		= 	(FTM_VOID_PTR)&xDiscovery
+		.pData		= 	NULL
 	},
 };
 
@@ -289,6 +280,7 @@ FTM_RET	FTOM_destroy(FTOM_PTR _PTR_ ppOM)
 FTM_RET	FTOM_init(FTOM_PTR pOM)
 {
 	FTM_RET	xRet;
+	FTM_INT	i;
 
 	memset(pOM, 0, sizeof(FTOM));
 
@@ -352,6 +344,29 @@ FTM_RET	FTOM_init(FTOM_PTR pOM)
 
 	FTOM_RULEM_setTriggerM(pOM->pRuleM, pOM->pTriggerM);
 	FTOM_RULEM_setActionM(pOM->pRuleM, pOM->pActionM);
+
+	FTOM_SERVER_create(pOM, &pOM->pServer);
+	FTOM_SNMPC_create(pOM, &pOM->pSNMPC);
+	FTOM_SNMPTRAPD_create(pOM, &pOM->pSNMPTRAPD);
+	FTOM_DMC_create(pOM, &pOM->pDMC);
+	FTOM_MQTT_CLIENT_create(pOM, &pOM->pMQTTC);
+	FTOM_SHELL_create(pOM, &pOM->pShell);
+	FTOM_DISCOVERY_create(pOM, &pOM->pDiscovery);
+
+	for(i = 0 ; i < sizeof(pServices) / sizeof(FTOM_SERVICE) ; i++)
+	{
+		switch(pServices[i].xType)
+		{
+		case	FTOM_SERVICE_SERVER: pServices[i].pData = (FTM_VOID_PTR)pOM->pServer; break;
+		case	FTOM_SERVICE_SNMP_CLIENT: pServices[i].pData = (FTM_VOID_PTR)pOM->pSNMPC; break;
+		case	FTOM_SERVICE_SNMPTRAPD: pServices[i].pData = (FTM_VOID_PTR)pOM->pSNMPTRAPD; break;
+		case	FTOM_SERVICE_DBM: pServices[i].pData =(FTM_VOID_PTR)pOM->pDMC; break;
+		case	FTOM_SERVICE_MQTT_CLIENT: pServices[i].pData =(FTM_VOID_PTR)pOM->pMQTTC; break;
+		case	FTOM_SERVICE_SHELL: pServices[i].pData =(FTM_VOID_PTR)pOM->pShell; break;
+		case	FTOM_SERVICE_DISCOVERY: pServices[i].pData = (FTM_VOID_PTR)pOM->pDiscovery; break;
+		default: break;
+		}
+	}
 
 	FTOM_SERVICE_init(pOM, pServices, sizeof(pServices) / sizeof(FTOM_SERVICE));
 
@@ -592,7 +607,7 @@ FTM_RET	FTOM_TASK_sync
 	FTM_RET			xRet;
 	FTM_ULONG		ulCount, i;
 
-	xRet = FTDMC_NODE_count(&xDMC.xSession, &ulCount);
+	xRet = FTDMC_NODE_count(&pOM->pDMC->xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -604,7 +619,7 @@ FTM_RET	FTOM_TASK_sync
 		FTM_NODE	xNodeInfo;
 		FTOM_NODE_PTR	pNode;
 
-		xRet = FTDMC_NODE_getAt(&xDMC.xSession, i, &xNodeInfo);	
+		xRet = FTDMC_NODE_getAt(&pOM->pDMC->xSession, i, &xNodeInfo);	
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Can't get node info from DMC!\n");
@@ -630,7 +645,7 @@ FTM_RET	FTOM_TASK_sync
 		TRACE("Node[%s] creating success.\n", pNode->xInfo.pDID);
 	}
 
-	xRet = FTDMC_EP_CLASS_count(&xDMC.xSession, &ulCount);
+	xRet = FTDMC_EP_CLASS_count(&pOM->pDMC->xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP Class count get failed[%08x].\n", xRet);
@@ -641,11 +656,11 @@ FTM_RET	FTOM_TASK_sync
 	{
 		FTM_EP_CLASS	xEPClassInfo;
 
-		xRet = FTDMC_EP_CLASS_getAt(&xDMC.xSession, i, &xEPClassInfo);
+		xRet = FTDMC_EP_CLASS_getAt(&pOM->pDMC->xSession, i, &xEPClassInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("FTDMC_EP_CLASS_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
-					xDMC.xSession.hSock, i, xRet);
+					pOM->pDMC->xSession.hSock, i, xRet);
 			continue;
 		}
 
@@ -657,7 +672,7 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
-	xRet = FTDMC_EP_count(&xDMC.xSession, 0, &ulCount);
+	xRet = FTDMC_EP_count(&pOM->pDMC->xSession, 0, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP count get failed[%08x].\n", xRet);
@@ -671,7 +686,7 @@ FTM_RET	FTOM_TASK_sync
 		FTM_EP			xEPInfo;
 		FTOM_EP_PTR		pEP;
 
-		xRet = FTDMC_EP_getAt(&xDMC.xSession, i, &xEPInfo);
+		xRet = FTDMC_EP_getAt(&pOM->pDMC->xSession, i, &xEPInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("EP object get at %d failed[%08x]\n", i, xRet);
@@ -693,7 +708,7 @@ FTM_RET	FTOM_TASK_sync
 		TRACE("EP[%s] creating success.\n", pEP->xInfo.pEPID);
 	}
 
-	xRet = FTDMC_TRIGGER_count(&xDMC.xSession, &ulCount);
+	xRet = FTDMC_TRIGGER_count(&pOM->pDMC->xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger count get failed[%08x].\n", xRet);
@@ -705,14 +720,14 @@ FTM_RET	FTOM_TASK_sync
 		FTM_TRIGGER		xTriggerInfo;
 		FTOM_TRIGGER_PTR	pTrigger = NULL;
 
-		xRet = FTDMC_TRIGGER_getAt(&xDMC.xSession, i, &xTriggerInfo);
+		xRet = FTDMC_TRIGGER_getAt(&pOM->pDMC->xSession, i, &xTriggerInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Event[%d] data load failed.\n", i);	
 			continue;
 		}
 
-		xRet = FTOM_TRIGGERM_add(pOM->pTriggerM, &xTriggerInfo, &pTrigger);
+		xRet = FTOM_TRIGGERM_createTrigger(pOM->pTriggerM, &xTriggerInfo, &pTrigger);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new event can not registration!\n") ;
@@ -720,7 +735,7 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
-	xRet = FTDMC_ACTION_count(&xDMC.xSession, &ulCount);
+	xRet = FTDMC_ACTION_count(&pOM->pDMC->xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action count get failed[%08x].\n", xRet);
@@ -732,14 +747,14 @@ FTM_RET	FTOM_TASK_sync
 		FTM_ACTION	xActionInfo;
 		FTOM_ACTION_PTR pAction = NULL;
 
-		xRet = FTDMC_ACTION_getAt(&xDMC.xSession, i, &xActionInfo);
+		xRet = FTDMC_ACTION_getAt(&pOM->pDMC->xSession, i, &xActionInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Action[%d] data load failed.\n", i);	
 			continue;
 		}
 
-		xRet = FTOM_ACTIONM_add(pOM->pActionM, &xActionInfo, &pAction);
+		xRet = FTOM_ACTIONM_createAction(pOM->pActionM, &xActionInfo, &pAction);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new action event can not registration!\n") ;
@@ -747,7 +762,7 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
-	xRet = FTDMC_RULE_count(&xDMC.xSession, &ulCount);
+	xRet = FTDMC_RULE_count(&pOM->pDMC->xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Rule count get failed[%08x].\n", xRet);
@@ -759,14 +774,14 @@ FTM_RET	FTOM_TASK_sync
 		FTM_RULE	xRuleInfo;
 		FTOM_RULE_PTR	pRule = NULL;
 
-		xRet = FTDMC_RULE_getAt(&xDMC.xSession, i, &xRuleInfo);
+		xRet = FTDMC_RULE_getAt(&pOM->pDMC->xSession, i, &xRuleInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Rule[%d] data load failed.\n", i);	
 			continue;
 		}
 
-		xRet = FTOM_RULEM_add(pOM->pRuleM, &xRuleInfo, &pRule);
+		xRet = FTOM_RULEM_createRule(pOM->pRuleM, &xRuleInfo, &pRule);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new action event can not registration!\n") ;
@@ -931,7 +946,7 @@ FTM_RET FTOM_onSaveEPData
 	FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pMsg->xData);
 
 	FTOM_TRIGGERM_updateEP(pOM->pTriggerM, pMsg->pEPID, &pMsg->xData);
-	FTOM_DMC_appendEPData(&xDMC, pMsg->pEPID, &pMsg->xData);
+	FTOM_DMC_appendEPData(pOM->pDMC, pMsg->pEPID, &pMsg->xData);
 
 	return	FTM_RET_OK;
 }
@@ -975,7 +990,7 @@ FTM_RET	FTOM_onSendEPData
 	ASSERT(pOM != NULL);
 	ASSERT(pMsg != NULL);
 
-	return	FTOM_MQTT_CLIENT_publishEPData(&xMQTTC, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
+	return	FTOM_MQTT_CLIENT_publishEPData(pOM->pMQTTC, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
 }
 
 FTM_RET	FTOM_onRule
@@ -1013,7 +1028,7 @@ FTM_RET	FTOM_onDiscovery
 	ASSERT(pOM != NULL);
 	ASSERT(pMsg != NULL);
 
-	FTOM_DISCOVERY_call(&xDiscovery, pMsg->pNetwork, pMsg->usPort);
+	FTOM_DISCOVERY_call(pOM->pDiscovery, pMsg->pNetwork, pMsg->usPort);
 
 	return	FTM_RET_OK;
 }
@@ -1131,7 +1146,7 @@ FTM_RET	FTOM_createEP
 	ASSERT(pOM != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EP_append(&xDMC.xSession, pInfo);
+	return	FTDMC_EP_append(&pOM->pDMC->xSession, pInfo);
 }
 
 FTM_RET	FTOM_destroyEP
@@ -1142,7 +1157,7 @@ FTM_RET	FTOM_destroyEP
 {
 	ASSERT(pOM != NULL);
 
-	return	FTDMC_EP_remove(&xDMC.xSession, pEPID);
+	return	FTDMC_EP_remove(&pOM->pDMC->xSession, pEPID);
 }
 
 FTM_RET	FTOM_setEPInfo
@@ -1166,7 +1181,7 @@ FTM_RET	FTOM_setEPInfo
 		return	xRet;	
 	}
 	
-	xRet = FTDMC_EP_set(&xDMC.xSession, pEPID, xFields, pInfo);
+	xRet = FTDMC_EP_set(&pOM->pDMC->xSession, pEPID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -1267,7 +1282,7 @@ FTM_RET	FTOM_getEPDataList
 	ASSERT(pDataList != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_get(&xDMC.xSession, pEPID, ulStart, pDataList, ulMaxCount, pulCount);
+	return	FTDMC_EP_DATA_get(&pOM->pDMC->xSession, pEPID, ulStart, pDataList, ulMaxCount, pulCount);
 }
 
 FTM_RET	FTOM_getEPDataInfo
@@ -1279,7 +1294,7 @@ FTM_RET	FTOM_getEPDataInfo
 	FTM_ULONG_PTR 	pulCount
 )
 {
-	return	FTDMC_EP_DATA_info(&xDMC.xSession, pEPID, pulBeginTime, pulEndTime, pulCount);
+	return	FTDMC_EP_DATA_info(&pOM->pDMC->xSession, pEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
 FTM_RET	FTOM_getEPDataCount
@@ -1289,7 +1304,7 @@ FTM_RET	FTOM_getEPDataCount
 	FTM_ULONG_PTR 	pulCount
 )
 {
-	return	FTDMC_EP_DATA_count(&xDMC.xSession, pEPID, pulCount);
+	return	FTDMC_EP_DATA_count(&pOM->pDMC->xSession, pEPID, pulCount);
 }
 
 
@@ -1571,14 +1586,14 @@ FTM_RET	FTOM_addTrigger
 	FTM_RET		xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
 
-	xRet = FTOM_TRIGGERM_add(pOM->pTriggerM, pInfo, &pTrigger);
+	xRet = FTOM_TRIGGERM_createTrigger(pOM->pTriggerM, pInfo, &pTrigger);
 	if (xRet == FTM_RET_OK)
 	{
 		strncpy(pTriggerID, pTrigger->xInfo.pID, FTM_ID_LEN);
-		xRet = FTDMC_TRIGGER_add(&xDMC.xSession, &pTrigger->xInfo);
+		xRet = FTDMC_TRIGGER_add(&pOM->pDMC->xSession, &pTrigger->xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			FTOM_TRIGGERM_del(pOM->pTriggerM, pTriggerID);
+			FTOM_TRIGGERM_destroyTrigger(pOM->pTriggerM, &pTrigger);
 		}
 	}
 	return	xRet;
@@ -1593,8 +1608,15 @@ FTM_RET	FTOM_delTrigger
 	ASSERT(pOM != NULL);
 
 	FTM_RET	xRet;
+	FTOM_TRIGGER_PTR	pTrigger = NULL;
 
-	xRet =  FTOM_TRIGGERM_del(pOM->pTriggerM, pTriggerID);
+	xRet =	FTOM_TRIGGERM_get(pOM->pTriggerM, pTriggerID, &pTrigger);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet =  FTOM_TRIGGERM_destroyTrigger(pOM->pTriggerM, &pTrigger);
 
 	return	xRet;
 }
@@ -1682,7 +1704,7 @@ FTM_RET	FTOM_setTriggerInfo
 		return	xRet;
 	}
 
-	xRet = FTDMC_TRIGGER_set(&xDMC.xSession, pTriggerID, xFields, pInfo);
+	xRet = FTDMC_TRIGGER_set(&pOM->pDMC->xSession, pTriggerID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger[%s] DB update failed.\n", pTriggerID);	
@@ -1740,14 +1762,14 @@ FTM_RET	FTOM_addAction
 	FTM_RET	xRet;
 	FTOM_ACTION_PTR	pAction = NULL;
 
-	xRet = FTOM_ACTIONM_add(pOM->pActionM, pInfo, &pAction);
+	xRet = FTOM_ACTIONM_createAction(pOM->pActionM, pInfo, &pAction);
 	if (xRet == FTM_RET_OK)
 	{
 		strncpy(pActionID, pAction->xInfo.pID, FTM_ID_LEN);
-		xRet = FTDMC_ACTION_add(&xDMC.xSession, &pAction->xInfo);
+		xRet = FTDMC_ACTION_add(&pOM->pDMC->xSession, &pAction->xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			FTOM_ACTIONM_del(pOM->pActionM, pActionID);
+			FTOM_ACTIONM_destroyAction(pOM->pActionM, &pAction);
 		}
 	}
 	return	xRet;
@@ -1762,10 +1784,15 @@ FTM_RET	FTOM_delAction
 	ASSERT(pOM != NULL);
 
 	FTM_RET	xRet;
+	FTOM_ACTION_PTR	pAction = NULL;
 
-	xRet = FTOM_ACTIONM_del(pOM->pActionM, pActionID);
+	xRet = FTOM_ACTIONM_get(pOM->pActionM, pActionID, &pAction);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	xRet;
+	return	FTOM_ACTIONM_destroyAction(pOM->pActionM, &pAction);
 }
 
 FTM_RET	FTOM_getActionCount
@@ -1853,7 +1880,7 @@ FTM_RET	FTOM_setActionInfo
 		return	xRet;
 	}
 
-	xRet = FTDMC_ACTION_set(&xDMC.xSession, pActionID, xFields, pInfo);
+	xRet = FTDMC_ACTION_set(&pOM->pDMC->xSession, pActionID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action[%s] DB update failed.\n", pActionID);	
@@ -1903,14 +1930,14 @@ FTM_RET	FTOM_addRule
 	FTM_RET	xRet;
 	FTOM_RULE_PTR pRule;
 
-	xRet = FTOM_RULEM_add(pOM->pRuleM, pInfo, &pRule);
+	xRet = FTOM_RULEM_createRule(pOM->pRuleM, pInfo, &pRule);
 	if (xRet == FTM_RET_OK)
 	{
 		strncpy(pRuleID, pRule->xInfo.pID, FTM_ID_LEN);
-		xRet = FTDMC_RULE_add(&xDMC.xSession, &pRule->xInfo);
+		xRet = FTDMC_RULE_add(&pOM->pDMC->xSession, &pRule->xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			FTOM_RULEM_del(pOM->pRuleM, pRuleID);
+			FTOM_RULEM_destroyRule(pOM->pRuleM, &pRule);
 		}
 	}
 	return	xRet;
@@ -1925,8 +1952,15 @@ FTM_RET	FTOM_delRule
 	ASSERT(pOM != NULL);
 
 	FTM_RET	xRet;
+	FTOM_RULE_PTR pRule = NULL;
 
-	xRet = FTOM_RULEM_del(pOM->pRuleM, pRuleID);
+	xRet = FTOM_RULEM_get(pOM->pRuleM, pRuleID, &pRule);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	xRet = FTOM_RULEM_destroyRule(pOM->pRuleM, &pRule);
 
 	return	xRet;
 }
@@ -2013,7 +2047,7 @@ FTM_RET	FTOM_setRuleInfo
 		return	xRet;
 	}
 
-	xRet = FTDMC_RULE_set(&xDMC.xSession, pRuleID, xFields, pInfo);
+	xRet = FTDMC_RULE_set(&pOM->pDMC->xSession, pRuleID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Rule[%s] DB update failed.\n", pRuleID);	
@@ -2153,7 +2187,7 @@ FTM_RET	FTOM_discoveryEPCount
 	ASSERT(pIP != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTOM_SNMPC_getEPCount(&xSNMPC, pIP, xType, pulCount);
+	return	FTOM_SNMPC_getEPCount(pOM->pSNMPC, pIP, xType, pulCount);
 }
 
 FTM_RET	FTOM_getNodeInfo
@@ -2182,14 +2216,14 @@ FTM_RET	FTOM_discoveryEP
 	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 	FTM_CHAR	pName[FTM_NAME_LEN + 1];
 
-	xRet = FTOM_SNMPC_getEPID(&xSNMPC, pIP, xType, ulIndex, pEPID);
+	xRet = FTOM_SNMPC_getEPID(pOM->pSNMPC, pIP, xType, ulIndex, pEPID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP not found!\n");
 		return	xRet;	
 	}
 
-	xRet = FTOM_SNMPC_getEPName(&xSNMPC, pIP, xType, ulIndex, pName, FTM_NAME_LEN);
+	xRet = FTOM_SNMPC_getEPName(pOM->pSNMPC, pIP, xType, ulIndex, pName, FTM_NAME_LEN);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP not found!\n");

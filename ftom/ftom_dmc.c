@@ -21,6 +21,36 @@ static FTM_RET	FTOM_DMC_onSaveEPData
 	FTOM_MSG_SAVE_EP_DATA_PTR	pMsg
 );
 
+FTM_RET	FTOM_DMC_create
+(
+	FTOM_PTR pOM,
+	FTOM_DMC_PTR _PTR_ 	ppDMC
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(ppDMC != NULL);
+
+	FTM_RET	xRet;
+	FTOM_DMC_PTR	pDMC;
+
+	pDMC = (FTOM_DMC_PTR)FTM_MEM_malloc(sizeof(FTOM_DMC));
+	if (pDMC == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = FTOM_DMC_init(pDMC, pOM);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pDMC);
+		return	xRet;	
+	}
+
+	*ppDMC = pDMC;
+
+	return	FTM_RET_OK;
+}
+	
 FTM_RET FTOM_DMC_init
 (
 	FTOM_DMC_PTR 	pDMC,

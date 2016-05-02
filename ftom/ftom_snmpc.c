@@ -17,6 +17,36 @@ FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData);
 
 extern int	active_hosts;
 
+FTM_RET	FTOM_SNMPC_create
+(
+	FTOM_PTR pOM,
+	FTOM_SNMPC_PTR _PTR_ 	ppSNMPC
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(ppSNMPC != NULL);
+
+	FTM_RET	xRet;
+	FTOM_SNMPC_PTR	pSNMPC;
+
+	pSNMPC = (FTOM_SNMPC_PTR)FTM_MEM_malloc(sizeof(FTOM_SNMPC));
+	if (pSNMPC == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = FTOM_SNMPC_init(pSNMPC, pOM);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pSNMPC);
+		return	xRet;	
+	}
+
+	*ppSNMPC = pSNMPC;
+
+	return	FTM_RET_OK;
+}
+	
 FTM_RET	FTOM_SNMPC_init
 (
 	FTOM_SNMPC_PTR pClient,
