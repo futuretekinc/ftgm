@@ -1,7 +1,0 @@
-config rule FTP
-  option path /etc/alg-rules/ftp.rules
-  option enabled 1
-
-config rule IPSec
-  option path /etc/alg-rules/ipsec.rules
-  option enabled 1

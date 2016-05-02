@@ -1,6 +1,0 @@
-#!/bin/sh
-while [ 0 ]
-do
-	/bin/get_gps.sh > /var/log/gps
-	sleep 30
-done

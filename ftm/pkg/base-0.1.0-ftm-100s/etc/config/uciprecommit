@@ -1,3 +1,0 @@
-config tr069
-       option init tr069
-       option method reload
