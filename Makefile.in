@@ -8,7 +8,7 @@ COMMON_CFLAGS=-c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftdm/client \
 				-I$(TOPDIR)/ftom/client \
 				-I$(TOPDIR)/ftom/cmdline \
-				-I$(TOPDIR)/mosquitto-1.4.1/lib \
+				-I$(TOPDIR)/mosquitto-1.4.8/lib \
 				-I$(TOPDIR)/libconfig-1.4.9/lib \
 				-I$(TOPDIR)/net-snmp-5.7.2/include \
 				-I$(TOPDIR)/sqlite-3.8.9\
@@ -16,6 +16,7 @@ COMMON_CFLAGS=-c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/mxml-2.9\
 				-I$(TOPDIR)/cjson
 COMMON_LDFLAGS=-L. \
+			-Wl,--no-as-needed\
 				-L$(TOPDIR)/ftm \
 				-L$(TOPDIR)/ftdm \
 				-L$(TOPDIR)/ftdm/client \
@@ -23,10 +24,10 @@ COMMON_LDFLAGS=-L. \
 				-L$(TOPDIR)/ftom/client \
 				-L$(TOPDIR)/ftom/cmdline \
 				-L$(TOPDIR)/sqlite-3.8.9/.libs \
-				-L$(TOPDIR)/mosquitto-1.4.1/lib \
+				-L$(TOPDIR)/mosquitto-1.4.8/lib \
 				-L$(TOPDIR)/qdecoder-12.0.4/src \
 				-L$(TOPDIR)/mxml-2.9\
-				-I$(TOPDIR)/cjson
+				-L$(TOPDIR)/cjson
 
 ifeq ($(TARGET),"FTM-50S")
 CC=armv5-linux-gcc
