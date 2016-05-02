@@ -12,7 +12,7 @@ typedef	unsigned long	FTM_NODE_TYPE, _PTR_ FTM_NODE_TYPE_PTR;
 #define	FTM_NODE_TYPE_MODBUS_OVER_SERIAL	0x00000004
 
 typedef	unsigned long	FTM_NODE_FLAG, _PTR_ FTM_NODE_FLAG_PTR;
-#define	FTM_NODE_FLAG_STATIC	(1 << 0)
+#define	FTM_NODE_FLAG_DYNAMIC	(1 << 0)
 #define	FTM_NODE_FLAG_LAST		(1 << 0)
 
 typedef	FTM_ULONG	FTM_NODE_FIELD, _PTR_ FTM_NODE_FIELD_PTR;
@@ -110,6 +110,11 @@ FTM_RET	FTM_NODE_isValidSNMPOpt
 );
 
 FTM_RET	FTM_NODE_isStatic
+(
+	FTM_NODE_PTR pNode
+);
+
+FTM_RET	FTM_NODE_isDynamic
 (
 	FTM_NODE_PTR pNode
 );

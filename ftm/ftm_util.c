@@ -8,7 +8,6 @@ FTM_RET	FTM_makeID
 )
 {
 	ASSERT(pID != NULL);
-	FTM_RET			xRet;
 	struct timeval	xTime;
 	FTM_CHAR		pNewID[FTM_ID_LEN+1];
 	FTM_ULONG		pValue[4];
