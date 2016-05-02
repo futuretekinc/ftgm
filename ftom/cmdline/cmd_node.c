@@ -45,9 +45,9 @@ FTM_RET	FTOM_CL_NODE_create
 		{
    			switch(nOpt)
     		{
-	 		case    'S':
+	 		case    'd':
 	  			{
-				   	xInfo.xFlags = FTM_NODE_FLAG_STATIC;	
+				   	xInfo.xFlags = FTM_NODE_FLAG_DYNAMIC;	
 				}
 				break;
 
