@@ -94,6 +94,13 @@ FTM_RET FTOM_EP_getAt
 	FTOM_EP_PTR _PTR_ 	ppEP
 );
 
+FTM_RET	FTOM_EP_setInfo
+(
+	FTOM_EP_PTR			pEP,
+	FTM_EP_FIELD		xFields,
+	FTM_EP_PTR			pInfo
+);
+
 FTM_RET FTOM_EP_start
 (
 	FTOM_EP_PTR 		pEP
@@ -111,10 +118,10 @@ FTM_RET	FTOM_EP_getDataType
 	FTM_EP_DATA_TYPE_PTR pType
 );
 
-FTM_RET	FTOM_EP_setInfo
+FTM_RET	FTOM_EP_getDataCount
 (
 	FTOM_EP_PTR			pEP,
-	FTM_EP_PTR			pInfo
+	FTM_ULONG_PTR		pulCount
 );
 
 FTM_RET	FTOM_EP_setData
@@ -127,6 +134,22 @@ FTM_RET	FTOM_EP_getData
 (
 	FTOM_EP_PTR 		pEP, 
 	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTOM_EP_removeData
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_ULONG			ulIndex,
+	FTM_ULONG			ulCount,
+	FTM_ULONG_PTR		pulDeletedCount
+);
+
+FTM_RET	FTOM_EP_removeDataWithTime
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_ULONG			ulBegin,
+	FTM_ULONG			ulEnd,
+	FTM_ULONG_PTR		pulDeletedCount
 );
 
 FTM_RET	FTOM_EP_pushData

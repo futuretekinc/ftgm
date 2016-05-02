@@ -104,7 +104,8 @@ FTM_RET	FTOM_TRIGGER_final
 FTM_RET	FTOM_TRIGGER_create
 (
 	FTM_TRIGGER_PTR	pInfo,
-	FTOM_TRIGGER_PTR _PTR_ ppTrigger
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger,
+	FTM_BOOL	bAddToDB
 )
 {
 	ASSERT(pInfo != NULL);
@@ -128,10 +129,19 @@ FTM_RET	FTOM_TRIGGER_create
 	}
 
 	memcpy(&pTrigger->xInfo, pInfo, sizeof(FTM_TRIGGER));
-
 	if (strlen(pTrigger->xInfo.pID) == 0)
 	{
 		FTM_makeID(pTrigger->xInfo.pID, 16);
+	}
+
+	if (bAddToDB)
+	{
+		xRet = FTOM_DB_TRIGGER_add(&pTrigger->xInfo);	
+		if (xRet != FTM_RET_OK)
+		{
+			FTM_MEM_free(pTrigger);
+			return	xRet;
+		}
 	}
 
 	FTM_LIST_append(pTriggerList, pTrigger);
@@ -298,6 +308,62 @@ FTM_RET	FTOM_TRIGGER_getAt
 	return	FTM_LIST_getAt(pTriggerList, ulIndex, (FTM_VOID_PTR _PTR_)ppTrigger);
 }
 
+FTM_RET	FTOM_TRIGGER_setInfo
+(
+	FTOM_TRIGGER_PTR	pTrigger,
+	FTM_TRIGGER_FIELD	xFields,
+	FTM_TRIGGER_PTR		pInfo
+)
+{
+	ASSERT(pTrigger != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_DB_TRIGGER_setInfo(pTrigger->xInfo.pID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Trigger[%s] DB update failed.\n", pTrigger->xInfo.pID);	
+		return	xRet;
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_NAME)
+	{
+		strcpy(pTrigger->xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_EPID)
+	{
+		strcpy(pTrigger->xInfo.pEPID, pInfo->pEPID);
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_DETECT_TIME)
+	{
+		pTrigger->xInfo.xParams.xCommon.ulDetectionTime = pInfo->xParams.xCommon.ulDetectionTime;
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_HOLD_TIME)
+	{
+		pTrigger->xInfo.xParams.xCommon.ulHoldingTime = pInfo->xParams.xCommon.ulHoldingTime;
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_VALUE)
+	{
+		memcpy(&pTrigger->xInfo.xParams.xAbove.xValue, &pInfo->xParams.xAbove.xValue, sizeof(FTM_VALUE));
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_LOWER)
+	{
+		memcpy(&pTrigger->xInfo.xParams.xInclude.xLower, &pInfo->xParams.xInclude.xLower, sizeof(FTM_VALUE));
+	}
+
+	if (xFields & FTM_TRIGGER_FIELD_UPPER)
+	{
+		memcpy(&pTrigger->xInfo.xParams.xInclude.xUpper, &pInfo->xParams.xInclude.xUpper, sizeof(FTM_VALUE));
+	}
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTOM_TRIGGER_updateEP
 (

@@ -68,13 +68,6 @@ static FTM_RET	FTOM_SNMPTRAPD_discovery
 	FTM_CHAR_PTR 		pMsg
 );
 
-static FTM_RET	FTOM_SNMPTRAPD_setEPData
-(
-	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_CHAR_PTR		pEPID,
-	FTM_EP_DATA_PTR 	pData
-);
-
 static FTM_RET	FTOM_SNMPTRAPD_sendAlert
 (
 	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
@@ -959,6 +952,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 				if (xRet == FTM_RET_OK)
 				{
 					FTM_EP_DATA_TYPE	xDataType;
+					FTOM_EP_PTR			pEP;
 
 					FTOM_EP_getDataType(pEP, &xDataType);
 		
@@ -1075,9 +1069,14 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 								}
 							}
 						}
-						
-						xRet = FTOM_SNMPTRAPD_setEPData(pSNMPTRAPD, pEPID, &xData);
-						if (xRet != FTM_RET_OK)
+				
+
+						xRet = FTOM_EP_get(pEPID, &pEP);
+						if (xRet == FTM_RET_OK)
+						{
+							xRet = FTOM_EP_setData(pEP, &xData);	
+						}
+						else
 						{
 							ERROR("Notify failed.\n");	
 						}
@@ -1397,19 +1396,6 @@ error:
 
 	return	xRet;
 
-}
-
-FTM_RET	FTOM_SNMPTRAPD_setEPData
-(
-	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
-	FTM_CHAR_PTR		pEPID,
-	FTM_EP_DATA_PTR		pData
-)
-{
-	ASSERT(pSNMPTRAPD != NULL);
-	ASSERT(pData != NULL);
-
-	return	FTOM_setEPData(pEPID, pData);
 }
 
 FTM_RET	FTOM_SNMPTRAPD_sendAlert

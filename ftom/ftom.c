@@ -74,9 +74,9 @@ FTM_RET	FTOM_onEPCtrl
 );
 
 static 
-FTM_RET FTOM_onSaveEPData
+FTM_RET FTOM_onAddEPData
 (
-	FTOM_MSG_SAVE_EP_DATA_PTR	pMsg
+	FTOM_MSG_ADD_EP_DATA_PTR	pMsg
 );
 
 static 
@@ -282,7 +282,7 @@ FTM_RET	FTOM_init
 	bStop = FTM_TRUE;
 
 	onMessage[FTOM_MSG_TYPE_QUIT] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onQuit;
-	onMessage[FTOM_MSG_TYPE_SAVE_EP_DATA] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onSaveEPData;
+	onMessage[FTOM_MSG_TYPE_ADD_EP_DATA] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onAddEPData;
 	onMessage[FTOM_MSG_TYPE_SEND_EP_DATA] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onSendEPData;
 	onMessage[FTOM_MSG_TYPE_TIME_SYNC] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onTimeSync;
 	onMessage[FTOM_MSG_TYPE_EP_CTRL] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPCtrl;
@@ -676,7 +676,7 @@ FTM_RET	FTOM_TASK_sync
 			continue;
 		}
 
-		xRet = FTOM_TRIGGER_create(&xTriggerInfo, &pTrigger);
+		xRet = FTOM_TRIGGER_create(&xTriggerInfo, &pTrigger, FTM_FALSE);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new event can not registration!\n") ;
@@ -703,7 +703,7 @@ FTM_RET	FTOM_TASK_sync
 			continue;
 		}
 
-		xRet = FTOM_ACTION_create(&xActionInfo, &pAction);
+		xRet = FTOM_ACTION_create(&xActionInfo, &pAction, FTM_FALSE);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The new action event can not registration!\n") ;
@@ -871,9 +871,9 @@ FTM_RET	FTOM_onTimeSync
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_onSaveEPData
+FTM_RET FTOM_onAddEPData
 (
-	FTOM_MSG_SAVE_EP_DATA_PTR	pMsg
+	FTOM_MSG_ADD_EP_DATA_PTR	pMsg
 )
 {
 	ASSERT(pMsg != NULL);
@@ -1058,7 +1058,7 @@ FTM_RET	FTOM_getDID
  * EP management interface
  ******************************************************************/
 
-FTM_RET	FTOM_SYS_EP_addToDB
+FTM_RET	FTOM_DB_EP_add
 (
 	FTM_EP_PTR 	pInfo
 )
@@ -1068,7 +1068,7 @@ FTM_RET	FTOM_SYS_EP_addToDB
 	return	FTDMC_EP_append(&pDMC->xSession, pInfo);
 }
 
-FTM_RET	FTOM_SYS_EP_removeFromDB
+FTM_RET	FTOM_DB_EP_remove
 (
 	FTM_CHAR_PTR	pEPID
 )
@@ -1076,7 +1076,7 @@ FTM_RET	FTOM_SYS_EP_removeFromDB
 	return	FTDMC_EP_remove(&pDMC->xSession, pEPID);
 }
 
-FTM_RET	FTOM_setEPInfo
+FTM_RET	FTOM_DB_EP_setInfo
 (
 	FTM_CHAR_PTR	pEPID,
 	FTM_EP_FIELD	xFields,
@@ -1087,99 +1087,14 @@ FTM_RET	FTOM_setEPInfo
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-	FTOM_EP_PTR	pEP;
 
-	xRet = FTOM_EP_get(pEPID, &pEP);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-	
 	xRet = FTDMC_EP_set(&pDMC->xSession, pEPID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
+		ERROR("EP[%s] data info get failed[%08x].\n", pEPID, xRet);
 	}
 
-	if (xFields & FTM_EP_FIELD_FLAGS)
-	{
-		pEP->xInfo.xFlags = pInfo->xFlags;
-	}
-
-	if (xFields & FTM_EP_FIELD_NAME)
-	{
-		strcpy(pEP->xInfo.pName, pInfo->pName);
-	}
-
-	if (xFields & FTM_EP_FIELD_UNIT)
-	{
-		strcpy(pEP->xInfo.pUnit, pInfo->pUnit);
-	}
-
-	if (xFields & FTM_EP_FIELD_ENABLE)
-	{
-		pEP->xInfo.bEnable = pInfo->bEnable;
-	}
-
-	if (xFields & FTM_EP_FIELD_TIMEOUT)
-	{
-		pEP->xInfo.ulTimeout = pInfo->ulTimeout;
-	}
-
-	if (xFields & FTM_EP_FIELD_INTERVAL)
-	{
-		pEP->xInfo.ulInterval = pInfo->ulInterval;
-	}
-
-	if (xFields & FTM_EP_FIELD_DID)
-	{
-		strcpy(pEP->xInfo.pDID, pInfo->pDID);
-	}
-
-	if (xFields & FTM_EP_FIELD_LIMIT)
-	{
-		if (pEP->xInfo.xLimit.xType != pInfo->xLimit.xType)
-		{
-			memset(&pEP->xInfo.xLimit, 0, sizeof(FTM_EP_LIMIT));
-		}
-		pEP->xInfo.xLimit.xType = pInfo->xLimit.xType;
-
-		switch(pEP->xInfo.xLimit.xType)
-		{
-		case	FTM_EP_LIMIT_TYPE_COUNT:	
-			{
-				pEP->xInfo.xLimit.xParams.ulCount = pInfo->xLimit.xParams.ulCount;
-			}
-			break;
-	
-		case	FTM_EP_LIMIT_TYPE_TIME:	
-			{
-				pEP->xInfo.xLimit.xParams.xTime.ulStart = pInfo->xLimit.xParams.xTime.ulStart;
-				pEP->xInfo.xLimit.xParams.xTime.ulEnd = pInfo->xLimit.xParams.xTime.ulEnd;
-			}
-			break;
-	
-		case	FTM_EP_LIMIT_TYPE_HOURS:	
-			{
-				pEP->xInfo.xLimit.xParams.ulHours= pInfo->xLimit.xParams.ulCount;
-			}
-			break;
-	
-		case	FTM_EP_LIMIT_TYPE_DAYS:	
-			{
-				pEP->xInfo.xLimit.xParams.ulDays = pInfo->xLimit.xParams.ulCount;
-			}
-			break;
-	
-		case	FTM_EP_LIMIT_TYPE_MONTHS:	
-			{
-				pEP->xInfo.xLimit.xParams.ulMonths = pInfo->xLimit.xParams.ulCount;
-			}
-			break;
-		}
-	}
-
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 FTM_RET	FTOM_DB_EP_getDataList
@@ -1290,8 +1205,7 @@ FTM_RET	FTOM_callback
  *	Node management 
  ************************************************************/
 
-
-FTM_RET	FTOM_setEPData
+FTM_RET	FTOM_DB_EP_addData
 (
 	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR pData
@@ -1300,37 +1214,9 @@ FTM_RET	FTOM_setEPData
 	ASSERT(pData != NULL);
 
 	FTM_RET						xRet;
-	FTOM_MSG_SET_EP_DATA_PTR	pMsg;
+	FTOM_MSG_ADD_EP_DATA_PTR	pMsg;
 
-	xRet = FTOM_MSG_createSetEPData(pEPID, pData, &pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message push error![%08x]\n", xRet);
-		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
-		return	xRet;
-	}
-	
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_SYS_EP_storeData
-(
-	FTM_CHAR_PTR	pEPID,
-	FTM_EP_DATA_PTR pData
-)
-{
-	ASSERT(pData != NULL);
-
-	FTM_RET						xRet;
-	FTOM_MSG_SAVE_EP_DATA_PTR	pMsg;
-
-	xRet = FTOM_MSG_createSaveEPData(pEPID, pData, &pMsg);
+	xRet = FTOM_MSG_createAddEPData(pEPID, pData, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		WARN("Save EP data message creation failed[%08x].\n", xRet);
@@ -1379,7 +1265,7 @@ FTM_RET	FTOM_SYS_EP_publishData
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_delEPData
+FTM_RET	FTOM_DB_EP_removeData
 (
 	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG		ulIndex,
@@ -1389,10 +1275,10 @@ FTM_RET	FTOM_delEPData
 {
 	ASSERT(pulDeletedCount != NULL);
 
-	return	FTOM_DMC_EP_DATA_del(pDMC, pEPID, ulIndex, ulCount, pulDeletedCount);
+	return	FTDMC_EP_DATA_remove(&pDMC->xSession, pEPID, ulIndex, ulCount, pulDeletedCount);
 }
 
-FTM_RET	FTOM_delEPDataWithTime
+FTM_RET	FTOM_DB_EP_removeDataWithTime
 (
 	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG		ulBegin,
@@ -1402,48 +1288,40 @@ FTM_RET	FTOM_delEPDataWithTime
 {
 	ASSERT(pulDeletedCount != NULL);
 
-	return	FTOM_DMC_EP_DATA_delWithTime(pDMC, pEPID, ulBegin, ulEnd, pulDeletedCount);
+	return	FTDMC_EP_DATA_removeWithTime(&pDMC->xSession, pEPID, ulBegin, ulEnd, pulDeletedCount);
 }
 
-FTM_RET	FTOM_addTrigger
+FTM_RET	FTOM_DB_TRIGGER_add
 (
-	FTM_TRIGGER_PTR		pInfo,
-	FTM_CHAR_PTR		pTriggerID
+	FTM_TRIGGER_PTR		pInfo
 )
 {
-	
-	FTM_RET		xRet;
-	FTOM_TRIGGER_PTR	pTrigger;
+	ASSERT(pInfo != NULL);
 
-	xRet = FTOM_TRIGGER_create(pInfo, &pTrigger);
-	if (xRet == FTM_RET_OK)
+	FTM_RET	xRet;
+
+	xRet = FTDMC_TRIGGER_add(&pDMC->xSession, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		strncpy(pTriggerID, pTrigger->xInfo.pID, FTM_ID_LEN);
-		xRet = FTDMC_TRIGGER_add(&pDMC->xSession, &pTrigger->xInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			FTOM_TRIGGER_destroy(&pTrigger);
-		}
+		ERROR("Trigger[%s] failed to add to DB[%08x].\n", pInfo->pID, xRet);
 	}
+
 	return	xRet;
 }
 
-FTM_RET	FTOM_delTrigger
+FTM_RET	FTOM_DB_TRIGGER_remove
 (
 	FTM_CHAR_PTR	pTriggerID
 )
 {
 
 	FTM_RET	xRet;
-	FTOM_TRIGGER_PTR	pTrigger = NULL;
 
-	xRet =	FTOM_TRIGGER_get(pTriggerID, &pTrigger);
+	xRet = FTDMC_TRIGGER_del(&pDMC->xSession, pTriggerID);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
+		ERROR("Trigger[%s] failed to remove from DB[%08x].\n", pTriggerID, xRet);
 	}
-
-	xRet =  FTOM_TRIGGER_destroy(&pTrigger);
 
 	return	xRet;
 }
@@ -1489,7 +1367,7 @@ FTM_RET	FTOM_getTriggerInfoAt
 	return	xRet;
 }
 
-FTM_RET	FTOM_setTriggerInfo
+FTM_RET	FTOM_DB_TRIGGER_setInfo
 (
 	FTM_CHAR_PTR		pTriggerID,
 	FTM_TRIGGER_FIELD	xFields,
@@ -1500,81 +1378,31 @@ FTM_RET	FTOM_setTriggerInfo
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-	FTOM_TRIGGER_PTR	pTrigger;
-
-	xRet = FTOM_TRIGGER_get(pTriggerID, &pTrigger);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Trigger[%s] set failed.\n", pTriggerID);
-		return	xRet;
-	}
 
 	xRet = FTDMC_TRIGGER_set(&pDMC->xSession, pTriggerID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger[%s] DB update failed.\n", pTriggerID);	
-		return	xRet;
-	}
-
-	if (xFields & FTM_TRIGGER_FIELD_NAME)
-	{
-		strcpy(pTrigger->xInfo.pName, pInfo->pName);
-	}
-
-	if (xFields & FTM_TRIGGER_FIELD_EPID)
-	{
-		strcpy(pTrigger->xInfo.pEPID, pInfo->pEPID);
-	}
-
-	if (xFields & FTM_TRIGGER_FIELD_DETECT_TIME)
-	{
-		pTrigger->xInfo.xParams.xCommon.ulDetectionTime = pInfo->xParams.xCommon.ulDetectionTime;
-	}
-
-	if (xFields & FTM_TRIGGER_FIELD_HOLD_TIME)
-	{
-		pTrigger->xInfo.xParams.xCommon.ulHoldingTime = pInfo->xParams.xCommon.ulHoldingTime;
-	}
-
-	if (xFields & FTM_TRIGGER_FIELD_VALUE)
-	{
-		memcpy(&pTrigger->xInfo.xParams.xAbove.xValue, &pInfo->xParams.xAbove.xValue, sizeof(FTM_VALUE));
-	}
-
-	if (xFields & FTM_TRIGGER_FIELD_LOWER)
-	{
-		memcpy(&pTrigger->xInfo.xParams.xInclude.xLower, &pInfo->xParams.xInclude.xLower, sizeof(FTM_VALUE));
-	}
-
-	if (xFields & FTM_TRIGGER_FIELD_UPPER)
-	{
-		memcpy(&pTrigger->xInfo.xParams.xInclude.xUpper, &pInfo->xParams.xInclude.xUpper, sizeof(FTM_VALUE));
 	}
 
 	return	xRet;
 }
 
-FTM_RET	FTOM_addAction
+FTM_RET	FTOM_DB_ACTION_add
 (
-	FTM_ACTION_PTR	pInfo,
-	FTM_CHAR_PTR	pActionID
+	FTM_ACTION_PTR	pInfo
 )
 {
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-	FTOM_ACTION_PTR	pAction = NULL;
 
-	xRet = FTOM_ACTION_create(pInfo, &pAction);
-	if (xRet == FTM_RET_OK)
+	xRet = FTDMC_ACTION_add(&pDMC->xSession, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		strncpy(pActionID, pAction->xInfo.pID, FTM_ID_LEN);
-		xRet = FTDMC_ACTION_add(&pDMC->xSession, &pAction->xInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			FTOM_ACTION_destroy(&pAction);
-		}
+		ERROR("Action[%s] failed to add to DB[%08x].\n", pInfo->pID, xRet);	
 	}
+
 	return	xRet;
 }
 
@@ -1595,7 +1423,7 @@ FTM_RET	FTOM_delAction
 	return	FTOM_ACTION_destroy(&pAction);
 }
 
-FTM_RET	FTOM_getActionInfo
+FTM_RET	FTOM_DB_ACTION_getInfo
 (
 	FTM_CHAR_PTR	pActionID,
 	FTM_ACTION_PTR	pInfo
@@ -1604,22 +1432,17 @@ FTM_RET	FTOM_getActionInfo
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-	FTOM_ACTION_PTR	pAction;
 
-	xRet = FTOM_ACTION_get(pActionID, &pAction);
-	if (xRet == FTM_RET_OK)
+	xRet = FTDMC_ACTION_get(&pDMC->xSession, pActionID, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		memcpy(pInfo, &pAction->xInfo, sizeof(FTM_ACTION));	
-	}
-	else
-	{
-		ERROR("Action[%s] get failed.[%08x]\n", pActionID, xRet);	
+		ERROR("Action[%s] info failed to get from DB.[%08x]\n", pActionID, pInfo);	
 	}
 
 	return	xRet;
 }
 
-FTM_RET	FTOM_getActionInfoAt
+FTM_RET	FTOM_DB_ACTION_getInfoAt
 (
 	FTM_ULONG		ulIndex,
 	FTM_ACTION_PTR	pInfo
@@ -1628,18 +1451,17 @@ FTM_RET	FTOM_getActionInfoAt
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-	FTOM_ACTION_PTR	pAction;
-
-	xRet = FTOM_ACTION_getAt(ulIndex, &pAction);
-	if (xRet == FTM_RET_OK)
+	
+	xRet = FTDMC_ACTION_getAt(&pDMC->xSession, ulIndex, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		memcpy(pInfo, &pAction->xInfo, sizeof(FTM_ACTION));	
+		ERROR("Action[%lu] info failed to get from DB.[%08x]", ulIndex, xRet);
 	}
 
-	return	xRet;
+	return	xRet;	
 }
 
-FTM_RET	FTOM_setActionInfo
+FTM_RET	FTOM_DB_ACTION_setInfo
 (
 	FTM_CHAR_PTR		pActionID,
 	FTM_ACTION_FIELD	xFields,
@@ -1650,47 +1472,11 @@ FTM_RET	FTOM_setActionInfo
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-	FTOM_ACTION_PTR	pAction;
-
-	xRet = FTOM_ACTION_get(pActionID, &pAction);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Action[%s] get failed[%08x].\n", pActionID, xRet);
-		return	xRet;
-	}
 
 	xRet = FTDMC_ACTION_set(&pDMC->xSession, pActionID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action[%s] DB update failed.\n", pActionID);	
-		return	xRet;
-	}
-
-	switch(pAction->xInfo.xType)
-	{
-	case	FTM_ACTION_TYPE_SET:
-		{
-			if (xFields & FTM_ACTION_FIELD_NAME)
-			{
-				strcpy(pAction->xInfo.pName, pInfo->pName);
-			}
-
-			if (xFields & FTM_ACTION_FIELD_EPID)
-			{
-				strcpy(pAction->xInfo.xParams.xSet.pEPID, pInfo->xParams.xSet.pEPID);
-			}
-			
-			if (xFields & FTM_ACTION_FIELD_VALUE)
-			{
-				memcpy(&pAction->xInfo.xParams.xSet.xValue, &pInfo->xParams.xSet.xValue, sizeof(FTM_VALUE));
-			}
-		}
-		break;
-
-	default:
-		{
-			return	FTM_RET_ERROR;	
-		}
 	}
 
 	return	xRet;
@@ -1737,7 +1523,7 @@ FTM_RET	FTOM_DB_RULE_getInfoAt
 	return	FTDMC_RULE_getAt(&pDMC->xSession, ulIndex, pInfo);
 }
 
-FTM_RET	FTOM_setRuleInfo
+FTM_RET	FTOM_DB_RULE_setInfo
 (
 	FTM_CHAR_PTR	pRuleID,
 	FTM_RULE_FIELD	xFields,
@@ -1748,42 +1534,11 @@ FTM_RET	FTOM_setRuleInfo
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-	FTOM_RULE_PTR	pRule;
-
-	xRet = FTOM_RULE_get(pRuleID, &pRule);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Rule[%s] not found!\n", pRuleID);
-		return	xRet;
-	}
 
 	xRet = FTDMC_RULE_set(&pDMC->xSession, pRuleID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Rule[%s] DB update failed.\n", pRuleID);	
-		return	xRet;
-	}
-
-	if (xFields & FTM_RULE_FIELD_NAME)
-	{
-		strcpy(pRule->xInfo.pName, pInfo->pName);
-	}
-
-	if (xFields & FTM_RULE_FIELD_STATE)
-	{
-		pRule->xInfo.xState = pInfo->xState;
-	}
-	
-	if (xFields & FTM_RULE_FIELD_TRIGGERS)
-	{
-		pRule->xInfo.xParams.ulTriggers = pInfo->xParams.ulTriggers;
-		memcpy(pRule->xInfo.xParams.pTriggers, pInfo->xParams.pTriggers, sizeof(pInfo->xParams.pTriggers));
-	}
-
-	if (xFields & FTM_RULE_FIELD_ACTIONS)
-	{
-		pRule->xInfo.xParams.ulActions = pInfo->xParams.ulActions;
-		memcpy(pRule->xInfo.xParams.pActions, pInfo->xParams.pActions, sizeof(pInfo->xParams.pActions));
 	}
 
 	return	xRet;

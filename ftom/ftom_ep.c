@@ -192,7 +192,7 @@ FTM_RET	FTOM_EP_create
 
 	if (bAddToDB)
 	{
-		xRet = FTOM_SYS_EP_addToDB(&pEP->xInfo);
+		xRet = FTOM_DB_EP_add(&pEP->xInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			FTM_MEM_free(pEP);
@@ -298,6 +298,105 @@ FTM_RET FTOM_EP_getAt
 	ASSERT(ppEP != NULL);
 
 	return	FTM_LIST_getAt(pEPList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
+}
+
+FTM_RET	FTOM_EP_setInfo
+(
+	FTOM_EP_PTR		pEP,
+	FTM_EP_FIELD	xFields,
+	FTM_EP_PTR		pInfo
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_DB_EP_setInfo(pEP->xInfo.pEPID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (xFields & FTM_EP_FIELD_FLAGS)
+	{
+		pEP->xInfo.xFlags = pInfo->xFlags;
+	}
+
+	if (xFields & FTM_EP_FIELD_NAME)
+	{
+		strcpy(pEP->xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_EP_FIELD_UNIT)
+	{
+		strcpy(pEP->xInfo.pUnit, pInfo->pUnit);
+	}
+
+	if (xFields & FTM_EP_FIELD_ENABLE)
+	{
+		pEP->xInfo.bEnable = pInfo->bEnable;
+	}
+
+	if (xFields & FTM_EP_FIELD_TIMEOUT)
+	{
+		pEP->xInfo.ulTimeout = pInfo->ulTimeout;
+	}
+
+	if (xFields & FTM_EP_FIELD_INTERVAL)
+	{
+		pEP->xInfo.ulInterval = pInfo->ulInterval;
+	}
+
+	if (xFields & FTM_EP_FIELD_DID)
+	{
+		strcpy(pEP->xInfo.pDID, pInfo->pDID);
+	}
+
+	if (xFields & FTM_EP_FIELD_LIMIT)
+	{
+		if (pEP->xInfo.xLimit.xType != pInfo->xLimit.xType)
+		{
+			memset(&pEP->xInfo.xLimit, 0, sizeof(FTM_EP_LIMIT));
+		}
+		pEP->xInfo.xLimit.xType = pInfo->xLimit.xType;
+
+		switch(pEP->xInfo.xLimit.xType)
+		{
+		case	FTM_EP_LIMIT_TYPE_COUNT:	
+			{
+				pEP->xInfo.xLimit.xParams.ulCount = pInfo->xLimit.xParams.ulCount;
+			}
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_TIME:	
+			{
+				pEP->xInfo.xLimit.xParams.xTime.ulStart = pInfo->xLimit.xParams.xTime.ulStart;
+				pEP->xInfo.xLimit.xParams.xTime.ulEnd = pInfo->xLimit.xParams.xTime.ulEnd;
+			}
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_HOURS:	
+			{
+				pEP->xInfo.xLimit.xParams.ulHours= pInfo->xLimit.xParams.ulCount;
+			}
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_DAYS:	
+			{
+				pEP->xInfo.xLimit.xParams.ulDays = pInfo->xLimit.xParams.ulCount;
+			}
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_MONTHS:	
+			{
+				pEP->xInfo.xLimit.xParams.ulMonths = pInfo->xLimit.xParams.ulCount;
+			}
+			break;
+		}
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_EP_attach
@@ -583,6 +682,18 @@ FTM_RET	FTOM_EP_pullData
 	return	xRet;
 }
 
+FTM_RET	FTOM_EP_getDataCount
+(
+	FTOM_EP_PTR			pEP,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTOM_DB_EP_getDataCount(pEP->xInfo.pEPID, pulCount);
+}
+
 FTM_RET	FTOM_EP_getData
 (
 	FTOM_EP_PTR 	pEP, 
@@ -602,6 +713,53 @@ FTM_RET	FTOM_EP_getData
 	}
 
 	return	xRet;
+}
+
+FTM_RET	FTOM_EP_getDataList
+(
+	FTOM_EP_PTR		pEP,
+	FTM_EP_DATA_PTR	pDatas,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pDatas != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET	xRet;
+	FTM_ULONG	ulCachedDataCount;
+	FTM_ULONG	ulDataCount = 0;
+
+	xRet = FTOM_EP_getDataCount(pEP, &ulCachedDataCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (ulMaxCount <  ulCachedDataCount)
+	{
+		FTM_INT	i;
+		FTM_EP_DATA_PTR	pData;
+
+		FTM_LIST_iteratorStart(&pEP->xDataList);
+		for(i = 0 ; i < ulMaxCount ; i++)
+		{
+			xRet = FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+			if (xRet == FTM_RET_OK)
+			{
+				memcpy(&pDatas[ulDataCount++], pData, sizeof(FTM_EP_DATA));
+			}
+		}
+
+		*pulCount = ulDataCount;
+	}
+	else
+	{
+		xRet = FTOM_DB_EP_getDataList(pEP->xInfo.pEPID, 0, pDatas, ulMaxCount, pulCount);
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_EP_setData
@@ -663,7 +821,7 @@ FTM_RET	FTOM_EP_setData
 		xRet = FTM_LIST_append(&pEP->xDataList, pNewData);
 		if (xRet == FTM_RET_OK)
 		{
-			FTOM_SYS_EP_storeData(pEP->xInfo.pEPID, pData);
+			FTOM_DB_EP_addData(pEP->xInfo.pEPID, pData);
 		}
 		else
 		{
@@ -677,6 +835,79 @@ FTM_RET	FTOM_EP_setData
 	}
 
 	return	xRet;
+}
+
+FTM_RET	FTOM_EP_removeData
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pulDeletedCount != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_DB_EP_removeData(pEP->xInfo.pEPID, ulIndex, ulCount, pulDeletedCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%s] data failed to remove from DB[%08x].\n", pEP->xInfo.pEPID, xRet);	
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_EP_removeDataWithTime
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulDeletedCount
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pulDeletedCount != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_DB_EP_removeDataWithTime(pEP->xInfo.pEPID, ulBegin, ulEnd, pulDeletedCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%s] data failed to remove from DB[%08x].\n", pEP->xInfo.pEPID, xRet);	
+	}
+	else
+	{
+		FTM_EP_DATA_PTR	pData;
+
+		FTM_LIST_iteratorStart(&pEP->xDataList);
+		while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+		{
+			if(ulBegin <= pData->ulTime && pData->ulTime <= ulEnd)
+			{
+				FTM_LIST_remove(&pEP->xDataList, pData);
+				FTM_EP_DATA_destroy(pData);
+			}
+			else if (ulBegin > pData->ulTime)
+			{
+				break;	
+			}
+		}
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_EP_getDataInfo
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG_PTR	pulBegin,
+	FTM_ULONG_PTR	pulEnd,
+	FTM_ULONG_PTR	pulDeletedCount
+)
+{
+
 }
 
 FTM_RET	FTOM_EP_sendDataInTime

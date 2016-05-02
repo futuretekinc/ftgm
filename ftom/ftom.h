@@ -87,52 +87,51 @@ FTM_RET	FTOM_getDID
 	FTM_ULONG 		ulBuffLen
 );
 
-FTM_RET	FTOM_createNode
+FTM_RET	FTOM_DB_NODE_add
 (
-	FTM_NODE_PTR	pInfo,
-	FTOM_NODE_PTR _PTR_	ppNode
+	FTM_NODE_PTR	pInfo
 );
 
-FTM_RET	FTOM_destroyNode
+FTM_RET	FTOM_DB_NODE_remove
 (
-	FTOM_NODE_PTR _PTR_	ppNode
+	FTM_CHAR_PTR	pDID
 );
 
-FTM_RET	FTOM_countNode
+FTM_RET	FTOM_DB_NODE_count
 (
 	FTM_ULONG_PTR	pulCount
 );
 
-FTM_RET	FTOM_getNode
+FTM_RET	FTOM_DB_NODE_getInfo
 (
 	FTM_CHAR_PTR	pDID,
-	FTOM_NODE_PTR _PTR_ ppNode
+	FTM_NODE_PTR	pInfo
 );
 
-FTM_RET	FTOM_getNodeAt
+FTM_RET	FTOM_DB_NODE_getAt
 (
 	FTM_ULONG		ulIndex,
-	FTOM_NODE_PTR _PTR_ ppNode
+	FTM_NODE_PTR	pInfo
 );
 
-FTM_RET	FTOM_setNode
+FTM_RET	FTOM_DB_NODE_set
 (
 	FTM_CHAR_PTR	pDID,
 	FTM_NODE_FIELD	xFields,
 	FTM_NODE_PTR 	pInfo
 );
 
-FTM_RET	FTOM_SYS_EP_addToDB
+FTM_RET	FTOM_DB_EP_add
 (
 	FTM_EP_PTR pInfo
 );
 
-FTM_RET	FTOM_SYS_EP_removeFromDB
+FTM_RET	FTOM_DB_EP_remove
 (
 	FTM_CHAR_PTR	pEPID
 );
 
-FTM_RET	FTOM_setEPInfo
+FTM_RET	FTOM_DB_EP_setInfo
 (
 	FTM_CHAR_PTR	pEPID,
 	FTM_EP_FIELD	xFields,
@@ -162,18 +161,7 @@ FTM_RET	FTOM_DB_EP_getDataCount
 	FTM_ULONG_PTR 	ulCount
 );
 
-FTM_RET	FTOM_NOTIFY_rule
-(
-	FTM_CHAR_PTR	pRuleID,
-	FTM_RULE_STATE	xRuleState
-);
-
-FTM_RET	FTOM_NOTIFY_SNMPTrap
-(
-	FTM_CHAR_PTR 		pTrapMsg
-);
-
-FTM_RET	FTOM_getEPDataInfo
+FTM_RET	FTOM_DB_EP_getDataInfo
 (
 	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG_PTR	pulBegin,
@@ -181,26 +169,13 @@ FTM_RET	FTOM_getEPDataInfo
 	FTM_ULONG_PTR	pulCount
 );
 
-FTM_RET	FTOM_setEPData
+FTM_RET	FTOM_DB_EP_addData
 (
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR 	pData
 );
 
-FTM_RET	FTOM_SYS_EP_storeData
-(
-	FTM_CHAR_PTR		pEPID,
-	FTM_EP_DATA_PTR 	pData
-);
-
-FTM_RET	FTOM_SYS_EP_publishData
-(
-	FTM_CHAR_PTR	pEPID,
-	FTM_EP_DATA_PTR	pData,
-	FTM_ULONG		ulCount
-);
-
-FTM_RET	FTOM_delEPData
+FTM_RET	FTOM_DB_EP_removeData
 (
 	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG		ulIndex,
@@ -208,7 +183,7 @@ FTM_RET	FTOM_delEPData
 	FTM_ULONG_PTR	pulDeletedCount
 );
 
-FTM_RET	FTOM_delEPDataWithTime
+FTM_RET	FTOM_DB_EP_removeDataWithTime
 (
 	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG		ulBegin,
@@ -216,60 +191,58 @@ FTM_RET	FTOM_delEPDataWithTime
 	FTM_ULONG_PTR	pulDeletedCount
 );
 
-FTM_RET	FTOM_addTrigger
+FTM_RET	FTOM_DB_TRIGGER_add
 (
-	FTM_TRIGGER_PTR	pInfo,
+	FTM_TRIGGER_PTR	pInfo
+);
+
+FTM_RET	FTOM_DB_TRIGGER_remove
+(
 	FTM_CHAR_PTR	pTriggerID
 );
 
-FTM_RET	FTOM_delTrigger
-(
-	FTM_CHAR_PTR	pTriggerID
-);
-
-FTM_RET	FTOM_getTriggerInfo
+FTM_RET	FTOM_DB_TRIGGER_getInfo
 (
 	FTM_CHAR_PTR	pTriggerID,
 	FTM_TRIGGER_PTR	pInfo
 );
 
-FTM_RET	FTOM_getTriggerInfoAt
+FTM_RET	FTOM_DB_TRIGGER_getInfoAt
 (
 	FTM_ULONG		ulIndex,
 	FTM_TRIGGER_PTR	pInfo
 );
 
-FTM_RET	FTOM_setTriggerInfo
+FTM_RET	FTOM_DB_TRIGGER_setInfo
 (
 	FTM_CHAR_PTR		pTriggerID,
 	FTM_TRIGGER_FIELD	xFields,
 	FTM_TRIGGER_PTR		pInfo
 );
 
-FTM_RET	FTOM_addAction
+FTM_RET	FTOM_DB_ACTION_add
 (
-	FTM_ACTION_PTR	pInfo,
+	FTM_ACTION_PTR	pInfo
+);
+
+FTM_RET	FTOM_DB_ACTION_remove
+(
 	FTM_CHAR_PTR	pActionID
 );
 
-FTM_RET	FTOM_delAction
-(
-	FTM_CHAR_PTR	pActionID
-);
-
-FTM_RET	FTOM_getActionInfo
+FTM_RET	FTOM_DB_ACTION_getInfo
 (
 	FTM_CHAR_PTR	pActionID,
 	FTM_ACTION_PTR	pInfo
 );
 
-FTM_RET	FTOM_getActionInfoAt
+FTM_RET	FTOM_DB_ACTION_getInfoAt
 (
 	FTM_ULONG		ulIndex,
 	FTM_ACTION_PTR	pInfo
 );
 
-FTM_RET	FTOM_setActionInfo
+FTM_RET	FTOM_DB_ACTION_setInfo
 (
 	FTM_CHAR_PTR	pActionID,
 	FTM_ACTION_FIELD	xField,
@@ -309,6 +282,13 @@ FTM_RET	FTOM_nodeDiscovery
 (
 	FTM_CHAR_PTR	pNetwork,
 	FTM_USHORT		usPort
+);
+
+FTM_RET	FTOM_SYS_EP_publishData
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulCount
 );
 
 FTM_RET	FTOM_sendAlert
@@ -359,6 +339,17 @@ FTM_RET	FTOM_setMessageCallback
 	FTM_VOID_PTR				pData,
 	FTOM_ON_MESSAGE_CALLBACK _PTR_	pOldCB,
 	FTM_VOID_PTR _PTR_			pOldData
+);
+
+FTM_RET	FTOM_NOTIFY_rule
+(
+	FTM_CHAR_PTR	pRuleID,
+	FTM_RULE_STATE	xRuleState
+);
+
+FTM_RET	FTOM_NOTIFY_SNMPTrap
+(
+	FTM_CHAR_PTR 		pTrapMsg
 );
 
 #endif

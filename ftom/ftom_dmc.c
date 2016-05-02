@@ -15,10 +15,10 @@ static FTM_VOID_PTR	FTOM_DMC_process
 	FTM_VOID_PTR 	pData
 );
 
-static FTM_RET	FTOM_DMC_onSaveEPData
+static FTM_RET	FTOM_DMC_onAddEPData
 (
 	FTOM_DMC_PTR	pDMC,
-	FTOM_MSG_SAVE_EP_DATA_PTR	pMsg
+	FTOM_MSG_ADD_EP_DATA_PTR	pMsg
 );
 
 FTM_RET	FTOM_DMC_create
@@ -207,9 +207,9 @@ FTM_RET	FTOM_DMC_notify
 
 	switch(pMsg->xType)
 	{
-	case	FTOM_MSG_TYPE_SAVE_EP_DATA:
+	case	FTOM_MSG_TYPE_ADD_EP_DATA:
 		{	
-			xRet = FTOM_DMC_onSaveEPData(pDMC, (FTOM_MSG_SAVE_EP_DATA_PTR)pMsg);
+			xRet = FTOM_DMC_onAddEPData(pDMC, (FTOM_MSG_ADD_EP_DATA_PTR)pMsg);
 		}
 		break;
 
@@ -222,10 +222,10 @@ FTM_RET	FTOM_DMC_notify
 	return	xRet;
 }
 
-FTM_RET	FTOM_DMC_onSaveEPData
+FTM_RET	FTOM_DMC_onAddEPData
 (
 	FTOM_DMC_PTR	pDMC,
-	FTOM_MSG_SAVE_EP_DATA_PTR	pMsg
+	FTOM_MSG_ADD_EP_DATA_PTR	pMsg
 )
 {
 	ASSERT(pDMC != NULL);

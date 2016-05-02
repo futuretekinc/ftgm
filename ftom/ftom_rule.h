@@ -61,6 +61,13 @@ FTM_RET	FTOM_RULE_getAt
 	FTOM_RULE_PTR _PTR_ ppRule
 );
 
+FTM_RET	FTOM_RULE_setInfo
+(
+	FTOM_RULE_PTR	pRule,
+	FTM_RULE_FIELD	xFields,
+	FTM_RULE_PTR	pInfo
+);
+
 FTM_RET	FTOM_RULE_notifyChanged
 (
 	FTM_CHAR_PTR	pTriggerID

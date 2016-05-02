@@ -25,7 +25,8 @@ FTM_RET	FTOM_ACTION_final
 FTM_RET	FTOM_ACTION_create
 (
 	FTM_ACTION_PTR	pInfo,
-	FTOM_ACTION_PTR _PTR_ ppActionM
+	FTOM_ACTION_PTR _PTR_ ppActionM,
+	FTM_BOOL	bAddToDB	
 );
 
 FTM_RET	FTOM_ACTION_destroy
@@ -58,6 +59,13 @@ FTM_RET	FTOM_ACTION_getAt
 (
 	FTM_ULONG 			ulIndex, 
 	FTOM_ACTION_PTR _PTR_ ppActor
+);
+
+FTM_RET	FTOM_ACTION_setInfo
+(
+	FTOM_ACTION_PTR		pAction,
+	FTM_ACTION_FIELD	xFields,
+	FTM_ACTION_PTR		xInfo
 );
 
 FTM_RET	FTOM_ACTION_active

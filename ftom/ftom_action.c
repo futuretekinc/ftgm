@@ -89,12 +89,14 @@ FTM_RET	FTOM_ACTION_final
 FTM_RET	FTOM_ACTION_create
 (
 	FTM_ACTION_PTR 		pInfo,
-	FTOM_ACTION_PTR _PTR_ ppAction
+	FTOM_ACTION_PTR _PTR_ ppAction,
+	FTM_BOOL		bAddToDB
 )
 {
 	ASSERT(pInfo != NULL);
 	ASSERT(ppAction != NULL);
-
+	
+	FTM_RET	xRet;
 	FTOM_ACTION_PTR	pAction;
 
 	pAction = (FTOM_ACTION_PTR)FTM_MEM_malloc(sizeof(FTOM_ACTION));
@@ -110,6 +112,16 @@ FTM_RET	FTOM_ACTION_create
 	if (strlen(pAction->xInfo.pID) == 0)
 	{
 		FTM_makeID(pAction->xInfo.pID, 16);
+	}
+
+	if (bAddToDB)
+	{
+		xRet = FTOM_DB_ACTION_add(&pAction->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			FTM_MEM_free(pAction);
+			return	xRet;
+		}
 	}
 
 	FTM_LIST_append(pActionList, pAction);
@@ -267,6 +279,54 @@ FTM_RET	FTOM_ACTION_getAt
 )
 {
 	return	FTM_LIST_getAt(pActionList, ulIndex, (FTM_VOID_PTR _PTR_)ppAction);
+}
+
+FTM_RET	FTOM_ACTION_setInfo
+(
+	FTOM_ACTION_PTR		pAction,
+	FTM_ACTION_FIELD	xFields,
+	FTM_ACTION_PTR		pInfo
+)
+{
+	ASSERT(pAction != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	
+	xRet = FTOM_DB_ACTION_setInfo(pAction->xInfo.pID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	switch(pAction->xInfo.xType)
+	{
+	case	FTM_ACTION_TYPE_SET:
+		{
+			if (xFields & FTM_ACTION_FIELD_NAME)
+			{
+				strcpy(pAction->xInfo.pName, pInfo->pName);
+			}
+
+			if (xFields & FTM_ACTION_FIELD_EPID)
+			{
+				strcpy(pAction->xInfo.xParams.xSet.pEPID, pInfo->xParams.xSet.pEPID);
+			}
+			
+			if (xFields & FTM_ACTION_FIELD_VALUE)
+			{
+				memcpy(&pAction->xInfo.xParams.xSet.xValue, &pInfo->xParams.xSet.xValue, sizeof(FTM_VALUE));
+			}
+		}
+		break;
+
+	default:
+		{
+			return	FTM_RET_ERROR;	
+		}
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_ACTION_active

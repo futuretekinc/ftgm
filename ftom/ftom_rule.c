@@ -352,6 +352,50 @@ FTM_RET	FTOM_RULE_getAt
 	return	FTM_LIST_getAt(pRuleList, ulIndex, (FTM_VOID_PTR _PTR_)ppRule);
 }
 
+FTM_RET	FTOM_RULE_setInfo
+(
+	FTOM_RULE_PTR	pRule,
+	FTM_RULE_FIELD	xFields,
+	FTM_RULE_PTR	pInfo
+)
+{
+	ASSERT(pRule != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_DB_RULE_setInfo(pRule->xInfo.pID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Rule[%s] DB update failed.\n", pRule->xInfo.pID);	
+		return	xRet;
+	}
+
+	if (xFields & FTM_RULE_FIELD_NAME)
+	{
+		strcpy(pRule->xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_RULE_FIELD_STATE)
+	{
+		pRule->xInfo.xState = pInfo->xState;
+	}
+	
+	if (xFields & FTM_RULE_FIELD_TRIGGERS)
+	{
+		pRule->xInfo.xParams.ulTriggers = pInfo->xParams.ulTriggers;
+		memcpy(pRule->xInfo.xParams.pTriggers, pInfo->xParams.pTriggers, sizeof(pInfo->xParams.pTriggers));
+	}
+
+	if (xFields & FTM_RULE_FIELD_ACTIONS)
+	{
+		pRule->xInfo.xParams.ulActions = pInfo->xParams.ulActions;
+		memcpy(pRule->xInfo.xParams.pActions, pInfo->xParams.pActions, sizeof(pInfo->xParams.pActions));
+	}
+
+	return	xRet;
+}
+
 
 FTM_RET	FTOM_RULE_activate
 (
