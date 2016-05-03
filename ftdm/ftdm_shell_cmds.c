@@ -361,11 +361,11 @@ FTM_RET	FTDM_SHELL_delEPData
 
 	if (nIndex > 0)
 	{
-		xRet = FTDM_EP_DATA_del(pEP, nIndex - 1, ulCount);
+		xRet = FTDM_EP_DATA_del(pEP, nIndex - 1, ulCount, &ulCount);
 	}
 	else
 	{
-		xRet = FTDM_EP_DATA_del(pEP, ulTotalCount + nIndex , ulCount);
+		xRet = FTDM_EP_DATA_del(pEP, ulTotalCount + nIndex , ulCount, &ulCount);
 	}
 
 	if (xRet != FTM_RET_OK)
