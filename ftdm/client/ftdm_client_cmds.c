@@ -803,6 +803,7 @@ FTM_RET	FTDMC_EP_DATA_cmd
 				struct tm	xTMBegin;
 				struct tm	xTMEnd;
 				FTM_CHAR	pTemp[128];
+				FTM_ULONG	ulCount;
 
 				if (nArgc == 8)
 				{
@@ -840,7 +841,7 @@ FTM_RET	FTDMC_EP_DATA_cmd
 					return	FTM_RET_INVALID_ARGUMENTS;
 				}
 
-				xRet = FTDMC_EP_DATA_removeWithTime(&_xSession, pEPID, nBeginTime, nEndTime);
+				xRet = FTDMC_EP_DATA_removeWithTime(&_xSession, pEPID, nBeginTime, nEndTime, &ulCount);
 				if (xRet == FTM_RET_OK)
 				{
 					MESSAGE("EndPoint data deleted successfully!\n");	
