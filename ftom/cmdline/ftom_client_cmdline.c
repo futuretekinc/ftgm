@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include "ftm.h"
 #include "ftm_shared_memory.h"
+#include "ftom_config.h"
 #include "ftom_client.h"
 #include "ftom_client_cmdline.h"
 #include "ftom_params.h"
@@ -18,6 +19,9 @@ FTM_RET	FTOM_CLIENT_CL_init
 	ASSERT(pClient != NULL);
 	
 	memset(pClient, 0, sizeof(FTOM_CLIENT_CL));
+
+	pClient->xConfig.ulDefaultDataCount = FTOM_DATA_READ_COUNT_DEFAULT;
+	pClient->xConfig.ulMaxDataCount = FTOM_DATA_READ_COUNT_MAX;
 
 	pClient->xCommon.fStart = (FTOM_CLIENT_START)FTOM_CLIENT_CL_start;
 	pClient->xCommon.fStop = (FTOM_CLIENT_STOP)FTOM_CLIENT_CL_stop;

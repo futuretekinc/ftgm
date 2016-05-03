@@ -341,18 +341,24 @@ FTM_RET	FTDM_EP_DATA_del
 (
 	FTDM_EP_PTR			pEP,
 	FTM_INT 			nIndex, 
-	FTM_ULONG			nCount
+	FTM_ULONG			nCount,
+	FTM_ULONG_PTR		pulCount
 ) 
 {
 	FTM_RET		xRet;
+	FTM_ULONG	ulFirstTime, ulLastTime;
+	FTM_ULONG	ulCount1 = 0, ulCount2= 0;
+
+	xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount1);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
 	xRet = FTDM_DBIF_EP_DATA_del( pEP->xInfo.pEPID, nIndex, nCount);
 	if (xRet == FTM_RET_OK)
 	{
-		FTM_ULONG	ulFirstTime, ulLastTime;
-		FTM_ULONG	ulCount;
-
-		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount);
+		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount2);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
@@ -361,7 +367,16 @@ FTM_RET	FTDM_EP_DATA_del
 		{
 			pEP->ulFirstTime = ulFirstTime;
 			pEP->ulLastTime = ulLastTime;
-			pEP->ulCount = ulCount;
+			pEP->ulCount = ulCount2;
+
+			if (ulCount1 > ulCount2)
+			{
+				*pulCount = ulCount1 - ulCount2;
+			}
+			else
+			{
+				*pulCount = 0;
+			}
 		}
 	
 	}
@@ -373,18 +388,25 @@ FTM_RET	FTDM_EP_DATA_delWithTime
 (
 	FTDM_EP_PTR			pEP,
 	FTM_ULONG 			nBeginTime, 
-	FTM_ULONG 			nEndTime
+	FTM_ULONG 			nEndTime,
+	FTM_ULONG_PTR		pulCount
 ) 
 {
 	FTM_RET		xRet;
+	FTM_ULONG	ulFirstTime, ulLastTime;
+	FTM_ULONG	ulCount1 = 0, ulCount2 = 0;
+
+	xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount1);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
 	xRet = FTDM_DBIF_EP_DATA_delWithTime( pEP->xInfo.pEPID, nBeginTime, nEndTime);
 	if (xRet == FTM_RET_OK)
 	{
-		FTM_ULONG	ulFirstTime, ulLastTime;
-		FTM_ULONG	ulCount;
 
-		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount);
+		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount2);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
@@ -393,7 +415,16 @@ FTM_RET	FTDM_EP_DATA_delWithTime
 		{
 			pEP->ulFirstTime = ulFirstTime;
 			pEP->ulLastTime = ulLastTime;
-			pEP->ulCount = ulCount;
+			pEP->ulCount = ulCount2;
+
+			if (ulCount1 > ulCount2)
+			{
+				*pulCount = ulCount1 - ulCount2;
+			}
+			else
+			{
+				*pulCount = 0;
+			}
 		}
 	
 	}

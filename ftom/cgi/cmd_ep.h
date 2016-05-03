@@ -37,6 +37,12 @@ FTM_RET	FTOM_CGI_setEPList
 	qentry_t _PTR_ pReq
 );
 
+FTM_RET	FTOM_CGI_getEPDataInfo
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+);
+
 FTM_RET	FTOM_CGI_getEPData
 (
 	FTOM_CLIENT_PTR pClient, 
@@ -44,6 +50,12 @@ FTM_RET	FTOM_CGI_getEPData
 );
 
 FTM_RET	FTOM_CGI_getEPDataLast
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+);
+
+FTM_RET	FTOM_CGI_delEPData
 (
 	FTOM_CLIENT_PTR pClient, 
 	qentry_t _PTR_ pReq

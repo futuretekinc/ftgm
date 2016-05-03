@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <syslog.h>
 #include <time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -16,7 +17,7 @@ FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szmsg);
 FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
 
 extern char *program_invocation_short_name;
-
+static FTM_TRACE_OUT	_xOut = FTM_TRACE_OUT_TERM;
 static FTM_TRACE_CFG	_xConfig = 
 {
 	.ulLevel = FTM_TRACE_LEVEL_ALL,
@@ -286,6 +287,13 @@ FTM_RET	FTM_TRACE_getLevel
 }
 
 
+FTM_RET	FTM_TRACE_setOut(FTM_TRACE_OUT xOut)
+{
+	_xOut = xOut;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_TRACE_out
 (
 	unsigned long	ulLevel,
@@ -365,14 +373,38 @@ FTM_RET	FTM_TRACE_out
 
 	szBuff[nLen] = '\0';
 
-	if (bFile)
+	switch(_xOut)
 	{
-		FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
+	case	FTM_TRACE_OUT_TERM:
+		{
+			FTM_TRACE_printToTerm(szBuff);
+		}
+		break;
 
-	}
-	else
-	{
-		FTM_TRACE_printToTerm(szBuff);
+	case	FTM_TRACE_OUT_FILE:
+		{
+			FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
+		}
+		break;
+
+	case	FTM_TRACE_OUT_SYSLOG:
+		{
+			syslog(LOG_INFO, "%s", szBuff);
+		}
+		break;
+
+	default:
+		{
+			if (bFile)
+			{
+				FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
+		
+			}
+			else
+			{
+				FTM_TRACE_printToTerm(szBuff);
+			}
+		}
 	}
 
 	return	FTM_RET_OK;

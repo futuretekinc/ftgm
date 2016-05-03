@@ -428,6 +428,7 @@ typedef	struct
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
 }	FTDM_RESP_EP_DATA_DEL_PARAMS, _PTR_ 	FTDM_RESP_EP_DATA_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -444,6 +445,7 @@ typedef	struct
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
 }	FTDM_RESP_EP_DATA_DEL_WITH_TIME_PARAMS, _PTR_ 	FTDM_RESP_EP_DATA_DEL_WITH_TIME_PARAMS_PTR;
 
 typedef	struct

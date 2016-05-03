@@ -107,6 +107,24 @@ FTM_RET	FTOM_DMC_appendEPData
 	FTM_EP_DATA_PTR pData
 );
 
+FTM_RET	FTOM_DMC_EP_DATA_del
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+);
+
+FTM_RET	FTOM_DMC_EP_DATA_delWithTime
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulDeletedCount
+);
+
 FTM_RET	FTOM_DMC_EP_DATA_count
 (
 	FTOM_DMC_PTR 	pDMC, 

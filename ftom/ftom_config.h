@@ -14,4 +14,7 @@
 
 #define	FTOM_MAX_NODE_INTERVAL				(60 * 60 * 24)
 #define	FTOM_MAX_NODE_TIMEOUT				(60 * 10)
+
+#define	FTOM_DATA_READ_COUNT_DEFAULT		20
+#define	FTOM_DATA_READ_COUNT_MAX			100
 #endif

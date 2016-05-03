@@ -336,19 +336,39 @@ typedef	struct
 {
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
-	FTM_ULONG			nLen;
+	FTM_ULONG			ulLen;
 	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
-	FTM_ULONG 			nIndex; 
-	FTM_ULONG			nCount;
+	FTM_ULONG 			ulIndex; 
+	FTM_ULONG			ulCount;
 }	FTOM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTOM_REQ_EP_DATA_DEL_PARAMS_PTR; 
 
 typedef	struct
 {
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
-	FTM_ULONG			nLen;
+	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
+	FTM_ULONG			ulCount;
 }	FTOM_RESP_EP_DATA_DEL_PARAMS, _PTR_ 	FTOM_RESP_EP_DATA_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
+	FTM_ULONG 			ulBegin; 
+	FTM_ULONG			ulEnd;
+}	FTOM_REQ_EP_DATA_DEL_WITH_TIME_PARAMS, _PTR_ FTOM_REQ_EP_DATA_DEL_WITH_TIME_PARAMS_PTR; 
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+	FTM_ULONG			ulCount;
+}	FTOM_RESP_EP_DATA_DEL_WITH_TIME_PARAMS, _PTR_ 	FTOM_RESP_EP_DATA_DEL_WITH_TIME_PARAMS_PTR;
 
 typedef	struct
 {

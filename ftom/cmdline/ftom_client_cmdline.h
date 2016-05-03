@@ -10,6 +10,8 @@
 typedef	struct
 {
 	FTM_CHAR_PTR		pRead[1024];
+	FTM_ULONG			ulDefaultDataCount;
+	FTM_ULONG			ulMaxDataCount;
 }	FTOM_CLIENT_CL_CONFIG, _PTR_ FTOM_CLIENT_CL_CONFIG_PTR;
 
 typedef	struct

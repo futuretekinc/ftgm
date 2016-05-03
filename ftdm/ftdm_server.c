@@ -208,29 +208,28 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 		hClient = accept(pServer->hSocket, (struct sockaddr *)&xClient, (socklen_t *)&nSockAddrInLen);
 		if (hClient > 0)
 		{
+			FTM_RET	xRet;
 
 			TRACE("Accept new connection.[ %s:%d ]\n", inet_ntoa(xClient.sin_addr), ntohs(xClient.sin_port));
 
-			FTDM_SESSION_PTR pSession = (FTDM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTDM_SESSION));
-			if (pSession == NULL)
+			
+			FTDM_SESSION_PTR pSession = NULL;
+			
+			xRet = FTDMS_createSession(pServer, hClient, (struct sockaddr *)&xClient, &pSession);
+			if (xRet != FTM_RET_OK)
 			{
-				ERROR("System memory is not enough!\n");
 				close(hClient);
 				TRACE("The session(%08x) was closed.\n", hClient);
 			}
 			else
 			{
 				FTM_INT	nRet;
-				TRACE("The new session(%08x) has beed connected\n", hClient);
 
-				pSession->pServer = pServer;
-				pSession->hSocket = hClient;
-				memcpy(&pSession->xPeer, &xClient, sizeof(xClient));
 				nRet = pthread_create(&pSession->xThread, NULL, FTDMS_service, pSession);
 				if (nRet != 0)
 				{
 					ERROR("Can't create a thread[%d]\n", nRet);
-					FTM_MEM_free(pSession);			
+					FTDMS_destroySession(pServer, &pSession);
 				}
 			}
 		}
@@ -263,10 +262,13 @@ error:
 
 FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 {
+	FTDM_SERVER_PTR			pServer;
 	FTDM_SESSION_PTR		pSession= (FTDM_SESSION_PTR)pData;
 	FTDM_REQ_PARAMS_PTR		pReq 	= (FTDM_REQ_PARAMS_PTR)pSession->pReqBuff;
 	FTDM_RESP_PARAMS_PTR	pResp 	= (FTDM_RESP_PARAMS_PTR)pSession->pRespBuff;
 	struct timespec			xTimeout;
+
+	pServer = pSession->pServer;
 
 	clock_gettime(CLOCK_REALTIME, &xTimeout);
 	xTimeout.tv_sec += 2;
@@ -277,20 +279,11 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 		return	0;	
 	}
 
-	if (sem_init(&pSession->xSemaphore, 0, 1) < 0)
-	{
-		ERROR("Can't alloc semaphore!\n");
-		return	0;	
-	}
-
-	FTM_LIST_append(&pSession->pServer->xSessionList, pSession);	
-
 	while(!pSession->bStop)
 	{
 		int	nLen;
 
 		nLen = recv(pSession->hSocket, pReq, sizeof(pSession->pReqBuff), 0);
-		//TRACE("recv(%08x, pReq, %lu, MSG_DONTWAIT)\n", pSession->hSocket, nLen);
 		if (nLen == 0)
 		{
 			TRACE("The connection is terminated.\n");
@@ -302,6 +295,8 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 			break;	
 		}
 
+		FTM_TIME_getCurrent(&pSession->xLastTime);
+
 		if (FTM_RET_OK != FTDMS_serviceCall(pSession->pServer, pReq, pResp))
 		{
 			pResp->xCmd = pReq->xCmd;
@@ -309,7 +304,6 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 			pResp->nLen = sizeof(FTDM_RESP_PARAMS);
 		}
 
-		//TRACE("send(%08x, pResp, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->nLen);
 		nLen = send(pSession->hSocket, pResp, pResp->nLen, MSG_DONTWAIT);
 		if (nLen < 0)
 		{
@@ -318,14 +312,9 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 		}
 	}
 
-	close(pSession->hSocket);
-	TRACE("The session(%08x) was closed\n", pSession->hSocket);
+	FTDMS_destroySession(pServer, &pSession);
 
-	sem_destroy(&pSession->xSemaphore);
-
-	FTM_LIST_remove(&pSession->pServer->xSessionList, (FTM_VOID_PTR)&pSession->xThread);	
-
-	sem_post(&pSession->pServer->xSemaphore);
+	sem_post(&pServer->xSemaphore);
 
 	return	0;
 }
@@ -366,6 +355,80 @@ FTM_BOOL	FTDMS_SESSION_LIST_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_P
 	pthread_t 			*pPThread = (pthread_t *)pIndicator;	
 
 	return (pSession->xThread == *pPThread);
+}
+
+FTM_RET	FTDMS_createSession
+(
+	FTDM_SERVER_PTR pServer,
+	FTM_INT			hClient,
+	struct sockaddr *pSockAddr,
+	FTDM_SESSION_PTR _PTR_ ppSession
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pSockAddr != NULL);
+	ASSERT(ppSession != NULL);
+	
+	FTM_RET	xRet;
+	FTDM_SESSION_PTR pSession = (FTDM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTDM_SESSION));
+	if (pSession == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+
+	}
+
+	pSession->pServer = pServer;
+	pSession->hSocket = hClient;
+	memcpy(&pSession->xPeer, pSockAddr, sizeof(struct sockaddr));
+
+	if (sem_init(&pSession->xSemaphore, 0, 1) < 0)
+	{
+		ERROR("Can't alloc semaphore!\n");
+		FTM_MEM_free(pSession);
+
+		return	FTM_RET_CANT_CREATE_SEMAPHORE;
+	}
+
+	xRet = FTM_LIST_append(&pServer->xSessionList, pSession);	
+	if (xRet != FTM_RET_OK)
+	{
+		sem_destroy(&pSession->xSemaphore);	
+		FTM_MEM_free(pSession);
+
+		return	FTM_RET_LIST_NOT_INSERTABLE;
+	}
+
+	FTM_TIME_getCurrent(&pSession->xStartTime);
+
+	*ppSession = pSession;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDMS_destroySession
+(
+	FTDM_SERVER_PTR pServer,
+	FTDM_SESSION_PTR _PTR_ ppSession
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(ppSession != NULL);
+
+	if ((*ppSession)->hSocket != 0)
+	{
+		TRACE("The session(%08x) was closed\n", (*ppSession)->hSocket);
+		close((*ppSession)->hSocket);
+		(*ppSession)->hSocket = 0;
+	}
+
+	sem_destroy(&(*ppSession)->xSemaphore);
+
+	FTM_LIST_remove(&pServer->xSessionList, (FTM_VOID_PTR)*ppSession);	
+
+	*ppSession = NULL;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDMS_getSessionCount(FTDM_SERVER_PTR pServer, FTM_ULONG_PTR pulCount)
@@ -890,16 +953,13 @@ FTM_RET	FTDMS_EP_DATA_get
 	FTDM_EP_PTR	pEP;
 
 	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
-	TRACE("REQ COUNT : %d\n", pReq->nCount);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTDM_EP_DATA_get( pEP, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
 	}
 	pResp->xCmd = pReq->xCmd;
-	pResp->nCount = pReq->nCount;
 	pResp->nRet = xRet;
 
-		TRACE("RESP COUNT : %d\n", pResp->nCount);
 	if (pResp->nRet == FTM_RET_OK)
 	{
 		pResp->nLen = sizeof(FTDM_RESP_EP_DATA_GET_PARAMS) + pResp->nCount * sizeof(FTM_EP_DATA);
@@ -961,7 +1021,7 @@ FTM_RET 	FTDMS_EP_DATA_del
 	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_EP_DATA_del(pEP, pReq->nIndex, pReq->nCount);
+		xRet = FTDM_EP_DATA_del(pEP, pReq->nIndex, pReq->nCount, &pResp->ulCount);
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -984,7 +1044,7 @@ FTM_RET 	FTDMS_EP_DATA_delWithTime
 	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_EP_DATA_delWithTime( pEP, pReq->nBeginTime, pReq->nEndTime);
+		xRet = FTDM_EP_DATA_delWithTime( pEP, pReq->nBeginTime, pReq->nEndTime, &pResp->ulCount);
 	}
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);

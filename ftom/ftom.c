@@ -1574,6 +1574,36 @@ FTM_RET	FTOM_sendEPData
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_delEPData
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pulDeletedCount != NULL);
+
+	return	FTOM_DMC_EP_DATA_del(pOM->pDMC, pEPID, ulIndex, ulCount, pulDeletedCount);
+}
+
+FTM_RET	FTOM_delEPDataWithTime
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulDeletedCount
+)
+{
+	ASSERT(pOM != NULL);
+	ASSERT(pulDeletedCount != NULL);
+
+	return	FTOM_DMC_EP_DATA_delWithTime(pOM->pDMC, pEPID, ulBegin, ulEnd, pulDeletedCount);
+}
+
 FTM_RET	FTOM_addTrigger
 (
 	FTOM_PTR			pOM,

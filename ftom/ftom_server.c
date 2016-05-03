@@ -17,9 +17,9 @@
 #include "ftom_server_cmd.h"
 
 
-#ifndef	FTOM_TRACE_IO
+//#ifndef	FTOM_TRACE_IO
 #define	FTOM_TRACE_IO		1
-#endif
+//#endif
 
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTOM_SERVER_CALLBACK)FUN }
 
@@ -179,6 +179,24 @@ static FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
  	FTOM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
  	FTOM_RESP_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static FTM_RET	FTOM_SERVER_EP_DATA_del
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_EP_DATA_DEL_PARAMS_PTR 	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_DEL_PARAMS_PTR 	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static FTM_RET	FTOM_SERVER_EP_DATA_delWithTime
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_EP_DATA_DEL_WITH_TIME_PARAMS_PTR 	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_DEL_WITH_TIME_PARAMS_PTR 	pResp,
 	FTM_ULONG		ulRespLen
 );
 
@@ -426,6 +444,8 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_SET,					FTOM_SERVER_EP_set),
 
 	MK_CMD_SET(FTOM_CMD_EP_REG_NOTIFY_RECEIVER, FTOM_SERVER_EP_registrationNotifyReceiver),
+	MK_CMD_SET(FTOM_CMD_EP_DATA_DEL,			FTOM_SERVER_EP_DATA_del),
+	MK_CMD_SET(FTOM_CMD_EP_DATA_DEL_WITH_TIME,	FTOM_SERVER_EP_DATA_delWithTime),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_INFO,			FTOM_SERVER_EP_DATA_info),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_GET_LAST,		FTOM_SERVER_EP_DATA_getLast),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_GET_LIST,		FTOM_SERVER_EP_DATA_getList),
@@ -754,7 +774,7 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 		{
 			FTM_ULONG	ulRetry = 3;
 #if	FTOM_TRACE_IO
-			//TRACE("RECV[%08lx:%08x] : Len = %lu\n", pSession->hSocket, pReq->ulReqID, ulLen);
+			TRACE("RECV[%08lx:%08x] : Len = %lu\n", pSession->hSocket, pReq->ulReqID, ulReqLen);
 #endif
 			pResp->ulReqID = pReq->ulReqID;
 
@@ -766,7 +786,7 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 			}
 
 #if	FTOM_TRACE_IO
-			//TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->ulReqID, pResp->ulLen);
+			TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pResp->ulReqID, pResp->ulLen);
 #endif
 			do
 			{
@@ -1444,6 +1464,54 @@ FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
 
 
 
+FTM_RET	FTOM_SERVER_EP_DATA_del
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_EP_DATA_DEL_PARAMS_PTR 	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_DEL_PARAMS_PTR 	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = FTOM_delEPData(pServer->pOM, 
+					pReq->pEPID, 
+					pReq->ulIndex,
+					pReq->ulCount,
+					&pResp->ulCount);
+
+	return	pResp->xRet;
+}
+
+FTM_RET	FTOM_SERVER_EP_DATA_delWithTime
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_EP_DATA_DEL_WITH_TIME_PARAMS_PTR 	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_DEL_WITH_TIME_PARAMS_PTR 	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = FTOM_delEPDataWithTime(pServer->pOM, 
+					pReq->pEPID, 
+					pReq->ulBegin, 
+					pReq->ulEnd, 
+					&pResp->ulCount);
+
+	return	pResp->xRet;
+}
+
 FTM_RET	FTOM_SERVER_EP_DATA_info
 (
 	FTOM_SERVER_PTR	pServer,
@@ -1459,10 +1527,15 @@ FTM_RET	FTOM_SERVER_EP_DATA_info
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_getEPDataInfo(pServer->pOM, pReq->pEPID, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
+	pResp->xRet = FTOM_getEPDataInfo(pServer->pOM, 
+					pReq->pEPID, 
+					&pResp->ulBeginTime, 
+					&pResp->ulEndTime, 
+					&pResp->ulCount);
 
 	return	pResp->xRet;
 }
+
 FTM_RET	FTOM_SERVER_EP_DATA_getLast
 (	
 	FTOM_SERVER_PTR	pServer,
@@ -1519,7 +1592,6 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 		pResp->nCount = 0;
 	}
 
-	TRACE("Data Count : %d\n", pResp->nCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_DATA) * pResp->nCount;
 	pResp->xCmd = pReq->xCmd;
 	pResp->xRet = xRet;

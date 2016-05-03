@@ -811,7 +811,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 	{
 		FTM_ULONG	ulReqCount;
 
-		if (ulMaxCount > 100)
+		if (ulMaxCount > 100) 
 		{
 			ulReqCount = 100;	
 		}
@@ -824,6 +824,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 		pResp = (FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
 		if (pResp == NULL)
 		{
+			ERROR("Not enough memory[size = %d]!\n", nRespSize);
 			return	FTM_RET_NOT_ENOUGH_MEMORY;
 		}
 	
@@ -834,7 +835,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 		strncpy(xReq.pEPID,	pEPID, FTM_EPID_LEN);
 		xReq.nStartIndex=	nStartIndex;
 		xReq.nCount		=	ulReqCount;
-		
+	
 		xRet = pClient->fRequest(
 					pClient, 
 					(FTM_VOID_PTR)&xReq, 
@@ -844,12 +845,13 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 					&ulRespLen);
 		if (xRet != FTM_RET_OK)
 		{
+			ERROR("Request error!\n");
 			FTM_MEM_free(pResp);
 			return	FTM_RET_ERROR;	
 		}
 	
 		xRet = pResp->xRet;
-	
+
 		if (pResp->xRet == FTM_RET_OK)
 		{
 			FTM_INT	i;
@@ -870,6 +872,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 		}
 		else
 		{
+			ERROR("FTOM request error[%08x]!", pResp->xRet);
 			bStop = FTM_TRUE;
 		}
 	
@@ -884,12 +887,13 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET	FTDMC_EP_DATA_del
+FTM_RET	FTOM_CLIENT_EP_DATA_del
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR	pEPID,
-	FTM_ULONG		nIndex,
-	FTM_ULONG		nCount
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
 )
 {
 	ASSERT(pClient != NULL);
@@ -902,10 +906,10 @@ FTM_RET	FTDMC_EP_DATA_del
 	memset(&xReq, 0, sizeof(xReq));
 
 	xReq.xCmd		=	FTOM_CMD_EP_DATA_DEL;
-	xReq.nLen		=	sizeof(xReq);
+	xReq.ulLen		=	sizeof(xReq);
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
-	xReq.nIndex		=	nIndex;
-	xReq.nCount		=	nCount;
+	xReq.ulIndex	=	ulIndex;
+	xReq.ulCount	=	ulCount;
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -917,6 +921,60 @@ FTM_RET	FTDMC_EP_DATA_del
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		*pulDeletedCount = xResp.ulCount;	
+	}
+
+	return	xResp.xRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET	FTOM_CLIENT_EP_DATA_delWithTime
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulDeletedCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pEPID != NULL);
+	ASSERT(pulDeletedCount != NULL);
+
+	FTM_RET									xRet;
+	FTOM_REQ_EP_DATA_DEL_WITH_TIME_PARAMS	xReq;
+	FTOM_RESP_EP_DATA_DEL_WITH_TIME_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+	
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd		=	FTOM_CMD_EP_DATA_DEL_WITH_TIME;
+	xReq.ulLen		=	sizeof(xReq);
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
+	xReq.ulBegin	=	ulBegin;
+	xReq.ulEnd		=	ulEnd;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		*pulDeletedCount = xResp.ulCount;	
 	}
 
 	return	xResp.xRet;

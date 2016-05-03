@@ -33,6 +33,8 @@ typedef	struct
 	struct sockaddr_in	xPeer;
 	FTM_BYTE			pReqBuff[FTDM_PACKET_LEN];
 	FTM_BYTE			pRespBuff[FTDM_PACKET_LEN];
+	FTM_TIME			xStartTime;
+	FTM_TIME			xLastTime;
 }	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
 
 typedef	FTM_RET	(*FTDM_SERVICE_CALLBACK)(FTDM_SERVER_PTR pServer, FTDM_REQ_PARAMS_PTR, FTDM_RESP_PARAMS_PTR);
@@ -80,6 +82,20 @@ FTM_RET	FTDMS_serviceCall
 	FTDM_SERVER_PTR			pServer,
 	FTDM_REQ_PARAMS_PTR		pReq,
 	FTDM_RESP_PARAMS_PTR	pResp
+);
+
+FTM_RET	FTDMS_createSession
+(
+	FTDM_SERVER_PTR pServer,
+	FTM_INT			hClient,
+	struct sockaddr *pSockAddr,
+	FTDM_SESSION_PTR _PTR_ ppSession
+);
+
+FTM_RET	FTDMS_destroySession
+(
+	FTDM_SERVER_PTR pServer,
+	FTDM_SESSION_PTR _PTR_ ppSession
 );
 
 FTM_RET	FTDMS_getSessionCount

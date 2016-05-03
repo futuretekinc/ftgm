@@ -405,6 +405,48 @@ finish:
 	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
+FTM_RET	FTOM_CGI_getEPDataInfo
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+
+	FTM_RET			xRet;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	FTM_ULONG		ulBegin = 0;
+	FTM_ULONG		ulEnd = 0;
+	FTM_ULONG		ulCount = 0;
+	cJSON _PTR_		pRoot;
+
+	pRoot = cJSON_CreateObject();
+
+	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		xRet = FTM_RET_INVALID_ARGUMENTS;
+		goto finish;	
+	}
+
+	xRet = FTOM_CLIENT_EP_DATA_info(pClient, pEPID, &ulBegin, &ulEnd, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP Data info get failed[%08x]\n", xRet);
+		goto finish;
+	}
+
+	cJSON_AddStringToObject(pRoot, "epid", pEPID);
+	cJSON_AddNumberToObject(pRoot, "begin", ulBegin);
+	cJSON_AddNumberToObject(pRoot, "end", ulEnd);
+	cJSON_AddNumberToObject(pRoot, "count", ulCount);
+
+finish:
+
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
+}
+
 FTM_RET	FTOM_CGI_getEPData
 (
 	FTOM_CLIENT_PTR pClient, 
@@ -417,7 +459,7 @@ FTM_RET	FTOM_CGI_getEPData
 	FTM_RET			xRet;
 	FTM_EP_DATA_PTR	pData;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
-	FTM_ULONG		ulCount = 0;
+	FTM_ULONG		ulCount = 20;
 	cJSON _PTR_		pRoot;
 
 	pRoot = cJSON_CreateObject();
@@ -446,6 +488,7 @@ FTM_RET	FTOM_CGI_getEPData
 	xRet = FTOM_CLIENT_EP_DATA_getList(pClient, pEPID, 0, pData, ulCount, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("EP Data list get failed[%08x]\n", xRet);
 		goto finish;
 	}
 
@@ -487,51 +530,85 @@ FTM_RET	FTOM_CGI_getEPDataLast
 
 	FTM_RET			xRet;
 	FTM_ULONG		ulCount = 0;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EPID		*pEPIDList = NULL;
-	cJSON _PTR_	pRoot;
+	cJSON _PTR_	pRoot, _PTR_ pDataArray;
 
 	pRoot = cJSON_CreateObject();
 
-	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;
-	}
-
-	pEPIDList = (FTM_EPID_PTR)FTM_MEM_malloc((FTM_EPID_LEN + 1) * ulCount);
-	if (pEPIDList == NULL)
-	{
-		goto finish;	
-	}
-
-	xRet = FTOM_CLIENT_EP_getList(pClient, 0, pEPIDList, ulCount, &ulCount);
-	if (xRet != FTM_RET_OK)
-	{
-		goto finish;
-	}
-
-	for(int i = 0 ; i < ulCount ; i++)
+	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
+	if (xRet == FTM_RET_OK)
 	{
 		FTM_EP_DATA	xEPData;
 		FTM_CHAR	pValueString[64];
-		cJSON _PTR_ pObject;
-
-		xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, pEPIDList[i], &xEPData);
+	
+		xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, pEPID, &xEPData);
 		if (xRet != FTM_RET_OK)
 		{
-			continue;
+			goto finish;
 		}
 
 		xRet = FTM_EP_DATA_snprint(pValueString, sizeof(pValueString), &xEPData);
 		if (xRet != FTM_RET_OK)
 		{
-			continue;
+			goto finish;
 		}
 
-		cJSON_AddItemToArray(pRoot, pObject = cJSON_CreateObject());
-		cJSON_AddStringToObject(pObject, "epid", pEPIDList[i]);
-		cJSON_AddStringToObject(pObject, "value", pValueString);
-		cJSON_AddNumberToObject(pObject, "time", xEPData.ulTime);
+		cJSON_AddStringToObject(pRoot, "epid", pEPID);
+		cJSON_AddStringToObject(pRoot, "value", pValueString);
+		cJSON_AddNumberToObject(pRoot, "time", xEPData.ulTime);
+
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			goto finish;
+		}
+
+		pEPIDList = (FTM_EPID_PTR)FTM_MEM_malloc((FTM_EPID_LEN + 1) * ulCount);
+		if (pEPIDList == NULL)
+		{
+			goto finish;	
+		}
+
+		xRet = FTOM_CLIENT_EP_getList(pClient, 0, pEPIDList, ulCount, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			goto finish;
+		}
+
+		cJSON_AddItemToObject(pRoot, "datas", pDataArray = cJSON_CreateArray());
+		for(int i = 0 ; i < ulCount ; i++)
+		{
+			FTM_EP_DATA	xEPData;
+			FTM_CHAR	pValueString[64];
+			cJSON _PTR_ pObject;
+	
+			xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, pEPIDList[i], &xEPData);
+			if (xRet != FTM_RET_OK)
+			{
+				continue;
+			}
+	
+			xRet = FTM_EP_DATA_snprint(pValueString, sizeof(pValueString), &xEPData);
+			if (xRet != FTM_RET_OK)
+			{
+				continue;
+			}
+	
+			cJSON_AddItemToArray(pDataArray, pObject = cJSON_CreateObject());
+			cJSON_AddStringToObject(pObject, "epid", pEPIDList[i]);
+			cJSON_AddStringToObject(pObject, "value", pValueString);
+			cJSON_AddNumberToObject(pObject, "time", xEPData.ulTime);
+		}
+
+	}
+	else
+	{
+		xRet = FTM_RET_INVALID_ARGUMENTS;
+		goto finish;	
 	}
 
 finish:
@@ -539,6 +616,90 @@ finish:
 	{
 		FTM_MEM_free(pEPIDList);
 	}
+
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
+}
+
+FTM_RET	FTOM_CGI_delEPData
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+
+	FTM_RET			xRet;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	FTM_ULONG		ulIndex = 0;
+	FTM_ULONG		ulCount = 0;
+	FTM_ULONG		ulBegin = 0;
+	FTM_ULONG		ulEnd = 0;
+	cJSON _PTR_		pRoot;
+
+	pRoot = cJSON_CreateObject();
+
+	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getIndex(pReq, &ulIndex, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getCount(pReq, &ulCount, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getBeginTime(pReq, &ulBegin, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getEndTime(pReq, &ulEnd, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	if (ulCount != 0)
+	{
+		if ((ulBegin != 0) || (ulEnd != 0))
+		{
+			xRet = FTM_RET_INVALID_ARGUMENTS;	
+			goto finish;
+		}
+
+		xRet = FTOM_CLIENT_EP_DATA_del(pClient, pEPID, ulIndex, ulCount, &ulCount);
+	}
+	else if ((ulBegin != 0) || (ulEnd != 0))
+	{
+		xRet = FTOM_CLIENT_EP_DATA_delWithTime(pClient,	pEPID, ulBegin, ulEnd, &ulCount);
+	}
+	else
+	{
+		xRet = FTOM_CLIENT_EP_DATA_del(pClient, pEPID, 0, 0, &ulCount);
+	}
+
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP Data delete failed[%08x]\n", xRet);
+	}
+	else
+	{
+		TRACE("%lu data have been deleted.\n", ulCount);
+		cJSON_AddNumberToObject(pRoot, "count", ulCount);
+
+	}
+
+finish:
 
 	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }

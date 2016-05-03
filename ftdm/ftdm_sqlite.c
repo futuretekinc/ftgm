@@ -1138,7 +1138,13 @@ typedef struct
 	FTM_INT			nCount;
 }	_FTDM_DBIF_CB_GET_EP_DATA_PARAMS, _PTR_ _FTDM_DBIF_CB_GET_EP_DATA_PARAMS_PTR;
 
-int _FTDM_DBIF_EP_DATA_getCB(void *pData, int nArgc, char **pArgv, char **pColName)
+FTM_INT	_FTDM_DBIF_EP_DATA_getCB
+(
+	FTM_VOID _PTR_ pData, 
+	FTM_INT	nArgc, 
+	FTM_CHAR _PTR_ _PTR_ pArgv, 
+	FTM_CHAR _PTR_ _PTR_ pColName
+)
 {
 	_FTDM_DBIF_CB_GET_EP_DATA_PARAMS_PTR pParams = (_FTDM_DBIF_CB_GET_EP_DATA_PARAMS_PTR)pData;
 

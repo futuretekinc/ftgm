@@ -33,6 +33,8 @@ FTOM_CGI_COMMAND	pEPCmds[] =
 static 
 FTOM_CGI_COMMAND	pDataCmds[] =
 {
+	{	"info",		FTOM_CGI_getEPDataInfo	},
+	{	"del",		FTOM_CGI_delEPData		},
 	{	"get",		FTOM_CGI_getEPData		},
 	{	"last",		FTOM_CGI_getEPDataLast	},
 	{	NULL,		NULL					}
@@ -705,6 +707,34 @@ FTM_RET	FTOM_CGI_getLimit
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_CGI_getIndex
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR pulIndex,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pulIndex != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "index", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else
+	{
+		*pulIndex = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_CGI_getCount
 (
 	qentry_t *pReq, 
@@ -923,6 +953,62 @@ FTM_RET FTOM_CGI_getTriggerType
 	
 	*pType = xType;
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_CGI_getBeginTime
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pulTime,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pulTime != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "begin", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else
+	{
+		*pulTime = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_CGI_getEndTime
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pulTime,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pulTime != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "end", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else
+	{
+		*pulTime = strtoul(pValue, 0, 10);
+	}
+	
 	return	FTM_RET_OK;
 }
 

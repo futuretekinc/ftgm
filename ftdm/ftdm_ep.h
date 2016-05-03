@@ -87,14 +87,16 @@ FTM_RET	FTDM_EP_DATA_del
 (
 	FTDM_EP_PTR			pEP,
 	FTM_INT				nIndex, 
-	FTM_ULONG			nCount
+	FTM_ULONG			nCount,
+	FTM_ULONG_PTR		pulCount
 ); 
 
 FTM_RET	FTDM_EP_DATA_delWithTime
 (
 	FTDM_EP_PTR			pEP,
 	FTM_ULONG 			nBeginTime, 
-	FTM_ULONG 			nEndTime 
+	FTM_ULONG 			nEndTime,
+	FTM_ULONG_PTR		pulCount
 ); 
 
 FTM_RET	FTDM_EP_DATA_count

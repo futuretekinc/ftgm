@@ -1008,7 +1008,8 @@ FTM_RET	FTDMC_EP_DATA_remove
 	FTDMC_SESSION_PTR		pSession,
 	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				nIndex,
-	FTM_ULONG				nCount
+	FTM_ULONG				nCount,
+	FTM_ULONG_PTR			pulCount
 )
 {
 	FTM_RET						nRet;
@@ -1037,6 +1038,11 @@ FTM_RET	FTDMC_EP_DATA_remove
 		return	FTM_RET_ERROR;	
 	}
 
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		*pulCount = xResp.ulCount;	
+	}
+
 	return	xResp.nRet;
 }
 
@@ -1048,7 +1054,8 @@ FTM_RET	FTDMC_EP_DATA_removeWithTime
 	FTDMC_SESSION_PTR		pSession,
 	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				nBeginTime,
-	FTM_ULONG				nEndTime
+	FTM_ULONG				nEndTime,
+	FTM_ULONG_PTR			pulCount
 )
 {
 	FTM_RET						nRet;
@@ -1075,6 +1082,11 @@ FTM_RET	FTDMC_EP_DATA_removeWithTime
 	if (nRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		*pulCount = xResp.ulCount;	
 	}
 
 	return	xResp.nRet;

@@ -4,6 +4,14 @@
 #include <stdio.h>
 #include "ftm_types.h"
 
+typedef enum	FTM_TRACE_OUT_ENUM
+{
+	FTM_TRACE_OUT_TERM	= 0,
+	FTM_TRACE_OUT_FILE	= 1,
+	FTM_TRACE_OUT_SYSLOG= 2,
+	FTM_TRACE_OUT_USER	= 3
+} FTM_TRACE_OUT, _PTR_ FTM_TRACE_OUT_PTR;
+
 #define		FTM_PATH_LEN		1024
 #define		FTM_FILENAME_LEN	256
 
@@ -44,6 +52,8 @@ FTM_RET	FTM_TRACE_printConfig(FTM_TRACE_CFG_PTR pCfg);
 FTM_RET	FTM_TRACE_strToLevel(FTM_CHAR_PTR	pString, FTM_ULONG_PTR pulLevel);
 FTM_RET	FTM_TRACE_setLevel(FTM_ULONG		ulLevel);
 FTM_RET	FTM_TRACE_getLevel(FTM_ULONG_PTR	pulLevel);
+
+FTM_RET	FTM_TRACE_setOut(FTM_TRACE_OUT xOut);
 
 FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR	szBuff);
 

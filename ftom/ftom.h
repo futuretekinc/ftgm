@@ -227,6 +227,15 @@ FTM_RET	FTOM_NOTIFY_SNMPTrap
 	FTM_CHAR_PTR 		pTrapMsg
 );
 
+FTM_RET	FTOM_getEPDataInfo
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pulBegin,
+	FTM_ULONG_PTR	pulEnd,
+	FTM_ULONG_PTR	pulCount
+);
+
 FTM_RET	FTOM_setEPData
 (
 	FTOM_PTR 			pOM, 
@@ -247,6 +256,24 @@ FTM_RET	FTOM_sendEPData
 	FTM_CHAR_PTR	pEPID,
 	FTM_EP_DATA_PTR	pData,
 	FTM_ULONG		ulCount
+);
+
+FTM_RET	FTOM_delEPData
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+);
+
+FTM_RET	FTOM_delEPDataWithTime
+(
+	FTOM_PTR		pOM,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulDeletedCount
 );
 
 FTM_RET	FTOM_addTrigger

@@ -297,10 +297,43 @@ FTM_RET FTOM_DMC_EP_DATA_get
 )
 {
 	ASSERT(pDMC != NULL);
+	ASSERT(pEPID != NULL);
 	ASSERT(pData != NULL);
 	ASSERT(pulCount != NULL);
 
 	return	FTDMC_EP_DATA_get(&pDMC->xSession, pEPID, ulStartIndex, pData, ulMaxCount, pulCount);
+}
+
+FTM_RET FTOM_DMC_EP_DATA_del
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR 	pulCount
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pEPID != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTDMC_EP_DATA_remove(&pDMC->xSession, pEPID, ulIndex, ulCount, pulCount);
+}
+
+FTM_RET FTOM_DMC_EP_DATA_delWithTime
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR 	pulCount
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pEPID != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTDMC_EP_DATA_removeWithTime(&pDMC->xSession, pEPID, ulStart, ulEnd, pulCount);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_info

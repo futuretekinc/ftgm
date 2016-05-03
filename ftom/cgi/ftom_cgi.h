@@ -156,6 +156,13 @@ FTM_RET	FTOM_CGI_getLimit
 	FTM_BOOL	bAllowEmpty
 );
 
+FTM_RET FTOM_CGI_getIndex
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR pulIndex,
+	FTM_BOOL	bAllowEmpty
+);
+
 FTM_RET FTOM_CGI_getCount
 (
 	qentry_t *pReq, 
@@ -174,6 +181,20 @@ FTM_RET FTOM_CGI_getTriggerType
 (
 	qentry_t *pReq, 
 	FTM_TRIGGER_TYPE_PTR pType,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET FTOM_CGI_getBeginTime
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pulTime,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET FTOM_CGI_getEndTime
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pulTime,
 	FTM_BOOL	bAllowEmpty
 );
 

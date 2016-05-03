@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <syslog.h>
 #include <sys/types.h>
 #include <sys/shm.h>
 #include <sys/ipc.h>
@@ -393,21 +394,21 @@ FTM_RET	FTM_SMP_createServer
 
 	memset(pSMP->pBlock, 0, sizeof(FTM_SMP_BLOCK));
 
-	FTM_INT	i = 0;
-	do 
-	{
-		sprintf(pSMP->pBlock->pLockerName, "ftom.smp.%d", pSMP->xKey + i);
-		pSMP->pLocker = sem_open(pSMP->pBlock->pLockerName, O_CREAT, 0666, 1);
-		i++;
-	} 
-	while (i < 10 && pSMP->pLocker == SEM_FAILED);
-	
+	FTM_INT	nSemCount = 0;
+
+	sprintf(pSMP->pBlock->pLockerName, "ftom.lock.%d", pSMP->xKey);
+	pSMP->pLocker = sem_open(pSMP->pBlock->pLockerName, O_CREAT, 0666, 1);
 	if (pSMP->pLocker == SEM_FAILED)
 	{
 		shmctl(pSMP->nShmID, IPC_RMID, (struct shmid_ds *)0);
 		ERROR("Locker creation failed.\n");
 		xRet = FTM_RET_CANT_CREATE_SEMAPHORE;
 		goto error;
+	}
+	else
+	{
+		sem_getvalue(pSMP->pLocker, &nSemCount);
+		sem_post(pSMP->pLocker);
 	}
 
 	TRACE("Locker[%s] created.\n", pSMP->pBlock->pLockerName);
@@ -465,7 +466,6 @@ FTM_RET	FTM_SMP_createClient
 		goto error;
 	}
 
-	sprintf(pSMP->pBlock->pLockerName, "ftom.smp.%d", pSMP->xKey);
 	pSMP->pLocker = sem_open(pSMP->pBlock->pLockerName, 0, 0666, 0);
 	if (pSMP->pLocker == SEM_FAILED)
 	{
@@ -546,6 +546,7 @@ FTM_RET	FTM_SMP_call
 	nRet = sem_timedwait(&pSMP->pBlock->xNotUse, &xTimeout);
 	if (nRet != 0)
 	{
+		ERROR("Shared memory is used.\n");
 		xRet = FTM_RET_TIMEOUT;	
 		goto finish;
 	}
@@ -553,6 +554,7 @@ FTM_RET	FTM_SMP_call
 	nRet = sem_timedwait(pSMP->pLocker, &xTimeout);
 	if (nRet != 0)
 	{
+		ERROR("Request send failed. Shared memory is locked.\n");
 		xRet = FTM_RET_TIMEOUT;	
 		goto error;
 	}
@@ -566,6 +568,7 @@ FTM_RET	FTM_SMP_call
 	nRet = sem_timedwait(&pSMP->pBlock->xResp, &xTimeout);
 	if (nRet != 0)
 	{
+		ERROR("Respose timeout.\n");
 		xRet = FTM_RET_TIMEOUT;	
 		goto error;
 	}
@@ -573,6 +576,7 @@ FTM_RET	FTM_SMP_call
 	nRet = sem_timedwait(pSMP->pLocker, &xTimeout);
 	if (nRet != 0)
 	{
+		ERROR("Response get failed. Shared memory is locked.\n");
 		xRet = FTM_RET_TIMEOUT;	
 		goto error;
 	}
