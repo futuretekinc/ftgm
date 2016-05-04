@@ -85,3 +85,4 @@ tags
 
 !*.conf
 ftdm
+ftdm.db-journal
