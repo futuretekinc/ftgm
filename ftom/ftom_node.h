@@ -70,6 +70,16 @@ typedef	struct FTOM_NODE_STRUCT
 	FTOM_NODE_DESCRIPT		xDescript;
 }	FTOM_NODE;
 
+FTM_RET	FTOM_NODE_init
+(
+	FTM_VOID
+);
+
+FTM_RET FTOM_NODE_final
+(
+	FTM_VOID
+);
+
 FTM_RET	FTOM_NODE_create
 (
 	FTM_NODE_PTR 		pInfo, 
@@ -81,15 +91,28 @@ FTM_RET	FTOM_NODE_destroy
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 
-FTM_RET	FTOM_NODE_init
+FTM_RET	FTOM_NODE_count
 (
-	FTOM_NODE_PTR 	pNode,
-	FTM_NODE_PTR	pInfo
+	FTM_ULONG_PTR		pulCount
 );
 
-FTM_RET FTOM_NODE_final
+FTM_RET FTOM_NODE_get
 (
-	FTOM_NODE_PTR 	pNode
+	FTM_CHAR_PTR pDID, 
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET FTOM_NODE_getAt
+(
+	FTM_ULONG ulIndex, 
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET FTOM_NODE_set
+(
+	FTM_CHAR_PTR 	pDID, 
+	FTM_NODE_FIELD	xFields,
+	FTM_NODE_PTR 	pInfo
 );
 
 FTM_RET	FTOM_NODE_linkEP

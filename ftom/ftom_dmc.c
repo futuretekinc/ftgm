@@ -23,11 +23,9 @@ static FTM_RET	FTOM_DMC_onSaveEPData
 
 FTM_RET	FTOM_DMC_create
 (
-	FTOM_PTR pOM,
 	FTOM_DMC_PTR _PTR_ 	ppDMC
 )
 {
-	ASSERT(pOM != NULL);
 	ASSERT(ppDMC != NULL);
 
 	FTM_RET	xRet;
@@ -39,7 +37,7 @@ FTM_RET	FTOM_DMC_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	xRet = FTOM_DMC_init(pDMC, pOM);
+	xRet = FTOM_DMC_init(pDMC);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pDMC);
@@ -53,8 +51,7 @@ FTM_RET	FTOM_DMC_create
 	
 FTM_RET FTOM_DMC_init
 (
-	FTOM_DMC_PTR 	pDMC,
-	FTOM_PTR 		pOM 
+	FTOM_DMC_PTR 	pDMC
 )
 {
 	ASSERT(pDMC != NULL);

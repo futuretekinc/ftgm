@@ -39,26 +39,31 @@ typedef	struct FTOM_EP_STRUCT
 	}	xOption;
 }	FTOM_EP, _PTR_ FTOM_EP_PTR;
 
-FTM_RET	FTOM_EP_create
-(
-	FTM_EP_PTR 			pInfo,
-	FTOM_EP_PTR _PTR_ ppEP
-);
-
-FTM_RET	FTOM_EP_destroy
-(
-	FTOM_EP_PTR _PTR_ ppEP
-);
+typedef	struct FTOM_EP_CLASS_STRUCT
+{
+	FTM_EP_CLASS	xInfo;
+}	FTOM_EP_CLASS, _PTR_ FTOM_EP_CLASS_PTR;
 
 FTM_RET	FTOM_EP_init
 (
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_PTR 			pInfo
+	FTM_VOID
 );
 
 FTM_RET	FTOM_EP_final
 (
-	FTOM_EP_PTR 		pEP 
+	FTM_VOID
+);
+
+FTM_RET	FTOM_EP_create
+(
+	FTM_EP_PTR 			pInfo,
+	FTOM_EP_PTR _PTR_ 	ppEP,
+	FTM_BOOL			bAddToDB
+);
+
+FTM_RET	FTOM_EP_destroy
+(
+	FTOM_EP_PTR _PTR_ 	ppEP
 );
 
 FTM_RET	FTOM_EP_attach
@@ -70,6 +75,23 @@ FTM_RET	FTOM_EP_attach
 FTM_RET	FTOM_EP_detach
 (
 	FTOM_EP_PTR 		pEP
+);
+
+FTM_RET	FTOM_EP_count
+(
+	FTM_ULONG_PTR		pulCount
+);
+
+FTM_RET	FTOM_EP_get
+(
+	FTM_CHAR_PTR		pEPID,
+	FTOM_EP_PTR _PTR_ 	ppEP
+);
+
+FTM_RET FTOM_EP_getAt
+(
+	FTM_ULONG 			ulIndex, 
+	FTOM_EP_PTR _PTR_ 	ppEP
 );
 
 FTM_RET FTOM_EP_start
@@ -145,5 +167,34 @@ FTM_RET FTOM_EP_trap
 	FTM_EP_DATA_PTR pData)
 ;
 
+FTM_RET FTOM_EP_getIDList
+(
+	FTM_CHAR		pEPID[][FTM_EPID_LEN+1],
+	FTM_ULONG 		ulMaxCount, 
+	FTM_ULONG_PTR 	pulCount
+);
+
+FTM_RET	FTOM_EP_CLASS_create
+(
+	FTM_EP_CLASS_PTR 	pInfo,
+	FTOM_EP_CLASS_PTR _PTR_	ppEPClass
+);
+
+FTM_RET	FTOM_EP_CLASS_destroy
+(
+	FTOM_EP_CLASS_PTR _PTR_	ppEPClass
+);
+
+FTM_RET FTOM_EP_CLASS_get
+(
+	FTM_EP_TYPE 	xType, 
+	FTOM_EP_CLASS_PTR _PTR_ ppEPClass
+);
+
+FTM_RET FTOM_EP_CLASS_getAt
+(
+	FTM_ULONG 		ulIndex, 
+	FTOM_EP_CLASS_PTR _PTR_ ppEPClass
+);
 #endif
 

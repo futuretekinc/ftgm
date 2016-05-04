@@ -4,9 +4,23 @@
 #include "ftm.h"
 #include "ftom.h"
 #include "ftom_node.h"
-#include "ftom_node_management.h"
 #include "ftom_ep.h"
 #include "ftom_node_snmpc.h"
+#include "ftm_list.h"
+
+static
+FTM_INT	FTOM_NODE_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+);
+
+static
+FTM_INT	FTOM_NODE_comparator
+(
+	const FTM_VOID_PTR pElement1, 
+	const FTM_VOID_PTR pElement2
+);
 
 static 
 FTM_RET	FTOM_NODE_lock
@@ -26,9 +40,59 @@ FTM_VOID_PTR FTOM_NODE_process
 	FTM_VOID_PTR pData
 );
 
+static
+FTM_LIST_PTR	pNodeList = NULL;
+
 /********************************************************************************
  *	NODE Manager
  ********************************************************************************/
+FTM_RET	FTOM_NODE_init
+(
+	FTM_VOID
+)
+{
+	FTM_RET	xRet ;
+
+	if (pNodeList != NULL)
+	{
+		return	FTM_RET_ALREADY_INITIALIZED;	
+	}
+
+	xRet = FTM_LIST_create(&pNodeList);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	FTM_LIST_setSeeker(pNodeList, FTOM_NODE_seeker);
+	FTM_LIST_setComparator(pNodeList, FTOM_NODE_comparator);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_NODE_final
+(
+	FTM_VOID
+)
+{
+	FTOM_NODE_PTR	pNode = NULL;
+	
+	if (pNodeList == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;
+	}
+	FTM_LIST_iteratorStart(pNodeList);
+	while(FTM_LIST_iteratorNext(pNodeList, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
+	{
+		FTOM_NODE_destroy(&pNode);	
+	}
+
+	FTM_LIST_destroy(pNodeList);
+
+	pNodeList = NULL;
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTOM_NODE_create
 (
@@ -67,66 +131,13 @@ FTM_RET	FTOM_NODE_create
 		return	xRet;	
 	}
 
-	pNode->xState = FTOM_NODE_STATE_CREATED;
-
-	FTOM_NODE_init(pNode, pInfo);
-
-	*ppNode = pNode;
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_NODE_destroy
-(
-	FTOM_NODE_PTR _PTR_	ppNode
-)
-{
-	ASSERT(ppNode != NULL);
-
-	FTM_RET			xRet;
-
-	xRet = FTOM_NODE_final(*ppNode);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Node finalize failed.[%08x]\n", xRet);
-	}
-
-	switch((*ppNode)->xInfo.xType)
-	{
-	case	FTM_NODE_TYPE_SNMP:
-		{
-			xRet = FTOM_NODE_SNMPC_destroy((FTOM_NODE_SNMPC_PTR _PTR_)ppNode);
-		}
-		break;
-
-	default:
-		{
-			ERROR("pInfo->xType = %08lx", (*ppNode)->xInfo.xType);
-			return	FTM_RET_INVALID_ARGUMENTS;	
-		}
-	}
-
-	*ppNode = NULL;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_NODE_init
-(
-	FTOM_NODE_PTR 	pNode,
-	FTM_NODE_PTR	pInfo
-)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pInfo != NULL);
-
-	FTM_RET	xRet;
-
 	memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
 	xRet = FTM_LIST_init(&pNode->xEPList);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("List initialize failed[%08x].\n", xRet);
+		FTM_MEM_free(pNode);
+
 		return	xRet;	
 	}
 	
@@ -134,6 +145,7 @@ FTM_RET	FTOM_NODE_init
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Message queue initialize failed[%08x].\n", xRet);
+		FTM_MEM_free(pNode);
 		return	xRet;	
 	}
 
@@ -149,44 +161,203 @@ FTM_RET	FTOM_NODE_init
 		pNode->xDescript.fInit(pNode, pInfo);
 	}
 
-	return	FTM_RET_OK;
+	pNode->xState = FTOM_NODE_STATE_CREATED;
+
+	FTM_LIST_append(pNodeList, pNode);
+
+	*ppNode = pNode;
+
+	return	xRet;
 }
 
-FTM_RET FTOM_NODE_final
+FTM_RET	FTOM_NODE_destroy
 (
-	FTOM_NODE_PTR 	pNode
+	FTOM_NODE_PTR _PTR_	ppNode
 )
 {
-	ASSERT(pNode != NULL);
+	ASSERT(ppNode != NULL);
 
-	FTM_RET			xRet;
 	FTOM_EP_PTR		pEP;
 
-	FTOM_NODE_lock(pNode);
+	FTOM_NODE_lock((*ppNode));
 
-	FTM_LIST_iteratorStart(&pNode->xEPList);
-	while(FTM_LIST_iteratorNext(&pNode->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
+	FTM_LIST_iteratorStart(&(*ppNode)->xEPList);
+	while(FTM_LIST_iteratorNext(&(*ppNode)->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
 	{
 		FTOM_EP_detach(pEP);
 	}
-	FTM_LIST_final(&pNode->xEPList);
+	FTM_LIST_final(&(*ppNode)->xEPList);
 
-	FTOM_NODE_unlock(pNode);
+	FTOM_NODE_unlock((*ppNode));
 
-	pthread_mutex_destroy(&pNode->xMutexLock);
+	pthread_mutex_destroy(&(*ppNode)->xMutexLock);
 
-	if (pNode->pNodeM != NULL)
+	FTM_LIST_remove(pNodeList, (*ppNode));
+
+	switch((*ppNode)->xInfo.xType)
 	{
-		xRet = FTOM_NODEM_detachNode(pNode->pNodeM, pNode);
-		if (xRet != FTM_RET_OK)
+	case	FTM_NODE_TYPE_SNMP:
 		{
-			WARN("Node detach failed[%08x].\n", xRet);	
+			FTOM_NODE_SNMPC_destroy((FTOM_NODE_SNMPC_PTR _PTR_)ppNode);
+		}
+		break;
+
+	default:
+		{
+			ERROR("pInfo->xType = %08lx", (*ppNode)->xInfo.xType);
+			return	FTM_RET_INVALID_ARGUMENTS;	
 		}
 	}
 
-	pNode->xState = FTOM_NODE_STATE_FINALIZED;
+	*ppNode = NULL;
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_count
+(
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pulCount != NULL);
+
+	return	FTM_LIST_count(pNodeList, pulCount);
+}
+
+
+FTM_RET FTOM_NODE_get
+(
+	FTM_CHAR_PTR pDID, 
+	FTOM_NODE_PTR _PTR_ ppNode
+)
+{
+	ASSERT(pDID != NULL);
+	ASSERT(ppNode != NULL);
+
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+	
+	xRet = FTM_LIST_get(pNodeList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		*ppNode = pNode;
+	}
+
+	return	xRet;
+}
+
+FTM_RET FTOM_NODE_getAt
+(
+	FTM_ULONG ulIndex, 
+	FTOM_NODE_PTR _PTR_ ppNode
+)
+{
+	ASSERT(ppNode != NULL);
+
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+
+	xRet = FTM_LIST_getAt(pNodeList, ulIndex, (FTM_VOID_PTR _PTR_)&pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		*ppNode = pNode;
+	}
+
+	return	xRet;
+}
+
+FTM_RET FTOM_NODE_set
+(
+	FTM_CHAR_PTR 	pDID, 
+	FTM_NODE_FIELD	xFields,
+	FTM_NODE_PTR 	pInfo
+)
+{
+	ASSERT(pDID != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+	
+	xRet = FTM_LIST_get(pNodeList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node[%s] not found.[%08x]\n", pDID, xRet);
+		return	FTM_RET_OBJECT_NOT_FOUND;
+	}
+
+	if (xFields & FTM_NODE_FIELD_FLAGS)
+	{
+		pNode->xInfo.xFlags = pInfo->xFlags;
+	}
+
+	if (xFields & FTM_NODE_FIELD_LOCATION)
+	{
+		strcpy(pNode->xInfo.pLocation, pInfo->pLocation);
+	}
+
+	if (xFields & FTM_NODE_FIELD_INTERVAL)
+	{
+		pNode->xInfo.ulInterval = pInfo->ulInterval;
+	}
+
+	if (xFields & FTM_NODE_FIELD_TIMEOUT)
+	{
+		pNode->xInfo.ulTimeout = pInfo->ulTimeout;
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_VERSION)
+	{
+		pNode->xInfo.xOption.xSNMP.ulVersion = pInfo->xOption.xSNMP.ulVersion ;
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_URL)
+	{
+		strcpy(pNode->xInfo.xOption.xSNMP.pURL, pInfo->xOption.xSNMP.pURL);
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_COMMUNITY)
+	{
+		strcpy(pNode->xInfo.xOption.xSNMP.pCommunity, pInfo->xOption.xSNMP.pCommunity);
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_MIB)
+	{
+		strcpy(pNode->xInfo.xOption.xSNMP.pMIB, pInfo->xOption.xSNMP.pMIB);
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_MAX_RETRY)
+	{
+		pNode->xInfo.xOption.xSNMP.ulMaxRetryCount = pInfo->xOption.xSNMP.ulMaxRetryCount;
+	}
+
+	if (xFields & FTM_NODE_FIELD_MQTT_VERSION)
+	{
+		pNode->xInfo.xOption.xMQTT.ulVersion = pInfo->xOption.xMQTT.ulVersion;
+	}
+
+	if (xFields & FTM_NODE_FIELD_MQTT_URL)
+	{
+		strcpy(pNode->xInfo.xOption.xMQTT.pURL, pInfo->xOption.xMQTT.pURL);
+	}
+
+	if (xFields & FTM_NODE_FIELD_MQTT_TOPIC)
+	{
+		strcpy(pNode->xInfo.xOption.xMQTT.pTopic, pInfo->xOption.xMQTT.pTopic);
+	}
+
+	if (xFields & FTM_NODE_FIELD_LORA_VERION)
+	{
+		pNode->xInfo.xOption.xLoRa.ulVersion = pInfo->xOption.xLoRa.ulVersion;
+	}
+
+	if (xFields & FTM_NODE_FIELD_LORA_DEVICE)
+	{
+		strcpy(pNode->xInfo.xOption.xLoRa.pDevice, pInfo->xOption.xLoRa.pDevice);
+	}
+
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_NODE_linkEP
@@ -546,5 +717,39 @@ FTM_CHAR_PTR	FTOM_NODE_stateToStr
 	}
 
 	return	"UNKNOWN";
+}
+
+FTM_INT	FTOM_NODE_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+)
+{
+	FTOM_NODE_PTR	pNode = (FTOM_NODE_PTR)pElement;
+	FTM_CHAR_PTR	pDID = (FTM_CHAR_PTR)pIndicator;
+
+	if ((pElement == NULL) || (pIndicator == NULL))
+	{
+		return	0;	
+	}
+
+	return	(strcasecmp(pNode->xInfo.pDID, pDID) == 0);
+}
+
+FTM_INT	FTOM_NODE_comparator
+(
+	const FTM_VOID_PTR pElement1, 
+	const FTM_VOID_PTR pElement2
+)
+{
+	FTOM_NODE_PTR	pNode1 = (FTOM_NODE_PTR)pElement1;
+	FTOM_NODE_PTR	pNode2 = (FTOM_NODE_PTR)pElement2;
+
+	if ((pElement1 == NULL) || (pElement2 == NULL))
+	{
+		return	0;	
+	}
+
+	return	strcasecmp(pNode1->xInfo.pDID, pNode2->xInfo.pDID);
 }
 

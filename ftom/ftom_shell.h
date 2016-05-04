@@ -14,19 +14,16 @@ typedef	struct FTOM_SHELL_STRUCT
 	pthread_t 		xThread;
 
 	FTM_BOOL		bStop;
-	FTOM_PTR		pOM;
 }	FTOM_SHELL, _PTR_ FTOM_SHELL_PTR;
 
 FTM_RET	FTOM_SHELL_create
 (
-	FTOM_PTR	pOM,
 	FTOM_SHELL_PTR _PTR_ ppShell
 );
 
 FTM_RET	FTOM_SHELL_init
 (
-	FTOM_SHELL_PTR 	pShell,
-	FTOM_PTR pOM 
+	FTOM_SHELL_PTR 	pShell
 );
 
 FTM_RET	FTOM_SHELL_final

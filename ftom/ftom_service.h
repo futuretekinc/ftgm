@@ -21,7 +21,7 @@ typedef	enum
 
 typedef	FTM_ULONG	FTOM_SERVICE_ID;
 
-typedef	FTM_RET	(*FTOM_SERVICE_INIT)(FTM_VOID_PTR pData, FTOM_PTR pOM);
+typedef	FTM_RET	(*FTOM_SERVICE_INIT)(FTM_VOID_PTR pData);
 typedef	FTM_RET	(*FTOM_SERVICE_FINAL)(FTM_VOID_PTR pData);
 typedef	FTM_RET	(*FTOM_SERVICE_START)(FTM_VOID_PTR pData);
 typedef	FTM_RET	(*FTOM_SERVICE_STOP)(FTM_VOID_PTR pData);
@@ -54,7 +54,6 @@ typedef	struct
 
 FTM_RET	FTOM_SERVICE_init
 (
-	FTOM_PTR 	pOM, 
 	FTOM_SERVICE_PTR pServices, 
 	FTM_ULONG ulCount
 );

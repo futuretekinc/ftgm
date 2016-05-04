@@ -9,7 +9,6 @@
 #include "ftom_node_snmpc.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
-#include "ftom_ep_management.h"
 #include "ftom_snmptrapd.h"
 
 
@@ -19,11 +18,9 @@ extern int	active_hosts;
 
 FTM_RET	FTOM_SNMPC_create
 (
-	FTOM_PTR pOM,
 	FTOM_SNMPC_PTR _PTR_ 	ppSNMPC
 )
 {
-	ASSERT(pOM != NULL);
 	ASSERT(ppSNMPC != NULL);
 
 	FTM_RET	xRet;
@@ -35,7 +32,7 @@ FTM_RET	FTOM_SNMPC_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	xRet = FTOM_SNMPC_init(pSNMPC, pOM);
+	xRet = FTOM_SNMPC_init(pSNMPC);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pSNMPC);
@@ -49,8 +46,7 @@ FTM_RET	FTOM_SNMPC_create
 	
 FTM_RET	FTOM_SNMPC_init
 (
-	FTOM_SNMPC_PTR pClient,
-	FTOM_PTR pOM 
+	FTOM_SNMPC_PTR pClient
 )
 {
 	ASSERT(pClient != NULL);
@@ -64,7 +60,6 @@ FTM_RET	FTOM_SNMPC_init
 	FTM_LIST_init(&pClient->xConfig.xMIBList);
 	pClient->xConfig.ulMaxRetryCount = FTOM_SNMPC_RETRY_COUNT;
 	FTM_LOCK_init(&pClient->xLock);
-	pClient->pOM = pOM;
 
 	return	FTM_RET_OK;
 }

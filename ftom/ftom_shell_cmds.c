@@ -1,11 +1,11 @@
 #include "ftom.h"
 #include "ftom_shell_cmds.h"
 #include "ftom_msg.h"
-#include "ftom_node_management.h"
-#include "ftom_ep_management.h"
-#include "ftom_trigger_management.h"
-#include "ftom_action_management.h"
-#include "ftom_rule_management.h"
+#include "ftom_node.h"
+#include "ftom_ep.h"
+#include "ftom_trigger.h"
+#include "ftom_action.h"
+#include "ftom_rule.h"
 #include "ftom_discovery.h"
 
 FTM_ULONG	ulGetheringTime = 3;
@@ -101,12 +101,10 @@ FTM_RET	FTOM_SHELL_CMD_config
 	FTM_VOID_PTR 	pData
 )
 {
-	FTOM_PTR pOM = (FTOM_PTR)pData;
-
 	switch(nArgc)
 	{
 	case	1:
-		FTOM_showConfig(pOM);
+		FTOM_showConfig();
 		break;
 	}
 
@@ -125,16 +123,15 @@ FTM_RET	FTOM_SHELL_CMD_list
 	FTOM_NODE_PTR		pNode;
 	FTOM_EP_PTR			pEP;
 	FTM_ULONG			i,j, ulCount;
-	FTOM_PTR	pOM = (FTOM_PTR)pData;
 
 	MESSAGE("\n# Node Information\n");
 	MESSAGE("%16s %16s %8s %8s %s\n", "DID", "STATE", "INTERVAL", "TIMEOUT", "EPs");
-	FTOM_NODEM_countNode(pOM->pNodeM, &ulCount);
+	FTOM_NODE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTM_ULONG	ulEPCount;
 
-		FTOM_NODEM_getNodeAt(pOM->pNodeM, i, &pNode);
+		FTOM_NODE_getAt(i, &pNode);
 		MESSAGE("%16s ", pNode->xInfo.pDID);
 		MESSAGE("%16s ", FTOM_NODE_stateToStr(pNode->xState));
 		MESSAGE("%8d ", pNode->xInfo.ulInterval);
@@ -154,10 +151,10 @@ FTM_RET	FTOM_SHELL_CMD_list
 
 	MESSAGE("\n# EP Information\n");
 	MESSAGE("%16s %16s %16s %16s %8s %24s\n", "EPID", "TYPE", "DID", "STATE", "VALUE", "TIME");
-	FTOM_EPM_count(pOM->pEPM, 0, &ulCount);
+	FTOM_EP_count(&ulCount);
 	for(i = 0; i < ulCount ; i++)
 	{
-		if (FTOM_EPM_getEPAt(pOM->pEPM, i, &pEP) == FTM_RET_OK)
+		if (FTOM_EP_getAt(i, &pEP) == FTM_RET_OK)
 		{
 			FTM_CHAR	pTimeString[64];
 			FTM_EP_DATA	xData;
@@ -184,13 +181,13 @@ FTM_RET	FTOM_SHELL_CMD_list
 	}
 
 	MESSAGE("\n# Trigger Information\n");
-	FTOM_TRIGGERM_count(pOM->pTriggerM, &ulCount);
+	FTOM_TRIGGER_count(&ulCount);
 	MESSAGE("\t%16s %16s %16s %8s %8s %32s %16s\n", "ID", "NAME", "TYPE", "DETECT", "HOLD", "CONDITION", "EPID");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_TRIGGER_PTR	pTrigger;
 
-		xRet = FTOM_TRIGGERM_getAt(pOM->pTriggerM, i, &pTrigger);
+		xRet = FTOM_TRIGGER_getAt(i, &pTrigger);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_CHAR	pCondition[1024];
@@ -210,13 +207,13 @@ FTM_RET	FTOM_SHELL_CMD_list
 	}
 
 	MESSAGE("\n# Action Information\n");
-	FTOM_ACTIONM_count(pOM->pActionM, &ulCount);
+	FTOM_ACTION_count(&ulCount);
 	MESSAGE("\t%16s %16s\n", "ID","TYPE");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_ACTION_PTR	pAction;
 
-		xRet = FTOM_ACTIONM_getAt(pOM->pActionM, i, &pAction);
+		xRet = FTOM_ACTION_getAt(i, &pAction);
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("\t%16s %16s\n", 
@@ -227,13 +224,13 @@ FTM_RET	FTOM_SHELL_CMD_list
 	}
 	
 	MESSAGE("\n# Rule Information\n");
-	FTOM_RULEM_count(pOM->pRuleM, &ulCount);
+	FTOM_RULE_count(&ulCount);
 	MESSAGE("\t%16s %24s %24s\n", "ID","TRIGGER", "ACTION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_RULE_PTR	pRule;
 
-		xRet = FTOM_RULEM_getAt(pOM->pRuleM, i, &pRule);
+		xRet = FTOM_RULE_getAt(i, &pRule);
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("\t%16s", pRule->xInfo.pID);
@@ -276,9 +273,7 @@ FTM_RET	FTOM_SHELL_CMD_quit
 	FTM_VOID_PTR 	pData
 )
 {
-	FTOM_PTR	pOM = (FTOM_PTR)pData;
-
-	return	FTOM_stop(pOM);
+	return	FTOM_stop();
 
 }
 
@@ -305,13 +300,12 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 	ASSERT(pData != NULL);
 
 	FTM_RET		xRet;
-	FTOM_PTR 	pOM = (FTOM_PTR)pData;
 	
 	switch(nArgc)
 	{
 	case	1:
 		{
-			xRet = FTOM_discovery(pOM, "255.255.255.255", 1234);
+			xRet = FTOM_discovery("255.255.255.255", 1234);
 			if (xRet != FTM_RET_OK)
 			{
 				MESSAGE("Discovery request was failed[%08x].\n", xRet);	

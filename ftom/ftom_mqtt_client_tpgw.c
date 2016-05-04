@@ -133,7 +133,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 			return;
 		}
 
-		xRet = FTOM_MSGQ_push(pClient->pOM->pMsgQ, pMsg);
+		xRet = FTOM_sendMessage(pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			FTM_MEM_free(pMsg);

@@ -10,7 +10,6 @@ typedef	struct	FTOM_STRUCT _PTR_ FTOM_PTR;
 
 typedef	struct
 {
-	FTOM_PTR				pOM;
 	FTDMC_SESSION			xSession;
 	FTDMC_CFG				xConfig;
 	pthread_t				xThread;
@@ -22,14 +21,12 @@ typedef	struct
 
 FTM_RET	FTOM_DMC_create
 (
-	FTOM_PTR pOM,
 	FTOM_DMC_PTR _PTR_ 	ppDMC
 );
 
 FTM_RET FTOM_DMC_init
 (
-	FTOM_DMC_PTR 	pDMC,
-	FTOM_PTR 		pOM 
+	FTOM_DMC_PTR 	pDMC
 );
 
 FTM_RET FTOM_DMC_final

@@ -15,7 +15,6 @@
 #include "ftom_node_snmpc.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
-#include "ftom_ep_management.h"
 
 #ifndef	FTOM_TRACE_SNMPTRAPD_IO	
 #define	FTOM_TRACE_SNMPTRAPD_IO	0
@@ -95,11 +94,9 @@ static FTM_RET	FTOM_SNMPTRAPD_receivedDiscovery
 
 FTM_RET	FTOM_SNMPTRAPD_create
 (
-	FTOM_PTR				pOM,
 	FTOM_SNMPTRAPD_PTR _PTR_ ppSNMPTRAPD
 )
 {
-	ASSERT(pOM != NULL);
 	ASSERT(ppSNMPTRAPD != NULL);
 
 	FTM_RET	xRet;
@@ -112,7 +109,7 @@ FTM_RET	FTOM_SNMPTRAPD_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	xRet = FTOM_SNMPTRAPD_init(pSNMPTRAPD, pOM);
+	xRet = FTOM_SNMPTRAPD_init(pSNMPTRAPD);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pSNMPTRAPD);	
@@ -153,8 +150,7 @@ FTM_RET	FTOM_SNMPTRAPD_destroy
 
 FTM_RET	FTOM_SNMPTRAPD_init
 (
-	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD,
-	FTOM_PTR 				pOM 
+	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD
 )
 {
 	FTM_RET	xRet;
@@ -170,8 +166,6 @@ FTM_RET	FTOM_SNMPTRAPD_init
 		FTM_LIST_setSeeker(&pSNMPTRAPD->xTrapCBList, FTOM_SNMPTRAPD_seekTrapCB);
 	}
 	
-	pSNMPTRAPD->pOM = pOM;
-
 	return	xRet;
 }
 
@@ -961,7 +955,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 			{
 				strcpy(pEPID, pItem->text_value);
 	
-				xRet = FTOM_EPM_getEP(pSNMPTRAPD->pOM->pEPM, pEPID, &pEP);
+				xRet = FTOM_EP_get(pEPID, &pEP);
 				if (xRet == FTM_RET_OK)
 				{
 					FTM_EP_DATA_TYPE	xDataType;
@@ -1155,7 +1149,7 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 
 	strncpy(pEPID, pItem->text_value, FTM_EPID_LEN);
 
-	xRet = FTOM_EPM_getEP(pSNMPTRAPD->pOM->pEPM, pEPID, &pEP);
+	xRet = FTOM_EP_get(pEPID, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
 		WARN("EP[%s] does not exist!\n",pEPID);
@@ -1415,7 +1409,7 @@ FTM_RET	FTOM_SNMPTRAPD_setEPData
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTOM_setEPData(pSNMPTRAPD->pOM, pEPID, pData);
+	return	FTOM_setEPData(pEPID, pData);
 }
 
 FTM_RET	FTOM_SNMPTRAPD_sendAlert
@@ -1428,7 +1422,7 @@ FTM_RET	FTOM_SNMPTRAPD_sendAlert
 	ASSERT(pSNMPTRAPD != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTOM_sendAlert(pSNMPTRAPD->pOM, pEPID, pData);
+	return	FTOM_sendAlert(pEPID, pData);
 }
 
 FTM_RET	FTOM_SNMPTRAPD_receivedDiscovery
@@ -1445,7 +1439,7 @@ FTM_RET	FTOM_SNMPTRAPD_receivedDiscovery
 	ASSERT(pDID != NULL);
 	ASSERT(pTypes != NULL);
 
-	return	FTOM_receivedDiscovery(pSNMPTRAPD->pOM, pName, pDID, pIP, pTypes, ulCount);
+	return	FTOM_receivedDiscovery(pName, pDID, pIP, pTypes, ulCount);
 }
 
 #if 0

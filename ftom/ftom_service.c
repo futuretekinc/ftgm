@@ -5,7 +5,11 @@
 static FTM_BOOL FTOM_SERVICE_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 static FTM_LIST_PTR	pServiceList = NULL;
 
-FTM_RET	FTOM_SERVICE_init(FTOM_PTR pOM, FTOM_SERVICE_PTR pServices, FTM_ULONG ulServices)
+FTM_RET	FTOM_SERVICE_init
+(
+	FTOM_SERVICE_PTR pServices, 
+	FTM_ULONG ulServices
+)
 {
 	FTM_RET				xRet;
 	FTM_ULONG			i;
@@ -32,7 +36,7 @@ FTM_RET	FTOM_SERVICE_init(FTOM_PTR pOM, FTOM_SERVICE_PTR pServices, FTM_ULONG ul
 	{
 		if (pService->fInit != NULL)
 		{
-			pService->xRet = pService->fInit(pService->pData, pOM);
+			pService->xRet = pService->fInit(pService->pData);
 		}
 
 		if ((pService->fSetCallback != NULL) && (pService->fCallback != NULL))

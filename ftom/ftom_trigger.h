@@ -5,46 +5,78 @@
 #include "ftm.h"
 #include "ftom.h"
 
-typedef	enum
+typedef	enum FTOM_TRIGGER_STATE_ENUM
 {
-	FTOM_TRIGGER_STATE_RESET,
-	FTOM_TRIGGER_STATE_PRESET,
-	FTOM_TRIGGER_STATE_SET,
-	FTOM_TRIGGER_STATE_PRERESET
-}	FTOM_TRIGGER_STATE, _PTR_ FTM_TRIGGER_STATE_PTR;
+       FTOM_TRIGGER_STATE_RESET,
+       FTOM_TRIGGER_STATE_PRESET,
+       FTOM_TRIGGER_STATE_SET,
+       FTOM_TRIGGER_STATE_PRERESET
+}      FTOM_TRIGGER_STATE, _PTR_ FTM_TRIGGER_STATE_PTR;
 
-typedef	struct
+typedef struct FTOM_TRIGGER_STRUCT
 {
 	FTM_TRIGGER			xInfo;
-	FTM_TIMER			xDetectionTimer;
-	FTM_TIMER			xHoldingTimer;
-	FTM_EP_DATA			xData;
-	FTOM_TRIGGER_STATE	xState;
-	FTM_TIME			xOccurrenceTime;
-	FTM_TIME			xReleaseTime;
-	FTM_LOCK			xLock;
-}	FTOM_TRIGGER, _PTR_ FTOM_TRIGGER_PTR;
-
-FTM_RET	FTOM_TRIGGER_create
-(
-	FTM_TRIGGER_PTR	pInfo,
-	FTOM_TRIGGER_PTR _PTR_ ppTrigger
-);
-
-FTM_RET	FTOM_TRIGGER_destroy
-(
-	FTOM_TRIGGER_PTR _PTR_ ppTrigger
-);
+	FTM_TIMER           xDetectionTimer;
+	FTM_TIMER           xHoldingTimer;
+	FTM_EP_DATA         xData;
+	FTOM_TRIGGER_STATE  xState;
+	FTM_TIME            xOccurrenceTime;
+	FTM_TIME            xReleaseTime;
+	FTM_LOCK            xLock;
+}      FTOM_TRIGGER, _PTR_ FTOM_TRIGGER_PTR;
 
 FTM_RET	FTOM_TRIGGER_init
 (
-	FTOM_TRIGGER_PTR pTrigger,
-	FTM_TRIGGER_PTR	pInfo
+	FTM_VOID
 );
 
 FTM_RET	FTOM_TRIGGER_final
 (
-	FTOM_TRIGGER_PTR pTrigger
+	FTM_VOID
+);
+
+FTM_RET	FTOM_TRIGGER_start
+(
+	FTM_VOID
+);
+
+FTM_RET	FTOM_TRIGGER_stop
+(	
+	FTM_VOID
+);
+
+FTM_RET	FTOM_TRIGGER_create
+(
+	FTM_TRIGGER_PTR pInfo,
+	FTOM_TRIGGER_PTR _PTR_	ppTrigger	
+);
+
+FTM_RET	FTOM_TRIGGER_destroy
+(
+	FTOM_TRIGGER_PTR _PTR_	ppTrigger	
+);
+
+FTM_RET	FTOM_TRIGGER_count
+(
+	FTM_ULONG_PTR pulCount
+);
+
+FTM_RET	FTOM_TRIGGER_get
+(
+	FTM_CHAR_PTR		pTriggerID,
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger
+);
+
+FTM_RET	FTOM_TRIGGER_getAt
+(
+	FTM_ULONG ulIndex, 
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger
+);
+
+FTM_RET	FTOM_TRIGGER_updateEP
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR pData
 );
 
 #endif

@@ -43,8 +43,6 @@ typedef	struct FTOM_MQTT_CLIENT_STRUCT
 {
 	FTOM_MQTT_CLIENT_CONFIG	xConfig;
 
-	FTOM_PTR				pOM;
-
 	FTM_BOOL				bStop;
 	FTM_BOOL				bConnected;
 	pthread_t				xMain;
@@ -87,7 +85,6 @@ typedef	struct
 
 FTM_RET	FTOM_MQTT_CLIENT_create
 (
-	FTOM_PTR 		pOM,
 	FTOM_MQTT_CLIENT_PTR _PTR_ ppClient
 );
 
@@ -98,8 +95,7 @@ FTM_RET	FTOM_MQTT_CLIENT_destroy
 
 FTM_RET	FTOM_MQTT_CLIENT_init
 (
-	FTOM_MQTT_CLIENT_PTR pClient,
-	FTOM_PTR 			pOM
+	FTOM_MQTT_CLIENT_PTR pClient
 );
 
 FTM_RET	FTOM_MQTT_CLIENT_final

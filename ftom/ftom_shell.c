@@ -8,11 +8,9 @@ static FTM_VOID_PTR	FTOM_SHELL_process
 
 FTM_RET	FTOM_SHELL_create
 (
-	FTOM_PTR pOM,
 	FTOM_SHELL_PTR _PTR_ 	ppShell
 )
 {
-	ASSERT(pOM != NULL);
 	ASSERT(ppShell != NULL);
 
 	FTM_RET	xRet;
@@ -24,7 +22,7 @@ FTM_RET	FTOM_SHELL_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	xRet = FTOM_SHELL_init(pShell, pOM);
+	xRet = FTOM_SHELL_init(pShell);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pShell);
@@ -38,15 +36,14 @@ FTM_RET	FTOM_SHELL_create
 	
 FTM_RET	FTOM_SHELL_init
 (
-	FTOM_SHELL_PTR 	pShell,
-	FTOM_PTR pOM 
+	FTOM_SHELL_PTR 	pShell
 )
 {
 	ASSERT(pShell != NULL);
 	
 	FTM_RET	xRet;
 
-	xRet = FTM_SHELL_init(&pShell->xShell, pOM);
+	xRet = FTM_SHELL_init(&pShell->xShell, NULL);
 	FTM_SHELL_setPrompt(&pShell->xShell, "FTOM> ");
 	if (xRet == FTM_RET_OK)
 	{
@@ -54,7 +51,6 @@ FTM_RET	FTOM_SHELL_init
 
 		for(i = 0 ; i < FTOM_shellCmdCount; i++)
 		{
-			FTOM_shellCmds[i].pData = pOM;
 			FTM_SHELL_appendCmd(&pShell->xShell, &FTOM_shellCmds[i]);
 		}
 	}
