@@ -506,6 +506,22 @@ FTM_RET	FTOM_SERVER_create
 	return	FTM_RET_OK;
 }
 	
+FTM_RET	FTOM_SERVER_destroy
+(
+	FTOM_SERVER_PTR _PTR_ 	ppServer
+)
+{
+	ASSERT(ppServer != NULL);
+
+	FTOM_SERVER_final(*ppServer);
+
+	FTM_MEM_free(*ppServer);
+
+	*ppServer = NULL;
+
+	return	FTM_RET_OK;
+}
+	
 FTM_RET	FTOM_SERVER_init
 (
 	FTOM_SERVER_PTR	pServer

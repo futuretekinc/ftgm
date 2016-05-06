@@ -34,6 +34,24 @@ FTM_RET	FTOM_SHELL_create
 	return	FTM_RET_OK;
 }
 	
+FTM_RET	FTOM_SHELL_destroy
+(
+	FTOM_SHELL_PTR _PTR_ 	ppShell
+)
+{
+	ASSERT(ppShell != NULL);
+
+	FTM_RET	xRet;
+
+	FTOM_SHELL_final(*ppShell);
+
+	FTM_MEM_free(*ppShell);
+
+	*ppShell = NULL;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_SHELL_init
 (
 	FTOM_SHELL_PTR 	pShell

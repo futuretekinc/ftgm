@@ -904,10 +904,15 @@ FTM_RET	FTOM_EP_getDataInfo
 	FTOM_EP_PTR		pEP,
 	FTM_ULONG_PTR	pulBegin,
 	FTM_ULONG_PTR	pulEnd,
-	FTM_ULONG_PTR	pulDeletedCount
+	FTM_ULONG_PTR	pulCount
 )
 {
+	ASSERT(pEP != NULL);
+	ASSERT(pulBegin != NULL);
+	ASSERT(pulEnd != NULL);
+	ASSERT(pulCount != NULL);
 
+	return	FTOM_DB_EP_getDataInfo(pEP->xInfo.pEPID, pulBegin, pulEnd, pulCount);
 }
 
 FTM_RET	FTOM_EP_sendDataInTime

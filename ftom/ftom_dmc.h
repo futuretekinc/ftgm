@@ -24,6 +24,11 @@ FTM_RET	FTOM_DMC_create
 	FTOM_DMC_PTR _PTR_ 	ppDMC
 );
 
+FTM_RET	FTOM_DMC_destroy
+(
+	FTOM_DMC_PTR _PTR_ 	ppDMC
+);
+
 FTM_RET FTOM_DMC_init
 (
 	FTOM_DMC_PTR 	pDMC

@@ -54,6 +54,11 @@ FTM_RET	FTOM_SERVER_create
 	FTOM_SERVER_PTR _PTR_ 	ppServer
 );
 	
+FTM_RET	FTOM_SERVER_destroy
+(
+	FTOM_SERVER_PTR _PTR_ 	ppServer
+);
+
 FTM_RET	FTOM_SERVER_init
 (
 	FTOM_SERVER_PTR 	pServer

@@ -129,6 +129,8 @@ static 	FTOM_SERVICE	pServices[] =
 		.xType		=	FTOM_SERVICE_SERVER,
 		.xID		=	FTOM_SERVICE_SERVER,
 		.pName		=	"Server",
+		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_SERVER_create,
+		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_SERVER_destroy,
 		.fInit		=	(FTOM_SERVICE_INIT)FTOM_SERVER_init,
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_SERVER_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SERVER_start,
@@ -144,6 +146,8 @@ static 	FTOM_SERVICE	pServices[] =
 		.xType		=	FTOM_SERVICE_SNMP_CLIENT,
 		.xID		=	FTOM_SERVICE_SNMP_CLIENT,
 		.pName		=	"SNMP Client",
+		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_SNMPC_create,
+		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_SNMPC_destroy,
 		.fInit		=	(FTOM_SERVICE_INIT)FTOM_SNMPC_init,
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_SNMPC_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SNMPC_start,
@@ -158,6 +162,8 @@ static 	FTOM_SERVICE	pServices[] =
 		.xType		=	FTOM_SERVICE_SNMPTRAPD,
 		.xID		=	FTOM_SERVICE_SNMPTRAPD,
 		.pName		=	"SNMP TrapD",
+		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_SNMPTRAPD_create,
+		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_SNMPTRAPD_destroy,
 		.fInit		=	(FTOM_SERVICE_INIT)FTOM_SNMPTRAPD_init,
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_SNMPTRAPD_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SNMPTRAPD_start,
@@ -172,6 +178,8 @@ static 	FTOM_SERVICE	pServices[] =
 		.xType		=	FTOM_SERVICE_DBM,
 		.xID		=	FTOM_SERVICE_DBM,
 		.pName		=	"DB Client",
+		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_DMC_create,
+		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_DMC_destroy,
 		.fInit		=	(FTOM_SERVICE_INIT)FTOM_DMC_init,
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_DMC_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_DMC_start,
@@ -187,6 +195,8 @@ static 	FTOM_SERVICE	pServices[] =
 		.xType		=	FTOM_SERVICE_MQTT_CLIENT,
 		.xID		=	FTOM_SERVICE_MQTT_CLIENT,
 		.pName		=	"MQTT Client",
+		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_MQTT_CLIENT_create,
+		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_MQTT_CLIENT_destroy,
 		.fInit		=	(FTOM_SERVICE_INIT)FTOM_MQTT_CLIENT_init,
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_MQTT_CLIENT_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_MQTT_CLIENT_start,
@@ -202,6 +212,8 @@ static 	FTOM_SERVICE	pServices[] =
 		.xType		=	FTOM_SERVICE_SHELL,
 		.xID		=	FTOM_SERVICE_SHELL,
 		.pName		=	"Shell",
+		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_SHELL_create,
+		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_SHELL_destroy,
 		.fInit		=	(FTOM_SERVICE_INIT)FTOM_SHELL_init,
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_SHELL_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SHELL_start,
@@ -217,6 +229,8 @@ static 	FTOM_SERVICE	pServices[] =
 		.xType		=	FTOM_SERVICE_DISCOVERY,
 		.xID		=	FTOM_SERVICE_DISCOVERY,
 		.pName		=	"Discovery",
+		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_DISCOVERY_create,
+		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_DISCOVERY_destroy,
 		.fInit		=	(FTOM_SERVICE_INIT)FTOM_DISCOVERY_init,
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_DISCOVERY_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_DISCOVERY_start,
@@ -274,7 +288,6 @@ FTM_RET	FTOM_init
 )
 {
 	FTM_RET	xRet;
-	FTM_INT	i;
 
 	FTOM_getDefaultDeviceID(xConfig.pDID);
 	TRACE("DID : %s\n", xConfig.pDID);
@@ -334,29 +347,6 @@ FTM_RET	FTOM_init
 		goto error;
 	}
 
-	FTOM_SERVER_create(&pServer);
-	FTOM_SNMPC_create(&pSNMPC);
-	FTOM_SNMPTRAPD_create(&pSNMPTRAPD);
-	FTOM_DMC_create(&pDMC);
-	FTOM_MQTT_CLIENT_create(&pMQTTC);
-	FTOM_SHELL_create(&pShell);
-	FTOM_DISCOVERY_create(&pDiscovery);
-
-	for(i = 0 ; i < sizeof(pServices) / sizeof(FTOM_SERVICE) ; i++)
-	{
-		switch(pServices[i].xType)
-		{
-		case	FTOM_SERVICE_SERVER: pServices[i].pData = (FTM_VOID_PTR)pServer; break;
-		case	FTOM_SERVICE_SNMP_CLIENT: pServices[i].pData = (FTM_VOID_PTR)pSNMPC; break;
-		case	FTOM_SERVICE_SNMPTRAPD: pServices[i].pData = (FTM_VOID_PTR)pSNMPTRAPD; break;
-		case	FTOM_SERVICE_DBM: pServices[i].pData =(FTM_VOID_PTR)pDMC; break;
-		case	FTOM_SERVICE_MQTT_CLIENT: pServices[i].pData =(FTM_VOID_PTR)pMQTTC; break;
-		case	FTOM_SERVICE_SHELL: pServices[i].pData =(FTM_VOID_PTR)pShell; break;
-		case	FTOM_SERVICE_DISCOVERY: pServices[i].pData = (FTM_VOID_PTR)pDiscovery; break;
-		default: break;
-		}
-	}
-
 	FTOM_SERVICE_init(pServices, sizeof(pServices) / sizeof(FTOM_SERVICE));
 
 	TRACE("initialization done.\n");
@@ -369,15 +359,13 @@ error:
 		FTOM_RULE_final();
 		FTOM_ACTION_final();
 		FTOM_TRIGGER_final();
-	
 		FTOM_EP_final();
+		FTOM_NODE_final();
 	
 		if (pMsgQ!= NULL)
 		{
 			FTOM_MSGQ_destroy(&pMsgQ);
 		}
-	
-		FTOM_NODE_final();
 	
 		pOM = NULL;
 	}
@@ -1314,6 +1302,7 @@ FTM_RET	FTOM_DB_TRIGGER_remove
 	FTM_CHAR_PTR	pTriggerID
 )
 {
+	ASSERT(pTriggerID != NULL);
 
 	FTM_RET	xRet;
 
@@ -1326,7 +1315,7 @@ FTM_RET	FTOM_DB_TRIGGER_remove
 	return	xRet;
 }
 
-FTM_RET	FTOM_getTriggerInfo
+FTM_RET	FTOM_DB_TRIGGER_getInfo
 (
 	FTM_CHAR_PTR	pTriggerID,
 	FTM_TRIGGER_PTR	pInfo
@@ -1336,18 +1325,17 @@ FTM_RET	FTOM_getTriggerInfo
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-	FTOM_TRIGGER_PTR	pTrigger;
 
-	xRet = FTOM_TRIGGER_get(pTriggerID, &pTrigger);
-	if (xRet == FTM_RET_OK)
+	xRet = FTDMC_TRIGGER_get(&pDMC->xSession, pTriggerID, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		memcpy(pInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+		ERROR("Trigger[%s] failed to get information[%08x].\n", pTriggerID, xRet);	
 	}
 
 	return	xRet;
 }
 
-FTM_RET	FTOM_getTriggerInfoAt
+FTM_RET	FTOM_DB_TRIgger_getInfoAt
 (
 	FTM_ULONG		ulIndex,
 	FTM_TRIGGER_PTR	pInfo
@@ -1356,12 +1344,11 @@ FTM_RET	FTOM_getTriggerInfoAt
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-	FTOM_TRIGGER_PTR	pTrigger;
 
-	xRet = FTOM_TRIGGER_getAt(ulIndex, &pTrigger);
-	if (xRet == FTM_RET_OK)
+	xRet = FTDMC_TRIGGER_getAt(&pDMC->xSession, ulIndex, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		memcpy(pInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+		ERROR("Trigger[%d] failed to get information[%08x].\n", ulIndex, xRet);	
 	}
 
 	return	xRet;
@@ -1406,21 +1393,22 @@ FTM_RET	FTOM_DB_ACTION_add
 	return	xRet;
 }
 
-FTM_RET	FTOM_delAction
+FTM_RET	FTOM_DB_ACTION_remove
 (
 	FTM_CHAR_PTR	pActionID
 )
 {
-	FTM_RET	xRet;
-	FTOM_ACTION_PTR	pAction = NULL;
+	ASSERT(pActionID != NULL);
 
-	xRet = FTOM_ACTION_get(pActionID, &pAction);
+	FTM_RET	xRet;
+
+	xRet = FTDMC_ACTION_del(&pDMC->xSession, pActionID);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
+		ERROR("Action[%s] failed to remove from DB[%08x].\n", pActionID, xRet);
 	}
 
-	return	FTOM_ACTION_destroy(&pAction);
+	return	xRet;	
 }
 
 FTM_RET	FTOM_DB_ACTION_getInfo

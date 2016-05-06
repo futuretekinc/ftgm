@@ -49,6 +49,22 @@ FTM_RET	FTOM_DMC_create
 	return	FTM_RET_OK;
 }
 	
+FTM_RET	FTOM_DMC_destroy
+(
+	FTOM_DMC_PTR _PTR_ 	ppDMC
+)
+{
+	ASSERT(ppDMC != NULL);
+
+	FTOM_DMC_final(*ppDMC );
+
+	FTM_MEM_free(*ppDMC);
+
+	*ppDMC = NULL;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET FTOM_DMC_init
 (
 	FTOM_DMC_PTR 	pDMC

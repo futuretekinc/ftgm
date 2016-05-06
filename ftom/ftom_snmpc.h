@@ -45,6 +45,11 @@ FTM_RET	FTOM_SNMPC_create
 	FTOM_SNMPC_PTR _PTR_ 	ppSNMPC
 );
 
+FTM_RET	FTOM_SNMPC_destroy
+(
+	FTOM_SNMPC_PTR _PTR_ 	ppClient
+);
+
 FTM_RET	FTOM_SNMPC_init
 (
 	FTOM_SNMPC_PTR 	pClient

@@ -44,6 +44,24 @@ FTM_RET	FTOM_SNMPC_create
 	return	FTM_RET_OK;
 }
 	
+FTM_RET	FTOM_SNMPC_destroy
+(
+	FTOM_SNMPC_PTR _PTR_ 	ppSNMPC
+)
+{
+	ASSERT(ppSNMPC != NULL);
+
+	FTM_RET	xRet;
+
+	FTOM_SNMPC_final(*ppSNMPC);
+
+	FTM_MEM_free(*ppSNMPC);
+
+	*ppSNMPC = NULL;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_SNMPC_init
 (
 	FTOM_SNMPC_PTR pClient

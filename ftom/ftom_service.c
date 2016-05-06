@@ -34,7 +34,11 @@ FTM_RET	FTOM_SERVICE_init
 	FTM_LIST_iteratorStart(pServiceList);
 	while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
 	{
-		if (pService->fInit != NULL)
+		if (pService->fCreate != NULL)
+		{
+			pService->xRet = pService->fCreate(&pService->pData);
+		}
+		else if (pService->fInit != NULL)
 		{
 			pService->xRet = pService->fInit(pService->pData);
 		}
@@ -61,7 +65,11 @@ FTM_RET	FTOM_SERVICE_final(FTM_VOID)
 	FTM_LIST_iteratorStart(pServiceList);
 	while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
 	{
-		if (pService->fFinal != NULL)
+		if (pService->fDestroy != NULL)
+		{
+			pService->fDestroy(&pService->pData);
+		}
+		else if (pService->fFinal != NULL)
 		{
 			pService->fFinal(pService->pData);
 		}

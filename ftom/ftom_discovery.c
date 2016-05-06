@@ -57,6 +57,24 @@ FTM_RET	FTOM_DISCOVERY_create
 	return	FTM_RET_OK;
 }
 	
+FTM_RET	FTOM_DISCOVERY_destroy
+(
+	FTOM_DISCOVERY_PTR _PTR_ 	ppDiscovery
+)
+{
+	ASSERT(ppDiscovery != NULL);
+
+	FTM_RET	xRet;
+
+	FTOM_DISCOVERY_final(*ppDiscovery);
+
+	FTM_MEM_free(*ppDiscovery);
+
+	*ppDiscovery = NULL;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_DISCOVERY_init
 (
 	FTOM_DISCOVERY_PTR	pDiscovery

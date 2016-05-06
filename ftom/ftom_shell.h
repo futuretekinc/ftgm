@@ -21,6 +21,11 @@ FTM_RET	FTOM_SHELL_create
 	FTOM_SHELL_PTR _PTR_ ppShell
 );
 
+FTM_RET	FTOM_SHELL_destroy
+(
+	FTOM_SHELL_PTR _PTR_ ppShell
+);
+
 FTM_RET	FTOM_SHELL_init
 (
 	FTOM_SHELL_PTR 	pShell
