@@ -51,8 +51,6 @@ FTM_RET	FTOM_SNMPC_destroy
 {
 	ASSERT(ppSNMPC != NULL);
 
-	FTM_RET	xRet;
-
 	FTOM_SNMPC_final(*ppSNMPC);
 
 	FTM_MEM_free(*ppSNMPC);

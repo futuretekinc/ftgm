@@ -25,8 +25,13 @@ FTM_RET	FTOM_ACTION_final
 FTM_RET	FTOM_ACTION_create
 (
 	FTM_ACTION_PTR	pInfo,
-	FTOM_ACTION_PTR _PTR_ ppActionM,
-	FTM_BOOL	bAddToDB	
+	FTOM_ACTION_PTR _PTR_ ppActionM
+);
+
+FTM_RET	FTOM_ACTION_createFromDB
+(
+	FTM_CHAR_PTR	pID,
+	FTOM_ACTION_PTR _PTR_ ppActionM
 );
 
 FTM_RET	FTOM_ACTION_destroy
@@ -72,6 +77,11 @@ FTM_RET	FTOM_ACTION_active
 (
 	FTM_CHAR_PTR		pActionID,
 	FTM_BOOL			bActivate
+);
+
+FTM_RET	FTOM_ACTION_printList
+(
+	FTM_VOID
 );
 
 #endif

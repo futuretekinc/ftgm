@@ -288,6 +288,7 @@ FTM_RET	FTOM_init
 )
 {
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR	pService;
 
 	FTOM_getDefaultDeviceID(xConfig.pDID);
 	TRACE("DID : %s\n", xConfig.pDID);
@@ -348,6 +349,12 @@ FTM_RET	FTOM_init
 	}
 
 	FTOM_SERVICE_init(pServices, sizeof(pServices) / sizeof(FTOM_SERVICE));
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DBM, &pService);
+	if (xRet == FTM_RET_OK)
+	{
+		pDMC = (FTOM_DMC_PTR)pService->pData;
+	}
 
 	TRACE("initialization done.\n");
 
@@ -486,8 +493,6 @@ FTM_VOID_PTR	FTOM_process
 	FTM_VOID_PTR 	pData
 )
 {
-	ASSERT (pData != NULL);
-	
 	xState = FTOM_STATE_INITIALIZED;
 	bStop	= FTM_FALSE;
 
@@ -549,36 +554,45 @@ FTM_RET	FTOM_TASK_sync
 )
 {
 	FTM_RET			xRet;
-	FTM_ULONG		ulCount, i;
+	FTM_ULONG		ulCount = 0, i;
 
 	xRet = FTDMC_NODE_count(&pDMC->xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Node count failed to get from DB[%08x]\n", xRet);
 		return	xRet;	
 	}
 
-	TRACE("Load Node Object : %lu\n", ulCount);
-	for(i = 0 ; i < ulCount ; i++)
+	if (ulCount != 0)
 	{
-		FTM_NODE	xNodeInfo;
-		FTOM_NODE_PTR	pNode;
-
-		xRet = FTDMC_NODE_getAt(&pDMC->xSession, i, &xNodeInfo);	
-		if (xRet != FTM_RET_OK)
+		FTM_DID_PTR		pDIDs = NULL;
+		pDIDs = (FTM_DID_PTR)FTM_MEM_malloc(sizeof(FTM_DID) * ulCount);
+		if (pDIDs != NULL)
 		{
-			ERROR("Can't get node info from DMC!\n");
-			exit(1);
-			continue;	
+			xRet = FTDMC_NODE_getDIDList(&pDMC->xSession, pDIDs, 0, ulCount,  &ulCount);
+			if (xRet == FTM_RET_OK)
+			{
+				for(i = 0 ; i  < ulCount; i++)	
+				{
+					FTOM_NODE_PTR	pNode;
+	
+					xRet = FTOM_NODE_createFromDB(pDIDs[i], &pNode);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("Node creation failed[%08lx].\n", xRet);
+						continue;	
+					}
+	
+					TRACE("Node[%s] creating success.\n", pNode->xInfo.pDID);
+				}
+			}
+	
+			FTM_MEM_free(pDIDs);
 		}
-
-		xRet = FTOM_NODE_create(&xNodeInfo, &pNode);
-		if (xRet != FTM_RET_OK)
+		else
 		{
-			ERROR("Node creation failed[%08lx].\n", xRet);
-			continue;	
+			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_DID) * ulCount);
 		}
-
-		TRACE("Node[%s] creating success.\n", pNode->xInfo.pDID);
 	}
 
 	xRet = FTDMC_EP_CLASS_count(&pDMC->xSession, &ulCount);
@@ -617,32 +631,50 @@ FTM_RET	FTOM_TASK_sync
 	}
 	TRACE("Load EP Object : %lu\n", ulCount);
 
-	for(i = 0 ; i < ulCount ; i++)
+	if (ulCount != 0)
 	{
-		FTOM_NODE_PTR	pNode;
-		FTM_EP			xEPInfo;
-		FTOM_EP_PTR		pEP;
+		FTM_EPID_PTR	pEPIDs;
 
-		xRet = FTDMC_EP_getAt(&pDMC->xSession, i, &xEPInfo);
-		if (xRet != FTM_RET_OK)
+		pEPIDs = (FTM_EPID_PTR)FTM_MEM_malloc(sizeof(FTM_EPID) * ulCount);
+		if (pEPIDs != NULL)
 		{
-			ERROR("EP object get at %d failed[%08x]\n", i, xRet);
-			continue;
+			xRet = FTDMC_EP_getEPIDList(&pDMC->xSession, pEPIDs, 0, ulCount,  &ulCount);
+			if (xRet == FTM_RET_OK)
+			{
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					FTOM_NODE_PTR	pNode;
+					FTM_EP			xEPInfo;
+					FTOM_EP_PTR		pEP;
+			
+					xRet = FTDMC_EP_getAt(&pDMC->xSession, i, &xEPInfo);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("EP object get at %d failed[%08x]\n", i, xRet);
+						continue;
+					}
+			
+					xRet = FTOM_EP_createFromDB(pEPIDs[i], &pEP);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("EP[%s] object creation failed[%08x]\n", xEPInfo.pEPID, xRet);
+						continue;	
+					}
+			
+					if (FTOM_NODE_get(pEP->xInfo.pDID, &pNode) == FTM_RET_OK)
+					{
+						FTOM_NODE_linkEP(pNode, pEP);
+					}
+					
+					TRACE("EP[%s] creating success.\n", pEP->xInfo.pEPID);
+				}
+			}
+			FTM_MEM_free(pEPIDs);
 		}
-
-		xRet = FTOM_EP_create(&xEPInfo, &pEP, FTM_FALSE);
-		if (xRet != FTM_RET_OK)
+		else
 		{
-			ERROR("EP[%s] object creation failed[%08x]\n", xEPInfo.pEPID, xRet);
-			continue;	
+			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_EPID) * ulCount);
 		}
-
-		if (FTOM_NODE_get(xEPInfo.pDID, &pNode) == FTM_RET_OK)
-		{
-			FTOM_NODE_linkEP(pNode, pEP);
-		}
-		
-		TRACE("EP[%s] creating success.\n", pEP->xInfo.pEPID);
 	}
 
 	xRet = FTDMC_TRIGGER_count(&pDMC->xSession, &ulCount);
@@ -652,23 +684,34 @@ FTM_RET	FTOM_TASK_sync
 		return	xRet;
 	}
 
-	for(i = 0 ; i < ulCount ; i++)
+	if (ulCount != 0)
 	{
-		FTM_TRIGGER		xTriggerInfo;
-		FTOM_TRIGGER_PTR	pTrigger = NULL;
+		FTM_ID_PTR	pIDs;
 
-		xRet = FTDMC_TRIGGER_getAt(&pDMC->xSession, i, &xTriggerInfo);
-		if (xRet != FTM_RET_OK)
+		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
+		if (pIDs != NULL)
 		{
-			ERROR("Event[%d] data load failed.\n", i);	
-			continue;
+			xRet = FTDMC_TRIGGER_getIDList(&pDMC->xSession, pIDs, 0, ulCount, &ulCount);
+			if (xRet == FTM_RET_OK)
+			{
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					FTOM_TRIGGER_PTR	pTrigger = NULL;
+			
+					xRet = FTOM_TRIGGER_createFromDB(pIDs[i], &pTrigger);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("The new event can not registration!\n") ;
+						continue;
+					}
+				}
+			}
+
+			FTM_MEM_free(pIDs);
 		}
-
-		xRet = FTOM_TRIGGER_create(&xTriggerInfo, &pTrigger, FTM_FALSE);
-		if (xRet != FTM_RET_OK)
+		else
 		{
-			ERROR("The new event can not registration!\n") ;
-			continue;
+			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_ID) * ulCount);	
 		}
 	}
 
@@ -679,26 +722,37 @@ FTM_RET	FTOM_TASK_sync
 		return	xRet;
 	}
 
-	for(i = 0 ; i < ulCount ; i++)
+	if (ulCount != 0)
 	{
-		FTM_ACTION	xActionInfo;
-		FTOM_ACTION_PTR pAction = NULL;
+		FTM_ID_PTR	pIDs;
 
-		xRet = FTDMC_ACTION_getAt(&pDMC->xSession, i, &xActionInfo);
-		if (xRet != FTM_RET_OK)
+		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
+		if (pIDs != NULL)
 		{
-			ERROR("Action[%d] data load failed.\n", i);	
-			continue;
+			xRet = FTDMC_ACTION_getIDList(&pDMC->xSession, pIDs, 0, ulCount, &ulCount);
+			if (xRet == FTM_RET_OK)
+			{
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					FTOM_ACTION_PTR pAction = NULL;
+			
+					xRet = FTOM_ACTION_createFromDB(pIDs[i], &pAction);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("The new action event can not registration!\n") ;
+						continue;
+					}
+				}
+			}
+
+			FTM_MEM_free(pIDs);
 		}
-
-		xRet = FTOM_ACTION_create(&xActionInfo, &pAction, FTM_FALSE);
-		if (xRet != FTM_RET_OK)
+		else
 		{
-			ERROR("The new action event can not registration!\n") ;
-			continue;
+			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_ID)*ulCount);	
 		}
 	}
-
+	
 	xRet = FTDMC_RULE_count(&pDMC->xSession, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
@@ -706,23 +760,30 @@ FTM_RET	FTOM_TASK_sync
 		return	xRet;
 	}
 
-	for(i = 0 ; i < ulCount ; i++)
+	if (ulCount != 0)
 	{
-		FTM_RULE	xRuleInfo;
-		FTOM_RULE_PTR	pRule = NULL;
+		FTM_ID_PTR	pIDs;
 
-		xRet = FTDMC_RULE_getAt(&pDMC->xSession, i, &xRuleInfo);
-		if (xRet != FTM_RET_OK)
+		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
+		if (pIDs != NULL)
 		{
-			ERROR("Rule[%d] data load failed.\n", i);	
-			continue;
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				FTOM_RULE_PTR	pRule = NULL;
+		
+				xRet = FTOM_RULE_createFromDB(pIDs[i], &pRule);
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR("The new action event can not registration!\n") ;
+					continue;
+				}
+			}
+
+			FTM_MEM_free(pIDs);
 		}
-
-		xRet = FTOM_RULE_create(&xRuleInfo, &pRule, FTM_FALSE);
-		if (xRet != FTM_RET_OK)
+		else
 		{
-			ERROR("The new action event can not registration!\n") ;
-			continue;
+			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_ID)*ulCount);	
 		}
 	}
 
@@ -1043,6 +1104,122 @@ FTM_RET	FTOM_getDID
 }
 
 /******************************************************************
+ * Node management interface
+ ******************************************************************/
+FTM_RET	FTOM_DB_NODE_add
+(
+	FTM_NODE_PTR 	pInfo
+)
+{
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTDMC_NODE_append(&pDMC->xSession, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Node[%s] failed to add to DB[%08x].\n", pInfo->pDID, xRet);	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_DB_NODE_remove
+(
+	FTM_CHAR_PTR	pDID
+)
+{
+	ASSERT(pDID != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTDMC_NODE_remove(&pDMC->xSession, pDID);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Node[%s] failed to remove from DB[%08x].\n", pDID, xRet);	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_DB_NDOE_count
+(
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pulCount != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTDMC_NODE_count(&pDMC->xSession, pulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Failed to get node count from DB[%08x].\n", xRet);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_DB_NODE_getInfo
+(
+	FTM_CHAR_PTR	pDID,
+	FTM_NODE_PTR	pInfo
+)
+{
+	ASSERT(pDID != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTDMC_NODE_get(&pDMC->xSession, pDID, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Node[%s] is not found[%08x]!\n", pDID, xRet);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_DB_NODE_getInfoAt
+(
+	FTM_ULONG		ulIndex,
+	FTM_NODE_PTR	pInfo
+)
+{
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTDMC_NODE_getAt(&pDMC->xSession, ulIndex, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Node[%d] is not found[%08x]!\n", ulIndex, xRet);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_DB_NODE_set
+(
+	FTM_CHAR_PTR	pDID,
+	FTM_ULONG		xFields,
+	FTM_NODE_PTR	pInfo
+)
+{
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTDMC_NODE_set(&pDMC->xSession, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Node[%s] is not found[%08x]!\n", pDID, xRet);
+	}
+
+	return	xRet;
+}
+
+/******************************************************************
  * EP management interface
  ******************************************************************/
 
@@ -1064,6 +1241,26 @@ FTM_RET	FTOM_DB_EP_remove
 	return	FTDMC_EP_remove(&pDMC->xSession, pEPID);
 }
 
+FTM_RET	FTOM_DB_EP_getInfo
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_PTR		pInfo
+)
+{
+	ASSERT(pEPID != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTDMC_EP_get(&pDMC->xSession, pEPID, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%s] failed to get info from DB[%08x].\n", pEPID, xRet);
+	}
+
+	return	xRet;
+}
+
 FTM_RET	FTOM_DB_EP_setInfo
 (
 	FTM_CHAR_PTR	pEPID,
@@ -1079,7 +1276,7 @@ FTM_RET	FTOM_DB_EP_setInfo
 	xRet = FTDMC_EP_set(&pDMC->xSession, pEPID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] data info get failed[%08x].\n", pEPID, xRet);
+		ERROR("EP[%s] failed to set info to DB[%08x].\n", pEPID, xRet);
 	}
 
 	return	xRet;
@@ -1633,15 +1830,6 @@ FTM_RET	FTOM_discoveryEPCount
 	ASSERT(pulCount != NULL);
 
 	return	FTOM_SNMPC_getEPCount(pSNMPC, pIP, xType, pulCount);
-}
-
-FTM_RET	FTOM_getNodeInfo
-(
-	FTM_CHAR_PTR	pDID,
-	FTM_NODE_PTR	pNodeInfo
-)
-{
-	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_discoveryEP

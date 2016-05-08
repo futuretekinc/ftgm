@@ -470,3 +470,31 @@ FTM_INT	FTDM_EPSeeker
 	return	(strcmp(pEP->xInfo.pEPID, pEPID) == 0);
 }
 
+FTM_RET	FTDM_EP_print
+(
+	FTDM_EP_PTR			pEP
+)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET	xRet;
+	FTM_ULONG	ulCount;
+
+	xRet = FTM_EP_print(&pEP->xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	xRet = FTDM_EP_DATA_count(pEP, &ulCount);
+	if (xRet == FTM_RET_OK)
+	{
+		MESSAGE("%-16s : %d\n", "data count", ulCount);
+	}
+	else
+	{
+		MESSAGE("%-16s : %s\n", "data count", "unknown");
+	}
+
+	return	FTM_RET_OK;
+}

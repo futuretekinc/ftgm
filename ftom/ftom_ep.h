@@ -57,8 +57,13 @@ FTM_RET	FTOM_EP_final
 FTM_RET	FTOM_EP_create
 (
 	FTM_EP_PTR 			pInfo,
-	FTOM_EP_PTR _PTR_ 	ppEP,
-	FTM_BOOL			bAddToDB
+	FTOM_EP_PTR _PTR_ 	ppEP
+);
+
+FTM_RET	FTOM_EP_createFromDB
+(
+	FTM_CHAR_PTR		pEPID,
+	FTOM_EP_PTR _PTR_ 	ppEP
 );
 
 FTM_RET	FTOM_EP_destroy
@@ -136,6 +141,15 @@ FTM_RET	FTOM_EP_getData
 	FTM_EP_DATA_PTR 	pData
 );
 
+FTM_RET	FTOM_EP_getDataList
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG		ulIndex,
+	FTM_EP_DATA_PTR	pDatas,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
 FTM_RET	FTOM_EP_removeData
 (
 	FTOM_EP_PTR 		pEP, 
@@ -150,6 +164,14 @@ FTM_RET	FTOM_EP_removeDataWithTime
 	FTM_ULONG			ulBegin,
 	FTM_ULONG			ulEnd,
 	FTM_ULONG_PTR		pulDeletedCount
+);
+
+FTM_RET	FTOM_EP_getDataInfo
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG_PTR	pulBegin,
+	FTM_ULONG_PTR	pulEnd,
+	FTM_ULONG_PTR	pulCount
 );
 
 FTM_RET	FTOM_EP_pushData
@@ -219,5 +241,11 @@ FTM_RET FTOM_EP_CLASS_getAt
 	FTM_ULONG 		ulIndex, 
 	FTOM_EP_CLASS_PTR _PTR_ ppEPClass
 );
+
+FTM_RET	FTOM_EP_printList
+(
+	FTM_VOID
+);
+
 #endif
 

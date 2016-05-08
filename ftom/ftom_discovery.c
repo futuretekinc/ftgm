@@ -64,8 +64,6 @@ FTM_RET	FTOM_DISCOVERY_destroy
 {
 	ASSERT(ppDiscovery != NULL);
 
-	FTM_RET	xRet;
-
 	FTOM_DISCOVERY_final(*ppDiscovery);
 
 	FTM_MEM_free(*ppDiscovery);

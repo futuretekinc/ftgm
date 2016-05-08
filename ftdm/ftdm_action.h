@@ -72,4 +72,13 @@ FTM_RET	FTDM_ACTION_getByIndex
 	FTM_ULONG				ulIndex,
 	FTDM_ACTION_PTR _PTR_ 	ppAction
 );
+
+FTM_RET	FTDM_ACTION_getIDList
+(
+	FTM_ID_PTR		pIDs,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
 #endif

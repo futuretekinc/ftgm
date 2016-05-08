@@ -758,7 +758,7 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 	struct timeval			xTimeval;
 
 	xTimeval.tv_sec = 0;
-	xTimeval.tv_usec = 100000;
+	xTimeval.tv_usec = 1000000;
 
 	pSession->bStop = FTM_FALSE;
 
@@ -1194,7 +1194,7 @@ FTM_RET	FTOM_SERVER_EP_create
 	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP;
 
-	xRet = FTOM_EP_create(&pReq->xInfo, &pEP, FTM_TRUE);
+	xRet = FTOM_EP_create(&pReq->xInfo, &pEP);
 
 	pResp->xCmd 	= pReq->xCmd;
 	pResp->ulLen 	= sizeof(*pResp);
@@ -1638,7 +1638,7 @@ FTM_RET	FTOM_SERVER_TRIGGER_add
 	FTM_RET	xRet;
 	FTOM_TRIGGER_PTR	pTrigger;
 
-	xRet = FTOM_TRIGGER_create(&pReq->xTrigger, &pTrigger, FTM_TRUE);
+	xRet = FTOM_TRIGGER_create(&pReq->xTrigger, &pTrigger);
 	if (xRet == FTM_RET_OK)
 	{
 		strcpy(pResp->pTriggerID, pTrigger->xInfo.pID);
@@ -1827,7 +1827,7 @@ FTM_RET	FTOM_SERVER_ACTION_add
 	FTM_RET	xRet;
 	FTOM_ACTION_PTR	pAction;
 
-	xRet = FTOM_ACTION_create(&pReq->xAction, &pAction, FTM_TRUE);
+	xRet = FTOM_ACTION_create(&pReq->xAction, &pAction);
 	if (xRet == FTM_RET_OK)
 	{
 		strcpy(pResp->pActionID, pAction->xInfo.pID);
@@ -2003,7 +2003,7 @@ FTM_RET	FTOM_SERVER_RULE_add
 	FTM_RET		xRet;
 	FTOM_RULE_PTR	pRule = NULL;
 
-	xRet = FTOM_RULE_create(&pReq->xRule, &pRule, FTM_TRUE);
+	xRet = FTOM_RULE_create(&pReq->xRule, &pRule);
 	if (xRet == FTM_RET_OK)
 	{
 		strcpy(pResp->pRuleID, pRule->xInfo.pID);	

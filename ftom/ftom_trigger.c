@@ -100,12 +100,10 @@ FTM_RET	FTOM_TRIGGER_final
 	return	FTM_RET_OK;
 }
 
-
 FTM_RET	FTOM_TRIGGER_create
 (
 	FTM_TRIGGER_PTR	pInfo,
-	FTOM_TRIGGER_PTR _PTR_ ppTrigger,
-	FTM_BOOL	bAddToDB
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
 	ASSERT(pInfo != NULL);
@@ -134,14 +132,57 @@ FTM_RET	FTOM_TRIGGER_create
 		FTM_makeID(pTrigger->xInfo.pID, 16);
 	}
 
-	if (bAddToDB)
+	xRet = FTOM_DB_TRIGGER_add(&pTrigger->xInfo);	
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DB_TRIGGER_add(&pTrigger->xInfo);	
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_MEM_free(pTrigger);
-			return	xRet;
-		}
+		FTM_MEM_free(pTrigger);
+		return	xRet;
+	}
+
+	FTM_LIST_append(pTriggerList, pTrigger);
+
+	*ppTrigger = pTrigger; 
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_TRIGGER_createFromDB
+(
+	FTM_CHAR_PTR	pID,
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger
+)
+{
+	ASSERT(pID != NULL);
+	ASSERT(ppTrigger != NULL);
+
+	FTM_RET	xRet;
+	FTM_TRIGGER			xInfo;
+	FTOM_TRIGGER_PTR	pTrigger;
+
+	xRet = FTOM_DB_TRIGGER_getInfo(pID, &xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pTrigger = (FTOM_TRIGGER_PTR)FTM_MEM_malloc(sizeof(FTOM_TRIGGER));
+	if (pTrigger == NULL)
+	{
+		ERROR("Not enough memory\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = FTM_LOCK_init(&pTrigger->xLock);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pTrigger);	
+		return	xRet;
+	}
+
+	memcpy(&pTrigger->xInfo, &xInfo, sizeof(FTM_TRIGGER));
+	if (strlen(pTrigger->xInfo.pID) == 0)
+	{
+		FTM_makeID(pTrigger->xInfo.pID, 16);
 	}
 
 	FTM_LIST_append(pTriggerList, pTrigger);
@@ -463,3 +504,40 @@ FTM_BOOL	FTOM_TRIGGER_seeker
 	return	strcasecmp(pTrigger->xInfo.pID, pTriggerID) == 0;
 }
 
+FTM_RET	FTOM_TRIGGER_printList
+(
+	FTM_VOID
+)
+{
+	FTM_RET				xRet;
+	FTM_INT				i;
+	FTM_ULONG			ulCount;
+
+	MESSAGE("\n# Trigger Information\n");
+	FTOM_TRIGGER_count(&ulCount);
+	MESSAGE("\t%16s %16s %16s %8s %8s %32s %16s\n", "ID", "NAME", "TYPE", "DETECT", "HOLD", "CONDITION", "EPID");
+	for(i = 0; i< ulCount ; i++)
+	{
+		FTOM_TRIGGER_PTR	pTrigger;
+
+		xRet = FTOM_TRIGGER_getAt(i, &pTrigger);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_CHAR	pCondition[1024];
+
+			FTM_TRIGGER_conditionToString(&pTrigger->xInfo, pCondition, sizeof(pCondition));
+
+			MESSAGE("\t%16s %16s %16s %8.3f %8.3f %32s %16s\n", 
+				pTrigger->xInfo.pID, 
+				pTrigger->xInfo.pName, 
+				FTM_TRIGGER_typeString(pTrigger->xInfo.xType),
+            	pTrigger->xInfo.xParams.xCommon.ulDetectionTime / 1000000.0,
+				pTrigger->xInfo.xParams.xCommon.ulHoldingTime / 1000000.0,
+				pCondition,
+				pTrigger->xInfo.pEPID);
+		}
+
+	}
+
+	return	FTM_RET_OK;
+}

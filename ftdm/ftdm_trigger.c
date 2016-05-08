@@ -536,6 +536,42 @@ FTM_RET	FTDM_TRIGGER_set
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_TRIGGER_getIDList
+(
+	FTM_ID_PTR		pIDs,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pIDs != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET	xRet;
+	FTM_ULONG	i, ulCount;
+	FTDM_TRIGGER_PTR	pTrigger;
+
+	xRet = FTDM_TRIGGER_count(&ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	*pulCount = 0;
+	for(i = 0 ; i < ulMaxCount && (ulIndex + i) < ulCount ; i++)
+	{
+		xRet = FTDM_TRIGGER_getAt(ulIndex + i, &pTrigger);
+		if (xRet != FTM_RET_OK)
+		{
+			break;	
+		}
+
+		strcpy(pIDs[(*pulCount)++], pTrigger->xInfo.pID);
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTDM_TRIGGER_showList
 (
 	FTM_VOID

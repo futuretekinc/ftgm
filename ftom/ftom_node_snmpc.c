@@ -39,6 +39,8 @@ FTM_RET	FTOM_NODE_SNMPC_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
+	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
+
 	pNode->xCommon.xDescript.xType		= FTOM_NODE_TYPE_SNMPC;
 	pNode->xCommon.xDescript.fInit		= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_init;
 	pNode->xCommon.xDescript.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_final;

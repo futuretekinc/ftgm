@@ -41,8 +41,6 @@ FTM_RET	FTOM_SHELL_destroy
 {
 	ASSERT(ppShell != NULL);
 
-	FTM_RET	xRet;
-
 	FTOM_SHELL_final(*ppShell);
 
 	FTM_MEM_free(*ppShell);

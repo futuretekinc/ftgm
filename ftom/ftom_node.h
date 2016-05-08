@@ -24,7 +24,7 @@ typedef	struct FTOM_NODEM_STRUCT _PTR_ FTOM_NODEM_PTR;
 typedef	struct FTOM_NODE_STRUCT _PTR_ FTOM_NODE_PTR;
 typedef	struct FTOM_EP_STRUCT   _PTR_ FTOM_EP_PTR;
 
-typedef	FTM_RET		(*FTOM_NODE_INIT)(FTOM_NODE_PTR pNode, FTM_NODE_PTR pInfo);
+typedef	FTM_RET		(*FTOM_NODE_INIT)(FTOM_NODE_PTR pNode);
 typedef	FTM_RET		(*FTOM_NODE_FINAL)(FTOM_NODE_PTR pNode);
 typedef	FTM_RET		(*FTOM_NODE_PRESTART)(FTOM_NODE_PTR pNode);
 typedef	FTM_RET		(*FTOM_NODE_START)(FTOM_NODE_PTR pNode);
@@ -83,6 +83,12 @@ FTM_RET FTOM_NODE_final
 FTM_RET	FTOM_NODE_create
 (
 	FTM_NODE_PTR 		pInfo, 
+	FTOM_NODE_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTOM_NODE_createFromDB
+(
+	FTM_CHAR_PTR	pDID,
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 
@@ -175,6 +181,11 @@ FTM_RET	FTOM_NODE_stop
 FTM_CHAR_PTR	FTOM_NODE_stateToStr
 (
 	FTOM_NODE_STATE xState
+);
+
+FTM_RET	FTOM_NODE_printList
+(
+	FTM_VOID
 );
 
 #include "ftom_node_snmpc.h"

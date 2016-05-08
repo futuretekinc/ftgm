@@ -139,8 +139,7 @@ FTM_RET	FTOM_EP_final
 FTM_RET	FTOM_EP_create
 (
 	FTM_EP_PTR 	pInfo,
-	FTOM_EP_PTR _PTR_ ppEP,
-	FTM_BOOL	bAddToDB
+	FTOM_EP_PTR _PTR_ ppEP
 )
 {
 	ASSERT(ppEP != NULL);
@@ -190,15 +189,80 @@ FTM_RET	FTOM_EP_create
 		return	xRet;
 	}
 
-	if (bAddToDB)
+	xRet = FTOM_DB_EP_add(&pEP->xInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DB_EP_add(&pEP->xInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_MEM_free(pEP);
-			ERROR("EP[%s] failed to add to DB[%08x].\n", pEP->xInfo.pEPID, xRet);
-			return	xRet;	
-		}
+		FTM_MEM_free(pEP);
+		ERROR("EP[%s] failed to add to DB[%08x].\n", pEP->xInfo.pEPID, xRet);
+		return	xRet;	
+	}
+
+	xRet = FTM_LIST_append(pEPList, pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEP);
+		ERROR("EP[%s] failed to add to list[%08x].\n", pEP->xInfo.pEPID, xRet);
+	}
+	else
+	{
+		*ppEP = pEP;
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_EP_createFromDB
+(
+	FTM_CHAR_PTR	pEPID,
+	FTOM_EP_PTR _PTR_ ppEP
+)
+{
+	ASSERT(ppEP != NULL);
+
+	FTM_RET		xRet;
+	FTM_EP		xInfo;
+	FTOM_EP_PTR	pEP;
+
+	xRet = FTOM_DB_EP_getInfo(pEPID, &xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	pEP = (FTOM_EP_PTR)FTM_MEM_malloc(sizeof(FTOM_EP));
+	if (pEP == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	memset(pEP, 0, sizeof(FTOM_EP));
+	memcpy(&pEP->xInfo, &xInfo, sizeof(FTM_EP));
+
+	pEP->bStop = FTM_TRUE;
+	sem_init(&pEP->xLock, 0, 1);
+	xRet = FTOM_MSGQ_init(&pEP->xMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEP);
+		ERROR("MsgQ	init failed.\n");
+		return	xRet;
+	}
+
+	xRet = FTM_LIST_init(&pEP->xDataList);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEP);
+		ERROR("Data list init failed.\n");
+		return	xRet;
+	}
+
+	xRet = FTM_LIST_init(&pEP->xTriggerList);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEP);
+		ERROR("Trigger list init failed.\n");
+		return	xRet;
 	}
 
 	xRet = FTM_LIST_append(pEPList, pEP);
@@ -718,6 +782,7 @@ FTM_RET	FTOM_EP_getData
 FTM_RET	FTOM_EP_getDataList
 (
 	FTOM_EP_PTR		pEP,
+	FTM_ULONG		ulIndex,
 	FTM_EP_DATA_PTR	pDatas,
 	FTM_ULONG		ulMaxCount,
 	FTM_ULONG_PTR	pulCount
@@ -737,15 +802,14 @@ FTM_RET	FTOM_EP_getDataList
 		return	xRet;	
 	}
 
-	if (ulMaxCount <  ulCachedDataCount)
+	if (ulIndex + ulMaxCount <  ulCachedDataCount)
 	{
 		FTM_INT	i;
 		FTM_EP_DATA_PTR	pData;
 
-		FTM_LIST_iteratorStart(&pEP->xDataList);
 		for(i = 0 ; i < ulMaxCount ; i++)
 		{
-			xRet = FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+			xRet = FTM_LIST_getAt(&pEP->xDataList, ulIndex + i, (FTM_VOID_PTR _PTR_)&pData);
 			if (xRet == FTM_RET_OK)
 			{
 				memcpy(&pDatas[ulDataCount++], pData, sizeof(FTM_EP_DATA));
@@ -756,7 +820,7 @@ FTM_RET	FTOM_EP_getDataList
 	}
 	else
 	{
-		xRet = FTOM_DB_EP_getDataList(pEP->xInfo.pEPID, 0, pDatas, ulMaxCount, pulCount);
+		xRet = FTOM_DB_EP_getDataList(pEP->xInfo.pEPID, ulIndex, pDatas, ulMaxCount, pulCount);
 	}
 
 	return	FTM_RET_OK;
@@ -1131,3 +1195,45 @@ FTM_RET FTOM_EP_CLASS_getAt
 	return	FTM_LIST_getAt(pClassList, ulIndex, (FTM_VOID_PTR _PTR_)ppEPClass);
 }
 
+FTM_RET	FTOM_EP_printList
+(
+	FTM_VOID
+)
+{
+	FTM_INT		i;
+	FTM_ULONG	ulCount;
+	FTOM_EP_PTR	pEP;
+	
+	MESSAGE("\n# EP Information\n");
+	MESSAGE("%16s %16s %16s %16s %8s %24s\n", "EPID", "TYPE", "DID", "STATE", "VALUE", "TIME");
+	FTOM_EP_count(&ulCount);
+	for(i = 0; i < ulCount ; i++)
+	{
+		if (FTOM_EP_getAt(i, &pEP) == FTM_RET_OK)
+		{
+			FTM_CHAR	pTimeString[64];
+			FTM_EP_DATA	xData;
+		
+			FTOM_EP_getData(pEP, &xData);
+
+			ctime_r((time_t *)&xData.ulTime, pTimeString);
+			if (strlen(pTimeString) != 0)
+			{
+				pTimeString[strlen(pTimeString) - 1] = '\0';
+			}
+			
+			MESSAGE("%16s ", pEP->xInfo.pEPID);
+			MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
+			if (pEP->pNode != NULL)
+			{
+				MESSAGE("%16s ", pEP->pNode->xInfo.pDID);
+			}
+	
+			MESSAGE("%16s ", (!pEP->bStop)?"RUN":"STOP");
+			MESSAGE("%8s ", FTM_VALUE_print(&xData.xValue));
+			MESSAGE("%24s\n", pTimeString);
+		}
+	}
+	
+	return	FTM_RET_OK;
+}

@@ -104,8 +104,7 @@ FTM_RET	FTOM_RULE_final
 FTM_RET	FTOM_RULE_create
 (
 	FTM_RULE_PTR 	pInfo,
-	FTOM_RULE_PTR _PTR_ ppRule,
-	FTM_BOOL		bAddToDB
+	FTOM_RULE_PTR _PTR_ ppRule
 )
 {
 	ASSERT(pInfo != NULL);
@@ -131,13 +130,57 @@ FTM_RET	FTOM_RULE_create
 
 	FTM_LOCK_init(&pRule->xLock);
 
-	xRet = FTOM_DB_RULE_add(&pRule->xInfo);
+	xRet = FTM_LIST_append(pRuleList, pRule);
 	if (xRet != FTM_RET_OK)
 	{
+		FTOM_DB_RULE_remove(pRule->xInfo.pID);
 		FTM_MEM_free(pRule);
-		ERROR("Rule[%s] failed to add to DB[%08x].\n", pRule->xInfo.pID, xRet);
+		ERROR("Rule[%s] failed to add to list[%08x].\n", pRule->xInfo.pID, xRet);
 		return	xRet;	
 	}
+	else
+	{
+		*ppRule = pRule;
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_RULE_createFromDB
+(
+	FTM_CHAR_PTR	pID,
+	FTOM_RULE_PTR _PTR_ ppRule
+)
+{
+	ASSERT(pID != NULL);
+	ASSERT(ppRule != NULL);
+
+	FTM_RET			xRet;
+	FTM_RULE		xInfo;
+	FTOM_RULE_PTR	pRule;
+
+	xRet = FTOM_DB_RULE_getInfo(pID, &xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	pRule = (FTOM_RULE_PTR)FTM_MEM_malloc(sizeof(FTOM_RULE));
+	if (pRule == NULL)
+	{
+		ERROR("Not enough memory\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	memset(pRule, 0, sizeof(FTOM_RULE));
+	memcpy(&pRule->xInfo, &xInfo, sizeof(FTM_RULE));
+	
+	if (strlen(pRule->xInfo.pID) == 0)
+	{
+		FTM_makeID(pRule->xInfo.pID, 16);
+	}
+
+	FTM_LOCK_init(&pRule->xLock);
 
 	xRet = FTM_LIST_append(pRuleList, pRule);
 	if (xRet != FTM_RET_OK)
@@ -460,4 +503,58 @@ FTM_BOOL	FTOM_RULE_seeker
 	FTM_CHAR_PTR	pRuleID = (FTM_CHAR_PTR)pKey ;
 
 	return	strcasecmp(pRule->xInfo.pID, pRuleID) == 0;
+}
+
+FTM_RET	FTOM_RULE_printList
+(
+	FTM_VOID
+)
+{
+	FTM_RET	xRet;
+	FTM_INT	i;
+	FTM_ULONG	ulCount;
+
+	MESSAGE("\n# Rule Information\n");
+	FTOM_RULE_count(&ulCount);
+	MESSAGE("\t%16s %24s %24s\n", "ID","TRIGGER", "ACTION");
+	for(i = 0; i< ulCount ; i++)
+	{
+		FTOM_RULE_PTR	pRule;
+
+		xRet = FTOM_RULE_getAt(i, &pRule);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_INT	j;
+
+			MESSAGE("\t%16s", pRule->xInfo.pID);
+			
+			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pTriggers) / (FTM_ID_LEN+1) ; j++)
+			{
+				if (j < pRule->xInfo.xParams.ulTriggers)
+				{
+					MESSAGE(" %2d", pRule->xInfo.xParams.pTriggers[j]);
+				}
+				else
+				{
+					MESSAGE(" %2d", 0);
+				}
+			}
+
+			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pActions) / (FTM_ID_LEN+1) ; j++)
+			{
+				if (j < pRule->xInfo.xParams.ulActions)
+				{
+					MESSAGE(" %2d", pRule->xInfo.xParams.pActions[j]);
+				}
+				else
+				{
+					MESSAGE(" %2d", 0);
+				}
+			}
+			MESSAGE("\n");
+		}
+
+	}
+
+	return	FTM_RET_OK;
 }

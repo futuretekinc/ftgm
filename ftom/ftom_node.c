@@ -131,7 +131,14 @@ FTM_RET	FTOM_NODE_create
 		return	xRet;	
 	}
 
-	memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
+	xRet = FTOM_DB_NODE_add(pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node[%s] failed to create to DB[%08x].\n", pInfo->pDID, xRet);
+		FTM_MEM_free(pNode);
+		return	xRet;	
+	}
+
 	xRet = FTM_LIST_init(&pNode->xEPList);
 	if (xRet != FTM_RET_OK)
 	{
@@ -158,7 +165,90 @@ FTM_RET	FTOM_NODE_create
 
 	if (pNode->xDescript.fInit != NULL)
 	{
-		pNode->xDescript.fInit(pNode, pInfo);
+		pNode->xDescript.fInit(pNode);
+	}
+
+	pNode->xState = FTOM_NODE_STATE_CREATED;
+
+	FTM_LIST_append(pNodeList, pNode);
+
+	*ppNode = pNode;
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_NODE_createFromDB
+(
+	FTM_CHAR_PTR	pDID,
+	FTOM_NODE_PTR _PTR_ ppNode
+)
+{
+	ASSERT(pDID != NULL);
+	ASSERT(ppNode != NULL);
+
+	FTM_RET			xRet;
+	FTM_NODE		xInfo;
+	FTOM_NODE_PTR	pNode;
+
+	xRet = FTM_LIST_get(pNodeList, pDID, (FTM_VOID_PTR _PTR_)&pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		return	FTM_RET_ALREADY_EXIST_OBJECT;	
+	}
+
+	xRet = FTOM_DB_NODE_getInfo(pDID, &xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	switch(xInfo.xType)
+	{
+	case	FTM_NODE_TYPE_SNMP:
+		{
+			xRet = FTOM_NODE_SNMPC_create(&xInfo, &pNode);
+		}
+		break;
+
+	default:
+		{
+			ERROR("Invalid Node type[%08lx]\n", xInfo.xType);
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
+
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTM_LIST_init(&pNode->xEPList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("List initialize failed[%08x].\n", xRet);
+		FTM_MEM_free(pNode);
+
+		return	xRet;	
+	}
+	
+	xRet = FTOM_MSGQ_init(&pNode->xMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message queue initialize failed[%08x].\n", xRet);
+		FTM_MEM_free(pNode);
+		return	xRet;	
+	}
+
+	pthread_mutex_init(&pNode->xMutexLock, NULL);
+	
+	pNode->bStop = FTM_TRUE;
+	pNode->xState = FTOM_NODE_STATE_INITIALIZED;
+	pNode->ulRetry = 10;
+	pNode->xTimeout = 10;
+
+	if (pNode->xDescript.fInit != NULL)
+	{
+		pNode->xDescript.fInit(pNode);
 	}
 
 	pNode->xState = FTOM_NODE_STATE_CREATED;
@@ -177,7 +267,14 @@ FTM_RET	FTOM_NODE_destroy
 {
 	ASSERT(ppNode != NULL);
 
+	FTM_RET			xRet;
 	FTOM_EP_PTR		pEP;
+
+	xRet = FTOM_DB_NODE_remove((*ppNode)->xInfo.pDID);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Node[%s] failed to remove from DB[%08x]\n", (*ppNode)->xInfo.pDID, xRet);	
+	}
 
 	FTOM_NODE_lock((*ppNode));
 
@@ -284,6 +381,13 @@ FTM_RET FTOM_NODE_set
 	{
 		ERROR("Node[%s] not found.[%08x]\n", pDID, xRet);
 		return	FTM_RET_OBJECT_NOT_FOUND;
+	}
+
+	xRet = FTOM_DB_NODE_set(pDID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node[%s] failed to set[%08x]\n", pDID, xRet);
+		return	xRet;	
 	}
 
 	if (xFields & FTM_NODE_FIELD_FLAGS)
@@ -751,5 +855,46 @@ FTM_INT	FTOM_NODE_comparator
 	}
 
 	return	strcasecmp(pNode1->xInfo.pDID, pNode2->xInfo.pDID);
+}
+
+FTM_RET	FTOM_NODE_printList
+(
+	FTM_VOID
+)
+{
+	FTM_INT			i;
+	FTM_ULONG		ulCount;
+	FTOM_NODE_PTR	pNode;
+
+	MESSAGE("\n# Node Information\n");
+	MESSAGE("%16s %16s %8s %8s %s\n", "DID", "STATE", "INTERVAL", "TIMEOUT", "EPs");
+
+	FTM_LIST_count(pNodeList, &ulCount);
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTM_INT		j;
+		FTOM_EP_PTR	pEP;
+		FTM_ULONG	ulEPCount;
+
+		FTOM_NODE_getAt(i, &pNode);
+		MESSAGE("%16s ", pNode->xInfo.pDID);
+		MESSAGE("%16s ", FTOM_NODE_stateToStr(pNode->xState));
+		MESSAGE("%8d ", pNode->xInfo.ulInterval);
+		MESSAGE("%8d ", pNode->xInfo.ulTimeout);
+
+		FTOM_NODE_getEPCount(pNode, &ulEPCount);
+		MESSAGE("%-3d [ ", ulCount);
+		for(j = 0; j < ulEPCount ; j++)
+		{
+			if (FTOM_NODE_getEPAt(pNode, j, &pEP) == FTM_RET_OK)
+			{
+				MESSAGE("%16s ", pEP->xInfo.pEPID);
+			}
+		}
+		MESSAGE("]\n");
+	}
+
+	return	FTM_RET_OK;
 }
 

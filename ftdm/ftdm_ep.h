@@ -113,4 +113,9 @@ FTM_RET	FTDM_EP_DATA_countWithTime
 	FTM_ULONG_PTR		pCount
 );
 
+FTM_RET	FTDM_EP_print
+(
+	FTDM_EP_PTR			pEP
+);
+
 #endif

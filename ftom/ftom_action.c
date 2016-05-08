@@ -89,8 +89,7 @@ FTM_RET	FTOM_ACTION_final
 FTM_RET	FTOM_ACTION_create
 (
 	FTM_ACTION_PTR 		pInfo,
-	FTOM_ACTION_PTR _PTR_ ppAction,
-	FTM_BOOL		bAddToDB
+	FTOM_ACTION_PTR _PTR_ ppAction
 )
 {
 	ASSERT(pInfo != NULL);
@@ -114,14 +113,52 @@ FTM_RET	FTOM_ACTION_create
 		FTM_makeID(pAction->xInfo.pID, 16);
 	}
 
-	if (bAddToDB)
+	xRet = FTOM_DB_ACTION_add(&pAction->xInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DB_ACTION_add(&pAction->xInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			FTM_MEM_free(pAction);
-			return	xRet;
-		}
+		FTM_MEM_free(pAction);
+		return	xRet;
+	}
+
+	FTM_LIST_append(pActionList, pAction);
+
+	*ppAction = pAction;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_ACTION_createFromDB
+(
+	FTM_CHAR_PTR	pID,
+	FTOM_ACTION_PTR _PTR_ ppAction
+)
+{
+	ASSERT(pID != NULL);
+	ASSERT(ppAction != NULL);
+	
+	FTM_RET	xRet;
+	FTM_ACTION		xInfo;
+	FTOM_ACTION_PTR	pAction;
+
+	xRet = FTOM_DB_ACTION_getInfo(pID, &xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	pAction = (FTOM_ACTION_PTR)FTM_MEM_malloc(sizeof(FTOM_ACTION));
+	if (pAction == NULL)
+	{
+		ERROR("Not enough memory\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	memset(pAction, 0, sizeof(FTOM_ACTION));
+	memcpy(&pAction->xInfo, &xInfo, sizeof(FTM_ACTION));
+
+	if (strlen(pAction->xInfo.pID) == 0)
+	{
+		FTM_makeID(pAction->xInfo.pID, 16);
 	}
 
 	FTM_LIST_append(pActionList, pAction);
@@ -369,3 +406,31 @@ FTM_BOOL	FTOM_ACTION_seeker
 	return	strcasecmp(pAction->xInfo.pID, pActionID) == 0;
 }
 
+FTM_RET	FTOM_ACTION_printList
+(
+	FTM_VOID
+)
+{
+	FTM_RET	xRet;
+	FTM_INT	i;
+	FTM_ULONG	ulCount;
+	
+	MESSAGE("\n# Action Information\n");
+	FTOM_ACTION_count(&ulCount);
+	MESSAGE("\t%16s %16s\n", "ID","TYPE");
+	for(i = 0; i< ulCount ; i++)
+	{
+		FTOM_ACTION_PTR	pAction;
+
+		xRet = FTOM_ACTION_getAt(i, &pAction);
+		if (xRet == FTM_RET_OK)
+		{
+			MESSAGE("\t%16s %16s\n", 
+				pAction->xInfo.pID, 
+				FTM_ACTION_typeString(pAction->xInfo.xType));
+		}
+
+	}
+
+	return	FTM_RET_OK;
+}

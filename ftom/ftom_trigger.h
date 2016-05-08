@@ -48,8 +48,13 @@ FTM_RET	FTOM_TRIGGER_stop
 FTM_RET	FTOM_TRIGGER_create
 (
 	FTM_TRIGGER_PTR pInfo,
-	FTOM_TRIGGER_PTR _PTR_	ppTrigger,
-	FTM_BOOL	bAddToDB
+	FTOM_TRIGGER_PTR _PTR_	ppTrigger
+);
+
+FTM_RET	FTOM_TRIGGER_createFromDB
+(
+	FTM_CHAR_PTR	pID,
+	FTOM_TRIGGER_PTR _PTR_	ppTrigger
 );
 
 FTM_RET	FTOM_TRIGGER_destroy
@@ -87,4 +92,8 @@ FTM_RET	FTOM_TRIGGER_updateEP
 	FTM_EP_DATA_PTR pData
 );
 
+FTM_RET	FTOM_TRIGGER_printList
+(
+	FTM_VOID
+);
 #endif

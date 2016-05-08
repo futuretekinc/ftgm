@@ -37,12 +37,14 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_NODE_GET,				FTDMS_NODE_get ),
 	MK_CMD_SET(FTDM_CMD_NODE_GET_AT,			FTDMS_NODE_getAt ),
 	MK_CMD_SET(FTDM_CMD_NODE_SET,				FTDMS_NODE_set ),
+	MK_CMD_SET(FTDM_CMD_NODE_GET_DID_LIST,		FTDMS_NODE_getDIDList ),
 	MK_CMD_SET(FTDM_CMD_EP_ADD,					FTDMS_EP_add ),
 	MK_CMD_SET(FTDM_CMD_EP_DEL,					FTDMS_EP_del ),
 	MK_CMD_SET(FTDM_CMD_EP_COUNT,				FTDMS_EP_count ),
 	MK_CMD_SET(FTDM_CMD_EP_GET,					FTDMS_EP_get ),
 	MK_CMD_SET(FTDM_CMD_EP_GET_AT,				FTDMS_EP_getAt ),
 	MK_CMD_SET(FTDM_CMD_EP_SET,					FTDMS_EP_set ),
+	MK_CMD_SET(FTDM_CMD_EP_GET_EPID_LIST,		FTDMS_EP_getEPIDList ),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_ADD,			FTDMS_EP_CLASS_add),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_DEL,			FTDMS_EP_CLASS_del),
 	MK_CMD_SET(FTDM_CMD_EP_CLASS_COUNT,			FTDMS_EP_CLASS_count ),
@@ -61,16 +63,19 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_TRIGGER_GET,			FTDMS_TRIGGER_get ),
 	MK_CMD_SET(FTDM_CMD_TRIGGER_GET_AT,			FTDMS_TRIGGER_getAt ),
 	MK_CMD_SET(FTDM_CMD_TRIGGER_SET,			FTDMS_TRIGGER_set ),
+	MK_CMD_SET(FTDM_CMD_TRIGGER_GET_ID_LIST,	FTDMS_TRIGGER_getIDList ),
 	MK_CMD_SET(FTDM_CMD_ACTION_ADD,				FTDMS_ACTION_add ),
 	MK_CMD_SET(FTDM_CMD_ACTION_DEL,				FTDMS_ACTION_del ),
 	MK_CMD_SET(FTDM_CMD_ACTION_COUNT,			FTDMS_ACTION_count ),
 	MK_CMD_SET(FTDM_CMD_ACTION_GET,				FTDMS_ACTION_get ),
 	MK_CMD_SET(FTDM_CMD_ACTION_GET_AT,			FTDMS_ACTION_getAt ),
+	MK_CMD_SET(FTDM_CMD_ACTION_GET_ID_LIST,		FTDMS_ACTION_getIDList ),
 	MK_CMD_SET(FTDM_CMD_RULE_ADD,				FTDMS_RULE_add ),
 	MK_CMD_SET(FTDM_CMD_RULE_DEL,				FTDMS_RULE_del ),
 	MK_CMD_SET(FTDM_CMD_RULE_COUNT,				FTDMS_RULE_count ),
 	MK_CMD_SET(FTDM_CMD_RULE_GET,				FTDMS_RULE_get ),
 	MK_CMD_SET(FTDM_CMD_RULE_GET_AT,			FTDMS_RULE_getAt ),
+	MK_CMD_SET(FTDM_CMD_RULE_GET_ID_LIST,		FTDMS_RULE_getIDList ),
 	MK_CMD_SET(FTDM_CMD_UNKNOWN, 				NULL)
 };
 
@@ -589,6 +594,27 @@ FTM_RET	FTDMS_NODE_set
 	return	pResp->nRet;
 }
 
+FTM_RET	FTDMS_NODE_getDIDList
+(
+	FTDM_SERVER_PTR					pServer,
+ 	FTDM_REQ_NODE_GET_DID_LIST_PARAMS_PTR	pReq,
+	FTDM_RESP_NODE_GET_DID_LIST_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nRet = FTDM_NODEM_getDIDList(pServer->pDM->pNodeM, pResp->pDIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		pResp->nLen = sizeof(*pResp) + sizeof(FTM_DID) * pResp->ulCount;
+	}
+	else
+	{
+		pResp->nLen = sizeof(*pResp);
+	}
+	
+	return	pResp->nRet;
+}
+
 FTM_RET	FTDMS_getNodeType
 (
 	FTDM_SERVER_PTR					pServer,
@@ -822,6 +848,27 @@ FTM_RET	FTDMS_EP_set
 	pResp->nLen = sizeof(*pResp);
 	pResp->nRet = xRet;
 
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_EP_getEPIDList
+(
+	FTDM_SERVER_PTR					pServer,
+ 	FTDM_REQ_EP_GET_EPID_LIST_PARAMS_PTR	pReq,
+	FTDM_RESP_EP_GET_EPID_LIST_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nRet = FTDM_EPM_getEPIDList(pServer->pDM->pEPM, pResp->pEPIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		pResp->nLen = sizeof(*pResp) + sizeof(FTM_EPID) * pResp->ulCount;
+	}
+	else
+	{
+		pResp->nLen = sizeof(*pResp);
+	}
+	
 	return	pResp->nRet;
 }
 
@@ -1211,6 +1258,27 @@ FTM_RET	FTDMS_TRIGGER_set
 	return	pResp->nRet;
 }
 
+FTM_RET	FTDMS_TRIGGER_getIDList
+(
+	FTDM_SERVER_PTR					pServer,
+ 	FTDM_REQ_TRIGGER_GET_ID_LIST_PARAMS_PTR	pReq,
+	FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nRet = FTDM_TRIGGER_getIDList(pResp->pIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;
+	}
+	else
+	{
+		pResp->nLen = sizeof(*pResp);
+	}
+	
+	return	pResp->nRet;
+}
+
 FTM_RET	FTDMS_ACTION_add
 (
 	FTDM_SERVER_PTR					pServer,
@@ -1296,6 +1364,27 @@ FTM_RET	FTDMS_ACTION_getAt
 	return	pResp->nRet;
 }
 
+FTM_RET	FTDMS_ACTION_getIDList
+(
+	FTDM_SERVER_PTR					pServer,
+ 	FTDM_REQ_ACTION_GET_ID_LIST_PARAMS_PTR	pReq,
+	FTDM_RESP_ACTION_GET_ID_LIST_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nRet = FTDM_ACTION_getIDList(pResp->pIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;
+	}
+	else
+	{
+		pResp->nLen = sizeof(*pResp);
+	}
+	
+	return	pResp->nRet;
+}
+
 FTM_RET	FTDMS_RULE_add
 (
 	FTDM_SERVER_PTR					pServer,
@@ -1377,6 +1466,27 @@ FTM_RET	FTDMS_RULE_getAt
 		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_RULE));
 	}
 
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_RULE_getIDList
+(
+	FTDM_SERVER_PTR					pServer,
+ 	FTDM_REQ_RULE_GET_ID_LIST_PARAMS_PTR	pReq,
+	FTDM_RESP_RULE_GET_ID_LIST_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nRet = FTDM_RULE_getIDList(pResp->pIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;
+	}
+	else
+	{
+		pResp->nLen = sizeof(*pResp);
+	}
+	
 	return	pResp->nRet;
 }
 
