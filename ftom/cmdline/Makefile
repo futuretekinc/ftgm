@@ -8,7 +8,7 @@ CLIENT=ftomc
 CLIENT_SRCS=main.c
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftm -lconfig -lpthread 
+CLIENT_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftm -lconfig -lpthread  -lrt
 
 LIB_FTOMCL=ftomcl
 LIB_FTOMCL_SRCS= ftom_client_cmdline.c\
