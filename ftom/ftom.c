@@ -175,8 +175,8 @@ static 	FTOM_SERVICE	pServices[] =
 		.pData		= 	NULL
 	},
 	{
-		.xType		=	FTOM_SERVICE_DBM,
-		.xID		=	FTOM_SERVICE_DBM,
+		.xType		=	FTOM_SERVICE_DMC,
+		.xID		=	FTOM_SERVICE_DMC,
 		.pName		=	"DB Client",
 		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_DMC_create,
 		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_DMC_destroy,
@@ -255,13 +255,6 @@ FTM_BOOL			bStop;
 
 FTOM_MSG_QUEUE_PTR	pMsgQ;
 FTM_SHELL			xShell;
-//FTOM_SERVER_PTR		pServer;
-//FTOM_SNMPC_PTR		pSNMPC;
-//FTOM_SNMPTRAPD_PTR	pSNMPTRAPD;
-FTOM_DMC_PTR		pDMC;
-//FTOM_MQTT_CLIENT_PTR	pMQTTC;
-//FTOM_SHELL_PTR		pShell;
-//FTOM_DISCOVERY_PTR	pDiscovery;
 
 FTOM_ON_MESSAGE_CALLBACK	onMessage[FTOM_MSG_TYPE_MAX];
 FTM_VOID_PTR				pOnMessageData[FTOM_MSG_TYPE_MAX];
@@ -288,7 +281,6 @@ FTM_RET	FTOM_init
 )
 {
 	FTM_RET	xRet;
-	FTOM_SERVICE_PTR	pService;
 
 	FTOM_getDefaultDeviceID(xConfig.pDID);
 	TRACE("DID : %s\n", xConfig.pDID);
@@ -349,13 +341,6 @@ FTM_RET	FTOM_init
 	}
 
 	FTOM_SERVICE_init(pServices, sizeof(pServices) / sizeof(FTOM_SERVICE));
-
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DBM, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		pDMC = (FTOM_DMC_PTR)pService->pData;
-	}
-
 	TRACE("initialization done.\n");
 
 	return	FTM_RET_OK;
@@ -555,8 +540,15 @@ FTM_RET	FTOM_TASK_sync
 {
 	FTM_RET			xRet;
 	FTM_ULONG		ulCount = 0, i;
+	FTOM_SERVICE_PTR	pService;
 
-	xRet = FTDMC_NODE_count(&pDMC->xSession, &ulCount);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTOM_DMC_NODE_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Node count failed to get from DB[%08x]\n", xRet);
@@ -569,7 +561,7 @@ FTM_RET	FTOM_TASK_sync
 		pDIDs = (FTM_DID_PTR)FTM_MEM_malloc(sizeof(FTM_DID) * ulCount);
 		if (pDIDs != NULL)
 		{
-			xRet = FTDMC_NODE_getDIDList(&pDMC->xSession, pDIDs, 0, ulCount,  &ulCount);
+			xRet = FTOM_DMC_NODE_getDIDList(pService->pData, pDIDs, 0, ulCount,  &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i  < ulCount; i++)	
@@ -595,7 +587,7 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
-	xRet = FTDMC_EP_CLASS_count(&pDMC->xSession, &ulCount);
+	xRet = FTOM_DMC_EP_CLASS_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP Class count get failed[%08x].\n", xRet);
@@ -607,11 +599,9 @@ FTM_RET	FTOM_TASK_sync
 		FTM_EP_CLASS	xEPClassInfo;
 		FTOM_EP_CLASS_PTR	pEPClass;
 
-		xRet = FTDMC_EP_CLASS_getAt(&pDMC->xSession, i, &xEPClassInfo);
+		xRet = FTOM_DMC_EP_CLASS_getAt(pService->pData, i, &xEPClassInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTDMC_EP_CLASS_getAt(%08lx, %d, &xEPInfo) = %08lx\n",
-					pDMC->xSession.hSock, i, xRet);
 			continue;
 		}
 
@@ -623,7 +613,7 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
-	xRet = FTDMC_EP_count(&pDMC->xSession, 0, &ulCount);
+	xRet = FTOM_DMC_EP_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP count get failed[%08x].\n", xRet);
@@ -638,7 +628,7 @@ FTM_RET	FTOM_TASK_sync
 		pEPIDs = (FTM_EPID_PTR)FTM_MEM_malloc(sizeof(FTM_EPID) * ulCount);
 		if (pEPIDs != NULL)
 		{
-			xRet = FTDMC_EP_getEPIDList(&pDMC->xSession, pEPIDs, 0, ulCount,  &ulCount);
+			xRet = FTOM_DMC_EP_getEPIDList(pService->pData, pEPIDs, 0, ulCount,  &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i < ulCount ; i++)
@@ -647,7 +637,7 @@ FTM_RET	FTOM_TASK_sync
 					FTM_EP			xEPInfo;
 					FTOM_EP_PTR		pEP;
 			
-					xRet = FTDMC_EP_getAt(&pDMC->xSession, i, &xEPInfo);
+					xRet = FTOM_DMC_EP_getAt(pService->pData, i, &xEPInfo);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR("EP object get at %d failed[%08x]\n", i, xRet);
@@ -677,7 +667,7 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
-	xRet = FTDMC_TRIGGER_count(&pDMC->xSession, &ulCount);
+	xRet = FTOM_DMC_TRIGGER_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger count get failed[%08x].\n", xRet);
@@ -691,7 +681,7 @@ FTM_RET	FTOM_TASK_sync
 		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
 		if (pIDs != NULL)
 		{
-			xRet = FTDMC_TRIGGER_getIDList(&pDMC->xSession, pIDs, 0, ulCount, &ulCount);
+			xRet = FTOM_DMC_TRIGGER_getIDList(pService->pData, pIDs, 0, ulCount, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i < ulCount ; i++)
@@ -715,7 +705,7 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
-	xRet = FTDMC_ACTION_count(&pDMC->xSession, &ulCount);
+	xRet = FTOM_DMC_ACTION_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action count get failed[%08x].\n", xRet);
@@ -729,7 +719,7 @@ FTM_RET	FTOM_TASK_sync
 		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
 		if (pIDs != NULL)
 		{
-			xRet = FTDMC_ACTION_getIDList(&pDMC->xSession, pIDs, 0, ulCount, &ulCount);
+			xRet = FTOM_DMC_ACTION_getIDList(pService->pData, pIDs, 0, ulCount, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i < ulCount ; i++)
@@ -753,7 +743,7 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 	
-	xRet = FTDMC_RULE_count(&pDMC->xSession, &ulCount);
+	xRet = FTOM_DMC_RULE_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Rule count get failed[%08x].\n", xRet);
@@ -927,12 +917,20 @@ FTM_RET FTOM_onAddEPData
 {
 	ASSERT(pMsg != NULL);
 
+	FTM_RET		xRet;
 	FTM_CHAR	pBuff[64];
+	FTOM_SERVICE_PTR	pService;
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
 
 	FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pMsg->xData);
 
 	FTOM_TRIGGER_updateEP(pMsg->pEPID, &pMsg->xData);
-	FTOM_DMC_appendEPData(pDMC, pMsg->pEPID, &pMsg->xData);
+	FTOM_DMC_EP_DATA_add(pService->pData, pMsg->pEPID, &pMsg->xData);
 
 	return	FTM_RET_OK;
 }
@@ -1128,10 +1126,15 @@ FTM_RET	FTOM_DB_NODE_add
 )
 {
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
-
-	xRet = FTDMC_NODE_append(&pDMC->xSession, pInfo);
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+	xRet = FTOM_DMC_NODE_add(pService->pData, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		INFO("Node[%s] failed to add to DB[%08x].\n", pInfo->pDID, xRet);	
@@ -1146,10 +1149,15 @@ FTM_RET	FTOM_DB_NODE_remove
 )
 {
 	ASSERT(pDID != NULL);
-
 	FTM_RET	xRet;
-
-	xRet = FTDMC_NODE_remove(&pDMC->xSession, pDID);
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+	xRet = FTOM_DMC_NODE_remove(pService->pData, pDID);
 	if (xRet != FTM_RET_OK)
 	{
 		INFO("Node[%s] failed to remove from DB[%08x].\n", pDID, xRet);	
@@ -1164,10 +1172,15 @@ FTM_RET	FTOM_DB_NDOE_count
 )
 {
 	ASSERT(pulCount != NULL);
-
 	FTM_RET	xRet;
-
-	xRet = FTDMC_NODE_count(&pDMC->xSession, pulCount);
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+	xRet = FTOM_DMC_NODE_count(pService->pData, pulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		INFO("Failed to get node count from DB[%08x].\n", xRet);
@@ -1184,10 +1197,15 @@ FTM_RET	FTOM_DB_NODE_getInfo
 {
 	ASSERT(pDID != NULL);
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
-
-	xRet = FTDMC_NODE_get(&pDMC->xSession, pDID, pInfo);
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+	xRet = FTOM_DMC_NODE_get(pService->pData, pDID, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		INFO("Node[%s] is not found[%08x]!\n", pDID, xRet);
@@ -1203,10 +1221,15 @@ FTM_RET	FTOM_DB_NODE_getInfoAt
 )
 {
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
-
-	xRet = FTDMC_NODE_getAt(&pDMC->xSession, ulIndex, pInfo);
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+	xRet = FTOM_DMC_NODE_getAt(pService->pData, ulIndex, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		INFO("Node[%d] is not found[%08x]!\n", ulIndex, xRet);
@@ -1223,10 +1246,15 @@ FTM_RET	FTOM_DB_NODE_set
 )
 {
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
-
-	xRet = FTDMC_NODE_set(&pDMC->xSession, xFields, pInfo);
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+	xRet = FTOM_DMC_NODE_set(pService->pData, pDID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		INFO("Node[%s] is not found[%08x]!\n", pDID, xRet);
@@ -1245,8 +1273,16 @@ FTM_RET	FTOM_DB_EP_add
 )
 {
 	ASSERT(pInfo != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTDMC_EP_append(&pDMC->xSession, pInfo);
+	return	FTOM_DMC_EP_add(pService->pData, pInfo);
 }
 
 FTM_RET	FTOM_DB_EP_remove
@@ -1254,7 +1290,17 @@ FTM_RET	FTOM_DB_EP_remove
 	FTM_CHAR_PTR	pEPID
 )
 {
-	return	FTDMC_EP_remove(&pDMC->xSession, pEPID);
+	ASSERT(pEPID != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTOM_DMC_EP_remove(pService->pData, pEPID);
 }
 
 FTM_RET	FTOM_DB_EP_getInfo
@@ -1265,10 +1311,16 @@ FTM_RET	FTOM_DB_EP_getInfo
 {
 	ASSERT(pEPID != NULL);
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_EP_get(&pDMC->xSession, pEPID, pInfo);
+	xRet = FTOM_DMC_EP_get(pService->pData, pEPID, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP[%s] failed to get info from DB[%08x].\n", pEPID, xRet);
@@ -1286,10 +1338,16 @@ FTM_RET	FTOM_DB_EP_setInfo
 {
 	ASSERT(pEPID != NULL);
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_EP_set(&pDMC->xSession, pEPID, xFields, pInfo);
+	xRet = FTOM_DMC_EP_set(pService->pData, pEPID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP[%s] failed to set info to DB[%08x].\n", pEPID, xRet);
@@ -1310,8 +1368,16 @@ FTM_RET	FTOM_DB_EP_getDataList
 	ASSERT(pEPID != NULL);
 	ASSERT(pDataList != NULL);
 	ASSERT(pulCount != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTDMC_EP_DATA_get(&pDMC->xSession, pEPID, ulStart, pDataList, ulMaxCount, pulCount);
+	return	FTOM_DMC_EP_DATA_get(pService->pData, pEPID, ulStart, pDataList, ulMaxCount, pulCount);
 }
 
 FTM_RET	FTOM_DB_EP_getDataInfo
@@ -1323,8 +1389,16 @@ FTM_RET	FTOM_DB_EP_getDataInfo
 )
 {
 	ASSERT(pEPID != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTDMC_EP_DATA_info(&pDMC->xSession, pEPID, pulBeginTime, pulEndTime, pulCount);
+	return	FTOM_DMC_EP_DATA_info(pService->pData, pEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
 FTM_RET	FTOM_DB_EP_getDataCount
@@ -1333,7 +1407,18 @@ FTM_RET	FTOM_DB_EP_getDataCount
 	FTM_ULONG_PTR 	pulCount
 )
 {
-	return	FTDMC_EP_DATA_count(&pDMC->xSession, pEPID, pulCount);
+	ASSERT(pEPID != NULL);
+	ASSERT(pulCount != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTOM_DMC_EP_DATA_count(pService->pData, pEPID, pulCount);
 }
 
 
@@ -1388,7 +1473,7 @@ FTM_RET	FTOM_callback
 		}
 		break;
 
-	case	FTOM_SERVICE_DBM:
+	case	FTOM_SERVICE_DMC:
 		{
 		}
 		break;
@@ -1474,9 +1559,18 @@ FTM_RET	FTOM_DB_EP_removeData
 	FTM_ULONG_PTR	pulDeletedCount
 )
 {
+	ASSERT(pEPID != NULL);
 	ASSERT(pulDeletedCount != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTDMC_EP_DATA_remove(&pDMC->xSession, pEPID, ulIndex, ulCount, pulDeletedCount);
+	return	FTOM_DMC_EP_DATA_remove(pService->pData, pEPID, ulIndex, ulCount, pulDeletedCount);
 }
 
 FTM_RET	FTOM_DB_EP_removeDataWithTime
@@ -1487,9 +1581,18 @@ FTM_RET	FTOM_DB_EP_removeDataWithTime
 	FTM_ULONG_PTR	pulDeletedCount
 )
 {
+	ASSERT(pEPID != NULL);
 	ASSERT(pulDeletedCount != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTDMC_EP_DATA_removeWithTime(&pDMC->xSession, pEPID, ulBegin, ulEnd, pulDeletedCount);
+	return	FTOM_DMC_EP_DATA_removeWithTime(pService->pData, pEPID, ulBegin, ulEnd, pulDeletedCount);
 }
 
 FTM_RET	FTOM_DB_TRIGGER_add
@@ -1498,10 +1601,16 @@ FTM_RET	FTOM_DB_TRIGGER_add
 )
 {
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_TRIGGER_add(&pDMC->xSession, pInfo);
+	xRet = FTOM_DMC_TRIGGER_add(pService->pData, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger[%s] failed to add to DB[%08x].\n", pInfo->pID, xRet);
@@ -1516,10 +1625,16 @@ FTM_RET	FTOM_DB_TRIGGER_remove
 )
 {
 	ASSERT(pTriggerID != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_TRIGGER_del(&pDMC->xSession, pTriggerID);
+	xRet = FTOM_DMC_TRIGGER_remove(pService->pData, pTriggerID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger[%s] failed to remove from DB[%08x].\n", pTriggerID, xRet);
@@ -1536,10 +1651,16 @@ FTM_RET	FTOM_DB_TRIGGER_getInfo
 {
 	ASSERT(pTriggerID != NULL);
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_TRIGGER_get(&pDMC->xSession, pTriggerID, pInfo);
+	xRet = FTOM_DMC_TRIGGER_get(pService->pData, pTriggerID, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger[%s] failed to get information[%08x].\n", pTriggerID, xRet);	
@@ -1555,10 +1676,16 @@ FTM_RET	FTOM_DB_TRIgger_getInfoAt
 )
 {
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_TRIGGER_getAt(&pDMC->xSession, ulIndex, pInfo);
+	xRet = FTOM_DMC_TRIGGER_getAt(pService->pData, ulIndex, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger[%d] failed to get information[%08x].\n", ulIndex, xRet);	
@@ -1576,10 +1703,16 @@ FTM_RET	FTOM_DB_TRIGGER_setInfo
 {
 	ASSERT(pTriggerID != NULL);
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_TRIGGER_set(&pDMC->xSession, pTriggerID, xFields, pInfo);
+	xRet = FTOM_DMC_TRIGGER_set(pService->pData, pTriggerID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger[%s] DB update failed.\n", pTriggerID);	
@@ -1594,10 +1727,16 @@ FTM_RET	FTOM_DB_ACTION_add
 )
 {
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_ACTION_add(&pDMC->xSession, pInfo);
+	xRet = FTOM_DMC_ACTION_add(pService->pData, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action[%s] failed to add to DB[%08x].\n", pInfo->pID, xRet);	
@@ -1612,10 +1751,16 @@ FTM_RET	FTOM_DB_ACTION_remove
 )
 {
 	ASSERT(pActionID != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_ACTION_del(&pDMC->xSession, pActionID);
+	xRet = FTOM_DMC_ACTION_remove(pService->pData, pActionID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action[%s] failed to remove from DB[%08x].\n", pActionID, xRet);
@@ -1631,10 +1776,16 @@ FTM_RET	FTOM_DB_ACTION_getInfo
 )
 {
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_ACTION_get(&pDMC->xSession, pActionID, pInfo);
+	xRet = FTOM_DMC_ACTION_get(pService->pData, pActionID, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action[%s] info failed to get from DB.[%08x]\n", pActionID, pInfo);	
@@ -1650,10 +1801,16 @@ FTM_RET	FTOM_DB_ACTION_getInfoAt
 )
 {
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
 	
-	xRet = FTDMC_ACTION_getAt(&pDMC->xSession, ulIndex, pInfo);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+	
+	xRet = FTOM_DMC_ACTION_getAt(pService->pData, ulIndex, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action[%lu] info failed to get from DB.[%08x]", ulIndex, xRet);
@@ -1671,10 +1828,16 @@ FTM_RET	FTOM_DB_ACTION_setInfo
 {
 	ASSERT(pActionID != NULL);
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_ACTION_set(&pDMC->xSession, pActionID, xFields, pInfo);
+	xRet = FTOM_DMC_ACTION_set(pService->pData, pActionID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action[%s] DB update failed.\n", pActionID);	
@@ -1689,8 +1852,16 @@ FTM_RET	FTOM_DB_RULE_add
 )
 {
 	ASSERT(pInfo != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTDMC_RULE_add(&pDMC->xSession, pInfo);
+	return	FTOM_DMC_RULE_add(pService->pData, pInfo);
 }
 
 FTM_RET	FTOM_DB_RULE_remove
@@ -1698,7 +1869,17 @@ FTM_RET	FTOM_DB_RULE_remove
 	FTM_CHAR_PTR	pRuleID
 )
 {
-	return	FTDMC_RULE_del(&pDMC->xSession, pRuleID);
+	ASSERT(pRuleID != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTOM_DMC_RULE_remove(pService->pData, pRuleID);
 }
 
 FTM_RET	FTOM_DB_RULE_getInfo
@@ -1709,8 +1890,16 @@ FTM_RET	FTOM_DB_RULE_getInfo
 {
 	ASSERT(pRuleID != NULL);
 	ASSERT(pInfo != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTDMC_RULE_get(&pDMC->xSession, pRuleID, pInfo);
+	return	FTOM_DMC_RULE_get(pService->pData, pRuleID, pInfo);
 }
 
 FTM_RET	FTOM_DB_RULE_getInfoAt
@@ -1720,8 +1909,16 @@ FTM_RET	FTOM_DB_RULE_getInfoAt
 )
 {
 	ASSERT(pInfo != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTDMC_RULE_getAt(&pDMC->xSession, ulIndex, pInfo);
+	return	FTOM_DMC_RULE_getAt(pService->pData, ulIndex, pInfo);
 }
 
 FTM_RET	FTOM_DB_RULE_setInfo
@@ -1733,10 +1930,16 @@ FTM_RET	FTOM_DB_RULE_setInfo
 {
 	ASSERT(pRuleID != NULL);
 	ASSERT(pInfo != NULL);
-
 	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTDMC_RULE_set(&pDMC->xSession, pRuleID, xFields, pInfo);
+	xRet = FTOM_DMC_RULE_set(pService->pData, pRuleID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Rule[%s] DB update failed.\n", pRuleID);	
