@@ -467,7 +467,7 @@ FTM_RET	FTDMC_NODE_cmd
 
 			strcpy(xInfo.xOption.xSNMP.pURL, pArgv[3]);
 
-			xRet = FTDMC_NODE_set(&_xSession, FTM_NODE_FIELD_SNMP_URL, &xInfo);
+			xRet = FTDMC_NODE_set(&_xSession, pDID, FTM_NODE_FIELD_SNMP_URL, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR("%s : Node information update failed[%08x].\n", pArgv[0], xRet);
