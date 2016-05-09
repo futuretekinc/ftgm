@@ -539,9 +539,16 @@ FTM_RET	FTOM_CGI_getEPDataLast
 	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
 	if (xRet == FTM_RET_OK)
 	{
+		FTM_EP		xInfo;
 		FTM_EP_DATA	xEPData;
 		FTM_CHAR	pValueString[64];
-	
+
+		xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			goto finish;
+		}
+
 		xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, pEPID, &xEPData);
 		if (xRet != FTM_RET_OK)
 		{
@@ -557,7 +564,14 @@ FTM_RET	FTOM_CGI_getEPDataLast
 		cJSON_AddStringToObject(pRoot, "epid", pEPID);
 		cJSON_AddStringToObject(pRoot, "value", pValueString);
 		cJSON_AddNumberToObject(pRoot, "time", xEPData.ulTime);
-
+		if (xInfo.bEnable)
+		{
+			cJSON_AddStringToObject(pRoot, "state", "run");
+		}
+		else
+		{
+			cJSON_AddStringToObject(pRoot, "state", "stop");
+		}
 	}
 	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
 	{
@@ -582,10 +596,17 @@ FTM_RET	FTOM_CGI_getEPDataLast
 		cJSON_AddItemToObject(pRoot, "datas", pDataArray = cJSON_CreateArray());
 		for(int i = 0 ; i < ulCount ; i++)
 		{
+			FTM_EP		xInfo;
 			FTM_EP_DATA	xEPData;
 			FTM_CHAR	pValueString[64];
 			cJSON _PTR_ pObject;
 	
+			xRet = FTOM_CLIENT_EP_get(pClient, pEPIDList[i], &xInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				goto finish;
+			}
+
 			xRet = FTOM_CLIENT_EP_DATA_getLast(pClient, pEPIDList[i], &xEPData);
 			if (xRet != FTM_RET_OK)
 			{
@@ -602,6 +623,14 @@ FTM_RET	FTOM_CGI_getEPDataLast
 			cJSON_AddStringToObject(pObject, "epid", pEPIDList[i]);
 			cJSON_AddStringToObject(pObject, "value", pValueString);
 			cJSON_AddNumberToObject(pObject, "time", xEPData.ulTime);
+			if (xInfo.bEnable)
+			{
+				cJSON_AddStringToObject(pRoot, "state", "run");
+			}
+			else 
+			{
+				cJSON_AddStringToObject(pRoot, "state", "stop");
+			}
 		}
 
 	}
@@ -784,6 +813,18 @@ FTM_RET	FTOM_CGI_createEPInfoObject
 	if (xFields & FTM_EP_FIELD_UNIT)
 	{
 		cJSON_AddStringToObject(pObject, "unit", pEPInfo->pUnit);
+	}
+
+	if (xFields & FTM_EP_FIELD_ENABLE)
+	{
+		if (pEPInfo->bEnable)
+		{
+			cJSON_AddStringToObject(pObject, "state", "run");
+		}
+		else
+		{
+			cJSON_AddStringToObject(pObject, "state", "stop");
+		}
 	}
 
 	if (xFields & FTM_EP_FIELD_INTERVAL)

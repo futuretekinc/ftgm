@@ -472,7 +472,7 @@ FTM_RET FTOM_CGI_createTriggerObject
 		{
 		case	FTM_TRIGGER_TYPE_ABOVE:
 			{
-				cJSON_AddStringToObject(pCondition, "value2", FTM_VALUE_print(&pTriggerInfo->xParams.xAbove.xValue));
+				cJSON_AddStringToObject(pCondition, "value", FTM_VALUE_print(&pTriggerInfo->xParams.xAbove.xValue));
 			}
 			break;
 	
