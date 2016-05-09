@@ -119,11 +119,6 @@ FTM_RET	FTOM_SHELL_CMD_list
 	FTM_VOID_PTR 	pData
 )
 {
-	FTM_RET				xRet;
-	FTOM_NODE_PTR		pNode;
-	FTOM_EP_PTR			pEP;
-	FTM_ULONG			i,j, ulCount;
-
 	FTOM_NODE_printList();
 	FTOM_EP_printList();
 	FTOM_TRIGGER_printList();

@@ -972,8 +972,16 @@ FTM_RET	FTOM_onSendEPData
 )
 {
 	ASSERT(pMsg != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_MQTT_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTOM_MQTT_CLIENT_publishEPData(pMQTTC, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
+	return	FTOM_MQTT_CLIENT_publishEPData(pService->pData, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
 }
 
 FTM_RET	FTOM_onRule
@@ -1004,8 +1012,16 @@ FTM_RET	FTOM_onDiscovery
 )
 {
 	ASSERT(pMsg != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	FTOM_DISCOVERY_call(pDiscovery, pMsg->pNetwork, pMsg->usPort);
+	FTOM_DISCOVERY_call(pService->pData, pMsg->pNetwork, pMsg->usPort);
 
 	return	FTM_RET_OK;
 }
@@ -1828,8 +1844,16 @@ FTM_RET	FTOM_discoveryEPCount
 {
 	ASSERT(pIP != NULL);
 	ASSERT(pulCount != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	return	FTOM_SNMPC_getEPCount(pSNMPC, pIP, xType, pulCount);
+	return	FTOM_SNMPC_getEPCount(pService->pData, pIP, xType, pulCount);
 }
 
 FTM_RET	FTOM_discoveryEP
@@ -1846,15 +1870,22 @@ FTM_RET	FTOM_discoveryEP
 	FTM_RET		xRet;
 	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
 	FTM_CHAR	pName[FTM_NAME_LEN + 1];
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
 
-	xRet = FTOM_SNMPC_getEPID(pSNMPC, pIP, xType, ulIndex, pEPID);
+	xRet = FTOM_SNMPC_getEPID(pService->pData, pIP, xType, ulIndex, pEPID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP not found!\n");
 		return	xRet;	
 	}
 
-	xRet = FTOM_SNMPC_getEPName(pSNMPC, pIP, xType, ulIndex, pName, FTM_NAME_LEN);
+	xRet = FTOM_SNMPC_getEPName(pService->pData, pIP, xType, ulIndex, pName, FTM_NAME_LEN);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP not found!\n");
