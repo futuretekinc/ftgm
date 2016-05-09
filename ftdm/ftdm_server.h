@@ -9,11 +9,9 @@
 
 #define	FTDM_PACKET_LEN					2048
 
-typedef	struct FTDM_CONTEXT_STRUCT _PTR_ FTDM_CONTEXT_PTR;
-
 typedef	struct
 {
-	FTDM_CONTEXT_PTR	pDM;
+	struct FTDM_CONTEXT_STRUCT *pDM;
 	FTDM_CFG_SERVER		xConfig;
 	pthread_t 			*pThread ;
 	FTM_BOOL			bStop;
@@ -42,7 +40,7 @@ typedef	FTM_RET	(*FTDM_SERVICE_CALLBACK)(FTDM_SERVER_PTR pServer, FTDM_REQ_PARAM
 FTM_RET	FTDMS_init
 (
 	FTDM_SERVER_PTR			pServer,
-	FTDM_CONTEXT_PTR		pParent
+	struct FTDM_CONTEXT_STRUCT *pParent
 );
 
 FTM_RET	FTDMS_final

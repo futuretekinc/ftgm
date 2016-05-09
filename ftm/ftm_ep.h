@@ -4,8 +4,6 @@
 #include "ftm_node.h"
 #include "ftm_value.h"
 
-typedef	FTM_CHAR	FTM_EPID[FTM_EPID_LEN+1];
-typedef FTM_EPID _PTR_ FTM_EPID_PTR;
 typedef	unsigned long	FTM_EP_TYPE, 	_PTR_ FTM_EP_TYPE_PTR;
 typedef	unsigned long	FTM_EP_STATE, 	_PTR_ FTM_EP_STATE_PTR;
 

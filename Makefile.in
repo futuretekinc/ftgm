@@ -1,4 +1,5 @@
-TARGET=
+TARGET="FTM-100S"
+#TARGET=
 
 COMMON_CFLAGS=-c -g -Wall -DDEBUG \
 				-I. \
@@ -7,14 +8,7 @@ COMMON_CFLAGS=-c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftdm \
 				-I$(TOPDIR)/ftdm/client \
 				-I$(TOPDIR)/ftom/client \
-				-I$(TOPDIR)/ftom/cmdline \
-				-I$(TOPDIR)/mosquitto-1.4.8/lib \
-				-I$(TOPDIR)/libconfig-1.4.9/lib \
-				-I$(TOPDIR)/net-snmp-5.7.2/include \
-				-I$(TOPDIR)/sqlite-3.8.9\
-				-I$(TOPDIR)/qdecoder-12.0.4/src\
-				-I$(TOPDIR)/mxml-2.9\
-				-I$(TOPDIR)/cjson
+				-I$(TOPDIR)/ftom/cmdline 
 COMMON_LDFLAGS=-L. \
 			-Wl,--no-as-needed\
 				-L$(TOPDIR)/ftm \
@@ -22,12 +16,7 @@ COMMON_LDFLAGS=-L. \
 				-L$(TOPDIR)/ftdm/client \
 				-L$(TOPDIR)/ftom \
 				-L$(TOPDIR)/ftom/client \
-				-L$(TOPDIR)/ftom/cmdline \
-				-L$(TOPDIR)/sqlite-3.8.9/.libs \
-				-L$(TOPDIR)/mosquitto-1.4.8/lib \
-				-L$(TOPDIR)/qdecoder-12.0.4/src \
-				-L$(TOPDIR)/mxml-2.9\
-				-L$(TOPDIR)/cjson
+				-L$(TOPDIR)/ftom/cmdline 
 
 ifeq ($(TARGET),"FTM-50S")
 CC=armv5-linux-gcc
@@ -41,11 +30,34 @@ CC=arm-openwrt-linux-uclibcgnueabi-gcc
 AR=arm-openwrt-linux-uclibcgnueabi-ar
 CFLAGS=-fPIC \
 		$(COMMON_CFLAGS) \
-		-I$(TOPDIR)/devtools/include 
-eDFLAGS= -L/usr/local/lib $(COMMON_LDFLAGS)
+		-I$(TOPDIR)/devtools/include \
+		-I/home/xtra/ftm/build/_root/include\
+		-I/home/xtra/ftm/build/_root/usr/include\
+		-I/home/xtra/ftm/build/_root/usr/local/include
+
+LDFLAGS= $(COMMON_LDFLAGS)\
+		-L/home/xtra/ftm/build/_root/lib \
+		-L/home/xtra/ftm/build/_root/usr/lib \
+		-L/home/xtra/ftm/build/_root/usr/local/lib \
+
 else
 CC=gcc
 CFLAGS= $(COMMON_CFLAGS) \
-		-I/usr/local/include 
-LDFLAGS= -L/usr/local/lib $(COMMON_LDFLAGS)
+		-I/usr/local/include \
+		-I$(TOPDIR)/mosquitto-1.4.8/lib \
+		-I$(TOPDIR)/libconfig-1.4.9/lib \
+		-I$(TOPDIR)/net-snmp-5.7.2/include \
+		-I$(TOPDIR)/sqlite-3.8.9\
+		-I$(TOPDIR)/qdecoder-12.0.4/src\
+		-I$(TOPDIR)/mxml-2.9\
+		-I$(TOPDIR)/cjson
+
+LDFLAGS= -L/usr/local/lib \
+		$(COMMON_LDFLAGS)\
+		-L$(TOPDIR)/sqlite-3.8.9/.libs \
+		-L$(TOPDIR)/mosquitto-1.4.8/lib \
+		-L$(TOPDIR)/qdecoder-12.0.4/src \
+		-L$(TOPDIR)/mxml-2.9\
+		-L$(TOPDIR)/cjson
+
 endif
