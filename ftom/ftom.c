@@ -454,6 +454,7 @@ FTM_RET FTOM_stop
 {
 	if (bStop)
 	{
+		WARN("Not started\n");
 		return	FTM_RET_NOT_START;	
 	}
 
@@ -513,8 +514,8 @@ FTM_VOID_PTR	FTOM_process
 
 	if (xState == FTOM_STATE_PROCESSING)
 	{
-		FTOM_TASK_stop();	
 		FTOM_TASK_stopService();	
+		FTOM_TASK_stop();	
 	}
 
 	TRACE("finished.\n");
@@ -634,20 +635,12 @@ FTM_RET	FTOM_TASK_sync
 				for(i = 0 ; i < ulCount ; i++)
 				{
 					FTOM_NODE_PTR	pNode;
-					FTM_EP			xEPInfo;
 					FTOM_EP_PTR		pEP;
-			
-					xRet = FTOM_DMC_EP_getAt(pService->pData, i, &xEPInfo);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR("EP object get at %d failed[%08x]\n", i, xRet);
-						continue;
-					}
 			
 					xRet = FTOM_EP_createFromDB(pEPIDs[i], &pEP);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("EP[%s] object creation failed[%08x]\n", xEPInfo.pEPID, xRet);
+						ERROR("EP[%s] object creation failed[%08x]\n", pEPIDs[i], xRet);
 						continue;	
 					}
 			
@@ -656,7 +649,7 @@ FTM_RET	FTOM_TASK_sync
 						FTOM_NODE_linkEP(pNode, pEP);
 					}
 					
-					TRACE("EP[%s] creating success.\n", pEP->xInfo.pEPID);
+					TRACE("EP[%s] creating success.\n", pEPIDs[i]);
 				}
 			}
 			FTM_MEM_free(pEPIDs);
@@ -863,6 +856,17 @@ FTM_RET	FTOM_TASK_stop
 	FTOM_TRIGGER_stop();
 	FTOM_ACTION_stop();
 	FTOM_RULE_stop();
+	FTOM_EP_count(&ulCount);
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTOM_EP_PTR	pEP;
+
+		if (FTOM_EP_getAt(i, &pEP) == FTM_RET_OK)
+		{
+			FTOM_EP_stop(pEP, FTM_TRUE);	
+		}
+	}
+
 	FTOM_NODE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
