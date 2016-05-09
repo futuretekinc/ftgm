@@ -16,6 +16,7 @@ LIBS:= 	-lftomcl\
 		$(TOPDIR)/cjson/libcjson.a \
 		-lpthread \
 		-lm\
+		-lrt\
 		$(TOPDIR)/qdecoder-12.0.4/src/libqdecoder.a
 
 TARGET=	ftom.cgi
