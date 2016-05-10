@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <semaphore.h>
@@ -183,12 +185,19 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 		goto error;
 	}
 
-	pServer->hSocket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+	pServer->hSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (pServer->hSocket == -1)
 	{
 		ERROR("Could not create socket\n");
 		goto error;
 	}
+
+ 	if( fcntl(pServer->hSocket, F_SETFL, O_NONBLOCK) == -1 )
+	{
+       ERROR("Listen socket nonblocking\n");
+       goto error;
+	}
+				 
 
 	xServer.sin_family 		= AF_INET;
 	xServer.sin_addr.s_addr = INADDR_ANY;

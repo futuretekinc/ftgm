@@ -7,22 +7,23 @@
 #include "ftom_params.h"
 #include "ftom_client_config.h"
 
-typedef	struct	FTOM_CLIENT_STRUCT _PTR_ FTOM_CLIENT_PTR;
 typedef	union	FTOM_CLIENT_CONFIG_UNION _PTR_ FTOM_CLIENT_CONFIG_PTR;
+
+struct FTOM_CLIENT_STRUCT;
 
 typedef	FTM_RET	(*FTOM_CLIENT_START)
 (
-	FTOM_CLIENT_PTR	pClient
+	struct FTOM_CLIENT_STRUCT _PTR_	pClient
 );
 
 typedef	FTM_RET	(*FTOM_CLIENT_STOP)
 (
-	FTOM_CLIENT_PTR	pClient
+	struct FTOM_CLIENT_STRUCT _PTR_	pClient
 );
 
 typedef FTM_RET	(*FTOM_CLIENT_LOAD_CONFIG)
 (
-	FTOM_CLIENT_PTR			pClient,
+	struct FTOM_CLIENT_STRUCT _PTR_			pClient,
 	FTOM_CLIENT_CONFIG_PTR	pConfig
 );
 
@@ -33,19 +34,19 @@ typedef	FTM_RET (*FTOM_CLIENT_NOTIFY_CALLBACK)
 
 typedef	FTM_RET	(*FTOM_CLIENT_LOAD_CONFIG_FROM_FILE)
 (
-	FTOM_CLIENT_PTR	pClient,
+	struct FTOM_CLIENT_STRUCT _PTR_	pClient,
 	FTM_CHAR_PTR	pFileName
 );
 
 typedef	FTM_RET	(*FTOM_CLIENT_SET_NOTIFY_CALLBACK)
 (
-	FTOM_CLIENT_PTR	pClient,
+	struct FTOM_CLIENT_STRUCT _PTR_	pClient,
 	FTOM_CLIENT_NOTIFY_CALLBACK	fCB
 );
 
 typedef	FTM_RET	(*FTOM_CLIENT_REQUEST)
 (
-	FTOM_CLIENT_PTR			pClient, 
+	struct FTOM_CLIENT_STRUCT _PTR_			pClient, 
 	FTOM_REQ_PARAMS_PTR		pReq,
 	FTM_ULONG				ulReqLen,
 	FTOM_RESP_PARAMS_PTR	pRespBuff,

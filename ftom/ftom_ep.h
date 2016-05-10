@@ -6,18 +6,14 @@
 #include <net-snmp/net-snmp-includes.h>
 
 #include "ftm.h"
-#include "ftom.h"
-
-typedef	struct FTOM_STRUCT _PTR_	FTOM_PTR;
-typedef	struct FTOM_NODE_STRUCT _PTR_ FTOM_NODE_PTR;
-typedef	struct FTOM_EPM_STRUCT _PTR_ FTOM_EPM_PTR;
+#include "ftom_msg.h"
 
 typedef	struct FTOM_EP_STRUCT
 {
-	FTM_EP				xInfo;
+	FTM_EP					xInfo;
 
-	FTOM_EPM_PTR		pEPM;
-	FTOM_NODE_PTR		pNode;
+	struct FTOM_EPM_STRUCT _PTR_	pEPM;
+	struct FTOM_NODE_STRUCT _PTR_	pNode;
 
 	FTM_BOOL			bStop;
 	FTM_ULONG			ulRetryCount;
@@ -74,7 +70,7 @@ FTM_RET	FTOM_EP_destroy
 FTM_RET	FTOM_EP_attach
 (
 	FTOM_EP_PTR 		pEP, 
-	FTOM_NODE_PTR 	pNode
+	struct FTOM_NODE_STRUCT _PTR_ 	pNode
 );
 
 FTM_RET	FTOM_EP_detach

@@ -26,14 +26,15 @@ CFLAGS=-fPIC \
 		-I$(TOPDIR)/devtools/include 
 LDFLAGS=-L$(TOPDIR)/devtools/lib $(COMMON_LDFLAGS)
 else ifeq ($(TARGET),"FTM-100S")
-CC=arm-openwrt-linux-uclibcgnueabi-gcc
-AR=arm-openwrt-linux-uclibcgnueabi-ar
+CC=arm-openwrt-linux-gnueabi-gcc
+AR=arm-openwrt-linux-gnueabi-ar
 CFLAGS=-fPIC \
 		$(COMMON_CFLAGS) \
 		-I$(TOPDIR)/devtools/include \
 		-I/home/xtra/ftm/build/_root/include\
 		-I/home/xtra/ftm/build/_root/usr/include\
-		-I/home/xtra/ftm/build/_root/usr/local/include
+		-I/home/xtra/ftm/build/_root/usr/local/include\
+		-I/home/xtra/ftm/build/_root/usr/include/cjson
 
 LDFLAGS= $(COMMON_LDFLAGS)\
 		-L/home/xtra/ftm/build/_root/lib \

@@ -57,7 +57,7 @@ typedef	enum
 	FTM_EP_DATA_STATE_INVALID,
 } FTM_EP_DATA_STATE, _PTR_ FTM_EP_DATA_STATE_PTR;
 
-typedef	struct
+typedef	struct FTM_EP_DATA_STRUCT
 {
 	FTM_ULONG			ulTime;
 	FTM_EP_DATA_TYPE	xType;

@@ -23,8 +23,6 @@
 
 #define	FTOM_MQTT_CLIENT_DEFAULT_CB_SET				1
 
-typedef	struct FTOM_STRUCT _PTR_ FTOM_PTR;
-
 typedef	struct
 {
 	FTM_CHAR	pClientID[24];

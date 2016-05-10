@@ -9,20 +9,18 @@
 #include "ftom_node.h"
 #include "ftom_service.h"
 
-typedef	struct FTOM_STRUCT _PTR_ FTOM_PTR;
-typedef	struct FTOM_SERVER_STRUCT _PTR_ FTOM_SERVER_PTR;
 typedef	struct
 {
 	FTM_INT				hSocket;
 	struct sockaddr_in	xPeer;
 	pthread_t			xPThread;
-	FTOM_SERVER_PTR		pServer;
+	struct FTOM_SERVER_STRUCT _PTR_		pServer;
 	FTM_BOOL			bStop;
 	FTM_BYTE			pReqBuff[FTOM_DEFAULT_PACKET_SIZE];
 	FTM_BYTE			pRespBuff[FTOM_DEFAULT_PACKET_SIZE];
 }	FTOM_SESSION, _PTR_ FTOM_SESSION_PTR;
 
-typedef	FTM_RET	(*FTOM_SERVER_CALLBACK)(FTOM_SERVER_PTR pServer, FTOM_REQ_PARAMS_PTR, FTM_ULONG, FTOM_RESP_PARAMS_PTR, FTM_ULONG);
+typedef	FTM_RET	(*FTOM_SERVER_CALLBACK)(struct FTOM_SERVER_STRUCT _PTR_ pServer, FTOM_REQ_PARAMS_PTR, FTM_ULONG, FTOM_RESP_PARAMS_PTR, FTM_ULONG);
 
 typedef struct
 {
@@ -47,7 +45,7 @@ typedef	struct FTOM_SERVER_STRUCT
 	FTM_INT				hSocket;
 	FTOM_SERVICE_ID		xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
-}	FTOM_SERVER;
+}	FTOM_SERVER, _PTR_ FTOM_SERVER_PTR;
 
 FTM_RET	FTOM_SERVER_create
 (

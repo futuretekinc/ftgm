@@ -6,8 +6,6 @@
 #include "ftom_msg.h"
 #include "ftom_service.h"
 
-typedef	struct	FTOM_STRUCT _PTR_ FTOM_PTR;
-
 typedef	struct
 {
 	FTDMC_SESSION			xSession;

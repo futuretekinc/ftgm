@@ -12,12 +12,12 @@ LIBS:= 	-lftomcl\
 		-lftomc\
 		-lftm\
 		-lconfig\
-		$(TOPDIR)/mxml-2.9/libmxml.a \
-		$(TOPDIR)/cjson/libcjson.a \
+		-lmxml \
+		-lcjson \
 		-lpthread \
 		-lm\
 		-lrt\
-		$(TOPDIR)/qdecoder-12.0.4/src/libqdecoder.a
+		-lqdecoder
 
 TARGET=	ftom.cgi
 SRCS=	main.o\
