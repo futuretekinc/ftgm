@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ftm_value.h"
@@ -70,29 +71,86 @@ FTM_RET	FTM_VALUE_init
 )
 {
 	ASSERT(pObject != NULL);
+	ASSERT(pValue != NULL);
+
+	if (strlen(pValue) == 0)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
 
 	switch(xType)
 	{
 	case	FTM_VALUE_TYPE_INT:
 		{
+			FTM_INT	ulLen = strlen(pValue);
+			FTM_INT	i;
 			FTM_INT	nValue = 0;
 
-			if (pValue != NULL)
+			if ((ulLen > 1) && (pValue[0] == '0') && (toupper(pValue[1]) == 'X'))
 			{
+				nValue = strtol(pValue, 0, 16);
+			}
+			else if ((ulLen > 1) && (pValue[0] == '0'))
+			{
+				nValue = strtol(pValue, 0, 8);
+			}
+			else if (pValue[0] == '-')
+			{
+				for(i = 1 ; i < ulLen ; i++)
+				{
+					if (isdigit(pValue[i]) == 0)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+				}
+
 				nValue = strtol(pValue, 0, 10);
 			}
+			else 
+			{
+				for(i = 0 ; i < ulLen ; i++)
+				{
+					if (isdigit(pValue[i]) == 0)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+				}
+
+				nValue = strtol(pValue, 0, 10);
+			}
+
 			FTM_VALUE_initINT(pObject, nValue);
 		}
 		break;
 
 	case	FTM_VALUE_TYPE_ULONG:
 		{
+
+			FTM_INT	ulLen = strlen(pValue);
+			FTM_INT	i;
 			FTM_ULONG	ulValue = 0;
 
-			if (pValue != NULL)
+			if ((ulLen > 1) && (pValue[0] == '0') && (toupper(pValue[1]) == 'X'))
 			{
+				ulValue = strtoul(pValue, 0, 16);
+			}
+			else if ((ulLen > 1) && (pValue[0] == '0'))
+			{
+				ulValue = strtoul(pValue, 0, 8);
+			}
+			else 
+			{
+				for(i = 0 ; i < ulLen ; i++)
+				{
+					if (isdigit(pValue[i]) == 0)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+				}
+
 				ulValue = strtoul(pValue, 0, 10);
 			}
+
 			FTM_VALUE_initULONG(pObject, ulValue);
 		}
 		break;

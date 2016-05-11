@@ -145,7 +145,7 @@ FTM_RET	FTOM_CGI_addRule
 		xRet = FTOM_CLIENT_RULE_get(pClient, pRuleID, &xRuleInfo);
 		if (xRet == FTM_RET_OK)
 		{
-			xRet = FTOM_CGI_addRuleToObject(pRoot, "rule", xFields, &xRuleInfo);
+			xRet = FTOM_CGI_addRuleToObject(pRoot, "rule", FTM_RULE_FIELD_ALL, &xRuleInfo);
 		}
 	}
 

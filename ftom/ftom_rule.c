@@ -128,6 +128,13 @@ FTM_RET	FTOM_RULE_create
 		FTM_makeID(pRule->xInfo.pID, 16);
 	}
 
+	xRet = FTOM_DB_RULE_add(&pRule->xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pRule);
+		return	xRet;
+	}
+
 	FTM_LOCK_init(&pRule->xLock);
 
 	xRet = FTM_LIST_append(pRuleList, pRule);
@@ -162,6 +169,7 @@ FTM_RET	FTOM_RULE_createFromDB
 	xRet = FTOM_DB_RULE_getInfo(pID, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
+		TRACE("Rule[%s] not found.\n", pID);
 		return	xRet;
 	}
 

@@ -646,6 +646,12 @@ FTM_RET	FTM_SMP_sendResp
 	struct timespec	xTimeout;
 	FTM_INT	nRet;
 
+	if (ulDataLen > sizeof(pSMP->pBlock->pBuff))
+	{
+		ERROR("ulDataLen : %d\n", ulDataLen);
+		return	FTM_RET_INTERNAL_ERROR;	
+	}
+
 	clock_gettime(CLOCK_REALTIME, &xTimeout);
 	xTimeout.tv_nsec = xTimeout.tv_nsec + ulTimeout*1000;
 	xTimeout.tv_sec = xTimeout.tv_sec + xTimeout.tv_nsec / 1000000000;

@@ -743,6 +743,7 @@ FTM_RET	FTOM_TASK_sync
 		return	xRet;
 	}
 
+	TRACE("DMC Rule Count : %d\n", ulCount);
 	if (ulCount != 0)
 	{
 		FTM_ID_PTR	pIDs;
@@ -750,18 +751,21 @@ FTM_RET	FTOM_TASK_sync
 		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
 		if (pIDs != NULL)
 		{
-			for(i = 0 ; i < ulCount ; i++)
+			xRet = FTOM_DMC_RULE_getIDList(pService->pData, pIDs, 0, ulCount, &ulCount);
+			if (xRet == FTM_RET_OK)
 			{
-				FTOM_RULE_PTR	pRule = NULL;
-		
-				xRet = FTOM_RULE_createFromDB(pIDs[i], &pRule);
-				if (xRet != FTM_RET_OK)
+				for(i = 0 ; i < ulCount ; i++)
 				{
-					ERROR("The new action event can not registration!\n") ;
-					continue;
+					FTOM_RULE_PTR	pRule = NULL;
+		
+					xRet = FTOM_RULE_createFromDB(pIDs[i], &pRule);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("The new rule can not registration[%08x]!\n", xRet) ;
+						continue;
+					}
 				}
 			}
-
 			FTM_MEM_free(pIDs);
 		}
 		else

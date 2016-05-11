@@ -954,6 +954,9 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 	{
 		FTM_ULONG	ulReqLen = 0;
 
+		memset(pReq, 0, FTOM_DEFAULT_PACKET_SIZE);
+		memset(pResp, 0, FTOM_DEFAULT_PACKET_SIZE);
+
 		xRet = FTM_SMP_receiveReq(pSMP, pReq, FTOM_DEFAULT_PACKET_SIZE, &ulReqLen, 1000000);
 		if (xRet == FTM_RET_OK)
 		{
@@ -1540,6 +1543,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 
 	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP;
+
 	pResp->nCount = 0;
 
 	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
@@ -1558,7 +1562,6 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 		pResp->nCount = 0;
 	}
 
-	TRACE("pResp->nCount = %d\n", pResp->nCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_DATA) * pResp->nCount;
 	pResp->xCmd = pReq->xCmd;
 	pResp->xRet = xRet;
@@ -2067,6 +2070,7 @@ FTM_RET	FTOM_SERVER_RULE_count
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
+	TRACE("Server Rule : %d\n", pResp->ulCount);
 	return	pResp->xRet;
 }
 
