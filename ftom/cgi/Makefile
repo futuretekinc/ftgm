@@ -12,12 +12,9 @@ LIBS:= 	-lftomcl\
 		-lftomc\
 		-lftm\
 		-lconfig\
-		-lmxml \
-		-lcjson \
 		-lpthread \
 		-lm\
-		-lrt\
-		-lqdecoder
+		-lrt
 
 TARGET=	ftom.cgi
 SRCS=	main.o\
@@ -27,6 +24,23 @@ SRCS=	main.o\
 		cmd_trigger.o\
 		cmd_action.o\
 		cmd_rule.o
+
+ifeq ($(TARGET),"FTM-50S")
+LIBS:=	$(LIBS)\
+		-lcjson \
+		-lmxml\
+		-lqdecoder
+else ifeq ($(TARGET),"FTM-100S")
+LIBS:=	$(LIBS)\
+		-lcjson \
+		-lmxml\
+		-lqdecoder
+else
+LIBS:=	$(LIBS)\
+		$(TOPDIR)/cjson/libcjson.a\
+		$(TOPDIR)/mxml-2.9/libmxml.a\
+		$(TOPDIR)/qdecoder-12.0.4/src/libqdecoder.a
+endif
 
 OBJS=$(SRCS:.c=.o)
 

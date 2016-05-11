@@ -1,5 +1,5 @@
-TARGET="FTM-100S"
-#TARGET=
+#TARGET="FTM-100S"
+TARGET=
 
 COMMON_CFLAGS=-c -g -Wall -DDEBUG \
 				-I. \
