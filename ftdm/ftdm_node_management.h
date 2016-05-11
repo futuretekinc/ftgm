@@ -95,6 +95,15 @@ FTM_RET	FTDM_NODEM_getAt
 	FTDM_NODE_PTR _PTR_	ppNode
 );
 
+FTM_RET	FTDM_NODEM_getDIDList
+(
+	FTDM_NODEM_PTR	pNodeM,
+	FTM_DID_PTR		pDIDs,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
 FTM_RET	FTDM_NODEM_type
 (
 	FTDM_NODEM_PTR	pNodeM,

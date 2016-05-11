@@ -76,8 +76,18 @@ FTM_RET FTDMC_NODE_get
 FTM_RET FTDMC_NODE_set
 (
 	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pDID,
 	FTM_NODE_FIELD			xFields,
 	FTM_NODE_PTR			pNode
+);
+
+FTM_RET	FTDMC_NODE_getDIDList
+(	
+	FTDMC_SESSION_PTR		pSession,
+	FTM_DID_PTR				pDIDs,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG				ulMaxCount,
+	FTM_ULONG_PTR			pulCount
 );
 
 FTM_RET FTDMC_EP_append
@@ -119,6 +129,15 @@ FTM_RET	FTDMC_EP_set
 	FTM_CHAR_PTR			pEPID,
 	FTM_NODE_FIELD			xFields,
 	FTM_EP_PTR				pEP
+);
+
+FTM_RET	FTDMC_EP_getEPIDList
+(	
+	FTDMC_SESSION_PTR		pSession,
+	FTM_EPID_PTR			pEPIDs,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG				ulMaxCount,
+	FTM_ULONG_PTR			pulCount
 );
 
 FTM_RET	FTDMC_EP_CLASS_count
@@ -253,6 +272,15 @@ FTM_RET	FTDMC_TRIGGER_set
 	FTM_TRIGGER_PTR			pTrigger
 );
 
+FTM_RET	FTDMC_TRIGGER_getIDList
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ID_PTR				pIDs,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG				ulMaxCount,
+	FTM_ULONG_PTR			pulCount
+);
+
 FTM_RET	FTDMC_ACTION_add
 (
 	FTDMC_SESSION_PTR		pSession,
@@ -293,6 +321,15 @@ FTM_RET	FTDMC_ACTION_set
 	FTM_ACTION_PTR			pInfo
 );
 
+FTM_RET	FTDMC_ACTION_getIDList
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ID_PTR				pIDs,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG				ulMaxCount,
+	FTM_ULONG_PTR			pulCount
+);
+
 FTM_RET	FTDMC_RULE_add
 (
 	FTDMC_SESSION_PTR		pSession,
@@ -331,6 +368,15 @@ FTM_RET	FTDMC_RULE_set
 	FTM_CHAR_PTR			pRuleID,
 	FTM_RULE_FIELD			xFields,
 	FTM_RULE_PTR			pInfo
+);
+
+FTM_RET	FTDMC_RULE_getIDList
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ID_PTR				pIDs,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG				ulMaxCount,
+	FTM_ULONG_PTR			pulCount
 );
 
 #endif

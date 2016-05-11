@@ -5,7 +5,11 @@
 static FTM_BOOL FTOM_SERVICE_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 static FTM_LIST_PTR	pServiceList = NULL;
 
-FTM_RET	FTOM_SERVICE_init(FTOM_PTR pOM, FTOM_SERVICE_PTR pServices, FTM_ULONG ulServices)
+FTM_RET	FTOM_SERVICE_init
+(
+	FTOM_SERVICE_PTR pServices, 
+	FTM_ULONG ulServices
+)
 {
 	FTM_RET				xRet;
 	FTM_ULONG			i;
@@ -30,9 +34,13 @@ FTM_RET	FTOM_SERVICE_init(FTOM_PTR pOM, FTOM_SERVICE_PTR pServices, FTM_ULONG ul
 	FTM_LIST_iteratorStart(pServiceList);
 	while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
 	{
-		if (pService->fInit != NULL)
+		if (pService->fCreate != NULL)
 		{
-			pService->xRet = pService->fInit(pService->pData, pOM);
+			pService->xRet = pService->fCreate(&pService->pData);
+		}
+		else if (pService->fInit != NULL)
+		{
+			pService->xRet = pService->fInit(pService->pData);
 		}
 
 		if ((pService->fSetCallback != NULL) && (pService->fCallback != NULL))
@@ -57,7 +65,11 @@ FTM_RET	FTOM_SERVICE_final(FTM_VOID)
 	FTM_LIST_iteratorStart(pServiceList);
 	while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
 	{
-		if (pService->fFinal != NULL)
+		if (pService->fDestroy != NULL)
+		{
+			pService->fDestroy(&pService->pData);
+		}
+		else if (pService->fFinal != NULL)
 		{
 			pService->fFinal(pService->pData);
 		}

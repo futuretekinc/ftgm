@@ -17,7 +17,6 @@ int main(int nArgc, char *pArgv[])
 	FTM_BOOL	bDaemon = FTM_FALSE;
 	FTM_ULONG	ulDebugLevel = FTM_TRACE_LEVEL_ERROR;
 	FTM_CHAR	pConfigFileName[1024];
-	FTOM_PTR	pOM;
 
 	sprintf(pConfigFileName, "%s.conf", FTOM_getProgramName());
 
@@ -48,14 +47,14 @@ int main(int nArgc, char *pArgv[])
 
 	FTM_MEM_init();
 	FTM_TRACE_setLevel(ulDebugLevel);
-	xRet = FTOM_create(&pOM);
+	xRet = FTOM_init();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Can't create object manager!\n");
 		return	-1;	
 	}
 
-	FTOM_loadFromFile(pOM, pConfigFileName);
+	FTOM_loadFromFile(pConfigFileName);
 
 	if (bDaemon)
 	{
@@ -65,10 +64,10 @@ int main(int nArgc, char *pArgv[])
 		}
 	}
 
-	FTOM_start(pOM);
-	FTOM_waitingForFinished(pOM);
+	FTOM_start();
+	FTOM_waitingForFinished();
 	
-	FTOM_destroy(&pOM);
+	FTOM_final();
 	FTM_MEM_final();
 
 	return	0;

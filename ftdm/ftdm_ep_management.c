@@ -379,6 +379,44 @@ FTM_RET	FTDM_EPM_getAt
 	return	FTM_LIST_getAt(pEPM->pList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
 }
 
+FTM_RET	FTDM_EPM_getEPIDList
+(
+	FTDM_EPM_PTR		pEPM,
+	FTM_EPID_PTR		pEPIDs,
+	FTM_ULONG			ulIndex,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	ASSERT(pEPM != NULL);
+	ASSERT(pEPIDs != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET		xRet;
+	FTM_ULONG	i, ulCount;
+
+	xRet = FTDM_EPM_count(pEPM, 0, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	*pulCount = 0;
+	for(i = 0 ; i < ulMaxCount && (ulIndex + i) < ulCount ; i++)
+	{
+		FTDM_EP_PTR	pEP;
+
+		xRet = FTDM_EPM_getAt(pEPM, ulIndex + i, &pEP);
+		if (xRet != FTM_RET_OK)
+		{
+			break;	
+		}
+
+		strcpy(pEPIDs[(*pulCount)++], pEP->xInfo.pEPID);
+	}
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET FTDM_EPM_showList
 (

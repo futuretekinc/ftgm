@@ -43,7 +43,6 @@ typedef	struct FTOM_SERVER_STRUCT
 	pthread_t 			xPThread;
 	sem_t				xLock;
 	FTM_BOOL			bStop;	
-	FTOM_PTR			pOM;
 	FTM_LIST			xSessionList;
 	FTM_INT				hSocket;
 	FTOM_SERVICE_ID		xServiceID;
@@ -52,14 +51,17 @@ typedef	struct FTOM_SERVER_STRUCT
 
 FTM_RET	FTOM_SERVER_create
 (
-	FTOM_PTR pOM,
 	FTOM_SERVER_PTR _PTR_ 	ppServer
 );
 	
+FTM_RET	FTOM_SERVER_destroy
+(
+	FTOM_SERVER_PTR _PTR_ 	ppServer
+);
+
 FTM_RET	FTOM_SERVER_init
 (
-	FTOM_SERVER_PTR 	pServer,
-	FTOM_PTR pOM 
+	FTOM_SERVER_PTR 	pServer
 );
 
 FTM_RET	FTOM_SERVER_final
@@ -101,44 +103,4 @@ FTM_RET	FTOM_SERVER_setServiceCallback
 	FTOM_SERVICE_CALLBACK fServiceCB
 );
 
-FTM_RET	FTOM_SERVER_createNode
-(
-	FTOM_SERVER_PTR		pServer,
-	FTM_NODE_PTR		pInfo,
-	FTOM_NODE_PTR _PTR_	ppNode
-);
-
-FTM_RET	FTOM_SERVER_destroyNode
-(
-	FTOM_SERVER_PTR		pServer,
-	FTOM_NODE_PTR _PTR_	ppNode
-);
-
-FTM_RET	FTOM_SERVER_countNode
-(
-	FTOM_SERVER_PTR		pServer,
-	FTM_ULONG_PTR		pulCount
-);
-
-FTM_RET	FTOM_SERVER_getNode
-(
-	FTOM_SERVER_PTR		pServer,
-	FTM_CHAR_PTR		pDID,
-	FTOM_NODE_PTR _PTR_ ppNode
-);
-
-FTM_RET	FTOM_SERVER_getNodeAt
-(
-	FTOM_SERVER_PTR		pServer,
-	FTM_ULONG			ulIndex,
-	FTOM_NODE_PTR _PTR_ ppNode
-);
-
-FTM_RET	FTOM_SERVER_setNode
-(
-	FTOM_SERVER_PTR		pServer,
-	FTM_CHAR_PTR		pDID,
-	FTM_NODE_FIELD		xFields,
-	FTM_NODE_PTR 		pInfo
-);
 #endif

@@ -36,6 +36,7 @@ FTM_RET	FTDM_EPM_loadConfig
 );
 
 FTM_RET	FTDM_EPM_loadFromFile
+
 (
 	FTDM_EPM_PTR	pEPM,
 	FTM_CHAR_PTR	pFileName
@@ -71,6 +72,15 @@ FTM_RET	FTDM_EPM_getAt
 	FTDM_EPM_PTR		pEPM,
 	FTM_ULONG			ulIndex,
 	FTDM_EP_PTR	_PTR_ 	ppEP
+);
+
+FTM_RET	FTDM_EPM_getEPIDList
+(
+	FTDM_EPM_PTR		pEPM,
+	FTM_EPID_PTR		pEPIDs,
+	FTM_ULONG			ulIndex,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
 );
 
 FTM_RET	FTDM_EPM_append

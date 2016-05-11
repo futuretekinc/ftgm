@@ -65,4 +65,12 @@ FTM_RET	FTDM_RULE_getAt
 	FTDM_RULE_PTR _PTR_	ppRule
 );
 
+FTM_RET	FTDM_RULE_getIDList
+(
+	FTM_ID_PTR		pIDs,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
 #endif

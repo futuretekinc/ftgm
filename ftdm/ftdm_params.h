@@ -103,6 +103,23 @@ typedef	struct
 	FTM_RET				nRet;
 }	FTDM_RESP_NODE_SET_PARAMS, _PTR_ FTDM_RESP_NODE_SET_PARAMS_PTR;
 
+typedef struct	
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ULONG			ulIndex;
+	FTM_ULONG			ulCount;
+}	FTDM_REQ_NODE_GET_DID_LIST_PARAMS, _PTR_ 	FTDM_REQ_NODE_GET_DID_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+	FTM_DID				pDIDs[];
+}	FTDM_RESP_NODE_GET_DID_LIST_PARAMS, _PTR_ FTDM_RESP_NODE_GET_DID_LIST_PARAMS_PTR;
+
 typedef	struct
 {
 	FTDM_CMD			xCmd;
@@ -270,6 +287,23 @@ typedef	struct
 	FTM_ULONG			nLen;
 	FTM_RET				nRet;
 }	FTDM_RESP_EP_SET_PARAMS, _PTR_	FTDM_RESP_EP_SET_PARAMS_PTR;
+
+typedef struct	
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ULONG			ulIndex;
+	FTM_ULONG			ulCount;
+}	FTDM_REQ_EP_GET_EPID_LIST_PARAMS, _PTR_ 	FTDM_REQ_EP_GET_EPID_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+	FTM_EPID			pEPIDs[];
+}	FTDM_RESP_EP_GET_EPID_LIST_PARAMS, _PTR_ FTDM_RESP_EP_GET_EPID_LIST_PARAMS_PTR;
 
 typedef	struct
 {
@@ -570,6 +604,23 @@ typedef	struct
 	FTM_TRIGGER			xTrigger;
 }	FTDM_RESP_TRIGGER_SET_PARAMS, _PTR_	FTDM_RESP_TRIGGER_SET_PARAMS_PTR;
 
+typedef struct	
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ULONG			ulIndex;
+	FTM_ULONG			ulCount;
+}	FTDM_REQ_TRIGGER_GET_ID_LIST_PARAMS, _PTR_ 	FTDM_REQ_TRIGGER_GET_ID_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+	FTM_ID				pIDs[];
+}	FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS, _PTR_ FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR;
+
 typedef	struct
 {
 	FTDM_CMD			xCmd;
@@ -658,6 +709,23 @@ typedef	struct
 	FTM_RET				nRet;
 	FTM_ACTION			xAction;
 }	FTDM_RESP_ACTION_SET_PARAMS, _PTR_	FTDM_RESP_ACTION_SET_PARAMS_PTR;
+
+typedef struct	
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ULONG			ulIndex;
+	FTM_ULONG			ulCount;
+}	FTDM_REQ_ACTION_GET_ID_LIST_PARAMS, _PTR_ 	FTDM_REQ_ACTION_GET_ID_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+	FTM_ID				pIDs[];
+}	FTDM_RESP_ACTION_GET_ID_LIST_PARAMS, _PTR_ FTDM_RESP_ACTION_GET_ID_LIST_PARAMS_PTR;
 
 typedef	struct
 {
@@ -748,4 +816,20 @@ typedef	struct
 	FTM_RULE			xRule;
 }	FTDM_RESP_RULE_SET_PARAMS, _PTR_	FTDM_RESP_RULE_SET_PARAMS_PTR;
 
+typedef struct	
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ULONG			ulIndex;
+	FTM_ULONG			ulCount;
+}	FTDM_REQ_RULE_GET_ID_LIST_PARAMS, _PTR_ 	FTDM_REQ_RULE_GET_ID_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
+	FTM_ID				pIDs[];
+}	FTDM_RESP_RULE_GET_ID_LIST_PARAMS, _PTR_ FTDM_RESP_RULE_GET_ID_LIST_PARAMS_PTR;
 #endif

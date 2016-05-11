@@ -36,21 +36,23 @@ typedef	struct
 
 	FTM_BOOL				bStop;
 	FTM_LOCK				xLock;
-	FTOM_PTR				pOM;
 	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
 }	FTOM_SNMPC, _PTR_ FTOM_SNMPC_PTR;
 
 FTM_RET	FTOM_SNMPC_create
 (
-	FTOM_PTR pOM,
 	FTOM_SNMPC_PTR _PTR_ 	ppSNMPC
+);
+
+FTM_RET	FTOM_SNMPC_destroy
+(
+	FTOM_SNMPC_PTR _PTR_ 	ppClient
 );
 
 FTM_RET	FTOM_SNMPC_init
 (
-	FTOM_SNMPC_PTR 	pClient,
-	FTOM_PTR 			pCTX 
+	FTOM_SNMPC_PTR 	pClient
 );
 
 FTM_RET	FTOM_SNMPC_final

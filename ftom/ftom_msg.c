@@ -26,55 +26,26 @@ FTM_RET FTOM_MSG_createQuit
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MSG_createSetEPData
+FTM_RET	FTOM_MSG_createAddEPData
 (
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
-	FTOM_MSG_SET_EP_DATA_PTR _PTR_ ppMsg
+	FTOM_MSG_ADD_EP_DATA_PTR _PTR_ ppMsg
 )
 {
-	ASSERT(pEPID != NULL);
 	ASSERT(pData != NULL);
 	ASSERT(ppMsg != NULL);
 
-	FTOM_MSG_SET_EP_DATA_PTR	pMsg;
+	FTOM_MSG_ADD_EP_DATA_PTR	pMsg;
 
-	pMsg = (FTOM_MSG_SET_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_SET_EP_DATA));
+	pMsg = (FTOM_MSG_ADD_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_ADD_EP_DATA));
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	pMsg->xType = FTOM_MSG_TYPE_SET_EP_DATA;
-	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
-	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
-
-	*ppMsg = pMsg;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_MSG_createSaveEPData
-(
-	FTM_CHAR_PTR		pEPID,
-	FTM_EP_DATA_PTR		pData,
-	FTOM_MSG_SAVE_EP_DATA_PTR _PTR_ ppMsg
-)
-{
-	ASSERT(pData != NULL);
-	ASSERT(ppMsg != NULL);
-
-	FTOM_MSG_SAVE_EP_DATA_PTR	pMsg;
-
-	pMsg = (FTOM_MSG_SAVE_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_SAVE_EP_DATA));
-	if (pMsg == NULL)
-	{
-		ERROR("Not enough memory!\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	pMsg->xType = FTOM_MSG_TYPE_SAVE_EP_DATA;
+	pMsg->xType = FTOM_MSG_TYPE_ADD_EP_DATA;
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
 

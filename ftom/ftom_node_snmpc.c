@@ -3,7 +3,6 @@
 #include "ftom_node_snmpc.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
-#include "ftom_ep_management.h"
 
 FTM_ULONG		active_hosts = 0;
 
@@ -39,6 +38,8 @@ FTM_RET	FTOM_NODE_SNMPC_create
 		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
+
+	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
 
 	pNode->xCommon.xDescript.xType		= FTOM_NODE_TYPE_SNMPC;
 	pNode->xCommon.xDescript.fInit		= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_init;
@@ -92,7 +93,7 @@ FTM_RET	FTOM_NODE_SNMPC_init
 		for(i = 0 ; i < ulEPCount ; i++)
 		{
 			FTOM_EP_PTR				pEP;
-			FTM_EP_CLASS_PTR	pEPClassInfo;
+			FTOM_EP_CLASS_PTR	pEPClassInfo;
 			FTM_CHAR				pOIDName[1024];
 
 			if (FTOM_NODE_getEPAt((FTOM_NODE_PTR)pNode, i, (FTOM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
@@ -101,7 +102,7 @@ FTM_RET	FTOM_NODE_SNMPC_init
 				continue;
 			}
 
-			if (FTOM_EPM_getClass(pEP->pEPM, (pEP->xInfo.xType & FTM_EP_TYPE_MASK), &pEPClassInfo) != FTM_RET_OK)
+			if (FTOM_EP_CLASS_get((pEP->xInfo.xType & FTM_EP_TYPE_MASK), &pEPClassInfo) != FTM_RET_OK)
 			{
 				TRACE("EP CLASS[%s] information not found\n", pEP->xInfo.pEPID);
 				continue;
@@ -109,7 +110,7 @@ FTM_RET	FTOM_NODE_SNMPC_init
 
 			snprintf(pOIDName, sizeof(pOIDName) - 1, "%s::%s", 
 				pNode->xCommon.xInfo.xOption.xSNMP.pMIB, 
-				pEPClassInfo->pValue);
+				pEPClassInfo->xInfo.pValue);
 			pEP->xOption.xSNMP.nOIDLen = MAX_OID_LEN;
 			if (read_objid(pOIDName, pEP->xOption.xSNMP.pOID, &pEP->xOption.xSNMP.nOIDLen) == 0)
 			{

@@ -25,7 +25,6 @@ typedef	struct
 
 typedef	struct FTOM_DISCOVERY_STRUCT
 {
-	FTOM_PTR			pOM;
 	pthread_t			xThread;
 
 	FTM_BOOL			bStop;
@@ -45,14 +44,17 @@ typedef	struct FTOM_DISCOVERY_STRUCT
 
 FTM_RET	FTOM_DISCOVERY_create
 (
-	FTOM_PTR pOM,
+	FTOM_DISCOVERY_PTR _PTR_ 	ppDiscovery
+);
+
+FTM_RET	FTOM_DISCOVERY_destroy
+(
 	FTOM_DISCOVERY_PTR _PTR_ 	ppDiscovery
 );
 
 FTM_RET	FTOM_DISCOVERY_init
 (
-	FTOM_DISCOVERY_PTR	pDiscovery,
-	FTOM_PTR			pOM
+	FTOM_DISCOVERY_PTR	pDiscovery
 );
 
 FTM_RET	FTOM_DISCOVERY_final

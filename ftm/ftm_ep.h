@@ -316,6 +316,11 @@ FTM_RET	FTM_EP_DATA_toValue
 	FTM_VALUE_PTR	pValue
 );
 
+FTM_RET	FTM_EP_print
+(
+	FTM_EP_PTR	pEP
+);
+
 typedef	struct
 {
 	FTM_USHORT			usPort;

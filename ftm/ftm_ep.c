@@ -775,3 +775,41 @@ FTM_CHAR_PTR	FTM_EP_typeString
 
 	return	pBuff;
 }
+
+FTM_RET	FTM_EP_print
+(
+	FTM_EP_PTR	pEP
+)
+{
+	ASSERT(pEP != NULL);
+
+	MESSAGE("%16s : %s\n", 	"epid", pEP->pEPID);
+	MESSAGE("%16s : %s\n", 	"type", FTM_EP_typeString(pEP->xType));
+	MESSAGE("%16s : %s\n", 	"name", pEP->pName);
+	MESSAGE("%16s : %s\n", 	"unit", pEP->pUnit);
+	MESSAGE("%16s : ", 		"state");
+
+	if (pEP->bEnable)
+	{
+		MESSAGE("%s\n", "enable");
+	}
+	else
+	{
+		MESSAGE("%s\n", "disable");
+	}
+
+	MESSAGE("%16s : %lu\n", 	"interval", pEP->ulInterval);
+	MESSAGE("%16s : %lu\n", 	"timeout", 	pEP->ulTimeout);
+	MESSAGE("%16s : %s\n", 	"did", 		pEP->pDID);
+	if (pEP->xLimit.xType == FTM_EP_LIMIT_TYPE_COUNT)
+	{
+		MESSAGE("%16s : %s(%d)\n", 	"limit", 	"count", pEP->xLimit.xParams.ulCount);
+	}
+	else
+	{
+		MESSAGE("%16s : %s(%d:%d)\n", 	"limit", 	"time", 
+			pEP->xLimit.xParams.xTime.ulStart,pEP->xLimit.xParams.xTime.ulEnd);
+	}
+
+	return	FTM_RET_OK;
+}

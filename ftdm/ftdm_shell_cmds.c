@@ -198,51 +198,15 @@ FTM_RET	FTDM_SHELL_showEPInfo
 {
 	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP = NULL;
-	FTM_ULONG	ulDataCount = 0;
 
-	if (FTDM_EPM_get(pEPM, pEPID, &pEP) != FTM_RET_OK)
+	xRet = FTDM_EPM_get(pEPM, pEPID, &pEP);
+	if (xRet != FTM_RET_OK)
 	{
-		MESSAGE("Invalid EPID [%s]\n", pEPID);
-		return	FTM_RET_OBJECT_NOT_FOUND;
-	}
-
-	MESSAGE("%-16s : %s\n", 	"EPID", pEP->xInfo.pEPID);
-	MESSAGE("%-16s : %s\n", 	"TYPE", FTM_EP_typeString(pEP->xInfo.xType));
-	MESSAGE("%-16s : %s\n", 	"NAME", pEP->xInfo.pName);
-	MESSAGE("%-16s : %s\n", 	"UNIT", pEP->xInfo.pUnit);
-	MESSAGE("%-16s : ", 		"STATE");
-
-	if (pEP->xInfo.bEnable)
-	{
-		MESSAGE("%-8s\n", "ENABLE");
-	}
-	else
-	{
-		MESSAGE("%-8s\n", "DISABLE");
+		MESSAGE("EP[%s] not found.\n", pEPID);
+		return	xRet;
 	}
 
-	MESSAGE("%-16s : %lu\n", 	"INTERVAL", pEP->xInfo.ulInterval);
-	MESSAGE("%-16s : %lu\n", 	"TIMEOUT", 	pEP->xInfo.ulTimeout);
-	MESSAGE("%-16s : %s\n", 	"DID", 		pEP->xInfo.pDID);
-	if (pEP->xInfo.xLimit.xType == FTM_EP_LIMIT_TYPE_COUNT)
-	{
-		MESSAGE("%-16s : %s(%d)\n", 	"LIMIT", 	"COUNT", pEP->xInfo.xLimit.xParams.ulCount);
-	}
-	else
-	{
-		MESSAGE("%-16s : %s(%d:%d)\n", 	"LIMIT", 	"TIME", 
-			pEP->xInfo.xLimit.xParams.xTime.ulStart,pEP->xInfo.xLimit.xParams.xTime.ulEnd);
-	}
-
-	xRet = FTDM_EP_DATA_count(pEP, &ulDataCount);
-	if (xRet == FTM_RET_OK)
-	{
-		MESSAGE("%-16s : %d\n", "DATA COUNT", ulDataCount);
-	}
-	else
-	{
-		MESSAGE("%-16s : %s\n", "DATA COUNT", "UNKNOWN");
-	}
+	FTDM_EP_print(pEP);
 
 	return	FTM_RET_OK;
 }
@@ -260,7 +224,6 @@ FTM_RET	FTDM_SHELL_showEPData
 	FTDM_EP_PTR		pEP;
 	FTM_EP_DATA_PTR pData;
 
-	TRACE("%s[%d]\n", __func__, __LINE__);
 	if (FTDM_EPM_get(pEPM, pEPID, &pEP) != FTM_RET_OK)
 	{
 		MESSAGE("Invalid EPID [%s]\n", pEPID);

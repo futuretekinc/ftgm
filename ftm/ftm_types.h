@@ -38,8 +38,17 @@ typedef	unsigned long	FTM_CMD, _PTR_ FTM_CMD_PTR;
 typedef	unsigned long	FTM_RET, _PTR_ FTM_RET_PTR;
 
 #define	FTM_ID_LEN							32
-#define	FTM_DID_LEN							32
-#define	FTM_EPID_LEN						32
+#define	FTM_DID_LEN							FTM_ID_LEN
+#define	FTM_EPID_LEN						FTM_ID_LEN
+
+typedef	FTM_CHAR	FTM_ID[FTM_ID_LEN+1];
+typedef	FTM_CHAR	FTM_DID[FTM_ID_LEN+1];
+typedef	FTM_CHAR	FTM_EPID[FTM_ID_LEN+1];
+
+typedef	FTM_ID _PTR_	FTM_ID_PTR;
+typedef	FTM_DID _PTR_	FTM_DID_PTR;
+typedef	FTM_EPID _PTR_	FTM_EPID_PTR;
+
 #define	FTM_URL_LEN							256
 #define	FTM_LOCATION_LEN					256
 #define	FTM_SNMP_COMMUNITY_LEN				128

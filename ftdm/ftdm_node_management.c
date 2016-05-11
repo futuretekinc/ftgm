@@ -369,6 +369,45 @@ FTM_RET	FTDM_NODEM_getAt
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_NODEM_getDIDList
+(
+	FTDM_NODEM_PTR	pNodeM,
+	FTM_DID_PTR		pDIDs,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pNodeM != NULL);
+	ASSERT(pDIDs != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET	xRet;
+	FTM_ULONG	ulCount, i;
+
+	xRet = FTM_LIST_count(pNodeM->pList, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	*pulCount = 0;
+	for(i = 0 ; i < ulCount && (*pulCount < ulMaxCount) ; i++)
+	{
+		FTDM_NODE_PTR	pNode;
+
+		xRet = FTM_LIST_getAt(pNodeM->pList, ulIndex + i, (FTM_VOID_PTR _PTR_)&pNode);
+		if (xRet != FTM_RET_OK)
+		{
+			break;	
+		}
+
+		strcpy(pDIDs[(*pulCount)++], pNode->xInfo.pDID);
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET FTDM_NODEM_isExist
 (
 	FTDM_NODEM_PTR	pNodeM,

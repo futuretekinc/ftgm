@@ -62,6 +62,14 @@ FTM_RET	FTDM_TRIGGER_getAt
 	FTDM_TRIGGER_PTR _PTR_	ppTrigger
 );
 
+FTM_RET	FTDM_TRIGGER_getIDList
+(
+	FTM_ID_PTR		pIDs,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
 FTM_RET	FTDM_TRIGGER_getByIndex
 (
 	FTM_ULONG				ulIndex, 

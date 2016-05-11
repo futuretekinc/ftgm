@@ -79,7 +79,6 @@ static 	FTM_ULONG	ulClientInstance = 0;
 
 FTM_RET	FTOM_MQTT_CLIENT_create
 (
-	FTOM_PTR 			pOM,
 	FTOM_MQTT_CLIENT_PTR _PTR_ 	ppClient
 )
 {
@@ -94,7 +93,7 @@ FTM_RET	FTOM_MQTT_CLIENT_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	xRet = FTOM_MQTT_CLIENT_init(pClient, pOM);
+	xRet = FTOM_MQTT_CLIENT_init(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("MQTT Client initialization was failed.\n");	
@@ -125,8 +124,7 @@ FTM_RET	FTOM_MQTT_CLIENT_destroy
 
 FTM_RET	FTOM_MQTT_CLIENT_init
 (
-	FTOM_MQTT_CLIENT_PTR pClient,
-	FTOM_PTR 			pOM
+	FTOM_MQTT_CLIENT_PTR pClient
 )
 {
 	ASSERT(pClient != NULL);
@@ -140,9 +138,7 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 
 	memset(pClient, 0, sizeof(FTOM_MQTT_CLIENT));
 
-	pClient->pOM = pOM;
-
-	FTOM_getDID(pOM, pClient->pDID, FTM_DID_LEN);
+	FTOM_getDID(pClient->pDID, FTM_DID_LEN);
 	strncpy(pClient->xConfig.pClientID, pClient->pDID, sizeof(pClient->xConfig.pClientID) - 1);
 	strcpy(pClient->xConfig.xBroker.pHost, FTOM_MQTT_CLIENT_DEFAULT_BROKER);
 	pClient->xConfig.xBroker.usPort = FTOM_MQTT_CLIENT_DEFAULT_PORT;

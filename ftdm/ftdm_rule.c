@@ -408,6 +408,42 @@ FTM_RET	FTDM_RULE_set
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_RULE_getIDList
+(
+	FTM_ID_PTR		pIDs,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pIDs != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET	xRet;
+	FTM_ULONG	i, ulCount;
+	FTDM_RULE_PTR	pRule;
+
+	xRet = FTDM_RULE_count(&ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	*pulCount = 0;
+	for(i = 0 ; i < ulMaxCount && (ulIndex + i) < ulCount ; i++)
+	{
+		xRet = FTDM_RULE_getAt(ulIndex + i, &pRule);
+		if (xRet != FTM_RET_OK)
+		{
+			break;	
+		}
+
+		strcpy(pIDs[(*pulCount)++], pRule->xInfo.pID);
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTDM_RULE_show
 (
 	FTDM_RULE_PTR	pRule	

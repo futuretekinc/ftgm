@@ -8,7 +8,7 @@ include $(TOPDIR)/Makefile.in
 FTOM=ftom
 FTOM_SRCS=ftom_main.c ftom.c
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)
-FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -ldl
+FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl
 
 LIB_FTOM=libftom
 LIB_FTOM_INCS= ftom.h 
@@ -16,20 +16,15 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_msg.c \
 			   ftom_server.c\
 			   ftom_node.c\
-			   ftom_node_management.c\
 			   ftom_ep.c\
-			   ftom_ep_management.c\
 			   ftom_node_snmpc.c\
 			   ftom_snmpc.c\
 			   ftom_snmptrapd.c\
 			   ftom_shell_cmds.c\
 			   ftom_dmc.c\
 			   ftom_trigger.c\
-			   ftom_trigger_management.c\
 			   ftom_action.c\
-			   ftom_action_management.c\
 			   ftom_rule.c\
-			   ftom_rule_management.c\
 			   ftom_mqtt_client.c\
 			   ftom_mqtt_client_ft.c\
 			   ftom_mqtt_client_tpgw.c\

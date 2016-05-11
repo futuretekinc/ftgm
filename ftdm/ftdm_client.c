@@ -348,6 +348,7 @@ FTM_RET FTDMC_NODE_get
 FTM_RET FTDMC_NODE_set
 (
  	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pDID,
 	FTM_NODE_FIELD	xFields,
 	FTM_NODE_PTR	pInfo
 )
@@ -380,6 +381,68 @@ FTM_RET FTDMC_NODE_set
 	}
 	
 	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET FTDMC_NODE_getDIDList
+(
+ 	FTDMC_SESSION_PTR	pSession,
+	FTM_DID_PTR			pDIDs,
+	FTM_ULONG			ulIndex,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	FTM_RET								nRet;
+	FTM_ULONG							ulRespLen;
+	FTDM_REQ_NODE_GET_DID_LIST_PARAMS	xReq;
+	FTDM_RESP_NODE_GET_DID_LIST_PARAMS_PTR	pResp = NULL;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd 	=	FTDM_CMD_NODE_GET_DID_LIST;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.ulIndex=	ulIndex;
+	xReq.ulCount=	ulMaxCount;
+
+	ulRespLen = sizeof(FTDM_RESP_NODE_GET_DID_LIST_PARAMS) + sizeof(FTM_DID) * ulMaxCount;
+	pResp = (FTDM_RESP_NODE_GET_DID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+	if (pResp == NULL)
+	{
+		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)pResp, 
+				ulRespLen);
+	if (nRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pResp);
+		return	nRet;	
+	}
+
+	nRet = pResp->nRet;
+
+	if (nRet == FTM_RET_OK)
+	{
+		*pulCount = pResp->ulCount;
+		memcpy(pDIDs, pResp->pDIDs, sizeof(FTM_DID) * pResp->ulCount);
+	}
+
+	FTM_MEM_free(pResp);
+
+	return	nRet;
 }
 
 /*****************************************************************
@@ -644,6 +707,67 @@ FTM_RET	FTDMC_EP_set
 	return	xResp.nRet;
 }
 
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET FTDMC_EP_getEPIDList
+(
+ 	FTDMC_SESSION_PTR	pSession,
+	FTM_EPID_PTR		pEPIDs,
+	FTM_ULONG			ulIndex,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	FTM_RET	nRet;
+	FTM_ULONG	ulRespLen;
+	FTDM_REQ_EP_GET_EPID_LIST_PARAMS	xReq;
+	FTDM_RESP_EP_GET_EPID_LIST_PARAMS_PTR	pResp = NULL;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd 	=	FTDM_CMD_EP_GET_EPID_LIST;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.ulIndex=	ulIndex;
+	xReq.ulCount=	ulMaxCount;
+
+	ulRespLen = sizeof(FTDM_RESP_EP_GET_EPID_LIST_PARAMS) + sizeof(FTM_EPID) * ulMaxCount;
+	pResp = (FTDM_RESP_EP_GET_EPID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+	if (pResp == NULL)
+	{
+		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)pResp, 
+				ulRespLen);
+	if (nRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pResp);
+		return	nRet;	
+	}
+
+	nRet = pResp->nRet;
+
+	if (nRet == FTM_RET_OK)
+	{
+		*pulCount = pResp->ulCount;
+		memcpy(pEPIDs, pResp->pEPIDs, sizeof(FTM_EPID) * pResp->ulCount);
+	}
+
+	FTM_MEM_free(pResp);
+
+	return	nRet;
+}
 /*****************************************************************
  *
  *****************************************************************/
@@ -1379,6 +1503,69 @@ FTM_RET	FTDMC_TRIGGER_set
 
 	return	xResp.nRet;
 }
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET FTDMC_TRIGGER_getIDList
+(
+ 	FTDMC_SESSION_PTR	pSession,
+	FTM_ID_PTR			pIDs,
+	FTM_ULONG			ulIndex,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	FTM_RET	nRet;
+	FTM_ULONG	ulRespLen;
+	FTDM_REQ_TRIGGER_GET_ID_LIST_PARAMS	xReq;
+	FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR	pResp = NULL;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd 	=	FTDM_CMD_TRIGGER_GET_ID_LIST;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.ulIndex=	ulIndex;
+	xReq.ulCount=	ulMaxCount;
+
+	ulRespLen = sizeof(FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS) + sizeof(FTM_ID) * ulMaxCount;
+	pResp = (FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+	if (pResp == NULL)
+	{
+		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)pResp, 
+				ulRespLen);
+	if (nRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pResp);
+		return	nRet;	
+	}
+
+	nRet = pResp->nRet;
+
+	if (nRet == FTM_RET_OK)
+	{
+		*pulCount = pResp->ulCount;
+		memcpy(pIDs, pResp->pIDs, sizeof(FTM_ID) * pResp->ulCount);
+	}
+
+	FTM_MEM_free(pResp);
+
+	return	nRet;
+}
+
 /////////////////////////////////////////////////////////////////////
 //
 //
@@ -1587,6 +1774,68 @@ FTM_RET	FTDMC_ACTION_set
 	}
 
 	return	xResp.nRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET FTDMC_ACTION_getIDList
+(
+ 	FTDMC_SESSION_PTR	pSession,
+	FTM_ID_PTR			pIDs,
+	FTM_ULONG			ulIndex,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	FTM_RET	nRet;
+	FTM_ULONG	ulRespLen;
+	FTDM_REQ_ACTION_GET_ID_LIST_PARAMS	xReq;
+	FTDM_RESP_ACTION_GET_ID_LIST_PARAMS_PTR	pResp = NULL;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd 	=	FTDM_CMD_ACTION_GET_ID_LIST;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.ulIndex=	ulIndex;
+	xReq.ulCount=	ulMaxCount;
+
+	ulRespLen = sizeof(FTDM_RESP_ACTION_GET_ID_LIST_PARAMS) + sizeof(FTM_ID) * ulMaxCount;
+	pResp = (FTDM_RESP_ACTION_GET_ID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+	if (pResp == NULL)
+	{
+		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)pResp, 
+				ulRespLen);
+	if (nRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pResp);
+		return	nRet;	
+	}
+
+	nRet = pResp->nRet;
+
+	if (nRet == FTM_RET_OK)
+	{
+		*pulCount = pResp->ulCount;
+		memcpy(pIDs, pResp->pIDs, sizeof(FTM_ID) * pResp->ulCount);
+	}
+
+	FTM_MEM_free(pResp);
+
+	return	nRet;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1799,6 +2048,69 @@ FTM_RET	FTDMC_RULE_set
 
 	return	xResp.nRet;
 }
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET FTDMC_RULE_getIDList
+(
+ 	FTDMC_SESSION_PTR	pSession,
+	FTM_ID_PTR			pIDs,
+	FTM_ULONG			ulIndex,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	FTM_RET	nRet;
+	FTM_ULONG	ulRespLen;
+	FTDM_REQ_RULE_GET_ID_LIST_PARAMS	xReq;
+	FTDM_RESP_RULE_GET_ID_LIST_PARAMS_PTR	pResp = NULL;
+
+	if ((pSession == NULL) || (pSession->hSock == 0))
+	{
+		return	FTM_RET_CLIENT_HANDLE_INVALID;	
+	}
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd 	=	FTDM_CMD_RULE_GET_ID_LIST;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.ulIndex=	ulIndex;
+	xReq.ulCount=	ulMaxCount;
+
+	ulRespLen = sizeof(FTDM_RESP_RULE_GET_ID_LIST_PARAMS) + sizeof(FTM_ID) * ulMaxCount;
+	pResp = (FTDM_RESP_RULE_GET_ID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+	if (pResp == NULL)
+	{
+		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)pResp, 
+				ulRespLen);
+	if (nRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pResp);
+		return	nRet;	
+	}
+
+	nRet = pResp->nRet;
+
+	if (nRet == FTM_RET_OK)
+	{
+		*pulCount = pResp->ulCount;
+		memcpy(pIDs, pResp->pIDs, sizeof(FTM_ID) * pResp->ulCount);
+	}
+
+	FTM_MEM_free(pResp);
+
+	return	nRet;
+}
+
 /*****************************************************************
  * Internal Functions
  *****************************************************************/
