@@ -57,6 +57,7 @@ LDFLAGS= -L/usr/local/lib \
 		$(COMMON_LDFLAGS)\
 		-L$(TOPDIR)/sqlite-3.8.9/.libs \
 		-L$(TOPDIR)/mosquitto-1.4.8/lib \
+		-L$(TOPDIR)/libconfig-1.4.9/lib \
 		-L$(TOPDIR)/qdecoder-12.0.4/src \
 		-L$(TOPDIR)/mxml-2.9\
 		-L$(TOPDIR)/cjson
