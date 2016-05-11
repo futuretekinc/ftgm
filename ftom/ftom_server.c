@@ -1540,6 +1540,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 
 	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP;
+	pResp->nCount = 0;
 
 	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
@@ -1557,6 +1558,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 		pResp->nCount = 0;
 	}
 
+	TRACE("pResp->nCount = %d\n", pResp->nCount);
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_DATA) * pResp->nCount;
 	pResp->xCmd = pReq->xCmd;
 	pResp->xRet = xRet;
