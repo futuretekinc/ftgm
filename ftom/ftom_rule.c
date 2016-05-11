@@ -212,9 +212,14 @@ FTM_RET	FTOM_RULE_destroy
 )
 {
 	ASSERT(ppRule != NULL);
+	FTM_RET		xRet;
 
-	FTM_LOCK_final(&(*ppRule)->xLock);
-	FTM_MEM_free(*ppRule);
+	xRet = FTM_LIST_remove(pRuleList, *ppRule);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_LOCK_final(&(*ppRule)->xLock);
+		FTM_MEM_free(*ppRule);
+	}
 
 	*ppRule = NULL;
 
