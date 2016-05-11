@@ -801,7 +801,6 @@ FTM_RET	FTOM_EP_getDataList
 	{
 		return	xRet;	
 	}
-
 	if (ulIndex + ulMaxCount <  ulCachedDataCount)
 	{
 		FTM_INT	i;
@@ -882,7 +881,7 @@ FTM_RET	FTOM_EP_setData
 			FTM_LIST_remove(&pEP->xDataList, pTempData);	
 		}
 	
-		xRet = FTM_LIST_append(&pEP->xDataList, pNewData);
+		xRet = FTM_LIST_insert(&pEP->xDataList, pNewData, 0);
 		if (xRet == FTM_RET_OK)
 		{
 			FTOM_DB_EP_addData(pEP->xInfo.pEPID, pData);
