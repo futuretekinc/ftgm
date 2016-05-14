@@ -149,7 +149,7 @@ FTM_RET	FTOM_EP_getDataList
 FTM_RET	FTOM_EP_removeData
 (
 	FTOM_EP_PTR 		pEP, 
-	FTM_ULONG			ulIndex,
+	FTM_INT				nIndex,
 	FTM_ULONG			ulCount,
 	FTM_ULONG_PTR		pulDeletedCount
 );

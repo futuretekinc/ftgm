@@ -1364,7 +1364,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 FTM_RET	FTDM_DBIF_EP_DATA_del
 (
 	FTM_CHAR_PTR	pEPID,
-	FTM_ULONG		nIndex,
+	FTM_INT			nIndex,
 	FTM_ULONG		nCount
 )
 {
@@ -1378,8 +1378,17 @@ FTM_RET	FTDM_DBIF_EP_DATA_del
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	sprintf(pSQL, " DELETE FROM ep_%s ORDER BY TIME DESC LIMIT %lu OFFSET %lu", 
-		pEPID,  nCount, nIndex);
+	if (nIndex >= 0)
+	{
+		sprintf(pSQL, " DELETE FROM ep_%s ORDER BY TIME DESC LIMIT %lu OFFSET %d", 
+				pEPID,  nCount, nIndex);
+	}
+	else
+	{
+		sprintf(pSQL, " DELETE FROM ep_%s ORDER BY ASC LIMIT %lu", 
+				pEPID,  nCount);
+	}
+
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{

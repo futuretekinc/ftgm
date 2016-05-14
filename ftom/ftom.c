@@ -1409,27 +1409,6 @@ FTM_RET	FTOM_DB_EP_getDataInfo
 	return	FTOM_DMC_EP_DATA_info(pService->pData, pEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
-FTM_RET	FTOM_DB_EP_getDataCount
-(
-	FTM_CHAR_PTR	pEPID,
-	FTM_ULONG_PTR 	pulCount
-)
-{
-	ASSERT(pEPID != NULL);
-	ASSERT(pulCount != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	return	FTOM_DMC_EP_DATA_count(pService->pData, pEPID, pulCount);
-}
-
-
 FTM_RET	FTOM_NOTIFY_rule
 (
 	FTM_CHAR_PTR	pRuleID,
@@ -1557,6 +1536,26 @@ FTM_RET	FTOM_SYS_EP_publishData
 	}
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_DB_EP_getDataCount
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pEPID != NULL);
+	ASSERT(pulCount != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	return	FTOM_DMC_EP_DATA_count(pService->pData, pEPID, pulCount);
 }
 
 FTM_RET	FTOM_DB_EP_removeData

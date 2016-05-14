@@ -864,6 +864,12 @@ FTM_RET	FTOM_EP_setData
 		return	xRet;	
 	}
 
+	xRet = FTOM_DB_EP_addData(pEP->xInfo.pEPID, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("DB store failed[%08x]!\n", xRet);	
+	}
+
 	xRet = FTM_LIST_count(&pEP->xDataList, &ulCount);
 	if (xRet == FTM_RET_OK)
 	{
@@ -882,11 +888,7 @@ FTM_RET	FTOM_EP_setData
 		}
 	
 		xRet = FTM_LIST_insert(&pEP->xDataList, pNewData, 0);
-		if (xRet == FTM_RET_OK)
-		{
-			FTOM_DB_EP_addData(pEP->xInfo.pEPID, pData);
-		}
-		else
+		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Data append failed.\n");
 			FTM_EP_DATA_destroy(pNewData);	
@@ -903,7 +905,7 @@ FTM_RET	FTOM_EP_setData
 FTM_RET	FTOM_EP_removeData
 (
 	FTOM_EP_PTR		pEP,
-	FTM_ULONG		ulIndex,
+	FTM_INT			nIndex,
 	FTM_ULONG		ulCount,
 	FTM_ULONG_PTR	pulDeletedCount
 )
@@ -912,13 +914,76 @@ FTM_RET	FTOM_EP_removeData
 	ASSERT(pulDeletedCount != NULL);
 
 	FTM_RET	xRet;
+	FTM_ULONG	ulListCount, ulDataCount;
 
-	xRet = FTOM_DB_EP_removeData(pEP->xInfo.pEPID, ulIndex, ulCount, pulDeletedCount);
+	xRet = FTM_LIST_count(&pEP->xDataList, &ulListCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] data failed to remove from DB[%08x].\n", pEP->xInfo.pEPID, xRet);	
+		ERROR("EP Data count unknown[%08x]\n", ulListCount);
+		return	xRet;
 	}
+
+	if (nIndex >= 0)
+	{
+		if (nIndex < ulListCount)
+		{
+			FTM_INT	i;
 	
+			if (nIndex + ulCount > ulListCount)
+			{
+				ulCount = ulListCount  - nIndex;
+			}
+	
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				FTM_EP_DATA_PTR	pData;
+
+				xRet = FTM_LIST_getAt(&pEP->xDataList, nIndex, (FTM_VOID_PTR _PTR_)&pData);	
+				if (xRet == FTM_RET_OK)
+				{
+					FTM_LIST_removeAt(&pEP->xDataList, nIndex);
+					FTM_EP_DATA_destroy(pData);
+				}
+			}
+		}
+	
+		xRet = FTOM_DB_EP_removeData(pEP->xInfo.pEPID, nIndex, ulCount, pulDeletedCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("EP[%s] data failed to remove from DB[%08x].\n", pEP->xInfo.pEPID, xRet);	
+		}
+	}
+	else
+	{
+		xRet = FTOM_DB_EP_removeData(pEP->xInfo.pEPID, -1, ulCount, pulDeletedCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("EP[%s] data failed to remove from DB[%08x].\n", pEP->xInfo.pEPID, xRet);	
+		}
+
+		xRet = FTOM_DB_EP_getDataCount(pEP->xInfo.pEPID, &ulDataCount);
+		if (xRet == FTM_RET_OK)
+		{
+			if (ulDataCount < ulListCount)
+			{
+				FTM_INT	i;
+
+				for(i = 0; i < ulListCount - ulDataCount ; i++)
+				{
+					FTM_EP_DATA_PTR	pData;
+
+					xRet = FTM_LIST_getAt(&pEP->xDataList, ulDataCount, (FTM_VOID_PTR _PTR_)&pData);	
+					if (xRet == FTM_RET_OK)
+					{
+						FTM_LIST_removeAt(&pEP->xDataList, ulDataCount);	
+						FTM_EP_DATA_destroy(pData);
+					}
+
+				}
+			}
+		}
+	}
+
 	return	FTM_RET_OK;
 }
 

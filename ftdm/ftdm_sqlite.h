@@ -224,7 +224,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 FTM_RET	FTDM_DBIF_EP_DATA_del
 (
 	FTM_CHAR_PTR	pEPID,
-	FTM_ULONG		nIndex,
+	FTM_INT			nIndex,
 	FTM_ULONG		nCount
 );
 

@@ -453,7 +453,7 @@ typedef	struct
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
-	FTM_ULONG 			nIndex; 
+	FTM_INT				nIndex; 
 	FTM_ULONG			nCount;
 }	FTDM_REQ_EP_DATA_DEL_PARAMS, _PTR_ FTDM_REQ_EP_DATA_DEL_PARAMS_PTR; 
 
