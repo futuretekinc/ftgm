@@ -79,4 +79,35 @@ FTM_RET	FTOM_DISCOVERY_call
 	FTM_USHORT			usPort
 );
 
+FTM_RET	FTOM_DISCOVERY_isFinished
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_BOOL_PTR		pbFinished
+);
+
+FTM_RET	FTOM_DISCOVERY_getNodeInfoCount
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_ULONG_PTR		pulCount
+);
+
+FTM_RET	FTOM_DISCOVERY_getNodeInfoAt
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_ULONG			ulIndex,
+	FTM_NODE_PTR		pNodeInfo
+);
+
+FTM_RET	FTOM_DISCOVERY_getEPInfoCount
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_ULONG_PTR		pulCount
+);
+
+FTM_RET	FTOM_DISCOVERY_getEPInfoAt
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_ULONG			ulIndex,
+	FTM_EP_PTR			pEPInfo
+);
 #endif

@@ -317,6 +317,21 @@ FTM_RET	FTOM_DISCOVERY_call
 	return	FTM_RET_OK;
 }
 
+
+FTM_RET	FTOM_DISCOVERY_isFinished
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_BOOL_PTR		pbFinished
+)
+{
+	ASSERT(pDiscovery != NULL);
+	ASSERT(pbFinished != NULL);
+
+	*pbFinished = (pDiscovery->bInProgress != FTM_TRUE);
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_DISCOVERY_getNodeInfoCount
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,
@@ -351,6 +366,44 @@ FTM_RET	FTOM_DISCOVERY_getNodeInfoAt
 	}
 
 	memcpy(pNodeInfo, pItem, sizeof(FTM_NODE));
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_DISCOVERY_getEPInfoCount
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	ASSERT(pDiscovery != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_LIST_count(&pDiscovery->xEPList, pulCount);	
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_DISCOVERY_getEPInfoAt
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_ULONG			ulIndex,
+	FTM_EP_PTR		pEPInfo
+)
+{
+	ASSERT(pDiscovery != NULL);
+	ASSERT(pEPInfo != NULL);
+
+	FTM_RET	xRet;	
+	FTM_EP_PTR	pItem;
+
+	xRet = FTM_LIST_getAt(&pDiscovery->xEPList, ulIndex, (FTM_VOID_PTR _PTR_)&pItem);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	memcpy(pEPInfo, pItem, sizeof(FTM_NODE));
 
 	return	FTM_RET_OK;
 }
