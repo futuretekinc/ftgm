@@ -17,6 +17,7 @@
 #include "ftom_server.h"
 #include "ftm_shared_memory.h"
 #include "ftom_server_cmd.h"
+#include "ftom_discovery.h"
 
 
 //#ifndef	FTOM_TRACE_IO
@@ -428,6 +429,47 @@ FTM_RET	FTOM_SERVER_RULE_set
 	FTM_ULONG		ulRespLen
 );
 
+static
+FTM_RET	FTOM_SERVER_DISCOVERY_start
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_DISCOVERY_START_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+ 	FTOM_RESP_DISCOVERY_START_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static
+FTM_RET	FTOM_SERVER_DISCOVERY_getInfo
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_DISCOVERY_GET_INFO_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+ 	FTOM_RESP_DISCOVERY_GET_INFO_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static
+FTM_RET	FTOM_SERVER_DISCOVERY_getNodeList
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_DISCOVERY_GET_NODE_LIST_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+ 	FTOM_RESP_DISCOVERY_GET_NODE_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static
+FTM_RET	FTOM_SERVER_DISCOVERY_getEPList
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_DISCOVERY_GET_EP_LIST_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+ 	FTOM_RESP_DISCOVERY_GET_EP_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+
 static FTOM_SERVER_CMD_SET	pCmdSet[] =
 {
 	MK_CMD_SET(FTOM_CMD_NODE_CREATE,			FTOM_SERVER_NODE_create),
@@ -475,6 +517,11 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_RULE_GET_AT,			FTOM_SERVER_RULE_getAt),
 	MK_CMD_SET(FTOM_CMD_RULE_SET,				FTOM_SERVER_RULE_set),
 	
+	MK_CMD_SET(FTOM_CMD_DISCOVERY_START,		FTOM_SERVER_DISCOVERY_start),
+	MK_CMD_SET(FTOM_CMD_DISCOVERY_GET_INFO,		FTOM_SERVER_DISCOVERY_getInfo),
+	MK_CMD_SET(FTOM_CMD_DISCOVERY_GET_NODE,		FTOM_SERVER_DISCOVERY_getNodeList),
+	MK_CMD_SET(FTOM_CMD_DISCOVERY_GET_EP,		FTOM_SERVER_DISCOVERY_getEPList),
+
 	MK_CMD_SET(FTOM_CMD_UNKNOWN, 		NULL)
 };
 
@@ -2160,6 +2207,161 @@ FTM_RET	FTOM_SERVER_RULE_set
 	pResp->xRet = xRet;
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
+
+	return	xRet;
+}
+
+static
+FTM_RET	FTOM_SERVER_DISCOVERY_start
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_DISCOVERY_START_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+ 	FTOM_RESP_DISCOVERY_START_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_discoveryStart(pReq->pIP, pReq->usPort, pReq->ulRetryCount);
+
+	pResp->xRet = xRet;
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	xRet;
+}
+
+static
+FTM_RET	FTOM_SERVER_DISCOVERY_getInfo
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_DISCOVERY_GET_INFO_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+ 	FTOM_RESP_DISCOVERY_GET_INFO_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET	xRet;
+
+
+	xRet = FTOM_discoveryIsFinished(&pResp->bFinished);
+	if (xRet == FTM_RET_OK)
+	{
+		FTOM_SERVICE_PTR	pService;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTOM_DISCOVERY_getNodeInfoCount(pService->pData, &pResp->ulNodeCount);
+			if (xRet == FTM_RET_OK)
+			{
+				xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &pResp->ulEPCount);
+			}
+		}
+	}
+
+	pResp->xRet = xRet;
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	return	xRet;
+}
+
+static
+FTM_RET	FTOM_SERVER_DISCOVERY_getNodeList
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_DISCOVERY_GET_NODE_LIST_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+ 	FTOM_RESP_DISCOVERY_GET_NODE_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR	pService;
+
+	memset(pResp, 0, sizeof(*pResp));
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_INT	i;
+
+		for(i = 0 ; i < pReq->ulCount ; i++)
+		{
+			xRet = FTOM_DISCOVERY_getNodeInfoAt(pService->pData, pReq->ulIndex + i, &pResp->pNodeList[i]);
+			if (xRet != FTM_RET_OK)
+			{
+				break;	
+			}
+
+			pResp->ulCount++;
+		}
+
+		xRet = FTM_RET_OK;
+	}
+
+	pResp->xRet = xRet;
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_NODE) * pResp->ulCount;
+
+	return	xRet;
+}
+
+static
+FTM_RET	FTOM_SERVER_DISCOVERY_getEPList
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_DISCOVERY_GET_EP_LIST_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+ 	FTOM_RESP_DISCOVERY_GET_EP_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR	pService;
+
+	memset(pResp, 0, sizeof(*pResp));
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_INT	i;
+
+		for(i = 0 ; i < pReq->ulCount ; i++)
+		{
+			xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, pReq->ulIndex + i, &pResp->pEPList[i]);
+			if (xRet != FTM_RET_OK)
+			{
+				break;	
+			}
+
+			pResp->ulCount++;
+		}
+
+		xRet = FTM_RET_OK;
+	}
+
+	pResp->xRet = xRet;
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP) * pResp->ulCount;
 
 	return	xRet;
 }

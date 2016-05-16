@@ -132,6 +132,19 @@ FTM_RET	FTOM_DMC_stop
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_DMC_isConnected
+(
+	FTOM_DMC_PTR 	pDMC,
+	FTM_BOOL_PTR	pbConnected
+)
+{
+	ASSERT(pDMC != NULL);
+
+	*pbConnected = pDMC->bConnected;
+
+	return	FTM_RET_OK;
+}
+
 FTM_VOID_PTR	FTOM_DMC_process
 (
 	FTM_VOID_PTR pData
@@ -154,6 +167,7 @@ FTM_VOID_PTR	FTOM_DMC_process
 			xRet = FTDMC_connect(&pDMC->xSession, inet_addr(pDMC->xConfig.xNetwork.pServerIP), pDMC->xConfig.xNetwork.usPort);
 			if (xRet != FTM_RET_OK)
 			{
+				pDMC->bConnected = FTM_FALSE;
 				TRACE("DB connection failed.\n");	
 				usleep(1000000);
 			}
@@ -163,6 +177,7 @@ FTM_VOID_PTR	FTOM_DMC_process
 				{
 					pDMC->fServiceCB(pDMC->xServiceID, FTOM_MSG_TYPE_CONNECTED, NULL);	
 				}
+				pDMC->bConnected = FTM_TRUE;
 			}
 		}
 		else

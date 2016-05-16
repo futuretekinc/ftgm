@@ -87,6 +87,7 @@ FTM_RET	FTOM_DISCOVERY_init
 	FTOM_MSGQ_create(&pDiscovery->pMsgQ);
 	FTM_TIMER_init(&pDiscovery->xTimer, 0);
 	FTM_LIST_init(&pDiscovery->xNodeList);
+	FTM_LIST_init(&pDiscovery->xEPList);
 	FTM_LIST_init(&pDiscovery->xInfoList);
 
 	FTM_LIST_setSeeker(&pDiscovery->xInfoList, FTOM_DISCOVERY_seekNode);
@@ -110,8 +111,8 @@ FTM_RET	FTOM_DISCOVERY_final
 
 	FTOM_MSGQ_destroy(&pDiscovery->pMsgQ);
 	FTM_LIST_final(&pDiscovery->xInfoList);
-	FTM_LIST_final(&pDiscovery->xNodeList);
 	FTM_LIST_final(&pDiscovery->xEPList);
+	FTM_LIST_final(&pDiscovery->xNodeList);
 
 	return	FTM_RET_OK;
 }
@@ -205,8 +206,9 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					{
 						pDiscovery->bInProgress = FTM_TRUE;
 						FTM_TIMER_init(&pDiscovery->xTimer, pDiscovery->ulTimeout * 1000000);
-						FTOM_DISCOVERY_requestInformation(pDiscovery, pMsg->pNetwork, pMsg->usPort);
-						pDiscovery->bInProgress = FTM_TRUE;
+						strncpy(pDiscovery->pTargetIP, pMsg->pNetwork, sizeof(pDiscovery->pTargetIP) - 1);
+						pDiscovery->usTargetPort = pMsg->usPort;
+						FTOM_DISCOVERY_requestInformation(pDiscovery, pDiscovery->pTargetIP, pDiscovery->usTargetPort);
 						pDiscovery->ulLoopCount = 1;
 					}
 				}
@@ -229,7 +231,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					strcpy(pNode->pIP, pMsg->pIP);
 
 					FTM_LIST_append(&pDiscovery->xNodeList, pNode);
-
+					TRACE("NODE[%s] found.\n", pNode->xInfo.pDID);
 					for(i = 0 ; i < pMsg->ulCount ; i++)
 					{
 						xRet = FTOM_discoveryEPCount(pMsg->pIP, pMsg->pTypes[i], &ulCount);
@@ -245,14 +247,25 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 								{
 									FTOM_DISCOVERY_EP_PTR	pEP;
 
+									strncpy(xEPInfo.pDID, pNode->xInfo.pDID, FTM_DID_LEN);
+
 									pEP = (FTOM_DISCOVERY_EP_PTR)FTM_MEM_malloc(sizeof(FTOM_DISCOVERY_EP));
 									if (pEP != NULL)
 									{
+										TRACE("EP[%s] found.\n", xEPInfo.pEPID);
 										memcpy(&pEP->xInfo, &xEPInfo, sizeof(FTM_EP));
 										FTM_LIST_append(&pDiscovery->xEPList, pEP);
 									}
 								}
+								else
+								{
+									ERROR("EP discovery is failed[%08x].\n", xRet);
+								}
 							}
+						}
+						else
+						{
+							ERROR("EP count	discovery is failed[%08x].\n", xRet);
 						}
 					}	
 				}
@@ -272,7 +285,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 			if (pDiscovery->ulLoopCount < pDiscovery->ulRetryCount)
 			{
 				FTM_TIMER_init(&pDiscovery->xTimer, pDiscovery->ulTimeout * 1000000);
-				FTOM_DISCOVERY_requestInformation(pDiscovery, "255.255.255.255", 1234);
+				FTOM_DISCOVERY_requestInformation(pDiscovery, pDiscovery->pTargetIP, pDiscovery->usTargetPort);
 				pDiscovery->ulLoopCount++;
 			}
 			else
@@ -290,7 +303,8 @@ FTM_RET	FTOM_DISCOVERY_call
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,
 	FTM_CHAR_PTR		pNetwork,
-	FTM_USHORT			usPort
+	FTM_USHORT			usPort,
+	FTM_ULONG			ulRetryCount
 )
 {
 	ASSERT(pDiscovery != NULL);
@@ -298,8 +312,9 @@ FTM_RET	FTOM_DISCOVERY_call
 
 	FTOM_MSG_DISCOVERY_PTR	pMsg;
 	FTM_RET		xRet;
-	
-	xRet = FTOM_MSG_createDiscovery(pNetwork, usPort, &pMsg);
+
+	TRACE("Received discovery request!\n");
+	xRet = FTOM_MSG_createDiscovery(pNetwork, usPort, ulRetryCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Discovery message creation failed[%08x].\n", xRet);
@@ -327,6 +342,7 @@ FTM_RET	FTOM_DISCOVERY_isFinished
 	ASSERT(pDiscovery != NULL);
 	ASSERT(pbFinished != NULL);
 
+	TRACE("%s : bInProgress = %d\n", __func__, pDiscovery->bInProgress);
 	*pbFinished = (pDiscovery->bInProgress != FTM_TRUE);
 
 	return	FTM_RET_OK;
@@ -403,7 +419,7 @@ FTM_RET	FTOM_DISCOVERY_getEPInfoAt
 		return	xRet;	
 	}
 
-	memcpy(pEPInfo, pItem, sizeof(FTM_NODE));
+	memcpy(pEPInfo, pItem, sizeof(FTM_EP));
 
 	return	FTM_RET_OK;
 }
@@ -480,7 +496,7 @@ FTM_RET	FTOM_DISCOVERY_requestInformation
 	FTM_INT			nBytes;
 	struct sockaddr_in xDestAddr;
 
-	TRACE("Discovery request!\n");
+	TRACE("Discovery request[%s:%d]!\n", pNetwork, usPort);
 	nSockFD = socket(PF_INET,SOCK_DGRAM,0);
 	if(nSockFD == -1)
 	{

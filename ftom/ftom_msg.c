@@ -253,6 +253,7 @@ FTM_RET	FTOM_MSG_createDiscovery
 (
 	FTM_CHAR_PTR	pNetwork,
 	FTM_USHORT		usPort,
+	FTM_ULONG		ulRetryCount,
 	FTOM_MSG_DISCOVERY_PTR	_PTR_ ppMsg
 )
 {
@@ -272,6 +273,7 @@ FTM_RET	FTOM_MSG_createDiscovery
 	pMsg->pNetwork 	= (FTM_CHAR_PTR)pMsg + sizeof(FTOM_MSG_DISCOVERY);
 	strcpy(pMsg->pNetwork, pNetwork);
 	pMsg->usPort	= usPort;
+	pMsg->ulRetryCount = ulRetryCount;
 
 	*ppMsg = pMsg;
 

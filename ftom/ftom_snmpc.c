@@ -387,7 +387,8 @@ FTM_RET	FTOM_SNMPC_getEPID
 	FTM_CHAR_PTR	pIP,
 	FTM_EP_TYPE		xType,
 	FTM_ULONG		ulIndex,
-	FTM_CHAR_PTR	pEPID
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulMaxLen
 )
 {
 	ASSERT(pClient != NULL);
@@ -396,13 +397,14 @@ FTM_RET	FTOM_SNMPC_getEPID
 
 	FTM_SNMP_OID	xOID = 
 	{ 
-		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1,1},
-		.ulOIDLen = 13
+		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1,1,0},
+		.ulOIDLen = 14
 	};
 
 	xOID.pOID[9] = (xType >> 16);
+	xOID.pOID[13] = ulIndex + 1;
 
-	return	FTOM_SNMPC_getULONG(pClient, pIP, &xOID, (FTM_ULONG_PTR)pEPID);
+	return	FTOM_SNMPC_getString(pClient, pIP, &xOID, pEPID, ulMaxLen);
 }
 
 FTM_RET	FTOM_SNMPC_getEPName
@@ -421,11 +423,12 @@ FTM_RET	FTOM_SNMPC_getEPName
 
 	FTM_SNMP_OID	xOID = 
 	{ 
-		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1,3},
-		.ulOIDLen = 13
+		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1,3,0},
+		.ulOIDLen = 14
 	};
 
 	xOID.pOID[9] = (xType >> 16);
+	xOID.pOID[13] = ulIndex + 1;
 
 	return	FTOM_SNMPC_getString(pClient, pIP, &xOID, pBuff, ulMaxLen);
 }
@@ -683,7 +686,7 @@ FTM_RET	FTOM_SNMPC_getULONG
 	ASSERT(pOID != NULL);
 	ASSERT(pulCount != NULL);
 
-	FTM_RET	xRet = FTM_RET_SNMP_ERROR;
+	FTM_RET	xRet = FTM_RET_OK;
 	FTM_INT	nRet;
 	struct snmp_session	*pSession = NULL;
 	struct snmp_session	xSession;
@@ -709,19 +712,27 @@ FTM_RET	FTOM_SNMPC_getULONG
 		}
 		else
 		{
-			pReqPDU->time = time(NULL);
+			pReqPDU->time = 1;
 			snmp_add_null_var(pReqPDU, pOID->pOID, pOID->ulOIDLen);
 
 			nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
 			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
 			{
 				struct variable_list *pVariable = pRespPDU->variables;
-				while (pVariable) 
+				if (pVariable != NULL)
 				{
 					*pulCount = *pVariable->val.integer;
-					TRACE("Count : %d\n", *pVariable->val.integer);
-					pVariable= pVariable->next_variable;
 				}
+				else
+				{
+					ERROR("SNMP synch respose error - %s\n", snmp_errstring(snmp_errno));
+					xRet = FTM_RET_SNMP_ERROR;
+				}
+			}
+			else
+			{
+				ERROR("SNMP synch respose error - %s\n", snmp_errstring(snmp_errno));
+				xRet = FTM_RET_SNMP_ERROR;
 			}
 		}
 
@@ -756,7 +767,7 @@ FTM_RET	FTOM_SNMPC_getString
 	ASSERT(pOID != NULL);
 	ASSERT(pBuff != NULL);
 
-	FTM_RET	xRet = FTM_RET_SNMP_ERROR;
+	FTM_RET	xRet = FTM_RET_OK;
 	FTM_INT	nRet;
 	struct snmp_session	*pSession = NULL;
 	struct snmp_session	xSession;
@@ -782,14 +793,14 @@ FTM_RET	FTOM_SNMPC_getString
 		}
 		else
 		{
-			pReqPDU->time = time(NULL);
+			pReqPDU->time = 1;
 			snmp_add_null_var(pReqPDU, pOID->pOID, pOID->ulOIDLen);
 
 			nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
 			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
 			{
 				struct variable_list *pVariable = pRespPDU->variables;
-				while (pVariable) 
+				if (pVariable != NULL)
 				{
 					if (pVariable->val_len < ulMaxLen)
 					{
@@ -799,9 +810,17 @@ FTM_RET	FTOM_SNMPC_getString
 					{
 						memcpy(pBuff, pVariable->val.string, ulMaxLen);
 					}
-
-					pVariable= pVariable->next_variable;
 				}
+				else
+				{
+					ERROR("SNMP synch respose error - %s\n", snmp_errstring(snmp_errno));
+					xRet = FTM_RET_SNMP_ERROR;
+				}
+			}
+			else
+			{
+				ERROR("SNMP synch respose error - %s\n", snmp_errstring(snmp_errno));
+				xRet = FTM_RET_SNMP_ERROR;
 			}
 		}
 

@@ -23,7 +23,8 @@ SRCS=	main.o\
 		cmd_node.o\
 		cmd_trigger.o\
 		cmd_action.o\
-		cmd_rule.o
+		cmd_rule.o\
+		cmd_discovery.o
 
 ifeq ($(TARGET),"FTM-50S")
 LIBS:=	$(LIBS)\

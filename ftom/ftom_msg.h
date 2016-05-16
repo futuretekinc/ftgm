@@ -102,6 +102,7 @@ typedef	struct
 	FTOM_MSG_TYPE	xType;
 	FTM_CHAR_PTR	pNetwork;
 	FTM_USHORT		usPort;
+	FTM_ULONG		ulRetryCount;
 }	FTOM_MSG_DISCOVERY, _PTR_ FTOM_MSG_DISCOVERY_PTR;
 
 typedef	struct
@@ -195,6 +196,7 @@ FTM_RET	FTOM_MSG_createDiscovery
 (
 	FTM_CHAR_PTR		pNetwork,
 	FTM_USHORT			usPort,
+	FTM_ULONG			ulRetryCount,
 	FTOM_MSG_DISCOVERY_PTR _PTR_ ppMsg
 );
 

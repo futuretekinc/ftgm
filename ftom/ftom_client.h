@@ -406,5 +406,43 @@ FTM_RET	FTOM_CLIENT_RULE_set
 	FTM_RULE_PTR	pRuleInfo
 );
 
+
+/****************************************************************
+ *
+ ***************************************************************/
+FTM_RET	FTOM_CLIENT_DISCOVERY_start
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_USHORT		usPort,
+	FTM_ULONG		ulRetryCount
+);
+
+FTM_RET	FTOM_CLIENT_DISCOVERY_getInfo
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_BOOL_PTR	pbFinished,
+	FTM_ULONG_PTR	pulNodeCount,
+	FTM_ULONG_PTR	pulEPCount
+);
+
+FTM_RET	FTOM_CLIENT_DISCOVERY_getNodeList
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_NODE_PTR	pNodeList,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_CLIENT_DISCOVERY_getEPList
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_EP_PTR		pEPList,
+	FTM_ULONG_PTR	pulCount
+);
+
 #endif
 

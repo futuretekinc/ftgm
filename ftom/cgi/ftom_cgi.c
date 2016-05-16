@@ -10,6 +10,7 @@
 #include "cmd_trigger.h"
 #include "cmd_action.h"
 #include "cmd_rule.h"
+#include "cmd_discovery.h"
 
 static 
 FTM_RET	FTOM_CGI_service
@@ -48,6 +49,7 @@ FTOM_CGI_COMMAND	pNodeCmds[] =
 	{	"get",		FTOM_CGI_getNode		},
 	{	"set",		FTOM_CGI_setNode		},
 	{	"list",		FTOM_CGI_getNodeList	},
+
 	{	NULL,		NULL					}
 };
 
@@ -81,6 +83,16 @@ FTOM_CGI_COMMAND	pRuleCmds[] =
 	{	"add",	FTOM_CGI_addRule			},
 	{	"del",	FTOM_CGI_delRule			},
 	{	"list",	FTOM_CGI_getRuleList		},
+	{	NULL,		NULL					}
+};
+
+static 
+FTOM_CGI_COMMAND	pDiscoveryCmds[] =
+{
+	{	"start",	FTOM_CGI_startDiscovery	},
+	{	"get",		FTOM_CGI_getDiscoveryInfo},
+	{	"nodes",	FTOM_CGI_getDiscoveryNodeList},
+	{	"eps",		FTOM_CGI_getDiscoveryEPList},
 	{	NULL,		NULL					}
 };
 
@@ -156,6 +168,15 @@ FTM_RET	FTOM_CGI_rule
 )
 {
 	return	FTOM_CGI_service(pClient, pReq, pRuleCmds);
+}
+
+FTM_RET	FTOM_CGI_discovery
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+)
+{
+	return	FTOM_CGI_service(pClient, pReq, pDiscoveryCmds);
 }
 
 FTM_RET	FTOM_CGI_service

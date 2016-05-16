@@ -800,15 +800,15 @@ CAPTURE	testing/fulltests/support/simple_eval_tools.sh	/^CAPTURE() {	# <command_
 CASE	local/net-snmp-cert	/^    CASE: {$/;"	l
 CBC_ENC_C__DONT_UPDATE_IV	snmplib/openssl/openssl_cbc_enc.c	59;"	d	file:
 CBC_ENC_C__DONT_UPDATE_IV	snmplib/openssl/openssl_des_enc.c	285;"	d	file:
-CC	Makefile	/^CC	        = gcc$/;"	m
-CC	agent/Makefile	/^CC	        = gcc$/;"	m
-CC	agent/helpers/Makefile	/^CC	        = gcc$/;"	m
-CC	agent/mibgroup/Makefile	/^CC	        = gcc$/;"	m
-CC	apps/Makefile	/^CC	        = gcc$/;"	m
-CC	apps/snmpnetstat/Makefile	/^CC	        = gcc$/;"	m
-CC	local/Makefile	/^CC	        = gcc$/;"	m
-CC	man/Makefile	/^CC	        = gcc$/;"	m
-CC	mibs/Makefile	/^CC	        = gcc$/;"	m
+CC	Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+CC	agent/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+CC	agent/helpers/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+CC	agent/mibgroup/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+CC	apps/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+CC	apps/snmpnetstat/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+CC	local/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+CC	man/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+CC	mibs/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
 CC	perl/ASN/Makefile	/^CC = cc$/;"	m
 CC	perl/Makefile	/^CC = cc$/;"	m
 CC	perl/OID/Makefile	/^CC = cc$/;"	m
@@ -818,9 +818,9 @@ CC	perl/agent/Makefile	/^CC = cc$/;"	m
 CC	perl/agent/Support/Makefile	/^CC = cc$/;"	m
 CC	perl/agent/default_store/Makefile	/^CC = cc$/;"	m
 CC	perl/default_store/Makefile	/^CC = cc$/;"	m
-CC	snmplib/Makefile	/^CC	        = gcc$/;"	m
-CC	testing/Makefile	/^CC		= gcc $(CPPFLAGS)$/;"	m
-CC	testing/Makefile	/^CC	        = gcc$/;"	m
+CC	snmplib/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+CC	testing/Makefile	/^CC		= arm-openwrt-linux-uclibcgnueabi-gcc $(CPPFLAGS)$/;"	m
+CC	testing/Makefile	/^CC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
 CCCDLFLAGS	perl/ASN/Makefile	/^CCCDLFLAGS = -fPIC$/;"	m
 CCCDLFLAGS	perl/Makefile	/^CCCDLFLAGS = -fPIC$/;"	m
 CCCDLFLAGS	perl/OID/Makefile	/^CCCDLFLAGS = -fPIC$/;"	m
@@ -1917,7 +1917,7 @@ CP	perl/agent/Makefile	/^CP = cp$/;"	m
 CP	perl/agent/Support/Makefile	/^CP = cp$/;"	m
 CP	perl/agent/default_store/Makefile	/^CP = cp$/;"	m
 CP	perl/default_store/Makefile	/^CP = cp$/;"	m
-CPP	Makefile	/^CPP		= gcc -E 					        \\$/;"	m
+CPP	Makefile	/^CPP		= arm-openwrt-linux-uclibcgnueabi-gcc -E 					        \\$/;"	m
 CPPFLAGS	agent/Makefile	/^CPPFLAGS	= $(TOP_INCLUDES) -I. $(AGENT_INCLUDES) $(MIBGROUP_INCLUDES) \\$/;"	m
 CPPFLAGS	agent/helpers/Makefile	/^CPPFLAGS= $(TOP_INCLUDES) -I. $(AGENT_INCLUDES) $(MIBGROUP_INCLUDES) \\$/;"	m
 CPPFLAGS	agent/mibgroup/Makefile	/^CPPFLAGS= $(TOP_INCLUDES) -I. $(AGENT_INCLUDES) $(MIBGROUP_INCLUDES) \\$/;"	m
@@ -3211,13 +3211,13 @@ EXTRACPPFLAGS	man/Makefile	/^EXTRACPPFLAGS	= -x c$/;"	m
 EXTRACPPFLAGS	mibs/Makefile	/^EXTRACPPFLAGS	= -x c$/;"	m
 EXTRACPPFLAGS	snmplib/Makefile	/^EXTRACPPFLAGS	= -x c$/;"	m
 EXTRACPPFLAGS	testing/Makefile	/^EXTRACPPFLAGS	= -x c$/;"	m
-EXTRALIBS	perl/ASN/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/ASN\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/ASN\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto$/;"	m
-EXTRALIBS	perl/OID/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/OID\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/OID\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto$/;"	m
-EXTRALIBS	perl/SNMP/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/SNMP\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/SNMP\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto$/;"	m
+EXTRALIBS	perl/ASN/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/ASN\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/ASN\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp$/;"	m
+EXTRALIBS	perl/OID/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/OID\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/OID\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp$/;"	m
+EXTRALIBS	perl/SNMP/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/SNMP\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/SNMP\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp$/;"	m
 EXTRALIBS	perl/TrapReceiver/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/apps\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/apps -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/agent\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/agent -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/snmplib -lnetsnmptrapd -lnetsnmpmibs -lnetsnmpagent -lnetsnmp$/;"	m
 EXTRALIBS	perl/agent/Makefile	/^EXTRALIBS = -L\/usr\/local\/lib -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/..\/..\/snmplib -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/..\/..\/agent\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/..\/..\/agent -lnetsnmpmibs -lnetsnmpagent -lnetsnmp$/;"	m
-EXTRALIBS	perl/agent/default_store/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/default_store\/..\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/default_store\/..\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto$/;"	m
-EXTRALIBS	perl/default_store/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/default_store\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/default_store\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto$/;"	m
+EXTRALIBS	perl/agent/default_store/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/default_store\/..\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/default_store\/..\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp$/;"	m
+EXTRALIBS	perl/default_store/Makefile	/^EXTRALIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/default_store\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/default_store\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp$/;"	m
 Either	testing/RUNFULLTESTS	/^Either:$/;"	l
 Email	local/FAQ2HTML	/^Email: <a href="mailto:net-snmp-coders@lists.sourceforge.net">net-snmp-coders@list.sourceforge.net<\/a><br\/>$/;"	l
 End_HR_FileSys	agent/mibgroup/host/hr_filesys.c	/^End_HR_FileSys(void)$/;"	f
@@ -3644,9 +3644,7 @@ HAVE_DLFCN_H	include/net-snmp/net-snmp-config.h	133;"	d
 HAVE_DLOPEN	include/net-snmp/net-snmp-config.h	136;"	d
 HAVE_DPKG_QUERY	include/net-snmp/net-snmp-config.h	142;"	d
 HAVE_ERR_H	include/net-snmp/net-snmp-config.h	145;"	d
-HAVE_EVP_MD_CTX_CREATE	include/net-snmp/net-snmp-config.h	151;"	d
 HAVE_EVP_MD_CTX_CREATE	win32/net-snmp/net-snmp-config.h	1365;"	d
-HAVE_EVP_MD_CTX_DESTROY	include/net-snmp/net-snmp-config.h	154;"	d
 HAVE_EVP_MD_CTX_DESTROY	win32/net-snmp/net-snmp-config.h	1368;"	d
 HAVE_EXECV	include/net-snmp/net-snmp-config.h	163;"	d
 HAVE_EXECV	include/net-snmp/system/mingw32.h	57;"	d
@@ -3656,7 +3654,6 @@ HAVE_FGETC_UNLOCKED	include/net-snmp/net-snmp-config.h	169;"	d
 HAVE_FLOCKFILE	include/net-snmp/net-snmp-config.h	172;"	d
 HAVE_FORK	include/net-snmp/net-snmp-config.h	175;"	d
 HAVE_FORK	include/net-snmp/system/mingw32.h	60;"	d
-HAVE_FSTAB_H	include/net-snmp/net-snmp-config.h	178;"	d
 HAVE_FSTAB_H	include/net-snmp/system/darwin.h	7;"	d
 HAVE_FSTAB_H	include/net-snmp/system/darwin10.h	109;"	d
 HAVE_FSTAB_H	include/net-snmp/system/darwin11.h	117;"	d
@@ -3681,7 +3678,6 @@ HAVE_GETHOSTNAME	include/net-snmp/net-snmp-config.h	211;"	d
 HAVE_GETHOSTNAME	include/net-snmp/system/dynix.h	73;"	d
 HAVE_GETHOSTNAME	include/net-snmp/system/mingw32.h	48;"	d
 HAVE_GETHOSTNAME	win32/net-snmp/net-snmp-config.h	292;"	d
-HAVE_GETLOADAVG	include/net-snmp/net-snmp-config.h	217;"	d
 HAVE_GETMNTENT	agent/mibgroup/ucd-snmp/disk.c	10;"	d	file:
 HAVE_GETMNTENT	agent/mibgroup/ucd-snmp/disk.c	9;"	d	file:
 HAVE_GETMNTENT	include/net-snmp/net-snmp-config.h	220;"	d
@@ -3724,7 +3720,6 @@ HAVE_KVM_H	include/net-snmp/system/darwin11.h	109;"	d
 HAVE_KVM_H	include/net-snmp/system/darwin12.h	109;"	d
 HAVE_KVM_OPENFILES	include/net-snmp/system/darwin11.h	111;"	d
 HAVE_KVM_OPENFILES	include/net-snmp/system/darwin12.h	111;"	d
-HAVE_LIBCRYPTO	include/net-snmp/net-snmp-config.h	328;"	d
 HAVE_LIBNSL	include/net-snmp/system/dynix.h	83;"	d
 HAVE_LIMITS_H	include/net-snmp/net-snmp-config.h	376;"	d
 HAVE_LIMITS_H	win32/net-snmp/net-snmp-config.h	414;"	d
@@ -3801,12 +3796,10 @@ HAVE_SETUID	include/net-snmp/net-snmp-config.h	700;"	d
 HAVE_SGTTY_H	include/net-snmp/net-snmp-config.h	703;"	d
 HAVE_SIGACTION	include/net-snmp/net-snmp-config.h	706;"	d
 HAVE_SIGBLOCK	include/net-snmp/net-snmp-config.h	712;"	d
-HAVE_SIGHOLD	include/net-snmp/net-snmp-config.h	715;"	d
 HAVE_SIGHUP	include/net-snmp/net-snmp-config.h	718;"	d
 HAVE_SIGNAL	include/net-snmp/net-snmp-config.h	721;"	d
 HAVE_SIGNAL	include/net-snmp/system/mingw32.h	39;"	d
 HAVE_SIGPROCMASK	include/net-snmp/net-snmp-config.h	724;"	d
-HAVE_SIGSET	include/net-snmp/net-snmp-config.h	727;"	d
 HAVE_SIN6_SCOPEID	agent/mibgroup/disman/ping/pingCtlTable.h	334;"	d
 HAVE_SNPRINTF	include/net-snmp/net-snmp-config.h	730;"	d
 HAVE_SNPRINTF	win32/net-snmp/net-snmp-config.h	672;"	d
@@ -3836,6 +3829,8 @@ HAVE_STRERROR	win32/net-snmp/net-snmp-config.h	701;"	d
 HAVE_STRINGS_H	include/net-snmp/net-snmp-config.h	766;"	d
 HAVE_STRING_H	include/net-snmp/net-snmp-config.h	769;"	d
 HAVE_STRING_H	win32/net-snmp/net-snmp-config.h	707;"	d
+HAVE_STRLCAT	include/net-snmp/net-snmp-config.h	772;"	d
+HAVE_STRLCPY	include/net-snmp/net-snmp-config.h	775;"	d
 HAVE_STRNCASECMP	include/net-snmp/net-snmp-config.h	778;"	d
 HAVE_STRTOK_R	include/net-snmp/net-snmp-config.h	781;"	d
 HAVE_STRTOL	include/net-snmp/net-snmp-config.h	784;"	d
@@ -3855,7 +3850,6 @@ HAVE_STRUCT_IFNET_IF_TYPE	include/net-snmp/net-snmp-config.h	850;"	d
 HAVE_STRUCT_MSGHDR_MSG_CONTROL	include/net-snmp/net-snmp-config.h	901;"	d
 HAVE_STRUCT_MSGHDR_MSG_FLAGS	include/net-snmp/net-snmp-config.h	904;"	d
 HAVE_STRUCT_RTENTRY_RT_DST	include/net-snmp/net-snmp-config.h	913;"	d
-HAVE_STRUCT_SIGACTION_SA_SIGACTION	include/net-snmp/net-snmp-config.h	931;"	d
 HAVE_STRUCT_SOCKADDR_IN6_SIN6_SCOPE_ID	include/net-snmp/net-snmp-config.h	934;"	d
 HAVE_STRUCT_SOCKADDR_IN6_SIN6_SCOPE_ID	win32/net-snmp/net-snmp-config.h	1732;"	d
 HAVE_STRUCT_SOCKADDR_SA_UNION_SA_GENERIC_SA_FAMILY2	include/net-snmp/system/svr5.h	15;"	d
@@ -3863,7 +3857,6 @@ HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY	include/net-snmp/net-snmp-config.h	944;"	
 HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY	win32/net-snmp/net-snmp-config.h	1796;"	d
 HAVE_STRUCT_STATFS_F_FFREE	include/net-snmp/net-snmp-config.h	953;"	d
 HAVE_STRUCT_STATFS_F_FILES	include/net-snmp/net-snmp-config.h	956;"	d
-HAVE_STRUCT_STATFS_F_FLAGS	include/net-snmp/net-snmp-config.h	959;"	d
 HAVE_STRUCT_STATFS_F_FRSIZE	include/net-snmp/net-snmp-config.h	962;"	d
 HAVE_STRUCT_STATVFS_F_FILES	include/net-snmp/net-snmp-config.h	965;"	d
 HAVE_STRUCT_STATVFS_F_FRSIZE	agent/mibgroup/host/hr_storage.c	11;"	d	file:
@@ -3915,7 +3908,6 @@ HAVE_UNAME	include/net-snmp/net-snmp-config.h	1222;"	d
 HAVE_UNISTD_H	include/net-snmp/net-snmp-config.h	1225;"	d
 HAVE_UNSIGNED_LONG_LONG_INT	include/net-snmp/net-snmp-config.h	1228;"	d
 HAVE_USLEEP	include/net-snmp/net-snmp-config.h	1231;"	d
-HAVE_UTMPX_H	include/net-snmp/net-snmp-config.h	1234;"	d
 HAVE_U_INT32_T	win32/net-snmp/net-snmp-config.h	342;"	d
 HAVE_U_INT64_T	win32/net-snmp/net-snmp-config.h	351;"	d
 HAVE_VSNPRINTF	include/net-snmp/net-snmp-config.h	1267;"	d
@@ -5907,13 +5899,13 @@ LDFROM	perl/agent/Makefile	/^LDFROM = $(OBJECT)$/;"	m
 LDFROM	perl/agent/Support/Makefile	/^LDFROM = $(OBJECT)$/;"	m
 LDFROM	perl/agent/default_store/Makefile	/^LDFROM = $(OBJECT)$/;"	m
 LDFROM	perl/default_store/Makefile	/^LDFROM = $(OBJECT)$/;"	m
-LDLOADLIBS	perl/ASN/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/ASN\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/ASN\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto -lm$/;"	m
-LDLOADLIBS	perl/OID/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/OID\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/OID\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto -lm$/;"	m
-LDLOADLIBS	perl/SNMP/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/SNMP\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/SNMP\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto -lm$/;"	m
+LDLOADLIBS	perl/ASN/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/ASN\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/ASN\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lm$/;"	m
+LDLOADLIBS	perl/OID/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/OID\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/OID\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lm$/;"	m
+LDLOADLIBS	perl/SNMP/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/SNMP\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/SNMP\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lm$/;"	m
 LDLOADLIBS	perl/TrapReceiver/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/apps\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/apps -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/agent\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/agent -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/TrapReceiver\/..\/..\/snmplib -lnetsnmptrapd -lnetsnmpmibs -lnetsnmpagent -lnetsnmp$/;"	m
 LDLOADLIBS	perl/agent/Makefile	/^LDLOADLIBS = -L\/usr\/local\/lib -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/..\/..\/snmplib -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/..\/..\/agent\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/..\/..\/agent -lnetsnmpmibs -lnetsnmpagent -lnetsnmp$/;"	m
-LDLOADLIBS	perl/agent/default_store/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/default_store\/..\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/default_store\/..\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto -lm$/;"	m
-LDLOADLIBS	perl/default_store/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/default_store\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/default_store\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lcrypto -lm$/;"	m
+LDLOADLIBS	perl/agent/default_store/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/default_store\/..\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/agent\/default_store\/..\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lm$/;"	m
+LDLOADLIBS	perl/default_store/Makefile	/^LDLOADLIBS = -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/default_store\/..\/..\/snmplib\/.libs -L\/home\/xtra\/ftgm\/net-snmp-5.7.2\/perl\/default_store\/..\/..\/snmplib -L\/usr\/local\/ssl\/lib -L\/usr\/local\/lib -lnetsnmp -lm$/;"	m
 LDOUBLE	snmplib/snprintf.c	73;"	d	file:
 LDOUBLE	snmplib/snprintf.c	75;"	d	file:
 LD_RUN_PATH	perl/ASN/Makefile	/^	LD_RUN_PATH="$(LD_RUN_PATH)" $(LD)  $(LDDLFLAGS) $(LDFROM) $(OTHERLDFLAGS) -o $@ $(MYEXTLIB)	\\$/;"	m
@@ -6080,17 +6072,17 @@ LINK	man/Makefile	/^LINK		= $(LIBTOOL) --mode=link $(LINKCC)$/;"	m
 LINK	mibs/Makefile	/^LINK		= $(LIBTOOL) --mode=link $(LINKCC)$/;"	m
 LINK	snmplib/Makefile	/^LINK		= $(LIBTOOL) --mode=link $(LINKCC)$/;"	m
 LINK	testing/Makefile	/^LINK		= $(LIBTOOL) --mode=link $(LINKCC)$/;"	m
-LINKCC	Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	agent/Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	agent/helpers/Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	agent/mibgroup/Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	apps/Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	apps/snmpnetstat/Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	local/Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	man/Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	mibs/Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	snmplib/Makefile	/^LINKCC	        = gcc$/;"	m
-LINKCC	testing/Makefile	/^LINKCC	        = gcc$/;"	m
+LINKCC	Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	agent/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	agent/helpers/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	agent/mibgroup/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	apps/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	apps/snmpnetstat/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	local/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	man/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	mibs/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	snmplib/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
+LINKCC	testing/Makefile	/^LINKCC	        = arm-openwrt-linux-uclibcgnueabi-gcc$/;"	m
 LINKTYPE	perl/ASN/Makefile	/^LINKTYPE = dynamic$/;"	m
 LINKTYPE	perl/Makefile	/^LINKTYPE = dynamic$/;"	m
 LINKTYPE	perl/OID/Makefile	/^LINKTYPE = dynamic$/;"	m
@@ -9090,11 +9082,11 @@ NETSNMP_USE_INLINE	acconfig.h	477;"	d
 NETSNMP_USE_INLINE	include/net-snmp/net-snmp-config.h	2089;"	d
 NETSNMP_USE_INLINE	targets/i686-pc-linux-gnu/acconfig.h	477;"	d
 NETSNMP_USE_INLINE	win32/net-snmp/net-snmp-config.h	1566;"	d
+NETSNMP_USE_INTERNAL_CRYPTO	include/net-snmp/net-snmp-config.h	1416;"	d
 NETSNMP_USE_INTERNAL_MD5	win32/net-snmp/net-snmp-config.h	1380;"	d
 NETSNMP_USE_LIBWRAP	acconfig.h	158;"	d
 NETSNMP_USE_LIBWRAP	targets/i686-pc-linux-gnu/acconfig.h	158;"	d
 NETSNMP_USE_OPENSSL	acconfig.h	46;"	d
-NETSNMP_USE_OPENSSL	include/net-snmp/net-snmp-config.h	1658;"	d
 NETSNMP_USE_OPENSSL	targets/i686-pc-linux-gnu/acconfig.h	46;"	d
 NETSNMP_USE_REVERSE_ASNENCODING	acconfig.h	108;"	d
 NETSNMP_USE_REVERSE_ASNENCODING	include/net-snmp/net-snmp-config.h	1720;"	d
@@ -10227,7 +10219,7 @@ PM_TO_BLIB	perl/Makefile	/^PM_TO_BLIB = Makefile.subs.pl \\$/;"	m
 PM_TO_BLIB	perl/OID/Makefile	/^PM_TO_BLIB = OID.pm \\$/;"	m
 PM_TO_BLIB	perl/SNMP/Makefile	/^PM_TO_BLIB = SNMP.pm \\$/;"	m
 PM_TO_BLIB	perl/TrapReceiver/Makefile	/^PM_TO_BLIB = TrapReceiver.pm \\$/;"	m
-PM_TO_BLIB	perl/agent/Makefile	/^PM_TO_BLIB = agent.pm \\$/;"	m
+PM_TO_BLIB	perl/agent/Makefile	/^PM_TO_BLIB = netsnmp_request_infoPtr.pm \\$/;"	m
 PM_TO_BLIB	perl/agent/Support/Makefile	/^PM_TO_BLIB = Support.pm \\$/;"	m
 PM_TO_BLIB	perl/agent/default_store/Makefile	/^PM_TO_BLIB = default_store.pm \\$/;"	m
 PM_TO_BLIB	perl/default_store/Makefile	/^PM_TO_BLIB = default_store.pm \\$/;"	m
@@ -14100,6 +14092,7 @@ VERSION	perl/ASN/Makefile	/^VERSION = 5.0702$/;"	m
 VERSION	perl/Makefile	/^VERSION = $/;"	m
 VERSION	perl/OID/Makefile	/^VERSION = 5.0702$/;"	m
 VERSION	perl/SNMP/Makefile	/^VERSION = 5.0702$/;"	m
+VERSION	perl/TrapReceiver/Makefile	/^	$(NOECHO) $(ECHO) '        <REQUIRE NAME="NetSNMP::OID" VERSION="5.02" \/>' >> $(DISTNAME).ppd$/;"	m
 VERSION	perl/TrapReceiver/Makefile	/^VERSION = 5.0702$/;"	m
 VERSION	perl/agent/Makefile	/^VERSION = 5.0702$/;"	m
 VERSION	perl/agent/Support/Makefile	/^VERSION = 5.0702$/;"	m

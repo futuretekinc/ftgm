@@ -160,15 +160,25 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 	FTM_VOID_PTR 	pData
 )
 {
-	ASSERT(pData != NULL);
-
 	FTM_RET		xRet;
+	FTOM_SERVICE_PTR	pService;
 	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		MESSAGE("Discovery not supported!\n");			
+		return	FTM_RET_OK;
+	}
+
 	switch(nArgc)
 	{
 	case	1:
 		{
-			xRet = FTOM_discovery("255.255.255.255", 1234);
+			FTM_BOOL	bFinished;
+			FTM_INT		i;
+			FTM_ULONG	ulCount;
+
+			xRet = FTOM_discoveryStart("255.255.255.255", 1234, 1);
 			if (xRet != FTM_RET_OK)
 			{
 				MESSAGE("Discovery request was failed[%08x].\n", xRet);	
@@ -176,10 +186,79 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 			else
 			{
 				MESSAGE("Discovery request is complete.\n");	
-			
+			}
+
+			usleep(1000000);
+			do
+			{
+				bFinished = FTM_FALSE;
+				FTOM_discoveryIsFinished(&bFinished);
+				usleep(100000);
+			}
+			while(!bFinished);
+
+			MESSAGE("Discovery finished!\n");
+			xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
+			if (xRet != FTM_RET_OK)
+			{
+				MESSAGE("Discovery get EP Info count failed.\n");
+			}
+			else
+			{
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					FTM_EP	xEPInfo;
+
+					xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
+					if (xRet == FTM_RET_OK)
+					{
+						MESSAGE("%2d : %16s %16s\n", i+1, xEPInfo.pEPID, xEPInfo.pName);	
+					}
+				}
 			}
 		}
 		break;
+
+	case	2:
+		{
+			FTM_ULONG			ulCount;
+			FTM_INT				i;
+
+			if (strcasecmp(pArgv[1], "start") == 0)
+			{
+				xRet = FTOM_discoveryStart("255.255.255.255", 1234, 1);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Discovery request was failed[%08x].\n", xRet);	
+				}
+				else
+				{
+					MESSAGE("Discovery request is complete.\n");	
+				}
+
+			}
+			else if (strcasecmp(pArgv[1], "list") == 0)
+			{
+				xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Discovery get EP Info count failed.\n");
+					break;	
+				}
+
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					FTM_EP	xEPInfo;
+
+					xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
+					if (xRet == FTM_RET_OK)
+					{
+						MESSAGE("%2d : %16s %16s\n", i+1, xEPInfo.pEPID, xEPInfo.pName);	
+					}
+				}
+			}
+				
+		}
 	}
 
 	return	FTM_RET_OK;

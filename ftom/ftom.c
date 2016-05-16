@@ -58,61 +58,71 @@ FTM_RET			FTOM_TASK_processing
 static 
 FTM_RET	FTOM_onQuit
 (
-	FTOM_MSG_TIME_SYNC_PTR	pMsg
+	FTOM_MSG_TIME_SYNC_PTR	pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 
 FTM_RET	FTOM_onTimeSync
 (
-	FTOM_MSG_TIME_SYNC_PTR	pMsg
+	FTOM_MSG_TIME_SYNC_PTR	pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 
 FTM_RET	FTOM_onEPCtrl
 (
-	FTOM_MSG_EP_CTRL_PTR	pMsg
+	FTOM_MSG_EP_CTRL_PTR	pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 
 FTM_RET FTOM_onAddEPData
 (
-	FTOM_MSG_ADD_EP_DATA_PTR	pMsg
+	FTOM_MSG_ADD_EP_DATA_PTR	pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 
 FTM_RET	FTOM_onSendEPData
 (
-	FTOM_MSG_SEND_EP_DATA_PTR pMsg
+	FTOM_MSG_SEND_EP_DATA_PTR pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 
 FTM_RET	FTOM_onRule
 (
-	FTOM_MSG_RULE_PTR pMsg
+	FTOM_MSG_RULE_PTR pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 
 FTM_RET	FTOM_onAlert
 (
-	FTOM_MSG_ALERT_PTR pMsg
+	FTOM_MSG_ALERT_PTR pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 
 FTM_RET	FTOM_onDiscovery
 (
-	FTOM_MSG_DISCOVERY_PTR pMsg
+	FTOM_MSG_DISCOVERY_PTR pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 
 FTM_RET	FTOM_onDiscoveryInfo
 (
-	FTOM_MSG_DISCOVERY_INFO_PTR pMsg
+	FTOM_MSG_DISCOVERY_INFO_PTR pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 
 FTM_RET	FTOM_onDiscoveryDone
 (
-	FTOM_MSG_DISCOVERY_DONE_PTR pMsg
+	FTOM_MSG_DISCOVERY_DONE_PTR pMsg,
+	FTM_VOID_PTR		pData
 );
 
 static 	
@@ -191,6 +201,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_DMC_notify,
 		.pData		= 	NULL
 	},
+#if 0
 	{
 		.xType		=	FTOM_SERVICE_MQTT_CLIENT,
 		.xID		=	FTOM_SERVICE_MQTT_CLIENT,
@@ -208,6 +219,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_MQTT_CLIENT_notify,
 		.pData		= 	NULL
 	},
+#endif
 	{
 		.xType		=	FTOM_SERVICE_SHELL,
 		.xID		=	FTOM_SERVICE_SHELL,
@@ -298,6 +310,7 @@ FTM_RET	FTOM_init
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_INFO]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryInfo;
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_DONE]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryDone;
 
+	TRACE("Discovery Info CB : %08x:%08x\n", onMessage[FTOM_MSG_TYPE_DISCOVERY_INFO], (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryInfo);
 	xRet = FTOM_MSGQ_create(&pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
@@ -540,6 +553,7 @@ FTM_RET	FTOM_TASK_sync
 )
 {
 	FTM_RET			xRet;
+	FTM_BOOL		bConnected = FTM_FALSE;
 	FTM_ULONG		ulCount = 0, i;
 	FTOM_SERVICE_PTR	pService;
 
@@ -547,6 +561,16 @@ FTM_RET	FTOM_TASK_sync
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
+	}
+
+	xRet = FTOM_DMC_isConnected(pService->pData, &bConnected);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+	else if (!bConnected)
+	{
+		return	FTM_RET_NOT_CONNECTED;
 	}
 
 	xRet = FTOM_DMC_NODE_count(pService->pData, &ulCount);
@@ -897,7 +921,8 @@ FTM_RET	FTOM_TASK_stopService
 
 FTM_RET	FTOM_onQuit
 (
-	FTOM_MSG_TIME_SYNC_PTR	pMsg
+	FTOM_MSG_TIME_SYNC_PTR	pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	bStop = FTM_TRUE;
@@ -908,7 +933,8 @@ FTM_RET	FTOM_onQuit
 
 FTM_RET	FTOM_onTimeSync
 (
-	FTOM_MSG_TIME_SYNC_PTR	pMsg
+	FTOM_MSG_TIME_SYNC_PTR	pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	ASSERT(pMsg != NULL);
@@ -920,7 +946,8 @@ FTM_RET	FTOM_onTimeSync
 
 FTM_RET FTOM_onAddEPData
 (
-	FTOM_MSG_ADD_EP_DATA_PTR	pMsg
+	FTOM_MSG_ADD_EP_DATA_PTR	pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	ASSERT(pMsg != NULL);
@@ -945,7 +972,8 @@ FTM_RET FTOM_onAddEPData
 
 FTM_RET	FTOM_onEPCtrl
 (
-	FTOM_MSG_EP_CTRL_PTR	pMsg
+	FTOM_MSG_EP_CTRL_PTR	pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	FTM_RET			xRet;
@@ -974,7 +1002,8 @@ FTM_RET	FTOM_onEPCtrl
 
 FTM_RET	FTOM_onSendEPData
 (
-	FTOM_MSG_SEND_EP_DATA_PTR pMsg
+	FTOM_MSG_SEND_EP_DATA_PTR pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	ASSERT(pMsg != NULL);
@@ -992,7 +1021,8 @@ FTM_RET	FTOM_onSendEPData
 
 FTM_RET	FTOM_onRule
 (
-	FTOM_MSG_RULE_PTR pMsg
+	FTOM_MSG_RULE_PTR pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	ASSERT(pMsg != NULL);
@@ -1004,44 +1034,49 @@ FTM_RET	FTOM_onRule
 
 FTM_RET	FTOM_onAlert
 (
-	FTOM_MSG_ALERT_PTR	pMsg
+	FTOM_MSG_ALERT_PTR	pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	ASSERT(pMsg != NULL);
 
+	TRACE("MSG : ON ALERT\n");
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_onDiscovery
 (
-	FTOM_MSG_DISCOVERY_PTR	pMsg
+	FTOM_MSG_DISCOVERY_PTR	pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	ASSERT(pMsg != NULL);
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
 	
+	TRACE("MSG : ON DISCOVERY\n");
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	FTOM_DISCOVERY_call(pService->pData, pMsg->pNetwork, pMsg->usPort);
+	FTOM_DISCOVERY_call(pService->pData, pMsg->pNetwork, pMsg->usPort, pMsg->ulRetryCount);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_onDiscoveryInfo
 (
-	FTOM_MSG_DISCOVERY_INFO_PTR	pMsg
+	FTOM_MSG_DISCOVERY_INFO_PTR	pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	ASSERT(pMsg != NULL);
 	
 	FTM_INT	i;
 
-	TRACE("MSG : DISCOVERY\n");
+	TRACE("MSG : DISCOVERY INFO\n");
 	TRACE("DID - %s\n", pMsg->pDID);
 	for(i = 0 ; i < pMsg->ulCount; i++)
 	{
@@ -1052,7 +1087,8 @@ FTM_RET	FTOM_onDiscoveryInfo
 
 FTM_RET	FTOM_onDiscoveryDone
 (
-	FTOM_MSG_DISCOVERY_DONE_PTR	pMsg
+	FTOM_MSG_DISCOVERY_DONE_PTR	pMsg,
+	FTM_VOID_PTR		pData
 )
 {
 	ASSERT(pMsg != NULL);
@@ -1085,6 +1121,7 @@ FTM_RET	FTOM_setMessageCallback
 {
 	ASSERT(fMessageCB != NULL);
 
+	TRACE("Set Message CB : %08x, %08x\n", xMsg, fMessageCB);
 	if (xMsg >= FTOM_MSG_TYPE_MAX)
 	{
 		ERROR("Message type[%08x] is invalid.\n", xMsg);
@@ -2016,10 +2053,11 @@ FTM_RET	FTOM_receivedDiscovery
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_discovery
+FTM_RET	FTOM_discoveryStart
 (
 	FTM_CHAR_PTR	pNetwork,
-	FTM_USHORT		usPort
+	FTM_USHORT		usPort,
+	FTM_ULONG		ulRetryCount
 )
 {
 	ASSERT(pNetwork != NULL);
@@ -2027,7 +2065,7 @@ FTM_RET	FTOM_discovery
 	FTM_RET	xRet;
 	FTOM_MSG_DISCOVERY_PTR	pMsg;
 
-	xRet = FTOM_MSG_createDiscovery(pNetwork, usPort, &pMsg);
+	xRet = FTOM_MSG_createDiscovery(pNetwork, usPort, ulRetryCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Discovery message creation failed[%08x].\n", xRet);
@@ -2043,6 +2081,42 @@ FTM_RET	FTOM_discovery
 	}
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_discoveryIsFinished
+(
+	FTM_BOOL_PTR	pbFinished
+)
+{
+	ASSERT(pbFinished != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTOM_DISCOVERY_isFinished(pService->pData, pbFinished);
+}
+
+FTM_RET	FTOM_discoveryNodeCount
+(
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pulCount != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTOM_DISCOVERY_getNodeInfoCount(pService->pData, pulCount);
 }
 
 FTM_RET	FTOM_discoveryEPCount
@@ -2063,7 +2137,13 @@ FTM_RET	FTOM_discoveryEPCount
 		return	xRet;	
 	}
 
-	return	FTOM_SNMPC_getEPCount(pService->pData, pIP, xType, pulCount);
+	xRet = FTOM_SNMPC_getEPCount(pService->pData, pIP, xType, pulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("SNMP client get EP count failed.\n");	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_discoveryEP
@@ -2078,34 +2158,30 @@ FTM_RET	FTOM_discoveryEP
 	ASSERT(pEPInfo != NULL);
 
 	FTM_RET		xRet;
-	FTM_CHAR	pEPID[FTM_EPID_LEN+1];
-	FTM_CHAR	pName[FTM_NAME_LEN + 1];
 	FTOM_SERVICE_PTR pService;
-	
+
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
+		return  xRet;   
 	}
 
-	xRet = FTOM_SNMPC_getEPID(pService->pData, pIP, xType, ulIndex, pEPID);
+	memset(pEPInfo, 0, sizeof(FTM_EP));
+	xRet = FTOM_SNMPC_getEPID(pService->pData, pIP, xType, ulIndex, pEPInfo->pEPID, FTM_EPID_LEN);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP not found!\n");
+		ERROR("SNMP get EPID failed![%08x]\n", xRet);
 		return	xRet;	
 	}
 
-	xRet = FTOM_SNMPC_getEPName(pService->pData, pIP, xType, ulIndex, pName, FTM_NAME_LEN);
+	xRet = FTOM_SNMPC_getEPName(pService->pData, pIP, xType, ulIndex, pEPInfo->pName, FTM_NAME_LEN);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP not found!\n");
+		ERROR("SNMP get EP Name failed![%08x]\n", xRet);
 		return	xRet;	
 	}
 
-	strncpy(pEPInfo->pEPID, pEPID, FTM_EPID_LEN);
-	strcpy(pEPInfo->pName, pName);
-
-	return	FTM_RET_OK;
+return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_sendMessage

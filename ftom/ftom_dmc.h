@@ -12,6 +12,7 @@ typedef	struct
 	FTDMC_CFG				xConfig;
 	pthread_t				xThread;
 	FTM_BOOL				bStop;
+	FTM_BOOL				bConnected;
 	FTOM_MSG_QUEUE		xMsgQ;
 	FTOM_SERVICE_ID		xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
@@ -56,6 +57,12 @@ FTM_RET	FTOM_DMC_start
 FTM_RET	FTOM_DMC_stop
 (
 	FTOM_DMC_PTR 	pDMC
+);
+
+FTM_RET	FTOM_DMC_isConnected
+(
+	FTOM_DMC_PTR 	pDMC,
+	FTM_BOOL_PTR	pbConnected
 );
 
 FTM_RET	FTOM_DMC_setServiceCallback

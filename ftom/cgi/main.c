@@ -17,6 +17,7 @@ FTOM_CGI_COMMAND	pCmds[] =
 	{	"trigger",	FTOM_CGI_trigger},
 	{	"action",	FTOM_CGI_action	},
 	{	"rule",		FTOM_CGI_rule	},
+	{	"discovery",FTOM_CGI_discovery},
 	{	NULL,		NULL			}
 };
 

@@ -2,13 +2,6 @@
 #include "ftom_client.h"
 #include "cJSON.h"
 
-FTM_RET	FTOM_CGI_addNodeInfoToObject
-(
-	cJSON _PTR_ 	pRoot, 
-	FTM_NODE_PTR 	pNodeInfo, 
-	FTM_NODE_FIELD 	xFields
-);
-
 FTM_RET	FTOM_CGI_addNode
 (
 	FTOM_CLIENT_PTR pClient,

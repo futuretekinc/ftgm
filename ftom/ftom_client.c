@@ -1784,6 +1784,195 @@ FTM_RET	FTOM_CLIENT_RULE_set
 }
 
 /*****************************************************************
+ * Discovery Functions
+ *****************************************************************/
+FTM_RET	FTOM_CLIENT_DISCOVERY_start
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_USHORT		usPort,
+	FTM_ULONG		ulRetryCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pIP != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_DISCOVERY_START_PARAMS	xReq;
+	FTOM_RESP_DISCOVERY_START_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd		=	FTOM_CMD_DISCOVERY_START;
+	xReq.ulLen		=	sizeof(xReq);
+	strncpy(xReq.pIP, pIP, sizeof(xReq.pIP) - 1);
+	xReq.usPort = usPort;
+	xReq.ulRetryCount = ulRetryCount;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_DISCOVERY_getInfo
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_BOOL_PTR	pbFinished,
+	FTM_ULONG_PTR	pulNodeCount,
+	FTM_ULONG_PTR	pulEPCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pbFinished != NULL);
+	ASSERT(pulNodeCount != NULL);
+	ASSERT(pulEPCount != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_DISCOVERY_GET_INFO_PARAMS	xReq;
+	FTOM_RESP_DISCOVERY_GET_INFO_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd		=	FTOM_CMD_DISCOVERY_GET_INFO;
+	xReq.ulLen		=	sizeof(xReq);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet == FTM_RET_OK)
+	{
+		*pbFinished = xResp.bFinished;
+		if (xResp.bFinished == FTM_TRUE)
+		{
+			*pulNodeCount = xResp.ulNodeCount;	
+			*pulEPCount = xResp.ulEPCount;	
+		}
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_DISCOVERY_getNodeList
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_NODE_PTR	pNodeList,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pNodeList != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET		xRet;
+	FTM_ULONG	ulRespLen;
+	FTOM_REQ_DISCOVERY_GET_NODE_LIST_PARAMS	xReq;
+	FTOM_RESP_DISCOVERY_GET_NODE_LIST_PARAMS_PTR	pResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd		=	FTOM_CMD_DISCOVERY_GET_NODE;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.ulIndex	=	ulIndex;
+	xReq.ulCount	=	ulMaxCount;
+
+	ulRespLen = sizeof(FTOM_RESP_DISCOVERY_GET_NODE_LIST_PARAMS) + sizeof(FTM_NODE) * ulMaxCount;
+	pResp = (FTOM_RESP_DISCOVERY_GET_NODE_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+	if (pResp == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)pResp, 
+				ulRespLen,
+				&ulRespLen);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(pNodeList, pResp->pNodeList, sizeof(FTM_NODE)*pResp->ulCount);
+		*pulCount = pResp->ulCount;
+
+		xRet = pResp->xRet;
+	}
+
+	FTM_MEM_free(pResp);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_CLIENT_DISCOVERY_getEPList
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_EP_PTR		pEPList,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pEPList != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET		xRet;
+	FTM_ULONG	ulRespLen;
+	FTOM_REQ_DISCOVERY_GET_EP_LIST_PARAMS	xReq;
+	FTOM_RESP_DISCOVERY_GET_EP_LIST_PARAMS_PTR	pResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd		=	FTOM_CMD_DISCOVERY_GET_EP;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.ulIndex	=	ulIndex;
+	xReq.ulCount	=	ulMaxCount;
+
+	ulRespLen = sizeof(FTOM_RESP_DISCOVERY_GET_EP_LIST_PARAMS) + sizeof(FTM_EP) * ulMaxCount;
+	pResp = (FTOM_RESP_DISCOVERY_GET_EP_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+	if (pResp == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)pResp, 
+				ulRespLen,
+				&ulRespLen);
+	if (xRet == FTM_RET_OK)
+	{
+		memcpy(pEPList, pResp->pEPList, sizeof(FTM_EP)*pResp->ulCount);
+		*pulCount = pResp->ulCount;
+
+		xRet = pResp->xRet;
+	}
+
+	FTM_MEM_free(pResp);
+
+	return	xRet;
+}
+
+/*****************************************************************
  * Internal Functions
  *****************************************************************/
 FTM_RET FTOM_CLIENT_request

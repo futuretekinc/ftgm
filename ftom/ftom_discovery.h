@@ -38,6 +38,8 @@ typedef	struct FTOM_DISCOVERY_STRUCT
 	FTM_ULONG			ulRetryCount;	
 	FTM_ULONG			ulLoopCount;	
 	FTM_TIMER			xTimer;
+	FTM_CHAR			pTargetIP[256];
+	FTM_USHORT			usTargetPort;
 	FTOM_ON_MESSAGE_CALLBACK	fOldCB;
 	FTM_VOID_PTR				pOldData;
 }	FTOM_DISCOVERY, _PTR_ FTOM_DISCOVERY_PTR;
@@ -76,7 +78,8 @@ FTM_RET	FTOM_DISCOVERY_call
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,
 	FTM_CHAR_PTR		pNetwork,
-	FTM_USHORT			usPort
+	FTM_USHORT			usPort,
+	FTM_ULONG			ulRetryCount
 );
 
 FTM_RET	FTOM_DISCOVERY_isFinished

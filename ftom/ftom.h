@@ -304,10 +304,16 @@ FTM_RET	FTOM_sendAlert
 	FTM_EP_DATA_PTR	pData
 );
 
-FTM_RET	FTOM_discovery
+FTM_RET	FTOM_discoveryStart
 (
 	FTM_CHAR_PTR	pNetwork,
-	FTM_USHORT		usPort
+	FTM_USHORT		usPort,
+	FTM_ULONG		ulRetryCount
+);
+
+FTM_RET	FTOM_discoveryIsFinished
+(
+	FTM_BOOL_PTR	pbFinished
 );
 
 FTM_RET	FTOM_receivedDiscovery
@@ -317,6 +323,11 @@ FTM_RET	FTOM_receivedDiscovery
 	FTM_CHAR_PTR	pIP,
 	FTM_EP_TYPE_PTR	pTypes,
 	FTM_ULONG		ulCount
+);
+
+FTM_RET	FTOM_discoveryNodeCount
+(
+	FTM_ULONG_PTR	pulCount
 );
 
 FTM_RET	FTOM_discoveryEPCount

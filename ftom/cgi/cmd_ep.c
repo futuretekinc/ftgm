@@ -3,13 +3,6 @@
 #include "ftm_json.h"
 #include "cJSON.h"
 
-static 
-FTM_RET	FTOM_CGI_addEPInfoToObject
-(
-	cJSON _PTR_ 		pObject,
-	FTM_EP_PTR			pEPInfo,
-	FTM_EP_FIELD		xFields
-);
 
 static 
 FTM_RET	FTOM_CGI_addEPInfoToArray

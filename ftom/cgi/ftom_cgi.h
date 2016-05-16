@@ -58,6 +58,12 @@ FTM_RET	FTOM_CGI_rule
 	qentry_t *pReq
 );
 
+FTM_RET	FTOM_CGI_discovery
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+);
+
 const 
 char *FTOM_CGI_whitespaceCB
 (
@@ -290,6 +296,19 @@ FTM_RET	FTOM_CGI_getRuleAction
 	FTM_BOOL	bAllowEmpty
 );
  
+FTM_RET	FTOM_CGI_addNodeInfoToObject
+(
+	cJSON _PTR_ 	pRoot, 
+	FTM_NODE_PTR 	pNodeInfo, 
+	FTM_NODE_FIELD 	xFields
+);
+
+FTM_RET	FTOM_CGI_addEPInfoToObject
+(
+	cJSON _PTR_ 		pObject,
+	FTM_EP_PTR			pEPInfo,
+	FTM_EP_FIELD		xFields
+);
 #undef	TRACE
 #define	TRACE(format, ...) 	syslog(LOG_INFO, format, ## __VA_ARGS__)
 

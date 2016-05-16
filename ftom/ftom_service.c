@@ -13,7 +13,6 @@ FTM_RET	FTOM_SERVICE_init
 {
 	FTM_RET				xRet;
 	FTM_ULONG			i;
-	FTOM_SERVICE_PTR	pService;
 
 	if (pServiceList != NULL)
 	{
@@ -28,25 +27,21 @@ FTM_RET	FTOM_SERVICE_init
 
 	for(i = 0 ; i < ulServices ; i++)
 	{
-		FTOM_SERVICE_register(&pServices[i]);	
-	}
-
-	FTM_LIST_iteratorStart(pServiceList);
-	while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
-	{
-		if (pService->fCreate != NULL)
+		if (pServices[i].fCreate != NULL)
 		{
-			pService->xRet = pService->fCreate(&pService->pData);
+			pServices[i].xRet = pServices[i].fCreate(&pServices[i].pData);
 		}
-		else if (pService->fInit != NULL)
+		else if (pServices[i].fInit != NULL)
 		{
-			pService->xRet = pService->fInit(pService->pData);
+			pServices[i].xRet = pServices[i].fInit(pServices[i].pData);
 		}
 
-		if ((pService->fSetCallback != NULL) && (pService->fCallback != NULL))
+		if ((pServices[i].fSetCallback != NULL) && (pServices[i].fCallback != NULL))
 		{
-			pService->fSetCallback(pService->pData, pService->xID, pService->fCallback);	
+			pServices[i].fSetCallback(pServices[i].pData, pServices[i].xID, pServices[i].fCallback);	
 		}
+
+		FTOM_SERVICE_register(&pServices[i]);
 	}
 
 	return	xRet;
@@ -89,7 +84,7 @@ FTM_RET	FTOM_SERVICE_register(FTOM_SERVICE_PTR pService)
 {
 	ASSERT(pServiceList != NULL);
 	ASSERT(pService != NULL);
-
+	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pTempService;
 
 	if (FTM_LIST_get(pServiceList, (FTM_VOID_PTR)&pService->xType, (FTM_VOID_PTR _PTR_)&pTempService) == FTM_RET_OK)
@@ -97,7 +92,17 @@ FTM_RET	FTOM_SERVICE_register(FTOM_SERVICE_PTR pService)
 		return	FTM_RET_ALREADY_EXISTS;
 	}
 
-	return	FTM_LIST_append(pServiceList, pService);
+	xRet = FTM_LIST_append(pServiceList, pService);
+	if (xRet == FTM_RET_OK)
+	{
+		TRACE("Service[%s] registeration is complete.\n", pService->pName);	
+	}
+	else
+	{
+		ERROR("Service[%s] registration failed[%08x].\n", pService->pName, xRet);	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_SERVICE_unregister(FTOM_SERVICE_TYPE xType)

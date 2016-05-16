@@ -1317,6 +1317,7 @@ FTM_RET	FTOM_SNMPTRAPD_discovery
 	pItem = nx_json_get(pRoot, "id");
 	if (pItem->type != NX_JSON_STRING)
 	{
+		ERROR("Invalid message format!\n");
 		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
 		goto error;
 	}
@@ -1330,6 +1331,7 @@ FTM_RET	FTOM_SNMPTRAPD_discovery
 	{ 
 		if (pItem->type != NX_JSON_STRING)
 		{
+			ERROR("Invalid message format!\n");
 			xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
 			goto error;
 		}
@@ -1339,6 +1341,7 @@ FTM_RET	FTOM_SNMPTRAPD_discovery
 	pItem = nx_json_get(pRoot, "mac");
 	if ((pItem->type != NX_JSON_STRING) || strlen(pItem->text_value) != 17)
 	{
+		ERROR("Invalid message format!\n");
 		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
 		goto error;
 	}
@@ -1356,6 +1359,7 @@ FTM_RET	FTOM_SNMPTRAPD_discovery
 	pOIDs = nx_json_get(pRoot, "oids");
 	if (pOIDs->type != NX_JSON_ARRAY)
 	{
+		ERROR("Invalid message format!\n");
 		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
 		goto error;
 	}
