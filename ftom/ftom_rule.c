@@ -529,7 +529,7 @@ FTM_RET	FTOM_RULE_printList
 
 	MESSAGE("\n# Rule Information\n");
 	FTOM_RULE_count(&ulCount);
-	MESSAGE("\t%16s %24s %24s\n", "ID","TRIGGER", "ACTION");
+	MESSAGE("%16s %24s %24s\n", "ID","TRIGGER", "ACTION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_RULE_PTR	pRule;
@@ -539,29 +539,31 @@ FTM_RET	FTOM_RULE_printList
 		{
 			FTM_INT	j;
 
-			MESSAGE("\t%16s", pRule->xInfo.pID);
+			MESSAGE("%16s", pRule->xInfo.pID);
 			
-			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pTriggers) / (FTM_ID_LEN+1) ; j++)
+			for(j = 0 ; j < pRule->xInfo.xParams.ulTriggers || j < pRule->xInfo.xParams.ulActions ; j++)
 			{
+				if (j != 0)
+				{
+					MESSAGE("%16s", "");
+				}
+
 				if (j < pRule->xInfo.xParams.ulTriggers)
 				{
-					MESSAGE(" %2d", pRule->xInfo.xParams.pTriggers[j]);
+					MESSAGE(" %24s", pRule->xInfo.xParams.pTriggers[j]);
 				}
 				else
 				{
-					MESSAGE(" %2d", 0);
+					MESSAGE(" %24s", "");
 				}
-			}
 
-			for(j = 0 ; j < sizeof(pRule->xInfo.xParams.pActions) / (FTM_ID_LEN+1) ; j++)
-			{
 				if (j < pRule->xInfo.xParams.ulActions)
 				{
-					MESSAGE(" %2d", pRule->xInfo.xParams.pActions[j]);
+					MESSAGE(" %24s", pRule->xInfo.xParams.pActions[j]);
 				}
 				else
 				{
-					MESSAGE(" %2d", 0);
+					MESSAGE(" %24s", "");
 				}
 			}
 			MESSAGE("\n");

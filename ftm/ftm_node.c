@@ -4,6 +4,7 @@
 #include "ftm.h"
 #include "ftm_list.h"
 #include "ftm_mem.h"
+#include "ftm_snmp.h"
 
 typedef struct
 {
@@ -58,7 +59,7 @@ FTM_RET	FTM_NODE_setDefault(FTM_NODE_PTR pNode)
 	pNode->xType		= FTM_NODE_TYPE_SNMP;
 	pNode->ulInterval	= 60;
 	pNode->ulTimeout	= 10;
-	pNode->xOption.xSNMP.ulVersion = 1;
+	pNode->xOption.xSNMP.ulVersion = FTM_SNMP_VERSION_2;
 	strcpy(pNode->xOption.xSNMP.pURL, "127.0.0.1");
 	strcpy(pNode->xOption.xSNMP.pCommunity, "public");
 	pNode->xOption.xSNMP.ulMaxRetryCount = 3;

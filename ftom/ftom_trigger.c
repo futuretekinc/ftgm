@@ -515,7 +515,7 @@ FTM_RET	FTOM_TRIGGER_printList
 
 	MESSAGE("\n# Trigger Information\n");
 	FTOM_TRIGGER_count(&ulCount);
-	MESSAGE("\t%16s %16s %16s %8s %8s %32s %16s\n", "ID", "NAME", "TYPE", "DETECT", "HOLD", "CONDITION", "EPID");
+	MESSAGE("%16s %16s %16s %8s %8s %32s %16s\n", "ID", "NAME", "TYPE", "DETECT", "HOLD", "CONDITION", "EPID");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_TRIGGER_PTR	pTrigger;
@@ -527,7 +527,7 @@ FTM_RET	FTOM_TRIGGER_printList
 
 			FTM_TRIGGER_conditionToString(&pTrigger->xInfo, pCondition, sizeof(pCondition));
 
-			MESSAGE("\t%16s %16s %16s %8.3f %8.3f %32s %16s\n", 
+			MESSAGE("%16s %16s %16s %8.3f %8.3f %32s %16s\n", 
 				pTrigger->xInfo.pID, 
 				pTrigger->xInfo.pName, 
 				FTM_TRIGGER_typeString(pTrigger->xInfo.xType),

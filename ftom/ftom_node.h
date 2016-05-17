@@ -67,6 +67,7 @@ typedef	struct FTOM_NODE_STRUCT
 	int64_t					xTimeout;
 	FTOM_MSG_QUEUE			xMsgQ;
 
+	FTM_CHAR				pIP[32];
 	FTOM_NODE_DESCRIPT		xDescript;
 }	FTOM_NODE, _PTR_ FTOM_NODE_PTR;
 

@@ -2121,12 +2121,12 @@ FTM_RET	FTOM_discoveryNodeCount
 
 FTM_RET	FTOM_discoveryEPCount
 (
-	FTM_CHAR_PTR	pIP,
+	FTOM_NODE_PTR	pNode,
 	FTM_EP_TYPE		xType,
 	FTM_ULONG_PTR	pulCount
 )
 {
-	ASSERT(pIP != NULL);
+	ASSERT(pNode != NULL);
 	ASSERT(pulCount != NULL);
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
@@ -2137,7 +2137,7 @@ FTM_RET	FTOM_discoveryEPCount
 		return	xRet;	
 	}
 
-	xRet = FTOM_SNMPC_getEPCount(pService->pData, pIP, xType, pulCount);
+	xRet = FTOM_SNMPC_getEPCount(pService->pData, pNode->pIP, xType, pulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("SNMP client get EP count failed.\n");	
@@ -2148,13 +2148,13 @@ FTM_RET	FTOM_discoveryEPCount
 
 FTM_RET	FTOM_discoveryEP
 (
-	FTM_CHAR_PTR	pIP,
+	FTOM_NODE_PTR	pNode,
 	FTM_EP_TYPE		xType,
 	FTM_ULONG		ulIndex,
 	FTM_EP_PTR		pEPInfo
 )
 {
-	ASSERT(pIP != NULL);
+	ASSERT(pNode != NULL);
 	ASSERT(pEPInfo != NULL);
 
 	FTM_RET		xRet;
@@ -2167,21 +2167,58 @@ FTM_RET	FTOM_discoveryEP
 	}
 
 	memset(pEPInfo, 0, sizeof(FTM_EP));
-	xRet = FTOM_SNMPC_getEPID(pService->pData, pIP, xType, ulIndex, pEPInfo->pEPID, FTM_EPID_LEN);
+
+	pEPInfo->xType = xType;
+
+	xRet = FTOM_SNMPC_getEPID(pService->pData, pNode->pIP, xType, ulIndex, pEPInfo->pEPID, FTM_EPID_LEN);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("SNMP get EPID failed![%08x]\n", xRet);
 		return	xRet;	
 	}
 
-	xRet = FTOM_SNMPC_getEPName(pService->pData, pIP, xType, ulIndex, pEPInfo->pName, FTM_NAME_LEN);
+	xRet = FTOM_SNMPC_getEPName(pService->pData, pNode->pIP, xType, ulIndex, pEPInfo->pName, FTM_NAME_LEN);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("SNMP get EP Name failed![%08x]\n", xRet);
 		return	xRet;	
 	}
 
-return	FTM_RET_OK;
+	xRet = FTOM_SNMPC_getEPState(pService->pData, pNode->pIP, xType, ulIndex, &pEPInfo->bEnable);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("SNMP get EP state failed![%08x]\n", xRet);
+		return	xRet;	
+	}
+
+	xRet = FTOM_SNMPC_getEPInterval(pService->pData, pNode->pIP, xType, ulIndex, &pEPInfo->ulInterval);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("SNMP get EP interval failed![%08x]\n", xRet);
+		return	xRet;	
+	}
+
+	strcpy(pEPInfo->pDID, pNode->xInfo.pDID);
+
+	if (strlen(pEPInfo->pEPID) == 8)
+	{
+		FTM_INT		nLen;
+		FTM_CHAR	pBuff[FTM_EPID_LEN + FTM_DID_LEN+1];
+
+		sprintf(pBuff, "%s%s", pEPInfo->pDID, pEPInfo->pEPID);
+
+		nLen = strlen(pBuff);
+		if (nLen > 14)
+		{
+			strncpy(pEPInfo->pEPID,  &pBuff[nLen - 14], FTM_EPID_LEN); 
+		}
+		else
+		{
+			strcpy(pEPInfo->pEPID, pBuff);
+		}
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_sendMessage

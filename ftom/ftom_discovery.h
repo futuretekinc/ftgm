@@ -12,17 +12,6 @@ typedef	struct FTOM_DISCOVERY_INFO_STRUCT
 	FTM_EP_TYPE		pEPTypes[];
 }	FTOM_DISCOVERY_INFO, _PTR_ FTOM_DISCOVERY_INFO_PTR;
 
-typedef	struct
-{
-	FTM_NODE	xInfo;
-	FTM_CHAR	pIP[32];
-}	FTOM_DISCOVERY_NODE, _PTR_ FTOM_DISCOVERY_NODE_PTR;
-
-typedef	struct
-{
-	FTM_EP		xInfo;
-}	FTOM_DISCOVERY_EP, _PTR_ FTOM_DISCOVERY_EP_PTR;
-
 typedef	struct FTOM_DISCOVERY_STRUCT
 {
 	pthread_t			xThread;

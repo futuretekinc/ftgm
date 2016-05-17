@@ -332,14 +332,14 @@ FTM_RET	FTOM_discoveryNodeCount
 
 FTM_RET	FTOM_discoveryEPCount
 (
-	FTM_CHAR_PTR	pIP,
+	FTOM_NODE_PTR	pNode,
 	FTM_EP_TYPE		xType,
 	FTM_ULONG_PTR	pulCount
 );
 
 FTM_RET	FTOM_discoveryEP
 (
-	FTM_CHAR_PTR	pIP,
+	FTOM_NODE_PTR	pNode,
 	FTM_EP_TYPE		xType,
 	FTM_ULONG		ulIndex,
 	FTM_EP_PTR		pEPInfo

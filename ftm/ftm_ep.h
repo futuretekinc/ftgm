@@ -200,6 +200,12 @@ FTM_CHAR_PTR FTM_EP_typeString
 	FTM_EP_TYPE nType
 );
 
+FTM_RET	FTM_EP_strToType
+(
+	FTM_CHAR_PTR	pString,
+	FTM_EP_TYPE_PTR	pType
+);
+
 FTM_RET	FTM_EP_getDataType
 (
 	FTM_EP_PTR pEP, 

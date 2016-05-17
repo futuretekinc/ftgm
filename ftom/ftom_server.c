@@ -1564,7 +1564,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_getLast
 	{
 		FTM_EP_DATA_PTR	pData;
 
-		xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+		xRet = FTM_LIST_getFirst(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
 		if (xRet != FTM_RET_OK)
 		{	
 			return	xRet;

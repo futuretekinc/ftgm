@@ -407,6 +407,43 @@ FTM_RET	FTOM_SNMPC_getEPID
 	return	FTOM_SNMPC_getString(pClient, pIP, &xOID, pEPID, ulMaxLen);
 }
 
+FTM_RET	FTOM_SNMPC_getEPType
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_EP_TYPE_PTR	pType,
+	FTM_ULONG		ulMaxLen
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pIP != NULL);
+	ASSERT(pType != NULL);
+	
+	FTM_RET		xRet;
+	FTM_CHAR	pTypeString[64];
+
+	FTM_SNMP_OID	xOID = 
+	{ 
+		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1,2,0},
+		.ulOIDLen = 14
+	};
+
+	xOID.pOID[9] = (xType >> 16);
+	xOID.pOID[13] = ulIndex + 1;
+
+	xRet = FTOM_SNMPC_getString(pClient, pIP, &xOID, pTypeString, sizeof(pTypeString));
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTM_EP_strToType(pTypeString, pType);
+
+	return	xRet;
+}
+
 FTM_RET	FTOM_SNMPC_getEPName
 (
 	FTOM_SNMPC_PTR	pClient,
@@ -431,6 +468,104 @@ FTM_RET	FTOM_SNMPC_getEPName
 	xOID.pOID[13] = ulIndex + 1;
 
 	return	FTOM_SNMPC_getString(pClient, pIP, &xOID, pBuff, ulMaxLen);
+}
+
+FTM_RET	FTOM_SNMPC_getEPUnit
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulMaxLen
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pIP != NULL);
+	ASSERT(pBuff != NULL);
+
+	FTM_SNMP_OID	xOID = 
+	{ 
+		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1,4,0},
+		.ulOIDLen = 14
+	};
+
+	xOID.pOID[9] = (xType >> 16);
+	xOID.pOID[13] = ulIndex + 1;
+
+	return	FTOM_SNMPC_getString(pClient, pIP, &xOID, pBuff, ulMaxLen);
+}
+
+FTM_RET	FTOM_SNMPC_getEPState
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CHAR_PTR	pIP,	
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_BOOL_PTR	pbEnable
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pIP != NULL);
+	ASSERT(pbEnable != NULL);
+
+	FTM_RET		xRet;
+	FTM_CHAR	pBuff[64];
+
+	FTM_SNMP_OID	xOID = 
+	{ 
+		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1, 5, 0},
+		.ulOIDLen = 14
+	};
+
+	xOID.pOID[9] = (xType >> 16);
+	xOID.pOID[13] = ulIndex + 1;
+
+	xRet = FTOM_SNMPC_getString(pClient, pIP, &xOID, pBuff, sizeof(pBuff));
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (strcasecmp(pBuff, "run") == 0)
+	{
+		*pbEnable = FTM_TRUE;	
+	}
+	else if (strcasecmp(pBuff, "stop") == 0)
+	{
+		*pbEnable = FTM_FALSE;	
+	}
+	else
+	{
+		return	FTM_RET_INVALID_DATA;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SNMPC_getEPInterval
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG_PTR	pulInterval
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pIP != NULL);
+	ASSERT(pulInterval != NULL);
+
+	FTM_SNMP_OID	xOID = 
+	{ 
+		.pOID = {1,3,6,1,4,1,42251,1,3,0,2,1,9,0},
+		.ulOIDLen = 14
+	};
+
+	xOID.pOID[9] = (xType >> 16);
+	xOID.pOID[13] = ulIndex + 1;
+
+	return	FTOM_SNMPC_getULONG(pClient, pIP, &xOID, pulInterval);
 }
 
 FTM_RET	FTOM_SNMPC_getEPData
@@ -721,7 +856,13 @@ FTM_RET	FTOM_SNMPC_getULONG
 				struct variable_list *pVariable = pRespPDU->variables;
 				if (pVariable != NULL)
 				{
-					*pulCount = *pVariable->val.integer;
+					switch (pVariable->val_len)
+					{
+					case	1: 	*pulCount = *(FTM_UINT8_PTR)pVariable->val.integer; break;
+					case	2:	*pulCount = *(FTM_UINT16_PTR)pVariable->val.integer; break;
+					case	4:	*pulCount = *(FTM_UINT32_PTR)pVariable->val.integer; break;
+					default: 	*pulCount = 0;
+					}
 				}
 				else
 				{

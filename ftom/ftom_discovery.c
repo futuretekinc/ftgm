@@ -217,10 +217,10 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 			case	FTOM_MSG_TYPE_DISCOVERY_INFO:
 				{
 					FTOM_MSG_DISCOVERY_INFO_PTR	pMsg = (FTOM_MSG_DISCOVERY_INFO_PTR)pCommonMsg;
-					FTOM_DISCOVERY_NODE_PTR	pNode;
-					FTM_ULONG				i, j, ulCount;
+					FTOM_NODE_PTR	pNode;
+					FTM_ULONG		i, j, ulCount;
 
-					pNode = (FTOM_DISCOVERY_NODE_PTR)FTM_MEM_malloc(sizeof(FTOM_DISCOVERY_NODE));
+					pNode = (FTOM_NODE_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE));
 					if (pNode == NULL)
 					{
 						break;
@@ -228,32 +228,31 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 
 					FTM_NODE_setDefault(&pNode->xInfo);
 					strcpy(pNode->xInfo.pDID, pMsg->pDID);
+					strcpy(pNode->xInfo.xOption.xSNMP.pURL, pMsg->pIP);
 					strcpy(pNode->pIP, pMsg->pIP);
 
 					FTM_LIST_append(&pDiscovery->xNodeList, pNode);
 					TRACE("NODE[%s] found.\n", pNode->xInfo.pDID);
 					for(i = 0 ; i < pMsg->ulCount ; i++)
 					{
-						xRet = FTOM_discoveryEPCount(pMsg->pIP, pMsg->pTypes[i], &ulCount);
+						xRet = FTOM_discoveryEPCount(pNode, pMsg->pTypes[i], &ulCount);
 						if (xRet == FTM_RET_OK)
 						{
+							TRACE("EP[%08x] is %d\n", pMsg->pTypes[i], ulCount);
 							for(j = 0 ; j < ulCount ; j++)
 							{
 								FTM_EP	xEPInfo;
 
 								FTM_EP_setDefault(&xEPInfo);
-								xRet = FTOM_discoveryEP(pMsg->pIP, pMsg->pTypes[i], j, &xEPInfo);
+								xRet = FTOM_discoveryEP(pNode, pMsg->pTypes[i], j, &xEPInfo);
 								if (xRet == FTM_RET_OK)
 								{
-									FTOM_DISCOVERY_EP_PTR	pEP;
+									FTM_EP_PTR	pEP;
 
-									strncpy(xEPInfo.pDID, pNode->xInfo.pDID, FTM_DID_LEN);
-
-									pEP = (FTOM_DISCOVERY_EP_PTR)FTM_MEM_malloc(sizeof(FTOM_DISCOVERY_EP));
+									pEP = (FTM_EP_PTR)FTM_MEM_malloc(sizeof(FTM_EP));
 									if (pEP != NULL)
 									{
-										TRACE("EP[%s] found.\n", xEPInfo.pEPID);
-										memcpy(&pEP->xInfo, &xEPInfo, sizeof(FTM_EP));
+										memcpy(pEP, &xEPInfo, sizeof(FTM_EP));
 										FTM_LIST_append(&pDiscovery->xEPList, pEP);
 									}
 								}
@@ -373,15 +372,15 @@ FTM_RET	FTOM_DISCOVERY_getNodeInfoAt
 	ASSERT(pNodeInfo != NULL);
 
 	FTM_RET	xRet;	
-	FTM_NODE_PTR	pItem;
+	FTOM_NODE_PTR	pNode;
 
-	xRet = FTM_LIST_getAt(&pDiscovery->xNodeList, ulIndex, (FTM_VOID_PTR _PTR_)&pItem);
+	xRet = FTM_LIST_getAt(&pDiscovery->xNodeList, ulIndex, (FTM_VOID_PTR _PTR_)&pNode);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	memcpy(pNodeInfo, pItem, sizeof(FTM_NODE));
+	memcpy(pNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
 
 	return	FTM_RET_OK;
 }

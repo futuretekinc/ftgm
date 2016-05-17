@@ -107,6 +107,34 @@ FTM_RET	FTOM_SNMPC_getEPName
 	FTM_ULONG		ulMaxLen
 );
 
+FTM_RET	FTOM_SNMPC_getEPUnit
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulMaxLen
+);
+
+FTM_RET	FTOM_SNMPC_getEPState
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CHAR_PTR	pIP,	
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_BOOL_PTR	pbEnable
+);
+
+FTM_RET	FTOM_SNMPC_getEPInterval
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTM_CHAR_PTR	pIP,
+	FTM_EP_TYPE		xType,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG_PTR	pulInterval
+);
+
 FTM_RET	FTOM_SNMPC_getEPInfo
 (
 	FTOM_SNMPC_PTR 	pClient, 

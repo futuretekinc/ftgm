@@ -73,7 +73,6 @@ typedef	struct
 		FTM_NODE_OPT_SNMP	xSNMP;
 		FTM_NODE_OPT_MQTT	xMQTT;
 		FTM_NODE_OPT_LORA	xLoRa;
-
 	}					xOption;
 }	FTM_NODE, _PTR_ FTM_NODE_PTR;
 

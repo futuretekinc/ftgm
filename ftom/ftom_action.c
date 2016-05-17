@@ -424,7 +424,7 @@ FTM_RET	FTOM_ACTION_printList
 	
 	MESSAGE("\n# Action Information\n");
 	FTOM_ACTION_count(&ulCount);
-	MESSAGE("\t%16s %16s\n", "ID","TYPE");
+	MESSAGE("%16s %16s\n", "ID","TYPE");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_ACTION_PTR	pAction;
@@ -432,7 +432,7 @@ FTM_RET	FTOM_ACTION_printList
 		xRet = FTOM_ACTION_getAt(i, &pAction);
 		if (xRet == FTM_RET_OK)
 		{
-			MESSAGE("\t%16s %16s\n", 
+			MESSAGE("%16s %16s\n", 
 				pAction->xInfo.pID, 
 				FTM_ACTION_typeString(pAction->xInfo.xType));
 		}

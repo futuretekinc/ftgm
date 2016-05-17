@@ -751,29 +751,94 @@ FTM_RET	FTM_EP_DATA_snprint
 	return	FTM_VALUE_snprint(pBuff, ulMaxLen, &pData->xValue);
 }
 
+static
+FTM_EP_TYPE_STRING	_typeString[] =
+{
+	{
+		.xType = FTM_EP_TYPE_TEMPERATURE,
+		.pTypeString = "TEMPERATURE"
+	},	
+	{
+		.xType = FTM_EP_TYPE_HUMIDITY,
+		.pTypeString = "HUMIDITY"	
+	},
+	{
+		.xType = FTM_EP_TYPE_VOLTAGE,
+		.pTypeString = "VOLTAGE"
+	},
+	{
+		.xType = FTM_EP_TYPE_CURRENT,
+		.pTypeString = "CURRENT"	
+	},
+	{
+		.xType = FTM_EP_TYPE_DI,
+		.pTypeString = "DIGITAL INPUT"
+	},
+	{	
+		.xType = FTM_EP_TYPE_DO,
+		.pTypeString = "DIGITAL OUTPUT"
+	},
+	{	
+		.xType = FTM_EP_TYPE_GAS,
+		.pTypeString = "GAS"
+	},
+	{	
+		.xType = FTM_EP_TYPE_POWER,
+		.pTypeString = "POWER"
+	},
+	{
+		.xType = FTM_EP_TYPE_AI,
+		.pTypeString = "ANALOG INPUT"
+	},
+	{	
+		.xType = FTM_EP_TYPE_MULTI,
+		.pTypeString = "MULTI-FUNCTION"
+	}
+};
+
 FTM_CHAR_PTR	FTM_EP_typeString
 (
 	FTM_EP_TYPE xType
 )
 {
-	switch(xType)
+	FTM_INT	i;
+
+	for(i = 0 ; i < sizeof(_typeString) / sizeof(FTM_EP_TYPE_STRING) ; i++)
 	{
-	case	FTM_EP_TYPE_TEMPERATURE:return	"TEMPERATURE";	
-	case	FTM_EP_TYPE_HUMIDITY:	return	"HUMIDITY";	
-	case	FTM_EP_TYPE_VOLTAGE:	return	"VOLTAGE";	
-	case	FTM_EP_TYPE_CURRENT:	return	"CURRENT";	
-	case	FTM_EP_TYPE_DI:			return	"DIGITAL INPUT";	
-	case	FTM_EP_TYPE_DO:			return	"DIGITAL OUTPUT";	
-	case	FTM_EP_TYPE_GAS:		return	"GAS";	
-	case	FTM_EP_TYPE_POWER:		return	"POWER";	
-	case	FTM_EP_TYPE_AI:			return	"ANALOG INPUT";	
-	case	FTM_EP_TYPE_MULTI:		return	"MULTI-FUNCTION";	
+		if (_typeString[i].xType == xType)
+		{
+			return	_typeString[i].pTypeString;	
+		}
 	}
 
 	static FTM_CHAR	pBuff[16];
 	sprintf(pBuff, "%08lx", xType);
 
 	return	pBuff;
+}
+
+FTM_RET	FTM_EP_strToType
+(
+	FTM_CHAR_PTR	pString,
+	FTM_EP_TYPE_PTR	pType
+)
+{
+	ASSERT(pString != NULL);
+	ASSERT(pType != NULL);
+
+	FTM_INT	i;
+
+	for(i = 0 ; i < sizeof(_typeString) / sizeof(FTM_EP_TYPE_STRING) ; i++)
+	{
+		if (strcasecmp(_typeString[i].pTypeString, pString) == 0)
+		{
+			*pType = _typeString[i].xType;	
+			return	FTM_RET_OK;
+		}
+	}
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
+
 }
 
 FTM_RET	FTM_EP_print

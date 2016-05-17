@@ -104,6 +104,8 @@ FTM_RET	FTOM_CGI_getDiscoveryNodeList
 		goto finish;	
 	}
 
+	cJSON_AddNumberToObject(pRoot, "index", ulIndex);
+	cJSON_AddNumberToObject(pRoot, "count", ulCount);
 	cJSON_AddItemToObject(pRoot, "nodes", pNodes = cJSON_CreateArray());
 
 	for(FTM_INT i = 0 ; i < ulCount ; i++)
@@ -172,6 +174,8 @@ FTM_RET	FTOM_CGI_getDiscoveryEPList
 		goto finish;	
 	}
 
+	cJSON_AddNumberToObject(pRoot, "index", ulIndex);
+	cJSON_AddNumberToObject(pRoot, "count", ulCount);
 	cJSON_AddItemToObject(pRoot, "eps", pEPs = cJSON_CreateArray());
 
 	for(FTM_INT i = 0 ; i < ulCount ; i++)
