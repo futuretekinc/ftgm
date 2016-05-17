@@ -1,4 +1,3 @@
-TOPDIR=../..
 include $(TOPDIR)/Makefile.in
 
 CFLAGS:=${CFLAGS}\
@@ -26,12 +25,12 @@ SRCS=	main.o\
 		cmd_rule.o\
 		cmd_discovery.o
 
-ifeq ($(TARGET),"FTM-50S")
+ifeq ($(MODEL),"FTM-50S")
 LIBS:=	$(LIBS)\
 		-lcjson \
 		-lmxml\
 		-lqdecoder
-else ifeq ($(TARGET),"FTM-100S")
+else ifeq ($(MODEL),"FTM-100S")
 LIBS:=	$(LIBS)\
 		-lcjson \
 		-lmxml\

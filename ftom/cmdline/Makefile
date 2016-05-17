@@ -1,4 +1,3 @@
-TOPDIR=../..
 include $(TOPDIR)/Makefile.in
 
 #CFLAGS=$(CFLAGS)\

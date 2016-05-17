@@ -943,10 +943,45 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 	{
 	case	FTOM_SNMPTRAPD_MSG_TYPE_EP_CHANGED:
 		{
+			FTM_CHAR	pDID[FTM_DID_LEN+1];
+
+			pItem = nx_json_get(pRoot, "did");
+			if (pItem->type == NX_JSON_NULL)
+			{
+				xRet = FTM_RET_INVALID_DATA;
+				break;
+			}
+
+			memset(pDID, 0, sizeof(pDID));
+			strncpy(pDID, pItem->text_value, FTM_DID_LEN);
+
 			pItem = nx_json_get(pRoot, "id");
 			if (pItem->type != NX_JSON_NULL)
 			{
-				strcpy(pEPID, pItem->text_value);
+				FTM_INT		nLen;
+
+				nLen = strlen(pItem->text_value);
+				if (nLen == 8)
+				{
+					FTM_CHAR	pBuff[FTM_DID_LEN + FTM_EPID_LEN + 1];
+
+					memset(pBuff, 0, sizeof(pBuff));
+					snprintf(pBuff, sizeof(pBuff) -1,  "%s%s", pDID, pItem->text_value);
+				
+					if (strlen(pBuff) > 14)
+					{
+						strcpy(pEPID, &pBuff[strlen(pBuff) - 14]);
+					}
+					else
+					{
+						strcpy(pEPID, pBuff);
+					
+					}
+				}
+				else
+				{
+					strcpy(pEPID, pItem->text_value);
+				}
 	
 				xRet = FTOM_EP_get(pEPID, &pEP);
 				if (xRet == FTM_RET_OK)
@@ -1124,6 +1159,7 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 	ASSERT(pMsg != NULL);
 	
 	FTM_RET			xRet;
+	FTM_CHAR		pDID[FTM_DID_LEN+1];
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTOM_EP_PTR		pEP = NULL;
 	FTM_EP_DATA_TYPE	xDataType;
@@ -1139,6 +1175,15 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
+	pItem = nx_json_get(pRoot, "did");
+	if (pItem->type == NX_JSON_NULL)
+	{
+		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+		goto error;
+	}
+	memset(pDID, 0, sizeof(pDID));
+	strncpy(pDID, pItem->text_value, FTM_DID_LEN);
+
 	pItem = nx_json_get(pRoot, "id");
 	if (pItem->type == NX_JSON_NULL)
 	{
@@ -1146,7 +1191,23 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 		goto error;
 	}
 
-	strncpy(pEPID, pItem->text_value, FTM_EPID_LEN);
+	if (strlen(pItem->text_value) == 8)
+	{
+		FTM_CHAR	pBuff[FTM_DID_LEN + FTM_EPID_LEN + 1];
+
+
+		memset(pBuff, 0, sizeof(pBuff));
+		sprintf(pBuff, "%s%s", pDID, pItem->text_value);
+
+		if (strlen(pBuff) > 14)
+		{
+			strcpy(pEPID, &pBuff[strlen(pBuff) - 14]);
+		}
+		else
+		{
+			strcpy(pEPID, pBuff);
+		}
+	}
 
 	xRet = FTOM_EP_get(pEPID, &pEP);
 	if (xRet != FTM_RET_OK)

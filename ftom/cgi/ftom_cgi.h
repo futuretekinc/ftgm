@@ -71,6 +71,22 @@ char *FTOM_CGI_whitespaceCB
 	int			where
 );
 
+FTM_RET	FTOM_CGI_getUSHORT
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pName,
+	FTM_USHORT_PTR	pusValue,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET	FTOM_CGI_getULONG
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pName,
+	FTM_ULONG_PTR	pulValue,
+	FTM_BOOL	bAllowEmpty
+);
+
 FTM_RET FTOM_CGI_getNodeType
 (
 	qentry_t *pReq, 
@@ -173,6 +189,28 @@ FTM_RET FTOM_CGI_getCount
 (
 	qentry_t *pReq, 
 	FTM_ULONG_PTR pulCount,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET	FTOM_CGI_getIPString
+(
+	qentry_t *pReq,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen,
+	FTM_BOOL bAllowEmpty
+);
+
+FTM_RET	FTOM_CGI_getPort
+(
+	qentry_t *pReq, 
+	FTM_USHORT_PTR	pusPort,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET	FTOM_CGI_getRetry
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pulRetry,
 	FTM_BOOL	bAllowEmpty
 );
 

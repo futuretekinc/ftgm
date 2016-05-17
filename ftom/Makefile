@@ -1,4 +1,3 @@
-TOPDIR=..
 include $(TOPDIR)/Makefile.in
 
 #CFLAGS=$(CFLAGS)\
@@ -40,8 +39,12 @@ LIB_FTOMC_SRCS= ftom_client.c \
 				ftom_client_net.c
 LIB_FTOMC_OBJS=$(LIB_FTOMC_SRCS:.c=.o)
 
+SUBDIR=client cmdline cgi
 
 all: $(LIB_FTOM) $(FTOM) $(LIB_FTOMC) 
+	for dir in $(SUBDIR); do\
+		make -C $$dir;\
+	done
 	
 $(CONSOLE): $(CONSOLE_OBJS)
 	$(CC) -o $@ $(CONSOLE_OBJS) $(CONSOLE_LDFLAGS)
@@ -62,3 +65,6 @@ $(LIB_FTOMC): $(LIB_FTOMC_OBJS)
 
 clean:
 	rm $(SERVER) *.a *.o
+	for dir in $(SUBDIR); do\
+		make -C $$dir clean;\
+	done

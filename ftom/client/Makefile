@@ -1,4 +1,3 @@
-TOPDIR=../..
 include $(TOPDIR)/Makefile.in
 
 #CFLAGS=$(CFLAGS)\
@@ -18,6 +17,7 @@ CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lconfig -lpthread  -lrt
 
 all: tags $(CLIENT) 
+	echo $(TOPDIR)
 
 tags:
 	ctags -R

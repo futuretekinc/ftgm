@@ -1,5 +1,7 @@
-#TARGET="FTM-100S"
-TARGET=
+#MODEL="FTM-100S"
+MODEL=
+
+export MODEL
 
 COMMON_CFLAGS=-c -g -Wall -DDEBUG \
 				-I. \
@@ -18,16 +20,16 @@ COMMON_LDFLAGS=-L. \
 				-L$(TOPDIR)/ftom/client \
 				-L$(TOPDIR)/ftom/cmdline 
 
-ifeq ($(TARGET),"FTM-50S")
+ifeq ($(MODEL),"FTM-50S")
 CC=armv5-linux-gcc
 AR=armv5-linux-ar
 CFLAGS=-fPIC \
 		$(COMMON_CFLAGS)\
 		-I$(TOPDIR)/devtools/include 
 LDFLAGS=-L$(TOPDIR)/devtools/lib $(COMMON_LDFLAGS)
-else ifeq ($(TARGET),"FTM-100S")
-CC=arm-openwrt-linux-gnueabi-gcc
-AR=arm-openwrt-linux-gnueabi-ar
+else ifeq ($(MODEL),"FTM-100S")
+CC=arm-openwrt-linux-uclibcgnueabi-gcc
+AR=arm-openwrt-linux-uclibcgnueabi-ar
 CFLAGS=-fPIC \
 		$(COMMON_CFLAGS) \
 		-I$(TOPDIR)/devtools/include \

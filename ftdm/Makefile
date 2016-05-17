@@ -1,11 +1,12 @@
-TOPDIR=..
-include ${TOPDIR}/Makefile.in
+include $(TOPDIR)/Makefile.in
 
 SERVER=ftdm
 SERVER_INCS=ftdm.h ftdm_server.h ftdm_server_cmds.h
 SERVER_SRCS=ftdm.c ftdm_server.c ftdm_server_cmds.c
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
 SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3 -ldl -lrt
+
+SUBDIR=client
 
 LIB_FTDM=libftdm
 LIB_FTDM_INCS= 	ftdm_config.h\
@@ -36,6 +37,9 @@ LIB_FTDMC_OBJS=$(LIB_FTDMC_SRCS:.c=.o)
 
 
 all: $(LIB_FTDMC) $(LIB_FTDM) $(SERVER)
+	for dir in $(SUBDIR); do\
+		make -C $$dir;\
+	done
 
 $(SERVER): $(SERVER_OBJS) $(LIB_FTDM)
 	$(CC) -o $@ $(SERVER_OBJS) $(SERVER_LDFLAGS)
@@ -53,3 +57,6 @@ $(LIB_FTDMC): $(LIB_FTDMC_OBJS)
 
 clean:
 	rm -f $(SERVER) *.a *.o $(LIB_FTDM) $(LIB_FTDMC)
+	for dir in $(SUBDIR); do\
+		make -C $$dir clean;\
+	done

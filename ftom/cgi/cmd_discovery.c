@@ -19,7 +19,27 @@ FTM_RET	FTOM_CGI_startDiscovery
 
 	pRoot= cJSON_CreateObject();
 
+	xRet = FTOM_CGI_getIPString(pReq, pIP, sizeof(pIP), FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getPort(pReq, &usPort, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getRetry(pReq, &ulRetryCount, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
 	xRet = FTOM_CLIENT_DISCOVERY_start(pClient, pIP, usPort, ulRetryCount);
+
+finish:
 
 	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }

@@ -298,6 +298,66 @@ char *FTOM_CGI_whitespaceCB
 	return (NULL);
 }
 
+FTM_RET	FTOM_CGI_getUSHORT
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pName,
+	FTM_USHORT_PTR	pusValue,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pName != NULL);
+	ASSERT(pusValue != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, pName, false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else
+	{
+		*pusValue = (FTM_USHORT)strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getULONG
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pName,
+	FTM_ULONG_PTR pulValue,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pName != NULL);
+	ASSERT(pulValue != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, pName, false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else
+	{
+		*pulValue = strtoul(pValue, 0, 10);
+	}
+	
+	return	FTM_RET_OK;
+}
+
 FTM_RET FTOM_CGI_getNodeType
 (
 	qentry_t *pReq, 
@@ -782,6 +842,56 @@ FTM_RET	FTOM_CGI_getCount
 	}
 	
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getIPString
+(
+	qentry_t *pReq,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen,
+	FTM_BOOL bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pBuff != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "ip", false);
+	if (pValue == NULL)
+	{
+		if (!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else
+	{
+		memset(pBuff, 0, ulBuffLen);
+		strncpy(pBuff, pValue, ulBuffLen - 1);
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getPort
+(
+	qentry_t *pReq, 
+	FTM_USHORT_PTR	pusPort,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	return	FTOM_CGI_getUSHORT(pReq, "port", pusPort, bAllowEmpty);
+}
+
+FTM_RET	FTOM_CGI_getRetry
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR pulCount,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	return	FTOM_CGI_getULONG(pReq, "retry", pulCount, bAllowEmpty);
 }
 
 FTM_RET	FTOM_CGI_getNodeOptSNMP
