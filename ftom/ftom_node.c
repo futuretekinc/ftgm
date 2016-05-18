@@ -108,7 +108,31 @@ FTM_RET	FTOM_NODE_create
 
 	if (strlen(pInfo->pDID) == 0)
 	{
-		FTM_makeID(pInfo->pDID, FTM_ID_LEN);
+		FTM_INT	i;
+
+		for(i = 0 ; i < 10 ; i++)
+		{
+			FTM_makeID(pInfo->pDID, FTM_ID_LEN);
+
+			xRet = FTOM_NODE_get(pInfo->pDID, &pNode);
+			if (xRet != FTM_RET_OK)
+			{
+				break;
+			}
+		}
+
+		if (i == 10)
+		{
+			return	FTM_RET_ALREADY_EXIST_OBJECT;	
+		}
+	}
+	else
+	{
+		xRet = FTOM_NODE_get(pInfo->pDID, &pNode);
+		if (xRet == FTM_RET_OK)
+		{
+			return	FTM_RET_ALREADY_EXIST_OBJECT;	
+		}
 	}
 
 	switch(pInfo->xType)
