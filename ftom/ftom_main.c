@@ -9,6 +9,11 @@
 
 extern	FTM_SHELL_CMD	FTOM_shellCmds[];
 extern	FTM_ULONG		FTOM_shellCmdCount;
+static
+FTM_VOID	FTOM_usage
+(
+	FTM_VOID
+);
 
 int main(int nArgc, char *pArgv[])
 {
@@ -18,9 +23,9 @@ int main(int nArgc, char *pArgv[])
 	FTM_ULONG	ulDebugLevel = FTM_TRACE_LEVEL_ERROR;
 	FTM_CHAR	pConfigFileName[1024];
 
-	sprintf(pConfigFileName, "%s.conf", FTOM_getProgramName());
+	sprintf(pConfigFileName, "/etc/%s.conf", FTOM_getProgramName());
 
-	while((nOpt = getopt(nArgc, pArgv, "c:Dd:?")) != -1)
+	while((nOpt = getopt(nArgc, pArgv, "c:dv:h?")) != -1)
 	{
 		switch(nOpt)
 		{
@@ -30,18 +35,21 @@ int main(int nArgc, char *pArgv[])
 			}
 			break;
 		
-		case	'D':
+		case	'd':
 			{
 				bDaemon = FTM_TRUE;	
 			}
 			break;
 
-		case	'd':
+		case	'v':
 			{
 				ulDebugLevel = strtoul(optarg, 0, 10);
 			}
 			break;
-		
+
+		default:
+			FTOM_usage();
+			return	0;
 		}
 	}
 
@@ -73,3 +81,15 @@ int main(int nArgc, char *pArgv[])
 	return	0;
 }
 
+FTM_VOID	FTOM_usage
+(
+	FTM_VOID
+)
+{
+	MESSAGE("Usage: %s [-d] [-c CONFFILE] [-v LEVEL]\n\n", FTOM_getProgramName());
+	MESSAGE("Object manager for IoT gateway.\n");
+	MESSAGE("OPTIONS:\n");
+	MESSAGE("\t-d\tRun as a daemon\n");
+	MESSAGE("\t-c FILE\tConfiguration file (default /etc/%s.conf)\n", FTOM_getProgramName());
+	MESSAGE("\t-v LEVEL\tVerbose level\n");
+}

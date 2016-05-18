@@ -384,10 +384,10 @@ int main(int nArgc, char *pArgv[])
 
 	FTM_MEM_init();
 	
-	sprintf(pConfigFileName, "%s.conf", program_invocation_short_name);
+	sprintf(pConfigFileName, "/etc/%s.conf", program_invocation_short_name);
 
 	/* set command line options */
-	while((nOpt = getopt(nArgc, pArgv, "c:dm:o:O:E?")) != -1)
+	while((nOpt = getopt(nArgc, pArgv, "c:dv:o:O:E?")) != -1)
 	{
 		switch(nOpt)
 		{
@@ -403,7 +403,7 @@ int main(int nArgc, char *pArgv[])
 			}
 			break;
 
-		case	'm':
+		case	'v':
 			{
 				if (FTM_TRACE_strToLevel(optarg, &ulTraceLevel) != FTM_RET_OK)
 				{
@@ -523,21 +523,21 @@ int main(int nArgc, char *pArgv[])
 
 FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName)
 {
-	MESSAGE("Usage : %s [-c file] [-d] [-m <level>]\n", pAppName);
-	MESSAGE("\tFutureTek Data Manger for M2M gateway.\n");
+	MESSAGE("Usage : %s [-c FILE] [-d] [-m <level>]\n", pAppName);
+	MESSAGE("\tFutureTek Data Manger for IoT gateway.\n");
 	MESSAGE("OPTIONS:\n");
-	MESSAGE("    -c <file> Configuration file\n");
-	MESSAGE("    -o <file> Configuration file\n");
-	MESSAGE("    -d        Run as a daemon\n");
-	MESSAGE("    -m <leve> Set message output mode.\n");
+	MESSAGE("\t-c FILE\tConfiguration file\n");
+	MESSAGE("\t-o FILE\tConfiguration file\n");
+	MESSAGE("\t-d\tRun as a daemon\n");
+	MESSAGE("\t-v LEVEL\tSet message output mode.\n");
 	MESSAGE("PARAMETERS:\n");
-	MESSAGE("    %8s %s\n", "level", "Output level");
-	MESSAGE("    %8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ALL, 	"all", 	"Output all message");
-	MESSAGE("    %8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_TRACE, "trace","Output trace message");
-	MESSAGE("    %8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_DEBUG, "debug","Output debug message");
-	MESSAGE("    %8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_INFO, 	"info", "Output information message");
-	MESSAGE("    %8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_WARN, 	"warn", "Output warning message");
-	MESSAGE("    %8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ERROR, "error","Output error message");
-	MESSAGE("    %8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_FATAL, "fatal","Output fatal message");
+	MESSAGE("\t%8s %s\n", "LEVEL", "Output level");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ALL, 	"all", 	"Output all message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_TRACE, "trace","Output trace message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_DEBUG, "debug","Output debug message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_INFO, 	"info", "Output information message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_WARN, 	"warn", "Output warning message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ERROR, "error","Output error message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_FATAL, "fatal","Output fatal message");
 }
 

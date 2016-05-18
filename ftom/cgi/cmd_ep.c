@@ -566,7 +566,7 @@ FTM_RET	FTOM_CGI_getEPDataLast
 			cJSON_AddStringToObject(pRoot, "state", "stop");
 		}
 	}
-	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	else if (xRet == FTM_RET_OBJECT_NOT_FOUND)
 	{
 		xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
 		if (xRet != FTM_RET_OK)
@@ -577,12 +577,14 @@ FTM_RET	FTOM_CGI_getEPDataLast
 		pEPIDList = (FTM_EPID_PTR)FTM_MEM_malloc((FTM_EPID_LEN + 1) * ulCount);
 		if (pEPIDList == NULL)
 		{
+			TRACE("Not enough memory![Count = %d]\n", ulCount);
 			goto finish;	
 		}
 
 		xRet = FTOM_CLIENT_EP_getList(pClient, 0, pEPIDList, ulCount, &ulCount);
 		if (xRet != FTM_RET_OK)
 		{
+			TRACE("EPID list get failed.\n");
 			goto finish;
 		}
 
@@ -597,6 +599,7 @@ FTM_RET	FTOM_CGI_getEPDataLast
 			xRet = FTOM_CLIENT_EP_get(pClient, pEPIDList[i], &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
+				TRACE("EP[%s] info get failed.\n", pEPIDList[i]);
 				goto finish;
 			}
 
@@ -618,17 +621,18 @@ FTM_RET	FTOM_CGI_getEPDataLast
 			cJSON_AddNumberToObject(pObject, "time", xEPData.ulTime);
 			if (xInfo.bEnable)
 			{
-				cJSON_AddStringToObject(pRoot, "state", "run");
+				cJSON_AddStringToObject(pObject, "state", "run");
 			}
 			else 
 			{
-				cJSON_AddStringToObject(pRoot, "state", "stop");
+				cJSON_AddStringToObject(pObject, "state", "stop");
 			}
 		}
 
 	}
 	else
 	{
+		TRACE("Invalid arguments!\n");
 		xRet = FTM_RET_INVALID_ARGUMENTS;
 		goto finish;	
 	}

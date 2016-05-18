@@ -143,9 +143,12 @@ FTM_RET	FTOM_CGI_getNodeList
 	FTM_CHAR_PTR	pValue;
 	FTM_NODE_FIELD	xFields = FTM_NODE_FIELD_DID;
 	FTM_INT			i;
-	cJSON _PTR_ pRoot;
+	cJSON _PTR_ pRoot; 
+	cJSON _PTR_ pNodes;
 
-	pRoot = cJSON_CreateArray();
+	pRoot = cJSON_CreateObject();
+
+	cJSON_AddItemToObject(pRoot, "nodes", pNodes = cJSON_CreateArray());
 
 	for(i = 0; i < 10 ; i++)
 	{
@@ -205,7 +208,7 @@ FTM_RET	FTOM_CGI_getNodeList
 			continue;	
 		}
 		
-		cJSON_AddItemToArray(pRoot, pObject = cJSON_CreateObject());
+		cJSON_AddItemToArray(pNodes, pObject = cJSON_CreateObject());
 		FTOM_CGI_addNodeInfoToObject(pObject, &xNodeInfo, xFields);
 	}
 
