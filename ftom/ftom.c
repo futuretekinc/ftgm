@@ -219,7 +219,6 @@ static 	FTOM_SERVICE	pServices[] =
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_MQTT_CLIENT_notify,
 		.pData		= 	NULL
 	},
-#endif
 	{
 		.xType		=	FTOM_SERVICE_SHELL,
 		.xID		=	FTOM_SERVICE_SHELL,
@@ -237,6 +236,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_SHELL_notify,
 		.pData		= 	NULL
 	},
+#endif
 	{
 		.xType		=	FTOM_SERVICE_DISCOVERY,
 		.xID		=	FTOM_SERVICE_DISCOVERY,

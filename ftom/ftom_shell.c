@@ -1,11 +1,6 @@
 #include "ftom_shell.h"
 #include "ftom_shell_cmds.h"
 
-static FTM_VOID_PTR	FTOM_SHELL_process
-(
-	FTM_VOID_PTR	pData
-);
-
 FTM_RET	FTOM_SHELL_create
 (
 	FTOM_SHELL_PTR _PTR_ 	ppShell

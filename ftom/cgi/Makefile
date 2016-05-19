@@ -37,9 +37,9 @@ LIBS:=	$(LIBS)\
 		-lqdecoder
 else
 LIBS:=	$(LIBS)\
-		$(TOPDIR)/cjson/libcjson.a\
-		$(TOPDIR)/mxml-2.9/libmxml.a\
-		$(TOPDIR)/qdecoder-12.0.4/src/libqdecoder.a
+		-lcjson\
+		-lmxml\
+		-lqdecoder
 endif
 
 OBJS=$(SRCS:.c=.o)

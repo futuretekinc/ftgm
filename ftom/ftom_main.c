@@ -5,7 +5,7 @@
 #include <getopt.h>
 #include "ftm.h"
 #include "ftom.h"
-#include "ftom_shell_cmds.h"
+#include "ftom_shell.h"
 
 extern	FTM_SHELL_CMD	FTOM_shellCmds[];
 extern	FTM_ULONG		FTOM_shellCmdCount;
@@ -70,10 +70,20 @@ int main(int nArgc, char *pArgv[])
 		{
 			return	0;
 		}
+		FTOM_start();
+		FTOM_waitingForFinished();
+	}
+	else
+	{
+		FTOM_SHELL_PTR pShell;
+
+		FTOM_start();
+		FTOM_SHELL_create(&pShell);
+		FTOM_SHELL_process(pShell);
+		FTOM_SHELL_destroy(&pShell);
+		FTOM_waitingForFinished();
 	}
 
-	FTOM_start();
-	FTOM_waitingForFinished();
 	
 	FTOM_final();
 	FTM_MEM_final();
