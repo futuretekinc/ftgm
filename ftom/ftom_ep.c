@@ -554,7 +554,7 @@ FTM_RET	FTOM_EP_stop
 
 	if (pEP->bStop)
 	{
-		WARN("EP[%s] is stopped.\n", pEP->xInfo.pEPID);
+		WARN("EP[%s] is not started.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_NOT_START;	
 	}
 

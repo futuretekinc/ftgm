@@ -891,6 +891,7 @@ FTM_RET	FTOM_TASK_stop
 
 		if (FTOM_EP_getAt(i, &pEP) == FTM_RET_OK)
 		{
+			TRACE("Reqiest stop EP[%s].\n", pEP->xInfo.pEPID);
 			FTOM_EP_stop(pEP, FTM_TRUE);	
 		}
 	}
