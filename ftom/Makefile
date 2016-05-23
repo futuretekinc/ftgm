@@ -1,3 +1,6 @@
+ifeq ($(TOPDIR),)
+TOPDIR=$(shell pwd)/..
+endif
 include $(TOPDIR)/Makefile.in
 
 #CFLAGS=$(CFLAGS)\
@@ -7,7 +10,7 @@ include $(TOPDIR)/Makefile.in
 FTOM=ftom
 FTOM_SRCS=ftom_main.c ftom.c
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)
-FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl
+FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmodbus -lmosquitto -lrt -ldl
 
 LIB_FTOM=libftom
 LIB_FTOM_INCS= ftom.h 
@@ -30,7 +33,8 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_utils.c\
 			   ftom_service.c\
 			   ftom_shell.c\
-			   ftom_discovery.c
+			   ftom_discovery.c\
+			   ftom_node_modbus_client.c
 LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)
 
 LIB_FTOMC=libftomc
@@ -43,7 +47,7 @@ SUBDIR=client cmdline cgi
 
 all: $(LIB_FTOM) $(FTOM) $(LIB_FTOMC) 
 	for dir in $(SUBDIR); do\
-		make -C $$dir;\
+		make -C $$dir TOPDIR=$(TOPDIR);\
 	done
 	
 $(CONSOLE): $(CONSOLE_OBJS)

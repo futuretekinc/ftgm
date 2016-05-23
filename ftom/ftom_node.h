@@ -8,6 +8,7 @@
 typedef	enum
 {
 	FTOM_NODE_TYPE_SNMPC,
+	FTOM_NODE_TYPE_MBC,
 	FTOM_NODE_TYPE_LORAM
 } FTOM_NODE_TYPE, _PTR_ FTOM_NODE_TYPE_PTR;
 
@@ -190,6 +191,7 @@ FTM_RET	FTOM_NODE_printList
 );
 
 #include "ftom_node_snmpc.h"
+#include "ftom_node_modbus_client.h"
 
 #endif
 

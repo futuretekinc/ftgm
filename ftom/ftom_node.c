@@ -143,6 +143,12 @@ FTM_RET	FTOM_NODE_create
 		}
 		break;
 
+	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
+		{
+			xRet = FTOM_NODE_MBC_create(pInfo, &pNode);
+		}
+		break;
+
 	default:
 		{
 			ERROR("pInfo->xType = %08lx", pInfo->xType);
@@ -234,6 +240,11 @@ FTM_RET	FTOM_NODE_createFromDB
 		}
 		break;
 
+	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
+		{
+			xRet = FTOM_NODE_MBC_create(&xInfo, &pNode);
+		}
+		break;
 	default:
 		{
 			ERROR("Invalid Node type[%08lx]\n", xInfo.xType);

@@ -449,16 +449,36 @@ FTM_RET	FTDM_NODEM_showList
 			FTDM_NODE_PTR	pNode;
 
 			FTDM_NODEM_getAt(pNodeM, i, &pNode);
-			MESSAGE("\t%16s %16s %16s %8d %8d %16s %16s %16s %16s\n",
+			MESSAGE("\t%16s %16s %16s %8d %8d ",
 				pNode->xInfo.pDID,
 				FTM_NODE_typeString(pNode->xInfo.xType),
 				pNode->xInfo.pLocation,
 				pNode->xInfo.ulInterval,
-				pNode->xInfo.ulTimeout,
-				FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion),
-				pNode->xInfo.xOption.xSNMP.pURL,
-				pNode->xInfo.xOption.xSNMP.pCommunity,
-				pNode->xInfo.xOption.xSNMP.pMIB);
+				pNode->xInfo.ulTimeout);
+
+			switch(pNode->xInfo.xType)
+			{
+			case	FTM_NODE_TYPE_SNMP:
+				{
+					MESSAGE(" %16s %16s %16s %16s\n",
+						FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion),
+						pNode->xInfo.xOption.xSNMP.pURL,
+						pNode->xInfo.xOption.xSNMP.pCommunity,
+						pNode->xInfo.xOption.xSNMP.pMIB);
+				}
+				break;
+
+
+			case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
+				{
+					MESSAGE(" %16s %16s %16d\n",
+						pNode->xInfo.xOption.xMB.pModel,
+						pNode->xInfo.xOption.xMB.pURL,
+						pNode->xInfo.xOption.xMB.ulPort);
+				}
+				break;
+			}
+
 		}
 	}
 

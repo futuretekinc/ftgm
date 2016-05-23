@@ -1,3 +1,7 @@
+ifeq ($(TOPDIR),)
+TOPDIR=$(shell pwd)/..
+endif
+
 include $(TOPDIR)/Makefile.in
 
 SERVER=ftdm

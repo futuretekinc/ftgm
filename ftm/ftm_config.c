@@ -711,10 +711,37 @@ FTM_RET	FTM_CONFIG_ITEM_getNode(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_PTR pNode)
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "interval", &xNode.ulInterval);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "timeout",  &xNode.ulTimeout);
 
-	xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "snmp", &xSNMPItem);
-	if (xRet == FTM_RET_OK)
+	if (strcmp(pTypeString, "snmp") == 0)
 	{
-		FTM_CONFIG_ITEM_getSNMP(&xSNMPItem, &xNode.xOption.xSNMP);
+		xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "snmp", &xSNMPItem);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Node type object invalid!\n");
+			return	FTM_RET_CONFIG_INVALID_OBJECT;	
+		}
+		
+		xRet = FTM_CONFIG_ITEM_getSNMP(&xSNMPItem, &xNode.xOption.xSNMP);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Node type object invalid!\n");
+			return	FTM_RET_CONFIG_INVALID_OBJECT;	
+		}
+	}
+	else if (strcmp(pTypeString, "modbustcp") == 0)
+	{
+		xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "modbustcp", &xSNMPItem);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Node type object invalid!\n");
+			return	FTM_RET_CONFIG_INVALID_OBJECT;	
+		}
+		
+		xRet = FTM_CONFIG_ITEM_getModbusOverTCP(&xSNMPItem, &xNode.xOption.xMB);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Node type object invalid!\n");
+			return	FTM_RET_CONFIG_INVALID_OBJECT;	
+		}
 	}
 
 	memcpy(pNode, &xNode, sizeof(FTM_NODE));
@@ -735,6 +762,23 @@ FTM_RET	FTM_CONFIG_ITEM_getSNMP(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_OPT_SNMP_PTR
 	FTM_CONFIG_ITEM_getItemString(pItem, "mib", 	xSNMP.pMIB, sizeof(xSNMP.pMIB) - 1);
 
 	memcpy(pSNMP, &xSNMP, sizeof(FTM_NODE_OPT_SNMP));
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_CONFIG_ITEM_getModbusOverTCP(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_OPT_MODBUS_OVER_TCP_PTR pMB)
+{
+	ASSERT(pItem != NULL);
+	ASSERT(pMB != NULL);
+
+	FTM_NODE_OPT_MODBUS_OVER_TCP	xMB;
+
+	FTM_CONFIG_ITEM_getItemULONG(pItem,	"version", 	&xMB.ulVersion);
+	FTM_CONFIG_ITEM_getItemString(pItem,"model", 	xMB.pModel, sizeof(xMB.pModel) - 1);
+	FTM_CONFIG_ITEM_getItemString(pItem,"url", 		xMB.pURL, sizeof(xMB.pURL) - 1);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "port", 	&xMB.ulPort);
+
+	memcpy(pMB, &xMB, sizeof(FTM_NODE_OPT_MODBUS_OVER_TCP));
 	
 	return	FTM_RET_OK;
 }

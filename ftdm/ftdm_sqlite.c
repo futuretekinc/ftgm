@@ -1385,7 +1385,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_del
 	}
 	else
 	{
-		sprintf(pSQL, " DELETE FROM ep_%s ORDER BY ASC LIMIT %lu", 
+		sprintf(pSQL, " DELETE FROM ep_%s ORDER BY TIME ASC LIMIT %lu", 
 				pEPID,  nCount);
 	}
 

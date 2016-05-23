@@ -18,7 +18,7 @@ FTM_RET	FTDM_SHELL_showNodeList(FTDM_NODEM_PTR pNodeM)
 	
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%-16s %-16s %-16s %-8s %-8s %-16s %-16s %-16s %-16s\n", "DID", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT", "OPT0", "OPT1", "OPT2", "OPT3");
+		MESSAGE("%16s %16s %16s %8s %8s %16s %16s %16s %16s\n", "DID", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT", "OPT0", "OPT1", "OPT2", "OPT3");
 
 		for(i = 0 ; i < ulCount; i++)
 		{
@@ -27,7 +27,7 @@ FTM_RET	FTDM_SHELL_showNodeList(FTDM_NODEM_PTR pNodeM)
 			xRet = FTDM_NODEM_getAt(pNodeM, i, &pNode);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%-16s %-16s %-16s %8d %8d ", 
+				MESSAGE("%16s %16s %16s %8d %8d ", 
 					pNode->xInfo.pDID, 
 					FTM_NODE_typeString(pNode->xInfo.xType), 
 				pNode->xInfo.pLocation,
@@ -38,11 +38,18 @@ FTM_RET	FTDM_SHELL_showNodeList(FTDM_NODEM_PTR pNodeM)
 				{
 				case	FTM_NODE_TYPE_SNMP:
 					{
-						MESSAGE("%-16s %-16s %-16s", 
+						MESSAGE("%16s %16s %16s", 
 							FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion),
 							pNode->xInfo.xOption.xSNMP.pURL,
 							pNode->xInfo.xOption.xSNMP.pCommunity);
-					
+					}
+					break;
+
+				case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
+					{
+						MESSAGE("%16s %16d", 
+							pNode->xInfo.xOption.xMB.pURL,
+							pNode->xInfo.xOption.xMB.ulPort);
 					}
 					break;
 				}
