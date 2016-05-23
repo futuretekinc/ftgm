@@ -4,19 +4,47 @@
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 
-static FTM_RET	FTOM_NODE_MBC_getEPData
+static 
+FTM_RET	FTOM_NODE_MBC_TEST_get
 (
 	FTOM_NODE_MBC_PTR	pMBC,
 	FTOM_EP_PTR			pEP,
 	FTM_EP_DATA_PTR 	PData
 );
 
-static FTM_RET	FTOM_NODE_MBC_setEPData
+static 
+FTM_RET	FTOM_NODE_MBC_TEST_set
 (
 	FTOM_NODE_MBC_PTR	pMBC,
 	FTOM_EP_PTR			pEP,
 	FTM_EP_DATA_PTR 	PData
 );
+
+static 
+FTM_RET	FTOM_NODE_MBC_getEPData
+(
+	FTOM_NODE_MBC_PTR	pMBC,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	PData
+);
+
+static 
+FTM_RET	FTOM_NODE_MBC_setEPData
+(
+	FTOM_NODE_MBC_PTR	pMBC,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	PData
+);
+
+static
+FTOM_NODE_MBC_DESCRIPT	pClient[] =
+{
+	{
+		.pModel	= "test",
+		.fGet	= FTOM_NODE_MBC_TEST_get,
+		.fSet	= FTOM_NODE_MBC_TEST_set
+	}
+};
 
 FTM_RET	FTOM_NODE_MBC_create
 (
@@ -71,7 +99,9 @@ FTM_RET	FTOM_NODE_MBC_init
 )
 {
 	ASSERT(pNode != NULL);
-	
+
+	FTM_INT	nRet;
+
 	sem_init(&pNode->xLock, 0, 1);
 
 	FTM_LIST_final(&pNode->xCommon.xEPList);
@@ -80,6 +110,12 @@ FTM_RET	FTOM_NODE_MBC_init
 	{
 		ERROR("Can't creation MB object!\n");
 		return	FTM_RET_MODBUS_ERROR;
+	}
+
+	nRet = modbus_connect(pNode->pMB);
+	if (nRet < 0)
+	{
+		return	FTM_RET_NOT_CONNECTED;
 	}
 
 	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
@@ -96,6 +132,7 @@ FTM_RET	FTOM_NODE_MBC_final
 
 	if (pNode->pMB != NULL)
 	{
+		modbus_close(pNode->pMB);
 		modbus_free(pNode->pMB);
 		pNode->pMB = NULL;
 	}
@@ -107,7 +144,7 @@ FTM_RET	FTOM_NODE_MBC_final
 
 FTM_RET	FTOM_NODE_MBC_getEPData
 (
-	FTOM_NODE_MBC_PTR pNode, 
+	FTOM_NODE_MBC_PTR 	pNode, 
 	FTOM_EP_PTR 		pEP, 
 	FTM_EP_DATA_PTR 	pData
 )
@@ -116,30 +153,28 @@ FTM_RET	FTOM_NODE_MBC_getEPData
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
-	FTM_RET	nRet;
-	FTM_USHORT	usValue;
+	FTM_INT		i;
 
 	if (pNode->pMB == NULL)
 	{
 		return	FTM_RET_NOT_CONNECTED;
 	}
 
-	nRet = modbus_connect(pNode->pMB);
-	if (nRet < 0)
+	for(i = 0 ; i < sizeof(pClient) / sizeof(FTOM_NODE_MBC_DESCRIPT) ; i++)
 	{
-		return	FTM_RET_NOT_CONNECTED;
+		if (strcasecmp(pNode->xCommon.xInfo.xOption.xMB.pModel, pClient[i].pModel) == 0)
+		{
+			return	pClient[i].fGet(pNode, pEP, pData);
+		
+		}
 	}
 
-	modbus_read_registers(pNode->pMB, 0x1000, 1, &usValue);
-
-	modbus_close(pNode->pMB);
-
-	return	FTM_RET_OK;
+	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
 FTM_RET	FTOM_NODE_MBC_setEPData
 (
-	FTOM_NODE_MBC_PTR pNode, 
+	FTOM_NODE_MBC_PTR 	pNode, 
 	FTOM_EP_PTR 		pEP, 
 	FTM_EP_DATA_PTR 	pData
 )
@@ -148,24 +183,101 @@ FTM_RET	FTOM_NODE_MBC_setEPData
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
-	FTM_RET	nRet;
-	FTM_USHORT	usValue = 0;
+	FTM_INT		i;
 
 	if (pNode->pMB == NULL)
 	{
 		return	FTM_RET_NOT_CONNECTED;
 	}
 
-	nRet = modbus_connect(pNode->pMB);
-	if (nRet < 0)
+	for(i = 0 ; i < sizeof(pClient) / sizeof(FTOM_NODE_MBC_DESCRIPT) ; i++)
 	{
-		return	FTM_RET_NOT_CONNECTED;
+		if (strcasecmp(pNode->xCommon.xInfo.xOption.xMB.pModel, pClient[i].pModel) == 0)
+		{
+			return	pClient[i].fSet(pNode, pEP, pData);
+		
+		}
 	}
 
-	modbus_write_register(pNode->pMB, 0x1000, usValue);
+	return	FTM_RET_OBJECT_NOT_FOUND;
+}
 
-	modbus_close(pNode->pMB);
+static 
+FTM_RET	FTOM_NODE_MBC_TEST_get
+(
+	FTOM_NODE_MBC_PTR	pNode,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	pData
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_INT		nRet;
+	FTM_USHORT	usValue = 0;
+
+	if (pNode->pMB == NULL)
+	{
+		return	FTM_RET_NOT_CONNECTED;	
+	}
+
+	nRet = modbus_read_input_registers(pNode->pMB, 0, 1, &usValue);
+	if (nRet < 0)
+	{
+		ERROR("MODBUS read input registers failed[%d]!\n", nRet);
+		return	FTM_RET_OBJECT_NOT_FOUND;
+	}
+
+	TRACE("MODBUS Read value : %d\n", usValue);
+	switch(pData->xValue.xType)
+	{
+	case	FTM_VALUE_TYPE_INT:
+		FTM_VALUE_setINT(&pData->xValue, (FTM_INT)usValue);
+		break;
+
+	case	FTM_VALUE_TYPE_ULONG:
+		FTM_VALUE_setINT(&pData->xValue, (FTM_ULONG)usValue);
+		break;
+
+	case	FTM_VALUE_TYPE_FLOAT:
+		FTM_VALUE_setFLOAT(&pData->xValue, (FTM_FLOAT)usValue);
+		break;
+
+	case	FTM_VALUE_TYPE_BOOL:
+		FTM_VALUE_setBOOL(&pData->xValue, (FTM_BOOL)usValue);
+		break;
+
+	default:	
+		return	FTM_RET_INVALID_TYPE;
+	}
 
 	return	FTM_RET_OK;
 }
 
+
+FTM_RET	FTOM_NODE_MBC_TEST_set
+(
+	FTOM_NODE_MBC_PTR	pNode,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	pData
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+
+	FTM_ULONG	ulValue;
+
+	if (pNode->pMB == NULL)
+	{
+		return	FTM_RET_NOT_CONNECTED;	
+	}
+
+	FTM_VALUE_getULONG(&pData->xValue, &ulValue);
+
+	modbus_write_register(pNode->pMB, 0, ulValue);
+
+	return	FTM_RET_OK;
+}

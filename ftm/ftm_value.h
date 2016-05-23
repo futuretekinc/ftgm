@@ -113,6 +113,12 @@ FTM_BOOL	FTM_VALUE_isSTRING
 	FTM_VALUE_PTR pObject
 );
 
+FTM_RET	FTM_VALUE_setINT
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_INT			nValue
+);
+
 FTM_RET	FTM_VALUE_setULONG
 (
 	FTM_VALUE_PTR 	pObject, 
@@ -123,6 +129,18 @@ FTM_RET	FTM_VALUE_getULONG
 (
 	FTM_VALUE_PTR 	pObject, 
 	FTM_ULONG_PTR 	pulValue
+);
+
+FTM_RET	FTM_VALUE_setFLOAT
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_FLOAT		fValue
+);
+
+FTM_RET	FTM_VALUE_setBOOL
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_BOOL		bValue
 );
 
 FTM_RET	FTM_VALUE_compare

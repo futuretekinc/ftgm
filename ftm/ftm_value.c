@@ -310,6 +310,24 @@ FTM_BOOL	FTM_VALUE_isSTRING
 }
 
 
+FTM_RET	FTM_VALUE_setINT
+(
+	FTM_VALUE_PTR 	pObject, 
+	FTM_INT			nValue
+)
+{
+	ASSERT(pObject != NULL);
+
+	if (pObject->xType != FTM_VALUE_TYPE_INT)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	pObject->xValue.nValue = nValue;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_VALUE_setULONG
 (
 	FTM_VALUE_PTR 	pObject, 
@@ -318,9 +336,48 @@ FTM_RET	FTM_VALUE_setULONG
 {
 	ASSERT(pObject != NULL);
 
-	pObject->xType = FTM_VALUE_TYPE_ULONG;
-	pObject->ulLen = 4;
+	if (pObject->xType != FTM_VALUE_TYPE_ULONG)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
 	pObject->xValue.ulValue = ulValue;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_setFLOAT
+(
+	FTM_VALUE_PTR 	pObject, 
+	FTM_FLOAT		fValue
+)
+{
+	ASSERT(pObject != NULL);
+
+	if (pObject->xType != FTM_VALUE_TYPE_FLOAT)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	pObject->xValue.fValue = fValue;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_setBOOL
+(
+	FTM_VALUE_PTR 	pObject, 
+	FTM_BOOL		bValue
+)
+{
+	ASSERT(pObject != NULL);
+
+	if (pObject->xType != FTM_VALUE_TYPE_BOOL)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	pObject->xValue.bValue = bValue;
 
 	return	FTM_RET_OK;
 }
