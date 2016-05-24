@@ -191,7 +191,7 @@ FTM_RET	FTOM_NODE_printList
 	FTM_VOID
 );
 
-#include "ftom_node_snmpc.h"
+#include "ftom_node_snmp_client.h"
 #include "ftom_node_modbus_client.h"
 #include "ftom_node_fins_client.h"
 

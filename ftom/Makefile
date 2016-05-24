@@ -19,7 +19,7 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_server.c\
 			   ftom_node.c\
 			   ftom_ep.c\
-			   ftom_node_snmpc.c\
+			   ftom_node_snmp_client.c\
 			   ftom_snmpc.c\
 			   ftom_snmptrapd.c\
 			   ftom_shell_cmds.c\

@@ -12,7 +12,7 @@
 #include "ftom.h"
 #include "ftom_msg.h"
 #include "ftom_snmptrapd.h"
-#include "ftom_node_snmpc.h"
+#include "ftom_node_snmp_client.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 

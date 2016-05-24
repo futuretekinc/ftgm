@@ -6,7 +6,7 @@
 #include "libconfig.h"
 #include "ftom.h"
 #include "ftdm_client.h"
-#include "ftom_node_snmpc.h"
+#include "ftom_node_snmp_client.h"
 #include "ftom_server.h"
 #include "ftom_dmc.h"
 

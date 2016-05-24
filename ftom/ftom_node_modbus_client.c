@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include "ftom.h"
-#include "ftom_node_snmpc.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 

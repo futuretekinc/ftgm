@@ -6,7 +6,7 @@
 
 #include "libconfig.h"
 #include "ftom.h"
-#include "ftom_node_snmpc.h"
+#include "ftom_node_snmp_client.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 #include "ftom_snmptrapd.h"
@@ -585,7 +585,7 @@ FTM_RET	FTOM_SNMPC_getEPData
 	struct snmp_session	xSession;
 
 	sem_wait(&pNode->xLock);
-	sem_wait(&pEP->xLock);
+	FTM_LOCK_set(&pEP->xLock);
 
 	snmp_sess_init(&xSession);			/* initialize session */
 
@@ -705,7 +705,7 @@ FTM_RET	FTOM_SNMPC_getEPData
 		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
 	}
 
-	sem_post(&pEP->xLock);
+	FTM_LOCK_reset(&pEP->xLock);
 	sem_post(&pNode->xLock);
 
 	return	xRet;
@@ -727,7 +727,7 @@ FTM_RET	FTOM_SNMPC_setEPData
 	struct snmp_session	xSession;
 
 	sem_wait(&pNode->xLock);
-	sem_wait(&pEP->xLock);
+	FTM_LOCK_set(&pEP->xLock);
 
 	snmp_sess_init(&xSession);			/* initialize session */
 
@@ -786,7 +786,7 @@ FTM_RET	FTOM_SNMPC_setEPData
 		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
 	}
 
-	sem_post(&pEP->xLock);
+	FTM_LOCK_reset(&pEP->xLock);
 	sem_post(&pNode->xLock);
 
 	return	xRet;

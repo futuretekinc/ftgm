@@ -5,7 +5,6 @@
 #include "ftom.h"
 #include "ftom_node.h"
 #include "ftom_ep.h"
-#include "ftom_node_snmpc.h"
 #include "ftm_list.h"
 
 static

@@ -164,7 +164,8 @@ FTM_RET	FTOM_EP_create
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
 
 	pEP->bStop = FTM_TRUE;
-	sem_init(&pEP->xLock, 0, 1);
+	FTM_LOCK_init(&pEP->xLock);
+
 	xRet = FTOM_MSGQ_init(&pEP->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
@@ -240,7 +241,8 @@ FTM_RET	FTOM_EP_createFromDB
 	memcpy(&pEP->xInfo, &xInfo, sizeof(FTM_EP));
 
 	pEP->bStop = FTM_TRUE;
-	sem_init(&pEP->xLock, 0, 1);
+	FTM_LOCK_init(&pEP->xLock);
+
 	xRet = FTOM_MSGQ_init(&pEP->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
@@ -317,7 +319,7 @@ FTM_RET	FTOM_EP_destroy
 		ERROR("MsgQ finalize failed.\n");
 	}
 
-	sem_destroy(&(*ppEP)->xLock);
+	FTM_LOCK_final(&(*ppEP)->xLock);
 
 	xRet = FTM_MEM_free(*ppEP);
 	if (xRet != FTM_RET_OK)
@@ -397,11 +399,6 @@ FTM_RET	FTOM_EP_setInfo
 		strcpy(pEP->xInfo.pUnit, pInfo->pUnit);
 	}
 
-	if (xFields & FTM_EP_FIELD_ENABLE)
-	{
-		pEP->xInfo.bEnable = pInfo->bEnable;
-	}
-
 	if (xFields & FTM_EP_FIELD_TIMEOUT)
 	{
 		pEP->xInfo.ulTimeout = pInfo->ulTimeout;
@@ -457,6 +454,19 @@ FTM_RET	FTOM_EP_setInfo
 				pEP->xInfo.xLimit.xParams.ulMonths = pInfo->xLimit.xParams.ulCount;
 			}
 			break;
+		}
+	}
+
+	if ((xFields & FTM_EP_FIELD_ENABLE) && (pEP->xInfo.bEnable != pInfo->bEnable))
+	{
+		pEP->xInfo.bEnable = pInfo->bEnable;
+		if (pEP->xInfo.bEnable)
+		{
+			FTOM_EP_start(pEP);	
+		}
+		else 
+		{
+			FTOM_EP_stop(pEP, FTM_FALSE);	
 		}
 	}
 
