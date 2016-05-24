@@ -34,7 +34,8 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_service.c\
 			   ftom_shell.c\
 			   ftom_discovery.c\
-			   ftom_node_modbus_client.c
+			   ftom_node_modbus_client.c\
+			   ftom_node_fins_client.c
 LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)
 
 LIB_FTOMC=libftomc

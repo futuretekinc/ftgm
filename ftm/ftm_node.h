@@ -53,6 +53,7 @@ typedef	struct
 	FTM_CHAR	pModel[FTM_NAME_LEN + 1];
 	FTM_CHAR	pURL[FTM_URL_LEN + 1];
 	FTM_ULONG	ulPort;
+	FTM_ULONG	ulSlaveID;
 }	FTM_NODE_OPT_MODBUS_OVER_TCP, _PTR_ FTM_NODE_OPT_MODBUS_OVER_TCP_PTR;
 
 typedef struct

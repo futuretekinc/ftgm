@@ -777,6 +777,7 @@ FTM_RET	FTM_CONFIG_ITEM_getModbusOverTCP(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_OPT
 	FTM_CONFIG_ITEM_getItemString(pItem,"model", 	xMB.pModel, sizeof(xMB.pModel) - 1);
 	FTM_CONFIG_ITEM_getItemString(pItem,"url", 		xMB.pURL, sizeof(xMB.pURL) - 1);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "port", 	&xMB.ulPort);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "slave_id", 		&xMB.ulSlaveID);
 
 	memcpy(pMB, &xMB, sizeof(FTM_NODE_OPT_MODBUS_OVER_TCP));
 	
@@ -932,6 +933,7 @@ FTM_RET	FTM_CONFIG_ITEM_getEP(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_PTR pEP)
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"timeout",	&pEP->ulTimeout);
 
 	FTM_CONFIG_ITEM_getItemString(pItem,"did",		pEP->pDID, sizeof(pEP->pDID) - 1);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "depid",	(FTM_ULONG_PTR)&pEP->xDEPID);
 
 	xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "limit", &xLimitItem);
 	if (xRet == FTM_RET_OK)

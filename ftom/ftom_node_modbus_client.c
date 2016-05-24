@@ -21,6 +21,22 @@ FTM_RET	FTOM_NODE_MBC_TEST_set
 );
 
 static 
+FTM_RET	FTOM_NODE_MBC_HHTW_get
+(
+	FTOM_NODE_MBC_PTR	pMBC,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	PData
+);
+
+static 
+FTM_RET	FTOM_NODE_MBC_HHTW_set
+(
+	FTOM_NODE_MBC_PTR	pMBC,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	PData
+);
+
+static 
 FTM_RET	FTOM_NODE_MBC_getEPData
 (
 	FTOM_NODE_MBC_PTR	pMBC,
@@ -39,6 +55,11 @@ FTM_RET	FTOM_NODE_MBC_setEPData
 static
 FTOM_NODE_MBC_DESCRIPT	pClient[] =
 {
+	{
+		.pModel	= "hhtw comp",
+		.fGet	= FTOM_NODE_MBC_HHTW_get,
+		.fSet	= FTOM_NODE_MBC_HHTW_set
+	},
 	{
 		.pModel	= "test",
 		.fGet	= FTOM_NODE_MBC_TEST_get,
@@ -84,8 +105,6 @@ FTM_RET	FTOM_NODE_MBC_destroy
 {
 	ASSERT(ppNode != NULL);
 
-	FTM_LIST_final(&(*ppNode)->xCommon.xEPList);
-
 	FTM_MEM_free(*ppNode);
 
 	*ppNode = NULL;
@@ -102,9 +121,9 @@ FTM_RET	FTOM_NODE_MBC_init
 
 	FTM_INT	nRet;
 
-	sem_init(&pNode->xLock, 0, 1);
+	FTM_LOCK_init(&pNode->xLock);
+	FTM_LIST_init(&pNode->xCommon.xEPList);
 
-	FTM_LIST_final(&pNode->xCommon.xEPList);
 	pNode->pMB = modbus_new_tcp(pNode->xCommon.xInfo.xOption.xMB.pURL, pNode->xCommon.xInfo.xOption.xMB.ulPort);
 	if (pNode->pMB == NULL)
 	{
@@ -112,12 +131,23 @@ FTM_RET	FTOM_NODE_MBC_init
 		return	FTM_RET_MODBUS_ERROR;
 	}
 
+	struct timeval timeout;
+
+	timeout.tv_sec = pNode->xCommon.xInfo.ulTimeout;
+	timeout.tv_usec = 0;
+
+	modbus_set_debug(pNode->pMB,1);
+	modbus_set_response_timeout(pNode->pMB,&timeout);
+	modbus_set_slave(pNode->pMB, pNode->xCommon.xInfo.xOption.xMB.ulSlaveID);
+
 	nRet = modbus_connect(pNode->pMB);
 	if (nRet < 0)
 	{
+		ERROR("Node[%s] failed connection to %s:%d!\n", pNode->xCommon.xInfo.pDID, pNode->xCommon.xInfo.xOption.xMB.pURL, pNode->xCommon.xInfo.xOption.xMB.ulPort);
 		return	FTM_RET_NOT_CONNECTED;
 	}
 
+	TRACE("Node[%s] connected : pMB = %08x!\n",pNode->xCommon.xInfo.pDID, pNode->pMB);
 	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
 
 	return	FTM_RET_OK;
@@ -203,6 +233,91 @@ FTM_RET	FTOM_NODE_MBC_setEPData
 }
 
 static 
+FTM_RET	FTOM_NODE_MBC_HHTW_get
+(
+	FTOM_NODE_MBC_PTR	pNode,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	pData
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET		xRet;
+	FTM_INT		nRet;
+	FTM_USHORT	usValue = 0;
+	FTM_USHORT	usRegID = 0;
+	FTM_EP_DATA_TYPE	xDataType;
+
+	if (pNode->pMB == NULL)
+	{
+		return	FTM_RET_NOT_CONNECTED;	
+	}
+
+	FTM_LOCK_set(&pNode->xLock);
+
+	switch(pEP->xInfo.xDEPID)
+	{
+	case	FTM_EP_TYPE_PRESSURE | 1: usRegID = 9300; break;
+	case	FTM_EP_TYPE_PRESSURE | 2: usRegID = 9302; break;
+	case	FTM_EP_TYPE_PRESSURE | 3: usRegID = 9304; break;
+	case	FTM_EP_TYPE_PRESSURE | 4: usRegID = 9310; break;
+	case	FTM_EP_TYPE_PRESSURE | 5: usRegID = 9312; break;
+	case	FTM_EP_TYPE_AI | 1: usRegID = 9306; break;
+	case	FTM_EP_TYPE_AI | 2: usRegID = 9308; break;
+	}
+
+	TRACE("MODBUS get(%d)\n", usRegID);
+	nRet = modbus_read_registers(pNode->pMB, usRegID, 1, &usValue);
+	if (nRet < 0)
+	{
+		ERROR("MODBUS read input registers failed[%d]!\n", nRet);
+		xRet = FTM_RET_OBJECT_NOT_FOUND;
+		goto finish;
+	}
+
+	xRet = FTOM_EP_getDataType(pEP, &xDataType);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Invalid data type\n");
+		xRet = FTM_RET_INVALID_TYPE;
+		goto finish;
+	}
+
+	pData->ulTime = time(NULL);
+	pData->xState = FTM_EP_DATA_STATE_VALID;
+	pData->xType  = FTM_VALUE_TYPE_FLOAT;
+	xRet = FTM_VALUE_initFLOAT(&pData->xValue, (FTM_FLOAT)usValue / 100);
+
+finish:
+	
+	FTM_LOCK_reset(&pNode->xLock);
+
+	return	xRet;
+}
+
+
+FTM_RET	FTOM_NODE_MBC_HHTW_set
+(
+	FTOM_NODE_MBC_PTR	pNode,
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR 	pData
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+
+	if (pNode->pMB == NULL)
+	{
+		return	FTM_RET_NOT_CONNECTED;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+static 
 FTM_RET	FTOM_NODE_MBC_TEST_get
 (
 	FTOM_NODE_MBC_PTR	pNode,
@@ -214,6 +329,7 @@ FTM_RET	FTOM_NODE_MBC_TEST_get
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
+	FTM_RET		xRet;
 	FTM_INT		nRet;
 	FTM_USHORT	usValue = 0;
 
@@ -222,37 +338,45 @@ FTM_RET	FTOM_NODE_MBC_TEST_get
 		return	FTM_RET_NOT_CONNECTED;	
 	}
 
-	nRet = modbus_read_input_registers(pNode->pMB, 0, 1, &usValue);
+	FTM_LOCK_set(&pNode->xLock);
+
+	TRACE("Node[%s] request EP[%s] data : pMB = %08x!\n",pNode->xCommon.xInfo.pDID, pEP->xInfo.pEPID, pNode->pMB);
+	nRet = modbus_read_registers(pNode->pMB, 9300, 1, &usValue);
 	if (nRet < 0)
 	{
 		ERROR("MODBUS read input registers failed[%d]!\n", nRet);
-		return	FTM_RET_OBJECT_NOT_FOUND;
+		xRet = FTM_RET_OBJECT_NOT_FOUND;
+		goto finish;
 	}
 
 	TRACE("MODBUS Read value : %d\n", usValue);
 	switch(pData->xValue.xType)
 	{
 	case	FTM_VALUE_TYPE_INT:
-		FTM_VALUE_setINT(&pData->xValue, (FTM_INT)usValue);
+		xRet = FTM_VALUE_setINT(&pData->xValue, (FTM_INT)usValue);
 		break;
 
 	case	FTM_VALUE_TYPE_ULONG:
-		FTM_VALUE_setINT(&pData->xValue, (FTM_ULONG)usValue);
+		xRet = FTM_VALUE_setINT(&pData->xValue, (FTM_ULONG)usValue);
 		break;
 
 	case	FTM_VALUE_TYPE_FLOAT:
-		FTM_VALUE_setFLOAT(&pData->xValue, (FTM_FLOAT)usValue);
+		xRet = FTM_VALUE_setFLOAT(&pData->xValue, (FTM_FLOAT)usValue);
 		break;
 
 	case	FTM_VALUE_TYPE_BOOL:
-		FTM_VALUE_setBOOL(&pData->xValue, (FTM_BOOL)usValue);
+		xRet = FTM_VALUE_setBOOL(&pData->xValue, (FTM_BOOL)usValue);
 		break;
 
 	default:	
-		return	FTM_RET_INVALID_TYPE;
+		xRet = FTM_RET_INVALID_TYPE;
 	}
 
-	return	FTM_RET_OK;
+finish:
+	
+	FTM_LOCK_reset(&pNode->xLock);
+
+	return	xRet;
 }
 
 
@@ -267,7 +391,6 @@ FTM_RET	FTOM_NODE_MBC_TEST_set
 	ASSERT(pEP != NULL);
 	ASSERT(pData != NULL);
 
-
 	FTM_ULONG	ulValue;
 
 	if (pNode->pMB == NULL)
@@ -275,9 +398,13 @@ FTM_RET	FTOM_NODE_MBC_TEST_set
 		return	FTM_RET_NOT_CONNECTED;	
 	}
 
+	FTM_LOCK_set(&pNode->xLock);
+
 	FTM_VALUE_getULONG(&pData->xValue, &ulValue);
 
 	modbus_write_register(pNode->pMB, 0, ulValue);
+
+	FTM_LOCK_reset(&pNode->xLock);
 
 	return	FTM_RET_OK;
 }

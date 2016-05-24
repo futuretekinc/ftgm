@@ -145,7 +145,8 @@ FTM_RET	FTOM_NODE_create
 
 	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 		{
-			xRet = FTOM_NODE_MBC_create(pInfo, &pNode);
+//			xRet = FTOM_NODE_MBC_create(pInfo, &pNode);
+			xRet = FTOM_NODE_FINSC_create(pInfo, &pNode);
 		}
 		break;
 
@@ -242,7 +243,8 @@ FTM_RET	FTOM_NODE_createFromDB
 
 	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 		{
-			xRet = FTOM_NODE_MBC_create(&xInfo, &pNode);
+//			xRet = FTOM_NODE_MBC_create(&xInfo, &pNode);
+			xRet = FTOM_NODE_FINSC_create(&xInfo, &pNode);
 		}
 		break;
 	default:

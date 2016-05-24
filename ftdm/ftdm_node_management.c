@@ -471,10 +471,11 @@ FTM_RET	FTDM_NODEM_showList
 
 			case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 				{
-					MESSAGE(" %16s %16s %16d\n",
+					MESSAGE(" %16s %16s %16d %16d\n",
 						pNode->xInfo.xOption.xMB.pModel,
 						pNode->xInfo.xOption.xMB.pURL,
-						pNode->xInfo.xOption.xMB.ulPort);
+						pNode->xInfo.xOption.xMB.ulPort,
+						pNode->xInfo.xOption.xMB.ulSlaveID);
 				}
 				break;
 			}

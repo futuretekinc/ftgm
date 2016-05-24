@@ -23,6 +23,7 @@ typedef	unsigned long	FTM_EP_STATE, 	_PTR_ FTM_EP_STATE_PTR;
 #define	FTM_EP_TYPE_POWER			0x08000000
 #define	FTM_EP_TYPE_AI				0x0A000000
 #define	FTM_EP_TYPE_COUNT			0x0B000000
+#define	FTM_EP_TYPE_PRESSURE		0x0C000000
 #define	FTM_EP_TYPE_MULTI			0x7F000000
 
 typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
@@ -123,6 +124,7 @@ typedef	struct
 	FTM_ULONG		ulInterval;	
 	FTM_ULONG		ulCycle;
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
+	FTM_ULONG		xDEPID;
 	FTM_EP_LIMIT	xLimit;
 }	FTM_EP, _PTR_ FTM_EP_PTR;
 

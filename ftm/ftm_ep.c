@@ -266,6 +266,7 @@ FTM_RET	FTM_EP_getDataType
 	case	FTM_EP_TYPE_GAS:
 	case	FTM_EP_TYPE_POWER:
 	case	FTM_EP_TYPE_AI:
+	case	FTM_EP_TYPE_PRESSURE:
 		{
 			*pType = FTM_EP_DATA_TYPE_FLOAT;
 		}
@@ -791,9 +792,13 @@ FTM_EP_TYPE_STRING	_typeString[] =
 		.pTypeString = "ANALOG INPUT"
 	},
 	{	
+		.xType = FTM_EP_TYPE_PRESSURE,
+		.pTypeString = "PRESSURE"
+	},
+	{	
 		.xType = FTM_EP_TYPE_MULTI,
 		.pTypeString = "MULTI-FUNCTION"
-	}
+	},
 };
 
 FTM_CHAR_PTR	FTM_EP_typeString
