@@ -19,5 +19,6 @@
 #include "ftm_lock.h"
 #include "ftm_log.h"
 #include "ftm_util.h"
+#include "ftm_fins.h"
 #endif
 

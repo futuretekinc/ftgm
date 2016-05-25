@@ -793,7 +793,7 @@ FTM_RET	FTOM_EP_getData
 	FTM_RET			xRet;
 	FTM_EP_DATA_PTR	pTempData;
 
-	xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pTempData);
+	xRet = FTM_LIST_getFirst(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pTempData);
 	if (xRet == FTM_RET_OK)
 	{
 		memcpy(pData, pTempData, sizeof(FTM_EP_DATA));
@@ -1282,6 +1282,32 @@ FTM_RET FTOM_EP_CLASS_getAt
 	return	FTM_LIST_getAt(pClassList, ulIndex, (FTM_VOID_PTR _PTR_)ppEPClass);
 }
 
+FTM_RET	FTOM_EP_print
+(
+	FTOM_EP_PTR	pEP
+)
+{
+	FTM_CHAR	pTimeString[64];
+	FTM_EP_DATA	xData;
+	
+	FTOM_EP_getData(pEP, &xData);
+	ctime_r((time_t *)&xData.ulTime, pTimeString);
+	if (strlen(pTimeString) != 0)
+	{
+		pTimeString[strlen(pTimeString) - 1] = '\0';
+	}
+
+	MESSAGE("\n# EP Information\n");
+	MESSAGE("%16s : %s\n", 	"EPID", pEP->xInfo.pEPID);
+	MESSAGE("%16s : %s\n", 	"Type", FTM_EP_typeString(pEP->xInfo.xType));
+	MESSAGE("%16s : %s\n", 	"DID", 	pEP->pNode->xInfo.pDID);
+	MESSAGE("%16s : %s\n", 	"State",(!pEP->bStop)?"RUN":"STOP");
+	MESSAGE("%16s : %s\n", 	"Value",FTM_VALUE_print(&xData.xValue));
+	MESSAGE("%16s : %s\n", 	"Time", pTimeString);
+	
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_EP_printList
 (
 	FTM_VOID
@@ -1314,6 +1340,10 @@ FTM_RET	FTOM_EP_printList
 			if (pEP->pNode != NULL)
 			{
 				MESSAGE("%16s ", pEP->pNode->xInfo.pDID);
+			}
+			else
+			{
+				MESSAGE("%16s ", "");
 			}
 	
 			MESSAGE("%16s ", (!pEP->bStop)?"RUN":"STOP");

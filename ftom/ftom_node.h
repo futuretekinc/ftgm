@@ -186,6 +186,11 @@ FTM_CHAR_PTR	FTOM_NODE_stateToStr
 	FTOM_NODE_STATE xState
 );
 
+FTM_RET	FTOM_NODE_print
+(
+	FTOM_NODE_PTR	pNode
+);
+
 FTM_RET	FTOM_NODE_printList
 (
 	FTM_VOID

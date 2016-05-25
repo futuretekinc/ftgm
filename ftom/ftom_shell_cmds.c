@@ -18,7 +18,7 @@ FTM_RET	FTOM_SHELL_CMD_config
 	FTM_VOID_PTR 	pData
 );
 
-FTM_RET	FTOM_SHELL_CMD_list
+FTM_RET	FTOM_SHELL_CMD_object
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc, 
@@ -60,11 +60,11 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 					  "\tConfiguration Management.\n"
 	},
 	{
-		.pString	= "list",
-		.function	= FTOM_SHELL_CMD_list,
-		.pShortHelp	= "show object list.",
+		.pString	= "object",
+		.function	= FTOM_SHELL_CMD_object,
+		.pShortHelp	= "show object.",
 		.pHelp		= "\n"\
-					  "\tShow object list.\n"
+					  "\tShow object.\n"
 	},
 	{
 		.pString	= "quit",
@@ -111,7 +111,7 @@ FTM_RET	FTOM_SHELL_CMD_config
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_SHELL_CMD_list
+FTM_RET	FTOM_SHELL_CMD_object
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -119,11 +119,41 @@ FTM_RET	FTOM_SHELL_CMD_list
 	FTM_VOID_PTR 	pData
 )
 {
-	FTOM_NODE_printList();
-	FTOM_EP_printList();
-	FTOM_TRIGGER_printList();
-	FTOM_ACTION_printList();
-	FTOM_RULE_printList();
+	switch(nArgc)
+	{
+	case	1:
+		{
+			FTOM_NODE_printList();
+			FTOM_EP_printList();
+			FTOM_TRIGGER_printList();
+			FTOM_ACTION_printList();
+			FTOM_RULE_printList();
+		}
+		break;
+
+	case	2:
+		{
+			FTM_RET	xRet;
+			FTOM_NODE_PTR	pNode;
+			FTOM_EP_PTR		pEP;
+
+			xRet = FTOM_NODE_get(pArgv[1], &pNode);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_NODE_print(pNode);	
+				break;
+			}
+
+			xRet = FTOM_EP_get(pArgv[1], &pEP);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_EP_print(pEP);
+				break;
+			}
+				
+		}
+		break;
+	}
 
 	return	FTM_RET_OK;
 }

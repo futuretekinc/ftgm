@@ -468,6 +468,7 @@ FTM_RET	FTM_SMP_createClient
 		}
 	}
 
+	TRACE("KEY : %d, SHMID : %d\n", pSMP->xKey, pSMP->nShmID);
 	pSMP->pBlock = (FTM_SMP_BLOCK_PTR)shmat(pSMP->nShmID, NULL, 0);
 	if ((FTM_INT)pSMP->pBlock == -1)
 	{

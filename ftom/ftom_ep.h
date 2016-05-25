@@ -32,6 +32,10 @@ typedef	struct FTOM_EP_STRUCT
 			oid		pOID[MAX_OID_LEN];
 			size_t	nOIDLen;
 		}	xSNMP;
+		struct
+		{
+			FTM_ULONG	ulOffset;	
+		}	xFINS;
 	}	xOption;
 }	FTOM_EP, _PTR_ FTOM_EP_PTR;
 
@@ -236,6 +240,11 @@ FTM_RET FTOM_EP_CLASS_getAt
 (
 	FTM_ULONG 		ulIndex, 
 	FTOM_EP_CLASS_PTR _PTR_ ppEPClass
+);
+
+FTM_RET	FTOM_EP_print
+(
+	FTOM_EP_PTR		pEP
 );
 
 FTM_RET	FTOM_EP_printList

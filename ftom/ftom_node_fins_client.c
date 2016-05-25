@@ -103,8 +103,6 @@ FTM_RET	FTOM_NODE_FINSC_init
 	FTM_LOCK_init(&pNode->xLock);
 	FTM_LIST_init(&pNode->xCommon.xEPList);
 
-	struct sockaddr_in ws_addr, cv_addr;
-
 	pNode->xSockFD = socket(AF_INET, SOCK_DGRAM, 0);
 	if (pNode->xSockFD < 0)
 	{
@@ -112,18 +110,26 @@ FTM_RET	FTOM_NODE_FINSC_init
 		return	FTM_RET_ERROR;
 	}
 
-	memset(&ws_addr, 0, sizeof(ws_addr));
-	ws_addr.sin_family = AF_INET;
-	ws_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	ws_addr.sin_port  = htons(9600);
+	memset(&pNode->xLocal, 0, sizeof(pNode->xLocal));
+	pNode->xLocal.sin_family 		= AF_INET;
+	pNode->xLocal.sin_addr.s_addr 	= htonl(INADDR_ANY);
+	pNode->xLocal.sin_port  		= htons(pNode->xCommon.xInfo.xOption.xFINS.ulSP);
 
-	nRet = bind(pNode->xSockFD, (struct sockaddr *)&ws_addr, sizeof(ws_addr));
+	memset(&pNode->xRemote, 0, sizeof(pNode->xRemote));
+	pNode->xRemote.sin_family 		= AF_INET;
+	pNode->xRemote.sin_addr.s_addr 	= inet_addr(pNode->xCommon.xInfo.xOption.xFINS.pDIP);
+	pNode->xRemote.sin_port 		= htons(pNode->xCommon.xInfo.xOption.xFINS.ulDP);
+
+	nRet = bind(pNode->xSockFD, (struct sockaddr *)&pNode->xLocal, sizeof(pNode->xLocal));
 	if (nRet < 0)
 	{
 		ERROR("Can't bind local address!\n");	
 		close(pNode->xSockFD);
+		pNode->xSockFD = -1;
+
 		return	FTM_RET_ERROR;
 	}
+
 	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
 
 	return	FTM_RET_OK;
@@ -135,6 +141,12 @@ FTM_RET	FTOM_NODE_FINSC_final
 )
 {
 	ASSERT(pNode != NULL);
+
+	if (pNode->xSockFD > 0)
+	{
+		close(pNode->xSockFD);
+		pNode->xSockFD = -1;	
+	}
 
 	FTM_LIST_final(&pNode->xCommon.xEPList);
 
@@ -199,65 +211,128 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_get
 	FTM_EP_DATA_PTR 	pData
 )
 {
-	FTM_INT	nRet;
 	FTM_RET	xRet;
-	struct sockaddr_in ws_addr, cv_addr;
-	FTM_CHAR	pFINSReq[2048];
-	FTM_CHAR	pFINSResp[2048];
-	socklen_t	nAddrLen;
-	FTM_INT		nRecvLen;
+
+	FTM_CHAR	pFINSReq[128];
+	FTM_CHAR	pFINSResp[128];
+	FTM_INT		nReqLen = 0;
+	FTM_INT		nRecvLen = 0;
+	FTM_BOOL	bDone = FTM_FALSE;
+	FTM_ULONG	usValue = 0;
+	FTM_INT		nIndex = 0;
+
+	pFINSReq[nReqLen++] = 0x80;
+	pFINSReq[nReqLen++] = 0x00;
+	pFINSReq[nReqLen++] = 0x02;
+	pFINSReq[nReqLen++] = (pNode->xCommon.xInfo.xOption.xFINS.ulDA >> 16) & 0xFF;
+	pFINSReq[nReqLen++] = (pNode->xCommon.xInfo.xOption.xFINS.ulDA >>  8) & 0xFF;
+	pFINSReq[nReqLen++] = (pNode->xCommon.xInfo.xOption.xFINS.ulDA >>  0) & 0xFF;
+	pFINSReq[nReqLen++] = (pNode->xCommon.xInfo.xOption.xFINS.ulSA >> 16) & 0xFF;
+	pFINSReq[nReqLen++] = (pNode->xCommon.xInfo.xOption.xFINS.ulSA >>  8) & 0xFF;
+	pFINSReq[nReqLen++] = (pNode->xCommon.xInfo.xOption.xFINS.ulSA >>  0) & 0xFF;
+	pFINSReq[nReqLen++] = pNode->xCommon.xInfo.xOption.xFINS.ulServerID;
+	pFINSReq[nReqLen++] = 0x01;
+	pFINSReq[nReqLen++] = 0x01;
+	pFINSReq[nReqLen++] = 0x82;
+	pFINSReq[nReqLen++] = 0x24;
+	pFINSReq[nReqLen++] = 0x54;
+	pFINSReq[nReqLen++] = 0x00;
+	pFINSReq[nReqLen++] = 0x00;
+	pFINSReq[nReqLen++] = 0x0D;
 
 	FTM_LOCK_set(&pNode->xLock);
 
-	pFINSReq[0] = 0x80;
-	pFINSReq[1] = 0x00;
-	pFINSReq[2] = 0x02;
-	pFINSReq[3] = 0x00;
-	pFINSReq[4] = 0x00;
-	pFINSReq[5] = 0x00;
-	pFINSReq[6] = 0x00;
-	pFINSReq[7] = 0x02;
-	pFINSReq[8] = 0x00;
-	pFINSReq[9] = 0x0e;
-	pFINSReq[10] = 0x01;
-	pFINSReq[11] = 0x01;
-	pFINSReq[12] = 0x82;
-	pFINSReq[13] = 0x24;
-	pFINSReq[14] = 0x54;
-	pFINSReq[15] = 0x00;
-	pFINSReq[16] = 0x00;
-	pFINSReq[17] = 0x03;
+	FTM_INT	nRetry = pNode->xCommon.xInfo.xOption.xFINS.ulRetryCount;
 
-	memset(&cv_addr, 0, sizeof(cv_addr));
-	cv_addr.sin_family = AF_INET;
-	cv_addr.sin_addr.s_addr = inet_addr("191.30.5.178");
-	cv_addr.sin_port = htons(9600);
-
-	if (sendto(pNode->xSockFD, pFINSReq, 18, 0, (const struct sockaddr *)&cv_addr, sizeof(cv_addr)) == 18)
+	while(!bDone && (nRetry > 0))
 	{
-		TRACE("Send success!\n");		
-	}
-
-	nRecvLen = recvfrom(pNode->xSockFD, pFINSResp, sizeof(pFINSResp), 0, (struct sockaddr *)&cv_addr, &nAddrLen);
-	if (nRecvLen > 0)
-	{
-		FTM_INT	i;
-
-		TRACE("Recv success : %d !\n", nRecvLen);		
-		for(i = 0 ; i < nRecvLen ; i++)
+		if (sendto(pNode->xSockFD, pFINSReq, nReqLen, 0, (const struct sockaddr *)&pNode->xRemote, sizeof(pNode->xRemote)) != nReqLen)
 		{
-			MESSAGE("%02x ", pFINSResp[i]);	
+			--nRetry;
+			continue;
 		}
-		MESSAGE("\n");
-	
+
+		FTM_INT	nTimeout = pEP->xInfo.ulTimeout;
+		while(--nTimeout > 0)
+		{
+			nRecvLen = recv(pNode->xSockFD, pFINSResp, sizeof(pFINSResp), MSG_DONTWAIT);
+			if (nRecvLen > 0)
+			{
+				break;
+			}
+			usleep(1000);
+		}
+
+		if (nRecvLen == 14 + pFINSReq[nReqLen-1]*2)
+		{
+			if ((pFINSReq[3] == pFINSResp[6]) 
+				&& (pFINSReq[4] ==  pFINSResp[7]) 
+				&& (pFINSReq[5] ==  pFINSResp[8]) 
+				&& (pFINSReq[9] == pNode->xCommon.xInfo.xOption.xFINS.ulServerID))
+			{
+				bDone = FTM_TRUE;	
+				break;
+			}
+		}
+		
+		--nRetry;
 	}
 
-	//close(pNode->xSockFD);
+	if (!bDone)
+	{
+		xRet = FTM_RET_COMM_TIMEOUT;
+		goto finish;	
+	}
+
+	switch(pEP->xInfo.xDEPID & 0x7F000000)
+	{
+	case	FTM_EP_TYPE_PRESSURE:
+		{
+			switch(pEP->xInfo.xDEPID & 0xFF)
+			{
+			case	1: nIndex = 0; break;
+			case	2: nIndex = 2; break;
+			case	3: nIndex = 4; break;
+			case	4: nIndex = 10; break;
+			case	5: nIndex = 12; break;
+			default:
+				xRet = FTM_RET_OBJECT_NOT_FOUND;	
+				goto finish;
+			}
+		}
+		break;
+
+	case	FTM_EP_TYPE_AI:
+		{
+			switch(pEP->xInfo.xDEPID & 0xFF)
+			{
+			case	1: nIndex = 6; break;
+			case	2: nIndex = 8; break;
+			default:
+				xRet = FTM_RET_OBJECT_NOT_FOUND;	
+				goto finish;
+			}
+		}
+		break;
+
+	default:
+		{
+			xRet = FTM_RET_OBJECT_NOT_FOUND;	
+			goto finish;
+		}
+
+	}
+	usValue = (((FTM_USHORT)(FTM_UINT8)pFINSResp[14 + nIndex*2]) << 8) | (FTM_USHORT)(FTM_UINT8)pFINSResp[14+nIndex*2+1];
+
+	pData->ulTime = time(NULL);
+	pData->xState = FTM_EP_DATA_STATE_VALID;
+	pData->xType  = FTM_VALUE_TYPE_FLOAT;
+	xRet = FTM_VALUE_initFLOAT(&pData->xValue, (FTM_FLOAT)usValue / 100.0);
 
 finish:
 	FTM_LOCK_reset(&pNode->xLock);
 
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 

@@ -743,6 +743,22 @@ FTM_RET	FTM_CONFIG_ITEM_getNode(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_PTR pNode)
 			return	FTM_RET_CONFIG_INVALID_OBJECT;	
 		}
 	}
+	else if (strcmp(pTypeString, "fins") == 0)
+	{
+		xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "fins", &xSNMPItem);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Node type object invalid!\n");
+			return	FTM_RET_CONFIG_INVALID_OBJECT;	
+		}
+		
+		xRet = FTM_CONFIG_ITEM_getFINS(&xSNMPItem, &xNode.xOption.xFINS);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Node type object invalid!\n");
+			return	FTM_RET_CONFIG_INVALID_OBJECT;	
+		}
+	}
 
 	memcpy(pNode, &xNode, sizeof(FTM_NODE));
 
@@ -766,7 +782,11 @@ FTM_RET	FTM_CONFIG_ITEM_getSNMP(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_OPT_SNMP_PTR
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_CONFIG_ITEM_getModbusOverTCP(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_OPT_MODBUS_OVER_TCP_PTR pMB)
+FTM_RET	FTM_CONFIG_ITEM_getModbusOverTCP
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_NODE_OPT_MODBUS_OVER_TCP_PTR pMB
+)
 {
 	ASSERT(pItem != NULL);
 	ASSERT(pMB != NULL);
@@ -784,7 +804,37 @@ FTM_RET	FTM_CONFIG_ITEM_getModbusOverTCP(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_OPT
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_CONFIG_ITEM_getEPData(FTM_CONFIG_ITEM_PTR pItem, FTM_EP_DATA_PTR pEPData)
+FTM_RET	FTM_CONFIG_ITEM_getFINS
+(
+	FTM_CONFIG_ITEM_PTR 	pItem, 
+	FTM_NODE_OPT_FINS_PTR	pFINS
+)
+{
+	ASSERT(pItem != NULL);
+	ASSERT(pFINS != NULL);
+
+	FTM_NODE_OPT_FINS	xFINS;
+
+	FTM_CONFIG_ITEM_getItemULONG(pItem,	"version", 	&xFINS.ulVersion);
+	FTM_CONFIG_ITEM_getItemString(pItem,"model", 	xFINS.pModel, sizeof(xFINS.pModel) - 1);
+	FTM_CONFIG_ITEM_getItemString(pItem,"dip", 		xFINS.pDIP, sizeof(xFINS.pDIP) - 1);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "dport", 	&xFINS.ulDP);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "sport", 	&xFINS.ulSP);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "da", 		&xFINS.ulDA);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "sa", 		&xFINS.ulSA);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "server_id",&xFINS.ulServerID);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "retry", 	&xFINS.ulRetryCount);
+
+	memcpy(pFINS, &xFINS, sizeof(FTM_NODE_OPT_FINS));
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_CONFIG_ITEM_getEPData
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_EP_DATA_PTR pEPData
+)
 {
 	ASSERT(pItem != NULL);
 	ASSERT(pEPData != NULL);

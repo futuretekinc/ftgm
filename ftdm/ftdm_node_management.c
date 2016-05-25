@@ -478,6 +478,21 @@ FTM_RET	FTDM_NODEM_showList
 						pNode->xInfo.xOption.xMB.ulSlaveID);
 				}
 				break;
+
+			case	FTM_NODE_TYPE_FINS:
+				{
+					MESSAGE(" %16s %16s %02x:%02x:%02x %02x:%02x:%02x %d\n",
+						pNode->xInfo.xOption.xFINS.pModel,
+						pNode->xInfo.xOption.xFINS.pDIP,
+						(pNode->xInfo.xOption.xFINS.ulDA >> 16) & 0xFF, 
+						(pNode->xInfo.xOption.xFINS.ulDA >> 8) & 0xFF, 
+						(pNode->xInfo.xOption.xFINS.ulDA >> 0) & 0xFF, 
+						(pNode->xInfo.xOption.xFINS.ulSA >> 16) & 0xFF, 
+						(pNode->xInfo.xOption.xFINS.ulSA >> 8) & 0xFF, 
+						(pNode->xInfo.xOption.xFINS.ulSA >> 0) & 0xFF, 
+						pNode->xInfo.xOption.xFINS.ulServerID);
+				}
+				break;
 			}
 
 		}

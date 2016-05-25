@@ -904,6 +904,77 @@ FTM_INT	FTOM_NODE_comparator
 	return	strcasecmp(pNode1->xInfo.pDID, pNode2->xInfo.pDID);
 }
 
+FTM_RET	FTOM_NODE_print
+(
+	FTOM_NODE_PTR	pNode
+)
+{
+	ASSERT(pNode != NULL);
+	FTM_INT		j;
+	FTOM_EP_PTR	pEP;
+	FTM_ULONG	ulEPCount;
+
+	MESSAGE("\n# Node Information\n");
+	MESSAGE("%16s : %s\n", "DID", 		pNode->xInfo.pDID);
+	MESSAGE("%16s : %s\n", "Type", 		FTM_NODE_typeString(pNode->xInfo.xType));
+	switch(pNode->xInfo.xType)
+	{
+	case	FTM_NODE_TYPE_SNMP:	
+		{
+			MESSAGE("%16s   %10s - %s\n", "", "Version", 	FTM_SNMP_versionString(pNode->xInfo.xOption.xSNMP.ulVersion));	
+			MESSAGE("%16s   %10s - %s\n", "", "URL", 		pNode->xInfo.xOption.xSNMP.pURL);
+			MESSAGE("%16s   %10s - %s\n", "", "Community", 	pNode->xInfo.xOption.xSNMP.pCommunity);
+			MESSAGE("%16s   %10s - %s\n", "", "MIB", 		pNode->xInfo.xOption.xSNMP.pMIB);
+			MESSAGE("%16s   %10s - %lu\n","", "Retry", 		pNode->xInfo.xOption.xSNMP.ulMaxRetryCount);
+		}
+		break;
+
+	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
+		{
+			MESSAGE("%16s   %10s - %d\n", "", "Version", 	pNode->xInfo.xOption.xMB.ulVersion);	
+			MESSAGE("%16s   %10s - %s\n", "", "Model", 		pNode->xInfo.xOption.xMB.pModel);
+			MESSAGE("%16s   %10s - %s\n", "", "URL", 		pNode->xInfo.xOption.xMB.pURL);
+			MESSAGE("%16s   %10s - %lu\n","", "Port", 		pNode->xInfo.xOption.xMB.ulPort);
+			MESSAGE("%16s   %10s - %lu\n","", "SlaveID", 	pNode->xInfo.xOption.xMB.ulSlaveID);
+		}
+		break;
+
+	case	FTM_NODE_TYPE_FINS:
+		{
+			MESSAGE("%16s   %10s - %d\n", "", "Version", 	pNode->xInfo.xOption.xFINS.ulVersion);	
+			MESSAGE("%16s   %10s - %s\n", "", "Model", 		pNode->xInfo.xOption.xFINS.pModel);
+			MESSAGE("%16s   %10s - %s\n", "", "DestIP", 	pNode->xInfo.xOption.xFINS.pDIP);
+			MESSAGE("%16s   %10s - %lu\n","", "DestPort",	pNode->xInfo.xOption.xFINS.ulDP);
+			MESSAGE("%16s   %10s - %lu\n","", "SrcPort", 	pNode->xInfo.xOption.xFINS.ulSP);
+			MESSAGE("%16s   %10s - %02x:%02x:%02x\n","", "DestAddr",	
+					(pNode->xInfo.xOption.xFINS.ulDA >> 16) & 0xFF,
+					(pNode->xInfo.xOption.xFINS.ulDA >>  8) & 0xFF,
+					(pNode->xInfo.xOption.xFINS.ulDA >>  0) & 0xFF);
+			MESSAGE("%16s   %10s - %02x:%02x:%02x\n","", "SrcAddr", 
+					(pNode->xInfo.xOption.xFINS.ulSA >> 16) & 0xFF,
+					(pNode->xInfo.xOption.xFINS.ulSA >>  8) & 0xFF,
+					(pNode->xInfo.xOption.xFINS.ulSA >>  0) & 0xFF);
+			MESSAGE("%16s   %10s - %lu\n","", "ServerID", 	pNode->xInfo.xOption.xFINS.ulServerID);
+		}
+		break;
+	}
+
+	MESSAGE("%16s : %s\n", "State", 	FTOM_NODE_stateToStr(pNode->xState));
+	MESSAGE("%16s : %d\n", "Interval", 	pNode->xInfo.ulInterval);
+	MESSAGE("%16s : %d\n", "Timeout", 	pNode->xInfo.ulTimeout);
+	FTOM_NODE_getEPCount(pNode, &ulEPCount);
+	MESSAGE("%16s : %d\n", "EPs",		ulEPCount);
+	for(j = 0; j < ulEPCount ; j++)
+	{
+		if (FTOM_NODE_getEPAt(pNode, j, &pEP) == FTM_RET_OK)
+		{
+			MESSAGE("%16s   %d - %16s\n", "", j+1, pEP->xInfo.pEPID);
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_NODE_printList
 (
 	FTM_VOID
