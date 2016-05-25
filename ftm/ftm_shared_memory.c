@@ -382,7 +382,9 @@ FTM_RET	FTM_SMP_createServer
 		xRet = FTM_RET_CANT_CREATE_SM;
 		goto error;
 	}
-		
+
+	TRACE("SM[%d:%d] creation success!\n", pSMP->xKey, pSMP->nShmID);
+
 	pSMP->pBlock = (FTM_SMP_BLOCK_PTR)shmat(pSMP->nShmID, NULL, 0);
 	if ((FTM_INT)pSMP->pBlock == -1)
 	{
@@ -434,6 +436,7 @@ error:
 FTM_RET	FTM_SMP_createClient
 (
 	key_t		xKey,
+	FTM_INT		nShmID,
 	FTM_SMP_PTR	_PTR_	ppSMP
 )
 {
@@ -450,14 +453,21 @@ FTM_RET	FTM_SMP_createClient
 	}
 
 	pSMP->xKey = xKey;
-	pSMP->nShmID = shmget(pSMP->xKey, sizeof(FTM_SMP_BLOCK), 0666);
-	if (pSMP->nShmID < 0)
+	if (nShmID > 0)
 	{
-		ERROR("shared memory creation failed.\n");	
-		xRet = FTM_RET_SM_IS_NOT_EXIST;
-		goto error;
+		pSMP->nShmID = nShmID;
 	}
-		
+	else
+	{
+		pSMP->nShmID = shmget(pSMP->xKey, sizeof(FTM_SMP_BLOCK), 0666);
+		if (pSMP->nShmID < 0)
+		{
+			ERROR("shared memory creation failed.\n");	
+			xRet = FTM_RET_SM_IS_NOT_EXIST;
+			goto error;
+		}
+	}
+
 	pSMP->pBlock = (FTM_SMP_BLOCK_PTR)shmat(pSMP->nShmID, NULL, 0);
 	if ((FTM_INT)pSMP->pBlock == -1)
 	{
@@ -668,6 +678,28 @@ FTM_RET	FTM_SMP_sendResp
 	sem_post(&pSMP->pBlock->xResp);
 
 	sem_post(pSMP->pLocker);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_SMP_createKeyFile
+(
+	FTM_SMP_PTR	pSMP,
+	FTM_CHAR_PTR	pFileName
+)
+{
+	FILE *pFile;
+
+	pFile = fopen(pFileName, "w");
+	if (pFile == NULL)
+	{
+		ERROR("Can't creation key file[%s]!\n", pFileName);
+		return	FTM_RET_ERROR;	
+	}
+
+	fprintf(pFile, "%d %d\n", pSMP->xKey, pSMP->nShmID);
+	fflush(pFile);
+	fclose(pFile);
 
 	return	FTM_RET_OK;
 }

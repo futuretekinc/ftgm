@@ -11,7 +11,7 @@
 static FTM_VOID_PTR FTOM_ACTION_process(FTM_VOID_PTR pData);
 static FTM_BOOL		FTOM_ACTION_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
-static sem_t		xLock;
+static FTM_LOCK		xLock;
 static pthread_t	xThread;
 static FTM_BOOL		bStop = FTM_TRUE;
 static FTM_LIST_PTR	pActionList = NULL;
@@ -28,10 +28,11 @@ FTM_RET	FTOM_ACTION_init
 	{
 		return	FTM_RET_ALREADY_INITIALIZED;	
 	}
-		
-	if (sem_init(&xLock, 0, 1) < 0)
+	
+	xRet = FTM_LOCK_init(&xLock);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_ERROR;	
+		return	xRet;	
 	}
 
 	xRet = FTOM_MSGQ_create(&pMsgQ);
@@ -81,6 +82,8 @@ FTM_RET	FTOM_ACTION_final
 
 	FTM_LIST_destroy(pActionList);
 	pActionList = NULL;
+
+	FTM_LOCK_final(&xLock);
 
 	return	FTM_RET_OK;
 }

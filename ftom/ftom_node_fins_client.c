@@ -103,6 +103,8 @@ FTM_RET	FTOM_NODE_FINSC_init
 	FTM_LOCK_init(&pNode->xLock);
 	FTM_LIST_init(&pNode->xCommon.xEPList);
 
+	struct sockaddr_in ws_addr, cv_addr;
+
 	pNode->xSockFD = socket(AF_INET, SOCK_DGRAM, 0);
 	if (pNode->xSockFD < 0)
 	{
@@ -110,6 +112,18 @@ FTM_RET	FTOM_NODE_FINSC_init
 		return	FTM_RET_ERROR;
 	}
 
+	memset(&ws_addr, 0, sizeof(ws_addr));
+	ws_addr.sin_family = AF_INET;
+	ws_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	ws_addr.sin_port  = htons(9600);
+
+	nRet = bind(pNode->xSockFD, (struct sockaddr *)&ws_addr, sizeof(ws_addr));
+	if (nRet < 0)
+	{
+		ERROR("Can't bind local address!\n");	
+		close(pNode->xSockFD);
+		return	FTM_RET_ERROR;
+	}
 	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
 
 	return	FTM_RET_OK;
@@ -194,18 +208,6 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_get
 	FTM_INT		nRecvLen;
 
 	FTM_LOCK_set(&pNode->xLock);
-	memset(&ws_addr, 0, sizeof(ws_addr));
-	ws_addr.sin_family = AF_INET;
-	ws_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	ws_addr.sin_port  = htons(9600);
-
-	nRet = bind(pNode->xSockFD, (struct sockaddr *)&ws_addr, sizeof(ws_addr));
-	if (nRet < 0)
-	{
-		ERROR("Can't bind local address!\n");	
-		xRet = FTM_RET_ERROR;
-		goto finish;
-	}
 
 	pFINSReq[0] = 0x80;
 	pFINSReq[1] = 0x00;
@@ -220,8 +222,8 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_get
 	pFINSReq[10] = 0x01;
 	pFINSReq[11] = 0x01;
 	pFINSReq[12] = 0x82;
-	pFINSReq[13] = 0x21;
-	pFINSReq[14] = 0x34;
+	pFINSReq[13] = 0x24;
+	pFINSReq[14] = 0x54;
 	pFINSReq[15] = 0x00;
 	pFINSReq[16] = 0x00;
 	pFINSReq[17] = 0x03;
@@ -250,7 +252,7 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_get
 	
 	}
 
-	close(pNode->xSockFD);
+	//close(pNode->xSockFD);
 
 finish:
 	FTM_LOCK_reset(&pNode->xLock);

@@ -53,7 +53,7 @@ FTM_RET FTDMC_connect
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	sem_init(&pSession->xLock, 0, 1);
+	FTM_LOCK_init(&pSession->xLock);
 	hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (hSock == -1)
 	{
@@ -90,7 +90,7 @@ FTM_RET FTDMC_disconnect
 	}
 
 	close(pSession->hSock);
-	sem_destroy(&pSession->xLock);
+	FTM_LOCK_final(&pSession->xLock);
 	pSession->hSock = 0;
 	
 	return	FTM_RET_OK;
@@ -2132,7 +2132,7 @@ FTM_RET FTDMC_request
 		return	FTM_RET_CLIENT_HANDLE_INVALID;	
 	}
 
-	sem_wait(&pSession->xLock);
+	FTM_LOCK_set(&pSession->xLock);
 
 	//TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, nReqLen);
 
@@ -2162,7 +2162,7 @@ FTM_RET FTDMC_request
 
 	}
 
-	sem_post(&pSession->xLock);
+	FTM_LOCK_reset(&pSession->xLock);
 
 	return	xRet;
 }

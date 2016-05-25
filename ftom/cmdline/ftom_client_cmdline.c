@@ -11,6 +11,13 @@
 #include "ftom_client_cmdline.h"
 #include "ftom_params.h"
 
+static
+FTM_RET	FTOM_CLIENT_CL_getSMKey
+(
+	key_t _PTR_		pxKey,
+	FTM_INT_PTR		pnShmID
+);
+
 FTM_RET	FTOM_CLIENT_CL_init
 (
 	FTOM_CLIENT_CL_PTR	pClient
@@ -232,8 +239,12 @@ FTM_RET FTOM_CLIENT_CL_requestSM
 {
 	FTM_RET	xRet;
 	FTM_SMP_PTR	pSMP;
+	key_t		xKey;
+	FTM_INT		nShmID;
 
-	xRet = FTM_SMP_createClient(1234, &pSMP);
+	FTOM_CLIENT_CL_getSMKey(&xKey, &nShmID);
+
+	xRet = FTM_SMP_createClient(xKey, nShmID, &pSMP);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_SMP_call(pSMP, pReq, ulReqLen, pResp, ulMaxRespLen, pulRespLen, 1000000);
@@ -247,4 +258,34 @@ FTM_RET FTOM_CLIENT_CL_requestSM
 	return	xRet;
 }
 
+FTM_RET	FTOM_CLIENT_CL_getSMKey
+(
+	key_t	_PTR_	pxKey,
+	FTM_INT_PTR		pnShmID
+)
+{
+	FILE *pFile;
 
+	*pxKey	= 1234;
+	*pnShmID= 0;
+
+	pFile = fopen("/run/ftom/ftom.smkey", "r");
+	if (pFile != NULL)
+	{
+		FTM_RET	nCount;
+		FTM_INT	nKey = 0;
+		FTM_INT	nShmID = 0;
+
+		nCount = fscanf(pFile, "%d %d", &nKey, &nShmID);	
+		if (nCount == 2)
+		{
+			*pxKey = nKey;
+			*pnShmID = nShmID;
+		}
+
+		fclose(pFile);
+	}
+
+	return	FTM_RET_OK;
+
+}

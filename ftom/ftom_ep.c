@@ -164,7 +164,13 @@ FTM_RET	FTOM_EP_create
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
 
 	pEP->bStop = FTM_TRUE;
-	FTM_LOCK_init(&pEP->xLock);
+	xRet = FTM_LOCK_create(&pEP->pLock);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEP);
+		ERROR("Lock init failed.\n");
+		return	xRet;	
+	}
 
 	xRet = FTOM_MSGQ_init(&pEP->xMsgQ);
 	if (xRet != FTM_RET_OK)
@@ -241,7 +247,14 @@ FTM_RET	FTOM_EP_createFromDB
 	memcpy(&pEP->xInfo, &xInfo, sizeof(FTM_EP));
 
 	pEP->bStop = FTM_TRUE;
-	FTM_LOCK_init(&pEP->xLock);
+
+	xRet = FTM_LOCK_create(&pEP->pLock);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pEP);
+		ERROR("Lock init failed.\n");
+		return	xRet;
+	}
 
 	xRet = FTOM_MSGQ_init(&pEP->xMsgQ);
 	if (xRet != FTM_RET_OK)
@@ -319,7 +332,7 @@ FTM_RET	FTOM_EP_destroy
 		ERROR("MsgQ finalize failed.\n");
 	}
 
-	FTM_LOCK_final(&(*ppEP)->xLock);
+	FTM_LOCK_destroy(&(*ppEP)->pLock);
 
 	xRet = FTM_MEM_free(*ppEP);
 	if (xRet != FTM_RET_OK)
@@ -574,7 +587,7 @@ FTM_RET	FTOM_EP_stop
 	xRet = FTOM_MSG_createQuit(&pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't create quit message!\n");
+		ERROR("EP[%s] : Can't create quit message!\n", pEP->xInfo.pEPID);
 	}
 	else
 	{

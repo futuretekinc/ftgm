@@ -620,9 +620,21 @@ FTM_RET	FTOM_SERVER_start
 	nRet = pthread_create(&pServer->xPThread, NULL, FTOM_SERVER_process, (FTM_VOID_PTR)pServer);
 	if (nRet != 0)
 	{
-		ERROR("Can't create thread[%d]\n", nRet);
-		return	FTM_RET_CANT_CREATE_THREAD;
+		ERROR("Can't create Net interface[%d]\n", nRet);
 	}
+
+	nRet = pthread_create(&pServer->xProcessPipe, NULL, FTOM_SERVER_processPipe, pServer);
+	if (nRet != 0)
+	{
+		ERROR("Can't create PIPE interface[%d]\n", nRet);
+	}
+
+	nRet = pthread_create(&pServer->xProcessSM, NULL, FTOM_SERVER_processSM, pServer);
+	if (nRet != 0)
+	{
+		ERROR("Can't create SM interface[%d]\n", nRet);
+	}
+
 	TRACE("xThread = %08x\n", pServer->xPThread);
 	return	FTM_RET_OK;
 }
@@ -653,6 +665,8 @@ FTM_RET	FTOM_SERVER_stop
 	pServer->bStop = FTM_TRUE;
 	shutdown(pServer->hSocket, SHUT_RD);
 	pthread_join(pServer->xPThread, NULL);
+	pthread_join(pServer->xProcessPipe, NULL);
+	pthread_join(pServer->xProcessSM, NULL);
 
 	TRACE("Server finished.\n");
 	return	FTM_RET_OK;
@@ -707,11 +721,9 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 	FTOM_SERVER_PTR 	pServer = (FTOM_SERVER_PTR)pData;
 	FTM_INT				nRet;
-	pthread_t			xProcessPipe;
-	pthread_t			xProcessSM;
 	struct sockaddr_in	xServerAddr, xClientAddr;
 
-
+	
 	if (sem_init(&pServer->xLock, 0,pServer->xConfig.ulMaxSession) < 0)
 	{
 		ERROR("Can't alloc semaphore!\n");
@@ -740,9 +752,6 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 	pServer->bStop = FTM_FALSE;
 	
-	pthread_create(&xProcessPipe, NULL, FTOM_SERVER_processPipe, pServer);
-	pthread_create(&xProcessSM, NULL, FTOM_SERVER_processSM, pServer);
-
 	while(!pServer->bStop)
 	{
 		FTM_INT	hClient;
@@ -788,9 +797,6 @@ FTM_VOID_PTR FTOM_SERVER_process
 			}
 		}
 	}
-
-	pthread_join(xProcessPipe, NULL);
-	pthread_join(xProcessSM, NULL);
 
 	return	FTM_RET_OK;
 }
@@ -996,6 +1002,8 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 		ERROR("SMP creation failed.[%08x]\n", xRet);
 		return	0;	
 	}
+
+	FTM_SMP_createKeyFile(pSMP, pServer->xConfig.pSMKeyFile);
 
 	while(!pServer->bStop)
 	{
@@ -2382,6 +2390,7 @@ FTM_RET FTOM_SERVER_loadFromFile
 	config_init(&xConfig);
 	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
 	{
+		ERROR("SERVER configuration file[%s] load failed\n", pFileName);
 		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
@@ -2401,6 +2410,20 @@ FTM_RET FTOM_SERVER_loadFromFile
 		{
 			pServer->xConfig.usPort = (FTM_ULONG)config_setting_get_int(pField);
 		}
+
+		pField = config_setting_get_member(pSection, "sm_key_file");
+		if (pField != NULL)
+		{
+			strncpy(pServer->xConfig.pSMKeyFile, config_setting_get_string(pField), sizeof(pServer->xConfig.pSMKeyFile) - 1);
+			TRACE("sm_key_file : %s\n", pServer->xConfig.pSMKeyFile);
+		}
+		else
+		{
+			TRACE("Can't found sm_key_file!\n");
+			strcpy(pServer->xConfig.pSMKeyFile, "/run/ftom/ftom.smkey");
+		}
+
+
 	}
 
 	config_destroy(&xConfig);

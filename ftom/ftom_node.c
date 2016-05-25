@@ -83,6 +83,7 @@ FTM_RET FTOM_NODE_final
 	FTM_LIST_iteratorStart(pNodeList);
 	while(FTM_LIST_iteratorNext(pNodeList, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
 	{
+		FTM_LIST_remove(pNodeList, pNode);
 		FTOM_NODE_destroy(&pNode);	
 	}
 
@@ -144,7 +145,12 @@ FTM_RET	FTOM_NODE_create
 
 	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 		{
-//			xRet = FTOM_NODE_MBC_create(pInfo, &pNode);
+			xRet = FTOM_NODE_MBC_create(pInfo, &pNode);
+		}
+		break;
+
+	case	FTM_NODE_TYPE_FINS:
+		{
 			xRet = FTOM_NODE_FINSC_create(pInfo, &pNode);
 		}
 		break;
@@ -242,7 +248,12 @@ FTM_RET	FTOM_NODE_createFromDB
 
 	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 		{
-//			xRet = FTOM_NODE_MBC_create(&xInfo, &pNode);
+			xRet = FTOM_NODE_MBC_create(&xInfo, &pNode);
+		}
+		break;
+	
+	case	FTM_NODE_TYPE_FINS:
+		{
 			xRet = FTOM_NODE_FINSC_create(&xInfo, &pNode);
 		}
 		break;
@@ -679,15 +690,15 @@ FTM_RET FTOM_NODE_stop
 	xRet = FTOM_MSG_createQuit(&pMsg);
 	if (xRet == FTM_RET_OK)
 	{
-		ERROR("Can't create quit message!\n");
-	}
-	else
-	{
 		xRet = FTOM_MSGQ_push(&pNode->xMsgQ, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			FTOM_MSG_destroy(&pMsg);	
 		}
+	}
+	else
+	{
+		ERROR("NODE[%s] : Can't create quit message!\n", pNode->xInfo.pDID);
 	}
 
 	if (pMsg == NULL)

@@ -121,6 +121,7 @@ FTM_RET	FTM_SMP_createServer
 FTM_RET	FTM_SMP_createClient
 (
 	key_t		xKey,
+	FTM_INT		nShmID,
 	FTM_SMP_PTR	_PTR_	ppSMP
 );
 
@@ -155,6 +156,12 @@ FTM_RET	FTM_SMP_sendResp
 	FTM_VOID_PTR	pRespData,
 	FTM_ULONG		ulDataLen,
 	FTM_ULONG		ulTimeout
+);
+
+FTM_RET	FTM_SMP_createKeyFile
+(
+	FTM_SMP_PTR		pSMP,
+	FTM_CHAR_PTR	pFileName
 );
 
 FTM_RET	FTM_SMP_print

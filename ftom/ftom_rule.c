@@ -21,7 +21,7 @@ FTM_BOOL	FTOM_RULE_seeker
 	const FTM_VOID_PTR pKey
 );
 
-static sem_t	xLock;
+static 	FTM_LOCK			xLock;
 static	pthread_t			xThread;
 static	FTM_BOOL			bStop = FTM_TRUE;
 static	FTOM_MSG_QUEUE_PTR	pMsgQ = NULL;
@@ -35,9 +35,10 @@ FTM_RET	FTOM_RULE_init
 {
 	FTM_RET			xRet;
 
-	if (sem_init(&xLock, 0, 1) < 0)
+	xRet = FTM_LOCK_init(&xLock);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_ERROR;	
+		return	xRet;	
 	}
 
 	xRet = FTOM_MSGQ_create(&pMsgQ);
@@ -97,6 +98,9 @@ FTM_RET	FTOM_RULE_final
 		FTM_LIST_destroy(pRuleList);
 		pRuleList = NULL;
 	}
+
+
+	FTM_LOCK_final(&xLock);
 
 	return	FTM_RET_OK;
 }
@@ -339,7 +343,7 @@ FTM_RET	FTOM_RULE_notifyChanged
 	FTM_RET			xRet;
 	FTOM_RULE_PTR	pRule;
 
-	sem_wait(&xLock);
+	FTM_LOCK_set(&xLock);
 
 	FTM_LIST_iteratorStart(pRuleList);
 	while(FTM_LIST_iteratorNext(pRuleList, (FTM_VOID_PTR _PTR_)&pRule) == FTM_RET_OK)
@@ -377,7 +381,7 @@ FTM_RET	FTOM_RULE_notifyChanged
 		}
 	}
 
-	sem_post(&xLock);
+	FTM_LOCK_reset(&xLock);
 
 	return	FTM_RET_OK;
 }

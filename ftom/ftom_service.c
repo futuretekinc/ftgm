@@ -62,7 +62,10 @@ FTM_RET	FTOM_SERVICE_final(FTM_VOID)
 	{
 		if (pService->fDestroy != NULL)
 		{
-			pService->fDestroy(&pService->pData);
+			if (pService->pData != NULL)
+			{
+				pService->fDestroy(&pService->pData);
+			}
 		}
 		else if (pService->fFinal != NULL)
 		{
@@ -127,17 +130,27 @@ FTM_RET	FTOM_SERVICE_unregister(FTOM_SERVICE_TYPE xType)
 
 FTM_RET FTOM_SERVICE_count(FTM_ULONG_PTR pulCount)
 {
-	ASSERT(pServiceList != NULL);
 	ASSERT(pulCount != NULL);
 
+	if (pServiceList == NULL)
+	{
+		*pulCount = 0;
+
+		return	FTM_RET_OK;
+	}
+	
 	return	FTM_LIST_count(pServiceList, pulCount);
 }
 
 FTM_RET FTOM_SERVICE_get(FTOM_SERVICE_TYPE xType, FTOM_SERVICE_PTR _PTR_ ppService)
 {
-	ASSERT(pServiceList != NULL);
 	ASSERT(ppService != NULL);
 
+	if (pServiceList == NULL)
+	{
+		return	FTM_RET_OBJECT_NOT_FOUND;
+	}
+	
 	return	FTM_LIST_get(pServiceList, (FTM_VOID_PTR)&xType, (FTM_VOID_PTR _PTR_)ppService);
 }
 

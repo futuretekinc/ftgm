@@ -33,12 +33,15 @@ typedef	struct
 {
 	FTM_USHORT		usPort;
 	FTM_ULONG		ulMaxSession;
+	FTM_CHAR		pSMKeyFile[FTM_FILE_NAME_LEN + 1];
 }	FTOM_SERVER_CONFIG, _PTR_ FTOM_SERVER_CONFIG_PTR;
 
 typedef	struct FTOM_SERVER_STRUCT
 {
 	FTOM_SERVER_CONFIG	xConfig;
 	pthread_t 			xPThread;
+	pthread_t 			xProcessSM;
+	pthread_t 			xProcessPipe;
 	sem_t				xLock;
 	FTM_BOOL			bStop;	
 	FTM_LIST			xSessionList;

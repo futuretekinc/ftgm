@@ -584,8 +584,8 @@ FTM_RET	FTOM_SNMPC_getEPData
 	struct snmp_session	*pSession = NULL;
 	struct snmp_session	xSession;
 
-	sem_wait(&pNode->xLock);
-	FTM_LOCK_set(&pEP->xLock);
+	FTM_LOCK_set(pNode->pLock);
+	FTM_LOCK_set(pEP->pLock);
 
 	snmp_sess_init(&xSession);			/* initialize session */
 
@@ -705,8 +705,8 @@ FTM_RET	FTOM_SNMPC_getEPData
 		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
 	}
 
-	FTM_LOCK_reset(&pEP->xLock);
-	sem_post(&pNode->xLock);
+	FTM_LOCK_reset(pEP->pLock);
+	FTM_LOCK_reset(pNode->pLock);
 
 	return	xRet;
 }
@@ -726,8 +726,8 @@ FTM_RET	FTOM_SNMPC_setEPData
 	struct snmp_session	*pSession = NULL;
 	struct snmp_session	xSession;
 
-	sem_wait(&pNode->xLock);
-	FTM_LOCK_set(&pEP->xLock);
+	FTM_LOCK_set(pNode->pLock);
+	FTM_LOCK_set(pEP->pLock);
 
 	snmp_sess_init(&xSession);			/* initialize session */
 
@@ -786,8 +786,8 @@ FTM_RET	FTOM_SNMPC_setEPData
 		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
 	}
 
-	FTM_LOCK_reset(&pEP->xLock);
-	sem_post(&pNode->xLock);
+	FTM_LOCK_reset(pEP->pLock);
+	FTM_LOCK_reset(pNode->pLock);
 
 	return	xRet;
 }

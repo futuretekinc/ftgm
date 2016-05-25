@@ -19,7 +19,7 @@ typedef	struct FTOM_EP_STRUCT
 	FTM_ULONG			ulRetryCount;
 
 	pthread_t			xPThread;
-	FTM_LOCK			xLock;
+	FTM_LOCK_PTR		pLock;
 	FTOM_MSG_QUEUE		xMsgQ;
 
 	FTM_LIST			xDataList;

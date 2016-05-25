@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "ftom.h"
 #include "ftom_node_snmp_client.h"
 #include "ftom_dmc.h"
@@ -58,8 +57,7 @@ FTM_RET	FTOM_NODE_SNMPC_destroy
 {
 	ASSERT(ppNode != NULL);
 
-	FTM_LIST_final(&(*ppNode)->xCommon.xEPList);
-
+	FTOM_NODE_SNMPC_final(*ppNode);
 	FTM_MEM_free(*ppNode);
 
 	*ppNode = NULL;
@@ -72,17 +70,23 @@ FTM_RET	FTOM_NODE_SNMPC_init
 	FTOM_NODE_SNMPC_PTR pNode
 )
 {
-	FTM_RET				nRet;
+	FTM_RET				xRet;
 	FTM_ULONG			ulEPCount;
 
 	ASSERT(pNode != NULL);
 
-	sem_init(&pNode->xLock, 0, 1);
-
-	nRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, &ulEPCount);
-	if (nRet != FTM_RET_OK)
+	xRet = FTM_LOCK_create(&pNode->pLock);
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		TRACE("Lock init failed!\n");
+		return	xRet;	
+	}
+
+	xRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, &ulEPCount);
+	if (xRet != FTM_RET_OK)
+	{
+		TRACE("Node[%s] get EP count failed.!\n", pNode->xCommon.xInfo.pDID);
+		return	xRet;	
 	}
 
 	TRACE("NODE(%08x)[%s] has %d EPs\n", pNode, pNode->xCommon.xInfo.pDID, ulEPCount);
@@ -137,6 +141,8 @@ FTM_RET	FTOM_NODE_SNMPC_final
 	ASSERT(pNode != NULL);
 
 	FTM_LIST_final(&pNode->xCommon.xEPList);
+
+	FTM_LOCK_destroy(&pNode->pLock);
 
 	return	FTM_RET_OK;
 }

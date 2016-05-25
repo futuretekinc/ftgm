@@ -1,3 +1,6 @@
+ifeq ($(TOPDIR),)
+TOPDIR=../..
+endif
 include $(TOPDIR)/Makefile.in
 
 CFLAGS:=${CFLAGS}\

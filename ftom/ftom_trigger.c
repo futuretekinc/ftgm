@@ -24,7 +24,7 @@ FTM_BOOL	FTOM_TRIGGER_seeker
 	const FTM_VOID_PTR pIndicator
 );
 
-static sem_t				xLock;
+static FTM_LOCK				xLock;
 static FTM_LIST_PTR			pTriggerList = NULL;
 static FTM_MSG_QUEUE_PTR	pMsgQ = NULL;
 static FTM_BOOL				bStop = FTM_TRUE;
@@ -43,9 +43,10 @@ FTM_RET	FTOM_TRIGGER_init
 	}
 
 
-	if (sem_init(&xLock, 0, 1) < 0)
+	xRet = FTM_LOCK_init(&xLock);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_ERROR;	
+		return	xRet;	
 	}
 
 	xRet = FTM_MSGQ_create(&pMsgQ);
@@ -96,6 +97,8 @@ FTM_RET	FTOM_TRIGGER_final
 
 	FTM_LIST_final(pTriggerList);
 	pTriggerList = NULL;
+
+	FTM_LOCK_final(&xLock);
 
 	return	FTM_RET_OK;
 }

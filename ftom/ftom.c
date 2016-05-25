@@ -257,7 +257,6 @@ static 	FTOM_SERVICE	pServices[] =
 };
 
 extern char *program_invocation_short_name;
-FTOM_PTR	pOM;
 FTOM_CONFIG			xConfig;
 
 FTOM_STATE			xState;
@@ -359,8 +358,6 @@ FTM_RET	FTOM_init
 	return	FTM_RET_OK;
 
 error:
-	if (pOM != NULL)
-	{
 		FTOM_RULE_final();
 		FTOM_ACTION_final();
 		FTOM_TRIGGER_final();
@@ -372,8 +369,6 @@ error:
 			FTOM_MSGQ_destroy(&pMsgQ);
 		}
 	
-		pOM = NULL;
-	}
 
 	return	xRet;
 }
@@ -384,11 +379,6 @@ FTM_RET	FTOM_final
 )
 {
 	FTM_RET	xRet;
-
-	if (pOM == NULL)
-	{
-		return	FTM_RET_OK;	
-	}
 
 	FTOM_SERVICE_final();
 
@@ -409,10 +399,6 @@ FTM_RET	FTOM_final
 
 	FTOM_EP_final();
 	FTOM_NODE_final();
-
-	FTM_MEM_free(pOM);
-
-	pOM = NULL;
 
 	TRACE("Finalize done.\n");
 

@@ -11,7 +11,7 @@ typedef	struct
 {
 	FTOM_NODE				xCommon;
 	struct snmp_session 	*pSession;		/* SNMP session data */
-	sem_t					xLock;
+	FTM_LOCK_PTR			pLock;
 
 	struct 
 	{
