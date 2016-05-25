@@ -5,6 +5,7 @@
 #include "ftom.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
+#include "ftom_node_class.h"
 
 static 
 FTM_RET	FTOM_NODE_FINSC_HHTW_get
@@ -22,30 +23,14 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_set
 	FTM_EP_DATA_PTR 	PData
 );
 
-static 
-FTM_RET	FTOM_NODE_FINSC_getEPData
-(
-	FTOM_NODE_FINSC_PTR	pFINSC,
-	FTOM_EP_PTR			pEP,
-	FTM_EP_DATA_PTR 	PData
-);
-
-static 
-FTM_RET	FTOM_NODE_FINSC_setEPData
-(
-	FTOM_NODE_FINSC_PTR	pFINSC,
-	FTOM_EP_PTR			pEP,
-	FTM_EP_DATA_PTR 	PData
-);
-
-static
-FTOM_NODE_FINSC_DESCRIPT	pClient[] =
+FTOM_NODE_CLASS	xHHTWNodeclass = 
 {
-	{
-		.pModel	= "hhtw comp",
-		.fGet	= FTOM_NODE_FINSC_HHTW_get,
-		.fSet	= FTOM_NODE_FINSC_HHTW_set
-	}
+	.pModel		= "hhtw comp",
+	.xType		= FTOM_NODE_TYPE_FINSC,
+	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_FINSC_init,
+	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_FINSC_final,
+	.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_FINSC_HHTW_get,
+	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_FINSC_HHTW_set
 };
 
 FTM_RET	FTOM_NODE_FINSC_create
@@ -57,8 +42,8 @@ FTM_RET	FTOM_NODE_FINSC_create
 	ASSERT(pInfo != NULL);
 	ASSERT(ppNode != NULL);
 
+	FTM_INT		i;
 	FTOM_NODE_FINSC_PTR	pNode;
-	
 
 	pNode = (FTOM_NODE_FINSC_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_FINSC));
 	if (pNode == NULL)
@@ -67,13 +52,13 @@ FTM_RET	FTOM_NODE_FINSC_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
+
 	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
 
-	pNode->xCommon.xDescript.xType		= FTOM_NODE_TYPE_FINSC;
-	pNode->xCommon.xDescript.fInit		= (FTOM_NODE_INIT)FTOM_NODE_FINSC_init;
-	pNode->xCommon.xDescript.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_FINSC_final;
-	pNode->xCommon.xDescript.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_FINSC_getEPData;
-	pNode->xCommon.xDescript.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_FINSC_setEPData;
+	pNode->xCommon.pClass = &xHHTWNodeclass;
+
+	FTM_LOCK_create(&pNode->pLock);
+
 	*ppNode = (FTOM_NODE_PTR)pNode;
 
 	return	FTM_RET_OK;
@@ -85,6 +70,8 @@ FTM_RET	FTOM_NODE_FINSC_destroy
 )
 {
 	ASSERT(ppNode != NULL);
+
+	FTM_LOCK_destroy(&(*ppNode)->pLock);
 
 	FTM_MEM_free(*ppNode);
 
@@ -99,9 +86,6 @@ FTM_RET	FTOM_NODE_FINSC_init
 )
 {
 	ASSERT(pNode != NULL);
-
-	FTM_LOCK_init(&pNode->xLock);
-	FTM_LIST_init(&pNode->xCommon.xEPList);
 
 	pNode->xSockFD = socket(AF_INET, SOCK_DGRAM, 0);
 	if (pNode->xSockFD < 0)
@@ -148,59 +132,7 @@ FTM_RET	FTOM_NODE_FINSC_final
 		pNode->xSockFD = -1;	
 	}
 
-	FTM_LIST_final(&pNode->xCommon.xEPList);
-
 	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_NODE_FINSC_getEPData
-(
-	FTOM_NODE_FINSC_PTR 	pNode, 
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pEP != NULL);
-	ASSERT(pData != NULL);
-
-	FTM_INT		i;
-
-	for(i = 0 ; i < sizeof(pClient) / sizeof(FTOM_NODE_FINSC_DESCRIPT) ; i++)
-	{
-		if (strcasecmp(pNode->xCommon.xInfo.xOption.xMB.pModel, pClient[i].pModel) == 0)
-		{
-			return	pClient[i].fGet(pNode, pEP, pData);
-		
-		}
-	}
-
-	return	FTM_RET_OBJECT_NOT_FOUND;
-}
-
-FTM_RET	FTOM_NODE_FINSC_setEPData
-(
-	FTOM_NODE_FINSC_PTR 	pNode, 
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pEP != NULL);
-	ASSERT(pData != NULL);
-
-	FTM_INT		i;
-
-	for(i = 0 ; i < sizeof(pClient) / sizeof(FTOM_NODE_FINSC_DESCRIPT) ; i++)
-	{
-		if (strcasecmp(pNode->xCommon.xInfo.xOption.xMB.pModel, pClient[i].pModel) == 0)
-		{
-			return	pClient[i].fSet(pNode, pEP, pData);
-		
-		}
-	}
-
-	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
 static 
@@ -240,7 +172,7 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_get
 	pFINSReq[nReqLen++] = 0x00;
 	pFINSReq[nReqLen++] = 0x0D;
 
-	FTM_LOCK_set(&pNode->xLock);
+	FTM_LOCK_set(pNode->pLock);
 
 	FTM_INT	nRetry = pNode->xCommon.xInfo.xOption.xFINS.ulRetryCount;
 
@@ -330,7 +262,7 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_get
 	xRet = FTM_VALUE_initFLOAT(&pData->xValue, (FTM_FLOAT)usValue / 100.0);
 
 finish:
-	FTM_LOCK_reset(&pNode->xLock);
+	FTM_LOCK_reset(pNode->pLock);
 
 	return	xRet;
 }

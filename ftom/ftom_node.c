@@ -6,6 +6,7 @@
 #include "ftom_node.h"
 #include "ftom_ep.h"
 #include "ftm_list.h"
+#include "ftom_node_class.h"
 
 static
 FTM_INT	FTOM_NODE_seeker
@@ -199,9 +200,9 @@ FTM_RET	FTOM_NODE_create
 	pNode->ulRetry = 10;
 	pNode->xTimeout = 10;
 
-	if (pNode->xDescript.fInit != NULL)
+	if (pNode->pClass->fInit != NULL)
 	{
-		pNode->xDescript.fInit(pNode);
+		pNode->pClass->fInit(pNode);
 	}
 
 	pNode->xState = FTOM_NODE_STATE_CREATED;
@@ -293,9 +294,9 @@ FTM_RET	FTOM_NODE_createFromDB
 	pNode->ulRetry = 10;
 	pNode->xTimeout = 10;
 
-	if (pNode->xDescript.fInit != NULL)
+	if (pNode->pClass->fInit != NULL)
 	{
-		pNode->xDescript.fInit(pNode);
+		pNode->pClass->fInit(pNode);
 	}
 
 	pNode->xState = FTOM_NODE_STATE_CREATED;
@@ -343,6 +344,18 @@ FTM_RET	FTOM_NODE_destroy
 	case	FTM_NODE_TYPE_SNMP:
 		{
 			FTOM_NODE_SNMPC_destroy((FTOM_NODE_SNMPC_PTR _PTR_)ppNode);
+		}
+		break;
+
+	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
+		{
+			FTOM_NODE_MBC_destroy((FTOM_NODE_MBC_PTR _PTR_)ppNode);
+		}
+		break;
+
+	case	FTM_NODE_TYPE_FINS:
+		{
+			FTOM_NODE_FINSC_destroy((FTOM_NODE_FINSC_PTR _PTR_)ppNode);
 		}
 		break;
 
@@ -559,12 +572,12 @@ FTM_RET FTOM_NODE_getEPData
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	if (pNode->xDescript.fGetEPData == NULL)
+	if (pNode->pClass->fGetEPData == NULL)
 	{
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pNode->xDescript.fGetEPData(pNode, pEP, pData);
+	return	pNode->pClass->fGetEPData(pNode, pEP, pData);
 }
 
 FTM_RET	FTOM_NODE_setEPData
@@ -577,12 +590,12 @@ FTM_RET	FTOM_NODE_setEPData
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	if (pNode->xDescript.fSetEPData == NULL)
+	if (pNode->pClass->fSetEPData == NULL)
 	{
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pNode->xDescript.fSetEPData(pNode, pEP, pData);
+	return	pNode->pClass->fSetEPData(pNode, pEP, pData);
 }
 
 FTM_RET	FTOM_NODE_getEPCount
@@ -638,14 +651,14 @@ FTM_RET	FTOM_NODE_start
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
-	if (pNode->xDescript.fPrestart != NULL)
+	if (pNode->pClass->fPrestart != NULL)
 	{
-		pNode->xDescript.fPrestart(pNode);
+		pNode->pClass->fPrestart(pNode);
 	}
 
-	if (pNode->xDescript.fProcess != NULL)
+	if (pNode->pClass->fProcess != NULL)
 	{
-		nRet = pthread_create(&pNode->xThread, NULL, pNode->xDescript.fProcess, pNode);
+		nRet = pthread_create(&pNode->xThread, NULL, pNode->pClass->fProcess, pNode);
 	}
 	else
 	{
@@ -659,9 +672,9 @@ FTM_RET	FTOM_NODE_start
 		return	FTM_RET_THREAD_CREATION_ERROR;
 	}
 
-	if (pNode->xDescript.fPoststart != NULL)
+	if (pNode->pClass->fPoststart != NULL)
 	{
-		pNode->xDescript.fPoststart(pNode);
+		pNode->pClass->fPoststart(pNode);
 	}
 
 	return	FTM_RET_OK;
@@ -682,9 +695,9 @@ FTM_RET FTOM_NODE_stop
 		return	FTM_RET_NOT_START;
 	}
 
-	if (pNode->xDescript.fPrestop != NULL)
+	if (pNode->pClass->fPrestop != NULL)
 	{
-		pNode->xDescript.fPrestop(pNode);
+		pNode->pClass->fPrestop(pNode);
 	}
 
 	xRet = FTOM_MSG_createQuit(&pMsg);
@@ -728,9 +741,9 @@ FTM_RET FTOM_NODE_stop
 	pthread_join(pNode->xThread, NULL);
 	pNode->xThread = 0;
 
-	if (pNode->xDescript.fPoststop != NULL)
+	if (pNode->pClass->fPoststop != NULL)
 	{
-		pNode->xDescript.fPoststop(pNode);
+		pNode->pClass->fPoststop(pNode);
 	}
 
 	return	FTM_RET_OK;

@@ -11,7 +11,7 @@ typedef	struct
 {
 	FTOM_NODE				xCommon;
 	FTM_INT					xSockFD;
-	FTM_LOCK				xLock;
+	FTM_LOCK_PTR			pLock;
 	struct sockaddr_in 		xLocal;
 	struct sockaddr_in 		xRemote;
 

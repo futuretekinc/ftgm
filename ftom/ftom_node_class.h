@@ -1,0 +1,53 @@
+#ifndef	__FTOM_NODE_CLASS_H__
+#define	__FTOM_NODE_CLASS_H__
+
+#include "ftm.h"
+#include "ftom_node.h"
+
+struct FTOM_NODE_STRUCT;
+struct FTOM_EP_STRUCT;
+struct FTM_EP_DATA_STRUCT;
+
+typedef	FTM_RET		(*FTOM_NODE_CREATE)(FTM_NODE_PTR pInfo, struct FTOM_NODE_STRUCT _PTR_ _PTR_ pNode);
+typedef	FTM_RET		(*FTOM_NODE_DESTROY)(struct FTOM_NODE_STRUCT _PTR_ _PTR_ pNode);
+typedef	FTM_RET		(*FTOM_NODE_INIT)(struct FTOM_NODE_STRUCT _PTR_ pNode);
+typedef	FTM_RET		(*FTOM_NODE_FINAL)(struct FTOM_NODE_STRUCT _PTR_ pNode);
+typedef	FTM_RET		(*FTOM_NODE_PRESTART)(struct FTOM_NODE_STRUCT _PTR_ pNode);
+typedef	FTM_RET		(*FTOM_NODE_START)(struct FTOM_NODE_STRUCT _PTR_ pNode);
+typedef	FTM_RET		(*FTOM_NODE_POSTSTART)(struct FTOM_NODE_STRUCT _PTR_ pNode);
+typedef	FTM_RET		(*FTOM_NODE_PRESTOP)(struct FTOM_NODE_STRUCT _PTR_ pNode);
+typedef	FTM_RET		(*FTOM_NODE_STOP)(struct FTOM_NODE_STRUCT _PTR_ pNode);
+typedef	FTM_RET		(*FTOM_NODE_POSTSTOP)(struct FTOM_NODE_STRUCT _PTR_ pNode);
+typedef	FTM_VOID_PTR (*FTOM_NODE_PROCESS)(FTM_VOID_PTR pNode);
+typedef	FTM_RET		(*FTOM_NODE_GET_EP_DATA)(struct FTOM_NODE_STRUCT _PTR_ pNode, struct FTOM_EP_STRUCT _PTR_ pEP, struct FTM_EP_DATA_STRUCT _PTR_ pData);
+typedef	FTM_RET		(*FTOM_NODE_SET_EP_DATA)(struct FTOM_NODE_STRUCT _PTR_ pNode, struct FTOM_EP_STRUCT _PTR_ pEP, struct FTM_EP_DATA_STRUCT _PTR_ pData);
+
+typedef struct FTOM_NODE_CLASS_STRUCT
+{
+	FTM_CHAR				pModel[FTM_NAME_LEN + 1];
+
+	FTOM_NODE_TYPE			xType;
+
+	FTOM_NODE_CREATE		fCreate;
+	FTOM_NODE_DESTROY		fDestroy;
+	FTOM_NODE_INIT			fInit;
+	FTOM_NODE_FINAL			fFinal;
+	FTOM_NODE_PRESTART		fPrestart;
+	FTOM_NODE_START			fStart;
+	FTOM_NODE_POSTSTART		fPoststart;
+	FTOM_NODE_PRESTOP		fPrestop;
+	FTOM_NODE_STOP			fStop;
+	FTOM_NODE_POSTSTOP		fPoststop;
+	FTOM_NODE_PROCESS		fProcess;
+	FTOM_NODE_GET_EP_DATA	fGetEPData;
+	FTOM_NODE_SET_EP_DATA	fSetEPData;
+} FTOM_NODE_CLASS, _PTR_ FTOM_NODE_CLASS_PTR;
+
+FTM_RET	FTOM_NODE_CLASS_get
+(
+	FTM_CHAR_PTR			pModel,
+	FTOM_NODE_TYPE			xType,
+	FTOM_NODE_CLASS_PTR		pClass
+);
+
+#endif

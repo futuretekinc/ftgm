@@ -1,4 +1,5 @@
 #include "ftom.h"
+#include "ftom_node_class.h"
 #include "ftom_node_snmp_client.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
@@ -18,6 +19,16 @@ static FTM_RET	FTOM_NODE_SNMPC_setEPData
 	FTOM_EP_PTR			pEP,
 	FTM_EP_DATA_PTR 	PData
 );
+
+FTOM_NODE_CLASS	xGeneralSNMP = 
+{
+	.pModel = "general",
+	.xType		= FTOM_NODE_TYPE_SNMPC,
+	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_init,
+	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_final,
+	.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_getEPData,
+	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_setEPData,
+};
 
 FTM_RET	FTOM_NODE_SNMPC_create
 (
@@ -40,11 +51,8 @@ FTM_RET	FTOM_NODE_SNMPC_create
 
 	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
 
-	pNode->xCommon.xDescript.xType		= FTOM_NODE_TYPE_SNMPC;
-	pNode->xCommon.xDescript.fInit		= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_init;
-	pNode->xCommon.xDescript.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_final;
-	pNode->xCommon.xDescript.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_getEPData;
-	pNode->xCommon.xDescript.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_setEPData;
+	pNode->xCommon.pClass = &xGeneralSNMP;
+
 	*ppNode = (FTOM_NODE_PTR)pNode;
 
 	return	FTM_RET_OK;
