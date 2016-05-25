@@ -617,6 +617,8 @@ FTM_RET	FTOM_SERVER_start
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
+	pServer->bStop = FTM_FALSE;
+	
 	nRet = pthread_create(&pServer->xPThread, NULL, FTOM_SERVER_process, (FTM_VOID_PTR)pServer);
 	if (nRet != 0)
 	{
@@ -750,8 +752,6 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 	listen(pServer->hSocket, 3);
 
-	pServer->bStop = FTM_FALSE;
-	
 	while(!pServer->bStop)
 	{
 		FTM_INT	hClient;
