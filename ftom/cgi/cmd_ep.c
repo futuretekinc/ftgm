@@ -577,7 +577,7 @@ FTM_RET	FTOM_CGI_getEPDataLast
 		pEPIDList = (FTM_EPID_PTR)FTM_MEM_malloc((FTM_EPID_LEN + 1) * ulCount);
 		if (pEPIDList == NULL)
 		{
-			TRACE("Not enough memory![Count = %d]\n", ulCount);
+			TRACE("Not enough memory![Count = %lu]\n", ulCount);
 			goto finish;	
 		}
 

@@ -795,7 +795,6 @@ FTM_RET	FTOM_TASK_start
 {
 	FTM_ULONG	i, ulCount;
 	
-	TRACE("Start FTOM!\n");
 	FTOM_RULE_start();
 	FTOM_ACTION_start();
 	FTOM_TRIGGER_start();

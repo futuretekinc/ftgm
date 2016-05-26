@@ -907,7 +907,15 @@ FTM_RET	FTOM_EP_setData
 				return	xRet;	
 			}
 
-			FTM_LIST_remove(&pEP->xDataList, pTempData);	
+			xRet = FTM_LIST_remove(&pEP->xDataList, pTempData);	
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Data remove failed.\n");	
+			}
+			else
+			{
+				FTM_EP_DATA_destroy(pTempData);	
+			}
 		}
 	
 		xRet = FTM_LIST_insert(&pEP->xDataList, pNewData, 0);

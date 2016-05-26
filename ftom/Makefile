@@ -10,7 +10,7 @@ include $(TOPDIR)/Makefile.in
 FTOM=ftom
 FTOM_SRCS=ftom_main.c ftom.c
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)
-FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmodbus -lmosquitto -lrt -ldl
+FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl
 
 LIB_FTOM=libftom
 LIB_FTOM_INCS= ftom.h 
@@ -19,7 +19,6 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_server.c\
 			   ftom_node.c\
 			   ftom_ep.c\
-			   ftom_node_snmp_client.c\
 			   ftom_snmpc.c\
 			   ftom_snmptrapd.c\
 			   ftom_shell_cmds.c\
@@ -34,8 +33,10 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_service.c\
 			   ftom_shell.c\
 			   ftom_discovery.c\
-			   ftom_node_modbus_client.c\
-			   ftom_node_fins_client.c
+			   ftom_node_snmp_client.c\
+			   ftom_node_snmp_client_gen.c\
+			   ftom_node_fins_client.c\
+			   ftom_node_fins_client_hhtw.c
 LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)
 
 LIB_FTOMC=libftomc

@@ -51,7 +51,6 @@ typedef	struct
 typedef	struct
 {
 	FTM_ULONG	ulVersion;
-	FTM_CHAR	pModel[FTM_NAME_LEN + 1];
 	FTM_CHAR	pURL[FTM_URL_LEN + 1];
 	FTM_ULONG	ulPort;
 	FTM_ULONG	ulSlaveID;
@@ -60,7 +59,6 @@ typedef	struct
 typedef	struct
 {
 	FTM_ULONG	ulVersion;
-	FTM_CHAR	pModel[FTM_NAME_LEN + 1];
 	FTM_CHAR	pDIP[FTM_URL_LEN + 1];
 	FTM_ULONG	ulSP;
 	FTM_ULONG	ulDP;
@@ -87,6 +85,7 @@ typedef	struct
 {
 	FTM_CHAR			pDID[FTM_DID_LEN + 1];
 	FTM_NODE_TYPE		xType;
+	FTM_CHAR			pModel[FTM_NAME_LEN + 1];
 	FTM_NODE_FLAG		xFlags;
 	FTM_CHAR			pLocation[FTM_LOCATION_LEN + 1];
 	FTM_ULONG			ulInterval;

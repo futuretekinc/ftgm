@@ -37,6 +37,15 @@ typedef	struct FTOM_NODE_STRUCT
 	int64_t					xTimeout;
 	FTOM_MSG_QUEUE			xMsgQ;
 
+	struct
+	{
+		FTM_ULONG	ulTxCount;
+		FTM_ULONG	ulRxCount;
+		FTM_ULONG	ulTxError;
+		FTM_ULONG	ulRxError;
+		FTM_ULONG	ulInvalidFrame;
+	}	xStatistics;
+
 	FTM_CHAR				pIP[32];
 	struct FTOM_NODE_CLASS_STRUCT _PTR_	pClass;
 }	FTOM_NODE, _PTR_ FTOM_NODE_PTR;
@@ -165,7 +174,7 @@ FTM_RET	FTOM_NODE_printList
 );
 
 #include "ftom_node_snmp_client.h"
-#include "ftom_node_modbus_client.h"
+//#include "ftom_node_modbus_client.h"
 #include "ftom_node_fins_client.h"
 
 #endif

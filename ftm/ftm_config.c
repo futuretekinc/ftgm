@@ -693,10 +693,22 @@ FTM_RET	FTM_CONFIG_ITEM_getNode(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_PTR pNode)
 		return	FTM_RET_CONFIG_INVALID_OBJECT;	
 	}
 
-	FTM_CONFIG_ITEM_getItemString(pItem, "type", pTypeString, sizeof(pTypeString));
+	xRet = FTM_CONFIG_ITEM_getItemString(pItem, "type", pTypeString, sizeof(pTypeString));
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Node type object invalid!\n");
+		return	FTM_RET_CONFIG_INVALID_OBJECT;	
+	}
+
+	xRet = FTM_CONFIG_ITEM_getItemString(pItem,"model", xNode.pModel, sizeof(xNode.pModel) - 1);
+	if (xRet == FTM_RET_OBJECT_NOT_FOUND)	
+	{
+		ERROR("Node model object not found!\n");
+		strcpy(xNode.pModel, "general");	
+	}
+	else if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node model object invalid!\n");
 		return	FTM_RET_CONFIG_INVALID_OBJECT;	
 	}
 
@@ -794,7 +806,6 @@ FTM_RET	FTM_CONFIG_ITEM_getModbusOverTCP
 	FTM_NODE_OPT_MODBUS_OVER_TCP	xMB;
 
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"version", 	&xMB.ulVersion);
-	FTM_CONFIG_ITEM_getItemString(pItem,"model", 	xMB.pModel, sizeof(xMB.pModel) - 1);
 	FTM_CONFIG_ITEM_getItemString(pItem,"url", 		xMB.pURL, sizeof(xMB.pURL) - 1);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "port", 	&xMB.ulPort);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "slave_id", 		&xMB.ulSlaveID);
@@ -816,7 +827,6 @@ FTM_RET	FTM_CONFIG_ITEM_getFINS
 	FTM_NODE_OPT_FINS	xFINS;
 
 	FTM_CONFIG_ITEM_getItemULONG(pItem,	"version", 	&xFINS.ulVersion);
-	FTM_CONFIG_ITEM_getItemString(pItem,"model", 	xFINS.pModel, sizeof(xFINS.pModel) - 1);
 	FTM_CONFIG_ITEM_getItemString(pItem,"dip", 		xFINS.pDIP, sizeof(xFINS.pDIP) - 1);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "dport", 	&xFINS.ulDP);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "sport", 	&xFINS.ulSP);

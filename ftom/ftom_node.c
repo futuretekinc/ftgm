@@ -143,13 +143,13 @@ FTM_RET	FTOM_NODE_create
 			xRet = FTOM_NODE_SNMPC_create(pInfo, &pNode);
 		}
 		break;
-
+#if 0
 	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 		{
 			xRet = FTOM_NODE_MBC_create(pInfo, &pNode);
 		}
 		break;
-
+#endif
 	case	FTM_NODE_TYPE_FINS:
 		{
 			xRet = FTOM_NODE_FINSC_create(pInfo, &pNode);
@@ -246,13 +246,13 @@ FTM_RET	FTOM_NODE_createFromDB
 			xRet = FTOM_NODE_SNMPC_create(&xInfo, &pNode);
 		}
 		break;
-
+#if 0
 	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 		{
 			xRet = FTOM_NODE_MBC_create(&xInfo, &pNode);
 		}
 		break;
-	
+#endif	
 	case	FTM_NODE_TYPE_FINS:
 		{
 			xRet = FTOM_NODE_FINSC_create(&xInfo, &pNode);
@@ -318,6 +318,11 @@ FTM_RET	FTOM_NODE_destroy
 	FTM_RET			xRet;
 	FTOM_EP_PTR		pEP;
 
+	if ((*ppNode)->pClass->fFinal!= NULL)
+	{
+		(*ppNode)->pClass->fFinal(*ppNode);
+	}
+
 	xRet = FTOM_DB_NODE_remove((*ppNode)->xInfo.pDID);
 	if (xRet != FTM_RET_OK)
 	{
@@ -339,30 +344,37 @@ FTM_RET	FTOM_NODE_destroy
 
 	FTM_LIST_remove(pNodeList, (*ppNode));
 
-	switch((*ppNode)->xInfo.xType)
+	if ((*ppNode)->pClass->fDestroy != NULL)
 	{
-	case	FTM_NODE_TYPE_SNMP:
+		(*ppNode)->pClass->fDestroy(ppNode);
+	}
+	else
+	{
+		switch((*ppNode)->xInfo.xType)
 		{
-			FTOM_NODE_SNMPC_destroy((FTOM_NODE_SNMPC_PTR _PTR_)ppNode);
-		}
-		break;
-
-	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
-		{
-			FTOM_NODE_MBC_destroy((FTOM_NODE_MBC_PTR _PTR_)ppNode);
-		}
-		break;
-
-	case	FTM_NODE_TYPE_FINS:
-		{
-			FTOM_NODE_FINSC_destroy((FTOM_NODE_FINSC_PTR _PTR_)ppNode);
-		}
-		break;
-
-	default:
-		{
-			ERROR("pInfo->xType = %08lx", (*ppNode)->xInfo.xType);
-			return	FTM_RET_INVALID_ARGUMENTS;	
+		case	FTM_NODE_TYPE_SNMP:
+			{
+				FTOM_NODE_SNMPC_destroy((FTOM_NODE_SNMPC_PTR _PTR_)ppNode);
+			}
+			break;
+#if 0
+		case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
+			{
+				FTOM_NODE_MBC_destroy((FTOM_NODE_MBC_PTR _PTR_)ppNode);
+			}
+			break;
+#endif
+		case	FTM_NODE_TYPE_FINS:
+			{
+				FTOM_NODE_FINSC_destroy((FTOM_NODE_FINSC_PTR _PTR_)ppNode);
+			}
+			break;
+	
+		default:
+			{
+				ERROR("pInfo->xType = %08lx", (*ppNode)->xInfo.xType);
+				return	FTM_RET_INVALID_ARGUMENTS;	
+			}
 		}
 	}
 
@@ -644,6 +656,7 @@ FTM_RET	FTOM_NODE_start
 	ASSERT(pNode != NULL);
 
 	FTM_INT	nRet;
+	FTM_RET	xRet;
 
 	if (!pNode->bStop)
 	{
@@ -651,30 +664,58 @@ FTM_RET	FTOM_NODE_start
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
-	if (pNode->pClass->fPrestart != NULL)
+	if (pNode->pClass->fStart != NULL)
 	{
-		pNode->pClass->fPrestart(pNode);
-	}
-
-	if (pNode->pClass->fProcess != NULL)
-	{
-		nRet = pthread_create(&pNode->xThread, NULL, pNode->pClass->fProcess, pNode);
+		return	pNode->pClass->fStart(pNode);
 	}
 	else
 	{
-		TRACE("Run default process\n");
-		nRet = pthread_create(&pNode->xThread, NULL, FTOM_NODE_process, pNode);
-	}
+		FTM_ULONG	ulCount = 0;
 
-	if (nRet != 0)
-	{
-		ERROR("Node start failed.[%d]\n", nRet);
-		return	FTM_RET_THREAD_CREATION_ERROR;
-	}
+		if (pNode->pClass->fPrestart != NULL)
+		{
+			pNode->pClass->fPrestart(pNode);
+		}
 
-	if (pNode->pClass->fPoststart != NULL)
-	{
-		pNode->pClass->fPoststart(pNode);
+
+
+		if (pNode->pClass->fProcess != NULL)
+		{
+			nRet = pthread_create(&pNode->xThread, NULL, pNode->pClass->fProcess, pNode);
+		}
+		else
+		{
+			TRACE("Run default process\n");
+			nRet = pthread_create(&pNode->xThread, NULL, FTOM_NODE_process, pNode);
+		}
+
+		if (nRet != 0)
+		{
+			ERROR("Node start failed.[%d]\n", nRet);
+			return	FTM_RET_THREAD_CREATION_ERROR;
+		}
+
+		xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_INT	i;
+	
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				FTOM_EP_PTR	pEP;
+	
+				xRet = FTM_LIST_getAt(&pNode->xEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
+				if (xRet == FTM_RET_OK)
+				{
+					FTOM_EP_start(pEP);
+				}
+			}
+		}
+
+		if (pNode->pClass->fPoststart != NULL)
+		{
+			pNode->pClass->fPoststart(pNode);
+		}
 	}
 
 	return	FTM_RET_OK;
@@ -695,29 +736,19 @@ FTM_RET FTOM_NODE_stop
 		return	FTM_RET_NOT_START;
 	}
 
-	if (pNode->pClass->fPrestop != NULL)
+	if (pNode->pClass->fStop != NULL)
 	{
-		pNode->pClass->fPrestop(pNode);
-	}
-
-	xRet = FTOM_MSG_createQuit(&pMsg);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_MSGQ_push(&pNode->xMsgQ, pMsg);
-		if (xRet != FTM_RET_OK)
-		{
-			FTOM_MSG_destroy(&pMsg);	
-		}
+		return	pNode->pClass->fStop(pNode);
 	}
 	else
 	{
-		ERROR("NODE[%s] : Can't create quit message!\n", pNode->xInfo.pDID);
-	}
-
-	if (pMsg == NULL)
-	{
 		FTM_ULONG	ulCount;
+		if (pNode->pClass->fPrestop != NULL)
 
+		{
+			pNode->pClass->fPrestop(pNode);
+		}
+	
 		xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
 		if (xRet == FTM_RET_OK)
 		{
@@ -735,15 +766,29 @@ FTM_RET FTOM_NODE_stop
 			}
 		}
 
-		pthread_cancel(pNode->xThread);
-	}
+		xRet = FTOM_MSG_createQuit(&pMsg);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTOM_MSGQ_push(&pNode->xMsgQ, pMsg);
+			if (xRet != FTM_RET_OK)
+			{
+				FTOM_MSG_destroy(&pMsg);	
+			}
+		}
+		else
+		{
+			ERROR("NODE[%s] : Can't create quit message!\n", pNode->xInfo.pDID);
+			pthread_cancel(pNode->xThread);
+		}
 	
-	pthread_join(pNode->xThread, NULL);
-	pNode->xThread = 0;
-
-	if (pNode->pClass->fPoststop != NULL)
-	{
-		pNode->pClass->fPoststop(pNode);
+		
+		pthread_join(pNode->xThread, NULL);
+		pNode->xThread = 0;
+	
+		if (pNode->pClass->fPoststop != NULL)
+		{
+			pNode->pClass->fPoststop(pNode);
+		}
 	}
 
 	return	FTM_RET_OK;
@@ -755,36 +800,21 @@ FTM_VOID_PTR FTOM_NODE_process
 )
 {
 	ASSERT(pData != NULL);
-
 	FTM_RET			xRet;
 	FTOM_NODE_PTR pNode = (FTOM_NODE_PTR)pData;
 	FTOM_MSG_PTR	pMsg;
 	FTM_TIMER		xReportTimer;
-	FTM_ULONG		ulCount;
 
 	pNode->xState = FTOM_NODE_STATE_RUN;
 
 	TRACE("Node[%s] start.\n", pNode->xInfo.pDID);
 
-	xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
-	if (xRet == FTM_RET_OK)
-	{
-		FTM_INT	i;
-
-		for(i = 0 ; i < ulCount ; i++)
-		{
-			FTOM_EP_PTR	pEP;
-
-			xRet = FTM_LIST_getAt(&pNode->xEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
-			if (xRet == FTM_RET_OK)
-			{
-				FTOM_EP_start(pEP);
-			}
-		}
-	}
-
 	pNode->bStop = FTM_FALSE;
-	FTM_TIMER_init(&xReportTimer, pNode->xInfo.ulInterval * 1000000);
+	xRet = FTM_TIMER_init(&xReportTimer, pNode->xInfo.ulInterval * 1000000);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Report timer init failed!\n");	
+	}
 
 	while(!pNode->bStop)
 	{
@@ -817,25 +847,12 @@ FTM_VOID_PTR FTOM_NODE_process
 			FTM_TIMER_waitForExpired(&xReportTimer);
 		}
 
-		FTM_TIMER_add(&xReportTimer, pNode->xInfo.ulInterval * 1000000);
-	} 
-
-	xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
-	if (xRet == FTM_RET_OK)
-	{
-		FTM_INT	i;
-
-		for(i = 0 ; i < ulCount ; i++)
+		xRet = FTM_TIMER_add(&xReportTimer, pNode->xInfo.ulInterval * 1000000);
+		if (xRet != FTM_RET_OK)
 		{
-			FTOM_EP_PTR	pEP;
-
-			xRet = FTM_LIST_getAt(&pNode->xEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
-			if (xRet == FTM_RET_OK)
-			{
-				FTOM_EP_stop(pEP, FTM_TRUE);
-			}
+			ERROR("Report timer update failed!\n");	
 		}
-	}
+	} 
 
 	TRACE("Node[%s] stopped.\n", pNode->xInfo.pDID);
 
@@ -929,6 +946,7 @@ FTM_RET	FTOM_NODE_print
 
 	MESSAGE("\n# Node Information\n");
 	MESSAGE("%16s : %s\n", "DID", 		pNode->xInfo.pDID);
+	MESSAGE("%16s : %s\n", "Model",		pNode->xInfo.pModel);
 	MESSAGE("%16s : %s\n", "Type", 		FTM_NODE_typeString(pNode->xInfo.xType));
 	switch(pNode->xInfo.xType)
 	{
@@ -941,21 +959,19 @@ FTM_RET	FTOM_NODE_print
 			MESSAGE("%16s   %10s - %lu\n","", "Retry", 		pNode->xInfo.xOption.xSNMP.ulMaxRetryCount);
 		}
 		break;
-
+#if 0
 	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 		{
 			MESSAGE("%16s   %10s - %d\n", "", "Version", 	pNode->xInfo.xOption.xMB.ulVersion);	
-			MESSAGE("%16s   %10s - %s\n", "", "Model", 		pNode->xInfo.xOption.xMB.pModel);
 			MESSAGE("%16s   %10s - %s\n", "", "URL", 		pNode->xInfo.xOption.xMB.pURL);
 			MESSAGE("%16s   %10s - %lu\n","", "Port", 		pNode->xInfo.xOption.xMB.ulPort);
 			MESSAGE("%16s   %10s - %lu\n","", "SlaveID", 	pNode->xInfo.xOption.xMB.ulSlaveID);
 		}
 		break;
-
+#endif
 	case	FTM_NODE_TYPE_FINS:
 		{
 			MESSAGE("%16s   %10s - %d\n", "", "Version", 	pNode->xInfo.xOption.xFINS.ulVersion);	
-			MESSAGE("%16s   %10s - %s\n", "", "Model", 		pNode->xInfo.xOption.xFINS.pModel);
 			MESSAGE("%16s   %10s - %s\n", "", "DestIP", 	pNode->xInfo.xOption.xFINS.pDIP);
 			MESSAGE("%16s   %10s - %lu\n","", "DestPort",	pNode->xInfo.xOption.xFINS.ulDP);
 			MESSAGE("%16s   %10s - %lu\n","", "SrcPort", 	pNode->xInfo.xOption.xFINS.ulSP);
@@ -984,6 +1000,11 @@ FTM_RET	FTOM_NODE_print
 			MESSAGE("%16s   %d - %16s\n", "", j+1, pEP->xInfo.pEPID);
 		}
 	}
+	MESSAGE("%16s : %d\n", "Tx Count", 		pNode->xStatistics.ulTxCount);
+	MESSAGE("%16s : %d\n", "Rx Count", 		pNode->xStatistics.ulRxCount);
+	MESSAGE("%16s : %d\n", "Tx Error", 		pNode->xStatistics.ulTxError);
+	MESSAGE("%16s : %d\n", "Rx Error", 		pNode->xStatistics.ulRxError);
+	MESSAGE("%16s : %d\n", "Invalid Frame", pNode->xStatistics.ulInvalidFrame);
 
 	return	FTM_RET_OK;
 }
@@ -998,7 +1019,7 @@ FTM_RET	FTOM_NODE_printList
 	FTOM_NODE_PTR	pNode;
 
 	MESSAGE("\n# Node Information\n");
-	MESSAGE("%16s %16s %8s %8s %s\n", "DID", "STATE", "INTERVAL", "TIMEOUT", "EPs");
+	MESSAGE("%16s %16s %16s %16s %8s %8s %s\n", "DID", "MODEL", "TYPE", "STATE", "INTERVAL", "TIMEOUT", "EPs");
 
 	FTM_LIST_count(pNodeList, &ulCount);
 
@@ -1010,20 +1031,14 @@ FTM_RET	FTOM_NODE_printList
 
 		FTOM_NODE_getAt(i, &pNode);
 		MESSAGE("%16s ", pNode->xInfo.pDID);
+		MESSAGE("%16s ", pNode->xInfo.pModel);
+		MESSAGE("%16s ", FTM_NODE_typeString(pNode->xInfo.xType));
 		MESSAGE("%16s ", FTOM_NODE_stateToStr(pNode->xState));
 		MESSAGE("%8d ", pNode->xInfo.ulInterval);
 		MESSAGE("%8d ", pNode->xInfo.ulTimeout);
 
 		FTOM_NODE_getEPCount(pNode, &ulEPCount);
-		MESSAGE("%-3d [ ", ulCount);
-		for(j = 0; j < ulEPCount ; j++)
-		{
-			if (FTOM_NODE_getEPAt(pNode, j, &pEP) == FTM_RET_OK)
-			{
-				MESSAGE("%16s ", pEP->xInfo.pEPID);
-			}
-		}
-		MESSAGE("]\n");
+		MESSAGE("%3d\n", ulCount);
 	}
 
 	return	FTM_RET_OK;

@@ -12,12 +12,6 @@ typedef	struct
 	FTOM_NODE				xCommon;
 	struct snmp_session 	*pSession;		/* SNMP session data */
 	FTM_LOCK_PTR			pLock;
-
-	struct 
-	{
-		FTM_ULONG			ulRequest;
-		FTM_ULONG			ulResponse;
-	}	xStatistics;	
 }	FTOM_NODE_SNMPC, _PTR_ FTOM_NODE_SNMPC_PTR;
 
 FTM_RET	FTOM_NODE_SNMPC_create
@@ -29,31 +23,6 @@ FTM_RET	FTOM_NODE_SNMPC_create
 FTM_RET	FTOM_NODE_SNMPC_destroy
 (
 	FTOM_NODE_SNMPC_PTR _PTR_ pNode
-);
-
-FTM_RET	FTOM_NODE_SNMPC_init
-(
-	FTOM_NODE_SNMPC_PTR pNode
-);
-
-FTM_RET	FTOM_NODE_SNMPC_final
-(
-	FTOM_NODE_SNMPC_PTR pNode
-);
-
-FTM_BOOL	FTOM_NODE_SNMPC_isRunning
-(
-	FTOM_NODE_SNMPC_PTR pNode
-);
-
-FTM_RET	FTOM_NODE_SNMPC_start
-(
-	FTOM_NODE_SNMPC_PTR pNode
-);
-
-FTM_RET	FTOM_NODE_SNMPC_stop
-(
-	FTOM_NODE_SNMPC_PTR pNode
 );
 
 FTM_RET	FTOM_NODE_SNMPC_getOID

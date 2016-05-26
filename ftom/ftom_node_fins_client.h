@@ -14,12 +14,7 @@ typedef	struct
 	FTM_LOCK_PTR			pLock;
 	struct sockaddr_in 		xLocal;
 	struct sockaddr_in 		xRemote;
-
-	struct 
-	{
-		FTM_ULONG			ulRequest;
-		FTM_ULONG			ulResponse;
-	}	xStatistics;	
+	FTM_VOID_PTR			pData;
 }	FTOM_NODE_FINSC, _PTR_ FTOM_NODE_FINSC_PTR;
 
 typedef	FTM_RET	(*FTOM_NODE_FINSC_GET)(FTOM_NODE_FINSC_PTR	pFINSC, FTOM_EP_PTR pEP, FTM_EP_DATA_PTR PData);
@@ -41,16 +36,6 @@ FTM_RET	FTOM_NODE_FINSC_create
 FTM_RET	FTOM_NODE_FINSC_destroy
 (
 	FTOM_NODE_FINSC_PTR _PTR_ pNode
-);
-
-FTM_RET	FTOM_NODE_FINSC_init
-(
-	FTOM_NODE_FINSC_PTR pNode
-);
-
-FTM_RET	FTOM_NODE_FINSC_final
-(
-	FTOM_NODE_FINSC_PTR pNode
 );
 
 FTM_BOOL	FTOM_NODE_FINSC_isRunning

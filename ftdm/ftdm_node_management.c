@@ -440,8 +440,8 @@ FTM_RET	FTDM_NODEM_showList
 	FTM_ULONG	i, ulCount;
 
 	MESSAGE("\n# Node Information\n");
-	MESSAGE("\t%16s %16s %16s %8s %8s %16s %16s %16s %16s\n",
-			"DID", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT", "OPT0", "OPT1", "OPT2", "OPT3");
+	MESSAGE("\t%16s %16s %16s %16s %8s %8s %16s %16s %16s %16s\n",
+			"DID", "MODEL", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT", "OPT0", "OPT1", "OPT2", "OPT3");
 	if (FTM_LIST_count(pNodeM->pList, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -449,8 +449,9 @@ FTM_RET	FTDM_NODEM_showList
 			FTDM_NODE_PTR	pNode;
 
 			FTDM_NODEM_getAt(pNodeM, i, &pNode);
-			MESSAGE("\t%16s %16s %16s %8d %8d ",
+			MESSAGE("\t%16s %16s %16s %16s %8d %8d ",
 				pNode->xInfo.pDID,
+				pNode->xInfo.pModel,
 				FTM_NODE_typeString(pNode->xInfo.xType),
 				pNode->xInfo.pLocation,
 				pNode->xInfo.ulInterval,
@@ -471,8 +472,7 @@ FTM_RET	FTDM_NODEM_showList
 
 			case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 				{
-					MESSAGE(" %16s %16s %16d %16d\n",
-						pNode->xInfo.xOption.xMB.pModel,
+					MESSAGE(" %16s %16d %16d\n",
 						pNode->xInfo.xOption.xMB.pURL,
 						pNode->xInfo.xOption.xMB.ulPort,
 						pNode->xInfo.xOption.xMB.ulSlaveID);
@@ -481,8 +481,7 @@ FTM_RET	FTDM_NODEM_showList
 
 			case	FTM_NODE_TYPE_FINS:
 				{
-					MESSAGE(" %16s %16s %02x:%02x:%02x %02x:%02x:%02x %d\n",
-						pNode->xInfo.xOption.xFINS.pModel,
+					MESSAGE(" %16s %02x:%02x:%02x %02x:%02x:%02x %d\n",
 						pNode->xInfo.xOption.xFINS.pDIP,
 						(pNode->xInfo.xOption.xFINS.ulDA >> 16) & 0xFF, 
 						(pNode->xInfo.xOption.xFINS.ulDA >> 8) & 0xFF, 

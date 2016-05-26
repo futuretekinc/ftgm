@@ -42,30 +42,5 @@ FTM_RET	FTOM_NODE_MBC_destroy
 	FTOM_NODE_MBC_PTR _PTR_ pNode
 );
 
-FTM_RET	FTOM_NODE_MBC_init
-(
-	FTOM_NODE_MBC_PTR pNode
-);
-
-FTM_RET	FTOM_NODE_MBC_final
-(
-	FTOM_NODE_MBC_PTR pNode
-);
-
-FTM_BOOL	FTOM_NODE_MBC_isRunning
-(
-	FTOM_NODE_MBC_PTR pNode
-);
-
-FTM_RET	FTOM_NODE_MBC_start
-(
-	FTOM_NODE_MBC_PTR pNode
-);
-
-FTM_RET	FTOM_NODE_MBC_stop
-(
-	FTOM_NODE_MBC_PTR pNode
-);
-
 #endif
 

@@ -610,7 +610,7 @@ FTM_RET	FTOM_SNMPC_getEPData
 		{
 			pReqPDU->time = pNode->xCommon.xInfo.ulTimeout;
 			snmp_add_null_var(pReqPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen);
-			pNode->xStatistics.ulRequest++;
+			pNode->xCommon.xStatistics.ulTxCount++;
 
 			nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
 			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
@@ -682,7 +682,7 @@ FTM_RET	FTOM_SNMPC_getEPData
 					pVariable= pVariable->next_variable;
 				}
 		
-				pNode->xStatistics.ulResponse++;
+				pNode->xCommon.xStatistics.ulRxCount++;
 			}
 			else
 			{
@@ -756,13 +756,13 @@ FTM_RET	FTOM_SNMPC_setEPData
 			FTM_EP_DATA_snprint(pValue, sizeof(pValue), pData);
 
 			snmp_add_var(pReqPDU, pEP->xOption.xSNMP.pOID, pEP->xOption.xSNMP.nOIDLen, 's', pValue);
-			pNode->xStatistics.ulRequest++;
+			pNode->xCommon.xStatistics.ulTxCount++;
 		
 			int nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
 			TRACE("SNMP set request[%08x]\n", nRet);	
 			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
 			{
-				pNode->xStatistics.ulResponse++;
+				pNode->xCommon.xStatistics.ulRxCount++;
 				xRet = FTM_RET_OK;
 			}
 			else
