@@ -45,9 +45,13 @@ LIB_FTOMC_SRCS= ftom_client.c \
 				ftom_client_net.c
 LIB_FTOMC_OBJS=$(LIB_FTOMC_SRCS:.c=.o)
 
+LIB_HHTW=libhhtw
+LIB_HHTW_SRCS= ftom_node_fins_client_hhtw.c
+LIB_HHTW_OBJS=$(LIB_HHTW_SRCS:.c=.o)
+
 SUBDIR=client cmdline cgi
 
-all: $(LIB_FTOM) $(FTOM) $(LIB_FTOMC) 
+all: $(LIB_FTOM) $(FTOM) $(LIB_FTOMC) $(LIB_HHTW)
 	for dir in $(SUBDIR); do\
 		make -C $$dir TOPDIR=$(TOPDIR);\
 	done
@@ -65,6 +69,10 @@ $(LIB_FTOM): $(LIB_FTOM_OBJS)
 $(LIB_FTOMC): $(LIB_FTOMC_OBJS)
 	$(AR) rcs $(LIB_FTOMC).a $(LIB_FTOMC_OBJS)
 	$(CC) -shared -o $(LIB_FTOMC).so.1.0.1 $(LIB_FTOMC_OBJS) $(LDFLAGS)
+
+$(LIB_HHTW): $(LIB_HHTW_OBJS)
+	$(AR) rcs $(LIB_HHTW).a $(LIB_HHTW_OBJS)
+	$(CC) -shared -o $(LIB_HHTW).so $(LIB_HHTW_OBJS) $(LDFLAGS)
 
 .c.o:  $(CLIENT_SRC) $(LIB_FTOMC_OBJS) *.h $(SERVER_SRC)
 	$(CC) $(CFLAGS) $< -o $@

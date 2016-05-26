@@ -9,7 +9,7 @@
 #include "ftom_node_fins_client_hhtw.h"
 
 static 
-FTOM_NODE_CLASS_PTR	pFINSClasses[] =
+FTOM_NODE_CLASS_PTR	pFINSClasses[1] =
 {
 	&xHHTWNodeClass 
 };
@@ -43,6 +43,7 @@ FTM_RET	FTOM_NODE_FINSC_create
 
 	if (pClass == NULL)
 	{
+		ERROR("Class not found!\n");
 		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
 
