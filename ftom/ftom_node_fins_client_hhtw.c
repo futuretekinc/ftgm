@@ -266,13 +266,11 @@ FTM_VOID_PTR	FTOM_NODE_FINSC_HHTW_dataProcess
 			else if (nRecvLen < 0)
 			{
 				pNode->xCommon.xStatistics.ulRxError++;		
-				TRACE("Invalid PKT recevied!\n");
 			}
 		}
 		else
 		{
 			pNode->xCommon.xStatistics.ulTxError++;		
-			TRACE("Invalid PKT recevied!\n");
 		}
 	
 		if (bDone)
