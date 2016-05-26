@@ -33,8 +33,6 @@ typedef	struct FTOM_NODE_STRUCT
 	pthread_t				xThread;
 	pthread_mutex_t			xMutexLock;
 	FTOM_NODE_STATE			xState;
-	FTM_ULONG				ulRetry;
-	int64_t					xTimeout;
 	FTOM_MSG_QUEUE			xMsgQ;
 
 	struct
@@ -172,10 +170,6 @@ FTM_RET	FTOM_NODE_printList
 (
 	FTM_VOID
 );
-
-#include "ftom_node_snmp_client.h"
-//#include "ftom_node_modbus_client.h"
-#include "ftom_node_fins_client.h"
 
 #endif
 

@@ -6,13 +6,20 @@
 #include "ftom.h"
 #include "ftm_timer.h"
 #include "ftom_node.h"
+#include "ftom_node_class.h"
 
-typedef	struct 
+typedef	struct  FTOM_NODE_SNMPC_STRUCT
 {
 	FTOM_NODE				xCommon;
 	struct snmp_session 	*pSession;		/* SNMP session data */
 	FTM_LOCK_PTR			pLock;
 }	FTOM_NODE_SNMPC, _PTR_ FTOM_NODE_SNMPC_PTR;
+
+FTM_RET	FTOM_NODE_SNMPC_getClass
+(
+	FTM_CHAR_PTR	pModel,
+	FTOM_NODE_CLASS_PTR	_PTR_ ppClass
+);
 
 FTM_RET	FTOM_NODE_SNMPC_create
 (

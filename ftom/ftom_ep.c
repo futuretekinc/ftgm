@@ -4,6 +4,7 @@
 #include "ftom.h"
 #include "ftom_ep.h"
 #include "ftom_dmc.h"
+#include "ftom_node_snmp_client.h"
 
 #define	FTOM_EP_DATA_COUNT	32
 

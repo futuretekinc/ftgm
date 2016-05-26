@@ -45,9 +45,9 @@ typedef struct FTOM_NODE_CLASS_STRUCT
 
 FTM_RET	FTOM_NODE_CLASS_get
 (
-	FTM_CHAR_PTR			pModel,
-	FTOM_NODE_TYPE			xType,
-	FTOM_NODE_CLASS_PTR		pClass
+	FTM_CHAR_PTR				pModel,
+	FTM_NODE_TYPE				xType,
+	FTOM_NODE_CLASS_PTR _PTR_ 	ppClass
 );
 
 #endif

@@ -45,6 +45,18 @@ FTM_BOOL	FTDM_DBIF_NODE_isTableExist
 	FTM_VOID
 );
 
+FTM_RET	FTDM_DBIF_getTableCount
+(
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET FTDM_DBIF_getTableList
+(
+	FTM_CHAR_PTR _PTR_	pTables,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
 FTM_RET	FTDM_DBIF_NODE_count
 (
 	FTM_ULONG_PTR		pCount
@@ -55,6 +67,11 @@ FTM_RET	FTDM_DBIF_NODE_getList
 	FTM_NODE_PTR	pInfos,
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pCount
+);
+
+FTM_RET	FTDM_DBIF_deleteTable
+(
+	FTM_CHAR_PTR		pTableName
 );
 
 FTM_RET	FTDM_DBIF_NODE_create
