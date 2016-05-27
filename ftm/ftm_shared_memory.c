@@ -553,7 +553,7 @@ FTM_RET	FTM_SMP_call
 	xTimeout.tv_nsec = xTimeout.tv_nsec + ulTimeout*1000;
 	xTimeout.tv_sec = xTimeout.tv_sec + xTimeout.tv_nsec / 1000000000;
 	xTimeout.tv_nsec = xTimeout.tv_nsec % 1000000000;
-	
+
 	nRet = sem_timedwait(&pSMP->pBlock->xNotUse, &xTimeout);
 	if (nRet != 0)
 	{
