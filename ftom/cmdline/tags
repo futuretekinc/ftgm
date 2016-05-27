@@ -5,7 +5,7 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 CLIENT	Makefile	/^CLIENT=ftomc$/;"	m
-CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -L.\/ -lftomcl -lftomc -lftm -lconfig -lpthread $/;"	m
+CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -L.\/ -lftomcl -lftomc -lftm -lconfig -lpthread  -lrt$/;"	m
 CLIENT_OBJS	Makefile	/^CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)$/;"	m
 CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c$/;"	m
 FTOM_CLIENT_CL	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL, _PTR_ FTOM_CLIENT_CL_PTR;$/;"	t	typeref:struct:__anon2
@@ -15,6 +15,7 @@ FTOM_CLIENT_CL_PTR	ftom_client_cmdline.h	/^}	FTOM_CLIENT_CL, _PTR_ FTOM_CLIENT_C
 FTOM_CLIENT_CL_create	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_create$/;"	f
 FTOM_CLIENT_CL_destroy	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_destroy$/;"	f
 FTOM_CLIENT_CL_final	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_final$/;"	f
+FTOM_CLIENT_CL_getSMKey	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_getSMKey$/;"	f
 FTOM_CLIENT_CL_init	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_init$/;"	f
 FTOM_CLIENT_CL_loadConfig	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_loadConfig$/;"	f
 FTOM_CLIENT_CL_loadConfigFromFile	ftom_client_cmdline.c	/^FTM_RET	FTOM_CLIENT_CL_loadConfigFromFile$/;"	f
@@ -54,5 +55,7 @@ pNodeCmds	main.c	/^FTOM_CL_CMD	pNodeCmds[] =$/;"	v
 pRead	ftom_client_cmdline.h	/^	FTM_CHAR_PTR		pRead[1024];$/;"	m	struct:__anon1
 pReqBuff	main.c	/^FTM_CHAR	pReqBuff[FTOM_DEFAULT_PACKET_SIZE];$/;"	v
 pRespBuff	main.c	/^FTM_CHAR	pRespBuff[FTOM_DEFAULT_PACKET_SIZE];$/;"	v
+ulDefaultDataCount	ftom_client_cmdline.h	/^	FTM_ULONG			ulDefaultDataCount;$/;"	m	struct:__anon1
+ulMaxDataCount	ftom_client_cmdline.h	/^	FTM_ULONG			ulMaxDataCount;$/;"	m	struct:__anon1
 xCommon	ftom_client_cmdline.h	/^	FTOM_CLIENT				xCommon;$/;"	m	struct:__anon2
 xConfig	ftom_client_cmdline.h	/^	FTOM_CLIENT_CL_CONFIG	xConfig;$/;"	m	struct:__anon2

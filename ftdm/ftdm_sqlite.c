@@ -258,7 +258,7 @@ FTM_RET	FTDM_DBIF_NODE_count
 {
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 
 	if (_pSQLiteDB == NULL)
 	{
@@ -266,11 +266,11 @@ FTM_RET	FTDM_DBIF_NODE_count
 	}
 
     sprintf(pSQL, "SELECT COUNT(*) FROM node_info");
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_countCB, pulCount, &strErrMsg);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_countCB, pulCount, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -341,7 +341,7 @@ FTM_RET	FTDM_DBIF_NODE_getList
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_getListCB, &xParams, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -416,7 +416,7 @@ FTM_RET	FTDM_DBIF_NODE_destroy
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -457,7 +457,7 @@ FTM_RET	FTDM_DBIF_NODE_get
 {
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 
 	if (_pSQLiteDB == NULL)
 	{
@@ -466,11 +466,11 @@ FTM_RET	FTDM_DBIF_NODE_get
 	}
 
     sprintf(pSQL, "SELECT * FROM node_info WHERE DID = \'%s\'", pDID);
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_getCB, pInfo, &strErrMsg);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_getCB, pInfo, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -554,7 +554,7 @@ FTM_RET	FTDM_DBIF_EP_initTable
 		xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 		if (xRet != SQLITE_OK)
 		{
-			ERROR("SQL error : %s\n", pErrMsg);	
+        	ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 			sqlite3_free(pErrMsg);
 
 			return	FTM_RET_ERROR;
@@ -642,7 +642,7 @@ FTM_RET	FTDM_DBIF_EP_del
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -705,7 +705,7 @@ FTM_RET	FTDM_DBIF_EP_isExist
     	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_countCB, &ulCount, &pErrMsg);
     	if (nRet != SQLITE_OK)
     	{
-       		ERROR("SQL error b: %s\n", pErrMsg);
+        	ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
         	sqlite3_free(pErrMsg);
 
     		return  FTM_RET_ERROR;
@@ -766,7 +766,7 @@ FTM_RET	FTDM_DBIF_EP_getList
 {
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 	FTDM_DBIF_CB_GET_EP_LIST_PARAMS xParams= 
 	{
 		.nMaxCount 	= nMaxCount,
@@ -781,11 +781,11 @@ FTM_RET	FTDM_DBIF_EP_getList
 	}
 
     sprintf(pSQL, "SELECT * FROM ep_info");
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getListCB, &xParams, &strErrMsg);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getListCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -824,7 +824,7 @@ FTM_RET	FTDM_DBIF_EP_get
 {
     int     xRet;
     char    pSQL[1024];
-    char    *strErrMsg = NULL;
+    char    *pErrMsg = NULL;
 	FTM_EP	xEP;
 
 	if (_pSQLiteDB == NULL)
@@ -834,11 +834,11 @@ FTM_RET	FTDM_DBIF_EP_get
 	}
 
     sprintf(pSQL, "SELECT * FROM ep_info WHERE EPID = \'%s\'", pEPID);
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getCB, &xEP, &strErrMsg);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getCB, &xEP, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -888,7 +888,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_initTable
 		xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 		if (xRet != SQLITE_OK)
 		{
-			ERROR("SQL error : %s\n", pErrMsg);	
+        	ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 			sqlite3_free(pErrMsg);
 
 			return	FTM_RET_ERROR;
@@ -995,7 +995,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1055,7 +1055,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_info
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulEndTime, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1065,7 +1065,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_info
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulBeginTime, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1151,7 +1151,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_CountWithTime
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_countCB, pulCount, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1272,7 +1272,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_get
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_getCB, &xParams, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1350,7 +1350,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_getCB, &xParams, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1371,6 +1371,8 @@ FTM_RET	FTDM_DBIF_EP_DATA_del
 	FTM_RET			xRet;
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
+	FTM_ULONG		ulTotalCount = 0, ulRetCount = 0;
+	FTM_EP_DATA		xFirstData, xLastData;
 
 	if (_pSQLiteDB == NULL)
 	{
@@ -1378,21 +1380,60 @@ FTM_RET	FTDM_DBIF_EP_DATA_del
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
+	xRet = FTDM_DBIF_EP_DATA_count(pEPID, &ulTotalCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (ulTotalCount == 0)
+	{
+		return	FTM_RET_OK;	
+	}
+
 	if (nIndex >= 0)
 	{
-		sprintf(pSQL, " DELETE FROM ep_%s ORDER BY TIME DESC LIMIT %lu OFFSET %d", 
-				pEPID,  nCount, nIndex);
+		if (nIndex >= ulTotalCount)
+		{
+			return	FTM_RET_OK;	
+		}
+
+		if (nIndex + nCount > ulTotalCount)
+		{
+			nCount = ulTotalCount - nIndex;	
+		}
 	}
 	else
 	{
-		sprintf(pSQL, " DELETE FROM ep_%s ORDER BY TIME ASC LIMIT %lu", 
-				pEPID,  nCount);
+		if (nCount > ulTotalCount)
+		{
+			nIndex = 0;
+			nCount = ulTotalCount;
+		}
+		else
+		{
+			nIndex = ulTotalCount - nCount;	
+		}
+	
 	}
 
+	xRet = FTDM_DBIF_EP_DATA_get(pEPID, nIndex, &xFirstData, 1, &ulRetCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTDM_DBIF_EP_DATA_get(pEPID, nIndex + nCount - 1, &xLastData, 1, &ulRetCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	sprintf(pSQL, " DELETE FROM ep_%s WHERE %lu <= TIME AND TIME <= %lu", pEPID, xFirstData.ulTime, xLastData.ulTime);
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1450,11 +1491,10 @@ FTM_RET	FTDM_DBIF_EP_DATA_delWithTime
 	}
 
 
-	MESSAGE("SQL : %s\n", pSQL);
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1477,7 +1517,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_countWithTime
 {
     int     xRet;
     char    pSQL[1024];
-    char    *strErrMsg = NULL;
+    char    *pErrMsg = NULL;
 
 	if (_pSQLiteDB == NULL)
 	{
@@ -1514,11 +1554,11 @@ FTM_RET	FTDM_DBIF_EP_DATA_countWithTime
 		}
 	
 	}
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_countCB, pulCount, &strErrMsg);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_countCB, pulCount, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -1580,7 +1620,7 @@ FTM_RET _FTDM_DBIF_isExistTable
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_isExistTable, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", pErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
         sqlite3_free(pErrMsg);
 
         return  FTM_RET_ERROR;
@@ -1613,7 +1653,7 @@ FTM_RET	_FTDM_DBIF_NODE_createTable
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1659,7 +1699,7 @@ FTM_RET _FTDM_DBIF_isExistNode
 	_FTDM_DBIF_CB_IS_EXIST_PARAMS xParams = {.bExist = FTM_TRUE };
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 
 	if (_pSQLiteDB == NULL)
 	{
@@ -1667,11 +1707,11 @@ FTM_RET _FTDM_DBIF_isExistNode
 	}
 
     sprintf(pSQL, "SELECT COUNT(DID) FROM %s WHERE DID = '%s'", pTableName, pDID);
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_isExist, &xParams, &strErrMsg);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_isExist, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -1810,7 +1850,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_destroy
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1841,7 +1881,7 @@ FTM_RET	_FTDM_DBIF_TRIGGER_createTable
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1878,7 +1918,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_get
 {
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_TRIGGER		xTrigger;
 
 	if (_pSQLiteDB == NULL)
@@ -1890,11 +1930,11 @@ FTM_RET	FTDM_DBIF_TRIGGER_get
 	memset(&xTrigger, 0, sizeof(xTrigger));
 
     sprintf(pSQL, "SELECT * FROM trigger WHERE ID = '%s'", pID);
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_TRIGGER_getCB, &xTrigger, &strErrMsg);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_TRIGGER_getCB, &xTrigger, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -1955,7 +1995,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_getList
 {
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 	FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS xParams= 
 	{
 		.ulMaxCount = nMaxCount,
@@ -1970,11 +2010,11 @@ FTM_RET	FTDM_DBIF_TRIGGER_getList
 	}
 
     sprintf(pSQL, "SELECT * FROM trigger");
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_TRIGGER_getListCB, &xParams, &strErrMsg);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_TRIGGER_getListCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -2170,7 +2210,7 @@ FTM_RET	FTDM_DBIF_ACTION_destroy
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2203,7 +2243,7 @@ FTM_RET	_FTDM_DBIF_ACTION_createTable
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2245,7 +2285,7 @@ FTM_RET	FTDM_DBIF_ACTION_get
 {
     FTM_INT			nRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_ACTION		xAction;
 
 	if (_pSQLiteDB == NULL)
@@ -2256,11 +2296,11 @@ FTM_RET	FTDM_DBIF_ACTION_get
 	memset(&xAction, 0, sizeof(xAction));
 
     sprintf(pSQL, "SELECT * FROM action WHERE ID = '%s'", pActionID);
-    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_ACTION_getCB, &xAction, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_ACTION_getCB, &xAction, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -2321,7 +2361,7 @@ FTM_RET	FTDM_DBIF_ACTION_getList
 {
     FTM_INT			nRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 	FTDM_DBIF_CB_GET_ACTION_LIST_PARAMS xParams= 
 	{
 		.ulMaxCount = nMaxCount,
@@ -2335,11 +2375,11 @@ FTM_RET	FTDM_DBIF_ACTION_getList
 	}
 
     sprintf(pSQL, "SELECT * FROM action");
-    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_ACTION_getListCB, &xParams, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_ACTION_getListCB, &xParams, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -2459,7 +2499,7 @@ FTM_RET	_FTDM_DBIF_RULE_createTable
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2555,7 +2595,7 @@ FTM_RET	FTDM_DBIF_RULE_destroy
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2571,7 +2611,7 @@ FTM_RET	FTDM_DBIF_RULE_get
 {
     FTM_INT			nRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_RULE		xRule;
 
 	if (_pSQLiteDB == NULL)
@@ -2582,11 +2622,11 @@ FTM_RET	FTDM_DBIF_RULE_get
 	memset(&xRule, 0, sizeof(xRule));
 
     sprintf(pSQL, "SELECT * FROM rule WHERE ID = '%s'", pRuleID);
-    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_RULE_getCB, &xRule, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_RULE_getCB, &xRule, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -2646,7 +2686,7 @@ FTM_RET	FTDM_DBIF_RULE_getList
 {
     FTM_INT			nRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 	FTDM_DBIF_CB_GET_RULE_LIST_PARAMS xParams= 
 	{
 		.ulMaxCount = nMaxCount,
@@ -2660,11 +2700,11 @@ FTM_RET	FTDM_DBIF_RULE_getList
 	}
 
     sprintf(pSQL, "SELECT * FROM rule");
-    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_RULE_getListCB, &xParams, &strErrMsg);
+    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_RULE_getListCB, &xParams, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
@@ -2739,7 +2779,7 @@ FTM_RET	FTDM_DBIF_count
 {
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
-    FTM_CHAR_PTR	strErrMsg = NULL;
+    FTM_CHAR_PTR	pErrMsg = NULL;
 
 	if (_pSQLiteDB == NULL)
 	{
@@ -2747,11 +2787,11 @@ FTM_RET	FTDM_DBIF_count
 	}
 
     sprintf(pSQL, "SELECT COUNT(*) FROM %s", pTableName);
-    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_countCB, pulCount, &strErrMsg);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_countCB, pulCount, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
-        sqlite3_free(strErrMsg);
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
     }
