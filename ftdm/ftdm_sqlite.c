@@ -177,7 +177,215 @@ FTM_RET	FTDM_DBIF_loadConfig
 
 	return	FTM_RET_OK;
 }
+/***************************************************************
+ *
+ ***************************************************************/
+static 
+FTM_INT _FTDM_DBIF_TABLE_countCB
+(
+	FTM_VOID_PTR 	pData, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR _PTR_ pArgv, 
+	FTM_CHAR_PTR _PTR_ pColName
+)
+{
+	FTM_ULONG_PTR pnCount = (FTM_ULONG_PTR)pData;
 
+	if (nArgc != 0)
+	{
+		*pnCount = atoi(pArgv[0]);
+	}
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_getTableCount
+(
+	FTM_ULONG_PTR	pulCount
+)
+{
+    FTM_INT			xRet;
+    FTM_CHAR		pSQL[1024];
+    FTM_CHAR_PTR	strErrMsg = NULL;
+
+	if (_pSQLiteDB == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+    sprintf(pSQL, "SELECT COUNT(*) FROM sqlite_master where type='table'");
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_TABLE_countCB, pulCount, &strErrMsg);
+    if (xRet != SQLITE_OK)
+    {
+        ERROR("SQL error : %s\n", strErrMsg);
+        sqlite3_free(strErrMsg);
+
+    	return  FTM_RET_ERROR;
+    }
+
+	return	FTM_RET_OK;
+}
+
+/**********************************************************************************
+ *
+ **********************************************************************************/
+typedef struct
+{
+	FTM_ULONG		ulMaxCount;
+	FTM_ULONG		ulCount;
+	FTM_CHAR_PTR _PTR_	pTables;
+}   _FTDM_DBIF_CB_TABLE_LIST_PARAMS, *  _FTDM_DBIF_CB_TABLE_LIST_PARAMS_PTR;
+
+FTM_INT	_FTDM_DBIF_CB_getTableList
+(
+	FTM_VOID_PTR	pData, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR _PTR_	pArgv, 
+	FTM_CHAR_PTR _PTR_ pColName
+)
+{
+    int i;
+  	_FTDM_DBIF_CB_TABLE_LIST_PARAMS_PTR pParams = (_FTDM_DBIF_CB_TABLE_LIST_PARAMS_PTR)pData;
+
+    if (nArgc != 0)
+    {
+		if (pParams->ulCount < pParams->ulMaxCount)
+		{
+			strncpy(pParams->pTables[pParams->ulCount++], pArgv[0], 63);
+		}
+    }
+
+    return  0;
+}
+
+FTM_RET FTDM_DBIF_getTableList
+(
+	FTM_CHAR_PTR _PTR_	pTables,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+)
+{
+    FTM_INT		nRet;
+    _FTDM_DBIF_CB_TABLE_LIST_PARAMS	xParams = { .ulMaxCount = ulMaxCount, .ulCount = 0, .pTables = pTables };
+    FTM_CHAR_PTR	pSQL = "select name from sqlite_master where type='table' order by name";
+    FTM_CHAR_PTR	pErrMsg = NULL;
+
+	if (_pSQLiteDB == NULL)
+	{
+		ERROR("DB is not initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+    nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_getTableList, &xParams, &pErrMsg);
+    if (nRet != SQLITE_OK)
+    {
+        ERROR("SQL error : %s\n", pErrMsg);
+        sqlite3_free(pErrMsg);
+
+        return  FTM_RET_ERROR;
+    }
+
+    *pulCount = xParams.ulCount;
+
+    return  FTM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+FTM_RET	FTDM_DBIF_TABLE_deleteAllTables
+(
+	FTM_VOID
+)
+{
+	FTM_RET		xRet;
+	FTM_INT		i;
+	FTM_ULONG	ulTableCount = 0;
+	FTM_CHAR_PTR _PTR_ pTables;
+	FTM_CHAR_PTR	pBuff;
+
+	xRet = FTDM_DBIF_getTableCount(&ulTableCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (ulTableCount == 0)
+	{
+		return	FTM_RET_OK;	
+	}
+
+	pTables = (FTM_CHAR_PTR _PTR_)FTM_MEM_malloc(sizeof(FTM_CHAR_PTR) * ulTableCount);
+	if (pTables == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(ulTableCount * 64);
+	if (pBuff == NULL)
+	{
+		FTM_MEM_free(pTables);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	for(i = 0 ; i < ulTableCount ; i++)
+	{
+		pTables[i] = &pBuff[i*64];	
+	}
+
+	xRet = FTDM_DBIF_getTableList(pTables, ulTableCount, &ulTableCount);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pTables);
+		FTM_MEM_free(pBuff);
+		return	xRet;	
+	}
+
+	for(i = 0 ; i < ulTableCount ; i++)
+	{
+		TRACE("Table[%s] delete \n", pTables[i]);
+		xRet = FTDM_DBIF_deleteTable(pTables[i]);	
+		if (xRet != FTM_RET_OK)
+		{
+			TRACE("Table[%s] delete failed.\n", pTables[i]);
+		}
+	}
+
+	FTM_MEM_free(pTables);
+	FTM_MEM_free(pBuff);
+
+	return	FTM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+FTM_RET	FTDM_DBIF_deleteTable
+(
+	FTM_CHAR_PTR		pTableName
+)
+{
+	FTM_RET			xRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+
+	if (_pSQLiteDB == NULL)
+	{
+		ERROR("DB not initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "DROP TABLE %s", pTableName);
+	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+	if (xRet != SQLITE_OK)
+	{
+		ERROR("SQL error : %s\n", pErrMsg);	
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
 /***************************************************************
  *
  ***************************************************************/

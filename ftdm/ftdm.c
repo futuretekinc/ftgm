@@ -387,7 +387,7 @@ int main(int nArgc, char *pArgv[])
 	sprintf(pConfigFileName, "/etc/%s.conf", program_invocation_short_name);
 
 	/* set command line options */
-	while((nOpt = getopt(nArgc, pArgv, "c:dv:o:O:E?")) != -1)
+	while((nOpt = getopt(nArgc, pArgv, "c:dv:a:i:e?")) != -1)
 	{
 		switch(nOpt)
 		{
@@ -412,14 +412,14 @@ int main(int nArgc, char *pArgv[])
 			}
 			break;
 
-		case	'o':
+		case	'a':
 			{
 				bLoadObjectFromFile = FTM_TRUE;
 				strcpy(pObjectFileName, optarg);
 			}
 			break;
 
-		case	'O':
+		case	'i':
 			{
 				bDBFirst = FTM_FALSE;
 				bLoadObjectFromFile = FTM_TRUE;
@@ -427,7 +427,7 @@ int main(int nArgc, char *pArgv[])
 			}
 			break;
 
-		case	'E':
+		case	'e':
 			{
 				bDBErase = FTM_TRUE;	
 			}	
@@ -466,6 +466,7 @@ int main(int nArgc, char *pArgv[])
 	if (bDBErase)
 	{
 		MESSAGE("Erase all data!\n");	
+		FTDM_DBIF_TABLE_deleteAllTables();
 	}
 
 	if (bDBFirst)
@@ -523,12 +524,13 @@ int main(int nArgc, char *pArgv[])
 
 FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName)
 {
-	MESSAGE("Usage : %s [-c FILE] [-d] [-m <level>]\n", pAppName);
+	MESSAGE("Usage : %s [-c FILE] [-d] [-v <level>]\n", pAppName);
 	MESSAGE("\tFutureTek Data Manger for IoT gateway.\n");
 	MESSAGE("OPTIONS:\n");
 	MESSAGE("\t-c FILE\tConfiguration file\n");
-	MESSAGE("\t-o FILE\tConfiguration file\n");
+	MESSAGE("\t-i FILE\tobject file\n");
 	MESSAGE("\t-d\tRun as a daemon\n");
+	MESSAGE("\t-e\terase all object\n");
 	MESSAGE("\t-v LEVEL\tSet message output mode.\n");
 	MESSAGE("PARAMETERS:\n");
 	MESSAGE("\t%8s %s\n", "LEVEL", "Output level");

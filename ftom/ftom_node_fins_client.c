@@ -6,13 +6,34 @@
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 #include "ftom_node_class.h"
+#include "ftom_node_fins_client.h"
 #include "ftom_node_fins_client_hhtw.h"
 
 static 
-FTOM_NODE_CLASS_PTR	pFINSClasses[1] =
+FTOM_NODE_CLASS_PTR	pClasses[1] =
 {
 	&xHHTWNodeClass 
 };
+
+FTM_RET	FTOM_NODE_FINSC_getClass
+(
+	FTM_CHAR_PTR	pModel,
+	FTOM_NODE_CLASS_PTR	_PTR_ ppClass
+)
+{
+	FTM_INT	i;
+
+	for(i = 0 ; i < sizeof(pClasses) / sizeof(FTOM_NODE_CLASS_PTR) ; i++)
+	{
+		if(strcasecmp(pModel, pClasses[i]->pModel) == 0)
+		{
+			*ppClass = pClasses[i];	
+			return	FTM_RET_OK;
+		}
+	}
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
+}
 
 FTM_RET	FTOM_NODE_FINSC_create
 (
@@ -23,28 +44,15 @@ FTM_RET	FTOM_NODE_FINSC_create
 	ASSERT(pInfo != NULL);
 	ASSERT(ppNode != NULL);
 
-	FTM_INT	i;
+	FTM_RET	xRet;
 	FTOM_NODE_FINSC_PTR	pNode;
 	FTOM_NODE_CLASS_PTR	pClass = NULL;
 
-	if (pInfo->xType != FTM_NODE_TYPE_FINS)
+	xRet = FTOM_NODE_FINSC_getClass(pInfo->pModel, &pClass);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_OBJECT_NOT_FOUND;
-	}
-
-	for(i = 0 ; i < sizeof(pFINSClasses) / sizeof(FTOM_NODE_CLASS_PTR) ; i++)
-	{
-		if(strcasecmp(pInfo->pModel, pFINSClasses[i]->pModel) == 0)
-		{
-			pClass = pFINSClasses[i];	
-			break;
-		}
-	}
-
-	if (pClass == NULL)
-	{
-		ERROR("Class not found!\n");
-		return	FTM_RET_OBJECT_NOT_FOUND;
+		ERROR("Class[%s] not found!\n", pInfo->pModel);
+		return	xRet;
 	}
 
 	pNode = (FTOM_NODE_FINSC_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_FINSC));

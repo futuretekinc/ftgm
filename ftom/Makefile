@@ -18,6 +18,7 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_msg.c \
 			   ftom_server.c\
 			   ftom_node.c\
+			   ftom_node_class.c\
 			   ftom_ep.c\
 			   ftom_snmpc.c\
 			   ftom_snmptrapd.c\

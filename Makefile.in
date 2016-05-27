@@ -1,5 +1,5 @@
-MODEL="FTM-100S"
-#MODEL=
+#MODEL="FTM-100S"
+MODEL=
 
 export MODEL
 

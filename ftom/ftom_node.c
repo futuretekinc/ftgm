@@ -106,6 +106,7 @@ FTM_RET	FTOM_NODE_create
 
 	FTM_RET			xRet;
 	FTOM_NODE_PTR	pNode;
+	FTOM_NODE_CLASS_PTR	pClass = NULL;
 
 	if (strlen(pInfo->pDID) == 0)
 	{
@@ -136,33 +137,16 @@ FTM_RET	FTOM_NODE_create
 		}
 	}
 
-	switch(pInfo->xType)
+	xRet = FTOM_NODE_CLASS_get(pInfo->pModel, pInfo->xType, &pClass);
+	if (xRet != FTM_RET_OK)
 	{
-	case	FTM_NODE_TYPE_SNMP:
-		{
-			xRet = FTOM_NODE_SNMPC_create(pInfo, &pNode);
-		}
-		break;
-#if 0
-	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
-		{
-			xRet = FTOM_NODE_MBC_create(pInfo, &pNode);
-		}
-		break;
-#endif
-	case	FTM_NODE_TYPE_FINS:
-		{
-			xRet = FTOM_NODE_FINSC_create(pInfo, &pNode);
-		}
-		break;
-
-	default:
-		{
-			ERROR("pInfo->xType = %08lx", pInfo->xType);
-			return	FTM_RET_INVALID_ARGUMENTS;	
-		}
+		ERROR("Node[%s] not found!\n", pInfo->pModel);
+		return	xRet;	
 	}
 
+	ASSERT(pClass->fCreate != NULL);
+
+	xRet = pClass->fCreate(pInfo, &pNode);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -197,8 +181,6 @@ FTM_RET	FTOM_NODE_create
 	
 	pNode->bStop = FTM_TRUE;
 	pNode->xState = FTOM_NODE_STATE_INITIALIZED;
-	pNode->ulRetry = 10;
-	pNode->xTimeout = 10;
 
 	if (pNode->pClass->fInit != NULL)
 	{
@@ -211,7 +193,7 @@ FTM_RET	FTOM_NODE_create
 
 	*ppNode = pNode;
 
-	return	xRet;
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_NODE_createFromDB
@@ -226,6 +208,7 @@ FTM_RET	FTOM_NODE_createFromDB
 	FTM_RET			xRet;
 	FTM_NODE		xInfo;
 	FTOM_NODE_PTR	pNode;
+	FTOM_NODE_CLASS_PTR	pClass = NULL;
 
 	xRet = FTM_LIST_get(pNodeList, pDID, (FTM_VOID_PTR _PTR_)&pNode);
 	if (xRet == FTM_RET_OK)
@@ -236,37 +219,23 @@ FTM_RET	FTOM_NODE_createFromDB
 	xRet = FTOM_DB_NODE_getInfo(pDID, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Node[%s] get info failed!\n", pDID);
 		return	xRet;	
 	}
 
-	switch(xInfo.xType)
-	{
-	case	FTM_NODE_TYPE_SNMP:
-		{
-			xRet = FTOM_NODE_SNMPC_create(&xInfo, &pNode);
-		}
-		break;
-#if 0
-	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
-		{
-			xRet = FTOM_NODE_MBC_create(&xInfo, &pNode);
-		}
-		break;
-#endif	
-	case	FTM_NODE_TYPE_FINS:
-		{
-			xRet = FTOM_NODE_FINSC_create(&xInfo, &pNode);
-		}
-		break;
-	default:
-		{
-			ERROR("Invalid Node type[%08lx]\n", xInfo.xType);
-			return	FTM_RET_INVALID_ARGUMENTS;	
-		}
-	}
-
+	xRet = FTOM_NODE_CLASS_get(xInfo.pModel, xInfo.xType, &pClass);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Node[%s] not found!\n", xInfo.pModel);
+		return	xRet;	
+	}
+
+	ASSERT(pClass->fCreate != NULL);
+
+	xRet = pClass->fCreate(&xInfo, &pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Class[%s] creation failed!\n", xInfo.pModel);
 		return	xRet;	
 	}
 
@@ -291,8 +260,6 @@ FTM_RET	FTOM_NODE_createFromDB
 	
 	pNode->bStop = FTM_TRUE;
 	pNode->xState = FTOM_NODE_STATE_INITIALIZED;
-	pNode->ulRetry = 10;
-	pNode->xTimeout = 10;
 
 	if (pNode->pClass->fInit != NULL)
 	{
@@ -305,7 +272,7 @@ FTM_RET	FTOM_NODE_createFromDB
 
 	*ppNode = pNode;
 
-	return	xRet;
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_NODE_destroy
@@ -347,35 +314,6 @@ FTM_RET	FTOM_NODE_destroy
 	if ((*ppNode)->pClass->fDestroy != NULL)
 	{
 		(*ppNode)->pClass->fDestroy(ppNode);
-	}
-	else
-	{
-		switch((*ppNode)->xInfo.xType)
-		{
-		case	FTM_NODE_TYPE_SNMP:
-			{
-				FTOM_NODE_SNMPC_destroy((FTOM_NODE_SNMPC_PTR _PTR_)ppNode);
-			}
-			break;
-#if 0
-		case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
-			{
-				FTOM_NODE_MBC_destroy((FTOM_NODE_MBC_PTR _PTR_)ppNode);
-			}
-			break;
-#endif
-		case	FTM_NODE_TYPE_FINS:
-			{
-				FTOM_NODE_FINSC_destroy((FTOM_NODE_FINSC_PTR _PTR_)ppNode);
-			}
-			break;
-	
-		default:
-			{
-				ERROR("pInfo->xType = %08lx", (*ppNode)->xInfo.xType);
-				return	FTM_RET_INVALID_ARGUMENTS;	
-			}
-		}
 	}
 
 	*ppNode = NULL;
@@ -1025,8 +963,6 @@ FTM_RET	FTOM_NODE_printList
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_INT		j;
-		FTOM_EP_PTR	pEP;
 		FTM_ULONG	ulEPCount;
 
 		FTOM_NODE_getAt(i, &pNode);

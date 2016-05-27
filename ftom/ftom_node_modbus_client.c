@@ -11,6 +11,26 @@ FTOM_NODE_CLASS_PTR	pClasses[] =
 	&xNodeModbusClientHHTW
 };
 
+FTM_RET	FTOM_NODE_MBC_getClass
+(
+	FTM_CHAR_PTR	pModel,
+	FTOM_NODE_CLASS_PTR	_PTR_ ppClass
+)
+{
+	FTM_INT	i;
+
+	for(i = 0 ; i < sizeof(pClasses) / sizeof(FTOM_NODE_CLASS_PTR) ; i++)
+	{
+		if(strcasecmp(pInfo->pModel, pClasses[i]->pModel) == 0)
+		{
+			*ppClass = pClasses[i];	
+			return	FTM_RET_OK;
+		}
+	}
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
+}
+
 FTM_RET	FTOM_NODE_MBC_create
 (
 	FTM_NODE_PTR pInfo, 
@@ -20,27 +40,14 @@ FTM_RET	FTOM_NODE_MBC_create
 	ASSERT(pInfo != NULL);
 	ASSERT(ppNode != NULL);
 
-	FTM_INT		i;
+	FTM_RET	xRet;
 	FTOM_NODE_MBC_PTR	pNode;
 	FTOM_NODE_CLASS_PTR	pClass = NULL;
 
-	if (pInfo->xType != FTM_NODE_TYPE_MODBUS_OVER_TCP)
+	xRet = FTOM_NODE_MBC_getClass(pInfo->pModel, &pClass);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_OBJECT_NOT_FOUND;	
-	}
-
-	for(i = 0 ; i < sizeof(pClasses) / sizeof(FTOM_NODE_CLASS_PTR) ; i++)
-	{
-		if (strcasecmp(pClasses[i]->pModel, pInfo->pModel) == 0)
-		{
-			pClass = pClasses[i];	
-			break;
-		}
-	}
-
-	if (pClass == NULL)
-	{
-		return	FTM_RET_OBJECT_NOT_FOUND;	
+		return	xRet;
 	}
 
 	pNode = (FTOM_NODE_MBC_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_MBC));

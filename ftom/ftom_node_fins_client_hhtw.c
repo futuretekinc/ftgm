@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include "ftom.h"
 #include "ftom_node_class.h"
+#include "ftom_node_fins_client.h"
 
 #define	FTOM_NODE_FINSC_HHTW_REG_COUNT	14
 
@@ -391,6 +392,8 @@ FTOM_NODE_CLASS	xHHTWNodeClass =
 {
 	.pModel		= "hhtw comp",
 	.xType		= FTOM_NODE_TYPE_FINSC,
+	.fCreate	= (FTOM_NODE_CREATE)FTOM_NODE_FINSC_create,
+	.fDestroy	= (FTOM_NODE_DESTROY)FTOM_NODE_FINSC_destroy,
 	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_FINSC_HHTW_init,
 	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_FINSC_HHTW_final,
 	.fPrestart	= (FTOM_NODE_PRESTART)FTOM_NODE_FINSC_HHTW_preStart,
