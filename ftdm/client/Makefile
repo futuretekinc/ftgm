@@ -1,3 +1,7 @@
+ifeq ($(TOPDIR),)
+TOPDIR=$(shell pwd)/../..
+endif
+
 include $(TOPDIR)/Makefile.in
 
 CLIENT=ftdmc
@@ -12,6 +16,10 @@ $(CLIENT): $(CLIENT_OBJS)
 
 .c.o:  *.c *.h
 	$(CC) $(CFLAGS) $< -o $@
+
+install: $(CLIENT)
+	install -d $(EXEC_PREFIX)
+	install -t $(EXEC_PREFIX) $(CLIENT)
 
 clean:
 	rm -f $(CLIENT) *.a *.o

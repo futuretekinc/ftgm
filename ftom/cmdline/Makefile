@@ -37,5 +37,11 @@ $(LIB_FTOMCL): $(LIB_FTOMCL_OBJS)
 .c.o:  $(CLIENT_SRC) $(LIB_FTOMCL_OBJS) *.h
 	$(CC) $(CFLAGS) $< -o $@
 
+install: $(CLIENT) $(LIB_FTOMCL)
+	install -d $(EXEC_PREFIX)
+	install -t $(EXEC_PREFIX) $(CLIENT)
+	install -d $(LIB_PREFIX)
+	install -t $(LIB_PREFIX) $(LIB_FTOMCL).so.1.0.1
+
 clean:
 	rm $(CLIENT) *.a *.o

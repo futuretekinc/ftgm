@@ -78,6 +78,20 @@ $(LIB_HHTW): $(LIB_HHTW_OBJS)
 .c.o:  $(CLIENT_SRC) $(LIB_FTOMC_OBJS) *.h $(SERVER_SRC)
 	$(CC) $(CFLAGS) $< -o $@
 
+install: $(FTOM) $(LIB_FTOM) $(LIB_FTOMC)
+	install -d $(EXEC_PREFIX)	
+	install -t $(EXEC_PREFIX) $(FTOM)
+	install -d $(LIB_PREFIX)
+	install -t $(LIB_PREFIX) $(LIB_FTOM).a
+	install -t $(LIB_PREFIX) $(LIB_FTOM).so.1.0.1
+	install -t $(LIB_PREFIX) $(LIB_FTOMC).a
+	install -t $(LIB_PREFIX) $(LIB_FTOMC).so.1.0.1
+	install -d $(CONF_PREFIX)
+	install -t $(CONF_PREFIX) $(FTOM).conf
+	for dir in $(SUBDIR); do\
+		make -C $$dir install;\
+	done
+
 clean:
 	rm $(SERVER) *.a *.o
 	for dir in $(SUBDIR); do\

@@ -27,5 +27,9 @@ $(CLIENT): $(CLIENT_OBJS)
 
 	$(CC) $(CFLAGS) $< -o $@
 
+install: $(CLIENT)
+	install -d $(EXEC_PREFIX)
+	install -t $(EXEC_PREFIX) $(CLIENT)
+
 clean:
 	rm $(CLIENT) *.a *.o

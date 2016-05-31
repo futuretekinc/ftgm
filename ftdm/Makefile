@@ -59,6 +59,20 @@ $(LIB_FTDMC): $(LIB_FTDMC_OBJS)
 .c.o:  *.c *.h
 	$(CC) $(CFLAGS) $< -o $@
 
+install: $(SERVER) $(LIB_FTDM) $(LIB_FTDMC)
+	install -d $(EXEC_PREFIX)	
+	install -t $(EXEC_PREFIX) $(SERVER)
+	install -d $(LIB_PREFIX)
+	install -t $(LIB_PREFIX)	$(LIB_FTDM).a
+	install -t $(LIB_PREFIX)	$(LIB_FTDM).so.1.0.1
+	install -t $(LIB_PREFIX)	$(LIB_FTDMC).a
+	install -t $(LIB_PREFIX)	$(LIB_FTDMC).so.1.0.1
+	install -d $(CONF_PREFIX)
+	install -t $(CONF_PREFIX) $(SERVER).conf
+	for dir in $(SUBDIR); do\
+		make -C $$dir install;\
+	done
+
 clean:
 	rm -f $(SERVER) *.a *.o $(LIB_FTDM) $(LIB_FTDMC)
 	for dir in $(SUBDIR); do\

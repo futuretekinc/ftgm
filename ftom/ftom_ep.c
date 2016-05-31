@@ -901,7 +901,7 @@ FTM_RET	FTOM_EP_setData
 		{
 			FTM_EP_DATA_PTR	pTempData;
 
-			xRet = FTM_LIST_getFirst(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pTempData);	
+			xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pTempData);	
 			if (xRet != FTM_RET_OK)
 			{
 				FTM_EP_DATA_destroy(pNewData);
