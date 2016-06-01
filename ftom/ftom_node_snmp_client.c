@@ -23,6 +23,12 @@ FTM_RET	FTOM_NODE_SNMPC_getClass
 {
 	FTM_INT	i;
 
+	if (strlen(pModel) == 0)
+	{
+		*ppClass = &xGeneralSNMP;	
+		return	FTM_RET_OK;
+	}
+
 	for(i = 0 ; i < sizeof(pClasses) / sizeof(FTOM_NODE_CLASS_PTR) ; i++)
 	{
 		if(strcasecmp(pModel, pClasses[i]->pModel) == 0)

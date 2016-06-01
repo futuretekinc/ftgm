@@ -35,23 +35,27 @@ FTM_RET	FTOM_CGI_addNode
 		break;
 
 	default:
+		ERROR("Node type[%s] not supported!\n", FTM_NODE_typeString(xInfo.xType));
 		goto finish;
 	}
 
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Invalid arguments!\n");
 		goto finish;	
 	}
 
 	xRet = FTOM_CLIENT_NODE_create(pClient, &xInfo, pDID, sizeof(pDID));
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Node creation failed.\n");
 		goto finish;	
 	}
 
 	xRet = FTOM_CLIENT_NODE_get(pClient, pDID, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Node[%s] not found!\n", pDID);
 		goto finish;
 	}
 

@@ -149,6 +149,7 @@ FTM_RET	FTOM_NODE_create
 	xRet = pClass->fCreate(pInfo, &pNode);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Node[%s] creation failed!\n", pInfo->pModel);
 		return	xRet;	
 	}
 

@@ -14,6 +14,7 @@ FTM_RET	FTOM_NODE_CLASS_get
 
 	FTM_RET	xRet;
 
+	TRACE("Node class type : %d\n", xType);
 	switch(xType)
 	{
 	case	FTM_NODE_TYPE_SNMP: xRet = FTOM_NODE_SNMPC_getClass(pModel, ppClass); break;
