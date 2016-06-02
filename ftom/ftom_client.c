@@ -374,6 +374,7 @@ FTM_RET FTOM_CLIENT_EP_create
 
 	memset(&xReq, 0, sizeof(xReq));
 
+    FTM_EP_print(pInfo);
 	xReq.xCmd	=	FTOM_CMD_EP_CREATE;
 	xReq.ulLen	=	sizeof(xReq);
 	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));

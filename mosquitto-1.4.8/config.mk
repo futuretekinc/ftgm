@@ -62,7 +62,7 @@ WITH_SRV:=yes
 
 # Build using libuuid for clientid generation (Linux only - please report if
 # supported on your platform).
-WITH_UUID:=yes
+WITH_UUID:=no
 
 # Build with websockets support on the broker.
 WITH_WEBSOCKETS:=no
@@ -105,12 +105,12 @@ ifeq ($(UNAME),SunOS)
 		CFLAGS?=-Wall -ggdb -O2
 	endif
 else
-	CFLAGS?=-Wall -ggdb -O2
+	CFLAGS?=-Wall -ggdb -O2 -I../../openssl-1.0.2g/include
 endif
 
-LIB_CFLAGS:=${CFLAGS} ${CPPFLAGS} -I. -I.. -I../lib
+LIB_CFLAGS:=${CFLAGS} ${CPPFLAGS} -I. -I.. -I../lib 
 LIB_CXXFLAGS:=$(LIB_CFLAGS) ${CPPFLAGS}
-LIB_LDFLAGS:=${LDFLAGS}
+LIB_LDFLAGS:=${LDFLAGS} -L../../openssl-1.0.2g
 
 BROKER_CFLAGS:=${LIB_CFLAGS} ${CPPFLAGS} -DVERSION="\"${VERSION}\"" -DTIMESTAMP="\"${TIMESTAMP}\"" -DWITH_BROKER
 CLIENT_CFLAGS:=${CFLAGS} ${CPPFLAGS} -I../lib -DVERSION="\"${VERSION}\""
@@ -118,17 +118,17 @@ CLIENT_CFLAGS:=${CFLAGS} ${CPPFLAGS} -I../lib -DVERSION="\"${VERSION}\""
 ifneq ($(or $(findstring $(UNAME),FreeBSD), $(findstring $(UNAME),OpenBSD)),)
 	BROKER_LIBS:=-lm
 else
-	BROKER_LIBS:=-ldl -lm
+	BROKER_LIBS:=-L../../openssl-1.0.2g -ldl -lm
 endif
-LIB_LIBS:= -ldl
-PASSWD_LIBS:= -ldl
+LIB_LIBS:= -L../../openssl-1.0.2g -ldl
+PASSWD_LIBS:=-L../../openssl-1.0.2g -ldl
 
 ifeq ($(UNAME),Linux)
 	BROKER_LIBS:=$(BROKER_LIBS) -lrt -Wl,--dynamic-list=linker.syms -ldl
 	LIB_LIBS:=$(LIB_LIBS) -lrt
 endif
 
-CLIENT_LDFLAGS:=$(LDFLAGS) -L../lib ../lib/libmosquitto.so.${SOVERSION} -ldl
+CLIENT_LDFLAGS:=$(LDFLAGS) -L../lib ../lib/libmosquitto.so.${SOVERSION} -L../../openssl-1.0.2g -ldl
 
 ifeq ($(UNAME),SunOS)
 	ifeq ($(CC),cc)
@@ -166,7 +166,7 @@ ifeq ($(WITH_TLS),yes)
 	LIB_LIBS:=$(LIB_LIBS) -lssl -lcrypto
 	BROKER_CFLAGS:=$(BROKER_CFLAGS) -DWITH_TLS
 	LIB_CFLAGS:=$(LIB_CFLAGS) -DWITH_TLS
-	PASSWD_LIBS:=-lcrypto -ldl
+	PASSWD_LIBS:=-L../../openssl-1.0.2g -lcrypto -ldl
 	CLIENT_CFLAGS:=$(CLIENT_CFLAGS) -DWITH_TLS
 
 	ifeq ($(WITH_TLS_PSK),yes)

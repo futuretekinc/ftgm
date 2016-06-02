@@ -68,7 +68,6 @@ FTM_RET	FTOM_NODE_SNMPC_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	TRACE("SNMP Version : %d\n", pInfo->xOption.xSNMP.ulVersion);
 	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
 
 	pNode->xCommon.pClass = pClass;
