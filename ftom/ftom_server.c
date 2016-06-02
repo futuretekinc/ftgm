@@ -2345,15 +2345,24 @@ FTM_RET	FTOM_SERVER_DISCOVERY_getEPList
 
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR	pService;
+	FTM_ULONG			nMaxCount;
 
 	memset(pResp, 0, sizeof(*pResp));
+
+	nMaxCount = (ulRespLen - sizeof(FTOM_RESP_DISCOVERY_GET_EP_LIST_PARAMS)) / sizeof(FTM_EP);
+	if (nMaxCount <= 0)
+	{
+		xRet = FTM_RET_BUFFER_TOO_SMALL;
+		goto finish;
+	}
+
 
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_INT	i;
 
-		for(i = 0 ; i < pReq->ulCount ; i++)
+		for(i = 0 ; i < pReq->ulCount && pResp->ulCount < nMaxCount; i++)
 		{
 			xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, pReq->ulIndex + i, &pResp->pEPList[i]);
 			if (xRet != FTM_RET_OK)
@@ -2367,6 +2376,7 @@ FTM_RET	FTOM_SERVER_DISCOVERY_getEPList
 		xRet = FTM_RET_OK;
 	}
 
+finish:
 	pResp->xRet = xRet;
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP) * pResp->ulCount;
