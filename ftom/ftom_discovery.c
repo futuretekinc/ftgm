@@ -229,6 +229,17 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					FTM_NODE_setDefault(&pNode->xInfo);
 					strcpy(pNode->xInfo.pDID, pMsg->pDID);
 					strcpy(pNode->xInfo.xOption.xSNMP.pURL, pMsg->pIP);
+					if (strlen(pMsg->pName) != 0)
+					{
+						if (strncasecmp(pMsg->pName, "FTE-E", 5) == 0)
+						{
+							strcpy(pNode->xInfo.xOption.xSNMP.pMIB, "FTE-E");	
+						}
+						else if (strncasecmp(pMsg->pName, "FTM50S", 6) == 0)
+						{
+							strcpy(pNode->xInfo.xOption.xSNMP.pMIB, "FTM50S-MIB");	
+						}
+					}
 					strcpy(pNode->pIP, pMsg->pIP);
 
 					FTM_LIST_append(&pDiscovery->xNodeList, pNode);
