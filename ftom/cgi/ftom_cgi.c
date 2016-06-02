@@ -413,7 +413,6 @@ FTM_RET	FTOM_CGI_getEPID
 	}
 	else if((strlen(pValue) > FTM_EPID_LEN))
 	{
-		TRACE("pValue = %s\n", pValue);
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 	else
