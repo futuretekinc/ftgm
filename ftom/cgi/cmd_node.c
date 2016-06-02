@@ -361,7 +361,8 @@ FTM_RET	FTOM_CGI_addNodeInfoToObject
 				cJSON_AddItemToObject(pRoot, "snmp", pSNMP = cJSON_CreateObject());
 				if (xFields & FTM_NODE_FIELD_SNMP_VERSION)
 				{
-					cJSON_AddStringToObject(pSNMP, "version", 	FTM_SNMP_versionString(pNodeInfo->xOption.xSNMP.ulVersion));
+					cJSON_AddNumberToObject(pSNMP, "version", 	pNodeInfo->xOption.xSNMP.ulVersion);
+					//cJSON_AddStringToObject(pSNMP, "version", 	FTM_SNMP_versionString(pNodeInfo->xOption.xSNMP.ulVersion));
 				}
 
 				if (xFields & FTM_NODE_FIELD_SNMP_URL)

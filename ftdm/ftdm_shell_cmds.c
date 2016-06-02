@@ -39,7 +39,7 @@ FTM_RET	FTDM_SHELL_showNodeList(FTDM_NODEM_PTR pNodeM)
 				case	FTM_NODE_TYPE_SNMP:
 					{
 						MESSAGE("%16s %16s %16s", 
-							FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion),
+							FTM_SNMP_versionString(pNode->xInfo.xOption.xSNMP.ulVersion),
 							pNode->xInfo.xOption.xSNMP.pURL,
 							pNode->xInfo.xOption.xSNMP.pCommunity);
 					}
