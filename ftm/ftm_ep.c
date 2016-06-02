@@ -93,6 +93,8 @@ FTM_RET	FTM_EP_setDefault
 	pEP->ulTimeout	=	30;
 	pEP->ulInterval	=	10;
 	pEP->ulInterval	=	60;
+	pEP->xLimit.xType = FTM_EP_LIMIT_TYPE_COUNT;
+	pEP->xLimit.xParams.ulCount = 100;
 
 	return	FTM_RET_OK;
 }
