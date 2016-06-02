@@ -173,6 +173,8 @@ FTM_RET	FTDM_EP_set
 		return	FTM_RET_INVALID_ID;	
 	}
 
+	xRet = FTM_RET_OK;	
+
 	if (FTM_EP_isStatic(&pEP->xInfo) == FTM_RET_OK)
 	{
 		memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
@@ -180,6 +182,10 @@ FTM_RET	FTDM_EP_set
 		if (FTM_EP_isStatic(pInfo) != FTM_RET_OK)
 		{
 			xRet =FTDM_DBIF_EP_del(pEP->xInfo.pEPID);
+		}
+		else
+		{
+			xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
 		}
 	}
 	else
@@ -189,10 +195,14 @@ FTM_RET	FTDM_EP_set
 		if (FTM_EP_isStatic(pInfo) == FTM_RET_OK)
 		{
 			xRet =FTDM_DBIF_EP_append(&pEP->xInfo);
+			if (xRet == FTM_RET_OK)
+			{
+				xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
+			}
 		}
 	}
 
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 

@@ -243,7 +243,6 @@ FTM_INT	_FTDM_DBIF_CB_getTableList
 	FTM_CHAR_PTR _PTR_ pColName
 )
 {
-    int i;
   	_FTDM_DBIF_CB_TABLE_LIST_PARAMS_PTR pParams = (_FTDM_DBIF_CB_TABLE_LIST_PARAMS_PTR)pData;
 
     if (nArgc != 0)
@@ -1059,6 +1058,44 @@ FTM_RET	FTDM_DBIF_EP_get
 	memcpy(pEP, &xEP, sizeof(FTM_EP));
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_EP_set
+(
+	FTM_CHAR_PTR	pEPID,
+ 	FTM_EP_PTR		pInfo
+)
+{
+	ASSERT(pInfo != NULL);
+
+	FTM_INT			nRC;
+	sqlite3_stmt 	*pStmt;
+	FTM_CHAR		pSQL[1024];
+
+	if (_pSQLiteDB == NULL)
+	{
+		TRACE("DB is not initialize.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "UPDATE ep_info SET VALUE = ? WHERE EPID = \'%s\'", pEPID);
+	do 
+	{
+		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRC!=SQLITE_OK )
+		{
+			return FTM_RET_ERROR;
+		}
+
+		sqlite3_bind_blob(pStmt, 1, pInfo, sizeof(FTM_EP), SQLITE_STATIC);
+
+		nRC = sqlite3_step(pStmt);
+		ASSERT( nRC != SQLITE_ROW);
+
+		nRC = sqlite3_finalize(pStmt);
+	}  while (nRC == SQLITE_SCHEMA);
+
+	return FTM_RET_OK;
 }
 
 FTM_RET	FTDM_DBIF_EP_DATA_initTable
