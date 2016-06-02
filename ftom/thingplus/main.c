@@ -182,10 +182,19 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	{
 	case	FTOM_TP_CLIENT_CMD_GW_GET_INFO:
 		{
-			xRet = FTOM_TP_CLIENT_GW_getInfo(&xClient);
+			FTOM_TP_GATEWAY_PTR	pGateway = NULL;
+
+			FTOM_TP_GATEWAY_create(&pGateway);
+			xRet = FTOM_TP_CLIENT_GW_getInfo(&xClient, pGateway);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR("Failed to get gateway information.\n");
+			}
+			else
+			{
+				MESSAGE("%16s : %s\n", "ID", 	pGateway->pID);			
+				MESSAGE("%16s : %s\n", "Name", 	pGateway->pName);			
+				MESSAGE("%16s : %s\n", "Report Interval", pGateway->ulReportInterval);			
 			}
 		}
 		break;
@@ -277,10 +286,69 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		break;
 	case	FTOM_TP_CLIENT_CMD_SENSOR_LIST:
 		{
-			xRet = FTOM_TP_CLIENT_SENSOR_getList(&xClient);
+			FTOM_TP_SENSOR	pSensors[20]; 
+			FTM_ULONG		ulCount = 0;
+
+			xRet = FTOM_TP_CLIENT_SENSOR_getList(&xClient, pSensors, 20, &ulCount);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR("Failed to get gateway information.\n");
+			}
+			else
+			{
+				FTM_INT	i;
+				FTM_INT	nIDLen = 0;
+				FTM_INT nNameLen = 0;
+				FTM_INT nTypeLen = 0;
+				FTM_INT	nOwnerLen = 0;
+				FTM_INT	nDeviceLen = 0;
+
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					if (strlen(pSensors[i].pID) > nIDLen)
+					{
+						nIDLen  =strlen(pSensors[i].pID);
+					}
+
+					if (strlen(pSensors[i].pName) > nNameLen)
+					{
+						nNameLen  =strlen(pSensors[i].pName);
+					}
+
+					FTM_CHAR_PTR pType = FTM_EP_typeString(pSensors[i].xType);
+					if (strlen(pType) > nTypeLen)
+					{
+						nTypeLen  =strlen(pType);
+					}
+
+					if (strlen(pSensors[i].pOwnerID) > nOwnerLen)
+					{
+						nOwnerLen  =strlen(pSensors[i].pOwnerID);
+					}
+
+					if (strlen(pSensors[i].pDeviceID) > nDeviceLen)
+					{
+						nDeviceLen  =strlen(pSensors[i].pDeviceID);
+					}
+				}
+
+				nIDLen = (nIDLen + 7) / 4 * 4;
+				nNameLen = (nNameLen + 7) / 4 * 4;
+				nTypeLen = (nTypeLen + 7) / 4 * 4;
+				nOwnerLen = (nOwnerLen + 7) / 4 * 4;
+				nDeviceLen = (nDeviceLen + 7) / 4 * 4;
+
+				FTM_CHAR	pFormat[256];
+
+				sprintf(pFormat, "   : %%%ds %%%ds %%%ds %%%ds %%%ds \n", nIDLen, nNameLen, nTypeLen, nOwnerLen, nDeviceLen);
+				MESSAGE(pFormat, "ID", "NAME", "TYPE", "OWNER", "DEVICE");
+
+				sprintf(pFormat, "%%2d : %%%ds %%%ds %%%ds %%%ds %%%ds \n", nIDLen, nNameLen, nTypeLen, nOwnerLen, nDeviceLen);
+				MESSAGE(pFormat, i+1, pSensors[i].pID, pSensors[i].pName, FTM_EP_typeString(pSensors[i].xType) , pSensors[i].pOwnerID, pSensors[i].pDeviceID); 
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					MESSAGE(pFormat, i+1, pSensors[i].pID, pSensors[i].pName, FTM_EP_typeString(pSensors[i].xType) , pSensors[i].pOwnerID, pSensors[i].pDeviceID); 
+				}
 			}
 		}
 		break;

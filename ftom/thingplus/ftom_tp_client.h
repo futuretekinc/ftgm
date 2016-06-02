@@ -3,6 +3,20 @@
 
 #include "ftom.h"
 #include <curl/curl.h>
+#include "ftom_tp_gateway.h"
+
+typedef	struct
+{
+	FTM_CHAR		pID[FTM_EPID_LEN+1];
+	FTM_CHAR		pName[FTM_NAME_LEN+1];
+	FTM_CHAR		pOwnerID[FTM_DID_LEN+1];
+	FTM_CHAR		pDeviceID[FTM_DID_LEN+1];
+	FTM_EP_TYPE		xType;
+	FTM_ULONG		ulAddress;
+	FTM_ULONG		ulSequence;
+	FTM_ULONG		ulCTime;
+	FTM_ULONG		ulMTime;
+}	FTOM_TP_SENSOR, _PTR_ FTOM_TP_SENSOR_PTR;
 
 typedef	struct
 {
@@ -45,7 +59,8 @@ FTM_RET	FTOM_TP_CLIENT_GW_setID
 
 FTM_RET	FTOM_TP_CLIENT_GW_getInfo
 (
-	FTOM_TP_CLIENT_PTR 	pClient
+	FTOM_TP_CLIENT_PTR 	pClient,
+	FTOM_TP_GATEWAY_PTR	pGateway
 );
 
 FTM_RET	FTOM_TP_CLIENT_GW_setStatus
@@ -89,7 +104,10 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_delete
 
 FTM_RET	FTOM_TP_CLIENT_SENSOR_getList
 (
-	FTOM_TP_CLIENT_PTR	pClient
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_SENSOR_PTR	pSensors,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
 );
 
 FTM_RET	FTOM_TP_CLIENT_SENSOR_getStatus
@@ -128,6 +146,20 @@ FTM_RET	FTOM_TP_CLIENT_EP_create
 (
 	FTOM_TP_CLIENT_PTR	pClient,
 	FTM_EP_PTR			pEPInfo
+);
+
+FTM_RET	FTOM_TP_CLIENT_EP_delete
+(
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR		pEPID
+);
+
+FTM_RET	FTOM_TP_CLIENT_EP_getList
+(
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTM_EP_PTR			pEPInfos,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
 );
 
 FTM_RET	FTOM_TP_CLIENT_setVerbose
