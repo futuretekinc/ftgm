@@ -5,10 +5,11 @@ endif
 include $(TOPDIR)/Makefile.in
 
 CLIENT=tpclient
-CLIENT_SRCS=main.c
+CLIENT_SRCS=main.c \
+			ftom_tp_client.c
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftm -lconfig -lcurl -lpthread  -lrt
+CLIENT_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftm -lconfig -lcurl -lcjson -lpthread  -lm -lrt
 
 all: $(CLIENT) 
 

@@ -13,7 +13,7 @@ CLIENT_SRCS=main.c
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftm -lconfig -lpthread  -lrt
 
-LIB_FTOMCL=ftomcl
+LIB_FTOMCL=libftomcl
 LIB_FTOMCL_SRCS= ftom_client_cmdline.c\
 			cmd_cgi.c\
 			cmd_node.c\
@@ -41,6 +41,7 @@ install: $(CLIENT) $(LIB_FTOMCL)
 	install -d $(EXEC_PREFIX)
 	install -t $(EXEC_PREFIX) $(CLIENT)
 	install -d $(LIB_PREFIX)
+	install -t $(LIB_PREFIX) $(LIB_FTOMCL).a
 	install -t $(LIB_PREFIX) $(LIB_FTOMCL).so.1.0.1
 
 clean:

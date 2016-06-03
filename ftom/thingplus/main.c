@@ -3,200 +3,163 @@
 #include "ftom.h"
 #include "ftom_tp_client.h"
 
-static 
-size_t FTOM_TP_CLIENT_CB_response
-(
- 	FTM_VOID_PTR	pContents, 
-	size_t 			nSize, 
-	size_t 			nMemB, 
-	FTM_VOID_PTR	pUser
-);
-
-static
-FTM_RET	FTOM_TP_CLIENT_setURL
-(
-	FTOM_TP_CLIENT_PTR	pClient,
-	const FTM_CHAR_PTR	pFormat,
-	...
-);
-
-static FTM_BOOL	bGlobalInit = FTM_FALSE;
-
-FTM_RET	FTOM_TP_CLIENT_init
-(
-	FTOM_TP_CLIENT_PTR pClient
-)
+typedef	enum
 {
-	ASSERT(pClient != NULL);
+	FTOM_TP_CLIENT_CMD_UNKNOWN = 0,
+	FTOM_TP_CLIENT_CMD_GW_GET_INFO,
+	FTOM_TP_CLIENT_CMD_GW_GET_STATUS,
+	FTOM_TP_CLIENT_CMD_GW_SET_STATUS,
+	FTOM_TP_CLIENT_CMD_GW_GET_MODEL,
+	FTOM_TP_CLIENT_CMD_DEVICE_CREATE,
+	FTOM_TP_CLIENT_CMD_DEVICE_DELETE,
+	FTOM_TP_CLIENT_CMD_SENSOR_LIST,
+	FTOM_TP_CLIENT_CMD_SENSOR_CREATE,
+	FTOM_TP_CLIENT_CMD_SENSOR_DELETE,
+	FTOM_TP_CLIENT_CMD_SENSOR_GET_STATUS,
+	FTOM_TP_CLIENT_CMD_SENSOR_SET_STATUS,
+	FTOM_TP_CLIENT_CMD_SENSOR_SET_VALUE
+}	FTOM_TP_CLIENT_CMD, _PTR_ FTOM_TP_CLIENT_CMD_PTR;
 
-	if (!bGlobalInit)
-	{
-		curl_global_init(CURL_GLOBAL_DEFAULT);
-		bGlobalInit = FTM_TRUE;	
-	}
-
-	memset(pClient, 0, sizeof(FTOM_TP_CLIENT));
-
-  	pClient->pCURL = curl_easy_init();
-  	if(pClient->pCURL == NULL) 
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	strcpy(pClient->pBase, "https://api.thingplus.net/v1");
-	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "username:00405cabcdef");
-	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "apikey:tlLZy-8UeYAzNMubWvQWS19RUV4=");
-
-	curl_easy_setopt(pClient->pCURL, CURLOPT_HTTPHEADER, pClient->pHTTPHeader);
- 	curl_easy_setopt(pClient->pCURL, CURLOPT_VERBOSE, 1L);
-	curl_easy_setopt(pClient->pCURL, CURLOPT_WRITEFUNCTION, FTOM_TP_CLIENT_CB_response);
-	curl_easy_setopt(pClient->pCURL, CURLOPT_WRITEDATA, (FTM_VOID_PTR)pClient);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_TP_CLIENT_final
-(
-	FTOM_TP_CLIENT_PTR pClient
-)
+typedef	struct
 {
-	ASSERT(pClient != NULL);
+	FTOM_TP_CLIENT_CMD	xCmd;
+	FTM_CHAR_PTR		pString;
+}	FTOM_TP_CLIENT_CMD_INFO, _PTR_ FTOM_TP_CLIENT_CMD_INFO_PTR;
 
-	if (pClient->pCURL != NULL)
-	{
-    	curl_easy_cleanup(pClient->pCURL);
-		pClient->pCURL = NULL;
-	}
-
-	if (pClient->pHTTPHeader != NULL)
-	{
-		curl_slist_free_all(pClient->pHTTPHeader);
-		pClient->pHTTPHeader = NULL;		
-	}
-
-	if (pClient->pResp != NULL)
-	{
-		FTM_MEM_free(pClient->pResp);
-		pClient->pResp = NULL;
-	}
-	if (bGlobalInit)
-	{
-  		curl_global_cleanup();
-
-		bGlobalInit = FTM_FALSE;
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_TP_CLIENT_getGatewayInfo
-(
-	FTOM_TP_CLIENT_PTR pClient
-)
+FTOM_TP_CLIENT_CMD_INFO	pTPClientCmds[] =
 {
-	CURLcode res;
-
-	FTOM_TP_CLIENT_setURL(pClient, "/gateways/00405cabcdef?fields=model&fiedlds=autoCreateDiscoverable");
-
-    res = curl_easy_perform(pClient->pCURL);
-    if(res != CURLE_OK)
 	{
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+		.xCmd 	= FTOM_TP_CLIENT_CMD_GW_GET_INFO,
+		.pString= "gw_get_info"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_GW_GET_STATUS,
+		.pString= "gw_get_status"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_GW_SET_STATUS,
+		.pString= "gw_set_status"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_GW_GET_MODEL,
+		.pString= "gw_get_model"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_DEVICE_CREATE,
+		.pString= "device_create"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_DEVICE_DELETE,
+		.pString= "device_delete"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_SENSOR_LIST,
+		.pString= "sensor_list"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_SENSOR_CREATE,
+		.pString= "sensor_create"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_SENSOR_DELETE,
+		.pString= "sensor_delete"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_SENSOR_GET_STATUS,
+		.pString= "sensor_get_status"
+	},
+	{
+		.xCmd 	= FTOM_TP_CLIENT_CMD_SENSOR_SET_STATUS,
+		.pString= "sensor_set_status"
 	}
+};
 
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_TP_CLIENT_getGatewayModel
-(
-	FTOM_TP_CLIENT_PTR 	pClient,
-	FTM_ULONG			ulModel
-)
+FTM_EP	xEP =
 {
-	CURLcode res;
+	.pEPID = "00405cabcdef-1232",
+	.pName = "00405cabcdef-1232",
+	.xType = FTM_EP_TYPE_TEMPERATURE
+};
 
-	FTOM_TP_CLIENT_setURL(pClient, "/gatewayModels/%lu", ulModel);
-
-    res = curl_easy_perform(pClient->pCURL);
-    if(res != CURLE_OK)
-	{
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-	}
-
-	printf("%s", pClient->pResp);
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_TP_CLIENT_setURL
-(
-	FTOM_TP_CLIENT_PTR	pClient,
-	const FTM_CHAR_PTR	pFormat,
-	...
-)
+FTM_EP_DATA	xData =
 {
-	ASSERT(pClient != NULL);
-	va_list pArgs;
-
-	strcpy(pClient->pURL, pClient->pBase);
-
-	va_start(pArgs, pFormat);
-	vsprintf(&pClient->pURL[strlen(pClient->pURL)], pFormat, pArgs);
-	va_end(pArgs);
-
-	curl_easy_setopt(pClient->pCURL, CURLOPT_URL, pClient->pURL);
-	if (pClient->pResp != NULL)
+	.ulTime = 0,
+	.xType  = FTM_EP_DATA_TYPE_FLOAT,
+	.xState = FTM_EP_DATA_STATE_VALID,
+	.xValue = 
 	{
-		FTM_MEM_free(pClient->pResp);
+		.xType = FTM_VALUE_TYPE_FLOAT
 	}
+};
 
-	pClient->pResp = FTM_MEM_malloc(1);
-	pClient->ulRespLen = 0;
-	
+FTM_BOOL	bVerbose = FTM_TRUE;
+FTM_BOOL	bDataDump = FTM_TRUE;
+FTM_BOOL	bStatus = FTM_FALSE;
+FTM_ULONG	ulTimeout = 90;
 
-	return	FTM_RET_OK;
-}
 
-size_t FTOM_TP_CLIENT_CB_response
-(
- 	FTM_VOID_PTR	pContents, 
-	size_t 			nSize, 
-	size_t 			nMemB, 
-	FTM_VOID_PTR	pUser
-)
+int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
-	ASSERT(pContents != NULL);
-	ASSERT(pUser != NULL);
+	FTM_RET			xRet;
+	FTOM_TP_CLIENT	xClient;
+	FTM_INT			nOpt;
+	FTM_CHAR		pGatewayID[FTM_DID_LEN+1] = {0,};
+	FTM_CHAR		pDeviceID[FTM_DID_LEN+1] = {0,};
+	FTM_CHAR		pSensorID[FTM_EPID_LEN+1] = {0,};
+	FTM_CHAR		pSensorType[FTM_NAME_LEN+1] = {0,};
+	FTOM_TP_CLIENT_CMD		xCmd = FTOM_TP_CLIENT_CMD_UNKNOWN;
 
-	FTOM_TP_CLIENT_PTR	pClient = (FTOM_TP_CLIENT_PTR)pUser;
-	FTM_INT				nRealSize = nSize * nMemB;
-	FTM_CHAR_PTR		pMem = NULL;
-
-	if (nRealSize == 0)
+	while((nOpt = getopt(nArgc, pArgv, "c:g:s:t:h?")) != -1)
 	{
-		return	0;	
+		switch(nOpt)
+		{
+		case	'c':
+			{
+				FTM_INT	i;
+
+				for(i = 0 ; i < sizeof(pTPClientCmds) /sizeof(FTOM_TP_CLIENT_CMD_INFO) ; i++)
+				{
+					if (strcasecmp(optarg, pTPClientCmds[i].pString) == 0)
+					{
+						xCmd = pTPClientCmds[i].xCmd;
+						break;
+					}
+				}
+
+			}
+			break;
+		
+		case	'g':
+			{
+				strncpy(pGatewayID, optarg, FTM_DID_LEN);
+			}
+			break;
+
+		case	'd':
+			{
+				strncpy(pDeviceID, optarg, FTM_DID_LEN);
+			}
+			break;
+
+		case	's':
+			{
+				strncpy(pSensorID, optarg, FTM_EPID_LEN);
+			}
+			break;
+
+		case	't':
+			{
+				strncpy(pSensorType, optarg, FTM_NAME_LEN);
+			}
+			break;
+
+		default:
+			return	0;
+		}
 	}
 
-	pMem = (FTM_VOID_PTR)FTM_MEM_malloc(pClient->ulRespLen + nRealSize + 1);
-	if (pMem == NULL)
-	{
-		ERROR("Not enough memory!\n");
-		return	0;	
-	}
-
-	strcpy(pMem, pClient->pResp);
-	memcpy(&pMem[pClient->ulRespLen], pContents, nRealSize);
-	FTM_MEM_free(pClient->pResp);
-	pClient->pResp = pMem;
-
-	pClient->ulRespLen += nRealSize;
-	pClient->pResp[pClient->ulRespLen] = 0;
-	return nRealSize;
-}
-
-int main(void)
-{
-		FTM_RET			xRet;
-		FTOM_TP_CLIENT	xClient;
+	FTM_MEM_init();
+	FTM_TRACE_setLevel(0);
 
 	xRet = FTOM_TP_CLIENT_init(&xClient);
 	if (xRet != FTM_RET_OK)
@@ -205,11 +168,240 @@ int main(void)
 		return	0;	
 	}
 
-	FTOM_TP_CLIENT_getGatewayInfo(&xClient);
-	FTOM_TP_CLIENT_getGatewayModel(&xClient, 4);
+	FTOM_TP_CLIENT_setVerbose(bVerbose);
+	FTOM_TP_CLIENT_setDataDump(bDataDump);
 
+	xRet = FTOM_TP_CLIENT_GW_setID(&xClient, pGatewayID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to set gateway ID!\n");	
+		ERROR("Gateway ID : %s\n", pGatewayID);	
+	}
+
+	switch(xCmd)
+	{
+	case	FTOM_TP_CLIENT_CMD_GW_GET_INFO:
+		{
+			xRet = FTOM_TP_CLIENT_GW_getInfo(&xClient);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to get gateway information.\n");
+			}
+		}
+		break;
+#if 0
+	case	FTOM_TP_CLIENT_CMD_GW_GET_STATUS:
+		{
+			xRet = FTOM_TP_CLIENT_GW_getStatus(&xClient);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to get gateway status.\n");
+			}
+		}
+		break;
+#endif
+	case	FTOM_TP_CLIENT_CMD_GW_SET_STATUS:
+		{
+			if (optind >= nArgc)
+			{
+				ERROR("Invalid arguments!\n");	
+				break;
+			}
+
+			if (strcasecmp(pArgv[optind], "on") == 0)
+			{
+				optind++;
+				bStatus = FTM_TRUE;	
+			}
+			else if (strcasecmp(pArgv[optind], "off") == 0)
+			{
+				optind++;
+				bStatus = FTM_FALSE;	
+			}
+			else
+			{
+				ERROR("Invalid arguments!\n");	
+				break;
+			}
+
+			if (optind <  nArgc)
+			{
+				ulTimeout = strtoul(pArgv[optind], 0, 10);
+			}
+
+			xRet = FTOM_TP_CLIENT_GW_setStatus(&xClient, bStatus, ulTimeout);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to set gateway status.\n");
+			}
+		}
+		break;
+
+	case	FTOM_TP_CLIENT_CMD_GW_GET_MODEL:
+		{
+			FTM_ULONG	ulModelID ;
+
+			if (optind >= nArgc)
+			{
+				ERROR("Invalid arguments!\n");	
+				break;
+			}
+		
+			ulModelID = strtoul(pArgv[optind++], 0, 10);
+
+			xRet = FTOM_TP_CLIENT_GW_getModel(&xClient, ulModelID);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to set gateway status.\n");
+			}
+		}
+		break;
+
+	case	FTOM_TP_CLIENT_CMD_DEVICE_CREATE:
+		{
+			if ((optind + 2) != nArgc)
+			{
+				ERROR("Invalid arguments!\n");	
+				break;
+			}
+
+			xRet = FTOM_TP_CLIENT_DEVICE_create(&xClient, 
+						pDeviceID, 
+						pArgv[optind], 
+						pArgv[optind+1]);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to create device.\n");	
+			}
+		}
+		break;
+	case	FTOM_TP_CLIENT_CMD_SENSOR_LIST:
+		{
+			xRet = FTOM_TP_CLIENT_SENSOR_getList(&xClient);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to get gateway information.\n");
+			}
+		}
+		break;
+
+	case	FTOM_TP_CLIENT_CMD_SENSOR_CREATE:
+		{
+			if ((optind + 1) != nArgc)
+			{
+				ERROR("Invalid arguments!\n");	
+				break;
+			}
+
+			xRet = FTOM_TP_CLIENT_SENSOR_create(&xClient, 
+						pGatewayID, 
+						pSensorID, 
+						pSensorType,
+						pArgv[optind],
+						NULL,
+						"0",
+						"0");
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to create Sensor.\n");
+			}
+		}
+		break;
+
+	case	FTOM_TP_CLIENT_CMD_SENSOR_DELETE:
+		{
+			xRet = FTOM_TP_CLIENT_SENSOR_delete(&xClient, pSensorID);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to sensor delete.\n");
+			}
+		}
+		break;
+
+	case	FTOM_TP_CLIENT_CMD_SENSOR_SET_STATUS:
+		{
+			if (optind >= nArgc)
+			{
+				ERROR("Invalid arguments!\n");	
+				break;
+			}
+
+			if (strcasecmp(pArgv[optind], "on") == 0)
+			{
+				optind++;
+				bStatus = FTM_TRUE;	
+			}
+			else if (strcasecmp(pArgv[optind], "off") == 0)
+			{
+				optind++;
+				bStatus = FTM_FALSE;	
+			}
+			else
+			{
+				ERROR("Invalid arguments!\n");	
+				break;
+			}
+
+			if (optind <  nArgc)
+			{
+				ulTimeout = strtoul(pArgv[optind], 0, 10);
+			}
+
+			xRet = FTOM_TP_CLIENT_SENSOR_setStatus(&xClient, pSensorID, bStatus, ulTimeout);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to sensor delete.\n");
+			}
+		}
+		break;
+
+	case	FTOM_TP_CLIENT_CMD_SENSOR_GET_STATUS:
+		{
+			FTM_BOOL	bStatus = FTM_FALSE;
+
+			xRet = FTOM_TP_CLIENT_SENSOR_getStatus(&xClient, pSensorID, &bStatus);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to sensor delete.\n");
+			}
+			else
+			{
+				MESSAGE("Sensor[%s] is %s.\n",	pSensorID, (bStatus)?"on":"off");
+			}
+		}
+		break;
+
+	case	FTOM_TP_CLIENT_CMD_SENSOR_SET_VALUE:
+		{
+			FTM_FLOAT	fValue;
+			FTM_EP_DATA	xData;
+
+			if (optind >= nArgc)
+			{
+				ERROR("Invalid arguments!\n");	
+				break;
+			}
+
+			fValue = strtod(pArgv[optind++], NULL);
+
+			FTM_EP_DATA_initFLOAT(&xData, fValue);
+			
+			xRet = FTOM_TP_CLIENT_SENSOR_setValues(&xClient, pSensorID, &xData, 1);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Failed to set sensor data.\n");
+			}
+		}
+		break;
+
+
+	default:
+		ERROR("Invalid command!\n");	
+		break;
+	}
 
 	FTOM_TP_CLIENT_final(&xClient);
+	FTM_MEM_final();
 
   	return 0;
 }

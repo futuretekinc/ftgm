@@ -1,5 +1,6 @@
-#MODEL="FTM-100S"
-MODEL=
+#MODEL=ftm-50s
+#MODEL=ftm-100s
+MODEL=i686
 
 TARGET=$(TOPDIR)/target/$(MODEL)
 EXEC_PREFIX=$(TARGET)/usr/bin
@@ -8,7 +9,7 @@ CONF_PREFIX=$(TARGET)/etc
 CGI_PREFIX=$(TARGET)/www/cgi-bin
 export MODEL
 
-COMMON_CFLAGS=-c -g -Wall -DDEBUG \
+COMMON_CFLAGS= -c -g -Wall -DDEBUG \
 				-I. \
 				-I$(TOPDIR)/ftm \
 				-I$(TOPDIR)/ftom \
@@ -16,42 +17,51 @@ COMMON_CFLAGS=-c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftdm/client \
 				-I$(TOPDIR)/ftom/client \
 				-I$(TOPDIR)/ftom/cmdline 
-COMMON_LDFLAGS=-L. \
-			-Wl,--no-as-needed\
+COMMON_LDFLAGS= -Wl,--no-as-needed\
+				-L.\
 				-L$(TOPDIR)/ftm \
+				-L$(TOPDIR)/ftom \
 				-L$(TOPDIR)/ftdm \
 				-L$(TOPDIR)/ftdm/client \
-				-L$(TOPDIR)/ftom \
 				-L$(TOPDIR)/ftom/client \
 				-L$(TOPDIR)/ftom/cmdline 
 
-ifeq ($(MODEL),"FTM-50S")
+ifeq ("$(MODEL)","ftm-50s")
 CC=armv5-linux-gcc
 AR=armv5-linux-ar
 CFLAGS=-fPIC \
 		$(COMMON_CFLAGS)\
-		-I$(TOPDIR)/devtools/include 
-LDFLAGS=-L$(TOPDIR)/devtools/lib $(COMMON_LDFLAGS)
-else ifeq ($(MODEL),"FTM-100S")
+		-I$(TOPDIR)/devtools/include\
+		-I/home/xtra/ftm/build/ftm-50s/_root/include\
+		-I/home/xtra/ftm/build/ftm-50s/_root/usr/include\
+		-I/home/xtra/ftm/build/ftm-50s/_root/usr/local/include\
+		-I/home/xtra/ftm/build/ftm-50s/_root/usr/include/cjson
+LDFLAGS=$(COMMON_LDFLAGS)\
+		-L$(TOPDIR)/devtools/lib\
+		-L/home/xtra/ftm/build/ftm-50s/_root/lib \
+		-L/home/xtra/ftm/build/ftm-50s/_root/usr/lib \
+		-L/home/xtra/ftm/build/ftm-50s/_root/usr/local/lib 
+else ifeq ("$(MODEL)","ftm-100s")
 CC=arm-openwrt-linux-uclibcgnueabi-gcc
 AR=arm-openwrt-linux-uclibcgnueabi-ar
 CFLAGS=-fPIC \
 		$(COMMON_CFLAGS) \
 		-I$(TOPDIR)/devtools/include \
-		-I/home/xtra/ftm/build/_root/include\
-		-I/home/xtra/ftm/build/_root/usr/include\
-		-I/home/xtra/ftm/build/_root/usr/local/include\
-		-I/home/xtra/ftm/build/_root/usr/include/cjson
+		-I/home/xtra/ftm/build/ftm-100s/_root/include\
+		-I/home/xtra/ftm/build/ftm-100s/_root/usr/include\
+		-I/home/xtra/ftm/build/ftm-100s/_root/usr/local/include\
+		-I/home/xtra/ftm/build/ftm-100s/_root/usr/include/cjson
 
 LDFLAGS= $(COMMON_LDFLAGS)\
-		-L/home/xtra/ftm/build/_root/lib \
-		-L/home/xtra/ftm/build/_root/usr/lib \
-		-L/home/xtra/ftm/build/_root/usr/local/lib \
+		-L/home/xtra/ftm/build/ftm-100s/_root/lib \
+		-L/home/xtra/ftm/build/ftm-100s/_root/usr/lib \
+		-L/home/xtra/ftm/build/ftm-100s/_root/usr/local/lib \
 
 else
 CC=gcc
 CFLAGS= $(COMMON_CFLAGS) \
 		-I/usr/local/include \
+		-I$(TARGET)/usr/local/include\
 		-I$(TOPDIR)/mosquitto-1.4.8/lib \
 		-I$(TOPDIR)/libconfig-1.4.9/lib \
 		-I$(TOPDIR)/net-snmp-5.7.2/include \
@@ -63,6 +73,7 @@ CFLAGS= $(COMMON_CFLAGS) \
 LDFLAGS= -L/usr/local/lib \
 		$(COMMON_LDFLAGS)\
 		-L/usr/local/lib \
+		-L$(TARGET)/usr/local/lib\
 		-L$(TOPDIR)/sqlite-3.8.9/.libs \
 		-L$(TOPDIR)/mosquitto-1.4.8/lib \
 		-L$(TOPDIR)/libconfig-1.4.9/lib \

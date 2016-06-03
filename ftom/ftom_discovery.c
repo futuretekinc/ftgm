@@ -231,6 +231,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					strcpy(pNode->xInfo.xOption.xSNMP.pURL, pMsg->pIP);
 					if (strlen(pMsg->pName) != 0)
 					{
+						TRACE("Name : %s\n", pMsg->pName);
 						if (strncasecmp(pMsg->pName, "FTE-E", 5) == 0)
 						{
 							strcpy(pNode->xInfo.xOption.xSNMP.pMIB, "FTE-E");	

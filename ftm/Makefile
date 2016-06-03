@@ -43,5 +43,10 @@ $(LIB_FTM): $(LIB_FTM_OBJS)
 .c.o:  *.c *.h
 	$(CC) $(CFLAGS) $< -o $@
 
+install: $(FTOM) $(LIB_FTOM) $(LIB_FTOMC)
+	install -d $(LIB_PREFIX)
+	install -t $(LIB_PREFIX) $(LIB_FTM).a
+	install -t $(LIB_PREFIX) $(LIB_FTM).so.1.0.1
+
 clean:
 	rm -f $(LIB_FTM).so.1.0.1 *.a *.o
