@@ -37,7 +37,8 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_node_snmp_client.c\
 			   ftom_node_snmp_client_gen.c\
 			   ftom_node_fins_client.c\
-			   ftom_node_fins_client_hhtw.c
+			   ftom_node_fins_client_hhtw.c\
+			   ftom_tp_client.c
 LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)
 
 LIB_FTOMC=libftomc

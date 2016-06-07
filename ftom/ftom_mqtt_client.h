@@ -72,6 +72,15 @@ typedef FTM_RET	 (*FTOM_MQTT_CLIENT_PUBLISH_EP_DATA)
 
 typedef	struct
 {
+	FTM_INT			nMessageID;
+	FTM_CHAR_PTR	pTopic;
+	FTM_CHAR_PTR	pMessage;
+	FTM_ULONG		ulMessageLen;
+	FTM_ULONG		ulQoS;
+}	FTOM_MQTT_PUBLISH, _PTR_ FTOM_MQTT_PUBLISH_PTR;
+
+typedef	struct
+{
 	FTOM_MQTT_CLIENT_CONNECT_CB				fConnect;
 	FTOM_MQTT_CLIENT_DISCONNECT_CB			fDisconnect;
 	FTOM_MQTT_CLIENT_PUBLISH_CB				fPublish;
@@ -161,6 +170,20 @@ FTM_RET	FTOM_MQTT_CLIENT_pushMsg
 (
 	FTOM_MQTT_CLIENT_PTR pClient,
 	FTOM_MSG_PTR		pMsg	
+);
+
+FTM_RET	FTOM_MQTT_PUBLISH_create
+(
+	FTM_CHAR_PTR	pTopic,
+	FTM_CHAR_PTR	pMessage,
+	FTM_ULONG		ulMessageLen,
+	FTM_ULONG		ulQoS,
+	FTOM_MQTT_PUBLISH_PTR _PTR_ ppPublish
+);
+
+FTM_RET	FTOM_MQTT_PUBLISH_destroy
+(
+	FTOM_MQTT_PUBLISH_PTR _PTR_ ppPublish
 );
 
 #endif

@@ -8,15 +8,6 @@
 #include "ftom_mqtt_client_tpgw.h"
 #include "ftom_mqtt_client_ft.h"
 
-typedef	struct
-{
-	FTM_INT			nMessageID;
-	FTM_CHAR_PTR	pTopic;
-	FTM_CHAR_PTR	pMessage;
-	FTM_ULONG		ulMessageLen;
-	FTM_ULONG		ulQoS;
-}	FTOM_MQTT_PUBLISH, _PTR_ FTOM_MQTT_PUBLISH_PTR;
-
 static FTM_VOID_PTR FTOM_MQTT_CLIENT_process(FTM_VOID_PTR pData);
 
 static FTM_RET	FTOM_MQTT_CLIENT_onPublishEPData
@@ -34,20 +25,6 @@ static FTM_VOID FTOM_MQTT_CLIENT_disconnectCB(struct mosquitto *mosq, void *pObj
 static FTM_VOID FTOM_MQTT_CLIENT_publishCB(struct mosquitto *mosq, void *pObj, int nResult);
 static FTM_VOID	FTOM_MQTT_CLIENT_messageCB(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
 static FTM_VOID FTOM_MQTT_CLIENT_subscribeCB(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
-
-static FTM_RET	FTOM_MQTT_PUBLISH_create
-(
-	FTM_CHAR_PTR	pTopic,
-	FTM_CHAR_PTR	pMessage,
-	FTM_ULONG		ulMessageLen,
-	FTM_ULONG		ulQoS,
-	FTOM_MQTT_PUBLISH_PTR _PTR_ ppPublish
-);
-
-static FTM_RET	FTOM_MQTT_PUBLISH_destroy
-(
-	FTOM_MQTT_PUBLISH_PTR _PTR_ ppPublish
-);
 
 FTM_BOOL FTOM_MQTT_PUBLISH_LIST_seeker
 (

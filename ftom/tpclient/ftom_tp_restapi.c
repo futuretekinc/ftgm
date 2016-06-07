@@ -2,11 +2,11 @@
 #include <curl/curl.h>
 #include <cJSON.h>
 #include "ftom.h"
-#include "ftom_tp_client.h"
+#include "ftom_tp_restapi.h"
 #include "nxjson.h"
 
 static
-size_t FTOM_TP_CLIENT_CB_readString
+size_t FTOM_TP_RESTAPI_CB_readString
 (
  	FTM_VOID_PTR	pBuff, 
 	size_t 			nSize, 
@@ -15,7 +15,7 @@ size_t FTOM_TP_CLIENT_CB_readString
 );
 
 static 
-size_t FTOM_TP_CLIENT_CB_response
+size_t FTOM_TP_RESTAPI_CB_response
 (
  	FTM_VOID_PTR	pContents, 
 	size_t 			nSize, 
@@ -24,69 +24,69 @@ size_t FTOM_TP_CLIENT_CB_response
 );
 
 static
-FTM_RET	FTOM_TP_CLIENT_setGetURL
+FTM_RET	FTOM_TP_RESTAPI_setGetURL
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	const FTM_CHAR_PTR	pFormat,
 	...
 );
 
 static
-FTM_RET	FTOM_TP_CLIENT_setPutURL
+FTM_RET	FTOM_TP_RESTAPI_setPutURL
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	const FTM_CHAR_PTR	pFormat,
 	...
 );
 
 static
-FTM_RET	FTOM_TP_CLIENT_setPostURL
+FTM_RET	FTOM_TP_RESTAPI_setPostURL
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	const FTM_CHAR_PTR	pFormat,
 	...
 );
 
 static
-FTM_RET	FTOM_TP_CLIENT_setDeleteURL
+FTM_RET	FTOM_TP_RESTAPI_setDeleteURL
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	const FTM_CHAR_PTR	pFormat,
 	...
 );
 
 static
-FTM_RET	FTOM_TP_CLIENT_putBody
+FTM_RET	FTOM_TP_RESTAPI_putBody
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	cJSON _PTR_			pBody
 );
 
 static
-FTM_RET	FTOM_TP_CLIENT_postBody
+FTM_RET	FTOM_TP_RESTAPI_postBody
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	cJSON _PTR_			pBody
 );
 
 static
-FTM_RET	FTOM_TP_CLIENT_perform
+FTM_RET	FTOM_TP_RESTAPI_perform
 (
-	FTOM_TP_CLIENT_PTR	pClient
+	FTOM_TP_RESTAPI_PTR	pClient
 );
 
 
-typedef struct FTOM_TP_CLIENT_SENSOR_TYPE_INFO_STRUCT
+typedef struct FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT
 {
 	FTM_EP_TYPE		xType;
 	FTM_CHAR_PTR	pName;
 	FTM_CHAR_PTR	pDriver;
 	FTM_CHAR_PTR	pModel;
 	FTM_CHAR_PTR	pCategory;
-} FTOM_TP_CLIENT_SENSOR_TYPE_INFO, _PTR_ FTOM_TP_CLIENT_SENSOR_TYPE_INFO_PTR; 
+} FTOM_TP_RESTAPI_SENSOR_TYPE_INFO, _PTR_ FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_PTR; 
 
 static
-FTOM_TP_CLIENT_SENSOR_TYPE_INFO pSensorTypeInfo[] = 
+FTOM_TP_RESTAPI_SENSOR_TYPE_INFO pSensorTypeInfo[] = 
 {
 	{
 		.xType = FTM_EP_TYPE_TEMPERATURE,
@@ -167,9 +167,9 @@ FTM_BOOL	bVerbose = FTM_TRUE;
 static 
 FTM_BOOL	bDataDump = FTM_FALSE;
 
-FTM_RET	FTOM_TP_CLIENT_init
+FTM_RET	FTOM_TP_RESTAPI_init
 (
-	FTOM_TP_CLIENT_PTR pClient
+	FTOM_TP_RESTAPI_PTR pClient
 )
 {
 	ASSERT(pClient != NULL);
@@ -180,7 +180,7 @@ FTM_RET	FTOM_TP_CLIENT_init
 		bGlobalInit = FTM_TRUE;	
 	}
 
-	memset(pClient, 0, sizeof(FTOM_TP_CLIENT));
+	memset(pClient, 0, sizeof(FTOM_TP_RESTAPI));
 
   	pClient->pCURL = curl_easy_init();
   	if(pClient->pCURL == NULL) 
@@ -198,15 +198,15 @@ FTM_RET	FTOM_TP_CLIENT_init
 	{
  		curl_easy_setopt(pClient->pCURL, CURLOPT_VERBOSE, 1L);
 	}
-	curl_easy_setopt(pClient->pCURL, CURLOPT_WRITEFUNCTION, FTOM_TP_CLIENT_CB_response);
+	curl_easy_setopt(pClient->pCURL, CURLOPT_WRITEFUNCTION, FTOM_TP_RESTAPI_CB_response);
 	curl_easy_setopt(pClient->pCURL, CURLOPT_WRITEDATA, (FTM_VOID_PTR)pClient);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_final
+FTM_RET	FTOM_TP_RESTAPI_final
 (
-	FTOM_TP_CLIENT_PTR pClient
+	FTOM_TP_RESTAPI_PTR pClient
 )
 {
 	ASSERT(pClient != NULL);
@@ -248,23 +248,23 @@ FTM_RET	FTOM_TP_CLIENT_final
 /******************************************************
  * Gateway management
  ******************************************************/
-FTM_RET	FTOM_TP_CLIENT_GW_getModel
+FTM_RET	FTOM_TP_RESTAPI_GW_getModel
 (
-	FTOM_TP_CLIENT_PTR 	pClient,
+	FTOM_TP_RESTAPI_PTR 	pClient,
 	FTM_ULONG			ulModel
 )
 {
 	ASSERT(pClient != NULL);
 	FTM_RET	xRet;
 
-	xRet = FTOM_TP_CLIENT_setGetURL(pClient, "/gatewayModels/%lu", ulModel);
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gatewayModels/%lu", ulModel);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -277,9 +277,9 @@ FTM_RET	FTOM_TP_CLIENT_GW_getModel
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_GW_setID
+FTM_RET	FTOM_TP_RESTAPI_GW_setID
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pGatewayID
 )
 {
@@ -291,9 +291,9 @@ FTM_RET	FTOM_TP_CLIENT_GW_setID
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_GW_getInfo
+FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 (
-	FTOM_TP_CLIENT_PTR 	pClient,
+	FTOM_TP_RESTAPI_PTR 	pClient,
 	FTOM_TP_GATEWAY_PTR	pGateway
 )
 {
@@ -305,14 +305,14 @@ FTM_RET	FTOM_TP_CLIENT_GW_getInfo
 	const nx_json _PTR_ pSensors = NULL;
 	const nx_json _PTR_ pItem = NULL;
 
-	xRet = FTOM_TP_CLIENT_setGetURL(pClient, "/gateways/%s", pClient->pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s", pClient->pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
 		goto finish;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -349,13 +349,13 @@ FTM_RET	FTOM_TP_CLIENT_GW_getInfo
 	pItem = nx_json_get(pRoot, "ctime") ;
 	if (pItem->type != NX_JSON_NULL)
 	{
-		pGateway->ulCTime = pItem->int_value;
+		pGateway->ullCTime = strtoull(pItem->text_value, 0, 10);
 	}
 
 	pItem = nx_json_get(pRoot, "mtime") ;
 	if (pItem->type != NX_JSON_NULL)
 	{
-		pGateway->ulMTime = pItem->int_value;
+		pGateway->ullMTime = strtoull(pItem->text_value, 0, 10);
 	}
 
 	pSensors = nx_json_get(pRoot, "sensors");
@@ -371,13 +371,23 @@ FTM_RET	FTOM_TP_CLIENT_GW_getInfo
 
 		for(i = 0; ; i++)
 		{
-			pItem = nx_json_item(pRoot, i);
-			if (pItem->type != NX_JSON_NULL)
+			pItem = nx_json_item(pSensors, i);
+			if ((pItem == NULL) || (pItem->type == NX_JSON_NULL))
 			{
-			
+				break;	
+			}
+		
+			FTM_ULONG		ulLen = strlen(pItem->text_value);
+			FTM_CHAR_PTR	pSensorID = FTM_MEM_malloc(ulLen+1);
+			if (pSensorID == NULL)
+			{
+				ERROR("Not enough memory!\n");	
+				break;
 			}
 
+			strcpy(pSensorID, pItem->text_value);
 
+			FTM_LIST_append(pGateway->pSensorList, pSensorID);
 		}
 	}
 
@@ -389,9 +399,9 @@ finish:
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_GW_setStatus
+FTM_RET	FTOM_TP_RESTAPI_GW_setStatus
 (
-	FTOM_TP_CLIENT_PTR 	pClient,
+	FTOM_TP_RESTAPI_PTR 	pClient,
 	FTM_BOOL			bStatus,	
 	FTM_ULONG			ulTimeout
 )
@@ -401,7 +411,7 @@ FTM_RET	FTOM_TP_CLIENT_GW_setStatus
 	FTM_RET			xRet;
 	cJSON _PTR_ 	pRoot = NULL;
 
-	xRet = FTOM_TP_CLIENT_setPutURL(pClient, "/gateways/%s/status", pClient->pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setPutURL(pClient, "/gateways/%s/status", pClient->pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
@@ -413,14 +423,14 @@ FTM_RET	FTOM_TP_CLIENT_GW_setStatus
 	cJSON_AddStringToObject(pRoot, "value", (bStatus)?"on":"off");
 	cJSON_AddNumberToObject(pRoot, "timeout", ulTimeout);
 
-	xRet = FTOM_TP_CLIENT_putBody(pClient, pRoot);
+	xRet = FTOM_TP_RESTAPI_putBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client post data setting.\n");
 		goto finish;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -438,9 +448,9 @@ finish:
 /******************************************************
  * Device management
  ******************************************************/
-FTM_RET	FTOM_TP_CLIENT_DEVICE_create
+FTM_RET	FTOM_TP_RESTAPI_DEVICE_create
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pDeviceID,
 	FTM_CHAR_PTR		pName,
 	FTM_CHAR_PTR		pModel
@@ -459,21 +469,21 @@ FTM_RET	FTOM_TP_CLIENT_DEVICE_create
 	cJSON_AddStringToObject(pRoot, "name", 	pName);
 	cJSON_AddStringToObject(pRoot, "model", pModel);
 
-	xRet = FTOM_TP_CLIENT_setPostURL(pClient, "/devices");
+	xRet = FTOM_TP_RESTAPI_setPostURL(pClient, "/devices");
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
 		goto finish;
 	}
 
-	xRet = FTOM_TP_CLIENT_postBody(pClient, pRoot);
+	xRet = FTOM_TP_RESTAPI_postBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client post data setting.\n");
 		goto finish;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -491,9 +501,9 @@ finish:
 /*********************************************************
  * Sensor management 
  *********************************************************/
-FTM_RET	FTOM_TP_CLIENT_SENSOR_create
+FTM_RET	FTOM_TP_RESTAPI_SENSOR_create
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pGatewayID,
 	FTM_CHAR_PTR		pSensorID,
 	FTM_CHAR_PTR		pType,
@@ -509,14 +519,14 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_create
 	FTM_INT			i;
 	cJSON _PTR_ 	pRoot = NULL;
 
-	FTOM_TP_CLIENT_SENSOR_TYPE_INFO_PTR pSensorInfo = NULL;
+	FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_PTR pSensorInfo = NULL;
 
 	if ((pSensorID == NULL) || (pName == NULL) || (pType == NULL))
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
-	for(i = 0 ; i < sizeof(pSensorTypeInfo) / sizeof(FTOM_TP_CLIENT_SENSOR_TYPE_INFO); i++)
+	for(i = 0 ; i < sizeof(pSensorTypeInfo) / sizeof(FTOM_TP_RESTAPI_SENSOR_TYPE_INFO); i++)
 	{
 		if (strcasecmp(pType, pSensorTypeInfo[i].pName) == 0)
 		{
@@ -559,7 +569,7 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_create
 	cJSON_AddStringToObject(pRoot, "category", pSensorInfo->pCategory);
 
 
-	xRet = FTOM_TP_CLIENT_setPostURL(pClient, "/gateways/%s/sensors", pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setPostURL(pClient, "/gateways/%s/sensors", pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
@@ -567,14 +577,14 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_create
 	}
 
 
-	xRet = FTOM_TP_CLIENT_postBody(pClient, pRoot);
+	xRet = FTOM_TP_RESTAPI_postBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client post data setting.\n");
 		goto finish;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -589,9 +599,9 @@ finish:
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_SENSOR_delete
+FTM_RET	FTOM_TP_RESTAPI_SENSOR_delete
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pSensorID
 )
 {
@@ -599,14 +609,14 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_delete
 
 	FTM_RET			xRet;
 
-	xRet = FTOM_TP_CLIENT_setDeleteURL(pClient, "/gateways/%s/sensors/%s", pClient->pGatewayID, pSensorID);
+	xRet = FTOM_TP_RESTAPI_setDeleteURL(pClient, "/gateways/%s/sensors/%s", pClient->pGatewayID, pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -615,9 +625,9 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_delete
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_SENSOR_getStatus
+FTM_RET	FTOM_TP_RESTAPI_SENSOR_getStatus
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pSensorID,
 	FTM_BOOL_PTR		pbStatus
 )
@@ -627,7 +637,7 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_getStatus
 
 	FTM_RET			xRet;
 
-	xRet = FTOM_TP_CLIENT_setGetURL(pClient, 
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, 
 				"/gateways/%s/sensors/%s/status", 
 				pClient->pGatewayID, 
 				pSensorID);
@@ -637,7 +647,7 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_getStatus
 		return	xRet;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -646,9 +656,9 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_getStatus
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_SENSOR_setStatus
+FTM_RET	FTOM_TP_RESTAPI_SENSOR_setStatus
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pSensorID,
 	FTM_BOOL			bStatus,
 	FTM_ULONG			ulTimeout
@@ -660,7 +670,7 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_setStatus
 	FTM_RET			xRet;
 	cJSON _PTR_ 	pRoot = NULL;
 
-	xRet = FTOM_TP_CLIENT_setPutURL(pClient, 
+	xRet = FTOM_TP_RESTAPI_setPutURL(pClient, 
 				"/gateways/%s/sensors/%s/status", 
 				pClient->pGatewayID, 
 				pSensorID);
@@ -675,14 +685,14 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_setStatus
 	cJSON_AddStringToObject(pRoot, "value", (bStatus)?"on":"off");
 	cJSON_AddNumberToObject(pRoot, "timeout", ulTimeout);
 
-	xRet = FTOM_TP_CLIENT_putBody(pClient, pRoot);
+	xRet = FTOM_TP_RESTAPI_putBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client post data setting.\n");
 		goto finish;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -697,9 +707,9 @@ finish:
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_SENSOR_getValue
+FTM_RET	FTOM_TP_RESTAPI_SENSOR_getValue
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pSensorID,
 	FTM_EP_DATA_PTR		pValue
 )
@@ -709,7 +719,7 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_getValue
 
 	FTM_RET			xRet;
 
-	xRet = FTOM_TP_CLIENT_setGetURL(pClient, 
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, 
 				"/gateways/%s/sensors/%s/series", 
 				pClient->pGatewayID, 
 				pSensorID);
@@ -719,7 +729,7 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_getValue
 		return	xRet;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -728,9 +738,9 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_getValue
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_SENSOR_setValues
+FTM_RET	FTOM_TP_RESTAPI_SENSOR_setValues
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pSensorID,
 	FTM_EP_DATA_PTR		pValues,
 	FTM_ULONG			ulCount
@@ -743,7 +753,7 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_setValues
 	FTM_INT			i;
 	cJSON _PTR_ 	pRoot = NULL;
 
-	xRet = FTOM_TP_CLIENT_setPutURL(pClient, 
+	xRet = FTOM_TP_RESTAPI_setPutURL(pClient, 
 				"/gateways/%s/sensors/%s/series", 
 				pClient->pGatewayID, 
 				pSensorID);
@@ -764,14 +774,14 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_setValues
 		cJSON_AddStringToObject(pItem, "value",FTM_VALUE_print(&pValues[i].xValue));
 	}
 
-	xRet = FTOM_TP_CLIENT_putBody(pClient, pRoot);
+	xRet = FTOM_TP_RESTAPI_putBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client put data setting.\n");
 		goto finish;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -786,10 +796,10 @@ finish:
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_SENSOR_getList
+FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 (
-	FTOM_TP_CLIENT_PTR	pClient,
-	FTOM_TP_SENSOR_PTR	pSensors,
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTOM_TP_RESTAPI_SENSOR_PTR	pSensors,
 	FTM_ULONG			ulMaxCount,
 	FTM_ULONG_PTR		pulCount
 )
@@ -800,14 +810,14 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_getList
 	const nx_json _PTR_ pRoot;
 	FTM_ULONG		i, ulCount = 0;
 
-	xRet = FTOM_TP_CLIENT_setGetURL(pClient, "/gateways/%s/sensors", pClient->pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s/sensors", pClient->pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
-	xRet = FTOM_TP_CLIENT_perform(pClient);
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error occurred while performing the client.\n");
@@ -825,7 +835,7 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_getList
 	{
 		const nx_json _PTR_ pSensorInfo;
 		const nx_json _PTR_ pItem;
-		FTOM_TP_SENSOR		xSensor;
+		FTOM_TP_RESTAPI_SENSOR		xSensor;
 
 		pSensorInfo = nx_json_item(pRoot, i);
 		if (pSensorInfo->type == NX_JSON_NULL)
@@ -887,13 +897,13 @@ FTM_RET	FTOM_TP_CLIENT_SENSOR_getList
 		pItem = nx_json_get(pSensorInfo, "ctime");
 		if (pItem->type != NX_JSON_NULL)
 		{
-			xSensor.ulCTime = pItem->int_value;
+			xSensor.ullCTime = strtoull(pItem->text_value, 0, 10);
 		}
 
 		pItem = nx_json_get(pSensorInfo, "mtime");
 		if (pItem->type != NX_JSON_NULL)
 		{
-			xSensor.ulMTime = pItem->int_value;
+			xSensor.ullMTime = pItem->int_value;
 		}
 
 		memcpy(&pSensors[ulCount++], &xSensor, sizeof(xSensor));
@@ -912,9 +922,9 @@ finish:
 /*********************************************************
  * End Point management 
  *********************************************************/
-FTM_RET	FTOM_TP_CLIENT_EP_create
+FTM_RET	FTOM_TP_RESTAPI_EP_create
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_EP_PTR			pEPInfo
 )
 {
@@ -923,9 +933,9 @@ FTM_RET	FTOM_TP_CLIENT_EP_create
 
 	FTM_RET	xRet;
 	FTM_INT	i;
-	FTOM_TP_CLIENT_SENSOR_TYPE_INFO_PTR	pTypeInfo = NULL;
+	FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_PTR	pTypeInfo = NULL;
 
-	for(i = 0 ; i < sizeof(pSensorTypeInfo) / sizeof(FTOM_TP_CLIENT_SENSOR_TYPE_INFO) ; i++)
+	for(i = 0 ; i < sizeof(pSensorTypeInfo) / sizeof(FTOM_TP_RESTAPI_SENSOR_TYPE_INFO) ; i++)
 	{
 		if (pEPInfo->xType == pSensorTypeInfo[i].xType)
 		{
@@ -939,7 +949,7 @@ FTM_RET	FTOM_TP_CLIENT_EP_create
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	xRet = FTOM_TP_CLIENT_SENSOR_create(
+	xRet = FTOM_TP_RESTAPI_SENSOR_create(
 				pClient, 
 				pClient->pGatewayID, 
 				pEPInfo->pEPID,
@@ -952,9 +962,9 @@ FTM_RET	FTOM_TP_CLIENT_EP_create
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_EP_getList
+FTM_RET	FTOM_TP_RESTAPI_EP_getList
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_EP_PTR			pEPInfos,
 	FTM_ULONG			ulMaxCount,
 	FTM_ULONG_PTR		pulCount
@@ -966,7 +976,7 @@ FTM_RET	FTOM_TP_CLIENT_EP_getList
 /*********************************************************
  * Library configuration
  *********************************************************/
- FTM_RET	FTOM_TP_CLIENT_setVerbose
+ FTM_RET	FTOM_TP_RESTAPI_setVerbose
  (
  	FTM_BOOL	bOn
  )
@@ -976,7 +986,7 @@ FTM_RET	FTOM_TP_CLIENT_EP_getList
 	return	FTM_RET_OK;
  }
 
- FTM_RET	FTOM_TP_CLIENT_setDataDump
+ FTM_RET	FTOM_TP_RESTAPI_setDataDump
  (
  	FTM_BOOL	bOn
  )
@@ -989,9 +999,9 @@ FTM_RET	FTOM_TP_CLIENT_EP_getList
 /*********************************************************
  * Internal functions
  *********************************************************/
-FTM_RET	FTOM_TP_CLIENT_setGetURL
+FTM_RET	FTOM_TP_RESTAPI_setGetURL
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	const FTM_CHAR_PTR	pFormat,
 	...
 )
@@ -1021,9 +1031,9 @@ FTM_RET	FTOM_TP_CLIENT_setGetURL
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_setPutURL
+FTM_RET	FTOM_TP_RESTAPI_setPutURL
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	const FTM_CHAR_PTR	pFormat,
 	...
 )
@@ -1053,9 +1063,9 @@ FTM_RET	FTOM_TP_CLIENT_setPutURL
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_setPostURL
+FTM_RET	FTOM_TP_RESTAPI_setPostURL
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	const FTM_CHAR_PTR	pFormat,
 	...
 )
@@ -1085,9 +1095,9 @@ FTM_RET	FTOM_TP_CLIENT_setPostURL
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_setDeleteURL
+FTM_RET	FTOM_TP_RESTAPI_setDeleteURL
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	const FTM_CHAR_PTR	pFormat,
 	...
 )
@@ -1117,9 +1127,9 @@ FTM_RET	FTOM_TP_CLIENT_setDeleteURL
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_putBody
+FTM_RET	FTOM_TP_RESTAPI_putBody
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	cJSON _PTR_			pBody
 )
 {
@@ -1133,7 +1143,7 @@ FTM_RET	FTOM_TP_CLIENT_putBody
 	pClient->pData = cJSON_Print(pBody);
 
 	curl_easy_setopt(pClient->pCURL, CURLOPT_READDATA, pClient->pData);
-	curl_easy_setopt(pClient->pCURL, CURLOPT_READFUNCTION, FTOM_TP_CLIENT_CB_readString);
+	curl_easy_setopt(pClient->pCURL, CURLOPT_READFUNCTION, FTOM_TP_RESTAPI_CB_readString);
 	curl_easy_setopt(pClient->pCURL, CURLOPT_INFILESIZE, strlen(pClient->pData));
 
 	if (bDataDump)
@@ -1147,9 +1157,9 @@ FTM_RET	FTOM_TP_CLIENT_putBody
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_postBody
+FTM_RET	FTOM_TP_RESTAPI_postBody
 (
-	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_RESTAPI_PTR	pClient,
 	cJSON _PTR_			pBody
 )
 {
@@ -1176,9 +1186,9 @@ FTM_RET	FTOM_TP_CLIENT_postBody
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_perform
+FTM_RET	FTOM_TP_RESTAPI_perform
 (
-	FTOM_TP_CLIENT_PTR	pClient
+	FTOM_TP_RESTAPI_PTR	pClient
 )
 {
 	CURLcode res;
@@ -1201,7 +1211,7 @@ FTM_RET	FTOM_TP_CLIENT_perform
 	return	FTM_RET_OK;
 }
 
-size_t FTOM_TP_CLIENT_CB_readString
+size_t FTOM_TP_RESTAPI_CB_readString
 (
  	FTM_VOID_PTR	pBuff, 
 	size_t 			nSize, 
@@ -1217,7 +1227,7 @@ size_t FTOM_TP_CLIENT_CB_readString
 	return	strlen((FTM_CHAR_PTR)pUser);
 }
 
-size_t FTOM_TP_CLIENT_CB_response
+size_t FTOM_TP_RESTAPI_CB_response
 (
  	FTM_VOID_PTR	pContents, 
 	size_t 			nSize, 
@@ -1228,7 +1238,7 @@ size_t FTOM_TP_CLIENT_CB_response
 	ASSERT(pContents != NULL);
 	ASSERT(pUser != NULL);
 
-	FTOM_TP_CLIENT_PTR	pClient = (FTOM_TP_CLIENT_PTR)pUser;
+	FTOM_TP_RESTAPI_PTR	pClient = (FTOM_TP_RESTAPI_PTR)pUser;
 	FTM_INT				nRealSize = nSize * nMemB;
 	FTM_CHAR_PTR		pMem = NULL;
 

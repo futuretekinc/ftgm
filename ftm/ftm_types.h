@@ -26,6 +26,8 @@ typedef	int				FTM_BOOL, 	_PTR_ FTM_BOOL_PTR;
 typedef	float			FTM_FLOAT, 	_PTR_ FTM_FLOAT_PTR;
 typedef	double			FTM_DOUBLE, _PTR_ FTM_DOUBLE_PTR;
 
+typedef	const char _PTR_ FTM_CONST_CHAR_PTR;
+
 #define	FTM_FALSE		0
 #define	FTM_TRUE		(!FTM_FALSE)
 
@@ -48,6 +50,9 @@ typedef	FTM_CHAR	FTM_EPID[FTM_ID_LEN+1];
 typedef	FTM_ID _PTR_	FTM_ID_PTR;
 typedef	FTM_DID _PTR_	FTM_DID_PTR;
 typedef	FTM_EPID _PTR_	FTM_EPID_PTR;
+
+#define	FTM_USER_ID_LEN						256
+#define	FTM_PASSWD_LEN						256
 
 #define	FTM_URL_LEN							256
 #define	FTM_LOCATION_LEN					256

@@ -1,0 +1,116 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CLIENT	Makefile	/^CLIENT=tprestapi$/;"	m
+CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -L.\/ -ltprestapi -lftomcl -lftomc -lftm -lconfig -lcurl -lcjson -lpthread  -lm -lrt$/;"	m
+CLIENT_OBJS	Makefile	/^CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)$/;"	m
+CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c $/;"	m
+FTOM_TP_GATEWAY	ftom_tp_restapi_gateway.h	/^}	FTOM_TP_GATEWAY, _PTR_ FTOM_TP_GATEWAY_PTR;$/;"	t	typeref:struct:__anon5
+FTOM_TP_GATEWAY_PTR	ftom_tp_restapi_gateway.h	/^}	FTOM_TP_GATEWAY, _PTR_ FTOM_TP_GATEWAY_PTR;$/;"	t	typeref:struct:__anon5
+FTOM_TP_GATEWAY_create	ftom_tp_restapi_gateway.c	/^FTM_RET	FTOM_TP_GATEWAY_create$/;"	f
+FTOM_TP_GATEWAY_destroy	ftom_tp_restapi_gateway.c	/^FTM_RET	FTOM_TP_GATEWAY_destroy$/;"	f
+FTOM_TP_GATEWAY_final	ftom_tp_restapi_gateway.c	/^FTM_RET	FTOM_TP_GATEWAY_final$/;"	f
+FTOM_TP_GATEWAY_init	ftom_tp_restapi_gateway.c	/^FTM_RET	FTOM_TP_GATEWAY_init$/;"	f
+FTOM_TP_RESTAPI	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;$/;"	t	typeref:struct:__anon4
+FTOM_TP_RESTAPI_CB_readString	ftom_tp_restapi.c	/^size_t FTOM_TP_RESTAPI_CB_readString$/;"	f
+FTOM_TP_RESTAPI_CB_response	ftom_tp_restapi.c	/^size_t FTOM_TP_RESTAPI_CB_response$/;"	f
+FTOM_TP_RESTAPI_CMD	main.c	/^}	FTOM_TP_RESTAPI_CMD, _PTR_ FTOM_TP_RESTAPI_CMD_PTR;$/;"	t	typeref:enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_DEVICE_CREATE	main.c	/^	FTOM_TP_RESTAPI_CMD_DEVICE_CREATE,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_DEVICE_DELETE	main.c	/^	FTOM_TP_RESTAPI_CMD_DEVICE_DELETE,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_GW_GET_INFO	main.c	/^	FTOM_TP_RESTAPI_CMD_GW_GET_INFO,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_GW_GET_MODEL	main.c	/^	FTOM_TP_RESTAPI_CMD_GW_GET_MODEL,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_GW_GET_STATUS	main.c	/^	FTOM_TP_RESTAPI_CMD_GW_GET_STATUS,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_GW_SET_STATUS	main.c	/^	FTOM_TP_RESTAPI_CMD_GW_SET_STATUS,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_INFO	main.c	/^}	FTOM_TP_RESTAPI_CMD_INFO, _PTR_ FTOM_TP_RESTAPI_CMD_INFO_PTR;$/;"	t	typeref:struct:__anon2	file:
+FTOM_TP_RESTAPI_CMD_INFO_PTR	main.c	/^}	FTOM_TP_RESTAPI_CMD_INFO, _PTR_ FTOM_TP_RESTAPI_CMD_INFO_PTR;$/;"	t	typeref:struct:__anon2	file:
+FTOM_TP_RESTAPI_CMD_PTR	main.c	/^}	FTOM_TP_RESTAPI_CMD, _PTR_ FTOM_TP_RESTAPI_CMD_PTR;$/;"	t	typeref:enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_SENSOR_CREATE	main.c	/^	FTOM_TP_RESTAPI_CMD_SENSOR_CREATE,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_SENSOR_DELETE	main.c	/^	FTOM_TP_RESTAPI_CMD_SENSOR_DELETE,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_SENSOR_GET_STATUS	main.c	/^	FTOM_TP_RESTAPI_CMD_SENSOR_GET_STATUS,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_SENSOR_LIST	main.c	/^	FTOM_TP_RESTAPI_CMD_SENSOR_LIST,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_SENSOR_SET_STATUS	main.c	/^	FTOM_TP_RESTAPI_CMD_SENSOR_SET_STATUS,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_SENSOR_SET_VALUE	main.c	/^	FTOM_TP_RESTAPI_CMD_SENSOR_SET_VALUE$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_CMD_UNKNOWN	main.c	/^	FTOM_TP_RESTAPI_CMD_UNKNOWN = 0,$/;"	e	enum:__anon1	file:
+FTOM_TP_RESTAPI_DEVICE_create	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_DEVICE_create$/;"	f
+FTOM_TP_RESTAPI_EP_create	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_EP_create$/;"	f
+FTOM_TP_RESTAPI_EP_getList	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_EP_getList$/;"	f
+FTOM_TP_RESTAPI_GW_getInfo	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_GW_getInfo$/;"	f
+FTOM_TP_RESTAPI_GW_getModel	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_GW_getModel$/;"	f
+FTOM_TP_RESTAPI_GW_setID	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_GW_setID$/;"	f
+FTOM_TP_RESTAPI_GW_setStatus	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_GW_setStatus$/;"	f
+FTOM_TP_RESTAPI_PTR	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;$/;"	t	typeref:struct:__anon4
+FTOM_TP_RESTAPI_SENSOR_TYPE_INFO	ftom_tp_restapi.c	/^} FTOM_TP_RESTAPI_SENSOR_TYPE_INFO, _PTR_ FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_PTR; $/;"	t	typeref:struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
+FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_PTR	ftom_tp_restapi.c	/^} FTOM_TP_RESTAPI_SENSOR_TYPE_INFO, _PTR_ FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_PTR; $/;"	t	typeref:struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
+FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	ftom_tp_restapi.c	/^typedef struct FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT$/;"	s	file:
+FTOM_TP_RESTAPI_SENSOR_create	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_SENSOR_create$/;"	f
+FTOM_TP_RESTAPI_SENSOR_delete	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_SENSOR_delete$/;"	f
+FTOM_TP_RESTAPI_SENSOR_getList	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList$/;"	f
+FTOM_TP_RESTAPI_SENSOR_getStatus	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_SENSOR_getStatus$/;"	f
+FTOM_TP_RESTAPI_SENSOR_getValue	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_SENSOR_getValue$/;"	f
+FTOM_TP_RESTAPI_SENSOR_setStatus	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_SENSOR_setStatus$/;"	f
+FTOM_TP_RESTAPI_SENSOR_setValues	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_SENSOR_setValues$/;"	f
+FTOM_TP_RESTAPI_final	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_final$/;"	f
+FTOM_TP_RESTAPI_init	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_init$/;"	f
+FTOM_TP_RESTAPI_perform	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_perform$/;"	f
+FTOM_TP_RESTAPI_postBody	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_postBody$/;"	f
+FTOM_TP_RESTAPI_putBody	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_putBody$/;"	f
+FTOM_TP_RESTAPI_setDataDump	ftom_tp_restapi.c	/^ FTM_RET	FTOM_TP_RESTAPI_setDataDump$/;"	f
+FTOM_TP_RESTAPI_setDeleteURL	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setDeleteURL$/;"	f
+FTOM_TP_RESTAPI_setGetURL	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setGetURL$/;"	f
+FTOM_TP_RESTAPI_setPostURL	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setPostURL$/;"	f
+FTOM_TP_RESTAPI_setPutURL	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setPutURL$/;"	f
+FTOM_TP_RESTAPI_setVerbose	ftom_tp_restapi.c	/^ FTM_RET	FTOM_TP_RESTAPI_setVerbose$/;"	f
+FTOM_TP_SENSOR	ftom_tp_restapi.h	/^}	FTOM_TP_SENSOR, _PTR_ FTOM_TP_SENSOR_PTR;$/;"	t	typeref:struct:__anon3
+FTOM_TP_SENSOR_PTR	ftom_tp_restapi.h	/^}	FTOM_TP_SENSOR, _PTR_ FTOM_TP_SENSOR_PTR;$/;"	t	typeref:struct:__anon3
+TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
+TPRESTAPI_LIB	Makefile	/^TPRESTAPI_LIB=libtprestapi$/;"	m
+TPRESTAPI_LIB_LDFLAGS	Makefile	/^TPRESTAPI_LIB_LDFLAGS=$(LDFLAGS)$/;"	m
+TPRESTAPI_LIB_OBJS	Makefile	/^TPRESTAPI_LIB_OBJS=$(TPRESTAPI_LIB_SRCS:.c=.o)$/;"	m
+TPRESTAPI_LIB_SRCS	Makefile	/^TPRESTAPI_LIB_SRCS= ftom_tp_restapi.c\\$/;"	m
+__FTOM_TP_GATEWAY_H__	ftom_tp_restapi_gateway.h	2;"	d
+__FTOM_TP_RESTAPI_H__	ftom_tp_restapi.h	2;"	d
+bDataDump	ftom_tp_restapi.c	/^FTM_BOOL	bDataDump = FTM_FALSE;$/;"	v	file:
+bDataDump	main.c	/^FTM_BOOL	bDataDump = FTM_TRUE;$/;"	v
+bGlobalInit	ftom_tp_restapi.c	/^FTM_BOOL	bGlobalInit = FTM_FALSE;$/;"	v	file:
+bStatus	main.c	/^FTM_BOOL	bStatus = FTM_FALSE;$/;"	v
+bVerbose	ftom_tp_restapi.c	/^FTM_BOOL	bVerbose = FTM_TRUE;$/;"	v	file:
+bVerbose	main.c	/^FTM_BOOL	bVerbose = FTM_TRUE;$/;"	v
+main	main.c	/^int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])$/;"	f
+pBase	ftom_tp_restapi.h	/^	FTM_CHAR			pBase[1024];$/;"	m	struct:__anon4
+pCURL	ftom_tp_restapi.h	/^	CURL 				_PTR_ pCURL;$/;"	m	struct:__anon4
+pCategory	ftom_tp_restapi.c	/^	FTM_CHAR_PTR	pCategory;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
+pData	ftom_tp_restapi.h	/^	FTM_CHAR_PTR		pData;$/;"	m	struct:__anon4
+pDeviceID	ftom_tp_restapi.h	/^	FTM_CHAR		pDeviceID[FTM_DID_LEN+1];$/;"	m	struct:__anon3
+pDriver	ftom_tp_restapi.c	/^	FTM_CHAR_PTR	pDriver;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
+pGatewayID	ftom_tp_restapi.h	/^	FTM_CHAR			pGatewayID[FTM_DID_LEN+1];$/;"	m	struct:__anon4
+pHTTPHeader	ftom_tp_restapi.h	/^	struct curl_slist	_PTR_ pHTTPHeader;$/;"	m	struct:__anon4	typeref:struct:__anon4::_PTR_
+pID	ftom_tp_restapi.h	/^	FTM_CHAR		pID[FTM_EPID_LEN+1];$/;"	m	struct:__anon3
+pID	ftom_tp_restapi_gateway.h	/^	FTM_CHAR		pID[FTM_DID_LEN+1];$/;"	m	struct:__anon5
+pModel	ftom_tp_restapi.c	/^	FTM_CHAR_PTR	pModel;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
+pName	ftom_tp_restapi.c	/^	FTM_CHAR_PTR	pName;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
+pName	ftom_tp_restapi.h	/^	FTM_CHAR		pName[FTM_NAME_LEN+1];$/;"	m	struct:__anon3
+pName	ftom_tp_restapi_gateway.h	/^	FTM_CHAR		pName[FTM_NAME_LEN+1];$/;"	m	struct:__anon5
+pOwnerID	ftom_tp_restapi.h	/^	FTM_CHAR		pOwnerID[FTM_DID_LEN+1];$/;"	m	struct:__anon3
+pResp	ftom_tp_restapi.h	/^	FTM_CHAR_PTR		pResp;$/;"	m	struct:__anon4
+pSensorList	ftom_tp_restapi_gateway.h	/^	FTM_LIST_PTR	pSensorList;$/;"	m	struct:__anon5
+pSensorTypeInfo	ftom_tp_restapi.c	/^FTOM_TP_RESTAPI_SENSOR_TYPE_INFO pSensorTypeInfo[] = $/;"	v	file:
+pString	main.c	/^	FTM_CHAR_PTR		pString;$/;"	m	struct:__anon2	file:
+pTPClientCmds	main.c	/^FTOM_TP_RESTAPI_CMD_INFO	pTPClientCmds[] =$/;"	v
+pURL	ftom_tp_restapi.h	/^	FTM_CHAR			pURL[1024];$/;"	m	struct:__anon4
+ulAddress	ftom_tp_restapi.h	/^	FTM_ULONG		ulAddress;$/;"	m	struct:__anon3
+ulReportInterval	ftom_tp_restapi_gateway.h	/^	FTM_ULONG		ulReportInterval;$/;"	m	struct:__anon5
+ulRespLen	ftom_tp_restapi.h	/^	FTM_ULONG			ulRespLen;$/;"	m	struct:__anon4
+ulSequence	ftom_tp_restapi.h	/^	FTM_ULONG		ulSequence;$/;"	m	struct:__anon3
+ulTimeout	main.c	/^FTM_ULONG	ulTimeout = 90;$/;"	v
+ullCTime	ftom_tp_restapi.h	/^	FTM_UINT64		ullCTime;$/;"	m	struct:__anon3
+ullCTime	ftom_tp_restapi_gateway.h	/^	FTM_UINT64		ullCTime;$/;"	m	struct:__anon5
+ullMTime	ftom_tp_restapi.h	/^	FTM_UINT64		ullMTime;$/;"	m	struct:__anon3
+ullMTime	ftom_tp_restapi_gateway.h	/^	FTM_UINT64		ullMTime;$/;"	m	struct:__anon5
+xCmd	main.c	/^	FTOM_TP_RESTAPI_CMD	xCmd;$/;"	m	struct:__anon2	file:
+xData	main.c	/^FTM_EP_DATA	xData =$/;"	v
+xEP	main.c	/^FTM_EP	xEP =$/;"	v
+xType	ftom_tp_restapi.c	/^	FTM_EP_TYPE		xType;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
+xType	ftom_tp_restapi.h	/^	FTM_EP_TYPE		xType;$/;"	m	struct:__anon3

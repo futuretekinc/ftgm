@@ -10,8 +10,8 @@ typedef	struct
 	FTM_CHAR		pID[FTM_DID_LEN+1];
 	FTM_CHAR		pName[FTM_NAME_LEN+1];
 	FTM_ULONG		ulReportInterval;
-	FTM_ULONG		ulCTime;
-	FTM_ULONG		ulMTime;
+	FTM_UINT64		ullCTime;
+	FTM_UINT64		ullMTime;
 
 	FTM_LIST_PTR	pSensorList;
 }	FTOM_TP_GATEWAY, _PTR_ FTOM_TP_GATEWAY_PTR;

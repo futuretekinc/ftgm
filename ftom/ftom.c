@@ -13,6 +13,7 @@
 #include "ftom_dmc.h"
 #include "ftom_shell.h"
 #include "ftom_mqtt_client.h"
+#include "ftom_tp_client.h"
 #include "ftom_msg.h"
 #include "ftom_trigger.h"
 #include "ftom_action.h"
@@ -199,6 +200,23 @@ static 	FTOM_SERVICE	pServices[] =
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_DMC_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_DMC_showConfig,
 		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_DMC_notify,
+		.pData		= 	NULL
+	},
+	{
+		.xType		=	FTOM_SERVICE_TPCLIENT,
+		.xID		=	FTOM_SERVICE_TPCLIENT,
+		.pName		=	"MQTT Client",
+		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_TP_CLIENT_create,
+		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_TP_CLIENT_destroy,
+		.fInit		=	(FTOM_SERVICE_INIT)FTOM_TP_CLIENT_init,
+		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_TP_CLIENT_final,
+		.fStart 	=	(FTOM_SERVICE_START)FTOM_TP_CLIENT_start,
+		.fStop		=	(FTOM_SERVICE_STOP)FTOM_TP_CLIENT_stop,
+		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_TP_CLIENT_setCallback,
+		.fCallback	=	FTOM_callback,
+		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_TP_CLIENT_loadFromFile,
+		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_TP_CLIENT_showConfig,
+		.fNotify	=	(FTOM_SERVICE_NOTIFY)FTOM_TP_CLIENT_notify,
 		.pData		= 	NULL
 	},
 #if 0

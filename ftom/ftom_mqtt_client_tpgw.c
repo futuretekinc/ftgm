@@ -65,6 +65,8 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_connectCB
 
 	TRACE("MQTT is connected.\n");
 
+	pClient->bConnected = FTM_TRUE;
+
 	sprintf(pTopic, "v/a/g/%s/mqtt/status", pClient->pDID);
 	ulMessageLen = sprintf(pMessage, "on");
 	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
@@ -83,7 +85,12 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_disconnectCB
 )
 {
 	ASSERT(pObj != NULL);
-	//FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
+	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
+
+	FTM_TIMER_init(&pClient->xReconnectionTimer, 0);
+	FTM_TIMER_addSeconds(&pClient->xReconnectionTimer, pClient->xConfig.ulReconnectionTime);
+
+	pClient->bConnected = FTM_FALSE;
 
 	TRACE("MQTT is disconnected.\n");
 }
@@ -92,9 +99,26 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_publishCB
 (
 	struct mosquitto 	*mosq, 
 	void				*pObj, 
-	int					nResult
+	int					nMID
 )
 {
+	ASSERT(pObj != NULL);
+
+	FTM_RET	xRet;
+	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
+	FTOM_MQTT_PUBLISH_PTR	pPublish;
+
+
+	xRet = FTM_LIST_get(pClient->pPublishList, &nMID, (FTM_VOID_PTR _PTR_)&pPublish);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_LIST_remove(pClient->pPublishList, pPublish);	
+		FTOM_MQTT_PUBLISH_destroy(&pPublish);
+	}
+	else
+	{
+		WARN("Publish[%08x] not found!\n");
+	}
 }
 
 FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB

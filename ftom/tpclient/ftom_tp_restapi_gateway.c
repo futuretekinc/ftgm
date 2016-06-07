@@ -1,5 +1,5 @@
 #include <string.h>
-#include "ftom_tp_gateway.h"
+#include "ftom_tp_restapi_gateway.h"
 
 
 FTM_RET	FTOM_TP_GATEWAY_create
