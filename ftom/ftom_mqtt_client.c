@@ -116,9 +116,8 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 	memset(pClient, 0, sizeof(FTOM_MQTT_CLIENT));
 
 	FTOM_getDID(pClient->pDID, FTM_DID_LEN);
-	strncpy(pClient->xConfig.pClientID, pClient->pDID, sizeof(pClient->xConfig.pClientID) - 1);
-	strcpy(pClient->xConfig.xBroker.pHost, FTOM_MQTT_CLIENT_DEFAULT_BROKER);
-	pClient->xConfig.xBroker.usPort = FTOM_MQTT_CLIENT_DEFAULT_PORT;
+	strcpy(pClient->xConfig.pHost, FTOM_MQTT_CLIENT_DEFAULT_BROKER);
+	pClient->xConfig.usPort = FTOM_MQTT_CLIENT_DEFAULT_PORT;
 	pClient->xConfig.ulReconnectionTime = FTOM_MQTT_CLIENT_DEFAULT_RECONNECTION_TIME;
 	pClient->xConfig.ulCBSet = FTOM_MQTT_CLIENT_DEFAULT_CB_SET;
 
@@ -325,10 +324,18 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 
 	pClient->bStop 		= FTM_FALSE;
 	pClient->bConnected = FTM_FALSE;
-	pClient->pMosquitto = mosquitto_new(pClient->xConfig.pClientID, true, pClient);
+	pClient->pMosquitto = mosquitto_new(pClient->pDID, true, pClient);
 	if(pClient->pMosquitto != NULL)
 	{
-		TRACE("MQTT CLIENT[%s] started.\n", pClient->xConfig.pClientID);
+		TRACE("MQTT CLIENT[%s] started.\n", pClient->pDID);
+
+		if (pClient->xConfig.bTLS)
+		{
+			mosquitto_username_pw_set(pClient->pMosquitto, pClient->xConfig.pUserID, pClient->xConfig.pPasswd);
+			mosquitto_tls_set(pClient->pMosquitto, pClient->xConfig.pCertFile, NULL, NULL, NULL, NULL);
+			mosquitto_tls_insecure_set(pClient->pMosquitto, 1);
+			mosquitto_tls_opts_set(pClient->pMosquitto, 1, NULL, NULL);
+		}
 
 		mosquitto_connect_callback_set(pClient->pMosquitto, 	FTOM_MQTT_CLIENT_connectCB);
 		mosquitto_disconnect_callback_set(pClient->pMosquitto, 	FTOM_MQTT_CLIENT_disconnectCB);
@@ -368,7 +375,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 
 		pthread_join(pClient->xConnector, NULL);
 
-		TRACE("MQTT CLIENT[%s] stopped.\n", pClient->xConfig.pClientID);
+		TRACE("MQTT CLIENT[%s] stopped.\n", pClient->pDID);
 
 		mosquitto_destroy(pClient->pMosquitto);
 		pClient->pMosquitto = NULL;
@@ -403,7 +410,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_connector
 
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pData;
 
-	mosquitto_connect_async(pClient->pMosquitto, pClient->xConfig.xBroker.pHost, pClient->xConfig.xBroker.usPort, 60);
+	mosquitto_connect_async(pClient->pMosquitto, pClient->xConfig.pHost, pClient->xConfig.usPort, 60);
 	mosquitto_loop_start(pClient->pMosquitto);
 	FTM_TIMER_init(&pClient->xReconnectionTimer, pClient->xConfig.ulReconnectionTime * 1000000);
 

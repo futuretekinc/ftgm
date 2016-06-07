@@ -25,13 +25,14 @@
 
 typedef	struct
 {
-	FTM_CHAR	pClientID[24];
+	FTM_CHAR	pHost[FTM_HOST_LEN+1];
+	FTM_UINT16	usPort;
 
-	struct
-	{
-		FTM_CHAR	pHost[128];
-		FTM_UINT16	usPort;
-	}	xBroker;
+	FTM_BOOL	bTLS;
+	FTM_CHAR	pUserID[FTM_USER_ID_LEN+1];
+	FTM_CHAR	pPasswd[FTM_PASSWD_LEN+1];
+
+	FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
 
 	FTM_ULONG	ulReconnectionTime;
 	FTM_ULONG	ulCBSet;
@@ -48,10 +49,10 @@ typedef	struct FTOM_MQTT_CLIENT_STRUCT
 	FTM_TIMER				xReconnectionTimer;
 
 	FTM_CHAR				pDID[FTM_DID_LEN + 1];
-	struct mosquitto		*pMosquitto;
-	FTOM_MSG_QUEUE_PTR	pMsgQ;
+	struct mosquitto _PTR_	pMosquitto;
+	FTOM_MSG_QUEUE_PTR		pMsgQ;
 	FTM_LIST_PTR			pPublishList;
-	FTOM_SERVICE_ID		xServiceID;
+	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
 }	FTOM_MQTT_CLIENT, _PTR_ FTOM_MQTT_CLIENT_PTR;
 

@@ -35,7 +35,7 @@ typedef	unsigned long	FTM_IP_ADDR, _PTR_ FTM_IP_ADDR_PTR;
 
 typedef	unsigned long	FTM_CMD, _PTR_ FTM_CMD_PTR;
 
-#define	FTM_FILE_NAME_LEN	256
+#define	FTM_FILE_NAME_LEN					256
 
 typedef	unsigned long	FTM_RET, _PTR_ FTM_RET_PTR;
 
@@ -50,6 +50,8 @@ typedef	FTM_CHAR	FTM_EPID[FTM_ID_LEN+1];
 typedef	FTM_ID _PTR_	FTM_ID_PTR;
 typedef	FTM_DID _PTR_	FTM_DID_PTR;
 typedef	FTM_EPID _PTR_	FTM_EPID_PTR;
+
+#define	FTM_HOST_LEN						256
 
 #define	FTM_USER_ID_LEN						256
 #define	FTM_PASSWD_LEN						256

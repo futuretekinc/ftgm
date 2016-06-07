@@ -4,11 +4,10 @@
 #include "ftm.h"
 #include "ftom.h"
 #include <pthread.h>
+#include "ftom_mqtt_client.h"
 
-#define	FTOM_TP_CLIENT_TOPIC_LENGTH					128
-#define	FTOM_TP_CLIENT_MESSAGE_LENGTH				1024
-#define	FTOM_TP_CLIENT_DEFAULT_BROKER				"127.0.0.1"
-#define	FTOM_TP_CLIENT_DEFAULT_PORT					1883
+#define	FTOM_TP_CLIENT_DEFAULT_BROKER				"dmqtt.thingplus.net"
+#define	FTOM_TP_CLIENT_DEFAULT_PORT					8883
 #define	FTOM_TP_CLIENT_DEFAULT_RECONNECTION_TIME	5
 
 #define	FTOM_TP_METHOD_REQ_TIME_SYNC				1
@@ -24,23 +23,15 @@
 
 typedef	struct
 {
-	FTM_CHAR	pGatewayID[FTM_ID_LEN+1];
+	FTM_CHAR	pGatewayID[FTM_USER_ID_LEN+1];
 	FTM_CHAR	pAPIKey[FTM_PASSWD_LEN+1];
 
-	struct
-	{
-		FTM_CHAR	pHost[128];
-		FTM_UINT16	usPort;
+	FTM_CHAR	pHost[FTM_HOST_LEN+1];
+	FTM_UINT16	usPort;
 
-		FTM_CHAR	pUserID[FTM_USER_ID_LEN+1];
-		FTM_CHAR	pPasswd[FTM_PASSWD_LEN+1];
-
-		FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
-	}	xBroker;
-
+	FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
 
 	FTM_ULONG	ulReconnectionTime;
-	FTM_ULONG	ulCBSet;
 }	FTOM_TP_CLIENT_CONFIG, _PTR_ FTOM_TP_CLIENT_CONFIG_PTR;
 
 typedef	struct FTOM_TP_CLIENT_STRUCT
@@ -54,11 +45,10 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 	FTM_TIMER				xReconnectionTimer;
 
 	FTM_CHAR				pDID[FTM_DID_LEN + 1];
-	struct mosquitto		*pMosquitto;
-	FTOM_MSG_QUEUE_PTR	pMsgQ;
-	FTM_LIST_PTR			pPublishList;
-	FTOM_SERVICE_ID		xServiceID;
+	FTOM_MSG_QUEUE_PTR		pMsgQ;
+	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
+	FTOM_MQTT_CLIENT_PTR	pMQTTClient;
 }	FTOM_TP_CLIENT, _PTR_ FTOM_TP_CLIENT_PTR;
 
 FTM_RET	FTOM_TP_CLIENT_create
@@ -119,12 +109,6 @@ FTM_RET	FTOM_TP_CLIENT_notify
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
 	FTOM_MSG_PTR 			pMsg
-);
-
-FTM_RET	FTOM_TP_CLIENT_pushMsg
-(
-	FTOM_TP_CLIENT_PTR pClient,
-	FTOM_MSG_PTR		pMsg	
 );
 
 #endif
