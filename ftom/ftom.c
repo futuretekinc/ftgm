@@ -85,6 +85,13 @@ FTM_RET FTOM_onAddEPData
 );
 
 static 
+FTM_RET	FTOM_onSendEPStatus
+(
+	FTOM_MSG_SEND_EP_STATUS_PTR pMsg,
+	FTM_VOID_PTR		pData
+);
+
+static 
 FTM_RET	FTOM_onSendEPData
 (
 	FTOM_MSG_SEND_EP_DATA_PTR pMsg,
@@ -146,6 +153,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_SERVER_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SERVER_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_SERVER_stop,
+		.fIsRun		=	NULL,
 		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_SERVER_setServiceCallback,
 		.fCallback	=	FTOM_callback,
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SERVER_loadFromFile,
@@ -163,6 +171,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_SNMPC_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SNMPC_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_SNMPC_stop,
+		.fIsRun		=	NULL,
 		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_SNMPC_setServiceCallback,
 		.fCallback	=	FTOM_callback,
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SNMPC_loadFromFile,
@@ -179,6 +188,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_SNMPTRAPD_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SNMPTRAPD_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_SNMPTRAPD_stop,
+		.fIsRun		=	NULL,
 		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_SNMPTRAPD_setServiceCallback,
 		.fCallback	=	FTOM_callback,
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SNMPTRAPD_loadFromFile,
@@ -195,6 +205,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_DMC_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_DMC_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_DMC_stop,
+		.fIsRun		=	NULL,
 		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_DMC_setServiceCallback,
 		.fCallback	=	FTOM_callback,
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_DMC_loadFromFile,
@@ -212,6 +223,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_TP_CLIENT_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_TP_CLIENT_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_TP_CLIENT_stop,
+		.fIsRun		=	(FTOM_SERVICE_IS_RUN)FTOM_TP_CLIENT_isRun,
 		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_TP_CLIENT_setCallback,
 		.fCallback	=	FTOM_callback,
 		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_TP_CLIENT_loadFromFile,
@@ -265,6 +277,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_DISCOVERY_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_DISCOVERY_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_DISCOVERY_stop,
+		.fIsRun		=	NULL,
 		.fSetCallback=	NULL,
 		.fCallback	=	NULL,
 		.fLoadFromFile=	NULL,
@@ -318,6 +331,7 @@ FTM_RET	FTOM_init
 
 	onMessage[FTOM_MSG_TYPE_QUIT] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onQuit;
 	onMessage[FTOM_MSG_TYPE_ADD_EP_DATA] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onAddEPData;
+	onMessage[FTOM_MSG_TYPE_SEND_EP_STATUS] = (FTOM_ON_MESSAGE_CALLBACK)FTOM_onSendEPStatus;
 	onMessage[FTOM_MSG_TYPE_SEND_EP_DATA] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onSendEPData;
 	onMessage[FTOM_MSG_TYPE_TIME_SYNC] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onTimeSync;
 	onMessage[FTOM_MSG_TYPE_EP_CTRL] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPCtrl;
@@ -845,8 +859,18 @@ FTM_RET	FTOM_TASK_processing
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg = NULL;
 	FTM_TIMER		xLoopTimer;
-
+	
 	FTM_TIMER_init(&xLoopTimer, FTOM_LOOP_INTERVAL);
+
+	xRet = FTOM_MSG_createInitializeDone(&pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	0;	
+	}
+
+	FTOM_SERVICE_notify(FTOM_SERVICE_ALL, pMsg);
+
+	FTOM_MSG_destroy(&pMsg);
 
 	while(!bStop)
 	{
@@ -1004,6 +1028,46 @@ FTM_RET	FTOM_onEPCtrl
 	return	xRet;
 }
 
+FTM_RET	FTOM_onSendEPStatus
+(
+	FTOM_MSG_SEND_EP_STATUS_PTR pMsg,
+	FTM_VOID_PTR		pData
+)
+{
+	ASSERT(pMsg != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	FTOM_MSG_PTR	pNewMsg;
+	FTM_BOOL		bRun = FTM_FALSE;
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_TPCLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Service[TPClient] not found\n");
+		return	xRet;	
+	}
+
+	if ((pService->fIsRun == NULL) || (pService->fNotify == NULL))
+	{
+		ERROR("Service[TPClient] not found\n");
+		return	FTM_RET_OK;			
+	}
+
+	xRet = pService->fIsRun(pService->pData, &bRun);
+	if ((xRet != FTM_RET_OK) || (!bRun))
+	{
+		return	FTM_RET_OK;	
+	}
+
+	xRet = FTOM_MSG_copy((FTOM_MSG_PTR)pMsg, &pNewMsg);	
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	pService->fNotify(pService->pData, pNewMsg);
+}
+
 FTM_RET	FTOM_onSendEPData
 (
 	FTOM_MSG_SEND_EP_DATA_PTR pMsg,
@@ -1013,14 +1077,35 @@ FTM_RET	FTOM_onSendEPData
 	ASSERT(pMsg != NULL);
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_MQTT_CLIENT, &pService);
+	FTOM_MSG_PTR	pNewMsg;
+	FTM_BOOL		bRun = FTM_FALSE;
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_TPCLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Service[TPClient] not found\n");
+		return	xRet;	
+	}
+
+	if ((pService->fIsRun == NULL) || (pService->fNotify == NULL))
+	{
+		ERROR("Service[TPClient] not found\n");
+		return	FTM_RET_OK;			
+	}
+
+	xRet = pService->fIsRun(pService->pData, &bRun);
+	if ((xRet != FTM_RET_OK) || (!bRun))
+	{
+		return	FTM_RET_OK;	
+	}
+
+	xRet = FTOM_MSG_copy((FTOM_MSG_PTR)pMsg, &pNewMsg);	
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	return	FTOM_MQTT_CLIENT_publishEPData(pService->pData, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
+	return	pService->fNotify(pService->pData, pNewMsg);
 }
 
 FTM_RET	FTOM_onRule
@@ -1161,7 +1246,8 @@ FTM_RET	FTOM_getDID
 		return	FTM_RET_BUFFER_TOO_SMALL;	
 	}
 
-	strcpy(pBuff, xConfig.pDID);
+	//strcpy(pBuff, xConfig.pDID);
+	strcpy(pBuff, "00405cabcdef");
 
 	return	FTM_RET_OK;
 }
@@ -1545,6 +1631,35 @@ FTM_RET	FTOM_DB_EP_addData
 		return	xRet;
 	}
 	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SYS_EP_publishStatus
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL		bStatus,
+	FTM_ULONG		ulTimeout
+)
+{
+	FTM_RET						xRet;
+	FTOM_MSG_SEND_EP_STATUS_PTR	pMsg;
+
+	xRet = FTOM_MSG_createSendEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Send EP data message creation failed[%08x].\n", xRet);
+		return	xRet;	
+	}
+
+
+	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Message push error![%08x]\n", xRet);
+		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
+		return	xRet;
+	}
+
 	return	FTM_RET_OK;
 }
 

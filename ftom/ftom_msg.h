@@ -11,31 +11,37 @@ typedef	FTM_ULONG	FTOM_MSG_ID, _PTR_ FTOM_MSG_ID_PTR;
 typedef	enum
 {
 	FTOM_MSG_TYPE_QUIT				=	0,
-	FTOM_MSG_TYPE_EP_CTRL			=	1,
-	FTOM_MSG_TYPE_RULE				=	2,
-	FTOM_MSG_TYPE_SEND_EP_DATA		=	4,
-	FTOM_MSG_TYPE_ADD_EP_DATA		=   5,
-	FTOM_MSG_TYPE_PUBLISH_EP_DATA	=	6,
-	FTOM_MSG_TYPE_TIME_SYNC			=   7,
-	FTOM_MSG_TYPE_CONNECTED			=   8,
-	FTOM_MSG_TYPE_DISCONNECTED		=   9,
-	FTOM_MSG_TYPE_ACTION			=	10,
-	FTOM_MSG_TYPE_ALERT				=	11,
-	FTOM_MSG_TYPE_DISCOVERY			=	12,
-	FTOM_MSG_TYPE_DISCOVERY_INFO	=	13,
-	FTOM_MSG_TYPE_DISCOVERY_DONE	=	14,
+	FTOM_MSG_TYPE_EP_CTRL,
+	FTOM_MSG_TYPE_RULE,
+	FTOM_MSG_TYPE_SEND_EP_STATUS,
+	FTOM_MSG_TYPE_SEND_EP_DATA,
+	FTOM_MSG_TYPE_ADD_EP_DATA,
+	FTOM_MSG_TYPE_PUBLISH_EP_STATUS,
+	FTOM_MSG_TYPE_PUBLISH_EP_DATA,
+	FTOM_MSG_TYPE_TIME_SYNC,
+	FTOM_MSG_TYPE_CONNECTED,
+	FTOM_MSG_TYPE_DISCONNECTED,
+	FTOM_MSG_TYPE_ACTION,
+	FTOM_MSG_TYPE_ALERT	,
+	FTOM_MSG_TYPE_DISCOVERY,
+	FTOM_MSG_TYPE_DISCOVERY_INFO,
+	FTOM_MSG_TYPE_DISCOVERY_DONE,
+	FTOM_MSG_TYPE_SERVER_SYNC,
+	FTOM_MSG_TYPE_INITIALIZE_DONE,
 	FTOM_MSG_TYPE_MAX
 }	FTOM_MSG_TYPE, _PTR_ FTOM_MSG_TYPE_PTR;
 
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTOM_MSG_ID		xMsgID;
 } FTOM_MSG, _PTR_ FTOM_MSG_PTR;
 
 typedef struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTOM_MSG_ID		xMsgID;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_DATA		xData;
@@ -44,6 +50,17 @@ typedef struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTOM_MSG_ID		xMsgID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	FTM_BOOL		bStatus;
+	FTM_ULONG		ulTimeout;
+}	FTOM_MSG_SEND_EP_STATUS, _PTR_ FTOM_MSG_SEND_EP_STATUS_PTR;
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTOM_MSG_ID		xMsgID;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG		ulCount;
@@ -53,6 +70,17 @@ typedef	struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTOM_MSG_ID		xMsgID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	FTM_BOOL		bStatus;
+	FTM_ULONG		ulTimeout;
+}	FTOM_MSG_PUBLISH_EP_STATUS, _PTR_ FTOM_MSG_PUBLISH_EP_STATUS_PTR;
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTOM_MSG_ID		xMsgID;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG		ulCount;
@@ -62,6 +90,7 @@ typedef	struct
 typedef struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTOM_MSG_ID		xMsgID;
 	FTM_ULONG		ulTime;
 }	FTOM_MSG_TIME_SYNC, _PTR_ FTOM_MSG_TIME_SYNC_PTR;
@@ -69,6 +98,7 @@ typedef struct
 typedef struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTOM_MSG_ID		xMsgID;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_CTRL		xCtrl;
@@ -78,6 +108,7 @@ typedef struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTM_CHAR		pActionID[FTM_ID_LEN+1];
 	FTM_BOOL		bActivate;
 }	FTOM_MSG_ACTION, _PTR_ FTOM_MSG_ACTION_PTR;
@@ -85,6 +116,7 @@ typedef	struct
 typedef struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTOM_MSG_ID		xMsgID;
 	FTM_CHAR		pRuleID[FTM_ID_LEN+1];
 	FTM_RULE_STATE	xRuleState;
@@ -93,6 +125,7 @@ typedef struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTM_EP_DATA		xData;
 }	FTOM_MSG_ALERT, _PTR_ FTOM_MSG_ALERT_PTR;
@@ -100,6 +133,7 @@ typedef	struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTM_CHAR_PTR	pNetwork;
 	FTM_USHORT		usPort;
 	FTM_ULONG		ulRetryCount;
@@ -108,6 +142,7 @@ typedef	struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTM_CHAR		pName[FTM_DEVICE_NAME_LEN + 1];
 	FTM_CHAR		pDID[FTM_DID_LEN + 1];
 	FTM_CHAR		pIP[32];
@@ -118,16 +153,23 @@ typedef	struct
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTM_ULONG		ulNodeCount;
 	FTM_NODE_PTR	pNodeInfos;
 	FTM_ULONG		ulEPCount;
 	FTM_EP_PTR		pEPInfos;
 }	FTOM_MSG_DISCOVERY_DONE, _PTR_ FTOM_MSG_DISCOVERY_DONE_PTR;
 
+
 typedef struct
 {
 	FTM_MSG_QUEUE	xQueue;
 } FTOM_MSG_QUEUE, _PTR_ FTOM_MSG_QUEUE_PTR;
+
+FTM_RET FTOM_MSG_createInitializeDone
+(
+	FTOM_MSG_PTR _PTR_ ppMsg
+);
 
 FTM_RET FTOM_MSG_createQuit
 (
@@ -139,6 +181,14 @@ FTM_RET	FTOM_MSG_createAddEPData
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTOM_MSG_ADD_EP_DATA_PTR _PTR_ ppMsg
+);
+
+FTM_RET	FTOM_MSG_createPublishEPStatus
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout,
+	FTOM_MSG_PUBLISH_EP_STATUS_PTR _PTR_ ppMsg
 );
 
 FTM_RET	FTOM_MSG_createPublishEPData
@@ -177,6 +227,13 @@ FTM_RET FTOM_MSG_createAction
 	FTOM_MSG_ACTION_PTR _PTR_ ppMsg
 );
 
+FTM_RET	FTOM_MSG_createSendEPStatus
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout,
+	FTOM_MSG_SEND_EP_STATUS_PTR _PTR_ ppMsg
+);
 FTM_RET	FTOM_MSG_createSendEPData
 (
 	FTM_CHAR_PTR		pEPID,
@@ -219,9 +276,20 @@ FTM_RET	FTOM_MSG_createDiscoveryDone
 	FTOM_MSG_DISCOVERY_DONE_PTR _PTR_ ppMsg
 );
 
+FTM_RET	FTOM_MSG_createServerSync
+(
+	FTOM_MSG_PTR _PTR_ ppMsg
+);
+
 FTM_RET	FTOM_MSG_destroy
 (
 	FTOM_MSG_PTR _PTR_ ppMsg
+);
+
+FTM_RET	FTOM_MSG_copy
+(
+	FTOM_MSG_PTR	pSrcMsg,
+	FTOM_MSG_PTR _PTR_ ppNewMsg
 );
 
 FTM_RET FTOM_MSGQ_create

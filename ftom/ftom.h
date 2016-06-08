@@ -291,6 +291,13 @@ FTM_RET	FTOM_nodeDiscovery
 	FTM_USHORT		usPort
 );
 
+FTM_RET	FTOM_SYS_EP_publishStatus
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL		bStatus,
+	FTM_ULONG		ulTimeout
+);
+
 FTM_RET	FTOM_SYS_EP_publishData
 (
 	FTM_CHAR_PTR	pEPID,

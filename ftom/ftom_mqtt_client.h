@@ -45,13 +45,18 @@ typedef	struct FTOM_MQTT_CLIENT_STRUCT
 	FTM_BOOL				bStop;
 	FTM_BOOL				bConnected;
 	pthread_t				xMain;
-	pthread_t				xConnector;
-	FTM_TIMER				xReconnectionTimer;
+
+	pthread_t				xLinkManager;
+	FTM_TIMER				xLinkTimer;
 
 	FTM_CHAR				pDID[FTM_DID_LEN + 1];
 	struct mosquitto _PTR_	pMosquitto;
 	FTOM_MSG_QUEUE_PTR		pMsgQ;
 	FTM_LIST_PTR			pPublishList;
+
+	FTM_ULONG				ulNewSubscribe;
+	FTM_LIST_PTR			pSubscribeList;
+
 	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
 }	FTOM_MQTT_CLIENT, _PTR_ FTOM_MQTT_CLIENT_PTR;
@@ -62,6 +67,14 @@ typedef	FTM_VOID (*FTOM_MQTT_CLIENT_PUBLISH_CB)(struct mosquitto *mosq, void *pO
 typedef	FTM_VOID (*FTOM_MQTT_CLIENT_MESSAGE_CB)(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
 typedef FTM_VOID (*FTOM_MQTT_CLIENT_SUBSCRIBE_CB)(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
 typedef FTM_VOID (*FTOM_MQTT_CLIENT_TIMER_CB)(struct mosquitto *mosq, void *pObj);
+
+typedef FTM_RET	 (*FTOM_MQTT_CLIENT_PUBLISH_EP_STATUS)
+(
+	FTOM_MQTT_CLIENT_PTR	pClient, 
+	FTM_CHAR_PTR			pEPID,
+	FTM_BOOL				bStatus,
+	FTM_ULONG				ulTimeout
+);
 
 typedef FTM_RET	 (*FTOM_MQTT_CLIENT_PUBLISH_EP_DATA)
 (
@@ -82,13 +95,21 @@ typedef	struct
 
 typedef	struct
 {
+	FTM_INT			nMessageID;
+	FTM_BOOL		bRegisted;
+	FTM_CHAR_PTR	pTopic;
+}	FTOM_MQTT_SUBSCRIBE, _PTR_ FTOM_MQTT_SUBSCRIBE_PTR;
+
+typedef	struct
+{
 	FTOM_MQTT_CLIENT_CONNECT_CB				fConnect;
 	FTOM_MQTT_CLIENT_DISCONNECT_CB			fDisconnect;
 	FTOM_MQTT_CLIENT_PUBLISH_CB				fPublish;
 	FTOM_MQTT_CLIENT_MESSAGE_CB				fMessage;
 	FTOM_MQTT_CLIENT_SUBSCRIBE_CB			fSubscribe;
 	FTOM_MQTT_CLIENT_TIMER_CB				fTimer;
-	FTOM_MQTT_CLIENT_PUBLISH_EP_DATA			fPublishEPData;
+	FTOM_MQTT_CLIENT_PUBLISH_EP_STATUS		fPublishEPStatus;
+	FTOM_MQTT_CLIENT_PUBLISH_EP_DATA		fPublishEPData;
 }	FTOM_MQTT_CLIENT_CALLBACK_SET, _PTR_ FTOM_MQTT_CLIENT_CALLBACK_SET_PTR;
 
 FTM_RET	FTOM_MQTT_CLIENT_create
@@ -151,12 +172,32 @@ FTM_RET	FTOM_MQTT_CLIENT_notify
 	FTOM_MSG_PTR 			pMsg
 );
 
+FTM_RET	FTOM_MQTT_CLIENT_subscribe
+(
+	FTOM_MQTT_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR			pTopic
+);
+
+FTM_RET	FTOM_MQTT_CLIENT_unsubscribe
+(
+	FTOM_MQTT_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR			pTopic
+);
+
 FTM_RET	FTOM_MQTT_CLIENT_publish
 (
 	FTOM_MQTT_CLIENT_PTR 	pClient, 
 	FTM_CHAR_PTR			pTopic,
 	FTM_CHAR_PTR			pMessage,
 	FTM_ULONG				ulMessageLen
+);
+
+FTM_RET	FTOM_MQTT_CLIENT_publishEPStatus
+(
+	FTOM_MQTT_CLIENT_PTR pClient,
+	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout
 );
 
 FTM_RET	FTOM_MQTT_CLIENT_publishEPData
@@ -185,6 +226,17 @@ FTM_RET	FTOM_MQTT_PUBLISH_create
 FTM_RET	FTOM_MQTT_PUBLISH_destroy
 (
 	FTOM_MQTT_PUBLISH_PTR _PTR_ ppPublish
+);
+
+FTM_RET	FTOM_MQTT_SUBSCRIBE_create
+(
+	FTM_CHAR_PTR	pTopic,
+	FTOM_MQTT_SUBSCRIBE_PTR _PTR_ ppSubscribe
+);
+
+FTM_RET	FTOM_MQTT_SUBSCRIBE_destroy
+(
+	FTOM_MQTT_SUBSCRIBE_PTR _PTR_ ppSubscribe
 );
 
 #endif

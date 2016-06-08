@@ -16,7 +16,8 @@ COMMON_CFLAGS= -c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftdm \
 				-I$(TOPDIR)/ftdm/client \
 				-I$(TOPDIR)/ftom/client \
-				-I$(TOPDIR)/ftom/cmdline 
+				-I$(TOPDIR)/ftom/cmdline\
+				-I$(TOPDIR)/ftom/tpclient
 COMMON_LDFLAGS= -Wl,--no-as-needed\
 				-L.\
 				-L$(TOPDIR)/ftm \
@@ -24,7 +25,8 @@ COMMON_LDFLAGS= -Wl,--no-as-needed\
 				-L$(TOPDIR)/ftdm \
 				-L$(TOPDIR)/ftdm/client \
 				-L$(TOPDIR)/ftom/client \
-				-L$(TOPDIR)/ftom/cmdline 
+				-L$(TOPDIR)/ftom/cmdline \
+				-L$(TOPDIR)/ftom/tpclient
 
 ifeq ("$(MODEL)","ftm-50s")
 CC=armv5-linux-gcc

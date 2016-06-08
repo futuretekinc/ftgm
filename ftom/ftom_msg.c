@@ -3,6 +3,30 @@
 #include "ftom_ep.h"
 #include "ftom_msg.h"
 
+FTM_RET FTOM_MSG_createInitializeDone
+(
+	FTOM_MSG_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_PTR	pMsg;
+	FTM_ULONG		ulMsgLen = sizeof(FTOM_MSG);
+
+	pMsg = (FTOM_MSG_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType = FTOM_MSG_TYPE_INITIALIZE_DONE;
+	pMsg->ulLen = ulMsgLen;
+	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET FTOM_MSG_createQuit
 (
 	FTOM_MSG_PTR _PTR_ ppMsg
@@ -11,8 +35,9 @@ FTM_RET FTOM_MSG_createQuit
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_PTR	pMsg;
+	FTM_ULONG		ulMsgLen = sizeof(FTOM_MSG);
 
-	pMsg = (FTOM_MSG_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG));
+	pMsg = (FTOM_MSG_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -20,6 +45,7 @@ FTM_RET FTOM_MSG_createQuit
 	}
 
 	pMsg->xType = FTOM_MSG_TYPE_QUIT;
+	pMsg->ulLen = ulMsgLen;
 
 	*ppMsg = pMsg;
 
@@ -37,8 +63,9 @@ FTM_RET	FTOM_MSG_createAddEPData
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_ADD_EP_DATA_PTR	pMsg;
+	FTM_ULONG		ulMsgLen = sizeof(FTOM_MSG_ADD_EP_DATA);
 
-	pMsg = (FTOM_MSG_ADD_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_ADD_EP_DATA));
+	pMsg = (FTOM_MSG_ADD_EP_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -46,8 +73,40 @@ FTM_RET	FTOM_MSG_createAddEPData
 	}
 
 	pMsg->xType = FTOM_MSG_TYPE_ADD_EP_DATA;
+	pMsg->ulLen = ulMsgLen;
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
+
+	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MSG_createSendEPStatus
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout,
+	FTOM_MSG_SEND_EP_STATUS_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_SEND_EP_STATUS_PTR pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_SEND_EP_STATUS);
+
+	pMsg = (FTOM_MSG_SEND_EP_STATUS_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_SEND_EP_STATUS;
+	pMsg->ulLen 	= ulMsgLen;
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
+	pMsg->bStatus 	= bStatus;
+	pMsg->ulTimeout = ulTimeout;
 
 	*ppMsg = pMsg;
 
@@ -65,8 +124,9 @@ FTM_RET	FTOM_MSG_createSendEPData
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_SEND_EP_DATA_PTR pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_SEND_EP_DATA) + sizeof(FTM_EP_DATA) * ulCount;
 
-	pMsg = (FTOM_MSG_SEND_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_SEND_EP_DATA) + sizeof(FTM_EP_DATA) * ulCount) ;
+	pMsg = (FTOM_MSG_SEND_EP_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -74,6 +134,7 @@ FTM_RET	FTOM_MSG_createSendEPData
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_SEND_EP_DATA;
+	pMsg->ulLen = ulMsgLen;
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->ulCount	= ulCount;
 	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
@@ -83,6 +144,36 @@ FTM_RET	FTOM_MSG_createSendEPData
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_MSG_createPublishEPStatus
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout,
+	FTOM_MSG_PUBLISH_EP_STATUS_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_PUBLISH_EP_STATUS_PTR pMsg;
+	FTM_ULONG ulMsgLen = sizeof(FTOM_MSG_PUBLISH_EP_STATUS);
+
+	pMsg = (FTOM_MSG_PUBLISH_EP_STATUS_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_PUBLISH_EP_STATUS;
+	pMsg->ulLen = ulMsgLen;
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
+	pMsg->bStatus = bStatus;
+	pMsg->ulTimeout = ulTimeout;
+
+	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
 FTM_RET	FTOM_MSG_createPublishEPData
 (
 	FTM_CHAR_PTR		pEPID,
@@ -94,8 +185,9 @@ FTM_RET	FTOM_MSG_createPublishEPData
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_PUBLISH_EP_DATA_PTR pMsg;
+	FTM_ULONG ulMsgLen = sizeof(FTOM_MSG_PUBLISH_EP_DATA) + sizeof(FTM_EP_DATA) * ulCount ;
 
-	pMsg = (FTOM_MSG_PUBLISH_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_PUBLISH_EP_DATA) + sizeof(FTM_EP_DATA) * ulCount) ;
+	pMsg = (FTOM_MSG_PUBLISH_EP_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -103,6 +195,7 @@ FTM_RET	FTOM_MSG_createPublishEPData
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_PUBLISH_EP_DATA;
+	pMsg->ulLen = ulMsgLen;
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->ulCount	= ulCount;
 	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
@@ -121,8 +214,9 @@ FTM_RET	FTOM_MSG_createTimeSync
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_TIME_SYNC_PTR	pMsg;
+	FTM_ULONG ulMsgLen = sizeof(FTOM_MSG_TIME_SYNC);
 
-	pMsg = (FTOM_MSG_TIME_SYNC_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_TIME_SYNC));
+	pMsg = (FTOM_MSG_TIME_SYNC_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -130,6 +224,7 @@ FTM_RET	FTOM_MSG_createTimeSync
 	}
 
 	pMsg->xType = FTOM_MSG_TYPE_TIME_SYNC;
+	pMsg->ulLen = ulMsgLen;
 	pMsg->ulTime= ulTime;
 
 	*ppMsg = pMsg;
@@ -148,8 +243,9 @@ FTM_RET FTOM_MSG_createEPCtrl
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_EP_CTRL_PTR	pMsg;
+	FTM_ULONG ulMsgLen = sizeof(FTOM_MSG_EP_CTRL);
 
-	pMsg = (FTOM_MSG_EP_CTRL_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_EP_CTRL));
+	pMsg = (FTOM_MSG_EP_CTRL_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -157,6 +253,7 @@ FTM_RET FTOM_MSG_createEPCtrl
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_EP_CTRL;
+	pMsg->ulLen = ulMsgLen;
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->xCtrl		= xCtrl;
 	pMsg->ulDuration= ulDuration;
@@ -177,8 +274,9 @@ FTM_RET FTOM_MSG_createRule
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_RULE_PTR	pMsg;
+	FTM_ULONG			ulMsgLen = sizeof(FTOM_MSG_RULE);
 
-	pMsg = (FTOM_MSG_RULE_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_RULE));
+	pMsg = (FTOM_MSG_RULE_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -186,6 +284,7 @@ FTM_RET FTOM_MSG_createRule
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_RULE;
+	pMsg->ulLen = ulMsgLen;
 	strncpy(pMsg->pRuleID, pRuleID, FTM_ID_LEN);
 	pMsg->xRuleState= xRuleState;
 
@@ -204,8 +303,9 @@ FTM_RET FTOM_MSG_createAction
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_ACTION_PTR	pMsg;
+	FTM_ULONG			ulMsgLen = sizeof(FTOM_MSG_ACTION);
 
-	pMsg = (FTOM_MSG_ACTION_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_ACTION));
+	pMsg = (FTOM_MSG_ACTION_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -213,6 +313,7 @@ FTM_RET FTOM_MSG_createAction
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_ACTION;
+	pMsg->ulLen = ulMsgLen;
 	strncpy(pMsg->pActionID, pActionID, FTM_ID_LEN);
 	pMsg->bActivate = bActivate;
 
@@ -232,8 +333,9 @@ FTM_RET	FTOM_MSG_createAlert
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_ALERT_PTR	pMsg;
+	FTM_ULONG			ulMsgLen = sizeof(FTOM_MSG_ALERT);
 
-	pMsg = (FTOM_MSG_ALERT_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_ALERT));
+	pMsg = (FTOM_MSG_ALERT_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -241,6 +343,7 @@ FTM_RET	FTOM_MSG_createAlert
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_ALERT;
+	pMsg->ulLen = ulMsgLen;
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
 
@@ -261,8 +364,9 @@ FTM_RET	FTOM_MSG_createDiscovery
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_DISCOVERY_PTR	pMsg;
+	FTM_ULONG				ulMsgLen = sizeof(FTOM_MSG_DISCOVERY) + strlen(pNetwork) + 1;
 
-	pMsg = (FTOM_MSG_DISCOVERY_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_DISCOVERY) + strlen(pNetwork) + 1);
+	pMsg = (FTOM_MSG_DISCOVERY_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -270,6 +374,7 @@ FTM_RET	FTOM_MSG_createDiscovery
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_DISCOVERY;
+	pMsg->ulLen = ulMsgLen;
 	pMsg->pNetwork 	= (FTM_CHAR_PTR)pMsg + sizeof(FTOM_MSG_DISCOVERY);
 	strcpy(pMsg->pNetwork, pNetwork);
 	pMsg->usPort	= usPort;
@@ -295,8 +400,9 @@ FTM_RET	FTOM_MSG_createDiscoveryInfo
 	ASSERT(ppMsg != NULL);
 
 	FTOM_MSG_DISCOVERY_INFO_PTR	pMsg;
+	FTM_ULONG ulMsgLen = sizeof(FTOM_MSG_DISCOVERY_INFO) + sizeof(FTM_EP_TYPE) * ulCount;
 
-	pMsg = (FTOM_MSG_DISCOVERY_INFO_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_DISCOVERY_INFO) + sizeof(FTM_EP_TYPE) * ulCount);
+	pMsg = (FTOM_MSG_DISCOVERY_INFO_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -304,6 +410,7 @@ FTM_RET	FTOM_MSG_createDiscoveryInfo
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_DISCOVERY_INFO;
+	pMsg->ulLen = ulMsgLen;
 	if (pName != NULL)
 	{
 		strncpy(pMsg->pName, pName, FTM_DEVICE_NAME_LEN);
@@ -331,8 +438,9 @@ FTM_RET	FTOM_MSG_createDiscoveryDone
 	ASSERT(pEPInfos != NULL);
 
 	FTOM_MSG_DISCOVERY_DONE_PTR pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_DISCOVERY_DONE) + sizeof(FTM_NODE) * ulNodeCount + sizeof(FTM_EP) * ulEPInfoCount;
 
-	pMsg = (FTOM_MSG_DISCOVERY_DONE_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_DISCOVERY_DONE) + sizeof(FTM_NODE) * ulNodeCount + sizeof(FTM_EP) * ulEPInfoCount);
+	pMsg = (FTOM_MSG_DISCOVERY_DONE_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -340,6 +448,7 @@ FTM_RET	FTOM_MSG_createDiscoveryDone
 	}
 
 	pMsg->xType 		= FTOM_MSG_TYPE_DISCOVERY_DONE;
+	pMsg->ulLen = ulMsgLen;
 	pMsg->ulNodeCount	= ulNodeCount;
 	pMsg->pNodeInfos	= (FTM_NODE_PTR)((FTM_CHAR_PTR)pMsg + sizeof(FTOM_MSG_DISCOVERY_DONE));
 	pMsg->ulEPCount		= ulEPInfoCount;
@@ -347,6 +456,31 @@ FTM_RET	FTOM_MSG_createDiscoveryDone
 
 	memcpy(pMsg->pNodeInfos, pNodeInfos, sizeof(FTM_NODE) * ulNodeCount);
 	memcpy(pMsg->pEPInfos, pEPInfos, sizeof(FTM_EP) * ulEPInfoCount);
+
+	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MSG_createServerSync
+(
+	FTOM_MSG_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+	
+	FTOM_MSG_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG);
+
+	pMsg = (FTOM_MSG_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_SERVER_SYNC;
+	pMsg->ulLen = ulMsgLen;
 
 	*ppMsg = pMsg;
 
@@ -362,6 +496,30 @@ FTM_RET	FTOM_MSG_destroy(FTOM_MSG_PTR _PTR_ ppMsg)
 		FTM_MEM_free(*ppMsg);
 		*ppMsg = NULL;
 	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MSG_copy
+(
+	FTOM_MSG_PTR	pSrcMsg,
+	FTOM_MSG_PTR _PTR_ ppNewMsg
+)
+{
+	ASSERT(pSrcMsg != NULL);
+	ASSERT(ppNewMsg != NULL);
+
+	FTOM_MSG_PTR	pNewMsg;
+
+	pNewMsg = (FTOM_MSG_PTR)FTM_MEM_malloc(pSrcMsg->ulLen);
+	if (pNewMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	memcpy(pNewMsg, pSrcMsg, pSrcMsg->ulLen);
+
+	*ppNewMsg = pNewMsg;
 
 	return	FTM_RET_OK;
 }

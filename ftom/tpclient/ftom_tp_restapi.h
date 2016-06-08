@@ -20,20 +20,34 @@ typedef	struct
 
 typedef	struct
 {
-	CURL 				_PTR_ pCURL;
-	struct curl_slist	_PTR_ pHTTPHeader;
-
 	FTM_CHAR			pGatewayID[FTM_DID_LEN+1];
 	FTM_CHAR			pBase[1024];
 	FTM_CHAR			pURL[1024];
 	FTM_CHAR_PTR		pData;
 	FTM_CHAR_PTR		pResp;
 	FTM_ULONG			ulRespLen;
+
+	struct curl_slist	_PTR_ pHTTPHeader;
+	CURL 				_PTR_ pCURL;
 }	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;
+
+FTM_RET	FTOM_TP_RESTAPI_create
+(
+	FTOM_TP_RESTAPI_PTR _PTR_ ppClient,
+	FTM_CHAR_PTR		pUserID,
+	FTM_CHAR_PTR		pAPIKey
+);
+
+FTM_RET	FTOM_TP_RESTAPI_destroy
+(
+	FTOM_TP_RESTAPI_PTR _PTR_ ppClient
+);
 
 FTM_RET	FTOM_TP_RESTAPI_init
 (
-	FTOM_TP_RESTAPI_PTR 	pClient
+	FTOM_TP_RESTAPI_PTR pClient,
+	FTM_CHAR_PTR		pUserID,
+	FTM_CHAR_PTR		pAPIKey
 );
 
 
@@ -47,7 +61,7 @@ FTM_RET	FTOM_TP_RESTAPI_final
  ********************************************************************/
 FTM_RET	FTOM_TP_RESTAPI_GW_getModel
 (
-	FTOM_TP_RESTAPI_PTR 	pClient,
+	FTOM_TP_RESTAPI_PTR pClient,
 	FTM_ULONG			ulModel
 );
 
@@ -59,13 +73,13 @@ FTM_RET	FTOM_TP_RESTAPI_GW_setID
 
 FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 (
-	FTOM_TP_RESTAPI_PTR 	pClient,
+	FTOM_TP_RESTAPI_PTR pClient,
 	FTOM_TP_GATEWAY_PTR	pGateway
 );
 
 FTM_RET	FTOM_TP_RESTAPI_GW_setStatus
 (
-	FTOM_TP_RESTAPI_PTR 	pClient,
+	FTOM_TP_RESTAPI_PTR pClient,
 	FTM_BOOL			bStatus,	
 	FTM_ULONG			ulTimeout
 );

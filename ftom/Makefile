@@ -10,7 +10,7 @@ include $(TOPDIR)/Makefile.in
 FTOM=ftom
 FTOM_SRCS=ftom_main.c ftom.c
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)
-FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lconfig -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl
+FTOM_LDFLAGS=$(LDFLAGS) -lftom -ltprestapi -lftdmc -lftm -lconfig -lcurl -lcjson -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl -lm
 
 LIB_FTOM=libftom
 LIB_FTOM_INCS= ftom.h 

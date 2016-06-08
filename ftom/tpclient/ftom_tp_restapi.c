@@ -163,16 +163,63 @@ FTOM_TP_RESTAPI_SENSOR_TYPE_INFO pSensorTypeInfo[] =
 static 
 FTM_BOOL	bGlobalInit = FTM_FALSE;
 static 
-FTM_BOOL	bVerbose = FTM_TRUE;
+FTM_BOOL	bVerbose = FTM_FALSE;
 static 
 FTM_BOOL	bDataDump = FTM_FALSE;
 
+FTM_RET	FTOM_TP_RESTAPI_create
+(
+	FTOM_TP_RESTAPI_PTR _PTR_ ppClient,
+	FTM_CHAR_PTR		pUserID,
+	FTM_CHAR_PTR		pAPIKey
+)
+{
+	ASSERT(ppClient != NULL);
+	FTM_RET		xRet;
+	FTOM_TP_RESTAPI_PTR	pClient = NULL;
+
+	pClient = (FTOM_TP_RESTAPI_PTR)FTM_MEM_malloc(sizeof(FTOM_TP_RESTAPI));
+	if (pClient == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	xRet =  FTOM_TP_RESTAPI_init(pClient, pUserID, pAPIKey);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pClient);
+		return	xRet;	
+	}
+
+	*ppClient = pClient;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_TP_RESTAPI_destroy
+(
+	FTOM_TP_RESTAPI_PTR _PTR_ ppClient
+)
+{
+	ASSERT(ppClient != NULL);
+
+	FTOM_TP_RESTAPI_final(*ppClient);
+	FTM_MEM_free(*ppClient);
+
+	*ppClient = NULL;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_TP_RESTAPI_init
 (
-	FTOM_TP_RESTAPI_PTR pClient
+	FTOM_TP_RESTAPI_PTR pClient,
+	FTM_CHAR_PTR		pUserID,
+	FTM_CHAR_PTR		pAPIKey
 )
 {
 	ASSERT(pClient != NULL);
+	FTM_CHAR	pBuff[1024];
 
 	if (!bGlobalInit)
 	{
@@ -189,14 +236,21 @@ FTM_RET	FTOM_TP_RESTAPI_init
 	}
 
 	strcpy(pClient->pBase, "https://api.thingplus.net/v1");
-	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "username:00405cabcdef");
-	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "apikey:tlLZy-8UeYAzNMubWvQWS19RUV4=");
+	sprintf(pBuff, "username:%s", pUserID);
+	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
+	sprintf(pBuff, "apikey:%s", pAPIKey);
+	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
 	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "Content-Type:application/json");
 
 	curl_easy_setopt(pClient->pCURL, CURLOPT_HTTPHEADER, pClient->pHTTPHeader);
+
 	if (bVerbose)
 	{
  		curl_easy_setopt(pClient->pCURL, CURLOPT_VERBOSE, 1L);
+	}
+	else
+	{
+ 		curl_easy_setopt(pClient->pCURL, CURLOPT_VERBOSE, 0L);
 	}
 	curl_easy_setopt(pClient->pCURL, CURLOPT_WRITEFUNCTION, FTOM_TP_RESTAPI_CB_response);
 	curl_easy_setopt(pClient->pCURL, CURLOPT_WRITEDATA, (FTM_VOID_PTR)pClient);
@@ -575,7 +629,6 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_create
 		ERROR("An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
-
 
 	xRet = FTOM_TP_RESTAPI_postBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)

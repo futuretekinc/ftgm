@@ -5,10 +5,12 @@
 #include "ftom.h"
 #include <pthread.h>
 #include "ftom_mqtt_client.h"
+#include "ftom_tp_restapi.h"
 
 #define	FTOM_TP_CLIENT_DEFAULT_BROKER				"dmqtt.thingplus.net"
 #define	FTOM_TP_CLIENT_DEFAULT_PORT					8883
-#define	FTOM_TP_CLIENT_DEFAULT_RECONNECTION_TIME	5
+#define	FTOM_TP_CLIENT_DEFAULT_REPORT_INTERVAL		60
+#define	FTOM_TP_CLIENT_DEFAULT_RECONNECTION_TIME	90
 
 #define	FTOM_TP_METHOD_REQ_TIME_SYNC				1
 #define	FTOM_TP_METHOD_REQ_CONTROL_ACTUATOR			2
@@ -31,6 +33,7 @@ typedef	struct
 
 	FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
 
+	FTM_ULONG	ulReportInterval;
 	FTM_ULONG	ulReconnectionTime;
 }	FTOM_TP_CLIENT_CONFIG, _PTR_ FTOM_TP_CLIENT_CONFIG_PTR;
 
@@ -38,17 +41,19 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 {
 	FTOM_TP_CLIENT_CONFIG	xConfig;
 
+	FTM_CHAR				pDID[FTM_DID_LEN + 1];
 	FTM_BOOL				bStop;
 	FTM_BOOL				bConnected;
 	pthread_t				xMain;
-	pthread_t				xConnector;
+	pthread_t				xLinkManager;
 	FTM_TIMER				xReconnectionTimer;
 
-	FTM_CHAR				pDID[FTM_DID_LEN + 1];
 	FTOM_MSG_QUEUE_PTR		pMsgQ;
+	FTOM_MQTT_CLIENT_PTR	pMQTTClient;
+	FTOM_TP_RESTAPI			xRESTApi;
+
 	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
-	FTOM_MQTT_CLIENT_PTR	pMQTTClient;
 }	FTOM_TP_CLIENT, _PTR_ FTOM_TP_CLIENT_PTR;
 
 FTM_RET	FTOM_TP_CLIENT_create
@@ -98,6 +103,12 @@ FTM_RET	FTOM_TP_CLIENT_stop
 	FTOM_TP_CLIENT_PTR pClient
 );
 
+FTM_RET	FTOM_TP_CLIENT_isRun
+(
+	FTOM_TP_CLIENT_PTR pClient,
+	FTM_BOOL_PTR		pbRun
+);
+
 FTM_RET	FTOM_TP_CLIENT_setCallback
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
@@ -111,4 +122,25 @@ FTM_RET	FTOM_TP_CLIENT_notify
 	FTOM_MSG_PTR 			pMsg
 );
 
+FTM_RET	FTOM_TP_CLIENT_serverSyncStart
+(
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTM_BOOL			bAutoRegister
+);
+
+FTM_RET	FTOM_TP_CLIENT_sendEPStatus
+(
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout
+);
+
+FTM_RET	FTOM_TP_CLIENT_sendEPData
+(
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_DATA_PTR		pDatas, 
+	FTM_ULONG			ulCount
+);
 #endif

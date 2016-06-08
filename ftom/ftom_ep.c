@@ -23,6 +23,13 @@ static FTM_VOID_PTR	FTOM_EP_process
 	FTM_VOID_PTR 	pData
 );
 
+static
+FTM_RET	FTOM_EP_sendStatus
+(
+	FTOM_EP_PTR 	pEP
+);
+
+static
 FTM_RET	FTOM_EP_sendDataInTime
 (
 	FTOM_EP_PTR 	pEP,
@@ -682,6 +689,7 @@ FTM_VOID_PTR FTOM_EP_process
 			FTM_TIMER_getTime(&xTransTimer, &ulCurrentTime);
 			ulPrevTime = ulCurrentTime - pEP->xInfo.ulCycle;
 
+			FTOM_EP_sendStatus(pEP);
 			FTOM_EP_sendDataInTime(pEP, ulPrevTime, ulCurrentTime);
 			FTM_TIMER_add(&xTransTimer, pEP->xInfo.ulCycle * 1000000);
 		}
@@ -1075,6 +1083,16 @@ FTM_RET	FTOM_EP_getDataInfo
 	return	FTOM_DB_EP_getDataInfo(pEP->xInfo.pEPID, pulBegin, pulEnd, pulCount);
 }
 
+FTM_RET	FTOM_EP_sendStatus
+(
+	FTOM_EP_PTR 	pEP
+)
+{
+	ASSERT(pEP != NULL);
+
+	return	FTOM_SYS_EP_publishStatus(pEP->xInfo.pEPID, !pEP->bStop, pEP->xInfo.ulInterval);
+}
+
 FTM_RET	FTOM_EP_sendDataInTime
 (
 	FTOM_EP_PTR 	pEP,
@@ -1087,7 +1105,8 @@ FTM_RET	FTOM_EP_sendDataInTime
 	FTM_RET			xRet;
 	FTM_EP_DATA_PTR	pData;
 	FTM_EP_DATA_PTR	pDataList;
-	FTM_INT			i, nCount = 0;
+	FTM_INT			nIndex, nDataCount = 0, nCount = 0;
+	FTM_ULONG		ulListCount = 0;
 
 	FTM_LIST_iteratorStart(&pEP->xDataList);
 	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
@@ -1109,17 +1128,20 @@ FTM_RET	FTOM_EP_sendDataInTime
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	i = 0;
-	FTM_LIST_iteratorStart(&pEP->xDataList);
-	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+	FTM_LIST_count(&pEP->xDataList, &ulListCount);
+	for(nIndex = ulListCount - 1 ; nIndex >= 0 ; nIndex--)
 	{
-		if ((i < nCount) && (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime))
+		xRet = FTM_LIST_getAt(&pEP->xDataList, nIndex, (FTM_VOID_PTR _PTR_)&pData);
+		if ((xRet == FTM_RET_OK) && (nDataCount < nCount))
 		{
-			memcpy(&pDataList[i++], pData, sizeof(FTM_EP_DATA));
+			if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
+			{
+				memcpy(&pDataList[nDataCount++], pData, sizeof(FTM_EP_DATA));
+			}
 		}
 	}
 
-	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pDataList, nCount);
+	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pDataList, nDataCount);
 	FTM_MEM_free(pDataList);
 
 	return	xRet;

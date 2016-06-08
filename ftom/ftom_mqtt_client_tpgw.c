@@ -67,14 +67,9 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_connectCB
 
 	pClient->bConnected = FTM_TRUE;
 
-	sprintf(pTopic, "v/a/g/%s/mqtt/status", pClient->pDID);
-	ulMessageLen = sprintf(pMessage, "on");
-	mosquitto_publish(pClient->pMosquitto, NULL, pTopic, ulMessageLen, pMessage, 1, 0);
-
-	sprintf(pTopic, "v/a/g/%s/res", pClient->pDID);
-	mosquitto_subscribe(pClient->pMosquitto, NULL, pTopic, 0);
-	sprintf(pTopic, "v/a/g/%s/req", pClient->pDID);
-	mosquitto_subscribe(pClient->pMosquitto, NULL, pTopic, 0);
+	sprintf(pTopic, "v/a/g/%s/status", pClient->pDID);
+	ulMessageLen = sprintf(pMessage, "on,%lu", pClient->xConfig.ulReconnectionTime);
+	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
 }
 
 FTM_VOID FTOM_MQTT_CLIENT_TPGW_disconnectCB
@@ -87,8 +82,8 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_disconnectCB
 	ASSERT(pObj != NULL);
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 
-	FTM_TIMER_init(&pClient->xReconnectionTimer, 0);
-	FTM_TIMER_addSeconds(&pClient->xReconnectionTimer, pClient->xConfig.ulReconnectionTime);
+	FTM_TIMER_init(&pClient->xLinkTimer, 0);
+	FTM_TIMER_addSeconds(&pClient->xLinkTimer, pClient->xConfig.ulReconnectionTime);
 
 	pClient->bConnected = FTM_FALSE;
 
@@ -117,7 +112,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_publishCB
 	}
 	else
 	{
-		WARN("Publish[%08x] not found!\n");
+		WARN("Publish[%08x] not found!\n", nMID);
 	}
 }
 
@@ -381,6 +376,28 @@ error:
 	return	xRet;
 }
 
+FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPStatus
+(
+	FTOM_MQTT_CLIENT_PTR pClient, 
+	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_CHAR	pTopic[FTOM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pBuff[FTOM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulLen = 0;
+
+	pBuff[sizeof(pBuff) - 1] = '\0';
+	
+	sprintf(pTopic, "v/a/g/%s/s/%s/status", pClient->pDID, pEPID);
+	ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "%s,%lu", bStatus?"on":"off", ulTimeout);
+
+	return	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen);
+}
+
 FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 (
 	FTOM_MQTT_CLIENT_PTR pClient, 
@@ -406,11 +423,11 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 	{
 		if (i == 0)
 		{
-			ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "%lu", pData[i].ulTime);
+			ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "%llu", pData[i].ulTime*(FTM_UINT64)1000);
 		}
 		else
 		{
-			ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, ",%lu", pData[i].ulTime);
+			ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, ",%llu", pData[i].ulTime*(FTM_UINT64)1000);
 		}
 
 		ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, ",%s", FTM_VALUE_print(&pData[i].xValue));

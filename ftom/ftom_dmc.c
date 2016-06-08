@@ -188,6 +188,12 @@ FTM_VOID_PTR	FTOM_DMC_process
 			{
 				switch(pMsg->xType)
 				{
+				case	FTOM_MSG_TYPE_ADD_EP_DATA:
+					{
+						FTOM_DMC_onAddEPData(pDMC, (FTOM_MSG_ADD_EP_DATA_PTR)pMsg);
+					}
+					break;
+
 				case	FTOM_MSG_TYPE_QUIT:
 					{
 						pDMC->bStop = FTM_TRUE;	
@@ -235,21 +241,21 @@ FTM_RET	FTOM_DMC_notify
 	ASSERT(pMsg != NULL);
 
 	FTM_RET	xRet;
+	FTOM_MSG_PTR	pNewMsg;
 
-	switch(pMsg->xType)
+	xRet = FTOM_MSG_copy(pMsg, &pNewMsg);
+	if (xRet != FTM_RET_OK)
 	{
-	case	FTOM_MSG_TYPE_ADD_EP_DATA:
-		{	
-			xRet = FTOM_DMC_onAddEPData(pDMC, (FTOM_MSG_ADD_EP_DATA_PTR)pMsg);
-		}
-		break;
-
-	default:
-		xRet = FTM_RET_INVALID_MESSAGE_TYPE;
+		return	xRet;	
 	}
 
-	FTOM_MSG_destroy(&pMsg);
-
+	xRet = FTOM_MSGQ_push(&pDMC->xMsgQ, pNewMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTOM_MSG_destroy(&pNewMsg);	
+		return	xRet;
+	}
+	
 	return	xRet;
 }
 

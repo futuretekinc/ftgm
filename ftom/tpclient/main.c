@@ -161,7 +161,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	FTM_MEM_init();
 	FTM_TRACE_setLevel(0);
 
-	xRet = FTOM_TP_RESTAPI_init(&xClient);
+	xRet = FTOM_TP_RESTAPI_init(&xClient, "00405cabcdef", "tlLZy-8UeYAzNMubWvQWS19RUV4=");
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Thingplus client initialization failed.\n");

@@ -20,12 +20,69 @@ static FTM_VOID_PTR FTOM_MQTT_CLIENT_connector
 (
 	FTM_VOID_PTR 		pData
 );
-static FTM_VOID FTOM_MQTT_CLIENT_connectCB(struct mosquitto *mosq, void *pObj, int nResult);
-static FTM_VOID FTOM_MQTT_CLIENT_disconnectCB(struct mosquitto *mosq, void *pObj, int nResult);
-static FTM_VOID FTOM_MQTT_CLIENT_publishCB(struct mosquitto *mosq, void *pObj, int nResult);
-static FTM_VOID	FTOM_MQTT_CLIENT_messageCB(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
-static FTM_VOID FTOM_MQTT_CLIENT_subscribeCB(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
 
+static
+FTM_RET	FTOM_MQTT_CLIENT_subscribeAll
+(
+	FTOM_MQTT_CLIENT_PTR	pClient
+);
+
+static
+FTM_RET	FTOM_MQTT_CLIENT_unsubscribeAll
+(
+	FTOM_MQTT_CLIENT_PTR	pClient
+);
+
+static 
+FTM_VOID FTOM_MQTT_CLIENT_connectCB
+(
+	struct mosquitto *mosq, 
+	void *pObj, 
+	int nResult
+);
+
+static 
+FTM_VOID FTOM_MQTT_CLIENT_disconnectCB
+(
+	struct mosquitto *mosq, 
+	void *pObj, 
+	int nResult
+);
+
+static 
+FTM_VOID FTOM_MQTT_CLIENT_publishCB
+(
+	struct mosquitto *mosq, 
+	void *pObj, 
+	int nResult
+);
+
+static 
+FTM_VOID FTOM_MQTT_CLIENT_messageCB
+(
+	struct mosquitto *mosq, 
+	void *pObj, 
+	const struct mosquitto_message *message
+);
+
+static 
+FTM_VOID FTOM_MQTT_CLIENT_subscribeCB
+(
+	struct mosquitto *mosq, 
+	void *pObj, 
+	int nMID, 
+	int nQoS, 
+	const int *pGrantedQoS
+);
+
+static
+FTM_BOOL FTOM_MQTT_SUBSCRIBE_LIST_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pKey
+);
+
+static
 FTM_BOOL FTOM_MQTT_PUBLISH_LIST_seeker
 (
 	const FTM_VOID_PTR pElement, 
@@ -40,6 +97,7 @@ static FTOM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
 		.fPublish 	= FTOM_MQTT_CLIENT_FT_publishCB,
 		.fMessage 	= FTOM_MQTT_CLIENT_FT_messageCB,
 		.fSubscribe = FTOM_MQTT_CLIENT_FT_subscribeCB,
+		.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
 		.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
 	},
 	{
@@ -48,6 +106,7 @@ static FTOM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
 		.fPublish 	= FTOM_MQTT_CLIENT_TPGW_publishCB,
 		.fMessage 	= FTOM_MQTT_CLIENT_TPGW_messageCB,
 		.fSubscribe = FTOM_MQTT_CLIENT_TPGW_subscribeCB,
+		.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
 		.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
 	},
 };
@@ -115,7 +174,8 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 
 	memset(pClient, 0, sizeof(FTOM_MQTT_CLIENT));
 
-	FTOM_getDID(pClient->pDID, FTM_DID_LEN);
+	//FTOM_getDID(pClient->pDID, FTM_DID_LEN);
+	strcpy(pClient->pDID, "00405cabcdef");
 	strcpy(pClient->xConfig.pHost, FTOM_MQTT_CLIENT_DEFAULT_BROKER);
 	pClient->xConfig.usPort = FTOM_MQTT_CLIENT_DEFAULT_PORT;
 	pClient->xConfig.ulReconnectionTime = FTOM_MQTT_CLIENT_DEFAULT_RECONNECTION_TIME;
@@ -127,11 +187,23 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 	xRet = FTM_LIST_create(&pClient->pPublishList);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("MQTT publish list creation failed[%08x]!\n", xRet);	
+		FTOM_MSGQ_destroy(&pClient->pMsgQ);
+		return	xRet;	
+	}
+
+	xRet = FTM_LIST_create(&pClient->pSubscribeList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("MQTT subscribe list creation failed[%08x]!\n", xRet);	
+		FTM_LIST_destroy(pClient->pPublishList);
+		pClient->pPublishList = NULL;
 		FTOM_MSGQ_destroy(&pClient->pMsgQ);
 		return	xRet;	
 	}
 
 	FTM_LIST_setSeeker(pClient->pPublishList, FTOM_MQTT_PUBLISH_LIST_seeker);
+	FTM_LIST_setSeeker(pClient->pSubscribeList, FTOM_MQTT_SUBSCRIBE_LIST_seeker);
 
 	if (ulClientInstance++ == 0)
 	{
@@ -148,7 +220,8 @@ FTM_RET	FTOM_MQTT_CLIENT_final
 {
 	ASSERT(pClient != NULL);
 
-	FTOM_MQTT_PUBLISH_PTR pPublish;
+	FTOM_MQTT_PUBLISH_PTR 	pPublish;
+	FTM_CHAR_PTR			pSubscribe;
 
 	if (pClient->pMsgQ == NULL)
 	{
@@ -157,6 +230,13 @@ FTM_RET	FTOM_MQTT_CLIENT_final
 
 	FTOM_MQTT_CLIENT_stop(pClient);
 
+	FTM_LIST_iteratorStart(pClient->pSubscribeList);
+	while(FTM_LIST_iteratorNext(pClient->pSubscribeList, (FTM_VOID_PTR _PTR_)&pSubscribe) == FTM_RET_OK)
+	{
+		FTM_LIST_remove(pClient->pSubscribeList, pSubscribe);
+		FTM_MEM_free(pSubscribe);
+	}
+
 	FTM_LIST_iteratorStart(pClient->pPublishList);
 	while(FTM_LIST_iteratorNext(pClient->pPublishList, (FTM_VOID_PTR _PTR_)&pPublish) == FTM_RET_OK)
 	{
@@ -164,7 +244,11 @@ FTM_RET	FTOM_MQTT_CLIENT_final
 		FTOM_MQTT_PUBLISH_destroy(&pPublish);
 	}
 
+	FTM_LIST_destroy(pClient->pSubscribeList);
+	pClient->pSubscribeList = NULL;
+
 	FTM_LIST_destroy(pClient->pPublishList);
+	pClient->pPublishList = NULL;
 
 	FTOM_MSGQ_destroy(&pClient->pMsgQ);
 
@@ -285,6 +369,7 @@ FTM_RET	FTOM_MQTT_CLIENT_start
 	
 	if (pClient->bStop != FTM_TRUE)
 	{
+		INFO("MQTT client is already started!\n");
 		return	FTM_RET_ALREADY_STARTED;	
 	}
 
@@ -302,6 +387,7 @@ FTM_RET	FTOM_MQTT_CLIENT_stop
 	
 	if (pClient->bStop == FTM_TRUE)
 	{
+		INFO("MQTT client is already stopped!\n");
 		return	FTM_RET_NOT_START;	
 	}
 
@@ -325,67 +411,69 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 	pClient->bStop 		= FTM_FALSE;
 	pClient->bConnected = FTM_FALSE;
 	pClient->pMosquitto = mosquitto_new(pClient->pDID, true, pClient);
-	if(pClient->pMosquitto != NULL)
+	if(pClient->pMosquitto == NULL)
 	{
-		TRACE("MQTT CLIENT[%s] started.\n", pClient->pDID);
+		ERROR("MQTT instance creation failed!\n");
+		return	0;
+	}
 
-		if (pClient->xConfig.bTLS)
+	TRACE("MQTT CLIENT[%s] started.\n", pClient->pDID);
+
+	if (pClient->xConfig.bTLS)
+	{
+		TRACE("UserID : %s\n", pClient->xConfig.pUserID);
+		TRACE("Passwd : %s\n", pClient->xConfig.pPasswd);
+		TRACE("  Cert : %s\n", pClient->xConfig.pCertFile);
+		mosquitto_username_pw_set(pClient->pMosquitto, pClient->xConfig.pUserID, pClient->xConfig.pPasswd);
+		mosquitto_tls_set(pClient->pMosquitto, pClient->xConfig.pCertFile, NULL, NULL, NULL, NULL);
+		mosquitto_tls_insecure_set(pClient->pMosquitto, 1);
+		mosquitto_tls_opts_set(pClient->pMosquitto, 1, NULL, NULL);
+	}
+
+	mosquitto_connect_callback_set(pClient->pMosquitto, 	FTOM_MQTT_CLIENT_connectCB);
+	mosquitto_disconnect_callback_set(pClient->pMosquitto, 	FTOM_MQTT_CLIENT_disconnectCB);
+	mosquitto_publish_callback_set(pClient->pMosquitto,  	FTOM_MQTT_CLIENT_publishCB);
+	mosquitto_subscribe_callback_set(pClient->pMosquitto,  	FTOM_MQTT_CLIENT_subscribeCB);
+	mosquitto_message_callback_set(pClient->pMosquitto,  	FTOM_MQTT_CLIENT_messageCB);
+
+	pthread_create(&pClient->xLinkManager, NULL, FTOM_MQTT_CLIENT_connector, pClient);
+
+	while(!pClient->bStop)
+	{
+		FTOM_MSG_PTR	pMsg;
+
+		xRet = FTOM_MSGQ_timedPop(pClient->pMsgQ, 1000000, &pMsg);
+		if (xRet == FTM_RET_OK)
 		{
-			mosquitto_username_pw_set(pClient->pMosquitto, pClient->xConfig.pUserID, pClient->xConfig.pPasswd);
-			mosquitto_tls_set(pClient->pMosquitto, pClient->xConfig.pCertFile, NULL, NULL, NULL, NULL);
-			mosquitto_tls_insecure_set(pClient->pMosquitto, 1);
-			mosquitto_tls_opts_set(pClient->pMosquitto, 1, NULL, NULL);
-		}
-
-		mosquitto_connect_callback_set(pClient->pMosquitto, 	FTOM_MQTT_CLIENT_connectCB);
-		mosquitto_disconnect_callback_set(pClient->pMosquitto, 	FTOM_MQTT_CLIENT_disconnectCB);
-		mosquitto_publish_callback_set(pClient->pMosquitto,  	FTOM_MQTT_CLIENT_publishCB);
-		mosquitto_subscribe_callback_set(pClient->pMosquitto,  	FTOM_MQTT_CLIENT_subscribeCB);
-		mosquitto_message_callback_set(pClient->pMosquitto,  	FTOM_MQTT_CLIENT_messageCB);
-
-		pthread_create(&pClient->xConnector, NULL, FTOM_MQTT_CLIENT_connector, pClient);
-
-		while(!pClient->bStop)
-		{
-			FTOM_MSG_PTR	pMsg;
-
-			xRet = FTOM_MSGQ_timedPop(pClient->pMsgQ, 1000000, &pMsg);
-			if (xRet == FTM_RET_OK)
+			switch(pMsg->xType)
 			{
-				switch(pMsg->xType)
+			case	FTOM_MSG_TYPE_PUBLISH_EP_DATA:
 				{
-				case	FTOM_MSG_TYPE_PUBLISH_EP_DATA:
-					{
-						xRet = FTOM_MQTT_CLIENT_onPublishEPData(pClient, (FTOM_MSG_PUBLISH_EP_DATA_PTR)pMsg);	
-					}
-					break;
-
-				default:
-					{
-						ERROR("Not supported msg[%08x]\n", pMsg->xType);	
-					}
+					xRet = FTOM_MQTT_CLIENT_onPublishEPData(pClient, (FTOM_MSG_PUBLISH_EP_DATA_PTR)pMsg);	
 				}
-				FTOM_MSG_destroy(&pMsg);
+				break;
+
+			default:
+				{
+					ERROR("Not supported msg[%08x]\n", pMsg->xType);	
+				}
 			}
-			else
-			{
-				usleep(1000);
-			}
+			FTOM_MSG_destroy(&pMsg);
 		}
 
-		pthread_join(pClient->xConnector, NULL);
-
-		TRACE("MQTT CLIENT[%s] stopped.\n", pClient->pDID);
-
-		mosquitto_destroy(pClient->pMosquitto);
-		pClient->pMosquitto = NULL;
-		
-	}
-	else
-	{
-		ERROR("Can't create mosquitto!\n");	
+		if (pClient->ulNewSubscribe != 0)
+		{
+			FTOM_MQTT_CLIENT_subscribeAll(pClient);	
+		}
 	}
 
+	pthread_join(pClient->xLinkManager, NULL);
+
+	TRACE("MQTT CLIENT[%s] stopped.\n", pClient->pDID);
+
+	mosquitto_destroy(pClient->pMosquitto);
+	pClient->pMosquitto = NULL;
+	
 	return 0;
 }
 
@@ -410,19 +498,21 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_connector
 
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pData;
 
+	TRACE("Host : %s\n", pClient->xConfig.pHost);
+	TRACE("Port : %d\n", pClient->xConfig.usPort);
 	mosquitto_connect_async(pClient->pMosquitto, pClient->xConfig.pHost, pClient->xConfig.usPort, 60);
 	mosquitto_loop_start(pClient->pMosquitto);
-	FTM_TIMER_init(&pClient->xReconnectionTimer, pClient->xConfig.ulReconnectionTime * 1000000);
+	FTM_TIMER_init(&pClient->xLinkTimer, pClient->xConfig.ulReconnectionTime * 1000000);
 
 	while(!pClient->bStop)
 	{
 		if(!pClient->bStop && !pClient->bConnected)
 		{
-			if (FTM_TIMER_isExpired(&pClient->xReconnectionTimer))
+			if (FTM_TIMER_isExpired(&pClient->xLinkTimer))
 			{
 				TRACE("MQTT try reconnection !\n");
 				mosquitto_reconnect_async(pClient->pMosquitto);
-				FTM_TIMER_addSeconds(&pClient->xReconnectionTimer, pClient->xConfig.ulReconnectionTime);
+				FTM_TIMER_addSeconds(&pClient->xLinkTimer, pClient->xConfig.ulReconnectionTime);
 			}
 		}
 
@@ -432,6 +522,35 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_connector
 
 	return 0;
 }
+
+FTM_RET	FTOM_MQTT_CLIENT_publishEPStatus
+(
+	FTOM_MQTT_CLIENT_PTR pClient,
+	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_RET	xRet;
+	FTOM_MSG_PUBLISH_EP_STATUS_PTR	pMsg;
+
+	xRet = FTOM_MSG_createPublishEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTOM_MQTT_CLIENT_pushMsg(pClient, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pMsg);	
+	}
+
+	return	xRet;
+}
+
 
 FTM_RET	FTOM_MQTT_CLIENT_publishEPData
 (
@@ -485,12 +604,13 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 		return	xRet;	
 	}
 
-	nRet = mosquitto_publish(pClient->pMosquitto, &pPublish->nMessageID, pPublish->pTopic, pPublish->ulMessageLen, pPublish->pMessage, pPublish->ulQoS, 0);
+	nRet = mosquitto_publish(pClient->pMosquitto, &pPublish->nMessageID, 
+				pPublish->pTopic, pPublish->ulMessageLen, pPublish->pMessage, pPublish->ulQoS, 0);
 	switch(nRet)
 	{
 	case	MOSQ_ERR_SUCCESS:
 		{
-			//TRACE("Publish[%04d] - %s:%s\n", pPublish->nMessageID, pTopic, pMessage);
+			TRACE("Publish[%04d] - %s:%s\n", pPublish->nMessageID, pTopic, pMessage);
 			xRet = FTM_LIST_append(pClient->pPublishList, pPublish);
 			if (xRet != FTM_RET_OK)
 			{
@@ -543,6 +663,164 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 	return	xRet;
 }
 
+FTM_RET	FTOM_MQTT_CLIENT_subscribeAll
+(
+	FTOM_MQTT_CLIENT_PTR	pClient
+)
+{
+	FTM_RET		xRet;
+	FTM_ULONG	i, ulCount = 0;
+
+	if (pClient->bConnected == FTM_FALSE)
+	{
+		return	FTM_RET_OK;	
+	}
+
+	FTM_LIST_count(pClient->pSubscribeList, &ulCount);
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTOM_MQTT_SUBSCRIBE_PTR	pSubscribe;
+
+		xRet = FTM_LIST_getAt(pClient->pSubscribeList, i, (FTM_VOID_PTR _PTR_)&pSubscribe);	
+		if (xRet == FTM_RET_OK)
+		{
+			mosquitto_subscribe(pClient->pMosquitto, &pSubscribe->nMessageID, pSubscribe->pTopic, 0);
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MQTT_CLIENT_unsubscribeAll
+(
+	FTOM_MQTT_CLIENT_PTR	pClient
+)
+{
+	FTM_RET		xRet;
+	FTM_ULONG	i, ulCount = 0;
+
+	FTM_LIST_count(pClient->pSubscribeList, &ulCount);
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTOM_MQTT_SUBSCRIBE_PTR	pSubscribe;
+
+		xRet = FTM_LIST_getAt(pClient->pSubscribeList, i, (FTM_VOID_PTR _PTR_)&pSubscribe);	
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_INT	nRet;
+		
+			if (pClient->bConnected)
+			{
+				nRet = mosquitto_unsubscribe(pClient->pMosquitto, NULL, pSubscribe->pTopic);
+				if (nRet == MOSQ_ERR_SUCCESS)
+				{
+					pSubscribe->bRegisted = FTM_FALSE;
+				}
+			}
+			else
+			{
+				pSubscribe->bRegisted = FTM_FALSE;
+			}
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MQTT_CLIENT_subscribe
+(
+	FTOM_MQTT_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR			pTopic
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pTopic != NULL);
+	FTM_RET			xRet;
+	FTOM_MQTT_SUBSCRIBE_PTR	pSubscribe;
+
+	FTM_LIST_iteratorStart(pClient->pSubscribeList);
+	while(FTM_LIST_iteratorNext(pClient->pSubscribeList, (FTM_VOID_PTR _PTR_)&pSubscribe) == FTM_RET_OK)
+	{
+		if (strcmp(pSubscribe->pTopic, pTopic) == 0)
+		{
+			return	FTM_RET_ALREADY_EXISTS;	
+		}
+	}
+
+	xRet = FTOM_MQTT_SUBSCRIBE_create(pTopic, &pSubscribe);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	xRet = FTM_LIST_append(pClient->pSubscribeList, pSubscribe);
+	if (xRet != FTM_RET_OK)
+	{
+		FTOM_MQTT_SUBSCRIBE_destroy(&pSubscribe);
+	}
+	else
+	{
+		pClient->ulNewSubscribe++;
+		if (pClient->bConnected)
+		{
+			mosquitto_subscribe(pClient->pMosquitto, &pSubscribe->nMessageID, pSubscribe->pTopic, 0);
+		}
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_MQTT_CLIENT_unsubscribe
+(
+	FTOM_MQTT_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR			pTopic
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pTopic != NULL);
+
+	FTM_RET			xRet;
+	FTOM_MQTT_SUBSCRIBE_PTR	pSubscribe;
+
+	FTM_LIST_iteratorStart(pClient->pSubscribeList);
+	while(FTM_LIST_iteratorNext(pClient->pSubscribeList, (FTM_VOID_PTR _PTR_)&pSubscribe) == FTM_RET_OK)
+	{
+		if (strcmp(pSubscribe->pTopic, pTopic) == 0)
+		{
+			if (pClient->bConnected)
+			{
+				mosquitto_unsubscribe(pClient->pMosquitto, NULL, pSubscribe->pTopic);
+			}
+
+			xRet = FTM_LIST_remove(pClient->pSubscribeList, pSubscribe);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("MQTT subscribe remove failed[%08x]!\n", xRet);
+				return	FTM_RET_ERROR;	
+			}
+
+			if (pSubscribe->bRegisted != FTM_TRUE)
+			{
+				if (pClient->ulNewSubscribe > 0)
+				{
+					pClient->ulNewSubscribe--;
+				}
+			}
+
+			xRet = FTOM_MQTT_SUBSCRIBE_destroy(&pSubscribe);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("MQTT subscribe destroy failed[%08x]!\n", xRet);
+			}
+
+			return	xRet ;
+		}
+	}
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
+}
+
+
 FTM_VOID FTOM_MQTT_CLIENT_connectCB
 (
 	struct mosquitto 	*mosq, 
@@ -551,16 +829,20 @@ FTM_VOID FTOM_MQTT_CLIENT_connectCB
 )
 {
 	ASSERT(pObj != NULL);
-
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 
-	TRACE("MQTT is connected.\n");
-	pClient->bConnected = FTM_TRUE;
 
 	if (pCBSet[pClient->xConfig.ulCBSet].fConnect != NULL)
 	{
 		pCBSet[pClient->xConfig.ulCBSet].fConnect(mosq, pObj, nResult);
 	}
+	else
+	{
+		TRACE("MQTT client[%s] is connected.\n", pClient->pDID);
+		pClient->bConnected = FTM_TRUE;
+	}
+
+	FTOM_MQTT_CLIENT_subscribeAll(pClient);
 }
 
 FTM_VOID FTOM_MQTT_CLIENT_disconnectCB
@@ -579,12 +861,15 @@ FTM_VOID FTOM_MQTT_CLIENT_disconnectCB
 	{
 		pCBSet[pClient->xConfig.ulCBSet].fDisconnect(mosq, pObj, nResult);
 	}
+	else
+	{
+		FTM_TIMER_init(&pClient->xLinkTimer, 0);
+		FTM_TIMER_addSeconds(&pClient->xLinkTimer, pClient->xConfig.ulReconnectionTime);
 
-	FTM_TIMER_init(&pClient->xReconnectionTimer, 0);
-	FTM_TIMER_addSeconds(&pClient->xReconnectionTimer, pClient->xConfig.ulReconnectionTime);
+		pClient->bConnected = FTM_FALSE;
+	}
 
-	pClient->bConnected = FTM_FALSE;
-
+	FTOM_MQTT_CLIENT_unsubscribeAll(pClient);
 }
 
 FTM_VOID FTOM_MQTT_CLIENT_publishCB
@@ -605,16 +890,18 @@ FTM_VOID FTOM_MQTT_CLIENT_publishCB
 	{
 		pCBSet[pClient->xConfig.ulCBSet].fPublish(mosq, pObj, nMID);
 	}
-
-	xRet = FTM_LIST_get(pClient->pPublishList, &nMID, (FTM_VOID_PTR _PTR_)&pPublish);
-	if (xRet == FTM_RET_OK)
-	{
-		FTM_LIST_remove(pClient->pPublishList, pPublish);	
-		FTOM_MQTT_PUBLISH_destroy(&pPublish);
-	}
 	else
 	{
-		WARN("Publish[%08x] not found!\n");
+		xRet = FTM_LIST_get(pClient->pPublishList, &nMID, (FTM_VOID_PTR _PTR_)&pPublish);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_LIST_remove(pClient->pPublishList, pPublish);	
+			FTOM_MQTT_PUBLISH_destroy(&pPublish);
+		}
+		else
+		{
+			WARN("Publish[%08x] not found!\n", nMID);
+		}
 	}
 }
 
@@ -647,12 +934,27 @@ FTM_VOID FTOM_MQTT_CLIENT_subscribeCB
 {
 	ASSERT(pObj != NULL);
 
-	TRACE("MQTT subscribe.\n");
+	FTM_RET					xRet;
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
+	FTOM_MQTT_SUBSCRIBE_PTR	pSubscribe = NULL;
 
 	if (pCBSet[pClient->xConfig.ulCBSet].fSubscribe != NULL)
 	{
 		pCBSet[pClient->xConfig.ulCBSet].fSubscribe(mosq, pObj, nMID, nQoS, pGrantedQoS);
+	}
+
+	xRet = FTM_LIST_get(pClient->pSubscribeList, &nMID, (FTM_VOID_PTR _PTR_)&pSubscribe); 
+	if (xRet == FTM_RET_OK)
+	{
+		TRACE("Subscription for a topic[%s] has been completed.\n", pSubscribe->pTopic);
+		if (pSubscribe->bRegisted == FTM_FALSE)
+		{
+			if (pClient->ulNewSubscribe > 0)
+			{
+				pClient->ulNewSubscribe--;
+			}
+			pSubscribe->bRegisted = FTM_TRUE;	
+		}
 	}
 }
 
@@ -669,6 +971,21 @@ FTM_BOOL FTOM_MQTT_PUBLISH_LIST_seeker
 	FTM_INT_PTR		 pMessageID= (FTM_INT_PTR)pKey;
 
 	return	(pPublish->nMessageID == *pMessageID);
+}
+
+FTM_BOOL FTOM_MQTT_SUBSCRIBE_LIST_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pKey
+)
+{
+	ASSERT(pElement != NULL);
+	ASSERT(pKey != NULL);
+
+	FTOM_MQTT_SUBSCRIBE_PTR pSubscribe = (FTOM_MQTT_SUBSCRIBE_PTR)pElement;
+	FTM_INT_PTR		 pMessageID= (FTM_INT_PTR)pKey;
+
+	return	(pSubscribe->nMessageID == *pMessageID);
 }
 
 FTM_RET	FTOM_MQTT_PUBLISH_create
@@ -722,3 +1039,43 @@ FTM_RET	FTOM_MQTT_PUBLISH_destroy
 }
 
 
+FTM_RET	FTOM_MQTT_SUBSCRIBE_create
+(
+	FTM_CHAR_PTR	pTopic,
+	FTOM_MQTT_SUBSCRIBE_PTR _PTR_ ppSubscribe
+)
+{
+	ASSERT(pTopic != NULL);
+	ASSERT(ppSubscribe != NULL);
+
+	FTOM_MQTT_SUBSCRIBE_PTR	pSubscribe;
+
+	pSubscribe = (FTOM_MQTT_SUBSCRIBE_PTR)FTM_MEM_malloc(sizeof(FTOM_MQTT_SUBSCRIBE) + strlen(pTopic) + 1);
+	if (pSubscribe == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pSubscribe->pTopic = (FTM_CHAR_PTR)pSubscribe + sizeof(FTOM_MQTT_SUBSCRIBE);
+	
+	pSubscribe->bRegisted = FTM_FALSE;
+	strcpy(pSubscribe->pTopic, pTopic);
+
+	*ppSubscribe = pSubscribe;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MQTT_SUBSCRIBE_destroy
+(
+	FTOM_MQTT_SUBSCRIBE_PTR _PTR_ ppSubscribe
+)
+{
+	ASSERT(ppSubscribe != NULL);
+
+	FTM_MEM_free(*ppSubscribe);
+
+	*ppSubscribe = NULL;
+
+	return	FTM_RET_OK;
+}
