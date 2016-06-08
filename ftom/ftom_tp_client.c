@@ -113,13 +113,14 @@ FTM_RET	FTOM_TP_CLIENT_init
 	xRet = FTOM_MQTT_CLIENT_init(&pClient->xMQTT);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MQTT Client creation failed!\n");
+		ERROR("MQTT Client initialize failed!\n");
 		goto error;
 	}
 
 	xRet = FTOM_MSGQ_init(&pClient->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("MsgQ init failed!\n");
 		goto error;	
 	}
 
@@ -479,22 +480,7 @@ FTM_VOID_PTR FTOM_TP_CLIENT_linkManager
 	{
 		FTOM_MQTT_CLIENT_isConnected(&pClient->xMQTT, &pClient->bConnected);
 
-		if(!pClient->bConnected)
-		{
-			if (bConnected)
-			{
-				FTM_TIMER_init(&xTimer, pClient->xConfig.ulRetryInterval * 1000000);
-				bConnected = pClient->bConnected;
-			}
-			else
-			{
-				if (FTM_TIMER_isExpired(&xTimer))
-				{
-					FTM_TIMER_addSeconds(&xTimer, pClient->xConfig.ulRetryInterval);
-				}
-			}
-		}
-		else
+		if(pClient->bConnected)
 		{
 			if (!bConnected)
 			{
@@ -508,6 +494,21 @@ FTM_VOID_PTR FTOM_TP_CLIENT_linkManager
 				{
 					FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
 					FTM_TIMER_addSeconds(&xReportTimer, pClient->xConfig.ulReportInterval);
+				}
+			}
+		}
+		else
+		{
+			if (bConnected)
+			{
+				FTM_TIMER_init(&xTimer, pClient->xConfig.ulRetryInterval * 1000000);
+				bConnected = pClient->bConnected;
+			}
+			else
+			{
+				if (FTM_TIMER_isExpired(&xTimer))
+				{
+					FTM_TIMER_addSeconds(&xTimer, pClient->xConfig.ulRetryInterval);
 				}
 			}
 		}
