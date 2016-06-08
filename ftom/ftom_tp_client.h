@@ -48,8 +48,8 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 	pthread_t				xLinkManager;
 	FTM_TIMER				xReconnectionTimer;
 
-	FTOM_MSG_QUEUE_PTR		pMsgQ;
-	FTOM_MQTT_CLIENT_PTR	pMQTTClient;
+	FTOM_MSG_QUEUE			xMsgQ;
+	FTOM_MQTT_CLIENT		xMQTT;
 	FTOM_TP_RESTAPI			xRESTApi;
 
 	FTOM_SERVICE_ID			xServiceID;

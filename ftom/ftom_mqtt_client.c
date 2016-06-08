@@ -10,6 +10,12 @@
 
 static FTM_VOID_PTR FTOM_MQTT_CLIENT_process(FTM_VOID_PTR pData);
 
+static FTM_RET	FTOM_MQTT_CLIENT_onPublishEPStatus
+(
+	FTOM_MQTT_CLIENT_PTR	pClient,
+	FTOM_MSG_PUBLISH_EP_STATUS_PTR	pMsg
+);
+
 static FTM_RET	FTOM_MQTT_CLIENT_onPublishEPData
 (
 	FTOM_MQTT_CLIENT_PTR	pClient,
@@ -337,6 +343,29 @@ FTM_RET	FTOM_MQTT_CLIENT_notify
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_MQTT_CLIENT_onPublishEPStatus
+(
+	FTOM_MQTT_CLIENT_PTR	pClient,
+	FTOM_MSG_PUBLISH_EP_STATUS_PTR	pMsg
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pMsg != NULL);
+
+	FTM_RET	xRet;
+
+	if (pCBSet[pClient->xConfig.ulCBSet].fPublishEPStatus != NULL)
+	{
+		xRet = pCBSet[pClient->xConfig.ulCBSet].fPublishEPStatus(pClient, pMsg->pEPID, pMsg->bStatus, pMsg->ulTimeout);
+	}
+	else
+	{
+		xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+	}
+
+	return	xRet;
+}
+
 FTM_RET	FTOM_MQTT_CLIENT_onPublishEPData
 (
 	FTOM_MQTT_CLIENT_PTR	pClient,
@@ -447,6 +476,12 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 		{
 			switch(pMsg->xType)
 			{
+			case	FTOM_MSG_TYPE_PUBLISH_EP_STATUS:
+				{
+					xRet = FTOM_MQTT_CLIENT_onPublishEPStatus(pClient, (FTOM_MSG_PUBLISH_EP_STATUS_PTR)pMsg);	
+				}
+				break;
+
 			case	FTOM_MSG_TYPE_PUBLISH_EP_DATA:
 				{
 					xRet = FTOM_MQTT_CLIENT_onPublishEPData(pClient, (FTOM_MSG_PUBLISH_EP_DATA_PTR)pMsg);	

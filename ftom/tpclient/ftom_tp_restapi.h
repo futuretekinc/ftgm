@@ -21,13 +21,14 @@ typedef	struct
 typedef	struct
 {
 	FTM_CHAR			pGatewayID[FTM_DID_LEN+1];
+	FTM_CHAR			pUserID[FTM_USER_ID_LEN+1];
+	FTM_CHAR			pPasswd[FTM_PASSWD_LEN+1];
 	FTM_CHAR			pBase[1024];
 	FTM_CHAR			pURL[1024];
 	FTM_CHAR_PTR		pData;
 	FTM_CHAR_PTR		pResp;
 	FTM_ULONG			ulRespLen;
 
-	struct curl_slist	_PTR_ pHTTPHeader;
 	CURL 				_PTR_ pCURL;
 }	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;
 
@@ -45,9 +46,7 @@ FTM_RET	FTOM_TP_RESTAPI_destroy
 
 FTM_RET	FTOM_TP_RESTAPI_init
 (
-	FTOM_TP_RESTAPI_PTR pClient,
-	FTM_CHAR_PTR		pUserID,
-	FTM_CHAR_PTR		pAPIKey
+	FTOM_TP_RESTAPI_PTR pClient
 );
 
 
@@ -56,6 +55,17 @@ FTM_RET	FTOM_TP_RESTAPI_final
 	FTOM_TP_RESTAPI_PTR 	pClient
 );
 
+FTM_RET	FTOM_TP_RESTAPI_setUserID
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pUserID
+);
+
+FTM_RET	FTOM_TP_RESTAPI_setPasswd
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pPasswd
+);
 /********************************************************************
  * Gateway mangement
  ********************************************************************/
