@@ -377,5 +377,10 @@ FTM_RET	FTOM_NOTIFY_SNMPTrap
 	FTM_CHAR_PTR 		pTrapMsg
 );
 
+FTM_RET	FTOM_serverSync
+(
+	FTM_BOOL			bAutoRegister
+);
+
 #endif
 

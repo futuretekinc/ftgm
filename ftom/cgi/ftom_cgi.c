@@ -703,6 +703,34 @@ FTM_RET	FTOM_CGI_getInterval
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_CGI_getReportInterval
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pInterval,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pInterval != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "report", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else
+	{
+		*pInterval = strtoul(pValue, 0, 10);
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_CGI_getDID
 (
 	qentry_t *pReq, 

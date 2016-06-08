@@ -25,6 +25,12 @@ typedef	struct FTOM_EP_STRUCT
 	FTM_LIST			xDataList;
 	FTM_LIST			xTriggerList;
 
+	struct
+	{
+		FTM_BOOL		bRegistered;
+		FTM_ULONG		ulLastReportTime;	
+	}	xServer;
+
 	union
 	{
 		struct	

@@ -66,9 +66,16 @@ FTM_RET	FTM_TIME_sub(FTM_TIME_PTR pTime1, FTM_TIME_PTR pTime2, FTM_TIME_PTR pTim
 	nValue2 = (FTM_INT64)pTime2->xTimeval.tv_sec * 1000000 + pTime2->xTimeval.tv_usec;
 
 	nValueR = nValue1 - nValue2;
-
-	pTimeR->xTimeval.tv_sec = nValueR / 1000000;
-	pTimeR->xTimeval.tv_usec = nValueR % 1000000;
+	if (nValueR > 0)
+	{
+		pTimeR->xTimeval.tv_sec = nValueR / 1000000;
+		pTimeR->xTimeval.tv_usec = nValueR % 1000000;
+	}
+	else
+	{
+		pTimeR->xTimeval.tv_sec = 0;
+		pTimeR->xTimeval.tv_usec = 0;
+	}
 
 	return	FTM_RET_OK;
 }
@@ -156,3 +163,16 @@ FTM_CHAR_PTR	FTM_TIME_toString
 	return	pString;
 }
 
+FTM_RET	FTM_TIME_toMS
+(
+	FTM_TIME_PTR	pTime,
+	FTM_UINT64_PTR	pullMS
+)
+{
+	ASSERT(pTime != NULL);
+	ASSERT(pullMS != NULL);
+
+	*pullMS = pTime->xTimeval.tv_sec * (FTM_UINT64)1000 + pTime->xTimeval.tv_usec / 1000;
+
+	return	FTM_RET_OK;
+}

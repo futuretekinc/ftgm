@@ -86,6 +86,7 @@ typedef	struct
 	FTM_CHAR			pDID[FTM_DID_LEN + 1];
 	FTM_NODE_TYPE		xType;
 	FTM_CHAR			pModel[FTM_NAME_LEN + 1];
+	FTM_CHAR			pName[FTM_NAME_LEN + 1];
 	FTM_NODE_FLAG		xFlags;
 	FTM_CHAR			pLocation[FTM_LOCATION_LEN + 1];
 	FTM_ULONG			ulInterval;

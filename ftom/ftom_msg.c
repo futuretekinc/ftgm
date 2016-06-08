@@ -51,6 +51,39 @@ FTM_RET FTOM_MSG_createQuit
 
 	return	FTM_RET_OK;
 }
+/*******************************************************************
+ * Gateway management
+ *******************************************************************/
+FTM_RET	FTOM_MSG_createReportGWStatus
+(
+	FTM_CHAR_PTR		pGatewayID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout,
+	FTOM_MSG_REPORT_GW_STATUS_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_REPORT_GW_STATUS_PTR pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_REPORT_GW_STATUS);
+
+	pMsg = (FTOM_MSG_REPORT_GW_STATUS_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_REPORT_GW_STATUS;
+	pMsg->ulLen 	= ulMsgLen;
+	strncpy(pMsg->pGatewayID, pGatewayID, FTM_GWID_LEN);
+	pMsg->bStatus 	= bStatus;
+	pMsg->ulTimeout = ulTimeout;
+
+	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTOM_MSG_createAddEPData
 (
@@ -464,15 +497,16 @@ FTM_RET	FTOM_MSG_createDiscoveryDone
 
 FTM_RET	FTOM_MSG_createServerSync
 (
-	FTOM_MSG_PTR _PTR_ ppMsg
+	FTM_BOOL			bAutoRegister,
+	FTOM_MSG_SERVER_SYNC_PTR _PTR_ 	ppMsg
 )
 {
 	ASSERT(ppMsg != NULL);
 	
-	FTOM_MSG_PTR	pMsg;
-	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG);
+	FTOM_MSG_SERVER_SYNC_PTR pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_SERVER_SYNC);
 
-	pMsg = (FTOM_MSG_PTR)FTM_MEM_malloc(ulMsgLen);
+	pMsg = (FTOM_MSG_SERVER_SYNC_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR("Not enough memory!\n");
@@ -481,6 +515,7 @@ FTM_RET	FTOM_MSG_createServerSync
 
 	pMsg->xType	= FTOM_MSG_TYPE_SERVER_SYNC;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->bAutoRegister = bAutoRegister;
 
 	*ppMsg = pMsg;
 

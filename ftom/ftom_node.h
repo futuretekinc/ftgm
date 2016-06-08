@@ -26,14 +26,20 @@ struct FTM_NODE_CLASS_STRUCT ;
 
 typedef	struct FTOM_NODE_STRUCT
 {
-	FTM_NODE				xInfo;
-	FTM_LIST				xEPList;
+	FTM_NODE		xInfo;
+	FTM_LIST		xEPList;
 
-	FTM_BOOL				bStop;
-	pthread_t				xThread;
-	pthread_mutex_t			xMutexLock;
-	FTOM_NODE_STATE			xState;
-	FTOM_MSG_QUEUE			xMsgQ;
+	FTM_BOOL		bStop;
+	pthread_t		xThread;
+	pthread_mutex_t	xMutexLock;
+	FTOM_NODE_STATE	xState;
+	FTOM_MSG_QUEUE	xMsgQ;
+
+	struct
+	{
+		FTM_BOOL	bRegistered;	
+		FTM_ULONG	ulLastReportTime;	
+	}	xServer;
 
 	struct
 	{

@@ -78,7 +78,7 @@ FTM_RET	FTOM_CL_EP_get
 	xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%s|%s|%08x|%s|%s|%d|%d|%d|%s\n", 
+		MESSAGE("%s|%s|%08x|%s|%s|%d|%d|%lu|%lu|%s\n", 
 			xInfo.pEPID, 
 			FTM_EP_typeString(xInfo.xType), 
 			xInfo.xFlags, 
@@ -86,7 +86,8 @@ FTM_RET	FTOM_CL_EP_get
 			xInfo.pUnit,
 			xInfo.bEnable,
 			xInfo.ulTimeout,
-			xInfo.ulInterval,
+			xInfo.ulUpdateInterval,
+			xInfo.ulReportInterval,
 			xInfo.pDID);
 	}
 
@@ -116,7 +117,7 @@ FTM_RET	FTOM_CL_EP_getAt
 	xRet = FTOM_CLIENT_EP_getAt(pClient, ulIndex, &xInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%s|%s|%08x|%s|%s|%d:%d|%d|%s\n", 
+		MESSAGE("%s|%s|%08x|%s|%s|%d:%d|%d|%d|%s\n", 
 			xInfo.pEPID, 
 			FTM_EP_typeString(xInfo.xType), 
 			xInfo.xFlags, 
@@ -124,7 +125,8 @@ FTM_RET	FTOM_CL_EP_getAt
 			xInfo.pUnit,
 			xInfo.bEnable,
 			xInfo.ulTimeout,
-			xInfo.ulInterval,
+			xInfo.ulUpdateInterval,
+			xInfo.ulReportInterval,
 			xInfo.pDID);
 	}
 

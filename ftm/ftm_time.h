@@ -57,6 +57,12 @@ FTM_RET	FTM_TIME_align
 	FTM_TIME_PTR	pTimeR
 );
 
+FTM_RET	FTM_TIME_toMS
+(
+	FTM_TIME_PTR	pTime,
+	FTM_UINT64_PTR	pullMS
+);
+
 FTM_BOOL		FTM_TIME_isZero
 (
 	FTM_TIME_PTR pTime

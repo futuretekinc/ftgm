@@ -164,6 +164,13 @@ FTM_RET	FTOM_CGI_getInterval
 	FTM_BOOL	bAllowEmpty
 );
 
+FTM_RET	FTOM_CGI_getReportInterval
+(
+	qentry_t *pReq, 
+	FTM_ULONG_PTR	pInterval,
+	FTM_BOOL	bAllowEmpty
+);
+
 FTM_RET	FTOM_CGI_getDID
 (
 	qentry_t *pReq, 

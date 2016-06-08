@@ -159,9 +159,9 @@ FTM_RET	FTDM_SHELL_showEPList(FTDM_EPM_PTR pEPM)
 	FTM_ULONG	ulCount;
 
 	MESSAGE("# PRE-REGISTERED ENDPOINT\n");
-	MESSAGE("%5s %16s %16s %16s %8s %8s %8s %8s %16s %8s\n",
+	MESSAGE("%5s %16s %16s %16s %8s %8s %8s %8s %8s %16s %8s\n",
 			"INDEX", "EPID", "TYPE", "NAME", "UNIT", 
-			"STATE", "INTERVAL", "TIMEOUT", "DID", "DEPID");
+			"STATE", "UPDATE", "REPORT", "TIMEOUT", "DID", "DEPID");
 	if (FTDM_EPM_count(pEPM, 0, &ulCount) == FTM_RET_OK)
 	{
 		FTM_ULONG	i;
@@ -187,8 +187,9 @@ FTM_RET	FTDM_SHELL_showEPList(FTDM_EPM_PTR pEPM)
 				MESSAGE("%8s ", "DISABLE");
 			}
 	
-			MESSAGE("%8lu %8lu %16s\n",
-				pEP->xInfo.ulInterval,
+			MESSAGE("%8lu %8lu %8lu %16s\n",
+				pEP->xInfo.ulUpdateInterval,
+				pEP->xInfo.ulReportInterval,
 				pEP->xInfo.ulTimeout,
 				pEP->xInfo.pDID);
 		}

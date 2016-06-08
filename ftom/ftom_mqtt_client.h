@@ -34,7 +34,7 @@ typedef	struct
 
 	FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
 
-	FTM_ULONG	ulReconnectionTime;
+	FTM_ULONG	ulRetryInterval;
 	FTM_ULONG	ulCBSet;
 }	FTOM_MQTT_CLIENT_CONFIG, _PTR_ FTOM_MQTT_CLIENT_CONFIG_PTR;
 
@@ -67,6 +67,14 @@ typedef	FTM_VOID (*FTOM_MQTT_CLIENT_PUBLISH_CB)(struct mosquitto *mosq, void *pO
 typedef	FTM_VOID (*FTOM_MQTT_CLIENT_MESSAGE_CB)(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
 typedef FTM_VOID (*FTOM_MQTT_CLIENT_SUBSCRIBE_CB)(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
 typedef FTM_VOID (*FTOM_MQTT_CLIENT_TIMER_CB)(struct mosquitto *mosq, void *pObj);
+
+typedef FTM_RET	 (*FTOM_MQTT_CLIENT_REPORT_GW_STATUS)
+(
+	FTOM_MQTT_CLIENT_PTR	pClient, 
+	FTM_CHAR_PTR			pGatewayID,
+	FTM_BOOL				bStatus,
+	FTM_ULONG				ulTimeout
+);
 
 typedef FTM_RET	 (*FTOM_MQTT_CLIENT_PUBLISH_EP_STATUS)
 (
@@ -108,6 +116,7 @@ typedef	struct
 	FTOM_MQTT_CLIENT_MESSAGE_CB				fMessage;
 	FTOM_MQTT_CLIENT_SUBSCRIBE_CB			fSubscribe;
 	FTOM_MQTT_CLIENT_TIMER_CB				fTimer;
+	FTOM_MQTT_CLIENT_REPORT_GW_STATUS		fReportGWStatus;
 	FTOM_MQTT_CLIENT_PUBLISH_EP_STATUS		fPublishEPStatus;
 	FTOM_MQTT_CLIENT_PUBLISH_EP_DATA		fPublishEPData;
 }	FTOM_MQTT_CLIENT_CALLBACK_SET, _PTR_ FTOM_MQTT_CLIENT_CALLBACK_SET_PTR;
@@ -159,6 +168,12 @@ FTM_RET	FTOM_MQTT_CLIENT_stop
 	FTOM_MQTT_CLIENT_PTR pClient
 );
 
+FTM_RET	FTOM_MQTT_CLIENT_isConnected
+(
+	FTOM_MQTT_CLIENT_PTR pClient,
+	FTM_BOOL_PTR		 pbConnected
+);
+
 FTM_RET	FTOM_MQTT_CLIENT_setCallback
 (
 	FTOM_MQTT_CLIENT_PTR 	pClient, 
@@ -190,6 +205,14 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 	FTM_CHAR_PTR			pTopic,
 	FTM_CHAR_PTR			pMessage,
 	FTM_ULONG				ulMessageLen
+);
+
+FTM_RET	FTOM_MQTT_CLIENT_reportGWStatus
+(
+	FTOM_MQTT_CLIENT_PTR pClient,
+	FTM_CHAR_PTR		pGatewayID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout
 );
 
 FTM_RET	FTOM_MQTT_CLIENT_publishEPStatus

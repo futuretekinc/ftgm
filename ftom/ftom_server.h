@@ -91,7 +91,7 @@ FTM_RET	FTOM_SERVER_showConfig
 	FTOM_SERVER_PTR 	pServer
 );
 
-FTM_RET	FTOM_SERVER_notify
+FTM_RET	FTOM_SERVER_sendMessage
 (
 	FTOM_SERVER_PTR 	pServer, 
 	FTOM_MSG_PTR 		pMsg

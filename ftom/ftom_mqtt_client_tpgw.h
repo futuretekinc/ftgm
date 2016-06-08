@@ -37,6 +37,14 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_subscribeCB
 	const int 			*pGrantedQoS
 );
 
+FTM_RET	FTOM_MQTT_CLIENT_TPGW_reportGWStatus
+(
+	FTOM_MQTT_CLIENT_PTR pClient, 
+	FTM_CHAR_PTR		pGatewayID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout
+);
+
 FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPStatus
 (
 	FTOM_MQTT_CLIENT_PTR pClient, 

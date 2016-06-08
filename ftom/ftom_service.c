@@ -329,7 +329,7 @@ FTM_RET	FTOM_SERVICE_stop(FTOM_SERVICE_TYPE xType)
 	return	xRet;
 }
 
-FTM_RET	FTOM_SERVICE_notify(FTOM_SERVICE_TYPE xType, FTOM_MSG_PTR pMsg)
+FTM_RET	FTOM_SERVICE_sendMessage(FTOM_SERVICE_TYPE xType, FTOM_MSG_PTR pMsg)
 {
 	ASSERT(pServiceList != NULL);
 
@@ -341,9 +341,9 @@ FTM_RET	FTOM_SERVICE_notify(FTOM_SERVICE_TYPE xType, FTOM_MSG_PTR pMsg)
 		FTM_LIST_iteratorStart(pServiceList);
 		while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
 		{
-			if (pService->fNotify != NULL)
+			if (pService->fSendMessage != NULL)
 			{
-				pService->xRet = pService->fNotify(pService->pData, pMsg);
+				pService->xRet = pService->fSendMessage(pService->pData, pMsg);
 			}
 		}
 
@@ -357,12 +357,12 @@ FTM_RET	FTOM_SERVICE_notify(FTOM_SERVICE_TYPE xType, FTOM_MSG_PTR pMsg)
 			return	xRet;	
 		}
 
-		if (pService->fNotify == NULL)
+		if (pService->fSendMessage == NULL)
 		{
 			return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 		}
 
-		pService->xRet = pService->fNotify(pService->pData, pMsg);
+		pService->xRet = pService->fSendMessage(pService->pData, pMsg);
 		xRet = pService->xRet;
 
 	}

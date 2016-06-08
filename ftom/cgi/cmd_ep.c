@@ -45,7 +45,8 @@ FTM_RET	FTOM_CGI_addEP
 	xRet |= FTOM_CGI_getUnit(pReq, xEPInfo.pUnit, FTM_TRUE);
 	xRet |= FTOM_CGI_getEnable(pReq, &xEPInfo.bEnable, FTM_TRUE);
 	xRet |= FTOM_CGI_getTimeout(pReq,&xEPInfo.ulTimeout, FTM_TRUE);
-	xRet |= FTOM_CGI_getInterval(pReq, &xEPInfo.ulInterval, FTM_TRUE);
+	xRet |= FTOM_CGI_getInterval(pReq, &xEPInfo.ulUpdateInterval, FTM_TRUE);
+	xRet |= FTOM_CGI_getReportInterval(pReq, &xEPInfo.ulReportInterval, FTM_TRUE);
 	xRet |= FTOM_CGI_getLimit(pReq, &xEPInfo.xLimit, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
@@ -213,7 +214,17 @@ FTM_RET	FTOM_CGI_setEP
 		goto finish;	
 	}
 
-	xRet = FTOM_CGI_getInterval(pReq, &xEPInfo.ulInterval, FTM_FALSE); 
+	xRet = FTOM_CGI_getInterval(pReq, &xEPInfo.ulUpdateInterval, FTM_FALSE); 
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_EP_FIELD_INTERVAL;	
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getReportInterval(pReq, &xEPInfo.ulReportInterval, FTM_FALSE); 
 	if (xRet == FTM_RET_OK)
 	{
 		xFields |= FTM_EP_FIELD_INTERVAL;	
@@ -826,7 +837,12 @@ FTM_RET	FTOM_CGI_createEPInfoObject
 
 	if (xFields & FTM_EP_FIELD_INTERVAL)
 	{
-		cJSON_AddNumberToObject(pObject, "interval", pEPInfo->ulInterval);
+		cJSON_AddNumberToObject(pObject, "interval", pEPInfo->ulUpdateInterval);
+	}
+
+	if (xFields & FTM_EP_FIELD_REPORT_INTERVAL)
+	{
+		cJSON_AddNumberToObject(pObject, "report", pEPInfo->ulReportInterval);
 	}
 
 	if (xFields & FTM_EP_FIELD_DID)

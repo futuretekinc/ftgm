@@ -62,7 +62,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 
 			case	'i':
 				{
-					xInfo.ulInterval = strtoul(optarg, NULL, 10);
+					xInfo.ulUpdateInterval = strtoul(optarg, NULL, 10);
 				}
 				break;
 
@@ -149,8 +149,8 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 				FTM_ULONG		ulStart = 0;
 
 				MESSAGE("EP COUNT : %d\n", nCount);
-				MESSAGE("%x16s %16s %16s %8s %8s %16s %16s %8s\n",
-					"EPID", "CLASS", "NAME", "UNIT", "INTERNAL", "DID", "PID", "VALUE");
+				MESSAGE("%x16s %16s %16s %8s %8s %8s %16s %16s %8s\n",
+					"EPID", "CLASS", "NAME", "UNIT", "UPDATE", "UPLOAD", "DID", "PID", "VALUE");
 				while(nCount > 0)
 				{
 					FTM_ULONG	ulReadCount = 0;
@@ -175,12 +175,13 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 						xRet = FTOM_CLIENT_EP_get(pClient, pEPIDs[i], &xInfo);
 						if (xRet == FTM_RET_OK)
 						{
-							MESSAGE("%16s %16s %16s %8s %8lu %16s ",
+							MESSAGE("%16s %16s %16s %8s %8lu %8lu %16s ",
 									xInfo.pEPID,
 									FTM_EP_typeString(xInfo.xType),
 									xInfo.pName,
 									xInfo.pUnit,
-									xInfo.ulInterval,
+									xInfo.ulUpdateInterval,
+									xInfo.ulReportInterval,
 									xInfo.pDID);
 						}
 	
@@ -207,8 +208,8 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 			xRet = FTOM_CLIENT_EP_getList(pClient, xEPClass, pEPID, 50, &nCount);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%16s %16s %16s %16s %8s %16s %16s\n",
-						"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
+				MESSAGE("%16s %16s %16s %16s %8s %8s %16s %16s\n",
+						"EPID", "TYPE", "NAME", "UNIT", "UPDATE", "UPLOAD", "DID", "PID");
 
 				for(i = 0 ; i< nCount ; i++)
 				{
@@ -217,12 +218,13 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 					xRet = FTOM_CLIENT_EP_get(pClient, pEPID[i], &xInfo);
 					if (xRet == FTM_RET_OK)
 					{
-						MESSAGE("%16s %16s %16s %16s %8lu %16s %16s\n",
+						MESSAGE("%16s %16s %16s %16s %8lu %8lu %16s %16s\n",
 								xInfo.pEPID,
 								FTM_getEPTypeString(xInfo.xType),
 								xInfo.pName,
 								xInfo.pUnit,
-								xInfo.ulInterval,
+								xInfo.ulUpdateInterval,
+								xInfo.ulReportInterval,
 								xInfo.pDID);
 					}
 					else
@@ -249,8 +251,8 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 			MESSAGE("%16s : %s\n",	"Unit",			xEPInfo.pUnit);
 			MESSAGE("%16s : %s\n",	"State",		(xEPInfo.bEnable)?"Enable":"Disable");
 			MESSAGE("%16s : %d\n",	"Timeout",		xEPInfo.ulTimeout);
-			MESSAGE("%16s : %d\n",	"Interval",		xEPInfo.ulInterval);	
-			MESSAGE("%16s : %d\n",	"Report Cycle",	xEPInfo.ulCycle);
+			MESSAGE("%16s : %d\n",	"Update Interval",		xEPInfo.ulUpdateInterval);	
+			MESSAGE("%16s : %d\n",	"Report Interval",	xEPInfo.ulReportInterval);
 			MESSAGE("%16s : %s\n",	"DID",			xEPInfo.pDID);
 			if (xEPInfo.xLimit.xType == FTM_EP_LIMIT_TYPE_TIME)
 			{
@@ -299,12 +301,13 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 					FTM_ULONG	ulCount;
 					FTM_CHAR	pValue[32];
 			
-					MESSAGE("%-8s : %s\n", 		"EPID", 	xInfo.pEPID);
-					MESSAGE("%-8s : %s\n",		"TYPE",		FTM_EP_typeString(xInfo.xType));
-					MESSAGE("%-8s : %s\n",		"NAME", 	xInfo.pName);
-					MESSAGE("%-8s : %s\n",		"UNIT", 	xInfo.pUnit);
-					MESSAGE("%-8s : %d\n",		"INTERVAL", xInfo.ulInterval);
-					MESSAGE("%-8s : %s\n",		"DID", 		xInfo.pDID);
+					MESSAGE("%16s : %s\n", 		"EPID", 	xInfo.pEPID);
+					MESSAGE("%16s : %s\n",		"Type",		FTM_EP_typeString(xInfo.xType));
+					MESSAGE("%16s : %s\n",		"Name", 	xInfo.pName);
+					MESSAGE("%16s : %s\n",		"Unit", 	xInfo.pUnit);
+					MESSAGE("%16s : %d\n",		"Update Interval", 	xInfo.ulUpdateInterval);
+					MESSAGE("%16s : %d\n",		"Report Inteval", 	xInfo.ulUpdateInterval);
+					MESSAGE("%16s : %s\n",		"DID", 		xInfo.pDID);
 			
 					xRet = FTOM_CLIENT_EP_DATA_count(pClient, pEPID, &ulCount);
 					if (xRet == FTM_RET_OK)

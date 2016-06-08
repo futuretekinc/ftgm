@@ -35,17 +35,18 @@ typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
 
 typedef	unsigned long	FTM_EP_FIELD, _PTR_ FTM_EP_FIELD_PTR;
 
-#define	FTM_EP_FIELD_ALL		(0xFFFFFFFF)
-#define	FTM_EP_FIELD_EPID		(1 << 0)
-#define	FTM_EP_FIELD_EPTYPE		(1 << 1)
-#define	FTM_EP_FIELD_FLAGS		(1 << 2)
-#define	FTM_EP_FIELD_NAME		(1 << 3)
-#define	FTM_EP_FIELD_UNIT		(1 << 4)
-#define	FTM_EP_FIELD_ENABLE		(1 << 5)
-#define	FTM_EP_FIELD_TIMEOUT	(1 << 6)
-#define	FTM_EP_FIELD_INTERVAL	(1 << 7)
-#define	FTM_EP_FIELD_DID		(1 << 9)
-#define	FTM_EP_FIELD_LIMIT		(1 << 10)
+#define	FTM_EP_FIELD_ALL			(0xFFFFFFFF)
+#define	FTM_EP_FIELD_EPID			(1 << 0)
+#define	FTM_EP_FIELD_EPTYPE			(1 << 1)
+#define	FTM_EP_FIELD_FLAGS			(1 << 2)
+#define	FTM_EP_FIELD_NAME			(1 << 3)
+#define	FTM_EP_FIELD_UNIT			(1 << 4)
+#define	FTM_EP_FIELD_ENABLE			(1 << 5)
+#define	FTM_EP_FIELD_TIMEOUT		(1 << 6)
+#define	FTM_EP_FIELD_INTERVAL		(1 << 7)
+#define	FTM_EP_FIELD_REPORT_INTERVAL (1 << 8)
+#define	FTM_EP_FIELD_DID			(1 << 9)
+#define	FTM_EP_FIELD_LIMIT			(1 << 10)
 
 typedef enum
 {
@@ -121,8 +122,8 @@ typedef	struct
 	FTM_CHAR		pUnit[FTM_UNIT_LEN+1];
 	FTM_BOOL		bEnable;
 	FTM_ULONG		ulTimeout;
-	FTM_ULONG		ulInterval;	
-	FTM_ULONG		ulCycle;
+	FTM_ULONG		ulUpdateInterval;	
+	FTM_ULONG		ulReportInterval;
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
 	FTM_ULONG		xDEPID;
 	FTM_EP_LIMIT	xLimit;

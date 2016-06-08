@@ -29,6 +29,7 @@ typedef	struct
 	FTM_CHAR_PTR		pResp;
 	FTM_ULONG			ulRespLen;
 
+	struct curl_slist	_PTR_ pHTTPHeader;
 	CURL 				_PTR_ pCURL;
 }	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;
 
@@ -188,6 +189,7 @@ FTM_RET	FTOM_TP_RESTAPI_EP_getList
 
 FTM_RET	FTOM_TP_RESTAPI_setVerbose
 (
+ 	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_BOOL	bOn
 );
 

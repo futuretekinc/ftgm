@@ -11,6 +11,7 @@ typedef	FTM_ULONG	FTOM_MSG_ID, _PTR_ FTOM_MSG_ID_PTR;
 typedef	enum
 {
 	FTOM_MSG_TYPE_QUIT				=	0,
+	FTOM_MSG_TYPE_REPORT_GW_STATUS,
 	FTOM_MSG_TYPE_EP_CTRL,
 	FTOM_MSG_TYPE_RULE,
 	FTOM_MSG_TYPE_SEND_EP_STATUS,
@@ -37,6 +38,16 @@ typedef	struct
 	FTM_ULONG		ulLen;
 	FTOM_MSG_ID		xMsgID;
 } FTOM_MSG, _PTR_ FTOM_MSG_PTR;
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTOM_MSG_ID		xMsgID;
+	FTM_CHAR		pGatewayID[FTM_DID_LEN+1];
+	FTM_BOOL		bStatus;
+	FTM_ULONG		ulTimeout;
+}	FTOM_MSG_REPORT_GW_STATUS, _PTR_ FTOM_MSG_REPORT_GW_STATUS_PTR;
 
 typedef struct
 {
@@ -160,6 +171,14 @@ typedef	struct
 	FTM_EP_PTR		pEPInfos;
 }	FTOM_MSG_DISCOVERY_DONE, _PTR_ FTOM_MSG_DISCOVERY_DONE_PTR;
 
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_BOOL		bAutoRegister;
+}	FTOM_MSG_SERVER_SYNC, _PTR_ FTOM_MSG_SERVER_SYNC_PTR;
+
+
 
 typedef struct
 {
@@ -174,6 +193,14 @@ FTM_RET FTOM_MSG_createInitializeDone
 FTM_RET FTOM_MSG_createQuit
 (
 	FTOM_MSG_PTR _PTR_ ppMsg
+);
+
+FTM_RET	FTOM_MSG_createReportGWStatus
+(
+	FTM_CHAR_PTR		pGatewayID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout,
+	FTOM_MSG_REPORT_GW_STATUS_PTR _PTR_ ppMsg
 );
 
 FTM_RET	FTOM_MSG_createAddEPData
@@ -278,7 +305,8 @@ FTM_RET	FTOM_MSG_createDiscoveryDone
 
 FTM_RET	FTOM_MSG_createServerSync
 (
-	FTOM_MSG_PTR _PTR_ ppMsg
+	FTM_BOOL			bAutoRegister,
+	FTOM_MSG_SERVER_SYNC_PTR _PTR_ 	ppMsg
 );
 
 FTM_RET	FTOM_MSG_destroy

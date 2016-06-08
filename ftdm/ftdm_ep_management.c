@@ -427,8 +427,8 @@ FTM_RET FTDM_EPM_showList
 
 	MESSAGE("\n# EP Information\n");
 	MESSAGE("\t%16s %16s %16s %8s %8s %8s %8s %8s %16s %8s %8s\n",
-			"EPID", "TYPE", "NAME", "UNIT", "STATE", "INTERVAL", 
-			"CYCLE", "TIMEOUT", "DID", "COUNT", "TIME");
+			"EPID", "TYPE", "NAME", "UNIT", "STATE", "UPDATE", 
+			"REPORT", "TIMEOUT", "DID", "COUNT", "TIME");
 	if (FTDM_EPM_count(pEPM, 0, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -452,8 +452,8 @@ FTM_RET FTDM_EPM_showList
 			}
 
 			MESSAGE("%8lu %8lu %8lu %16s %8d %10d %10d\n",
-				pEP->xInfo.ulInterval,
-				pEP->xInfo.ulCycle,
+				pEP->xInfo.ulUpdateInterval,
+				pEP->xInfo.ulReportInterval,
 				pEP->xInfo.ulTimeout,
 				pEP->xInfo.pDID,
 				pEP->ulCount,

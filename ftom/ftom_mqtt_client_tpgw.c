@@ -68,7 +68,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_connectCB
 	pClient->bConnected = FTM_TRUE;
 
 	sprintf(pTopic, "v/a/g/%s/status", pClient->pDID);
-	ulMessageLen = sprintf(pMessage, "on,%lu", pClient->xConfig.ulReconnectionTime);
+	ulMessageLen = sprintf(pMessage, "on,%lu", pClient->xConfig.ulRetryInterval);
 	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
 }
 
@@ -83,7 +83,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_disconnectCB
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 
 	FTM_TIMER_init(&pClient->xLinkTimer, 0);
-	FTM_TIMER_addSeconds(&pClient->xLinkTimer, pClient->xConfig.ulReconnectionTime);
+	FTM_TIMER_addSeconds(&pClient->xLinkTimer, pClient->xConfig.ulRetryInterval);
 
 	pClient->bConnected = FTM_FALSE;
 
@@ -374,6 +374,28 @@ error:
 	nx_json_free(pJSON);
 
 	return	xRet;
+}
+
+FTM_RET	FTOM_MQTT_CLIENT_TPGW_reportGWStatus
+(
+	FTOM_MQTT_CLIENT_PTR pClient, 
+	FTM_CHAR_PTR		pGatewayID,
+	FTM_BOOL			bStatus,
+	FTM_ULONG			ulTimeout
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_CHAR	pTopic[FTOM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pBuff[FTOM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulLen = 0;
+
+	pBuff[sizeof(pBuff) - 1] = '\0';
+	
+	sprintf(pTopic, "v/a/g/%s/status", pGatewayID);
+	ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "%s,%lu", bStatus?"on":"off", ulTimeout);
+
+	return	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen);
 }
 
 FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPStatus

@@ -886,6 +886,7 @@ FTM_RET	FTOM_NODE_print
 	MESSAGE("\n# Node Information\n");
 	MESSAGE("%16s : %s\n", "DID", 		pNode->xInfo.pDID);
 	MESSAGE("%16s : %s\n", "Model",		pNode->xInfo.pModel);
+	MESSAGE("%16s : %s\n", "Name",		pNode->xInfo.pName);
 	MESSAGE("%16s : %s\n", "Type", 		FTM_NODE_typeString(pNode->xInfo.xType));
 	switch(pNode->xInfo.xType)
 	{
@@ -958,7 +959,7 @@ FTM_RET	FTOM_NODE_printList
 	FTOM_NODE_PTR	pNode;
 
 	MESSAGE("\n# Node Information\n");
-	MESSAGE("%16s %16s %16s %16s %8s %8s %s\n", "DID", "MODEL", "TYPE", "STATE", "INTERVAL", "TIMEOUT", "EPs");
+	MESSAGE("%16s %16s %16s %16s %16s %8s %8s %s\n", "DID", "MODEL", "NAME", "TYPE", "STATE", "INTERVAL", "TIMEOUT", "EPs");
 
 	FTM_LIST_count(pNodeList, &ulCount);
 
@@ -969,6 +970,7 @@ FTM_RET	FTOM_NODE_printList
 		FTOM_NODE_getAt(i, &pNode);
 		MESSAGE("%16s ", pNode->xInfo.pDID);
 		MESSAGE("%16s ", pNode->xInfo.pModel);
+		MESSAGE("%16s ", pNode->xInfo.pName);
 		MESSAGE("%16s ", FTM_NODE_typeString(pNode->xInfo.xType));
 		MESSAGE("%16s ", FTOM_NODE_stateToStr(pNode->xState));
 		MESSAGE("%8d ", pNode->xInfo.ulInterval);

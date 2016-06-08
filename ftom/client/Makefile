@@ -1,8 +1,9 @@
+ifeq ($(TOPDIR),)
+TOPDIR=../..
+endif
+
 include $(TOPDIR)/Makefile.in
 
-#CFLAGS=$(CFLAGS)\
-		-D__malloc_and_calloc_defined=1 \
-		-D__need_malloc_and_calloc=1
 CLIENT=ftomc
 CLIENT_SRCS=main.c\
 			ftom_client_config.c\
@@ -16,12 +17,8 @@ CLIENT_SRCS=main.c\
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lconfig -lpthread  -lrt
 
-all: tags $(CLIENT) 
-	echo $(TOPDIR)
+all: $(CLIENT) 
 
-tags:
-	ctags -R
-	
 $(CLIENT): $(CLIENT_OBJS)
 	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)
 

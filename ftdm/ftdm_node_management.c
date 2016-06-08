@@ -440,8 +440,8 @@ FTM_RET	FTDM_NODEM_showList
 	FTM_ULONG	i, ulCount;
 
 	MESSAGE("\n# Node Information\n");
-	MESSAGE("\t%16s %16s %16s %16s %8s %8s %16s %16s %16s %16s\n",
-			"DID", "MODEL", "TYPE", "LOCATION", "INTERVAL", "TIMEOUT", "OPT0", "OPT1", "OPT2", "OPT3");
+	MESSAGE("\t%16s %16s %16s %16s %16s %8s %8s %16s\n",
+			"DID", "MODEL", "TYPE", "NAME", "LOCATION", "INTERVAL", "TIMEOUT", "OPT");
 	if (FTM_LIST_count(pNodeM->pList, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -453,6 +453,7 @@ FTM_RET	FTDM_NODEM_showList
 				pNode->xInfo.pDID,
 				pNode->xInfo.pModel,
 				FTM_NODE_typeString(pNode->xInfo.xType),
+				pNode->xInfo.pName,
 				pNode->xInfo.pLocation,
 				pNode->xInfo.ulInterval,
 				pNode->xInfo.ulTimeout);
@@ -461,7 +462,7 @@ FTM_RET	FTDM_NODEM_showList
 			{
 			case	FTM_NODE_TYPE_SNMP:
 				{
-					MESSAGE(" %16s %16s %16s %16s\n",
+					MESSAGE(" %8s %16s %8s %8s\n",
 						FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion),
 						pNode->xInfo.xOption.xSNMP.pURL,
 						pNode->xInfo.xOption.xSNMP.pCommunity,

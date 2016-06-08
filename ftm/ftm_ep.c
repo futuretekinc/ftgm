@@ -87,13 +87,13 @@ FTM_RET	FTM_EP_setDefault
 
 	memset(pEP, 0, sizeof(FTM_EP));
 	sprintf(pEP->pEPID, "%lu%lu", tv.tv_sec, tv.tv_usec);
-	pEP->xType		=	0;
+	pEP->xType				=	0;
 	strcpy(pEP->pName, "Unknown");
-	pEP->bEnable	=	FTM_FALSE;
-	pEP->ulTimeout	=	30;
-	pEP->ulInterval	=	10;
-	pEP->ulInterval	=	60;
-	pEP->xLimit.xType = FTM_EP_LIMIT_TYPE_COUNT;
+	pEP->bEnable			=	FTM_FALSE;
+	pEP->ulTimeout			=	30;
+	pEP->ulUpdateInterval	=	10;
+	pEP->ulReportInterval	=	60;
+	pEP->xLimit.xType 		= FTM_EP_LIMIT_TYPE_COUNT;
 	pEP->xLimit.xParams.ulCount = 100;
 
 	return	FTM_RET_OK;
@@ -324,7 +324,7 @@ FTM_RET	FTM_EP_isValid(FTM_EP_PTR pEP)
 		return	xRet;
 	}
 	
-	xRet = FTM_isValidInterval(pEP->ulInterval);
+	xRet = FTM_isValidInterval(pEP->ulUpdateInterval);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
@@ -343,7 +343,7 @@ FTM_RET	FTM_EP_isValidTimeout(FTM_EP_PTR pEP, FTM_ULONG	ulTimeout)
 {
 	ASSERT(pEP != NULL);
 
-	if (pEP->ulInterval < ulTimeout)
+	if (pEP->ulUpdateInterval < ulTimeout)
 	{
 		return	FTM_RET_INVALID_TIMEOUT;	
 	}
@@ -870,7 +870,8 @@ FTM_RET	FTM_EP_print
 		MESSAGE("%s\n", "disable");
 	}
 
-	MESSAGE("%16s : %lu\n", 	"interval", pEP->ulInterval);
+	MESSAGE("%16s : %lu\n", 	"update interval", pEP->ulUpdateInterval);
+	MESSAGE("%16s : %lu\n", 	"report interval", pEP->ulReportInterval);
 	MESSAGE("%16s : %lu\n", 	"timeout", 	pEP->ulTimeout);
 	MESSAGE("%16s : %s\n", 	"did", 		pEP->pDID);
 	if (pEP->xLimit.xType == FTM_EP_LIMIT_TYPE_COUNT)

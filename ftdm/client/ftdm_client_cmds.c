@@ -524,8 +524,8 @@ FTM_RET	FTDMC_EP_cmd
 			}
 
 		case	7:
-			xInfo.ulInterval = atoi(pArgv[6]);
-			if (xInfo.ulInterval <= 0)
+			xInfo.ulUpdateInterval = atoi(pArgv[6]);
+			if (xInfo.ulUpdateInterval <= 0)
 			{
 				MESSAGE("Invalid interval.\n");
 				return	FTM_RET_INVALID_ARGUMENTS;
@@ -597,8 +597,8 @@ FTM_RET	FTDMC_EP_cmd
 		xRet = FTDMC_EP_count(&_xSession, 0, &nCount);
 		if (xRet == FTM_RET_OK)
 		{
-			MESSAGE("%8s %16s %16s %16s %8s %16s %16s\n",
-					"EPID", "TYPE", "NAME", "UNIT", "INTERVAL", "DID", "PID");
+			MESSAGE("%8s %16s %16s %16s %8s %8s %16s %16s\n",
+					"EPID", "TYPE", "NAME", "UNIT", "UPDATE", "REPORT", "DID", "PID");
 
 			for(i = 0 ; i< nCount ; i++)
 			{
@@ -607,12 +607,13 @@ FTM_RET	FTDMC_EP_cmd
 				xRet = FTDMC_EP_getAt(&_xSession, i, &xInfo);
 				if (xRet == FTM_RET_OK)
 				{
-					MESSAGE("%16s %16s %16s %16s %8lu %16s\n",
+					MESSAGE("%16s %16s %16s %16s %8lu %8lu %16s\n",
 							xInfo.pEPID,
 							FTM_getEPTypeString(xInfo.xType),
 							xInfo.pName,
 							xInfo.pUnit,
-							xInfo.ulInterval,
+							xInfo.ulUpdateInterval,
+							xInfo.ulReportInterval,
 							xInfo.pDID);
 				}
 			}
@@ -637,13 +638,13 @@ FTM_RET	FTDMC_EP_cmd
 		case	2:
 			{
 				MESSAGE("%16s : %s\n", "EPID", xInfo.pEPID);
-				MESSAGE("%16s : %s\n", "TYPE", FTM_getEPTypeString(xInfo.xType));
-				MESSAGE("%16s : %s\n", "NAME", xInfo.pName);
-				MESSAGE("%16s : %s\n", "UNIT", xInfo.pUnit);
-				MESSAGE("%16s : %s\n", "STATE", (xInfo.bEnable)?"ENABLE":"DISABLE");
-				MESSAGE("%16s : %d\n", "TIMEOUT", xInfo.ulTimeout);
-				MESSAGE("%16s : %d\n", "INTERVAL", xInfo.ulInterval);
-				MESSAGE("%16s : %d\n", "CYCLE", xInfo.ulCycle);
+				MESSAGE("%16s : %s\n", "Type", FTM_getEPTypeString(xInfo.xType));
+				MESSAGE("%16s : %s\n", "Name", xInfo.pName);
+				MESSAGE("%16s : %s\n", "Unit", xInfo.pUnit);
+				MESSAGE("%16s : %s\n", "State", (xInfo.bEnable)?"ENABLE":"DISABLE");
+				MESSAGE("%16s : %d\n", "Timeout", xInfo.ulTimeout);
+				MESSAGE("%16s : %d\n", "Update Interval", xInfo.ulUpdateInterval);
+				MESSAGE("%16s : %d\n", "Report Interval", xInfo.ulReportInterval);
 				MESSAGE("%16s : %s\n", "DID", xInfo.pDID);
 			}
 			break;

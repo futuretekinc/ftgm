@@ -184,7 +184,7 @@ FTM_RET	FTOM_TP_RESTAPI_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	xRet =  FTOM_TP_RESTAPI_init(pClient, pUserID, pAPIKey);
+	xRet =  FTOM_TP_RESTAPI_init(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pClient);
@@ -218,7 +218,6 @@ FTM_RET	FTOM_TP_RESTAPI_init
 {
 	ASSERT(pClient != NULL);
 	FTM_CHAR	pBuff[1024];
-	struct curl_slist	_PTR_ pHTTPHeader = NULL;
 
 	if (!bGlobalInit)
 	{
@@ -235,23 +234,22 @@ FTM_RET	FTOM_TP_RESTAPI_init
 	}
 
 	strcpy(pClient->pBase, "https://api.thingplus.net/v1");
+
 	if (strlen(pClient->pUserID) != 0)
 	{
 		sprintf(pBuff, "username:%s", pClient->pUserID);
-		pHTTPHeader = curl_slist_append(pHTTPHeader, pBuff);
+		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
 	}
 
 	if (strlen(pClient->pPasswd) != 0)
 	{
 		sprintf(pBuff, "apikey:%s", pClient->pPasswd);
-		pHTTPHeader = curl_slist_append(pHTTPHeader, pBuff);
+		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
 	}
 
-	pHTTPHeader = curl_slist_append(pHTTPHeader, "Content-Type:application/json");
+	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "Content-Type:application/json");
 
-	curl_easy_setopt(pClient->pCURL, CURLOPT_HTTPHEADER, pHTTPHeader);
-	curl_slist_free_all(pHTTPHeader);
-
+	curl_easy_setopt(pClient->pCURL, CURLOPT_HTTPHEADER, pClient->pHTTPHeader);
 	if (bVerbose)
 	{
  		curl_easy_setopt(pClient->pCURL, CURLOPT_VERBOSE, 1L);
@@ -316,18 +314,30 @@ FTM_RET	FTOM_TP_RESTAPI_setUserID
 	ASSERT(pClient != NULL);
 	ASSERT(pUserID != NULL);
 	FTM_CHAR	pBuff[1024];
-	struct curl_slist	_PTR_ pHTTPHeader = NULL;
 
 	strncpy(pClient->pUserID, pUserID, FTM_USER_ID_LEN);
 
-	sprintf(pBuff, "username:%s", pClient->pUserID);
-	pClient->pHTTPHeader = curl_slist_append(pHTTPHeader, pBuff);
-	sprintf(pBuff, "apikey:%s", pClient->pPasswd);
-	pClient->pHTTPHeader = curl_slist_append(pHTTPHeader, pBuff);
-	pClient->pHTTPHeader = curl_slist_append(pHTTPHeader, "Content-Type:application/json");
+	if (pClient->pHTTPHeader != NULL)
+	{
+		curl_slist_free_all(pClient->pHTTPHeader);
+		pClient->pHTTPHeader = NULL;		
+	}
 
-	curl_easy_setopt(pClient->pCURL, CURLOPT_HTTPHEADER, pHTTPHeader);
-	curl_slist_free_all(pHTTPHeader);
+	if (strlen(pClient->pUserID) != 0)
+	{
+		sprintf(pBuff, "username:%s", pClient->pUserID);
+		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
+	}
+
+	if (strlen(pClient->pPasswd) != 0)
+	{
+		sprintf(pBuff, "apikey:%s", pClient->pPasswd);
+		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
+	}
+
+	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "Content-Type:application/json");
+
+	curl_easy_setopt(pClient->pCURL, CURLOPT_HTTPHEADER, pClient->pHTTPHeader);
 
 	return	FTM_RET_OK;
 }
@@ -341,19 +351,30 @@ FTM_RET	FTOM_TP_RESTAPI_setPasswd
 	ASSERT(pClient != NULL);
 	ASSERT(pPasswd != NULL);
 	FTM_CHAR	pBuff[1024];
-	struct curl_slist	_PTR_ pHTTPHeader = NULL;
 
 	strncpy(pClient->pPasswd, pPasswd, FTM_PASSWD_LEN);
 
-	sprintf(pBuff, "username:%s", pClient->pUserID);
-	pClient->pHTTPHeader = curl_slist_append(pHTTPHeader, pBuff);
-	sprintf(pBuff, "apikey:%s", pClient->pPasswd);
-	pClient->pHTTPHeader = curl_slist_append(pHTTPHeader, pBuff);
-	pClient->pHTTPHeader = curl_slist_append(pHTTPHeader, "Content-Type:application/json");
+	if (pClient->pHTTPHeader != NULL)
+	{
+		curl_slist_free_all(pClient->pHTTPHeader);
+		pClient->pHTTPHeader = NULL;		
+	}
 
-	curl_easy_setopt(pClient->pCURL, CURLOPT_HTTPHEADER, pHTTPHeader);
-	curl_slist_free_all(pHTTPHeader);
+	if (strlen(pClient->pUserID) != 0)
+	{
+		sprintf(pBuff, "username:%s", pClient->pUserID);
+		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
+	}
 
+	if (strlen(pClient->pPasswd) != 0)
+	{
+		sprintf(pBuff, "apikey:%s", pClient->pPasswd);
+		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
+	}
+
+	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "Content-Type:application/json");
+
+	curl_easy_setopt(pClient->pCURL, CURLOPT_HTTPHEADER, pClient->pHTTPHeader);
 
 	return	FTM_RET_OK;
 }
@@ -1066,8 +1087,8 @@ FTM_RET	FTOM_TP_RESTAPI_EP_create
 				pClient->pGatewayID, 
 				pEPInfo->pEPID,
 				pTypeInfo->pName,
-				pEPInfo->pEPID,
-				NULL,
+				pEPInfo->pName,
+				pEPInfo->pDID,
 				"1",
 				"1");
 
@@ -1090,11 +1111,22 @@ FTM_RET	FTOM_TP_RESTAPI_EP_getList
  *********************************************************/
  FTM_RET	FTOM_TP_RESTAPI_setVerbose
  (
+ 	FTOM_TP_RESTAPI_PTR	pClient,
  	FTM_BOOL	bOn
  )
  {
+ 	ASSERT(pClient != NULL);
+
 	bVerbose = bOn;
 
+	if (bVerbose)
+	{
+ 		curl_easy_setopt(pClient->pCURL, CURLOPT_VERBOSE, 1L);
+	}
+	else
+	{
+ 		curl_easy_setopt(pClient->pCURL, CURLOPT_VERBOSE, 0L);
+	}
 	return	FTM_RET_OK;
  }
 

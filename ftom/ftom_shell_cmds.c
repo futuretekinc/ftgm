@@ -50,6 +50,14 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 	FTM_VOID_PTR 	pData
 );
 
+FTM_RET	FTOM_SHELL_CMD_server
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
 FTM_SHELL_CMD	FTOM_shellCmds[] = 
 {
 	{
@@ -79,6 +87,13 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pShortHelp	= "task management",
 		.pHelp		= "\n"\
 					  "\ttask management.\n"
+	},
+	{
+		.pString	= "server",
+		.function	= FTOM_SHELL_CMD_server,
+		.pShortHelp	= "Server management.",
+		.pHelp		= "\n"\
+					  "\tServer management.\n"
 	},
 	{
 		.pString	= "discovery",
@@ -187,6 +202,61 @@ FTM_RET	FTOM_SHELL_CMD_task
 {
 	return	FTM_RET_OK;
 
+}
+
+FTM_RET	FTOM_SHELL_CMD_server
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
+)
+{
+	FTM_RET	xRet ;
+
+	switch(nArgc)
+	{
+	case	2:
+		{
+			if (strcasecmp(pArgv[1], "sync") == 0)
+			{
+				xRet = FTOM_serverSync(FTM_FALSE);
+				if (xRet == FTM_RET_OK)
+				{
+					MESSAGE("Start the server synchronization.\n");
+				}
+				else
+				{
+					MESSAGE("Failed to start the server synchronization.\n");
+				}
+			}
+		}
+		break;
+
+	case	3:
+		{
+			if (strcasecmp(pArgv[1], "sync") == 0)
+			{
+				if (strcasecmp(pArgv[2], "auto") == 0)
+				{
+					xRet = FTOM_serverSync(FTM_TRUE);
+					if (xRet == FTM_RET_OK)
+					{
+						MESSAGE("Start the server synchronization.\n");
+						MESSAGE("The new sensor will be automatically registered.\n");
+					}
+					else
+					{
+						MESSAGE("Failed to start the server synchronization.\n");
+					}
+				}
+			}
+		}
+		break;
+
+
+	}
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_SHELL_CMD_discovery

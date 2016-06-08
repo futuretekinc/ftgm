@@ -231,7 +231,7 @@ FTM_RET	FTOM_DMC_setServiceCallback
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_DMC_notify
+FTM_RET	FTOM_DMC_sendMessage
 (
 	FTOM_DMC_PTR pDMC, 
 	FTOM_MSG_PTR pMsg

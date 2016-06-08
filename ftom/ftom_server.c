@@ -674,7 +674,7 @@ FTM_RET	FTOM_SERVER_stop
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_SERVER_notify
+FTM_RET	FTOM_SERVER_sendMessage
 (
 	FTOM_SERVER_PTR	pServer,
 	FTOM_MSG_PTR 		pMsg
