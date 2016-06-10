@@ -70,7 +70,7 @@ FTM_RET	FTOM_CL_NODE_create
 						return	FTM_RET_INVALID_INTERVAL;	
 					}
 
-					xInfo.ulInterval = ulInterval;
+					xInfo.ulReportInterval = ulInterval;
 				}
 				break;
 
@@ -188,7 +188,7 @@ FTM_RET	FTOM_CL_NODE_get
 			FTM_NODE_typeString(xInfo.xType),
 			xInfo.xFlags,
 			xInfo.pLocation,
-			xInfo.ulInterval,
+			xInfo.ulReportInterval,
 			xInfo.ulTimeout,
 			xInfo.xOption.xSNMP.ulVersion,
 			xInfo.xOption.xSNMP.pURL,
@@ -226,7 +226,7 @@ FTM_RET	FTOM_CL_NODE_getAt
 			FTM_NODE_typeString(xInfo.xType),
 			xInfo.xFlags,
 			xInfo.pLocation,
-			xInfo.ulInterval,
+			xInfo.ulReportInterval,
 			xInfo.ulTimeout,
 			xInfo.xOption.xSNMP.ulVersion,
 			xInfo.xOption.xSNMP.pURL,

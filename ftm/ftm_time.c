@@ -3,7 +3,10 @@
 #include "ftm_time.h"
 #include "ftm_trace.h"
 
-FTM_RET	FTM_TIME_getCurrent(FTM_TIME_PTR pTime)
+FTM_RET	FTM_TIME_getCurrent
+(
+	FTM_TIME_PTR 	pTime
+)
 {
 	ASSERT(pTime != NULL);
 	
@@ -12,32 +15,48 @@ FTM_RET	FTM_TIME_getCurrent(FTM_TIME_PTR pTime)
 	return	FTM_RET_OK;
 }
 
-FTM_BOOL	FTM_TIME_isZero(FTM_TIME_PTR pTime)
+FTM_BOOL	FTM_TIME_isZero
+(
+	FTM_TIME_PTR 	pTime
+)
 {
 	return	((pTime == NULL) || ((pTime->xTimeval.tv_sec == 0) && (pTime->xTimeval.tv_usec == 0)));
 }
 
-FTM_RET	FTM_TIME_set(FTM_TIME_PTR pTime, FTM_ULONG ulMilliSeconds)
+FTM_RET	FTM_TIME_set
+(
+	FTM_TIME_PTR 	pTime, 
+	FTM_ULONG 		ulTimeMS
+)
 {
 	ASSERT(pTime != NULL);
 	
-	pTime->xTimeval.tv_sec = ulMilliSeconds / 1000;
-	pTime->xTimeval.tv_usec = ulMilliSeconds % 1000 * 1000;
+	pTime->xTimeval.tv_sec = ulTimeMS / 1000;
+	pTime->xTimeval.tv_usec = ulTimeMS % 1000 * 1000;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TIME_setSeconds(FTM_TIME_PTR pTime, FTM_ULONG ulSeconds)
+FTM_RET	FTM_TIME_setSeconds
+(
+	FTM_TIME_PTR 	pTime, 
+	FTM_ULONG 		ulTimeS
+)
 {
 	ASSERT(pTime != NULL);
 	
-	pTime->xTimeval.tv_sec = ulSeconds;
+	pTime->xTimeval.tv_sec = ulTimeS;
 	pTime->xTimeval.tv_usec = 0;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TIME_add(FTM_TIME_PTR pTime1, FTM_TIME_PTR pTime2, FTM_TIME_PTR pTimeR)
+FTM_RET	FTM_TIME_add
+(
+	FTM_TIME_PTR 	pTime1, 
+	FTM_TIME_PTR 	pTime2, 
+	FTM_TIME_PTR 	pTimeR
+)
 {
 	ASSERT(pTime1 != NULL);
 	ASSERT(pTime2 != NULL);
@@ -54,7 +73,33 @@ FTM_RET	FTM_TIME_add(FTM_TIME_PTR pTime1, FTM_TIME_PTR pTime2, FTM_TIME_PTR pTim
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TIME_sub(FTM_TIME_PTR pTime1, FTM_TIME_PTR pTime2, FTM_TIME_PTR pTimeR)
+FTM_RET	FTM_TIME_addMS
+(
+	FTM_TIME_PTR 	pTime1, 
+	FTM_ULONG		ulTimeMS,
+	FTM_TIME_PTR 	pTimeR
+)
+{
+	ASSERT(pTime1 != NULL);
+	ASSERT(pTimeR != NULL);
+	
+	FTM_TIME	xTimeR;
+
+	xTimeR.xTimeval.tv_usec = pTime1->xTimeval.tv_usec + ulTimeMS * 1000;
+	xTimeR.xTimeval.tv_sec = pTime1->xTimeval.tv_sec + xTimeR.xTimeval.tv_usec / 1000000;
+	xTimeR.xTimeval.tv_usec = xTimeR.xTimeval.tv_usec % 1000000;
+
+	memcpy(pTimeR, &xTimeR, sizeof(FTM_TIME));
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_TIME_sub
+(
+	FTM_TIME_PTR 	pTime1, 
+	FTM_TIME_PTR 	pTime2, 
+	FTM_TIME_PTR 	pTimeR
+)
 {
 	ASSERT(pTime1 != NULL);
 	ASSERT(pTime2 != NULL);

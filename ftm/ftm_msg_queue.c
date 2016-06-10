@@ -116,8 +116,8 @@ FTM_RET FTM_MSGQ_timedPop(FTM_MSG_QUEUE_PTR pMsgQ, FTM_ULONG ulTimeout, FTM_VOID
 
 	clock_gettime(CLOCK_REALTIME, &xTime);	
 
-	xTime.tv_nsec += (ulTimeout % 1000000) * 1000;
-	xTime.tv_sec  += (ulTimeout / 1000000 + xTime.tv_nsec / 1000000000);
+	xTime.tv_nsec += (ulTimeout % 1000) * 1000000;
+	xTime.tv_sec  += (ulTimeout / 1000) + (xTime.tv_nsec / 1000000000);
 	xTime.tv_nsec %= 1000000000;
 
 	nRet = sem_timedwait(&pMsgQ->xLock, &xTime);

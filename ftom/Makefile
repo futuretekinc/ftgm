@@ -16,6 +16,7 @@ LIB_FTOM=libftom
 LIB_FTOM_INCS= ftom.h 
 LIB_FTOM_SRCS= ftom.c \
 			   ftom_msg.c \
+			   ftom_message_queue.c \
 			   ftom_server.c\
 			   ftom_node.c\
 			   ftom_node_class.c\

@@ -4,6 +4,7 @@
 #include <mosquitto.h>
 #include "ftm.h"
 #include "nxjson.h"
+#include "ftom_message_queue.h"
 #include "ftom_mqtt_client.h"
 #include "ftom_mqtt_client_tpgw.h"
 #include "ftom_mqtt_client_ft.h"
@@ -112,6 +113,7 @@ static FTOM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
 		.fReportGWStatus	= FTOM_MQTT_CLIENT_TPGW_reportGWStatus,
 		.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
 		.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
+		.fTPResponse		= FTOM_MQTT_CLIENT_TPGW_response,
 	},
 	{
 		.fConnect 	= FTOM_MQTT_CLIENT_TPGW_connectCB,
@@ -122,6 +124,7 @@ static FTOM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
 		.fReportGWStatus	= FTOM_MQTT_CLIENT_TPGW_reportGWStatus,
 		.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
 		.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
+		.fTPResponse		= FTOM_MQTT_CLIENT_TPGW_response,
 	},
 };
 
@@ -420,6 +423,29 @@ FTM_RET	FTOM_MQTT_CLIENT_onPublishEPData
 	return	xRet;
 }
 
+FTM_RET	FTOM_MQTT_CLIENT_onTPResponse
+(
+	FTOM_MQTT_CLIENT_PTR	pClient,
+	FTOM_MSG_TP_RESPONSE_PTR	pMsg
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pMsg != NULL);
+
+	FTM_RET	xRet;
+
+	if (pCBSet[pClient->xConfig.ulCBSet].fTPResponse != NULL)
+	{
+		xRet = pCBSet[pClient->xConfig.ulCBSet].fTPResponse(pClient, pMsg->pMsgID, pMsg->nCode, pMsg->pMessage);
+	}
+	else
+	{
+		xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+	}
+
+	return	xRet;
+}
+
 FTM_RET	FTOM_MQTT_CLIENT_start
 (
 	FTOM_MQTT_CLIENT_PTR pClient
@@ -516,7 +542,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 	{
 		FTOM_MSG_PTR	pMsg;
 
-		xRet = FTOM_MSGQ_timedPop(pClient->pMsgQ, 1000000, &pMsg);
+		xRet = FTOM_MSGQ_timedPop(pClient->pMsgQ, 100, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			switch(pMsg->xType)
@@ -536,6 +562,12 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 			case	FTOM_MSG_TYPE_PUBLISH_EP_DATA:
 				{
 					xRet = FTOM_MQTT_CLIENT_onPublishEPData(pClient, (FTOM_MSG_PUBLISH_EP_DATA_PTR)pMsg);	
+				}
+				break;
+
+			case	FTOM_MSG_TYPE_TP_RESPONSE:
+				{
+					xRet = FTOM_MQTT_CLIENT_onTPResponse(pClient, (FTOM_MSG_TP_RESPONSE_PTR)pMsg);
 				}
 				break;
 
@@ -588,7 +620,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_connector
 	TRACE("Port : %d\n", pClient->xConfig.usPort);
 	mosquitto_connect_async(pClient->pMosquitto, pClient->xConfig.pHost, pClient->xConfig.usPort, 60);
 	mosquitto_loop_start(pClient->pMosquitto);
-	FTM_TIMER_init(&pClient->xLinkTimer, pClient->xConfig.ulRetryInterval * 1000000);
+	FTM_TIMER_initS(&pClient->xLinkTimer, pClient->xConfig.ulRetryInterval);
 
 	while(!pClient->bStop)
 	{
@@ -598,7 +630,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_connector
 			{
 				TRACE("MQTT try reconnection !\n");
 				mosquitto_reconnect_async(pClient->pMosquitto);
-				FTM_TIMER_addSeconds(&pClient->xLinkTimer, pClient->xConfig.ulRetryInterval);
+				FTM_TIMER_addS(&pClient->xLinkTimer, pClient->xConfig.ulRetryInterval);
 			}
 		}
 
@@ -688,6 +720,37 @@ FTM_RET	FTOM_MQTT_CLIENT_publishEPData
 	}
 
 	xRet = FTOM_MQTT_CLIENT_pushMsg(pClient, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pMsg);	
+	}
+
+	return	xRet;
+}
+
+
+FTM_RET	FTOM_MQTT_CLIENT_response
+(
+	FTOM_MQTT_CLIENT_PTR pClient,
+	FTM_CHAR_PTR		pMsgID,
+	FTM_INT				nCode,
+	FTM_CHAR_PTR		pMessage
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pMsgID != NULL);
+	ASSERT(pMessage != NULL);
+
+	FTM_RET	xRet;
+	FTOM_MSG_PTR	pMsg;
+
+	xRet = FTOM_MSG_TP_createResponse(pMsgID, nCode, pMessage, &pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTOM_MQTT_CLIENT_pushMsg(pClient, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pMsg);	
@@ -978,8 +1041,8 @@ FTM_VOID FTOM_MQTT_CLIENT_disconnectCB
 	}
 	else
 	{
-		FTM_TIMER_init(&pClient->xLinkTimer, 0);
-		FTM_TIMER_addSeconds(&pClient->xLinkTimer, pClient->xConfig.ulRetryInterval);
+		FTM_TIMER_initS(&pClient->xLinkTimer, 0);
+		FTM_TIMER_addS(&pClient->xLinkTimer, pClient->xConfig.ulRetryInterval);
 
 		pClient->bConnected = FTM_FALSE;
 	}

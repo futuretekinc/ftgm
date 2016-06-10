@@ -15,6 +15,7 @@
 #include "ftom_mqtt_client.h"
 #include "ftom_tp_client.h"
 #include "ftom_msg.h"
+#include "ftom_message_queue.h"
 #include "ftom_trigger.h"
 #include "ftom_action.h"
 #include "ftom_rule.h"
@@ -851,7 +852,7 @@ FTM_RET	FTOM_TASK_processing
 	FTOM_MSG_PTR	pMsg = NULL;
 	FTM_TIMER		xLoopTimer;
 	
-	FTM_TIMER_init(&xLoopTimer, FTOM_LOOP_INTERVAL);
+	FTM_TIMER_initMS(&xLoopTimer, FTOM_LOOP_INTERVAL);
 
 	xRet = FTOM_MSG_createInitializeDone(&pMsg);
 	if (xRet != FTM_RET_OK)
@@ -867,7 +868,7 @@ FTM_RET	FTOM_TASK_processing
 	{
 		FTM_ULONG	ulRemainTime;
 		
-		FTM_TIMER_remain(&xLoopTimer, &ulRemainTime);
+		FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
 		xRet = FTOM_MSGQ_timedPop(pMsgQ, ulRemainTime, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
@@ -885,7 +886,7 @@ FTM_RET	FTOM_TASK_processing
 
 		if (FTM_TIMER_isExpired(&xLoopTimer))
 		{
-			FTM_TIMER_add(&xLoopTimer, FTOM_LOOP_INTERVAL);
+			FTM_TIMER_addMS(&xLoopTimer, FTOM_LOOP_INTERVAL);
 		}
 	}
 
@@ -2406,11 +2407,20 @@ FTM_RET	FTOM_discoveryEP
 
 FTM_RET	FTOM_sendMessage
 (
-	FTOM_MSG_PTR	pMsg
+	FTOM_SERVICE_TYPE	xService,
+	FTOM_MSG_PTR		pMsg
 )
 {
-	return	FTOM_MSGQ_push(pMsgQ, pMsg);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR	pService;
 
+	xRet = FTOM_SERVICE_get(xService, &pService);
+	if ((xRet != FTM_RET_OK) || (pService->fSendMessage == NULL))
+	{
+		return	FTOM_MSGQ_push(pMsgQ, pMsg);
+	}
+
+	return	pService->fSendMessage(pService->pData, pMsg);
 }
 
 FTM_RET	FTOM_serverSync

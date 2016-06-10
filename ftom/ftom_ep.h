@@ -7,6 +7,7 @@
 
 #include "ftm.h"
 #include "ftom_msg.h"
+#include "ftom_message_queue.h"
 
 typedef	struct FTOM_EP_STRUCT
 {
@@ -25,6 +26,9 @@ typedef	struct FTOM_EP_STRUCT
 	FTM_LIST			xDataList;
 	FTM_LIST			xTriggerList;
 
+	pthread_t			xUpdateThread;
+	FTM_TIMER			xUpdateTimer;
+	FTM_TIMER			xReportTimer;
 	struct
 	{
 		FTM_BOOL		bRegistered;
@@ -223,6 +227,18 @@ FTM_RET FTOM_EP_getIDList
 	FTM_CHAR		pEPID[][FTM_EPID_LEN+1],
 	FTM_ULONG 		ulMaxCount, 
 	FTM_ULONG_PTR 	pulCount
+);
+
+FTM_RET	FTOM_EP_setReportInterval
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG		ulInterval
+);
+
+FTM_RET	FTOM_EP_getReportInterval
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG_PTR	pulInterval
 );
 
 FTM_RET	FTOM_EP_CLASS_create

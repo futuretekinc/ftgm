@@ -74,6 +74,11 @@ FTM_RET	FTDM_DBIF_deleteTable
 	FTM_CHAR_PTR		pTableName
 );
 
+FTM_RET	FTDM_DBIF_TABLE_deleteAllTables
+(
+	FTM_VOID
+);
+
 FTM_RET	FTDM_DBIF_NODE_create
 (
  	FTM_NODE_PTR	pInfo

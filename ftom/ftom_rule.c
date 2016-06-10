@@ -2,11 +2,11 @@
 #include <unistd.h>
 #include "ftom.h"
 #include "ftom_msg.h"
+#include "ftom_message_queue.h"
 #include "ftom_rule.h"
 #include "ftom_trigger.h"
 #include "ftom_action.h"
 
-#define	FTOM_RULE_LOOP_INTERVAL	100000
 #if 0
 #define	TRACE_CALL()	TRACE("%s[%d]\n", __func__, __LINE__)
 #else
@@ -288,19 +288,19 @@ FTM_VOID_PTR FTOM_RULE_process
 	FTOM_MSG_RULE_PTR		pMsg;
 	FTM_TIMER				xTimer;
 	
-	FTM_TIMER_init(&xTimer, 0);
+	FTM_TIMER_initS(&xTimer, 0);
 
 	bStop = FTM_FALSE;
 
 	while(!bStop)
 	{
-		FTM_TIMER_add(&xTimer, FTOM_RULE_LOOP_INTERVAL);
+		FTM_TIMER_addMS(&xTimer, FTOM_RULE_LOOP_INTERVAL);
 	
 		do
 		{
 			FTM_ULONG	ulRemain = 0;	
 
-			FTM_TIMER_remain(&xTimer, &ulRemain);
+			FTM_TIMER_remainMS(&xTimer, &ulRemain);
 
 			xRet = FTOM_MSGQ_timedPop(pMsgQ, ulRemain, (FTOM_MSG_PTR _PTR_)&pMsg);
 			if (xRet == FTM_RET_OK)

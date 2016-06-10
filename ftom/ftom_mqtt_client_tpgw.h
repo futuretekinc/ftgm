@@ -61,4 +61,11 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 	FTM_ULONG			ulCount
 );
 
+FTM_RET	FTOM_MQTT_CLIENT_TPGW_response
+(
+	FTOM_MQTT_CLIENT_PTR pClient, 
+	FTM_CHAR_PTR		pMsgID,
+	FTM_INT				nCode,
+	FTM_CHAR_PTR		pMessage
+);
 #endif

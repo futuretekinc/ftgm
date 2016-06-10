@@ -354,7 +354,8 @@ FTM_RET	FTOM_discoveryEP
 
 FTM_RET	FTOM_sendMessage
 (
-	FTOM_MSG_PTR	pMsg
+	FTOM_SERVICE_TYPE	xService,
+	FTOM_MSG_PTR		pMsg
 );
 
 FTM_RET	FTOM_setMessageCallback

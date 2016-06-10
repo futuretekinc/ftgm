@@ -35,6 +35,8 @@ typedef	struct FTOM_NODE_STRUCT
 	FTOM_NODE_STATE	xState;
 	FTOM_MSG_QUEUE	xMsgQ;
 
+	FTM_TIMER		xReportTimer;
+
 	struct
 	{
 		FTM_BOOL	bRegistered;	
@@ -151,6 +153,17 @@ FTM_RET	FTOM_NODE_setEPData
 	FTM_EP_DATA_PTR pData
 );
 
+FTM_RET	FTOM_NODE_setReportInterval
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_ULONG		ulInterval
+);
+
+FTM_RET	FTOM_NODE_getReportInterval
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_ULONG_PTR	pulInterval
+);
 
 FTM_RET	FTOM_NODE_start
 (

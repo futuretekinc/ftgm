@@ -4,6 +4,7 @@
 #include "ftm.h"
 #include "ftdm_client.h"
 #include "ftom_msg.h"
+#include "ftom_message_queue.h"
 #include "ftom_service.h"
 
 typedef	struct

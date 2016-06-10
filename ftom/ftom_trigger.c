@@ -9,8 +9,6 @@
 #include "ftom_msg.h"
 #include "libconfig.h"
 
-#define	FTOM_TRIGGER_LOOP_INTERVAL	100000	// 1s
-
 static 
 FTM_VOID_PTR FTOM_TRIGGER_process
 (
@@ -258,7 +256,7 @@ FTM_VOID_PTR FTOM_TRIGGER_process
 	ASSERT(pData != NULL);
 	FTM_TIMER xTimer;
 	
-	FTM_TIMER_init(&xTimer, 0);
+	FTM_TIMER_initS(&xTimer, 0);
 
 	TRACE("Trigger management process started.\n");
 	while(!bStop)
@@ -267,7 +265,7 @@ FTM_VOID_PTR FTOM_TRIGGER_process
 		FTOM_TRIGGER_PTR	pTrigger;
 		FTM_ULONG			i, ulCount;
 
-		FTM_TIMER_add(&xTimer, FTOM_TRIGGER_LOOP_INTERVAL);
+		FTM_TIMER_addMS(&xTimer, FTOM_TRIGGER_LOOP_INTERVAL);
 	
 		FTM_LIST_count(pTriggerList, &ulCount);
 		for(i = 0 ; i < ulCount ; i++)
@@ -284,7 +282,7 @@ FTM_VOID_PTR FTOM_TRIGGER_process
 						INFO("Trigger[%s] occurred!\n", pTrigger->xInfo.pID);
 						pTrigger->xState = FTOM_TRIGGER_STATE_SET;
 						FTM_TIME_getCurrent(&pTrigger->xOccurrenceTime);
-						FTM_TIMER_init(&pTrigger->xHoldingTimer, pTrigger->xInfo.xParams.xCommon.ulHoldingTime);
+						FTM_TIMER_initS(&pTrigger->xHoldingTimer, pTrigger->xInfo.xParams.xCommon.ulHoldingTime);
 
 						FTOM_RULE_notifyChanged(pTrigger->xInfo.pID);
 					}
@@ -307,10 +305,10 @@ FTM_VOID_PTR FTOM_TRIGGER_process
 		
 		if (FTM_TIMER_isExpired(&xTimer) != FTM_TRUE)
 		{
-			FTM_ULONG	ulRemain = 0;	
+			FTM_UINT64	ulRemainUS = 0;	
 
-			FTM_TIMER_remain(&xTimer, &ulRemain);
-			usleep(ulRemain);
+			FTM_TIMER_remainUS(&xTimer, &ulRemainUS);
+			usleep(ulRemainUS);
 		}
 	}
 
@@ -449,7 +447,7 @@ FTM_RET	FTOM_TRIGGER_updateEP
 					{
 						if (bOccurrence)
 						{
-							FTM_TIMER_init(&pTrigger->xDetectionTimer, pTrigger->xInfo.xParams.xCommon.ulDetectionTime);
+							FTM_TIMER_initS(&pTrigger->xDetectionTimer, pTrigger->xInfo.xParams.xCommon.ulDetectionTime);
 							pTrigger->xState = FTOM_TRIGGER_STATE_PRESET;
 						}
 					}
@@ -459,7 +457,7 @@ FTM_RET	FTOM_TRIGGER_updateEP
 					{
 						if (!bOccurrence)
 						{
-							FTM_TIMER_init(&pTrigger->xDetectionTimer, 0);
+							FTM_TIMER_initS(&pTrigger->xDetectionTimer, 0);
 							pTrigger->xState = FTOM_TRIGGER_STATE_RESET;
 						}
 					}

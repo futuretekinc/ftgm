@@ -2,6 +2,7 @@
 #include <time.h>
 #include "ftm_trace.h"
 #include "ftm_mem.h"
+#include "ftm_snmp.h"
 #include "ftdm_shell_cmds.h"
 #include "ftdm_node.h"
 #include "ftdm_ep.h"
@@ -31,7 +32,7 @@ FTM_RET	FTDM_SHELL_showNodeList(FTDM_NODEM_PTR pNodeM)
 					pNode->xInfo.pDID, 
 					FTM_NODE_typeString(pNode->xInfo.xType), 
 				pNode->xInfo.pLocation,
-				pNode->xInfo.ulInterval,
+				pNode->xInfo.ulReportInterval,
 				pNode->xInfo.ulTimeout);
 
 				switch(pNode->xInfo.xType)
@@ -79,7 +80,7 @@ FTM_RET FTDM_SHELL_showNodeInfo(FTDM_NODEM_PTR pNodeM, FTM_CHAR_PTR pDID)
 		MESSAGE("%-16s : %s\n", "DID", 		pDID);	
 		MESSAGE("%-16s : %s\n", "TYPE", 	FTM_NODE_typeString(pNode->xInfo.xType)); 
 		MESSAGE("%-16s : %s\n", "LOCATION", pNode->xInfo.pLocation);
-		MESSAGE("%-16s : %lu\n", "INTERVAL",pNode->xInfo.ulInterval);
+		MESSAGE("%-16s : %lu\n", "INTERVAL",pNode->xInfo.ulReportInterval);
 		MESSAGE("%-16s : %lu\n", "TIMEOUT", pNode->xInfo.ulTimeout);
 		MESSAGE("%-16s : %s\n", "OPT 0", 	FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion));	
 		MESSAGE("%-16s : %s\n", "OPT 1", 	pNode->xInfo.xOption.xSNMP.pURL);	

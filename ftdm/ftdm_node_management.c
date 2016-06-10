@@ -455,7 +455,7 @@ FTM_RET	FTDM_NODEM_showList
 				FTM_NODE_typeString(pNode->xInfo.xType),
 				pNode->xInfo.pName,
 				pNode->xInfo.pLocation,
-				pNode->xInfo.ulInterval,
+				pNode->xInfo.ulReportInterval,
 				pNode->xInfo.ulTimeout);
 
 			switch(pNode->xInfo.xType)

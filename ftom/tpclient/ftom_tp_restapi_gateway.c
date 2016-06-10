@@ -51,10 +51,27 @@ FTM_RET	FTOM_TP_GATEWAY_init
 )
 {
 	ASSERT(pGateway != NULL);
+	FTM_RET	xRet;
 
 	memset(pGateway, 0, sizeof(FTOM_TP_GATEWAY));
 
-	return	FTM_LIST_create(&pGateway->pSensorList);
+	xRet = FTM_LIST_create(&pGateway->pDeviceList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't creation device list!\n");
+		return	xRet;	
+	}
+
+	xRet = FTM_LIST_create(&pGateway->pSensorList);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LIST_destroy(pGateway->pDeviceList);
+		pGateway->pDeviceList = NULL;
+		ERROR("Can't creation sensor list!\n");
+		return	xRet;	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_TP_GATEWAY_final
@@ -65,6 +82,27 @@ FTM_RET	FTOM_TP_GATEWAY_final
 	ASSERT(pGateway != NULL);
 	FTM_RET		xRet;
 	FTM_ULONG	i, ulCount;
+
+	xRet = FTM_LIST_count(pGateway->pDeviceList, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTM_CHAR_PTR	pDeviceID = NULL;
+
+		xRet =FTM_LIST_getAt(pGateway->pDeviceList, i, (FTM_VOID_PTR _PTR_)&pDeviceID);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_MEM_free(pDeviceID);	
+		}
+	
+	}
+
+	FTM_LIST_destroy(pGateway->pDeviceList);
+	pGateway->pDeviceList = NULL;
 
 	xRet = FTM_LIST_count(pGateway->pSensorList, &ulCount);
 	if (xRet != FTM_RET_OK)

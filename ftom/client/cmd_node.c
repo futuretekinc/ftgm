@@ -162,7 +162,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 			MESSAGE("%16s : %s\n", 	"DID", 		xInfo.pDID);
 			MESSAGE("%16s : %s\n",	"Type",		FTM_NODE_typeString(xInfo.xType));
 			MESSAGE("%16s : %s\n", 	"Location", xInfo.pLocation);
-			MESSAGE("%16S : %lu\n",	"Interval",	xInfo.ulInterval);
+			MESSAGE("%16S : %lu\n",	"Interval",	xInfo.ulReportInterval);
 			MESSAGE("%16S : %lu\n",	"Timeout",	xInfo.ulTimeout);
 			MESSAGE("Options\n");
 			switch(xInfo.xType)
@@ -215,7 +215,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 					xInfo.pDID, 
 					FTM_NODE_typeString(xInfo.xType), 
 					xInfo.pLocation,
-					xInfo.ulInterval);
+					xInfo.ulReportInterval);
 
 				switch(xInfo.xType)
 				{

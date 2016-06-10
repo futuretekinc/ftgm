@@ -106,6 +106,11 @@ FTM_RET	FTOM_TP_RESTAPI_DEVICE_create
 	FTM_CHAR_PTR		pModel
 );
 
+FTM_RET	FTOM_TP_RESTAPI_DEVICE_delete
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pDeviceID
+);
 /********************************************************************
  * Sensor management
  ********************************************************************/
@@ -164,6 +169,23 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_setValues
 	FTM_EP_DATA_PTR		pValues,
 	FTM_ULONG			ulCount
 );
+
+
+/********************************************************************
+ * Node management
+ ********************************************************************/
+FTM_RET	FTOM_TP_RESTAPI_NODE_create
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_NODE_PTR			pNodeInfo
+);
+
+FTM_RET	FTOM_TP_RESTAPI_NODE_delete
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pDID
+);
+
 /********************************************************************
  * End Point management
  ********************************************************************/

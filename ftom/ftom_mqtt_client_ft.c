@@ -86,7 +86,7 @@ FTM_VOID FTOM_MQTT_CLIENT_FT_messageCB
 			return;
 		}
 
-		xRet = FTOM_sendMessage(pMsg);
+		xRet = FTOM_sendMessage(FTOM_SERVICE_ALL, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			FTM_MEM_free(pMsg);

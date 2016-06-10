@@ -43,6 +43,13 @@ FTM_RET	FTM_TIME_add
 	FTM_TIME_PTR 	pTimeS
 );
 
+FTM_RET	FTM_TIME_addMS
+(
+	FTM_TIME_PTR 	pTimeA, 
+	FTM_ULONG		ulTimeMS,
+	FTM_TIME_PTR 	pTimeS
+);
+
 FTM_RET	FTM_TIME_sub
 (
 	FTM_TIME_PTR 	pTimeA, 

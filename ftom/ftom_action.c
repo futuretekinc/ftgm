@@ -4,9 +4,9 @@
 #include "ftm.h"
 #include "ftom_action.h"
 #include "ftom_msg.h"
+#include "ftom_message_queue.h"
 #include "libconfig.h"
 
-#define	FTOM_ACTION_LOOP_INTERVAL	100000	// 1000 us
 
 static FTM_VOID_PTR FTOM_ACTION_process(FTM_VOID_PTR pData);
 static FTM_BOOL		FTOM_ACTION_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
@@ -257,19 +257,19 @@ FTM_VOID_PTR FTOM_ACTION_process
 	FTOM_MSG_ACTION_PTR		pMsg;
 	FTM_TIMER				xTimer;
 	
-	FTM_TIMER_init(&xTimer, 0);
+	FTM_TIMER_initS(&xTimer, 0);
 
 	bStop = FTM_FALSE;
 
 	while(!bStop)
 	{
-		FTM_TIMER_add(&xTimer, FTOM_ACTION_LOOP_INTERVAL);
+		FTM_TIMER_addMS(&xTimer, FTOM_ACTION_LOOP_INTERVAL);
 	
 		do
 		{
 			FTM_ULONG	ulRemain = 0;	
 
-			FTM_TIMER_remain(&xTimer, &ulRemain);
+			FTM_TIMER_remainMS(&xTimer, &ulRemain);
 
 			xRet = FTOM_MSGQ_timedPop(pMsgQ, ulRemain, (FTOM_MSG_PTR _PTR_)&pMsg);
 			if (xRet == FTM_RET_OK)

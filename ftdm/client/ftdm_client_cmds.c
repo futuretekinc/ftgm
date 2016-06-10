@@ -392,7 +392,7 @@ FTM_RET	FTDMC_NODE_cmd
 			MESSAGE("%16s : %s\n", "DID", 		xInfo.pDID);
 			MESSAGE("%16s : %s\n", "Type", 		FTM_NODE_typeString(xInfo.xType));
 			MESSAGE("%16s : %s\n", "Location", 	xInfo.pLocation);
-			MESSAGE("%16s : %d\n", "Interval", 	xInfo.ulInterval);
+			MESSAGE("%16s : %d\n", "Interval", 	xInfo.ulReportInterval);
 			MESSAGE("%16s : %d\n", "Timeout", 	xInfo.ulTimeout);
 			MESSAGE("%16s : %s\n", "Version", 	FTM_SNMP_versionString(xInfo.xOption.xSNMP.ulVersion));
 			MESSAGE("%16s : %s\n", "URL", 		xInfo.xOption.xSNMP.pURL);
@@ -422,7 +422,7 @@ FTM_RET	FTDMC_NODE_cmd
 						xInfo.pDID,
 						FTM_NODE_typeString(xInfo.xType),
 						FTM_NODE_isStatic(&xInfo)?"Static":"Dynamic",
-						xInfo.ulInterval,
+						xInfo.ulReportInterval,
 						xInfo.ulTimeout,
 						FTM_SNMP_versionString(xInfo.xOption.xSNMP.ulVersion),
 						xInfo.xOption.xSNMP.pURL,

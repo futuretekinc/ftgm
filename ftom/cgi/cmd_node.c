@@ -23,7 +23,7 @@ FTM_RET	FTOM_CGI_addNode
 	xRet = FTOM_CGI_getDID(pReq, xInfo.pDID, FTM_TRUE);
 	xRet |= FTOM_CGI_getNodeType(pReq, &xInfo.xType, FTM_FALSE);
 	xRet |= FTOM_CGI_getLocation(pReq, xInfo.pLocation, FTM_TRUE);
-	xRet |= FTOM_CGI_getInterval(pReq, &xInfo.ulInterval, FTM_TRUE);
+	xRet |= FTOM_CGI_getReportInterval(pReq, &xInfo.ulReportInterval, FTM_TRUE);
 	xRet |= FTOM_CGI_getTimeout(pReq, &xInfo.ulTimeout, FTM_TRUE);
 	
 	switch(xInfo.xType)
@@ -260,7 +260,7 @@ FTM_RET	FTOM_CGI_setNode
 		goto finish;
 	}
 
-	xRet = FTOM_CGI_getInterval(pReq, &xInfo.ulInterval, FTM_TRUE);
+	xRet = FTOM_CGI_getReportInterval(pReq, &xInfo.ulReportInterval, FTM_TRUE);
 	if (xRet == FTM_RET_OK)
 	{
 		xFields |= FTM_NODE_FIELD_INTERVAL;
@@ -328,7 +328,7 @@ FTM_RET	FTOM_CGI_addNodeInfoToObject
 	
 	if (xFields & FTM_NODE_FIELD_INTERVAL )
 	{
-		cJSON_AddNumberToObject(pRoot,	"interval", pNodeInfo->ulInterval);
+		cJSON_AddNumberToObject(pRoot,	"report_interval", pNodeInfo->ulReportInterval);
 	}
 	
 	if (xFields & FTM_NODE_FIELD_TIMEOUT )

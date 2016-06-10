@@ -1,4 +1,5 @@
 #include "ftom_discovery.h"
+#include "ftom_message_queue.h"
 #include "ftm_list.h"
 
 static
@@ -85,7 +86,7 @@ FTM_RET	FTOM_DISCOVERY_init
 	pDiscovery->ulRetryCount= 3;
 	pDiscovery->ulLoopCount	= 0;
 	FTOM_MSGQ_create(&pDiscovery->pMsgQ);
-	FTM_TIMER_init(&pDiscovery->xTimer, 0);
+	FTM_TIMER_initS(&pDiscovery->xTimer, 0);
 	FTM_LIST_init(&pDiscovery->xNodeList);
 	FTM_LIST_init(&pDiscovery->xEPList);
 	FTM_LIST_init(&pDiscovery->xInfoList);
@@ -193,7 +194,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 	{
 		FTOM_MSG_PTR	pCommonMsg;
 
-		xRet = FTOM_MSGQ_timedPop(pDiscovery->pMsgQ, 100000, &pCommonMsg);
+		xRet = FTOM_MSGQ_timedPop(pDiscovery->pMsgQ, 100, &pCommonMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			switch(pCommonMsg->xType)
@@ -205,7 +206,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					if (!pDiscovery->bInProgress)
 					{
 						pDiscovery->bInProgress = FTM_TRUE;
-						FTM_TIMER_init(&pDiscovery->xTimer, pDiscovery->ulTimeout * 1000000);
+						FTM_TIMER_initS(&pDiscovery->xTimer, pDiscovery->ulTimeout);
 						strncpy(pDiscovery->pTargetIP, pMsg->pNetwork, sizeof(pDiscovery->pTargetIP) - 1);
 						pDiscovery->usTargetPort = pMsg->usPort;
 						FTOM_DISCOVERY_requestInformation(pDiscovery, pDiscovery->pTargetIP, pDiscovery->usTargetPort);
@@ -295,7 +296,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 		{
 			if (pDiscovery->ulLoopCount < pDiscovery->ulRetryCount)
 			{
-				FTM_TIMER_init(&pDiscovery->xTimer, pDiscovery->ulTimeout * 1000000);
+				FTM_TIMER_initS(&pDiscovery->xTimer, pDiscovery->ulTimeout);
 				FTOM_DISCOVERY_requestInformation(pDiscovery, pDiscovery->pTargetIP, pDiscovery->usTargetPort);
 				pDiscovery->ulLoopCount++;
 			}

@@ -4,6 +4,7 @@
 #include "ftom.h"
 #include "ftom_ep.h"
 #include "ftom_dmc.h"
+#include "ftom_message_queue.h"
 #include "ftom_node_snmp_client.h"
 
 #define	FTOM_EP_DATA_COUNT	32
@@ -629,98 +630,93 @@ FTM_VOID_PTR FTOM_EP_process
 
 	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP = (FTOM_EP_PTR)pData;
-	FTM_TIMER	xCollectionTimer;
-	FTM_TIMER	xTransTimer;
-	FTM_TIME	xCurrentTime, xAlignTime, xNextTime, xInterval, xCycle;
+	FTM_TIMER	xLoopTimer;
 
-	pEP->bStop = FTM_FALSE;
 
 	TRACE("EP[%s] process start.\n", pEP->xInfo.pEPID);
 
-	FTM_TIME_getCurrent(&xAlignTime);
-	switch(pEP->xInfo.ulUpdateInterval)
-	{
-	case       1: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_1S, &xAlignTime); break;
-	case      10: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_10S, &xAlignTime); break;
-	case      60: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_1M, &xAlignTime); break;
-	case     600: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_10M, &xAlignTime); break;
-	case    3600: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_1H, &xAlignTime); break;
-	case 24*3600: FTM_TIME_align(&xAlignTime, FTM_TIME_ALIGN_1D, &xAlignTime); break;
-	};
-
-	FTM_TIME_setSeconds(&xInterval, pEP->xInfo.ulUpdateInterval);
-	FTM_TIME_add(&xAlignTime, &xInterval, &xNextTime);
-
-	FTM_TIME_getCurrent(&xCurrentTime);
-	FTM_TIME_sub(&xNextTime, &xCurrentTime, &xInterval);
-
-	FTM_TIMER_initTime(&xCollectionTimer, &xInterval);
-
-	FTM_TIME_setSeconds(&xCycle, pEP->xInfo.ulReportInterval);
-	FTM_TIME_add(&xAlignTime, &xCycle, &xNextTime);
-
-	FTM_TIME_getCurrent(&xCurrentTime);
-	FTM_TIME_sub(&xNextTime, &xCurrentTime, &xCycle);
-
-	FTM_TIMER_initTime(&xTransTimer, &xCycle);
+	pEP->bStop = FTM_FALSE;
+	FTM_TIMER_initS(&pEP->xUpdateTimer, 0);
+	FTM_TIMER_initS(&pEP->xReportTimer, 0);
 
 	while(!pEP->bStop)
 	{
-		FTM_ULONG		ulRemainTime = 0;
 		FTM_EP_DATA		xData;
 		FTOM_MSG_PTR	pMsg = NULL;
 
-		xRet = FTOM_EP_pullData(pEP, &xData);
-		if (xRet == FTM_RET_OK)
+		if (FTM_TIMER_isExpired(&pEP->xUpdateTimer))
 		{
-			xData.xState = FTM_EP_DATA_STATE_VALID;
-			xData.ulTime = time(NULL);
-			FTOM_EP_setData(pEP, &xData);
-		}
-		else
-		{
-			WARN("It failed to import data from EP[%s].\n", pEP->xInfo.pEPID);
+			xRet = FTOM_EP_pullData(pEP, &xData);
+			if (xRet == FTM_RET_OK)
+			{
+				xData.xState = FTM_EP_DATA_STATE_VALID;
+				xData.ulTime = time(NULL);
+				FTOM_EP_setData(pEP, &xData);
+			}
+			else
+			{
+				WARN("It failed to import data from EP[%s].\n", pEP->xInfo.pEPID);
+			}
+
+			FTM_TIMER_addS(&pEP->xUpdateTimer, pEP->xInfo.ulUpdateInterval);
 		}
 
-		if (FTM_TIMER_isExpired(&xTransTimer))
+		if (FTM_TIMER_isExpired(&pEP->xReportTimer))
 		{
 			FTM_ULONG	ulPrevTime, ulCurrentTime;
 
-			FTM_TIMER_getTime(&xTransTimer, &ulCurrentTime);
+			FTM_TIMER_getTime(&pEP->xReportTimer, &ulCurrentTime);
 			ulPrevTime = ulCurrentTime - pEP->xInfo.ulReportInterval;
 
 			FTOM_EP_reportStatus(pEP);
 			FTOM_EP_reportDataInTime(pEP, ulPrevTime, ulCurrentTime);
-			FTM_TIMER_add(&xTransTimer, pEP->xInfo.ulReportInterval * 1000000);
+			FTM_TIMER_addS(&pEP->xReportTimer, pEP->xInfo.ulReportInterval);
 		}
 	
-		do
+		FTM_ULONG		ulRemainTime1 = 0;
+		FTM_ULONG		ulRemainTime2 = 0;
+		FTM_ULONG		ulRemainTime  = 0;
+	
+		FTM_TIMER_remainMS(&pEP->xUpdateTimer, &ulRemainTime1);
+		FTM_TIMER_remainMS(&pEP->xReportTimer, &ulRemainTime2);
+		if (ulRemainTime1 < ulRemainTime2)
 		{
-			FTM_TIMER_remain(&xCollectionTimer, &ulRemainTime);
-		
-			if (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK)
-			{
-				TRACE("Receive Message : EP[%s], MSG[%08x]\n", pEP->xInfo.pEPID, pMsg->xType);
-				switch(pMsg->xType)
-				{
-				case	FTOM_MSG_TYPE_QUIT:
-					{
-						pEP->bStop = FTM_TRUE;
-					}
-					break;
-
-				default:
-					{	
-						WARN("Invalid message[%08x]\n", pMsg->xType);
-					}
-				}
-
-				FTM_MEM_free(pMsg);
-			}
+			ulRemainTime = ulRemainTime1;	
 		}
-		while (!pEP->bStop && (FTM_TIMER_isExpired(&xCollectionTimer) != FTM_TRUE));
-	
-		FTM_TIMER_add(&xCollectionTimer, pEP->xInfo.ulUpdateInterval * 1000000);
+		else
+		{
+			ulRemainTime = ulRemainTime2;	
+		}
+
+		if (ulRemainTime == 0)
+		{
+			ulRemainTime = 1;	
+		}
+
+		FTM_TIMER_initMS(&xLoopTimer, ulRemainTime);
+
+		TRACE("EP[%s] waiting time %d\n", pEP->xInfo.pEPID, ulRemainTime);
+		while (!pEP->bStop && (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
+		{
+			TRACE("Receive Message : EP[%s], MSG[%08x]\n", pEP->xInfo.pEPID, pMsg->xType);
+			switch(pMsg->xType)
+			{
+			case	FTOM_MSG_TYPE_QUIT:
+				{
+					pEP->bStop = FTM_TRUE;
+				}
+				break;
+
+			default:
+				{	
+					WARN("Invalid message[%08x]\n", pMsg->xType);
+				}
+			}
+			
+			FTOM_MSG_destroy(&pMsg);
+
+			FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
+		}
 	} 
 
 	return	0;
@@ -1182,6 +1178,43 @@ FTM_RET FTOM_EP_getIDList
 
 	
 	*pulCount = ulCount;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_EP_setReportInterval
+(
+	FTOM_EP_PTR	pEP,
+	FTM_ULONG		ulInterval
+)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTM_isValidInterval(ulInterval);
+	if (xRet == FTM_RET_OK)
+	{
+		pEP->xInfo.ulReportInterval = ulInterval;
+		if ((!pEP->bStop) && (!FTM_TIMER_isExpired(&pEP->xReportTimer)))
+		{
+			FTM_TIMER_initS(&pEP->xReportTimer, 0);
+		}
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_EP_getReportInterval
+(
+	FTOM_EP_PTR	pEP,
+	FTM_ULONG_PTR	pulInterval
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pulInterval != NULL);
+		
+	*pulInterval = pEP->xInfo.ulReportInterval;
 
 	return	FTM_RET_OK;
 }

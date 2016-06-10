@@ -207,6 +207,7 @@ FTM_RET	FTOM_MSG_createPublishEPStatus
 
 	return	FTM_RET_OK;
 }
+
 FTM_RET	FTOM_MSG_createPublishEPData
 (
 	FTM_CHAR_PTR		pEPID,
@@ -559,85 +560,69 @@ FTM_RET	FTOM_MSG_copy
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MSGQ_create(FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
+/********************************************************************************
+ * Requested from the thing+
+ ********************************************************************************/
+FTM_RET	FTOM_MSG_TP_createReqSetReportInterval
+(
+	FTM_CHAR_PTR	pReqID,
+ 	FTM_ULONG	ulReportIntervalMS,
+	FTOM_MSG_PTR _PTR_	ppMsg
+
+)
 {
-	ASSERT(ppMsgQ != NULL);
+	ASSERT(ppMsg != NULL);
 
-	FTM_RET				xRet;
-	FTOM_MSG_QUEUE_PTR	pMsgQ;
+	FTOM_MSG_TP_REQ_SET_REPORT_INTERVAL_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_TP_REQ_SET_REPORT_INTERVAL) + strlen(pReqID) + 1;
 
-	pMsgQ = (FTOM_MSG_QUEUE_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_QUEUE));
-	if (pMsgQ == NULL)
+	pMsg = (FTOM_MSG_TP_REQ_SET_REPORT_INTERVAL_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
 	{
-		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	memset(pMsgQ, 0, sizeof(FTOM_MSG_QUEUE));
+	pMsg->xType	= FTOM_MSG_TYPE_TP_REQ_SET_REPORT_INTERVAL;
+	pMsg->ulLen = ulMsgLen;
+	strcpy(pMsg->pReqID, pReqID);
+	pMsg->ulReportIntervalMS = ulReportIntervalMS;
 
-	xRet = FTOM_MSGQ_init(pMsgQ);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pMsgQ);
-		return	xRet;
-	}
-
-	*ppMsgQ = pMsgQ;
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MSGQ_destroy(FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
+FTM_RET	FTOM_MSG_TP_createResponse
+(
+	FTM_CHAR_PTR	pMsgID,
+	FTM_INT			nCode,
+	FTM_CHAR_PTR	pMessage,
+	FTOM_MSG_PTR _PTR_	ppMsg
+)
 {
-	ASSERT(ppMsgQ != NULL);
+	ASSERT(ppMsg != NULL);
+	ASSERT(pMsgID != NULL);
+	ASSERT(pMessage != NULL);
 
-	if (*ppMsgQ == NULL)
+	FTOM_MSG_TP_RESPONSE_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_TP_RESPONSE) + strlen(pMsgID) + strlen(pMessage) + 1;
+
+	pMsg = (FTOM_MSG_TP_RESPONSE_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
 	{
-		return	FTM_RET_NOT_INITIALIZED;
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
+	pMsg->pMsgID = (FTM_CHAR_PTR)pMsg + sizeof(FTOM_MSG_TP_RESPONSE);
+	pMsg->pMessage = (FTM_CHAR_PTR)pMsg + sizeof(FTOM_MSG_TP_RESPONSE) + strlen(pMsgID) + 1;
 
-	FTOM_MSGQ_final(*ppMsgQ);
-	FTM_MEM_free(*ppMsgQ);
+	pMsg->xType	= FTOM_MSG_TYPE_TP_RESPONSE;
+	pMsg->ulLen = ulMsgLen;
+	pMsg->nCode = nCode;
+	strcpy(pMsg->pMsgID, pMsgID);
+	strcpy(pMsg->pMessage, pMessage);
 
-	*ppMsgQ = NULL;
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_MSGQ_init(FTOM_MSG_QUEUE_PTR pMsgQ)
-{
-	ASSERT(pMsgQ != NULL);
-
-	return	FTM_MSGQ_init(&pMsgQ->xQueue);	
-}
-
-FTM_RET	FTOM_MSGQ_final(FTOM_MSG_QUEUE_PTR pMsgQ)
-{
-	ASSERT(pMsgQ != NULL);
-
-	return	FTM_MSGQ_final(&pMsgQ->xQueue);	
-}
-
-FTM_RET	FTOM_MSGQ_push(FTOM_MSG_QUEUE_PTR pMsgQ, FTOM_MSG_PTR pMsg)
-{
-	ASSERT(pMsgQ != NULL);
-	ASSERT(pMsg != NULL);
-
-	return	FTM_MSGQ_push(&pMsgQ->xQueue, pMsg);
-}
-
-FTM_RET	FTOM_MSGQ_pop(FTOM_MSG_QUEUE_PTR pMsgQ, FTOM_MSG_PTR _PTR_ ppMsg)
-{
-	ASSERT(pMsgQ != NULL);
-	ASSERT(ppMsg != NULL);
-
-	return	FTM_MSGQ_pop(&pMsgQ->xQueue, (FTM_VOID_PTR _PTR_)ppMsg);	
-}
-
-FTM_RET	FTOM_MSGQ_timedPop(FTOM_MSG_QUEUE_PTR pMsgQ, FTM_ULONG ulTimeout, FTOM_MSG_PTR _PTR_ ppMsg)
-{
-	ASSERT(pMsgQ != NULL);
-	ASSERT(ppMsg != NULL);
-
-	return	FTM_MSGQ_timedPop(&pMsgQ->xQueue, ulTimeout, (FTM_VOID_PTR _PTR_)ppMsg);	
-}

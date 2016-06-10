@@ -36,7 +36,8 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 	FTM_BOOL				bConnected;
 	pthread_t				xMain;
 	pthread_t				xLinkManager;
-	FTM_TIMER				xReconnectionTimer;
+	FTM_TIMER				xReportTimer;
+	FTM_TIMER				xRetryTimer;
 
 	FTOM_MSG_QUEUE			xMsgQ;
 	FTOM_MQTT_CLIENT		xMQTT;
@@ -145,5 +146,13 @@ FTM_RET	FTOM_TP_CLIENT_sendEPData
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pDatas, 
 	FTM_ULONG			ulCount
+);
+
+FTM_RET	FTOM_TP_CLIENT_respose
+(
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR		pMsgID,
+	FTM_INT				nErrorCode,
+	FTM_CHAR_PTR		pMessage
 );
 #endif

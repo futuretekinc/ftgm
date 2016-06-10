@@ -29,6 +29,8 @@ typedef	enum
 	FTOM_MSG_TYPE_DISCOVERY_DONE,
 	FTOM_MSG_TYPE_SERVER_SYNC,
 	FTOM_MSG_TYPE_INITIALIZE_DONE,
+	FTOM_MSG_TYPE_TP_REQ_SET_REPORT_INTERVAL,
+	FTOM_MSG_TYPE_TP_RESPONSE,
 	FTOM_MSG_TYPE_MAX
 }	FTOM_MSG_TYPE, _PTR_ FTOM_MSG_TYPE_PTR;
 
@@ -178,12 +180,23 @@ typedef	struct
 	FTM_BOOL		bAutoRegister;
 }	FTOM_MSG_SERVER_SYNC, _PTR_ FTOM_MSG_SERVER_SYNC_PTR;
 
-
-
-typedef struct
+typedef	struct
 {
-	FTM_MSG_QUEUE	xQueue;
-} FTOM_MSG_QUEUE, _PTR_ FTOM_MSG_QUEUE_PTR;
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_ULONG		ulReportIntervalMS;
+	FTM_CHAR		pReqID[];
+}	FTOM_MSG_TP_REQ_SET_REPORT_INTERVAL, _PTR_ FTOM_MSG_TP_REQ_SET_REPORT_INTERVAL_PTR;
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_CHAR_PTR	pMsgID;
+	FTM_INT			nCode;
+	FTM_CHAR_PTR	pMessage;
+}	FTOM_MSG_TP_RESPONSE, _PTR_ FTOM_MSG_TP_RESPONSE_PTR;
+
 
 FTM_RET FTOM_MSG_createInitializeDone
 (
@@ -309,6 +322,21 @@ FTM_RET	FTOM_MSG_createServerSync
 	FTOM_MSG_SERVER_SYNC_PTR _PTR_ 	ppMsg
 );
 
+FTM_RET	FTOM_MSG_TP_createReqSetReportInterval
+(
+	FTM_CHAR_PTR		pReqID,
+	FTM_ULONG			ulReportIntervalMS,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+);
+
+FTM_RET	FTOM_MSG_TP_createResponse
+(
+	FTM_CHAR_PTR	pMsgID,
+	FTM_INT			nCode,
+	FTM_CHAR_PTR	pMessage,
+	FTOM_MSG_PTR _PTR_	ppMsg
+);
+
 FTM_RET	FTOM_MSG_destroy
 (
 	FTOM_MSG_PTR _PTR_ ppMsg
@@ -320,43 +348,5 @@ FTM_RET	FTOM_MSG_copy
 	FTOM_MSG_PTR _PTR_ ppNewMsg
 );
 
-FTM_RET FTOM_MSGQ_create
-(
-	FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ
-);
-
-FTM_RET FTOM_MSGQ_destroy
-(
-	FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ
-);
-
-FTM_RET FTOM_MSGQ_init
-(
-	FTOM_MSG_QUEUE_PTR pMsgQ
-);
-
-FTM_RET FTOM_MSGQ_final
-(
-	FTOM_MSG_QUEUE_PTR pMsgQ
-);
-
-FTM_RET	FTOM_MSGQ_push
-(
-	FTOM_MSG_QUEUE_PTR 	pMsgQ, 
-	FTOM_MSG_PTR 		pMsg
-);
-
-FTM_RET	FTOM_MSGQ_pop
-(
-	FTOM_MSG_QUEUE_PTR	pMsgQ, 
-	FTOM_MSG_PTR _PTR_ 	ppMsg
-);
-
-FTM_RET	FTOM_MSGQ_timedPop
-(
-	FTOM_MSG_QUEUE_PTR 	pMsgQ, 
-	FTM_ULONG 				ulTimeout, 
-	FTOM_MSG_PTR _PTR_ 	ppMsg
-);
 
 #endif

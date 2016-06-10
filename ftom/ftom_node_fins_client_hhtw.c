@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "ftom.h"
+#include "ftom_message_queue.h"
 #include "ftom_node_class.h"
 #include "ftom_node_fins_client.h"
 
@@ -134,7 +135,7 @@ FTM_VOID_PTR FTOM_NODE_FINSC_HHTW_process
 	TRACE("Node[%s] start(FINS Client).\n", pNode->xCommon.xInfo.pDID);
 
 	pNode->xCommon.bStop = FTM_FALSE;
-	xRet = FTM_TIMER_init(&xReportTimer, pNode->xCommon.xInfo.ulInterval * 1000000);
+	xRet = FTM_TIMER_initS(&xReportTimer, pNode->xCommon.xInfo.ulReportInterval);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Report timer init failed!\n");	
@@ -150,7 +151,7 @@ FTM_VOID_PTR FTOM_NODE_FINSC_HHTW_process
 	{
 		FTM_ULONG		ulRemainTime = 0;
 	
-		FTM_TIMER_remain(&xReportTimer, &ulRemainTime);
+		FTM_TIMER_remainMS(&xReportTimer, &ulRemainTime);
 		while (!pNode->xCommon.bStop && (FTOM_MSGQ_timedPop(&pNode->xCommon.xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
 		{
 			TRACE("Message received[%08x]\n", pMsg->xType);
@@ -169,7 +170,7 @@ FTM_VOID_PTR FTOM_NODE_FINSC_HHTW_process
 			}
 			FTM_MEM_free(pMsg);
 
-			FTM_TIMER_remain(&xReportTimer, &ulRemainTime);
+			FTM_TIMER_remainMS(&xReportTimer, &ulRemainTime);
 		}
 	
 		if (!pNode->xCommon.bStop)
@@ -177,7 +178,7 @@ FTM_VOID_PTR FTOM_NODE_FINSC_HHTW_process
 			FTM_TIMER_waitForExpired(&xReportTimer);
 		}
 
-		xRet = FTM_TIMER_add(&xReportTimer, pNode->xCommon.xInfo.ulInterval * 1000000);
+		xRet = FTM_TIMER_addS(&xReportTimer, pNode->xCommon.xInfo.ulReportInterval);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Report timer update failed!\n");	

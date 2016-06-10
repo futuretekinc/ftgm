@@ -6,6 +6,7 @@
 #include "libconfig.h"
 #include "ftom.h"
 #include "ftdm_client.h"
+#include "ftom_message_queue.h"
 #include "ftom_node_snmp_client.h"
 #include "ftom_server.h"
 #include "ftom_dmc.h"
@@ -184,7 +185,7 @@ FTM_VOID_PTR	FTOM_DMC_process
 		{
 			FTOM_MSG_PTR	pMsg= NULL;
 
-			while(FTOM_MSGQ_timedPop(&pDMC->xMsgQ, 1000000, &pMsg) == FTM_RET_OK)
+			while(FTOM_MSGQ_timedPop(&pDMC->xMsgQ, 100, &pMsg) == FTM_RET_OK)
 			{
 				switch(pMsg->xType)
 				{

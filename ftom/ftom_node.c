@@ -7,6 +7,7 @@
 #include "ftom_ep.h"
 #include "ftm_list.h"
 #include "ftom_node_class.h"
+#include "ftom_message_queue.h"
 
 static
 FTM_INT	FTOM_NODE_seeker
@@ -413,7 +414,7 @@ FTM_RET FTOM_NODE_set
 
 	if (xFields & FTM_NODE_FIELD_INTERVAL)
 	{
-		pNode->xInfo.ulInterval = pInfo->ulInterval;
+		pNode->xInfo.ulReportInterval = pInfo->ulReportInterval;
 	}
 
 	if (xFields & FTM_NODE_FIELD_TIMEOUT)
@@ -738,28 +739,28 @@ FTM_VOID_PTR FTOM_NODE_process
 	FTM_VOID_PTR pData
 )
 {
-	ASSERT(pData != NULL);
-	FTM_RET			xRet;
 	FTOM_NODE_PTR pNode = (FTOM_NODE_PTR)pData;
 	FTOM_MSG_PTR	pMsg;
-	FTM_TIMER		xReportTimer;
-
-	pNode->xState = FTOM_NODE_STATE_RUN;
+	FTM_TIMER		xLoopTimer;
 
 	TRACE("Node[%s] start.\n", pNode->xInfo.pDID);
 
+	FTM_TIMER_initS(&xLoopTimer, 0);
+	FTM_TIMER_initS(&pNode->xReportTimer, 0);
+
+	pNode->xState= FTOM_NODE_STATE_RUN;
 	pNode->bStop = FTM_FALSE;
-	xRet = FTM_TIMER_init(&xReportTimer, pNode->xInfo.ulInterval * 1000000);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Report timer init failed!\n");	
-	}
 
 	while(!pNode->bStop)
 	{
 		FTM_ULONG		ulRemainTime = 0;
-	
-		FTM_TIMER_remain(&xReportTimer, &ulRemainTime);
+
+		if (FTM_TIMER_isExpired(&pNode->xReportTimer))
+		{
+			FTM_TIMER_addS(&pNode->xReportTimer, pNode->xInfo.ulReportInterval);
+		}
+
+		FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
 		while (!pNode->bStop && (FTOM_MSGQ_timedPop(&pNode->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
 		{
 			TRACE("Message received[%08x]\n", pMsg->xType);
@@ -776,23 +777,16 @@ FTM_VOID_PTR FTOM_NODE_process
 					WARN("Invalid message[%08x]\n", pMsg->xType);	
 				}
 			}
-			FTM_MEM_free(pMsg);
 
-			FTM_TIMER_remain(&xReportTimer, &ulRemainTime);
+			FTOM_MSG_destroy(&pMsg);
+
+			FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
 		}
 	
-		if (!pNode->bStop)
-		{
-			FTM_TIMER_waitForExpired(&xReportTimer);
-		}
-
-		xRet = FTM_TIMER_add(&xReportTimer, pNode->xInfo.ulInterval * 1000000);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR("Report timer update failed!\n");	
-		}
+		FTM_TIMER_addS(&xLoopTimer, FTOM_NODE_LOOP_INTERVAL);
 	} 
 
+	pNode->xState= FTOM_NODE_STATE_STOP;
 	TRACE("Node[%s] stopped.\n", pNode->xInfo.pDID);
 
 	return	FTM_RET_OK;
@@ -819,6 +813,39 @@ FTM_RET	FTOM_NODE_unlock
 	ASSERT(pNode != NULL);
 
 	pthread_mutex_unlock(&pNode->xMutexLock);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_setReportInterval
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_ULONG		ulInterval
+)
+{
+	ASSERT(pNode != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTM_isValidInterval(ulInterval);
+	if (xRet == FTM_RET_OK)
+	{
+		pNode->xInfo.ulReportInterval = ulInterval;
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_NODE_getReportInterval
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_ULONG_PTR	pulInterval
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pulInterval != NULL);
+		
+	*pulInterval = pNode->xInfo.ulReportInterval;
 
 	return	FTM_RET_OK;
 }
@@ -929,7 +956,7 @@ FTM_RET	FTOM_NODE_print
 	}
 
 	MESSAGE("%16s : %s\n", "State", 	FTOM_NODE_stateToStr(pNode->xState));
-	MESSAGE("%16s : %d\n", "Interval", 	pNode->xInfo.ulInterval);
+	MESSAGE("%16s : %d\n", "Report Interval", 	pNode->xInfo.ulReportInterval);
 	MESSAGE("%16s : %d\n", "Timeout", 	pNode->xInfo.ulTimeout);
 	FTOM_NODE_getEPCount(pNode, &ulEPCount);
 	MESSAGE("%16s : %d\n", "EPs",		ulEPCount);
@@ -959,7 +986,7 @@ FTM_RET	FTOM_NODE_printList
 	FTOM_NODE_PTR	pNode;
 
 	MESSAGE("\n# Node Information\n");
-	MESSAGE("%16s %16s %16s %16s %16s %8s %8s %s\n", "DID", "MODEL", "NAME", "TYPE", "STATE", "INTERVAL", "TIMEOUT", "EPs");
+	MESSAGE("%16s %16s %16s %16s %16s %8s %8s %s\n", "DID", "MODEL", "NAME", "TYPE", "STATE", "REPORT", "TIMEOUT", "EPs");
 
 	FTM_LIST_count(pNodeList, &ulCount);
 
@@ -973,7 +1000,7 @@ FTM_RET	FTOM_NODE_printList
 		MESSAGE("%16s ", pNode->xInfo.pName);
 		MESSAGE("%16s ", FTM_NODE_typeString(pNode->xInfo.xType));
 		MESSAGE("%16s ", FTOM_NODE_stateToStr(pNode->xState));
-		MESSAGE("%8d ", pNode->xInfo.ulInterval);
+		MESSAGE("%8d ", pNode->xInfo.ulReportInterval);
 		MESSAGE("%8d ", pNode->xInfo.ulTimeout);
 
 		FTOM_NODE_getEPCount(pNode, &ulEPCount);

@@ -82,8 +82,8 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_disconnectCB
 	ASSERT(pObj != NULL);
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 
-	FTM_TIMER_init(&pClient->xLinkTimer, 0);
-	FTM_TIMER_addSeconds(&pClient->xLinkTimer, pClient->xConfig.ulRetryInterval);
+	FTM_TIMER_initS(&pClient->xLinkTimer, 0);
+	FTM_TIMER_addS(&pClient->xLinkTimer, pClient->xConfig.ulRetryInterval);
 
 	pClient->bConnected = FTM_FALSE;
 
@@ -130,9 +130,12 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 	FTM_CHAR		pTopic[FTOM_MQTT_CLIENT_TOPIC_LENGTH+1];
 	FTM_CHAR_PTR	pIDs[10];
 	FTM_INT			nIDs = 0;
-	
+
 	memset(pTopic, 0, sizeof(pTopic));
 	strncpy(pTopic, pMessage->topic, FTOM_MQTT_CLIENT_TOPIC_LENGTH);
+
+	TRACE("Topic : %s\n", pTopic);
+	TRACE("Message : %s\n", pMessage->payload);
 
 	FTOM_MQTT_CLIENT_TPGW_topicParser(pTopic, pIDs, 10, &nIDs);
 	if ((nIDs != 5) || (strcmp(pClient->pDID, pIDs[3]) != 0))
@@ -148,11 +151,11 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 		xRet = FTOM_MQTT_CLIENT_TPGW_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Invalid message.\n");
+			ERROR("Invalid message[%s].\n", pMessage->payload);
 			return;
 		}
 
-		xRet = FTOM_sendMessage(pMsg);
+		xRet = FTOM_sendMessage(FTOM_SERVICE_TPCLIENT, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			FTM_MEM_free(pMsg);
@@ -232,6 +235,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 	const nx_json *pItem = nx_json_get(pJSON, "id");
 	if ((pItem == NULL) || (pItem->type != NX_JSON_STRING))
 	{
+		ERROR("Message ID is not exist or invalid type!\n");
 		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 		goto error;
 	}
@@ -241,6 +245,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 	pItem = nx_json_get(pJSON, "method");
 	if ((pItem == NULL) || (pItem->type != NX_JSON_STRING))
 	{
+		ERROR("Message method is not exist or invalid!\n");
 		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
 		goto error;
 	}	
@@ -357,6 +362,25 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 		break;
 
 	case	FTOM_MQTT_METHOD_REQ_SET_PROPERTY:
+		{
+			const nx_json *pParams = nx_json_get(pJSON, "params");
+			if (pParams== NULL)
+			{
+				WARN("MQTT REQ : Params is not exist.\n");
+				xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+				goto error;
+			}	
+
+			const nx_json *pReportInterval = nx_json_get(pParams, "reportInterval");
+			if ((pReportInterval != NULL) && (pReportInterval->type == NX_JSON_STRING))
+			{
+				FTM_ULONG	ulReportIntervalMS = strtoul(pReportInterval->text_value,0,10);
+
+				xRet = FTOM_MSG_TP_createReqSetReportInterval(pReqID, ulReportIntervalMS, ppMsg);
+			}
+		}
+		break;
+
 	case	FTOM_MQTT_METHOD_REQ_POWER_OFF:
 	case	FTOM_MQTT_METHOD_REQ_REBOOT:
 	case	FTOM_MQTT_METHOD_REQ_RESTART:
@@ -456,6 +480,44 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 	}
 
 	ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "]");
+
+	return	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen);
+}
+
+
+FTM_RET	FTOM_MQTT_CLIENT_TPGW_response
+(
+	FTOM_MQTT_CLIENT_PTR pClient, 
+	FTM_CHAR_PTR		pMsgID,
+	FTM_INT				nCode,
+	FTM_CHAR_PTR		pMessage
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_CHAR	pTopic[FTOM_MQTT_CLIENT_TOPIC_LENGTH+1];
+	FTM_CHAR	pBuff[FTOM_MQTT_CLIENT_MESSAGE_LENGTH+1];
+	FTM_ULONG	ulLen = 0;
+
+	pBuff[sizeof(pBuff) - 1] = '\0';
+	
+	sprintf(pTopic, "v/a/g/%s/res", pClient->pDID);
+	if (nCode == 0)
+	{
+		ulLen += snprintf(	&pBuff[ulLen], 
+							FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, 
+							"{\"id\":\"%s\",\"result\":\"\"}", 
+							pMsgID);
+	}
+	else
+	{
+		ulLen += snprintf(	&pBuff[ulLen], 
+							FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, 
+							"{\"id\":\"%s\",\"error\":{\"code\":%d,\"message\":\"%s\"}}", 
+							pMsgID, 
+							nCode, 
+							(pMessage == NULL)?"":pMessage);
+	}
 
 	return	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen);
 }

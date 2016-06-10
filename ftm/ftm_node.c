@@ -56,9 +56,9 @@ FTM_RET	FTM_NODE_setDefault(FTM_NODE_PTR pNode)
 
 	memset(pNode, 0, sizeof(FTM_NODE));
 	
-	pNode->xType		= FTM_NODE_TYPE_SNMP;
-	pNode->ulInterval	= 60;
-	pNode->ulTimeout	= 10;
+	pNode->xType			= FTM_NODE_TYPE_SNMP;
+	pNode->ulReportInterval	= 60;
+	pNode->ulTimeout		= 10;
 	pNode->xOption.xSNMP.ulVersion = FTM_SNMP_VERSION_2;
 	strcpy(pNode->xOption.xSNMP.pURL, "127.0.0.1");
 	strcpy(pNode->xOption.xSNMP.pCommunity, "public");
@@ -85,7 +85,7 @@ FTM_RET	FTM_NODE_isValid(FTM_NODE_PTR pNode)
 		return	xRet;	
 	}
 
-	xRet = FTM_isValidInterval(pNode->ulInterval);
+	xRet = FTM_isValidInterval(pNode->ulReportInterval);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -160,7 +160,7 @@ FTM_RET	FTM_NODE_isValidTimeout
 {
 	ASSERT(pNode != NULL);
 
-	if (pNode->ulInterval < ulTimeout)
+	if (pNode->ulReportInterval < ulTimeout)
 	{
 		return	FTM_RET_INVALID_TIMEOUT;	
 	}

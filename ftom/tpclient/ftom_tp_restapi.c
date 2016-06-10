@@ -436,6 +436,7 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 
 	FTM_RET	xRet;
 	const nx_json _PTR_ pRoot = NULL;
+	const nx_json _PTR_ pDevices = NULL;
 	const nx_json _PTR_ pSensors = NULL;
 	const nx_json _PTR_ pItem = NULL;
 
@@ -490,6 +491,39 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 	if (pItem->type != NX_JSON_NULL)
 	{
 		pGateway->ullMTime = strtoull(pItem->text_value, 0, 10);
+	}
+
+	pDevices = nx_json_get(pRoot, "devices");
+	if (pDevices->type != NX_JSON_NULL)
+	{
+		FTM_INT	i;
+
+		if (pDevices->type != NX_JSON_ARRAY)
+		{
+			xRet = FTM_RET_COMM_INVALID_VALUE;	
+			goto finish;	
+		}
+
+		for(i = 0; ; i++)
+		{
+			pItem = nx_json_item(pDevices, i);
+			if ((pItem == NULL) || (pItem->type == NX_JSON_NULL))
+			{
+				break;	
+			}
+		
+			FTM_ULONG		ulLen = strlen(pItem->text_value);
+			FTM_CHAR_PTR	pDeviceID = FTM_MEM_malloc(ulLen+1);
+			if (pDeviceID == NULL)
+			{
+				ERROR("Not enough memory!\n");	
+				break;
+			}
+
+			strcpy(pDeviceID, pItem->text_value);
+
+			FTM_LIST_append(pGateway->pDeviceList, pDeviceID);
+		}
 	}
 
 	pSensors = nx_json_get(pRoot, "sensors");
@@ -603,7 +637,7 @@ FTM_RET	FTOM_TP_RESTAPI_DEVICE_create
 	cJSON_AddStringToObject(pRoot, "name", 	pName);
 	cJSON_AddStringToObject(pRoot, "model", pModel);
 
-	xRet = FTOM_TP_RESTAPI_setPostURL(pClient, "/devices");
+	xRet = FTOM_TP_RESTAPI_setPostURL(pClient, "/gateways/%s/devices", pClient->pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
@@ -627,6 +661,32 @@ finish:
 	if (pRoot != NULL)
 	{
 		cJSON_Delete(pRoot);	
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_TP_RESTAPI_DEVICE_delete
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pDeviceID
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_RET			xRet;
+
+	xRet = FTOM_TP_RESTAPI_setDeleteURL(pClient, "/gateways/%s/devices/%s", pClient->pGatewayID, pDeviceID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("An error has occurred in the client settings of the URL.\n");
+		return	xRet;
+	}
+
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("An error occurred while performing the client.\n");
 	}
 
 	return	xRet;
@@ -1052,6 +1112,53 @@ finish:
 
 	return	xRet;
 }
+
+/*********************************************************
+ * Node management 
+ *********************************************************/
+FTM_RET	FTOM_TP_RESTAPI_NODE_create
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_NODE_PTR		pNodeInfo
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pNodeInfo != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_TP_RESTAPI_DEVICE_create(
+				pClient, 
+				pNodeInfo->pDID,
+				pNodeInfo->pName,
+				pNodeInfo->pModel);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_TP_RESTAPI_NODE_delete
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pDID
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pDID != NULL);
+
+	return	FTOM_TP_RESTAPI_DEVICE_delete(pClient, pDID);
+}
+
+FTM_RET	FTOM_TP_RESTAPI_NODE_getList
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_NODE_PTR			pNodeInfos,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	return	FTM_RET_OK;
+}
+
 /*********************************************************
  * End Point management 
  *********************************************************/
@@ -1090,7 +1197,7 @@ FTM_RET	FTOM_TP_RESTAPI_EP_create
 				pEPInfo->pName,
 				pEPInfo->pDID,
 				"1",
-				"1");
+				pEPInfo->pEPID);
 
 	return	xRet;
 }

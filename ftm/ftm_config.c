@@ -723,7 +723,7 @@ FTM_RET	FTM_CONFIG_ITEM_getNode(FTM_CONFIG_ITEM_PTR pItem, FTM_NODE_PTR pNode)
 	
 	FTM_CONFIG_ITEM_getItemString(pItem,"name",		xNode.pName, sizeof(xNode.pName) - 1);
 	FTM_CONFIG_ITEM_getItemString(pItem,"location",	xNode.pLocation, sizeof(xNode.pLocation) - 1);
-	FTM_CONFIG_ITEM_getItemULONG(pItem, "interval", &xNode.ulInterval);
+	FTM_CONFIG_ITEM_getItemULONG(pItem, "report_interval", &xNode.ulReportInterval);
 	FTM_CONFIG_ITEM_getItemULONG(pItem, "timeout",  &xNode.ulTimeout);
 
 	if (strcmp(pTypeString, "snmp") == 0)

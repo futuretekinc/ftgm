@@ -170,7 +170,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		return	0;	
 	}
 
-	FTOM_TP_RESTAPI_setVerbose(bVerbose);
+	FTOM_TP_RESTAPI_setVerbose(&xClient, bVerbose);
 	FTOM_TP_RESTAPI_setDataDump(bDataDump);
 
 	xRet = FTOM_TP_RESTAPI_GW_setID(&xClient, pGatewayID);

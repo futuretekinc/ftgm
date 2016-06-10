@@ -13,6 +13,7 @@ typedef	struct
 	FTM_UINT64		ullCTime;
 	FTM_UINT64		ullMTime;
 
+	FTM_LIST_PTR	pDeviceList;
 	FTM_LIST_PTR	pSensorList;
 }	FTOM_TP_GATEWAY, _PTR_ FTOM_TP_GATEWAY_PTR;
 
