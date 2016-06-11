@@ -241,23 +241,7 @@ FTM_RET	FTOM_DMC_sendMessage
 	ASSERT(pDMC != NULL);
 	ASSERT(pMsg != NULL);
 
-	FTM_RET	xRet;
-	FTOM_MSG_PTR	pNewMsg;
-
-	xRet = FTOM_MSG_copy(pMsg, &pNewMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	xRet = FTOM_MSGQ_push(&pDMC->xMsgQ, pNewMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		FTOM_MSG_destroy(&pNewMsg);	
-		return	xRet;
-	}
-	
-	return	xRet;
+	return	FTOM_MSGQ_push(&pDMC->xMsgQ, pMsg);
 }
 
 FTM_RET	FTOM_DMC_onAddEPData

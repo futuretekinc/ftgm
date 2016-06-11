@@ -63,13 +63,9 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_connectCB
 	FTM_CHAR			pMessage[FTOM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG			ulMessageLen = 0;
 
-	TRACE("MQTT is connected.\n");
+	TRACE("MQTT TPGW is connected.\n");
 
 	pClient->bConnected = FTM_TRUE;
-
-	sprintf(pTopic, "v/a/g/%s/status", pClient->pDID);
-	ulMessageLen = sprintf(pMessage, "on,%lu", pClient->xConfig.ulRetryInterval);
-	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pMessage, ulMessageLen);
 }
 
 FTM_VOID FTOM_MQTT_CLIENT_TPGW_disconnectCB
@@ -87,7 +83,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_disconnectCB
 
 	pClient->bConnected = FTM_FALSE;
 
-	TRACE("MQTT is disconnected.\n");
+	TRACE("MQTT TPGW is connected.\n");
 }
 
 FTM_VOID FTOM_MQTT_CLIENT_TPGW_publishCB
@@ -138,7 +134,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 	TRACE("Message : %s\n", pMessage->payload);
 
 	FTOM_MQTT_CLIENT_TPGW_topicParser(pTopic, pIDs, 10, &nIDs);
-	if ((nIDs != 5) || (strcmp(pClient->pDID, pIDs[3]) != 0))
+	if ((nIDs != 5) || (strcmp(pClient->xConfig.pGatewayID, pIDs[3]) != 0))
 	{
 		ERROR("Invalid Topic[%s]\n", pMessage->topic);
 		return;
@@ -158,7 +154,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 		xRet = FTOM_sendMessage(FTOM_SERVICE_TPCLIENT, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
-			FTM_MEM_free(pMsg);
+			FTOM_MSG_destroy(&pMsg);
 			ERROR("Message queue push failed.\n");
 			return;
 		}
@@ -438,7 +434,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPStatus
 
 	pBuff[sizeof(pBuff) - 1] = '\0';
 	
-	sprintf(pTopic, "v/a/g/%s/s/%s/status", pClient->pDID, pEPID);
+	sprintf(pTopic, "v/a/g/%s/s/%s/status", pClient->xConfig.pGatewayID, pEPID);
 	ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "%s,%lu", bStatus?"on":"off", ulTimeout);
 
 	return	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen);
@@ -462,7 +458,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 
 	pBuff[sizeof(pBuff) - 1] = '\0';
 	
-	sprintf(pTopic, "v/a/g/%s/s/%s", pClient->pDID, pEPID);
+	sprintf(pTopic, "v/a/g/%s/s/%s", pClient->xConfig.pGatewayID, pEPID);
 
 	ulLen = sprintf(pBuff, "[");
 	for(i = 0 ; i < ulCount ; i++)
@@ -501,7 +497,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_response
 
 	pBuff[sizeof(pBuff) - 1] = '\0';
 	
-	sprintf(pTopic, "v/a/g/%s/res", pClient->pDID);
+	sprintf(pTopic, "v/a/g/%s/res", pClient->xConfig.pGatewayID);
 	if (nCode == 0)
 	{
 		ulLen += snprintf(	&pBuff[ulLen], 

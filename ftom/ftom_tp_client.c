@@ -35,13 +35,6 @@ FTM_RET	FTOM_TP_CLIENT_EP_register
 	FTOM_EP_PTR			pEP
 );
 
-static
-FTM_RET	FTOM_TP_CLIENT_pushMsg
-(
-	FTOM_TP_CLIENT_PTR pClient,
-	FTOM_MSG_PTR		pMsg	
-);
-
 FTM_RET	FTOM_TP_CLIENT_create
 (
 	FTOM_TP_CLIENT_PTR _PTR_ 	ppClient
@@ -159,11 +152,7 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 
 	memcpy(&pClient->xConfig, pConfig, sizeof(FTOM_TP_CLIENT_CONFIG));
 
-	FTOM_TP_RESTAPI_setUserID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
-	FTOM_TP_RESTAPI_setPasswd(&pClient->xRESTApi, pClient->xConfig.pAPIKey);
-	FTOM_TP_RESTAPI_GW_setID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
-	FTOM_TP_RESTAPI_setVerbose(&pClient->xRESTApi, FTM_TRUE);
-
+	strncpy(xMQTTConfig.pGatewayID,	pClient->xConfig.pGatewayID,FTM_GWID_LEN);
 	strncpy(xMQTTConfig.pHost, 		pClient->xConfig.pHost, 	FTM_HOST_LEN);
 	strncpy(xMQTTConfig.pUserID, 	pClient->xConfig.pGatewayID,FTM_USER_ID_LEN);
 	strncpy(xMQTTConfig.pPasswd, 	pClient->xConfig.pAPIKey, 	FTM_PASSWD_LEN);
@@ -247,13 +236,9 @@ FTM_RET	FTOM_TP_CLIENT_loadFromFile
 
 	FTM_CONFIG_final(&xConfig);
 
-	FTOM_TP_RESTAPI_setUserID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
-	FTOM_TP_RESTAPI_setPasswd(&pClient->xRESTApi, pClient->xConfig.pAPIKey);
-	FTOM_TP_RESTAPI_GW_setID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
-	FTOM_TP_RESTAPI_setVerbose(&pClient->xRESTApi, FTM_TRUE);
-
 	FTOM_MQTT_CLIENT_CONFIG	xMQTTConfig;
 
+	strncpy(xMQTTConfig.pGatewayID,	pClient->xConfig.pGatewayID,FTM_GWID_LEN);
 	strncpy(xMQTTConfig.pHost, 		pClient->xConfig.pHost, 	FTM_HOST_LEN);
 	strncpy(xMQTTConfig.pUserID, 	pClient->xConfig.pGatewayID,FTM_USER_ID_LEN);
 	strncpy(xMQTTConfig.pPasswd, 	pClient->xConfig.pAPIKey, 	FTM_PASSWD_LEN);
@@ -312,16 +297,7 @@ FTM_RET	FTOM_TP_CLIENT_sendMessage
 	ASSERT(pClient != NULL);
 	ASSERT(pMsg != NULL);
 
-	FTM_RET			xRet;
-	FTOM_MSG_PTR	pNewMsg;
-
-	xRet = FTOM_MSG_copy(pMsg, &pNewMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
-
-	return	FTOM_TP_CLIENT_pushMsg(pClient, pNewMsg);
+	return	FTOM_MSGQ_push(&pClient->xMsgQ, pMsg);
 }
 
 FTM_RET	FTOM_TP_CLIENT_start
@@ -390,6 +366,11 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 	FTM_CHAR				pTopic[FTM_MQTT_TOPIC_LEN + 1];
 
 	TRACE("TPClient[%s] started.\n", pClient->xConfig.pGatewayID);
+
+	FTOM_TP_RESTAPI_setUserID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
+	FTOM_TP_RESTAPI_setPasswd(&pClient->xRESTApi, pClient->xConfig.pAPIKey);
+	FTOM_TP_RESTAPI_GW_setID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
+	FTOM_TP_RESTAPI_setVerbose(&pClient->xRESTApi, FTM_TRUE);
 
 	FTM_TIMER_initS(&pClient->xRetryTimer,	0);
 	FTM_TIMER_initS(&pClient->xReportTimer, 	0);
@@ -496,8 +477,7 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 
 			case	FTOM_MSG_TYPE_TP_REQ_RESTART:
 				{
-					FTM_ULONG	ulCount = 0;
-					FTOM_MSG_TP_REQ_RESTART_PTR pMsg = (FTOM_MSG_TP_REQ_RESTART)pBaseMsg;
+					FTOM_MSG_TP_REQ_RESTART_PTR pMsg = (FTOM_MSG_TP_REQ_RESTART_PTR)pBaseMsg;
 
 					FTOM_TP_CLIENT_respose(pClient, pMsg->pReqID, 0, "");
 				}
@@ -579,18 +559,6 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 	return 0;
 }
 
-FTM_RET	FTOM_TP_CLIENT_pushMsg
-(
-	FTOM_TP_CLIENT_PTR pClient,
-	FTOM_MSG_PTR		pMsg	
-)
-{
-	ASSERT(pClient != NULL);
-	ASSERT(pMsg != NULL);
-
-	return	FTOM_MSGQ_push(&pClient->xMsgQ, pMsg);
-}
-
 FTM_RET	FTOM_TP_CLIENT_serverSyncStart
 (
 	FTOM_TP_CLIENT_PTR	pClient,
@@ -608,7 +576,7 @@ FTM_RET	FTOM_TP_CLIENT_serverSyncStart
 		return	xRet;	
 	}
 
-	xRet = FTOM_TP_CLIENT_pushMsg(pClient, pMsg);
+	xRet = FTOM_MSGQ_push(&pClient->xMsgQ, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		FTOM_MSG_destroy(&pMsg);	
@@ -816,7 +784,6 @@ FTM_RET	FTOM_TP_CLIENT_reportGWStatus
 	ASSERT(pClient != NULL);
 	ASSERT(pGatewayID != NULL);
 
-	TRACE("Report Gateway[%s] status!\n", pGatewayID);
 	return	FTOM_MQTT_CLIENT_reportGWStatus(&pClient->xMQTT, pGatewayID, bStatus, ulTimeout);
 }
 

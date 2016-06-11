@@ -860,9 +860,11 @@ FTM_RET	FTOM_TASK_processing
 		return	0;	
 	}
 
-	FTOM_SERVICE_sendMessage(FTOM_SERVICE_ALL, pMsg);
-
-	FTOM_MSG_destroy(&pMsg);
+	xRet = FTOM_SERVICE_sendMessage(FTOM_SERVICE_ALL, pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTOM_MSG_destroy(&pMsg);	
+	}
 
 	while(!bStop)
 	{
@@ -881,7 +883,7 @@ FTM_RET	FTOM_TASK_processing
 				ERROR("Message[%08x] not supported.\n", pMsg->xType);
 			}
 
-			FTM_MEM_free(pMsg);
+			FTOM_MSG_destroy(&pMsg);
 		}
 
 		if (FTM_TIMER_isExpired(&xLoopTimer))

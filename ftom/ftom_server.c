@@ -637,7 +637,6 @@ FTM_RET	FTOM_SERVER_start
 		ERROR("Can't create SM interface[%d]\n", nRet);
 	}
 
-	TRACE("xThread = %08x\n", pServer->xPThread);
 	return	FTM_RET_OK;
 }
 
@@ -688,18 +687,30 @@ FTM_RET	FTOM_SERVER_sendMessage
 	FTM_LIST_iteratorStart(&pServer->xSessionList);
 	while(FTM_LIST_iteratorNext(&pServer->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
 	{
-		FTOM_RESP_NOTIFY_PARAMS	xNotify;
+		FTOM_RESP_NOTIFY_PARAMS_PTR	pParam;
+		FTM_ULONG	ulParamLen  = sizeof(FTOM_RESP_NOTIFY_PARAMS) - sizeof(FTOM_MSG) + pMsg->ulLen;
 
-		xNotify.ulReqID = 0;
-		xNotify.xCmd	= 1;
-		xNotify.ulLen	= sizeof(FTOM_RESP_NOTIFY_PARAMS);
-		xNotify.xRet	= FTM_RET_OK;
-		memcpy(&xNotify.xMsg, pMsg, sizeof(FTOM_MSG));
+		pParam = (FTOM_RESP_NOTIFY_PARAMS_PTR)FTM_MEM_malloc(ulParamLen);
+		if (pParam  == NULL)
+		{
+			ERROR("Not enough memory!\n");
+			return	FTM_RET_NOT_ENOUGH_MEMORY;
+		}
 
-		//TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, xNotify.ulReqID, xNotify.ulLen);
-		send(pSession->hSocket, &xNotify, sizeof(xNotify), MSG_DONTWAIT);
+		pParam->ulReqID = 0;
+		pParam->xCmd	= 1;
+		pParam->ulLen	= ulParamLen;
+		pParam->xRet	= FTM_RET_OK;
+		memcpy(&pParam->xMsg, pMsg, pMsg->ulLen);
+
+		//TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pParam->ulReqID, pParam->ulLen);
+		send(pSession->hSocket, pParam, ulParamLen, MSG_DONTWAIT);
+
+		FTM_MEM_free(pParam);
 	}
-	
+
+	FTOM_MSG_destroy(&pMsg);
+
 	return	FTM_RET_OK;
 }
 

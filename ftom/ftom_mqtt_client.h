@@ -25,6 +25,8 @@
 
 typedef	struct
 {
+	FTM_CHAR	pGatewayID[FTM_GWID_LEN+1];
+
 	FTM_CHAR	pHost[FTM_HOST_LEN+1];
 	FTM_UINT16	usPort;
 

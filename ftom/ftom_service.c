@@ -343,9 +343,21 @@ FTM_RET	FTOM_SERVICE_sendMessage(FTOM_SERVICE_TYPE xType, FTOM_MSG_PTR pMsg)
 		{
 			if (pService->fSendMessage != NULL)
 			{
-				pService->xRet = pService->fSendMessage(pService->pData, pMsg);
+				FTOM_MSG_PTR	pNewMsg;
+
+				xRet = FTOM_MSG_copy(pMsg, &pNewMsg);
+				if (xRet == FTM_RET_OK)
+				{
+					pService->xRet = pService->fSendMessage(pService->pData, pNewMsg);
+				}
+				else
+				{
+					WARN("Message copy error!\n");	
+				}
 			}
 		}
+
+		FTOM_MSG_destroy(&pMsg);
 
 		xRet = FTM_RET_OK;
 	}

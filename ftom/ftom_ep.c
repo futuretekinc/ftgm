@@ -695,7 +695,6 @@ FTM_VOID_PTR FTOM_EP_process
 
 		FTM_TIMER_initMS(&xLoopTimer, ulRemainTime);
 
-		TRACE("EP[%s] waiting time %d\n", pEP->xInfo.pEPID, ulRemainTime);
 		while (!pEP->bStop && (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
 		{
 			TRACE("Receive Message : EP[%s], MSG[%08x]\n", pEP->xInfo.pEPID, pMsg->xType);

@@ -23,7 +23,6 @@ FTM_RET    FTDM_NODE_create
 		return	xRet;
 	}
 
-	TRACE("SNMP Version : %d\n", pInfo->xOption.xSNMP.ulVersion);
 	xRet = FTM_NODE_isStatic(pInfo);
 	if (xRet == FTM_RET_OK)
 	{

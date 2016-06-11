@@ -117,7 +117,8 @@ FTM_RET FTM_NODE_isValidType(FTM_NODE_TYPE xType)
 	if ((xType == FTM_NODE_TYPE_SNMP) ||
 		(xType == FTM_NODE_TYPE_MODBUS_OVER_TCP) ||
 		(xType == FTM_NODE_TYPE_FINS) ||
-		(xType == FTM_NODE_TYPE_MODBUS_OVER_SERIAL))
+		(xType == FTM_NODE_TYPE_MODBUS_OVER_SERIAL) ||
+		(xType == FTM_NODE_TYPE_VIRTUAL))
 	{
 		return	FTM_RET_OK;	
 	}
@@ -228,6 +229,7 @@ FTM_NODE_TYPE_INFO	pNodeTypeInfo[] =
 	{	.xType = FTM_NODE_TYPE_MODBUS_OVER_TCP, .pName = "MODBUSTCP"	},
 	{	.xType = FTM_NODE_TYPE_FINS, .pName = "FINS"	},
 	{	.xType = FTM_NODE_TYPE_NONE, .pName = "NONE"	},
+	{	.xType = FTM_NODE_TYPE_VIRTUAL, .pName = "VIRTUAL"	},
 };
 
 FTM_RET	FTM_NODE_strToType

@@ -191,8 +191,7 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 
 	memset(pClient, 0, sizeof(FTOM_MQTT_CLIENT));
 
-	//FTOM_getDID(pClient->pDID, FTM_DID_LEN);
-	strcpy(pClient->pDID, "00405cabcdef");
+	FTOM_getDID(pClient->pDID, FTM_DID_LEN);
 	strcpy(pClient->xConfig.pHost, FTOM_MQTT_CLIENT_DEFAULT_BROKER);
 	pClient->xConfig.usPort = FTOM_MQTT_CLIENT_DEFAULT_PORT;
 	pClient->xConfig.ulRetryInterval = FTOM_MQTT_CLIENT_DEFAULT_RECONNECTION_TIME;
@@ -510,14 +509,14 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 
 	pClient->bStop 		= FTM_FALSE;
 	pClient->bConnected = FTM_FALSE;
-	pClient->pMosquitto = mosquitto_new(pClient->pDID, true, pClient);
+	pClient->pMosquitto = mosquitto_new(pClient->xConfig.pGatewayID, true, pClient);
 	if(pClient->pMosquitto == NULL)
 	{
 		ERROR("MQTT instance creation failed!\n");
 		return	0;
 	}
 
-	TRACE("MQTT CLIENT[%s] started.\n", pClient->pDID);
+	TRACE("MQTT CLIENT[%s] started.\n", pClient->xConfig.pGatewayID);
 
 	if (pClient->xConfig.bTLS)
 	{
@@ -587,7 +586,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 
 	pthread_join(pClient->xLinkManager, NULL);
 
-	TRACE("MQTT CLIENT[%s] stopped.\n", pClient->pDID);
+	TRACE("MQTT CLIENT[%s] stopped.\n", pClient->xConfig.pGatewayID);
 
 	mosquitto_destroy(pClient->pMosquitto);
 	pClient->pMosquitto = NULL;
@@ -1009,14 +1008,14 @@ FTM_VOID FTOM_MQTT_CLIENT_connectCB
 	ASSERT(pObj != NULL);
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 
-
+	TRACE("MQTT is connected!\n");
 	if (pCBSet[pClient->xConfig.ulCBSet].fConnect != NULL)
 	{
 		pCBSet[pClient->xConfig.ulCBSet].fConnect(mosq, pObj, nResult);
 	}
 	else
 	{
-		TRACE("MQTT client[%s] is connected.\n", pClient->pDID);
+		TRACE("MQTT client[%s] is connected.\n", pClient->xConfig.pGatewayID);
 		pClient->bConnected = FTM_TRUE;
 	}
 

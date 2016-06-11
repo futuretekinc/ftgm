@@ -1,6 +1,7 @@
 #include "ftom_node_class.h"
 #include "ftom_node_snmp_client.h"
 #include "ftom_node_fins_client.h"
+#include "ftom_node_virtual.h"
 
 FTM_RET	FTOM_NODE_CLASS_get
 (
@@ -16,6 +17,7 @@ FTM_RET	FTOM_NODE_CLASS_get
 
 	switch(xType)
 	{
+	case	FTM_NODE_TYPE_VIRTUAL: xRet = FTOM_NODE_VIRTUAL_getClass(pModel, ppClass); break;
 	case	FTM_NODE_TYPE_SNMP: xRet = FTOM_NODE_SNMPC_getClass(pModel, ppClass); break;
 	case	FTM_NODE_TYPE_FINS: xRet = FTOM_NODE_FINSC_getClass(pModel, ppClass); break;
 	default:	xRet = FTM_RET_OBJECT_NOT_FOUND;

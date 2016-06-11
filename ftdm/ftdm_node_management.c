@@ -441,7 +441,7 @@ FTM_RET	FTDM_NODEM_showList
 
 	MESSAGE("\n# Node Information\n");
 	MESSAGE("\t%16s %16s %16s %16s %16s %8s %8s %16s\n",
-			"DID", "MODEL", "TYPE", "NAME", "LOCATION", "INTERVAL", "TIMEOUT", "OPT");
+			"DID", "MODEL", "TYPE", "NAME", "LOCATION", "REPORT", "TIMEOUT", "OPT");
 	if (FTM_LIST_count(pNodeM->pList, &ulCount) == FTM_RET_OK)
 	{
 		for(i = 0 ; i < ulCount ; i++)
@@ -449,7 +449,7 @@ FTM_RET	FTDM_NODEM_showList
 			FTDM_NODE_PTR	pNode;
 
 			FTDM_NODEM_getAt(pNodeM, i, &pNode);
-			MESSAGE("\t%16s %16s %16s %16s %8d %8d ",
+			MESSAGE("\t%16s %16s %16s %16s %16s %8d %8d ",
 				pNode->xInfo.pDID,
 				pNode->xInfo.pModel,
 				FTM_NODE_typeString(pNode->xInfo.xType),
@@ -493,6 +493,9 @@ FTM_RET	FTDM_NODEM_showList
 						pNode->xInfo.xOption.xFINS.ulServerID);
 				}
 				break;
+
+			default:
+				MESSAGE("\n");
 			}
 
 		}

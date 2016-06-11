@@ -89,8 +89,8 @@ FTM_VOID FTOM_MQTT_CLIENT_FT_messageCB
 		xRet = FTOM_sendMessage(FTOM_SERVICE_ALL, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
-			FTM_MEM_free(pMsg);
-			ERROR("Message queue push failed.\n");
+			FTOM_MSG_destroy(&pMsg);
+			ERROR("Message send failed.\n");
 			return;
 		}
 	}
