@@ -4,7 +4,6 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
-#include "libconfig.h"
 #include "ftom.h"
 #include "ftom_node_snmp_client.h"
 #include "ftom_dmc.h"
@@ -216,6 +215,63 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 	return	0;
 }
 
+FTM_RET FTOM_SNMPC_loadConfig
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CONFIG_PTR		pConfig
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfig != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_ITEM		xSection;	
+
+	xRet = FTM_CONFIG_getItem(pConfig, "snmpc", &xSection);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_CONFIG_ITEM	xArray;
+
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "mibs", &xArray);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_ULONG	i, ulCount = 0;
+
+			xRet = FTM_CONFIG_LIST_getItemCount(&xArray, &ulCount);
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				FTM_CONFIG_ITEM	xItem;
+				
+				xRet = FTM_CONFIG_LIST_getItemAt(&xArray, i, &xItem);
+				if (xRet == FTM_RET_OK)
+				{
+					FTM_CHAR	pMIBFileName[1024];
+
+					xRet = FTM_CONFIG_ITEM_getString(&xItem, pMIBFileName, sizeof(pMIBFileName) - 1);
+					if (xRet == FTM_RET_OK)
+					{
+						FTM_CHAR_PTR pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(strlen(pMIBFileName)+1);
+						if (pBuff != NULL)
+						{
+							strcpy(pBuff, pMIBFileName);
+							FTM_LIST_append(&pClient->xConfig.xMIBList, pBuff);
+							read_mib(pBuff);
+						}
+					}
+				}
+			}
+		}
+
+		xRet = FTM_CONFIG_ITEM_getItemULONG(&xSection, "retry_count", &pClient->xConfig.ulMaxRetryCount);
+		if (xRet != FTM_RET_OK)
+		{
+			pClient->xConfig.ulMaxRetryCount = 1;
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET FTOM_SNMPC_loadFromFile
 (
 	FTOM_SNMPC_PTR 	pClient, 
@@ -225,90 +281,83 @@ FTM_RET FTOM_SNMPC_loadFromFile
 	ASSERT(pClient != NULL);
 	ASSERT(pFileName != NULL);
 
-#if 0
-	FTM_RET			xRet;
-	FTM_CONFIG_PTR	pConfig;
-	FTM_CONFIG_ITEM_PTR	pSection;
+	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pConfig;
 
 	xRet = FTM_CONFIG_create(pFileName, &pConfig);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
-	}
-
-	xRet = FTM_CONFIG_getItem(pConfig, "snmpc", &pSection);
-	if (xRet == FTM_RET_OK)
-	{
-		FTM_CONFIG_ITEM_PTR	pMIBS;
-
-		xRet = FTM_CONFIG_ITEM_getChildItem(pSection, "mibs", &pMIBS);
-		if (xRet == FTM_RET_OK)
-		{	
-			FTM_ULONG	ulCount;
-			xRet = FTM_CONFIG_LIST_getItemCount(pMIBS, &ulCount);
-			if (xRet == FTM_RET_OK)
-			{
-				for(i = 0 ; i < ulCount ; i++)
-				{
-					FTM_CONFIG_ITEM	xItem;
-
-					xRet = FTM_CONFIG_LIST_getItemAt(pMIBS, i, &xItem);
-					if (xRet == FTM_RET_OK)
-					{}
-				}
-			
-			}
-		}
-	}
-
-#else
-	config_t			xConfig;
-	config_setting_t	*pSection;
-	
-	config_init(&xConfig);
-	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
-	{
 		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
-	pSection = config_lookup(&xConfig, "snmpc");
-	if (pSection != NULL)
+	xRet = FTOM_SNMPC_loadConfig(pClient, pConfig);
+
+	FTM_CONFIG_destroy(&pConfig);
+
+	return	xRet;
+}
+
+FTM_RET FTOM_SNMPC_saveConfig
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfig != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_ITEM		xSection;	
+
+	xRet = FTM_CONFIG_getItem(pConfig, "snmpc", &xSection);
+	if (xRet == FTM_RET_OK)
 	{
-		config_setting_t	*pField;
-
-		pField = config_setting_get_member(pSection, "mibs");
-		if (pField != NULL)
+		xRet = FTM_CONFIG_addItem(pConfig, "snmpc", &xSection);
+		if (xRet != FTM_RET_OK)
 		{
-			FTM_INT	i, nCount = config_setting_length(pField);
-			
-			for(i = 0 ; i < nCount ; i++)
-			{
-				const char * pMIBFileName = config_setting_get_string_elem(pField, i);	
-				if (pMIBFileName != NULL)
-				{
-					FTM_CHAR_PTR pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(strlen(pMIBFileName)+1);
-					if (pBuff != NULL)
-					{
-						strcpy(pBuff, pMIBFileName);
-						FTM_LIST_append(&pClient->xConfig.xMIBList, pBuff);
-						read_mib(pBuff);
-					}
-				}
-			}
-		}
-
-		pField = config_setting_get_member(pSection, "retry_count");
-		if (pField != NULL)
-		{
-			pClient->xConfig.ulMaxRetryCount = config_setting_get_int(pField);		
-		}
-		else
-		{
-			pClient->xConfig.ulMaxRetryCount = 1;
+			return	xRet;	
 		}
 	}
-	config_destroy(&xConfig);
-#endif
+
+	FTM_CONFIG_ITEM	xArray;
+
+	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "mibs", &xArray);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_CONFIG_ITEM_createChildList(&xSection, "mibs", &xArray);
+		if (xRet != FTM_RET_OK)
+		{
+			return	xRet;
+		}
+	}
+
+	FTM_ULONG	i, ulCount = 0;
+
+	xRet = FTM_CONFIG_LIST_getItemCount(&xArray, &ulCount);
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTM_CONFIG_LIST_deleteItemAt(&xArray, i);
+	}
+
+	FTM_LIST_count(&pClient->xConfig.xMIBList, &ulCount);
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTM_CHAR_PTR	pMIBFileName = NULL;
+
+		xRet = FTM_LIST_getAt(&pClient->xConfig.xMIBList, i, (FTM_VOID_PTR _PTR_)pMIBFileName);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_CONFIG_ITEM	xElement;
+			FTM_CONFIG_LIST_addItemString(&xArray, 	pMIBFileName, &xElement);
+		}
+	}
+
+	xRet = FTM_CONFIG_ITEM_setItemULONG(&xSection, "retry_count", pClient->xConfig.ulMaxRetryCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can't save retry count[%08x] !\n", xRet);
+	}
+
 	return	FTM_RET_OK;
 }
 

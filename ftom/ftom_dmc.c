@@ -872,45 +872,90 @@ FTM_RET	FTOM_DMC_RULE_getIDList
 	return	FTDMC_RULE_getIDList(&pDMC->xSession, pIDs, ulIndex, ulMaxCount, pulCount);
 }
 
-FTM_RET FTOM_DMC_loadFromFile(FTOM_DMC_PTR pDMC, FTM_CHAR_PTR pFileName)
+FTM_RET FTOM_DMC_loadConfig
+(
+	FTOM_DMC_PTR 	pDMC, 
+	FTM_CONFIG_PTR	pConfig
+)
 {
-	ASSERT(pFileName != NULL);
+	ASSERT(pDMC != NULL);
+	ASSERT(pConfig != NULL);
 
 	FTM_RET				xRet;
-	config_t			xConfig;
-	config_setting_t	*pSection;
-	
-	config_init(&xConfig);
-	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
-	{
-		return	FTM_RET_CONFIG_LOAD_FAILED;
-	}
+	FTM_CONFIG_ITEM		xSection;
 
-	pSection = config_lookup(&xConfig, "client");
-	if (pSection != NULL)
+	xRet = FTM_CONFIG_getItem(pConfig, "client", &xSection);
+	if (xRet == FTM_RET_OK)
 	{
-		config_setting_t	*pField;
+		FTM_CHAR	pValue[256];
 
-		pField = config_setting_get_member(pSection, "server_ip");
-		if (pField != NULL)
+		memset(pValue, 0, sizeof(pValue) - 1);
+		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "server_ip", pValue, sizeof(pValue) - 1);
+		if (xRet == FTM_RET_OK)
 		{
-			strncpy(pDMC->xConfig.xNetwork.pServerIP, config_setting_get_string(pField), FTDMC_SERVER_IP_LEN);
+			strncpy(pDMC->xConfig.xNetwork.pServerIP, pValue, FTDMC_SERVER_IP_LEN);
 		}
 	
-		pField = config_setting_get_member(pSection, "port");
-		if (pField != NULL)
-		{
-			pDMC->xConfig.xNetwork.usPort = (FTM_ULONG)config_setting_get_int(pField);
-		}
+		xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xSection, "port", &pDMC->xConfig.xNetwork.usPort);
 	}
-
-	config_destroy(&xConfig);
 
 	xRet = FTDMC_init(&pDMC->xConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_DMC_loadFromFile
+(
+	FTOM_DMC_PTR pDMC, 
+	FTM_CHAR_PTR pFileName
+)
+{
+	ASSERT(pFileName != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pConfig;
+
+	xRet = FTM_CONFIG_create(pFileName, &pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	FTOM_DMC_loadConfig(pDMC, pConfig);
+
+	FTM_CONFIG_destroy(&pConfig);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_DMC_saveConfig
+(
+	FTOM_DMC_PTR 	pDMC, 
+	FTM_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pConfig != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_ITEM		xSection;
+
+	xRet = FTM_CONFIG_getItem(pConfig, "client", &xSection);
+	if (xRet != FTM_RET_OK)
+	{
+		xRet = FTM_CONFIG_addItem(pConfig, "client", &xSection);
+		if (xRet != FTM_RET_OK)
+		{
+			return	xRet;	
+		}
+	}
+
+	FTM_CONFIG_ITEM_setItemString(&xSection, "server_ip", pDMC->xConfig.xNetwork.pServerIP);
+	FTM_CONFIG_ITEM_setItemUSHORT(&xSection, "port", pDMC->xConfig.xNetwork.usPort);
 
 	return	FTM_RET_OK;
 }

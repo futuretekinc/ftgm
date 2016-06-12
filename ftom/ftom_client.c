@@ -39,7 +39,7 @@ FTM_RET	FTOM_CLIENT_stop
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 
-FTM_RET	FTOM_CLIENT_loadConfig
+FTM_RET	FTOM_CLIENT_setConfig
 (
 	FTOM_CLIENT_PTR			pClient,
 	FTM_VOID_PTR			pConfig
@@ -48,9 +48,9 @@ FTM_RET	FTOM_CLIENT_loadConfig
 	ASSERT(pClient != NULL);
 	ASSERT(pConfig != NULL);
 
-	if (pClient->fLoadConfig != NULL)
+	if (pClient->fSetConfig != NULL)
 	{
-		pClient->fLoadConfig(pClient, pConfig);
+		pClient->fSetConfig(pClient, pConfig);
 	}
 
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;

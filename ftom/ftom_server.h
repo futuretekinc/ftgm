@@ -80,10 +80,22 @@ FTM_RET	FTOM_SERVER_stop
 	FTOM_SERVER_PTR	pServer
 );
 
+FTM_RET FTOM_SERVER_loadConfig
+(
+	FTOM_SERVER_PTR	pServer,
+	FTM_CONFIG_PTR	pConfig
+);
+
 FTM_RET	FTOM_SERVER_loadFromFile
 (
 	FTOM_SERVER_PTR	pServer, 
 	FTM_CHAR_PTR		pFileName
+);
+
+FTM_RET FTOM_SERVER_saveConfig
+(
+	FTOM_SERVER_PTR	pServer,
+	FTM_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTOM_SERVER_showConfig

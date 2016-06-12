@@ -105,16 +105,16 @@ FTM_RET	FTDM_EPM_loadFromFile
 	ASSERT(pFileName != NULL);
 
 	FTM_RET				xRet;
-	FTM_CONFIG			xConfig;
+	FTM_CONFIG_PTR		pConfig;
 	FTM_CONFIG_ITEM		xSection;
 
-	xRet = FTM_CONFIG_init(&xConfig, pFileName);
+	xRet = FTM_CONFIG_create(pFileName, &pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
-	xRet = FTM_CONFIG_getItem(&xConfig, "ep", &xSection);
+	xRet = FTM_CONFIG_getItem(pConfig, "ep", &xSection);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_CONFIG_ITEM	xEPItemList;
@@ -166,7 +166,7 @@ FTM_RET	FTDM_EPM_loadFromFile
 		}
 	}
 
-	FTM_CONFIG_final(&xConfig);
+	FTM_CONFIG_destroy(&pConfig);
 
 	return	FTM_RET_OK;
 }

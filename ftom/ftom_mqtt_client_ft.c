@@ -1,7 +1,6 @@
 #include "ftm.h"
 #include "ftom.h"
 #include "ftom_mqtt_client.h"
-#include <nxjson.h>
 
 static FTM_RET	FTOM_MQTT_CLIENT_FT_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
 static FTM_RET	FTOM_MQTT_CLIENT_FT_requestMessageParser(FTM_CHAR_PTR pMessage, FTOM_MSG_PTR _PTR_	pMsg);

@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <mosquitto.h>
 #include "ftm.h"
-#include "nxjson.h"
 #include "ftom_message_queue.h"
 #include "ftom_mqtt_client.h"
 #include "ftom_mqtt_client_tpgw.h"
@@ -276,7 +275,7 @@ FTM_RET	FTOM_MQTT_CLIENT_final
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MQTT_CLIENT_loadConfig
+FTM_RET	FTOM_MQTT_CLIENT_setConfig
 (
 	FTOM_MQTT_CLIENT_PTR 		pClient, 
 	FTOM_MQTT_CLIENT_CONFIG_PTR 	pConfig
@@ -764,7 +763,9 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 	FTOM_MQTT_CLIENT_PTR 	pClient, 
 	FTM_CHAR_PTR			pTopic,
 	FTM_CHAR_PTR			pMessage,
-	FTM_ULONG				ulMessageLen
+	FTM_ULONG				ulMessageLen,
+	FTM_VOID_PTR			pData,
+	FTM_ULONG_PTR			pulMessageID
 )
 {
 	ASSERT(pClient != NULL);
@@ -775,7 +776,7 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 	FTM_INT	nRet;
 	FTOM_MQTT_PUBLISH_PTR	pPublish;
 
-	xRet = FTOM_MQTT_PUBLISH_create(pTopic, pMessage, ulMessageLen, 1, &pPublish);
+	xRet = FTOM_MQTT_PUBLISH_create(pTopic, pMessage, ulMessageLen, 1, pData, &pPublish);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -787,6 +788,11 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 	{
 	case	MOSQ_ERR_SUCCESS:
 		{
+			if (pulMessageID != NULL)
+			{
+				*pulMessageID = pPublish->nMessageID;	
+			}
+
 			TRACE("Publish[%04d] - %s:%s\n", pPublish->nMessageID, pTopic, pMessage);
 			xRet = FTM_LIST_append(pClient->pPublishList, pPublish);
 			if (xRet != FTM_RET_OK)
@@ -1171,6 +1177,7 @@ FTM_RET	FTOM_MQTT_PUBLISH_create
 	FTM_CHAR_PTR	pMessage,
 	FTM_ULONG		ulMessageLen,
 	FTM_ULONG		ulQoS,
+	FTM_VOID_PTR	pData,
 	FTOM_MQTT_PUBLISH_PTR _PTR_ ppPublish
 )
 {
@@ -1195,6 +1202,7 @@ FTM_RET	FTOM_MQTT_PUBLISH_create
 	pPublish->ulMessageLen 	= ulMessageLen;
 	pPublish->ulQoS     	= ulQoS;
 	pPublish->nMessageID	= 0;
+	pPublish->pData			= pData;
 
 	*ppPublish = pPublish;
 

@@ -51,6 +51,12 @@ FTM_VOID_PTR	FTOM_SHELL_process
 	FTM_VOID_PTR	pData
 );
 
+FTM_RET	FTOM_SHELL_loadConfig
+(
+	FTOM_SHELL_PTR	pShell, 
+	FTM_CONFIG_PTR	pConfig
+);
+
 FTM_RET	FTOM_SHELL_loadFromFile
 (
 	FTOM_SHELL_PTR	pShell, 

@@ -165,17 +165,17 @@ FTM_RET	FTDM_NODEM_loadFromFile
 	ASSERT(pFileName != NULL);
 
 	FTM_RET				xRet;
-	FTM_CONFIG			xConfig;
+	FTM_CONFIG_PTR		pRoot;
 	FTM_CONFIG_ITEM		xNodeSection;
 
-	xRet = FTM_CONFIG_init(&xConfig, pFileName);
+	xRet = FTM_CONFIG_create(pFileName, &pRoot);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Config initialize failed[%08x].\n", xRet);
 		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
-	xRet = FTM_CONFIG_getItem(&xConfig, "node", &xNodeSection);
+	xRet = FTM_CONFIG_getItem(pRoot, "node", &xNodeSection);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_CONFIG_ITEM	xNodeItemList;
@@ -233,7 +233,7 @@ FTM_RET	FTDM_NODEM_loadFromFile
 		ERROR("NODE section not found!\n");	
 	}
 
-	FTM_CONFIG_final(&xConfig);
+	FTM_CONFIG_destroy(&pRoot);
 
 	return	FTM_RET_OK;
 }

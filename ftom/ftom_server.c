@@ -2395,6 +2395,33 @@ finish:
 	return	xRet;
 }
 
+FTM_RET FTOM_SERVER_loadConfig
+(
+	FTOM_SERVER_PTR	pServer,
+	FTM_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pConfig != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_ITEM		xServer;
+
+	xRet = FTM_CONFIG_getItem(pConfig, "server", &xServer);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Server configuration not found!\n");
+		goto finish;
+	}
+
+	FTM_CONFIG_ITEM_getItemULONG(&xServer, "max_session", &pServer->xConfig.ulMaxSession);
+	FTM_CONFIG_ITEM_getItemUSHORT(&xServer, "port", 		&pServer->xConfig.usPort);
+	FTM_CONFIG_ITEM_getItemString(&xServer, "sm_key_file", pServer->xConfig.pSMKeyFile, sizeof(pServer->xConfig.pSMKeyFile) - 1);
+
+finish:
+	return	xRet;
+}
+
 FTM_RET FTOM_SERVER_loadFromFile
 (
 	FTOM_SERVER_PTR	pServer,
@@ -2404,52 +2431,52 @@ FTM_RET FTOM_SERVER_loadFromFile
 	ASSERT(pServer != NULL);
 	ASSERT(pFileName != NULL);
 
-	config_t			xConfig;
-	config_setting_t	*pSection;
-	
+	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pRoot;
 
-	config_init(&xConfig);
-	if (config_read_file(&xConfig, pFileName) == CONFIG_FALSE)
+	xRet =FTM_CONFIG_create(pFileName, &pRoot);
+	if (xRet != FTM_RET_OK)
 	{
 		ERROR("SERVER configuration file[%s] load failed\n", pFileName);
-		return	FTM_RET_CONFIG_LOAD_FAILED;
+		return	xRet;	
 	}
 
-	pSection = config_lookup(&xConfig, "server");
-	if (pSection != NULL)
+	xRet = FTOM_SERVER_loadConfig(pServer, pRoot);
+
+	FTM_CONFIG_destroy(&pRoot);
+
+	return	xRet;
+}
+
+FTM_RET FTOM_SERVER_saveConfig
+(
+	FTOM_SERVER_PTR	pServer,
+	FTM_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pConfig != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_ITEM		xServer;
+
+	xRet = FTM_CONFIG_getItem(pConfig, "server", &xServer);
+	if (xRet != FTM_RET_OK)
 	{
-		config_setting_t	*pField;
-
-		pField = config_setting_get_member(pSection, "max_session");
-		if (pField != NULL)
+		xRet = FTM_CONFIG_addItem(pConfig, "server", &xServer);
+		if (xRet != FTM_RET_OK)
 		{
-			pServer->xConfig.ulMaxSession = (FTM_ULONG)config_setting_get_int(pField);
+			ERROR("Server configuration not found!\n");
+			goto finish;
 		}
-	
-		pField = config_setting_get_member(pSection, "port");
-		if (pField != NULL)
-		{
-			pServer->xConfig.usPort = (FTM_ULONG)config_setting_get_int(pField);
-		}
-
-		pField = config_setting_get_member(pSection, "sm_key_file");
-		if (pField != NULL)
-		{
-			strncpy(pServer->xConfig.pSMKeyFile, config_setting_get_string(pField), sizeof(pServer->xConfig.pSMKeyFile) - 1);
-			TRACE("sm_key_file : %s\n", pServer->xConfig.pSMKeyFile);
-		}
-		else
-		{
-			TRACE("Can't found sm_key_file!\n");
-			strcpy(pServer->xConfig.pSMKeyFile, "/run/ftom/ftom.smkey");
-		}
-
-
 	}
 
-	config_destroy(&xConfig);
+	FTM_CONFIG_ITEM_setItemULONG(&xServer, 	"max_session", 	pServer->xConfig.ulMaxSession);
+	FTM_CONFIG_ITEM_setItemUSHORT(&xServer, "port", 		pServer->xConfig.usPort);
+	FTM_CONFIG_ITEM_setItemString(&xServer, "sm_key_file", 	pServer->xConfig.pSMKeyFile);
 
-	return	FTM_RET_OK;
+finish:
+	return	xRet;
 }
 
 FTM_RET FTOM_SERVER_showConfig

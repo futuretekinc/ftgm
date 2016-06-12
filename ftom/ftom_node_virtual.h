@@ -13,6 +13,7 @@ typedef	struct  FTOM_NODE_VIRTUAL_STRUCT
 	FTOM_NODE				xCommon;
 	struct snmp_session 	*pSession;		/* SNMP session data */
 	FTM_LOCK_PTR			pLock;
+	FTM_VOID_PTR			pData;
 }	FTOM_NODE_VIRTUAL, _PTR_ FTOM_NODE_VIRTUAL_PTR;
 
 FTM_RET	FTOM_NODE_VIRTUAL_getClass

@@ -130,6 +130,17 @@ FTM_VOID_PTR	FTOM_SHELL_process
 	return	0;
 }
 
+FTM_RET	FTOM_SHELL_loadConfig
+(
+	FTOM_SHELL_PTR	pShell, 
+	FTM_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pShell != NULL);
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_SHELL_loadFromFile
 (
 	FTOM_SHELL_PTR	pShell, 

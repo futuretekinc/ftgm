@@ -2,7 +2,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "ftm.h"
-#include "nxjson.h"
 #include "ftom_tp_client.h"
 #include "ftom_message_queue.h"
 #include "ftom_mqtt_client.h"
@@ -139,7 +138,7 @@ FTM_RET	FTOM_TP_CLIENT_final
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_loadConfig
+FTM_RET	FTOM_TP_CLIENT_setConfig
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
 	FTOM_TP_CLIENT_CONFIG_PTR 	pConfig
@@ -162,7 +161,7 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 	xMQTTConfig.bTLS 			= FTM_TRUE;
 	xMQTTConfig.ulCBSet 		= 1;
 
-	xRet = FTOM_MQTT_CLIENT_loadConfig(&pClient->xMQTT, &xMQTTConfig);
+	xRet = FTOM_MQTT_CLIENT_setConfig(&pClient->xMQTT, &xMQTTConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("MQTT Client configation loading failed!\n");
@@ -172,28 +171,19 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 	return	FTM_RET_OK;
 }
 
-
-FTM_RET	FTOM_TP_CLIENT_loadFromFile
+FTM_RET	FTOM_TP_CLIENT_loadConfig
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
-	FTM_CHAR_PTR 		pFileName
+	FTM_CONFIG_PTR		pConfig
 )
 {
 	ASSERT(pClient != NULL);
-	ASSERT(pFileName != NULL);
+	ASSERT(pConfig != NULL);
 
 	FTM_RET				xRet;
-	FTM_CONFIG			xConfig;
 	FTM_CONFIG_ITEM		xSection;
 
-	xRet = FTM_CONFIG_init(&xConfig, pFileName);
-	if (xRet !=  FTM_RET_OK)
-	{
-		ERROR("Configration loading failed!\n");
-		return	xRet;	
-	}
-
-	xRet = FTM_CONFIG_getItem(&xConfig, "tpclient", &xSection);
+	xRet = FTM_CONFIG_getItem(pConfig, "tpclient", &xSection);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "id", pClient->xConfig.pGatewayID, FTM_GWID_LEN);
@@ -234,8 +224,6 @@ FTM_RET	FTOM_TP_CLIENT_loadFromFile
 	
 	}
 
-	FTM_CONFIG_final(&xConfig);
-
 	FTOM_MQTT_CLIENT_CONFIG	xMQTTConfig;
 
 	strncpy(xMQTTConfig.pGatewayID,	pClient->xConfig.pGatewayID,FTM_GWID_LEN);
@@ -248,11 +236,98 @@ FTM_RET	FTOM_TP_CLIENT_loadFromFile
 	xMQTTConfig.bTLS 			= FTM_TRUE;
 	xMQTTConfig.ulCBSet 		= 1;
 
-	xRet = FTOM_MQTT_CLIENT_loadConfig(&pClient->xMQTT, &xMQTTConfig);
+	xRet = FTOM_MQTT_CLIENT_setConfig(&pClient->xMQTT, &xMQTTConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("MQTT Client configation loading failed!\n");
-		return	0;	
+		return	xRet;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_TP_CLIENT_loadConfigFromFile
+(
+	FTOM_TP_CLIENT_PTR 	pClient, 
+	FTM_CHAR_PTR 		pFileName
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pFileName != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pConfig;
+
+	xRet = FTM_CONFIG_create(pFileName, &pConfig);
+	if (xRet !=  FTM_RET_OK)
+	{
+		ERROR("Configration loading failed!\n");
+		return	xRet;	
+	}
+
+	xRet = FTOM_TP_CLIENT_loadConfig(pClient, pConfig);
+
+	FTM_CONFIG_destroy(&pConfig);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_TP_CLIENT_saveConfig
+(
+	FTOM_TP_CLIENT_PTR 	pClient, 
+	FTM_CONFIG_PTR		pConfig
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfig != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_ITEM		xSection;
+
+	xRet = FTM_CONFIG_getItem(pConfig, "tpclient", &xSection);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_CONFIG_addItem(pConfig, "tpclient", &xSection);
+		if (xRet != FTM_RET_OK)
+		{
+			return	xRet;	
+		}
+	}
+
+	xRet = FTM_CONFIG_ITEM_setItemString(&xSection, "id", pClient->xConfig.pGatewayID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can not save the gateway id for the TPClient!\n");
+	}
+
+	xRet = FTM_CONFIG_ITEM_setItemString(&xSection, "cert", pClient->xConfig.pCertFile);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can not save the certificate information for the TPClient!\n");
+	}
+
+	xRet = FTM_CONFIG_ITEM_setItemString(&xSection, "apikey", pClient->xConfig.pAPIKey);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can not save a APIKEY information for the TPClient!\n");
+	}
+
+	xRet = FTM_CONFIG_ITEM_setItemString(&xSection, "host", pClient->xConfig.pHost);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Can not save a host for the TPClient!\n");
+	}
+
+	xRet = FTM_CONFIG_ITEM_setItemUSHORT(&xSection, "port", pClient->xConfig.usPort);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Can not save a port for the TPClient!\n");
+	}
+
+	xRet = FTM_CONFIG_ITEM_setItemULONG(&xSection, "report_interval", pClient->xConfig.ulReportInterval);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Can not save a report interval for the TPClient!\n");
 	}
 
 	return	FTM_RET_OK;

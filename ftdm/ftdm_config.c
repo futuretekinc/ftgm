@@ -51,7 +51,7 @@ FTM_RET FTDM_CFG_final(FTDM_CFG_PTR pConfig)
 FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 {
 	FTM_RET			xRet;
-	FTM_CONFIG		xConfig;
+	FTM_CONFIG_PTR	pRoot;
 	FTM_CONFIG_ITEM	xServer;
 	FTM_CONFIG_ITEM	xDB;
 	FTM_CONFIG_ITEM	xDebug;
@@ -60,13 +60,13 @@ FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 	ASSERT(pConfig != NULL);
 	ASSERT(pFileName != NULL);
 
-	xRet = FTM_CONFIG_init(&xConfig, pFileName);
+	xRet = FTM_CONFIG_create(pFileName, &pRoot);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
 	}
 
-	xRet = FTM_CONFIG_getItem(&xConfig, "database", &xDB);
+	xRet = FTM_CONFIG_getItem(pRoot, "database", &xDB);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_CHAR	pDBFileName[FTM_FILE_NAME_LEN+1];
@@ -78,7 +78,7 @@ FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		}
 	}
 
-	xRet = FTM_CONFIG_getItem(&xConfig, "server", &xServer);
+	xRet = FTM_CONFIG_getItem(pRoot, "server", &xServer);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_USHORT	usPort;
@@ -97,7 +97,7 @@ FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		}
 	}
 
-	xRet = FTM_CONFIG_getItem(&xConfig, "ep", &xEPSection);
+	xRet = FTM_CONFIG_getItem(pRoot, "ep", &xEPSection);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_CONFIG_ITEM	xTypeItemList;
@@ -136,7 +136,7 @@ FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		}
 	}
 
-	xRet = FTM_CONFIG_getItem(&xConfig, "debug", &xDebug);
+	xRet = FTM_CONFIG_getItem(pRoot, "debug", &xDebug);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_ULONG	ulLevel;
@@ -148,7 +148,7 @@ FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		}
 	}
 
-	FTM_CONFIG_final(&xConfig);
+	FTM_CONFIG_destroy(&pRoot);
 
 	return	FTM_RET_OK;
 }

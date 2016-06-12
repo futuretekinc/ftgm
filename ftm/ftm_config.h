@@ -2,20 +2,22 @@
 #define	_FTM_CONFIG_H_
 
 #include "ftm_types.h"
-#include "libconfig.h"
 #include "ftm_node.h"
 #include "ftm_ep.h"
 #include "ftm_time.h"
 #include "ftm_value.h"
+#include "cJSON.h"
 
 typedef	struct
 {
-	config_t		xLibConfig;
+	cJSON	_PTR_	pRoot;
+	FTM_CHAR_PTR	pData;
+	FTM_ULONG		ulLen;
 }	FTM_CONFIG, _PTR_ FTM_CONFIG_PTR;
 
 typedef	struct
 {
-	config_setting_t	*pSetting;
+	cJSON	_PTR_	pObject;
 }	FTM_CONFIG_ITEM, _PTR_ FTM_CONFIG_ITEM_PTR;
 
 FTM_RET	FTM_CONFIG_create
@@ -26,7 +28,7 @@ FTM_RET	FTM_CONFIG_create
 
 FTM_RET	FTM_CONFIG_destroy
 (
-	FTM_CONFIG_PTR 		pConfig
+	FTM_CONFIG_PTR _PTR_ pConfig
 );
 
 FTM_RET	FTM_CONFIG_init
@@ -40,10 +42,22 @@ FTM_RET	FTM_CONFIG_final
 	FTM_CONFIG_PTR 		pConfig
 );
 
+FTM_RET	FTM_CONFIG_print
+(
+	FTM_CONFIG_PTR		pConfig
+);
+
 FTM_RET	FTM_CONFIG_getItem
 (
 	FTM_CONFIG_PTR 		pConfig, 
 	FTM_CHAR_PTR 		pName, 
+	FTM_CONFIG_ITEM_PTR pItem
+);
+
+FTM_RET	FTM_CONFIG_addItem
+(
+	FTM_CONFIG_PTR pConfig, 
+	FTM_CHAR_PTR 	pName, 
 	FTM_CONFIG_ITEM_PTR pItem
 );
 
@@ -60,6 +74,53 @@ FTM_RET	FTM_CONFIG_LIST_getItemAt
 	FTM_CONFIG_ITEM_PTR pChildItem
 );
 
+FTM_RET	FTM_CONFIG_LIST_deleteItemAt
+(
+	FTM_CONFIG_ITEM_PTR	pItem,
+	FTM_ULONG			ulIndex
+);
+
+FTM_RET	FTM_CONFIG_LIST_addItem
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CONFIG_ITEM_PTR pChildItem
+);
+
+FTM_RET	FTM_CONFIG_LIST_addItemINT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_INT				nValue,
+	FTM_CONFIG_ITEM_PTR pChildItem
+);
+
+FTM_RET	FTM_CONFIG_LIST_addItemUSHORT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_USHORT			usValue,
+	FTM_CONFIG_ITEM_PTR pChildItem
+);
+
+FTM_RET	FTM_CONFIG_LIST_addItemULONG
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_ULONG			ulValue,
+	FTM_CONFIG_ITEM_PTR pChildItem
+);
+
+FTM_RET	FTM_CONFIG_LIST_addItemFLOAT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_FLOAT			fValue,
+	FTM_CONFIG_ITEM_PTR pChildItem
+);
+
+FTM_RET	FTM_CONFIG_LIST_addItemString
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR		pValue,
+	FTM_CONFIG_ITEM_PTR pChildItem
+);
+	
 FTM_RET	FTM_CONFIG_ITEM_create
 (
 	FTM_CONFIG_ITEM_PTR _PTR_ ppItem
@@ -84,18 +145,21 @@ FTM_RET	FTM_CONFIG_ITEM_getItemAt
 	FTM_CONFIG_ITEM_PTR pChildItem
 );
 
+/*************************************
+ * get item
+ *************************************/
+FTM_RET	FTM_CONFIG_ITEM_getItemNumber
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_FLOAT_PTR		pfValue
+);
+
 FTM_RET	FTM_CONFIG_ITEM_getItemBOOL
 (
 	FTM_CONFIG_ITEM_PTR pItem, 	
 	FTM_CHAR_PTR 		pName, 
 	FTM_BOOL_PTR 		pbValue
-);
-
-FTM_RET	FTM_CONFIG_ITEM_setItemBOOL
-(
-	FTM_CONFIG_ITEM_PTR pItem, 	
-	FTM_CHAR_PTR 		pName, 
-	FTM_BOOL  			bValue
 );
 
 FTM_RET	FTM_CONFIG_ITEM_getItemUSHORT
@@ -105,25 +169,11 @@ FTM_RET	FTM_CONFIG_ITEM_getItemUSHORT
 	FTM_USHORT_PTR 		pusValue
 );
 
-FTM_RET	FTM_CONFIG_ITEM_setItemUSHORT
-(
-	FTM_CONFIG_ITEM_PTR pItem,
-	FTM_CHAR_PTR 		pName, 
-	FTM_USHORT 			usValue
-);
-
 FTM_RET	FTM_CONFIG_ITEM_getItemINT
 (
 	FTM_CONFIG_ITEM_PTR pItem, 	
 	FTM_CHAR_PTR 		pName, 
 	FTM_INT_PTR 		pnValue
-);
-
-FTM_RET	FTM_CONFIG_ITEM_setItemINT
-(
-	FTM_CONFIG_ITEM_PTR pItem, 	
-	FTM_CHAR_PTR 		pName, 
-	FTM_INT 			nValue
 );
 
 FTM_RET	FTM_CONFIG_ITEM_getItemULONG
@@ -133,25 +183,11 @@ FTM_RET	FTM_CONFIG_ITEM_getItemULONG
 	FTM_ULONG_PTR 		pulValue
 );
 
-FTM_RET	FTM_CONFIG_ITEM_setItemULONG
-(
-	FTM_CONFIG_ITEM_PTR pItem, 
-	FTM_CHAR_PTR 		pName, 
-	FTM_ULONG 			ulValue
-);
-
 FTM_RET	FTM_CONFIG_ITEM_getItemFLOAT
 (
 	FTM_CONFIG_ITEM_PTR pItem, 
 	FTM_CHAR_PTR 		pName, 
 	FTM_FLOAT_PTR 		pfValue
-);
-
-FTM_RET	FTM_CONFIG_ITEM_setItemFLOAT
-(
-	FTM_CONFIG_ITEM_PTR pItem, 
-	FTM_CHAR_PTR 		pName, 
-	FTM_FLOAT			fValue
 );
 
 FTM_RET	FTM_CONFIG_ITEM_getItemString
@@ -160,13 +196,6 @@ FTM_RET	FTM_CONFIG_ITEM_getItemString
 	FTM_CHAR_PTR 		pName, 
 	FTM_CHAR_PTR 		pBuff, 
 	FTM_ULONG 			ulBuffLen
-);
-
-FTM_RET	FTM_CONFIG_ITEM_setItemString
-(
-	FTM_CONFIG_ITEM_PTR pItem,
-	FTM_CHAR_PTR 		pName, 
-	FTM_CHAR_PTR 		pBuff 
 );
 
 FTM_RET	FTM_CONFIG_ITEM_getItemNode
@@ -183,18 +212,18 @@ FTM_RET	FTM_CONFIG_ITEM_getItemEP
 	FTM_EP_DATA_PTR 	pData
 );
 
-FTM_RET	FTM_CONFIG_ITEM_getItemTime
-(
-	FTM_CONFIG_ITEM_PTR pItem, 
-	FTM_CHAR_PTR 		pName, 
-	FTM_TIME_PTR 		pTime
-);
-
 FTM_RET	FTM_CONFIG_ITEM_getItemEPData
 (
 	FTM_CONFIG_ITEM_PTR pItem,
 	FTM_CHAR_PTR 		pName, 
 	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getItemTime
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_TIME_PTR 		pTime
 );
 
 FTM_RET	FTM_CONFIG_ITEM_getItemValue
@@ -211,16 +240,226 @@ FTM_RET	FTM_CONFIG_ITEM_getItemEPClass
 	FTM_EP_CLASS_PTR	pEPClass
 );
 
+FTM_RET	FTM_CONFIG_ITEM_getItemSNMP
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR		pName,
+	FTM_NODE_OPT_SNMP_PTR 	pSNMP
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getItemMBTCP
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR		pName,
+	FTM_NODE_OPT_MODBUS_OVER_TCP_PTR pMB
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getItemFINS
+(
+	FTM_CONFIG_ITEM_PTR 	pItem, 
+	FTM_CHAR_PTR			pName,
+	FTM_NODE_OPT_FINS_PTR	pFINS
+);
+/****************************************
+ * set item
+ ******************************************/
+FTM_RET	FTM_CONFIG_ITEM_setItemNumber
+(
+	FTM_CONFIG_ITEM_PTR pItem, 	
+	FTM_CHAR_PTR 		pName, 
+	FTM_FLOAT			fValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemBOOL
+(
+	FTM_CONFIG_ITEM_PTR pItem, 	
+	FTM_CHAR_PTR 		pName, 
+	FTM_BOOL  			bValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemUSHORT
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_CHAR_PTR 		pName, 
+	FTM_USHORT 			usValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemINT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 	
+	FTM_CHAR_PTR 		pName, 
+	FTM_INT 			nValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemULONG
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_ULONG 			ulValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemFLOAT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_FLOAT			fValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemString
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_CHAR_PTR 		pName, 
+	FTM_CHAR_PTR 		pBuff 
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemNode
+(
+	FTM_CONFIG_ITEM_PTR pItem, 	
+	FTM_CHAR_PTR 		pName, 
+	FTM_NODE_PTR 		pNode
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemEP
+(
+	FTM_CONFIG_ITEM_PTR pItem, 	
+	FTM_CHAR_PTR 		pName, 
+	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemEPData
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_CHAR_PTR 		pName, 
+	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemTime
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_TIME_PTR		pTime
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemValue
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_CHAR_PTR 		pName, 
+	FTM_VALUE_PTR 		pValue
+);
+
+/***************************************
+ *
+ ***************************************/
+FTM_RET	FTM_CONFIG_ITEM_createChildItem
+(
+	FTM_CONFIG_ITEM_PTR	pItem,
+	FTM_CHAR_PTR		pName,
+	FTM_CONFIG_ITEM_PTR	pChildItem
+);
+
+FTM_RET	FTM_CONFIG_ITEM_createChildList
+(
+	FTM_CONFIG_ITEM_PTR	pItem,
+	FTM_CHAR_PTR		pName,
+	FTM_CONFIG_ITEM_PTR	pChildItem
+);
+
+FTM_RET	FTM_CONFIG_ITEM_addItemNumber
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_FLOAT			fValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_addItemBOOL
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_BOOL			bValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_addItemUSHORT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_USHORT	 		usValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_addItemINT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_INT				nValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_addItemULONG
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_ULONG			ulValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_addItemFLOAT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_FLOAT			fValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_addItemString
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_CHAR_PTR		pValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_addItemTime
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pName, 
+	FTM_TIME_PTR		pTime
+);
+
+FTM_RET	FTM_CONFIG_ITEM_addItemValue
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_CHAR_PTR 		pName, 
+	FTM_VALUE_PTR 		pValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemSNMP
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR		pName,
+	FTM_NODE_OPT_SNMP_PTR 	pSNMP
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemMBTCP
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR		pName,
+	FTM_NODE_OPT_MODBUS_OVER_TCP_PTR pMB
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setItemFINS
+(
+	FTM_CONFIG_ITEM_PTR 	pItem, 
+	FTM_CHAR_PTR			pName,
+	FTM_NODE_OPT_FINS_PTR	pFINS
+);
+/****************************************
+ *
+ ****************************************/
+FTM_RET	FTM_CONFIG_ITEM_getNumber
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_FLOAT_PTR pfValue
+);
+
 FTM_RET	FTM_CONFIG_ITEM_getBOOL
 (
 	FTM_CONFIG_ITEM_PTR pItem, 	
 	FTM_BOOL_PTR pbValue
-);
-
-FTM_RET	FTM_CONFIG_ITEM_setBOOL
-(
-	FTM_CONFIG_ITEM_PTR pItem, 	
-	FTM_BOOL			bValue
 );
 
 FTM_RET	FTM_CONFIG_ITEM_getUSHORT
@@ -229,22 +468,10 @@ FTM_RET	FTM_CONFIG_ITEM_getUSHORT
 	FTM_USHORT_PTR pusValue
 );
 
-FTM_RET	FTM_CONFIG_ITEM_setUSHORT
-(
-	FTM_CONFIG_ITEM_PTR pItem,
-	FTM_USHORT			usValue
-);
-
 FTM_RET	FTM_CONFIG_ITEM_getINT
 (
 	FTM_CONFIG_ITEM_PTR pItem, 	
 	FTM_INT_PTR 		pnValue
-);
-
-FTM_RET	FTM_CONFIG_ITEM_setINT
-(
-	FTM_CONFIG_ITEM_PTR pItem, 	
-	FTM_INT     		nValue
 );
 
 FTM_RET	FTM_CONFIG_ITEM_getULONG
@@ -253,22 +480,10 @@ FTM_RET	FTM_CONFIG_ITEM_getULONG
 	FTM_ULONG_PTR 		pulValue
 );
 
-FTM_RET	FTM_CONFIG_ITEM_setULONG
-(
-	FTM_CONFIG_ITEM_PTR pItem, 
-	FTM_ULONG 			ulValue
-);
-
 FTM_RET	FTM_CONFIG_ITEM_getFLOAT
 (
 	FTM_CONFIG_ITEM_PTR pItem, 
 	FTM_FLOAT_PTR 		pfValue
-);
-
-FTM_RET	FTM_CONFIG_ITEM_setFLOAT
-(
-	FTM_CONFIG_ITEM_PTR pItem, 
-	FTM_FLOAT   		fValue
 );
 
 FTM_RET	FTM_CONFIG_ITEM_getString
@@ -278,19 +493,7 @@ FTM_RET	FTM_CONFIG_ITEM_getString
 	FTM_ULONG 			ulBuffLen
 );
 
-FTM_RET	FTM_CONFIG_ITEM_setString
-(
-	FTM_CONFIG_ITEM_PTR pItem, 
-	FTM_CHAR_PTR 		pBuff
-);
-
 FTM_RET	FTM_CONFIG_ITEM_getTime
-(
-	FTM_CONFIG_ITEM_PTR pItem, 
-	FTM_TIME_PTR 		pTime
-);
-
-FTM_RET	FTM_CONFIG_ITEM_setTime
 (
 	FTM_CONFIG_ITEM_PTR pItem, 
 	FTM_TIME_PTR 		pTime
@@ -300,6 +503,93 @@ FTM_RET	FTM_CONFIG_ITEM_getNode
 (
 	FTM_CONFIG_ITEM_PTR pItem, 	
 	FTM_NODE_PTR 		pNode
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getEPData
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getValue
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_VALUE_PTR 		pValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getEPLimit
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_EP_LIMIT_PTR 	pLimit
+);
+
+FTM_RET FTM_CONFIG_ITEM_getEPClass
+(	
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_EP_CLASS_PTR 	pClass
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getSNMP
+(
+	FTM_CONFIG_ITEM_PTR	pItem, 	
+	FTM_NODE_OPT_SNMP_PTR 	pSNMP
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getMBTCP
+(
+	FTM_CONFIG_ITEM_PTR	pItem, 	
+	FTM_NODE_OPT_MODBUS_OVER_TCP_PTR 	pMB
+);
+
+FTM_RET	FTM_CONFIG_ITEM_getFINS
+(
+	FTM_CONFIG_ITEM_PTR	pItem, 	
+	FTM_NODE_OPT_FINS_PTR	pFINS
+);
+
+/**************************************
+ *
+ **************************************/
+FTM_RET	FTM_CONFIG_ITEM_setBOOL
+(
+	FTM_CONFIG_ITEM_PTR pItem, 	
+	FTM_BOOL			bValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setUSHORT
+(
+	FTM_CONFIG_ITEM_PTR pItem,
+	FTM_USHORT			usValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setINT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 	
+	FTM_INT     		nValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setULONG
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_ULONG 			ulValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setFLOAT
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_FLOAT   		fValue
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setString
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_CHAR_PTR 		pBuff
+);
+
+FTM_RET	FTM_CONFIG_ITEM_setTime
+(
+	FTM_CONFIG_ITEM_PTR pItem, 
+	FTM_TIME_PTR 		pTime
 );
 
 FTM_RET	FTM_CONFIG_ITEM_setNode
@@ -320,22 +610,10 @@ FTM_RET	FTM_CONFIG_ITEM_setEP
 	FTM_EP_PTR 			pEP
 );
 
-FTM_RET	FTM_CONFIG_ITEM_getEPData
-(
-	FTM_CONFIG_ITEM_PTR pItem,
-	FTM_EP_DATA_PTR 	pData
-);
-
 FTM_RET	FTM_CONFIG_ITEM_setEPData
 (
 	FTM_CONFIG_ITEM_PTR pItem,
 	FTM_EP_DATA_PTR 	pData
-);
-
-FTM_RET	FTM_CONFIG_ITEM_getValue
-(
-	FTM_CONFIG_ITEM_PTR pItem,
-	FTM_VALUE_PTR 		pValue
 );
 
 FTM_RET	FTM_CONFIG_ITEM_setValue
@@ -344,22 +622,10 @@ FTM_RET	FTM_CONFIG_ITEM_setValue
 	FTM_VALUE_PTR 		pValue
 );
 
-FTM_RET	FTM_CONFIG_ITEM_getEPLimit
-(
-	FTM_CONFIG_ITEM_PTR pItem, 
-	FTM_EP_LIMIT_PTR 	pLimit
-);
-
 FTM_RET	FTM_CONFIG_ITEM_setEPLimit
 (
 	FTM_CONFIG_ITEM_PTR pItem, 
 	FTM_EP_LIMIT_PTR 	pLimit
-);
-
-FTM_RET FTM_CONFIG_ITEM_getEPClass
-(	
-	FTM_CONFIG_ITEM_PTR pItem,
-	FTM_EP_CLASS_PTR 	pClass
 );
 
 FTM_RET FTM_CONFIG_ITEM_setEPClass
@@ -368,39 +634,21 @@ FTM_RET FTM_CONFIG_ITEM_setEPClass
 	FTM_EP_CLASS_PTR 	pClass
 );
 
-FTM_RET	FTM_CONFIG_ITEM_getSNMP
-(
-	FTM_CONFIG_ITEM_PTR	pItem, 	
-	FTM_NODE_OPT_SNMP_PTR 	pSNMP
-);
-
 FTM_RET	FTM_CONFIG_ITEM_setSNMP
 (
 	FTM_CONFIG_ITEM_PTR	pItem, 	
 	FTM_NODE_OPT_SNMP_PTR 	pSNMP
 );
 
-FTM_RET	FTM_CONFIG_ITEM_getModbusOverTCP
+FTM_RET	FTM_CONFIG_ITEM_setMBTCP
 (
 	FTM_CONFIG_ITEM_PTR	pItem, 	
 	FTM_NODE_OPT_MODBUS_OVER_TCP_PTR 	pMB
-);
-
-FTM_RET	FTM_CONFIG_ITEM_setModbusOverTCP
-(
-	FTM_CONFIG_ITEM_PTR	pItem, 	
-	FTM_NODE_OPT_MODBUS_OVER_TCP_PTR 	pMB
-);
-
-FTM_RET	FTM_CONFIG_ITEM_getFINS
-(
-	FTM_CONFIG_ITEM_PTR	pItem, 	
-	FTM_NODE_OPT_FINS_PTR	pFINS
 );
 
 FTM_RET	FTM_CONFIG_ITEM_setFINS
 (
-	FTM_CONFIG_ITEM_PTR 	pItem, 
+	FTM_CONFIG_ITEM_PTR	pItem, 	
 	FTM_NODE_OPT_FINS_PTR	pFINS
 );
 #endif

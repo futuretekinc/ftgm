@@ -8,7 +8,7 @@ SERVER=ftdm
 SERVER_INCS=ftdm.h ftdm_server.h ftdm_server_cmds.h
 SERVER_SRCS=ftdm.c ftdm_server.c ftdm_server_cmds.c
 SERVER_OBJS=$(SERVER_SRCS:.c=.o)
-SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lpthread -lsqlite3 -ldl -lrt
+SERVER_LDFLAGS=$(LDFLAGS) -lftdm -lftm -lconfig -lcjson -lpthread -lsqlite3 -ldl -lrt -lm
 
 SUBDIR=client
 

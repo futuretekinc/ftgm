@@ -40,7 +40,7 @@ FTM_RET	FTOM_CLIENT_NET_init
 
 	pClient->xCommon.fStart = (FTOM_CLIENT_START)FTOM_CLIENT_NET_start;
 	pClient->xCommon.fStop = (FTOM_CLIENT_STOP)FTOM_CLIENT_NET_stop;
-	pClient->xCommon.fLoadConfig = (FTOM_CLIENT_LOAD_CONFIG)FTOM_CLIENT_NET_loadConfig;
+	pClient->xCommon.fSetConfig = (FTOM_CLIENT_SET_CONFIG)FTOM_CLIENT_NET_setConfig;
 	pClient->xCommon.fLoadConfigFromFile = (FTOM_CLIENT_LOAD_CONFIG_FROM_FILE)FTOM_CLIENT_NET_loadConfigFromFile;
 	pClient->xCommon.fSetNotifyCallback = (FTOM_CLIENT_SET_NOTIFY_CALLBACK)FTOM_CLIENT_NET_setNotifyCallback;
 	pClient->xCommon.fRequest = (FTOM_CLIENT_REQUEST)FTOM_CLIENT_NET_request;	
@@ -246,7 +246,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_process(FTM_VOID_PTR pData)
 	return	0;
 }
 
-FTM_RET	FTOM_CLIENT_NET_loadConfig
+FTM_RET	FTOM_CLIENT_NET_setConfig
 (
 	FTOM_CLIENT_NET_PTR			pClient,
 	FTOM_CLIENT_NET_CONFIG_PTR	pConfig

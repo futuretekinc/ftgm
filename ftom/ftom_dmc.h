@@ -39,10 +39,22 @@ FTM_RET FTOM_DMC_final
 	FTOM_DMC_PTR pDMC
 );
 
+FTM_RET FTOM_DMC_loadConfig
+(
+	FTOM_DMC_PTR 	pDMC, 
+	FTM_CONFIG_PTR	pConfig
+);
+
 FTM_RET FTOM_DMC_loadFromFile
 (
 	FTOM_DMC_PTR 	pDMC, 
 	FTM_CHAR_PTR 	pConfigFileName
+);
+
+FTM_RET FTOM_DMC_saveConfig
+(
+	FTOM_DMC_PTR 	pDMC, 
+	FTM_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTOM_DMC_showConfig

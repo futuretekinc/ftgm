@@ -108,7 +108,10 @@ FTM_RET	FTOM_SERVICE_register(FTOM_SERVICE_PTR pService)
 	return	xRet;
 }
 
-FTM_RET	FTOM_SERVICE_unregister(FTOM_SERVICE_TYPE xType)
+FTM_RET	FTOM_SERVICE_unregister
+(
+	FTOM_SERVICE_TYPE xType
+)
 {
 	ASSERT(pServiceList != NULL);
 	FTM_RET				xRet;
@@ -128,7 +131,10 @@ FTM_RET	FTOM_SERVICE_unregister(FTOM_SERVICE_TYPE xType)
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_SERVICE_count(FTM_ULONG_PTR pulCount)
+FTM_RET FTOM_SERVICE_count
+(
+	FTM_ULONG_PTR pulCount
+)
 {
 	ASSERT(pulCount != NULL);
 
@@ -142,7 +148,11 @@ FTM_RET FTOM_SERVICE_count(FTM_ULONG_PTR pulCount)
 	return	FTM_LIST_count(pServiceList, pulCount);
 }
 
-FTM_RET FTOM_SERVICE_get(FTOM_SERVICE_TYPE xType, FTOM_SERVICE_PTR _PTR_ ppService)
+FTM_RET FTOM_SERVICE_get
+(
+	FTOM_SERVICE_TYPE xType, 
+	FTOM_SERVICE_PTR _PTR_ ppService
+)
 {
 	ASSERT(ppService != NULL);
 
@@ -154,7 +164,11 @@ FTM_RET FTOM_SERVICE_get(FTOM_SERVICE_TYPE xType, FTOM_SERVICE_PTR _PTR_ ppServi
 	return	FTM_LIST_get(pServiceList, (FTM_VOID_PTR)&xType, (FTM_VOID_PTR _PTR_)ppService);
 }
 
-FTM_RET FTOM_SERVICE_getAt(FTM_ULONG ulIndex, FTOM_SERVICE_PTR _PTR_ ppService)
+FTM_RET FTOM_SERVICE_getAt
+(
+	FTM_ULONG ulIndex, 
+	FTOM_SERVICE_PTR _PTR_ ppService
+)
 {
 	ASSERT(pServiceList != NULL);
 	ASSERT(ppService != NULL);
@@ -162,7 +176,57 @@ FTM_RET FTOM_SERVICE_getAt(FTM_ULONG ulIndex, FTOM_SERVICE_PTR _PTR_ ppService)
 	return	FTM_LIST_getAt(pServiceList, ulIndex, (FTM_VOID_PTR _PTR_)ppService);
 }
 
-FTM_RET	FTOM_SERVICE_loadFromFile(FTOM_SERVICE_TYPE xType, FTM_CHAR_PTR pFileName)
+FTM_RET	FTOM_SERVICE_loadConfig
+(
+	FTOM_SERVICE_TYPE 	xType, 
+	FTM_CONFIG_PTR		pConfig
+)
+{
+	ASSERT(pServiceList != NULL);
+	ASSERT(pConfig != NULL);
+
+	FTM_RET				xRet;
+	FTOM_SERVICE_PTR	pService;
+	
+	if (xType == FTOM_SERVICE_ALL)
+	{
+		FTM_LIST_iteratorStart(pServiceList);
+		while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
+		{
+			if (pService->fLoadFromFile != NULL)
+			{
+				pService->xRet = pService->fLoadConfig(pService->pData, pConfig);
+			}
+		}
+
+		xRet = FTM_RET_OK;
+	}
+	else
+	{
+		xRet = FTM_LIST_get(pServiceList, (FTM_VOID_PTR)&xType, (FTM_VOID_PTR _PTR_)&pService);		
+		if (xRet != FTM_RET_OK)
+		{
+			return	xRet;	
+		}
+
+		if (pService->fLoadFromFile == NULL)
+		{
+			return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
+		}
+
+		pService->xRet = pService->fLoadConfig(pService->pData, pConfig);
+		xRet = pService->xRet;
+
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_SERVICE_loadFromFile
+(
+	FTOM_SERVICE_TYPE xType, 
+	FTM_CHAR_PTR pFileName
+)
 {
 	ASSERT(pServiceList != NULL);
 	ASSERT(pFileName != NULL);

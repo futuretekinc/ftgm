@@ -4,6 +4,90 @@
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 
+typedef	struct
+{
+	pthread_t	xThread;
+	FTM_BOOL	bStop;
+	FTM_BOOL	bDI;
+	FTM_ULONG	ulCO2;
+	FTM_FLOAT	fHumidity;
+	FTM_FLOAT	pTemperatures[11];
+}	FTOM_NODE_VIRTUAL_FTE_ES7_DATA, _PTR_ FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR;
+
+
+static
+FTM_VOID_PTR	FTOM_NODE_VIRTUAL_FTE_ES7_process
+(
+	FTM_VOID_PTR	pData
+)
+{
+	ASSERT(pData != NULL);
+	FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR pES7 = (FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR)pData;
+	FTM_TIMER	xUpdateTimer;
+	FTM_ULONG	ulLoop = 0;
+	FTM_ULONG	ulRemainTime = 0;
+	FTM_INT		i;
+
+	pES7->bStop = FTM_FALSE;
+	pES7->bDI = FTM_FALSE;
+	pES7->ulCO2 = 400;
+	pES7->fHumidity = 60.0;
+	for(i = 0  ; i < 11 ; i++)
+	{
+		pES7->pTemperatures[i] = 20.0;	
+	}
+
+	FTM_TIMER_initS(&xUpdateTimer, 100);
+	while(!pES7->bStop)
+	{
+		if (++ulLoop >= 10)
+		{
+			pES7->bDI = (rand() % 100 >= 80);
+			ulLoop  = 0;	
+		}
+		
+		pES7->ulCO2 += (rand() % 21) - 10;
+		if (pES7->ulCO2 > 100000)
+		{
+			pES7->ulCO2 = 0;
+		}
+		else if (pES7->ulCO2 > 10000)
+		{
+			pES7->ulCO2 = 10000;
+		}
+
+		pES7->fHumidity += ((rand() % 21) - 10) / 10.0;
+		if (pES7->fHumidity < 0)
+		{
+			pES7->fHumidity = 0;
+		}
+		else if (pES7->fHumidity > 100)
+		{
+			pES7->fHumidity = 100;
+		}
+
+		for(i = 0 ; i < 11 ; i++)
+		{
+			pES7->pTemperatures[i] += ((rand() % 21) - 10) / 10.0;
+			if (pES7->pTemperatures[i] < -20)
+			{
+					pES7->pTemperatures[i]= -20;
+			}
+			else if (pES7->pTemperatures[i] > 40)
+			{
+					pES7->pTemperatures[i] = 40;
+			}
+		}
+
+		FTM_TIMER_remainMS(&xUpdateTimer, &ulRemainTime);
+		usleep(ulRemainTime * 1000);
+
+		FTM_TIMER_addMS(&xUpdateTimer, 100);
+	}
+
+	return	0;
+}
+
 FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 (
 	FTOM_NODE_VIRTUAL_PTR pNode
@@ -11,6 +95,7 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 {
 	FTM_RET				xRet;
 	FTM_ULONG			ulEPCount;
+	FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR	pES7;
 
 	ASSERT(pNode != NULL);
 
@@ -67,6 +152,15 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 			FTM_LIST_append(&pNode->xCommon.xEPList, pEP);
 		}
 	}
+	pES7 = (FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_VIRTUAL_FTE_ES7_DATA));
+	if (pES7 == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pthread_create(&pES7->xThread, NULL, FTOM_NODE_VIRTUAL_FTE_ES7_process, pES7);
+
+	pNode->pData = pES7;
 	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
 
 	return	FTM_RET_OK;
@@ -78,6 +172,17 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_final
 )
 {
 	ASSERT(pNode != NULL);
+	FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR	pES7 = (FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR)pNode->pData;
+	
+	if (pNode->pData != NULL)
+	{
+		pES7->bStop = FTM_TRUE;
+
+		pthread_join(pES7->xThread, NULL);
+
+		FTM_MEM_free(pNode->pData);
+		pNode->pData = NULL;
+	}
 
 	FTM_LIST_final(&pNode->xCommon.xEPList);
 
@@ -93,158 +198,51 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_getEPData
 	FTM_EP_DATA_PTR 	pData
 )
 {
+	FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR pES7 = (FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR)pNode->pData;
+
 	pData->ulTime = time(NULL);
 	pData->xState = FTM_EP_DATA_STATE_VALID;
 	switch(pEP->xInfo.xType)
 	{
 	case	FTM_EP_TYPE_DI:
-	case	FTM_EP_TYPE_DO:
 		{
-			static	FTM_INT	nValue = 0;
-			static	FTM_BOOL	bUp = FTM_FALSE;
-			if (bUp)
+			if (pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1] == '1')
 			{
-				if (nValue < 100)
-				{
-					nValue ++;	
-				}
-				else
-				{
-					bUp = FTM_FALSE;
-					nValue --;
-				}
+				pData->xType = FTM_EP_DATA_TYPE_INT;
+				FTM_VALUE_initINT(&pData->xValue, pES7->bDI); 
 			}
-			else
-			{
-				if (-nValue > 100)
-				{
-					nValue --;	
-				}
-				else
-				{
-					bUp = FTM_TRUE;
-					nValue ++;
-				}
-			}
-
-			pData->xType = FTM_EP_DATA_TYPE_INT;
-			FTM_VALUE_initINT(&pData->xValue, nValue); 
-		}
-		break;
-
-	case	FTM_EP_TYPE_COUNT:
-	case	FTM_EP_TYPE_PRESSURE:
-		{
-			static	FTM_ULONG	ulValue = 0;
-			static	FTM_BOOL	bUp = FTM_FALSE;
-			if (bUp)
-			{
-				if (ulValue < 200)
-				{
-					ulValue ++;	
-				}
-				else
-				{
-					bUp = FTM_FALSE;
-					ulValue --;
-				}
-			}
-			else
-			{
-				if (ulValue > 0)
-				{
-					ulValue --;	
-				}
-				else
-				{
-					bUp = FTM_TRUE;
-					ulValue ++;
-				}
-			}
-
-			pData->xType = FTM_EP_DATA_TYPE_ULONG;
-			FTM_VALUE_initULONG(&pData->xValue, ulValue); 
 		}
 		break;
 
 	case	FTM_EP_TYPE_TEMPERATURE:
+		{
+			FTM_ULONG	ulIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1], 0, 16);
+			if (ulIndex < 11)
+			{
+				pData->xType = FTM_EP_DATA_TYPE_FLOAT;
+				FTM_VALUE_initFLOAT(&pData->xValue, pES7->pTemperatures[ulIndex]); 
+			}
+		}
+		break;
+
 	case	FTM_EP_TYPE_HUMIDITY:
-	case	FTM_EP_TYPE_VOLTAGE:
-	case	FTM_EP_TYPE_CURRENT:
+		{
+			if (pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1] == '1')
+			{
+				pData->xType = FTM_EP_DATA_TYPE_FLOAT;
+				FTM_VALUE_initFLOAT(&pData->xValue, pES7->fHumidity); 
+			}
+		}
+		break;
 	case	FTM_EP_TYPE_GAS:
-	case	FTM_EP_TYPE_POWER:
-	case	FTM_EP_TYPE_AI:
 		{
-			static	FTM_FLOAT	fValue = 0;
-			static	FTM_FLOAT	fDelta = 0;
-			static	FTM_BOOL	bUp = FTM_FALSE;
-
-			fDelta = rand() % 200 / 100.0;	
-
-			if (bUp)
+			if (pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1] == '1')
 			{
-				if (fValue < 30.0)
-				{
-					fValue += fDelta;
-				}
-				else
-				{
-					bUp = FTM_FALSE;
-					fValue -= fDelta;
-				}
+				pData->xType = FTM_EP_DATA_TYPE_ULONG;
+				FTM_VALUE_initULONG(&pData->xValue, pES7->ulCO2); 
 			}
-			else
-			{
-				if (fValue > 0)
-				{
-					fValue -= fDelta;
-				}
-				else
-				{
-					bUp = FTM_TRUE;
-					fValue += fDelta;
-				}
-			}
-
-			pData->xType = FTM_EP_DATA_TYPE_FLOAT;
-			FTM_VALUE_initFLOAT(&pData->xValue, fDelta); 
 		}
 		break;
-#if 0
-	case	FTM_EP_DATA_TYPE_BOOL:	
-		{
-			static	FTM_ULONG	ulValue = 0;
-			static	FTM_BOOL	bUp = FTM_FALSE;
-			if (bUp)
-			{
-				if (ulValue < 200)
-				{
-					ulValue ++;	
-				}
-				else
-				{
-					bUp = FTM_FALSE;
-					ulValue --;
-				}
-			}
-			else
-			{
-				if (ulValue > 0)
-				{
-					ulValue --;	
-				}
-				else
-				{
-					bUp = FTM_TRUE;
-					ulValue ++;
-				}
-			}
-
-			pData->xType = FTM_EP_DATA_TYPE_BOOL;
-			FTM_VALUE_initBOOL(&pData->xValue, ulValue / 7 % 2); 
-		}
-		break;
-#endif
 	}
 
 	return	FTM_RET_OK;

@@ -60,10 +60,22 @@ FTM_RET	FTOM_SNMPC_final
 	FTOM_SNMPC_PTR pClient
 );
 
+FTM_RET FTOM_SNMPC_loadConfig
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CONFIG_PTR		pConfig
+);
+
 FTM_RET FTOM_SNMPC_loadFromFile
 (
 	FTOM_SNMPC_PTR pClient, 
 	FTM_CHAR_PTR pFileName
+);
+
+FTM_RET FTOM_SNMPC_saveConfig
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTM_CONFIG_PTR	pConfig
 );
 
 FTM_RET FTOM_SNMPC_showConfig

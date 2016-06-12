@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include "ftm_types.h"
 #include "ftm_trace.h"
-#include "libconfig.h"
+#include "ftm_config.h"
 
 FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szmsg);
 FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
@@ -40,96 +40,48 @@ static FTM_TRACE_CFG	_xConfig =
 
 static FTM_BOOL	bShowIndex = FTM_FALSE;
 
-FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
+FTM_RET	FTM_TRACE_configLoad
+(
+	FTM_TRACE_CFG_PTR pConfig, 
+	FTM_CHAR_PTR pFileName
+)
 {
-	config_t		xLibConfig;
-	config_setting_t	*pSection;
-	config_setting_t	*pSubSection;
-	config_setting_t	*pField;
+	FTM_RET			xRet;
+	FTM_CONFIG_PTR	pRoot;
+	FTM_CONFIG_ITEM	xSection;
+	FTM_CONFIG_ITEM	xSubSection;
 
-	config_init(&xLibConfig);
-
-	if (config_read_file(&xLibConfig, pFileName) == CONFIG_FALSE)
+	xRet = FTM_CONFIG_create(pFileName, &pRoot);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;	
+		return	xRet;
 	}
 
-	pSection = config_lookup(&xLibConfig, "DEBUG");
-	if (pSection != NULL)
+	xRet = FTM_CONFIG_getItem(pRoot, "DEBUG", &xSection);
+	if (xRet == FTM_RET_OK)
 	{
-		pField = config_setting_get_member(pSection, "mode");
-		if (pField != NULL)
+		FTM_CONFIG_ITEM_getItemULONG(&xSection, "mode", &pConfig->ulLevel);
+		
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "trace", &xSubSection);
+		if (xRet == FTM_RET_OK)
 		{
-			pConfig->ulLevel = (FTM_ULONG)config_setting_get_int(pField);
+			FTM_CONFIG_ITEM_getItemString(&xSubSection, "path", pConfig->xTrace.pPath, sizeof(pConfig->xTrace.pPath) - 1);
+			FTM_CONFIG_ITEM_getItemString(&xSubSection, "prefix", pConfig->xTrace.pPrefix, sizeof(pConfig->xTrace.pPrefix) - 1);
+			FTM_CONFIG_ITEM_getItemBOOL(&xSubSection, "to_file", &pConfig->xTrace.bToFile);
+			FTM_CONFIG_ITEM_getItemBOOL(&xSubSection, "print_line", &pConfig->xTrace.bLine);
 		}
 
-		pSubSection = config_setting_get_member(pSection, "trace");
-		if (pSubSection != NULL)
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "error", &xSubSection);
+		if (xRet == FTM_RET_OK)
 		{
-			pField = config_setting_get_member(pSubSection, "path");
-			if (pField != NULL)
-			{
-				strncpy(pConfig->xTrace.pPath, 
-						config_setting_get_string(pField),
-						sizeof(pConfig->xTrace.pPath) - 1);
-			}
-	
-			pField = config_setting_get_member(pSubSection, "prefix");
-			if (pField != NULL)
-			{
-				strncpy(pConfig->xTrace.pPrefix, 
-						config_setting_get_string(pField),
-						sizeof(pConfig->xTrace.pPath) - 1);
-			}
-	
-			pField = config_setting_get_member(pSubSection, "to_file");
-			if (pField != NULL)
-			{
-				pConfig->xTrace.bToFile = (FTM_BOOL)config_setting_get_int(pField);
-			}
-	
-			pField = config_setting_get_member(pSubSection, "print_line");
-			if (pField != NULL)
-			{
-				pConfig->xTrace.bLine = (FTM_BOOL)config_setting_get_int(pField);
-			}
+			FTM_CONFIG_ITEM_getItemString(&xSubSection, "path", pConfig->xTrace.pPath, sizeof(pConfig->xTrace.pPath) - 1);
+			FTM_CONFIG_ITEM_getItemString(&xSubSection, "prefix", pConfig->xTrace.pPrefix, sizeof(pConfig->xTrace.pPrefix) - 1);
+			FTM_CONFIG_ITEM_getItemBOOL(&xSubSection, "to_file", &pConfig->xTrace.bToFile);
+			FTM_CONFIG_ITEM_getItemBOOL(&xSubSection, "print_line", &pConfig->xTrace.bLine);
 		}
-
-		pSubSection = config_setting_get_member(pSection, "error");
-		if (pSubSection != NULL)
-		{
-			pField = config_setting_get_member(pSubSection, "path");
-			if (pField != NULL)
-			{
-				strncpy(pConfig->xError.pPath, 
-						config_setting_get_string(pField),
-						sizeof(pConfig->xError.pPath) - 1);
-			}
-	
-			pField = config_setting_get_member(pSubSection, "prefix");
-			if (pField != NULL)
-			{
-				strncpy(pConfig->xError.pPrefix, 
-						config_setting_get_string(pField),
-						sizeof(pConfig->xError.pPath) - 1);
-			}
-	
-			pField = config_setting_get_member(pSubSection, "to_file");
-			if (pField != NULL)
-			{
-				pConfig->xError.bToFile = (FTM_BOOL)config_setting_get_int(pField);
-			}
-	
-			pField = config_setting_get_member(pSubSection, "print_line");
-			if (pField != NULL)
-			{
-				pConfig->xError.bLine = (FTM_BOOL)config_setting_get_int(pField);
-			}
-		}
-
 	}
 
-	config_destroy(&xLibConfig);
+	FTM_CONFIG_destroy(&pRoot);
 
 	return	FTM_RET_OK;
 }

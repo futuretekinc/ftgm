@@ -11,7 +11,7 @@ CLIENT=ftomc
 CLIENT_SRCS=main.c
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftm -lconfig -lpthread  -lrt
+CLIENT_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftm -lcjson -lpthread  -lrt -lm
 
 LIB_FTOMCL=libftomcl
 LIB_FTOMCL_SRCS= ftom_client_cmdline.c\

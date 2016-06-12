@@ -13,7 +13,6 @@ LDFLAGS:=$(LDFLAGS)
 LIBS:= 	-lftomcl\
 		-lftomc\
 		-lftm\
-		-lconfig\
 		-lpthread \
 		-lm\
 		-lrt

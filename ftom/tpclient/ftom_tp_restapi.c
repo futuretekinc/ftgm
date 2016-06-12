@@ -435,10 +435,10 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 	ASSERT(pGateway!= NULL);
 
 	FTM_RET	xRet;
-	const nx_json _PTR_ pRoot = NULL;
-	const nx_json _PTR_ pDevices = NULL;
-	const nx_json _PTR_ pSensors = NULL;
-	const nx_json _PTR_ pItem = NULL;
+	cJSON _PTR_ pRoot = NULL;
+	cJSON _PTR_ pDevices = NULL;
+	cJSON _PTR_ pSensors = NULL;
+	cJSON _PTR_ pItem = NULL;
 
 	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s", pClient->pGatewayID);
 	if (xRet != FTM_RET_OK)
@@ -454,51 +454,51 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 		goto finish;
 	}
 
-	pRoot = nx_json_parse(pClient->pResp, nx_json_unicode_to_utf8);
-	if (pRoot->type == NX_JSON_NULL)
+	pRoot = cJSON_Parse(pClient->pResp);
+	if (pRoot == NULL)
 	{
 		xRet = FTM_RET_COMM_INVALID_VALUE;
 		goto finish;	
 	}
 
-	pItem = nx_json_get(pRoot, "id") ;
-	if (pItem->type == NX_JSON_NULL)
+	pItem = cJSON_GetObjectItem(pRoot, "id") ;
+	if ((pItem == NULL) || (pItem->type == cJSON_String))
 	{
 		xRet = FTM_RET_COMM_INVALID_VALUE;	
 		goto finish;
 	}
-	strncpy(pGateway->pID, pItem->text_value, FTM_DID_LEN);
+	strncpy(pGateway->pID, pItem->valuestring, FTM_DID_LEN);
 
-	pItem = nx_json_get(pRoot, "name") ;
-	if (pItem->type != NX_JSON_NULL)
+	pItem = cJSON_GetObjectItem(pRoot, "name") ;
+	if ((pItem != NULL) && (pItem->type == cJSON_String))
 	{
-		strncpy(pGateway->pName, pItem->text_value, FTM_NAME_LEN);
+		strncpy(pGateway->pName, pItem->valuestring, FTM_NAME_LEN);
 	}
 
-	pItem = nx_json_get(pRoot, "reportInterval") ;
-	if (pItem->type != NX_JSON_NULL)
+	pItem = cJSON_GetObjectItem(pRoot, "reportInterval") ;
+	if ((pItem != NULL) && (pItem->type == cJSON_Number))
 	{
-		pGateway->ulReportInterval = pItem->int_value;
+		pGateway->ulReportInterval = pItem->valueint;
 	}
 
-	pItem = nx_json_get(pRoot, "ctime") ;
-	if (pItem->type != NX_JSON_NULL)
+	pItem = cJSON_GetObjectItem(pRoot, "ctime") ;
+	if ((pItem != NULL) && (pItem->type == cJSON_String))
 	{
-		pGateway->ullCTime = strtoull(pItem->text_value, 0, 10);
+		pGateway->ullCTime = strtoull(pItem->valuestring, 0, 10);
 	}
 
-	pItem = nx_json_get(pRoot, "mtime") ;
-	if (pItem->type != NX_JSON_NULL)
+	pItem = cJSON_GetObjectItem(pRoot, "mtime") ;
+	if ((pItem != NULL) && (pItem->type == cJSON_String))
 	{
-		pGateway->ullMTime = strtoull(pItem->text_value, 0, 10);
+		pGateway->ullMTime = strtoull(pItem->valuestring, 0, 10);
 	}
 
-	pDevices = nx_json_get(pRoot, "devices");
-	if (pDevices->type != NX_JSON_NULL)
+	pDevices = cJSON_GetObjectItem(pRoot, "devices");
+	if (pDevices != NULL)
 	{
 		FTM_INT	i;
 
-		if (pDevices->type != NX_JSON_ARRAY)
+		if (pDevices->type != cJSON_Array)
 		{
 			xRet = FTM_RET_COMM_INVALID_VALUE;	
 			goto finish;	
@@ -506,13 +506,13 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 
 		for(i = 0; ; i++)
 		{
-			pItem = nx_json_item(pDevices, i);
-			if ((pItem == NULL) || (pItem->type == NX_JSON_NULL))
+			pItem = cJSON_GetArrayItem(pDevices, i);
+			if ((pItem == NULL) || (pItem->type != cJSON_String))
 			{
 				break;	
 			}
 		
-			FTM_ULONG		ulLen = strlen(pItem->text_value);
+			FTM_ULONG		ulLen = strlen(pItem->valuestring);
 			FTM_CHAR_PTR	pDeviceID = FTM_MEM_malloc(ulLen+1);
 			if (pDeviceID == NULL)
 			{
@@ -520,18 +520,18 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 				break;
 			}
 
-			strcpy(pDeviceID, pItem->text_value);
+			strcpy(pDeviceID, pItem->valuestring);
 
 			FTM_LIST_append(pGateway->pDeviceList, pDeviceID);
 		}
 	}
 
-	pSensors = nx_json_get(pRoot, "sensors");
-	if (pSensors->type != NX_JSON_NULL)
+	pSensors = cJSON_GetObjectItem(pRoot, "sensors");
+	if (pSensors != NULL)
 	{
 		FTM_INT	i;
 
-		if (pSensors->type != NX_JSON_ARRAY)
+		if (pSensors->type != cJSON_Array)
 		{
 			xRet = FTM_RET_COMM_INVALID_VALUE;	
 			goto finish;	
@@ -539,13 +539,13 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 
 		for(i = 0; ; i++)
 		{
-			pItem = nx_json_item(pSensors, i);
-			if ((pItem == NULL) || (pItem->type == NX_JSON_NULL))
+			pItem = cJSON_GetArrayItem(pSensors, i);
+			if ((pItem == NULL) || (pItem->type != cJSON_String))
 			{
 				break;	
 			}
 		
-			FTM_ULONG		ulLen = strlen(pItem->text_value);
+			FTM_ULONG		ulLen = strlen(pItem->valuestring);
 			FTM_CHAR_PTR	pSensorID = FTM_MEM_malloc(ulLen+1);
 			if (pSensorID == NULL)
 			{
@@ -553,16 +553,17 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 				break;
 			}
 
-			strcpy(pSensorID, pItem->text_value);
+			strcpy(pSensorID, pItem->valuestring);
 
 			FTM_LIST_append(pGateway->pSensorList, pSensorID);
 		}
 	}
 
 finish:
+
 	if (pRoot != NULL)
 	{
-		nx_json_free(pRoot);	
+		cJSON_Delete(pRoot);	
 	}
 	return	xRet;
 }
@@ -1000,7 +1001,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 	ASSERT(pClient != NULL);
 
 	FTM_RET			xRet;
-	const nx_json _PTR_ pRoot;
+	cJSON _PTR_ pRoot;
 	FTM_ULONG		i, ulCount = 0;
 
 	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s/sensors", pClient->pGatewayID);
@@ -1016,8 +1017,8 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 		ERROR("An error occurred while performing the client.\n");
 	}
 
-	pRoot = nx_json_parse(pClient->pResp, nx_json_unicode_to_utf8);
-	if (pRoot->type == NX_JSON_NULL)
+	pRoot = cJSON_Parse(pClient->pResp);
+	if ((pRoot == NULL) || (pRoot->type != cJSON_Array))
 	{
 		xRet = FTM_RET_COMM_INVALID_VALUE;	
 		goto finish;
@@ -1026,77 +1027,77 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 	
 	for( i = 0 ; ulCount < ulMaxCount ; i++)
 	{
-		const nx_json _PTR_ pSensorInfo;
-		const nx_json _PTR_ pItem;
+		cJSON _PTR_ pSensorInfo;
+		cJSON _PTR_ pItem;
 		FTOM_TP_RESTAPI_SENSOR		xSensor;
 
-		pSensorInfo = nx_json_item(pRoot, i);
-		if (pSensorInfo->type == NX_JSON_NULL)
+		pSensorInfo = cJSON_GetArrayItem(pRoot, i);
+		if (pSensorInfo == NULL)
 		{
 			break;	
 		}
 
 		memset(&xSensor, 0, sizeof(xSensor));
 
-		pItem = nx_json_get(pSensorInfo, "id"); // get object's property by key
-		if (pItem->type == NX_JSON_NULL)
+		pItem = cJSON_GetObjectItem(pSensorInfo, "id"); // get object's property by key
+		if ((pItem == NULL) || (pItem->type != cJSON_String))
 		{
 			continue;	
 		}
-		strncpy(xSensor.pID, pItem->text_value, FTM_EPID_LEN);
+		strncpy(xSensor.pID, pItem->valuestring, FTM_EPID_LEN);
 
-		pItem = nx_json_get(pSensorInfo, "type");
-		if (pItem->type == NX_JSON_NULL)
+		pItem = cJSON_GetObjectItem(pSensorInfo, "type");
+		if ((pItem == NULL) || (pItem->type != cJSON_String))
 		{
 			continue;	
 		}
 
-		xRet = FTM_EP_strToType((FTM_CHAR_PTR)pItem->text_value, &xSensor.xType);
+		xRet = FTM_EP_strToType((FTM_CHAR_PTR)pItem->valuestring, &xSensor.xType);
 		if (xRet != FTM_RET_OK)
 		{
 			continue;
 		}
 
-		pItem = nx_json_get(pSensorInfo, "name");
-		if (pItem->type != NX_JSON_NULL)
+		pItem = cJSON_GetObjectItem(pSensorInfo, "name");
+		if ((pItem != NULL) || (pItem->type != cJSON_String))
 		{
-			strncpy(xSensor.pName, pItem->text_value, FTM_NAME_LEN);	
+			strncpy(xSensor.pName, pItem->valuestring, FTM_NAME_LEN);	
 		}
 
-		pItem = nx_json_get(pSensorInfo, "owner");
-		if (pItem->type != NX_JSON_NULL)
+		pItem = cJSON_GetObjectItem(pSensorInfo, "owner");
+		if ((pItem != NULL) || (pItem->type != cJSON_String))
 		{
-			strncpy(xSensor.pOwnerID, pItem->text_value, FTM_DID_LEN);	
+			strncpy(xSensor.pOwnerID, pItem->valuestring, FTM_DID_LEN);	
 		}
 
-		pItem = nx_json_get(pSensorInfo, "deviceId");
-		if (pItem->type != NX_JSON_NULL)
+		pItem = cJSON_GetObjectItem(pSensorInfo, "deviceId");
+		if ((pItem != NULL) || (pItem->type != cJSON_String))
 		{
-			strncpy(xSensor.pDeviceID, pItem->text_value, FTM_DID_LEN);	
+			strncpy(xSensor.pDeviceID, pItem->valuestring, FTM_DID_LEN);	
 		}
 
-		pItem = nx_json_get(pSensorInfo, "address");
-		if (pItem->type != NX_JSON_NULL)
+		pItem = cJSON_GetObjectItem(pSensorInfo, "address");
+		if ((pItem != NULL) || (pItem->type != cJSON_Number))
 		{
-			xSensor.ulAddress = pItem->int_value;
+			xSensor.ulAddress = pItem->valueint;
 		}
 
-		pItem = nx_json_get(pSensorInfo, "sequence");
-		if (pItem->type != NX_JSON_NULL)
+		pItem = cJSON_GetObjectItem(pSensorInfo, "sequence");
+		if ((pItem != NULL) || (pItem->type != cJSON_Number))
 		{
-			xSensor.ulSequence = pItem->int_value;
+			xSensor.ulSequence = pItem->valueint;
 		}
 
-		pItem = nx_json_get(pSensorInfo, "ctime");
-		if (pItem->type != NX_JSON_NULL)
+		pItem = cJSON_GetObjectItem(pSensorInfo, "ctime");
+		if ((pItem != NULL) || (pItem->type != cJSON_String))
 		{
-			xSensor.ullCTime = strtoull(pItem->text_value, 0, 10);
+			xSensor.ullCTime = strtoull(pItem->valuestring, 0, 10);
 		}
 
-		pItem = nx_json_get(pSensorInfo, "mtime");
-		if (pItem->type != NX_JSON_NULL)
+		pItem = cJSON_GetObjectItem(pSensorInfo, "mtime");
+		if ((pItem != NULL) || (pItem->type != cJSON_Number))
 		{
-			xSensor.ullMTime = pItem->int_value;
+			xSensor.ullMTime = pItem->valueint;
 		}
 
 		memcpy(&pSensors[ulCount++], &xSensor, sizeof(xSensor));
@@ -1107,7 +1108,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 finish:
 	if (pRoot != NULL)
 	{
-		nx_json_free(pRoot);
+		cJSON_Delete(pRoot);
 	}
 
 	return	xRet;

@@ -1,3 +1,7 @@
+ifeq ($(TOPDIR),)
+TOPDIR=$(shell pwd)/..
+endif
+
 include ../Makefile.in
 
 CFLAGS:=$(CFLAGS) -DUSER_LITTLE_ENDIAN
@@ -28,7 +32,6 @@ LIB_FTM_SRCS= ftm_types.c \
 			  ftm_json.c\
 			  ftm_util.c \
 			  convert.c \
-			  nxjson.c \
 			  KISA_SHA256.c\
 			  ftm_fins.c
 

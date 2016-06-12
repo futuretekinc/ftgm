@@ -67,16 +67,28 @@ FTM_RET	FTOM_TP_CLIENT_final
 	FTOM_TP_CLIENT_PTR pClient
 );
 
-FTM_RET	FTOM_TP_CLIENT_loadConfig
+FTM_RET	FTOM_TP_CLIENT_setConfig
 (
 	FTOM_TP_CLIENT_PTR 		pClient, 
 	FTOM_TP_CLIENT_CONFIG_PTR 	pConfig
 );
 
-FTM_RET	FTOM_TP_CLIENT_loadFromFile
+FTM_RET	FTOM_TP_CLIENT_loadConfig
+(
+	FTOM_TP_CLIENT_PTR 	pClient, 
+	FTM_CONFIG_PTR		pConfig
+);
+
+FTM_RET	FTOM_TP_CLIENT_loadConfigFromFile
 (
 	FTOM_TP_CLIENT_PTR pClient, 
 	FTM_CHAR_PTR 		pFileName
+);
+
+FTM_RET	FTOM_TP_CLIENT_saveConfig
+(
+	FTOM_TP_CLIENT_PTR 	pClient, 
+	FTM_CONFIG_PTR		pConfig
 );
 
 FTM_RET	FTOM_TP_CLIENT_showConfig
