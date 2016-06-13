@@ -7,7 +7,7 @@
 #include "ftom_message_queue.h"
 #include "ftom_node_snmp_client.h"
 
-#define	FTOM_EP_DATA_COUNT	32
+#define	FTOM_EP_CACHED_DATA_COUNT	100
 
 typedef	enum FTOM_EP_CMD_ENUM
 {
@@ -22,6 +22,20 @@ typedef	struct	FTOM_EP_MSG_STRUCT
 static FTM_VOID_PTR	FTOM_EP_process
 (
 	FTM_VOID_PTR 	pData
+);
+
+static
+FTM_RET	FTOM_EP_setData
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+);
+
+static
+FTM_RET	FTOM_EP_getData
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
 );
 
 static
@@ -642,11 +656,11 @@ FTM_VOID_PTR FTOM_EP_process
 	while(!pEP->bStop)
 	{
 		FTM_EP_DATA		xData;
-		FTOM_MSG_PTR	pMsg = NULL;
+		FTOM_MSG_PTR	pBaseMsg = NULL;
 
 		if (FTM_TIMER_isExpired(&pEP->xUpdateTimer))
 		{
-			xRet = FTOM_EP_pullData(pEP, &xData);
+			xRet = FTOM_EP_remoteGet(pEP, &xData);
 			if (xRet == FTM_RET_OK)
 			{
 				xData.xState = FTM_EP_DATA_STATE_VALID;
@@ -695,11 +709,23 @@ FTM_VOID_PTR FTOM_EP_process
 
 		FTM_TIMER_initMS(&xLoopTimer, ulRemainTime);
 
-		while (!pEP->bStop && (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
+		while (!pEP->bStop && (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pBaseMsg) == FTM_RET_OK))
 		{
-			TRACE("Receive Message : EP[%s], MSG[%08x]\n", pEP->xInfo.pEPID, pMsg->xType);
-			switch(pMsg->xType)
+			TRACE("Receive Message : EP[%s], MSG[%08x]\n", pEP->xInfo.pEPID, pBaseMsg->xType);
+			switch(pBaseMsg->xType)
 			{
+			case	FTOM_MSG_TYPE_EP_INSERT_DATA:
+				{
+					FTM_INT	i;
+					FTOM_MSG_EP_INSERT_DATA_PTR	pMsg = (FTOM_MSG_EP_INSERT_DATA_PTR)pBaseMsg;
+
+					for(i = 0 ; i < pMsg->ulCount ; i++)
+					{
+						FTOM_EP_setData(pEP, &pMsg->pData[i]);
+					}
+				}
+				break;
+
 			case	FTOM_MSG_TYPE_QUIT:
 				{
 					pEP->bStop = FTM_TRUE;
@@ -708,11 +734,11 @@ FTM_VOID_PTR FTOM_EP_process
 
 			default:
 				{	
-					WARN("Invalid message[%08x]\n", pMsg->xType);
+					WARN("Invalid message[%08x]\n", pBaseMsg->xType);
 				}
 			}
 			
-			FTOM_MSG_destroy(&pMsg);
+			FTOM_MSG_destroy(&pBaseMsg);
 
 			FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
 		}
@@ -733,7 +759,7 @@ FTM_RET	FTOM_EP_getDataType
 	return	FTM_EP_getDataType(&pEP->xInfo, pType);
 }
 
-FTM_RET	FTOM_EP_pushData
+FTM_RET	FTOM_EP_remoteSet
 (
 	FTOM_EP_PTR 	pEP, 
 	FTM_EP_DATA_PTR pData
@@ -753,7 +779,7 @@ FTM_RET	FTOM_EP_pushData
 	return	xRet;
 }
 
-FTM_RET	FTOM_EP_pullData
+FTM_RET	FTOM_EP_remoteGet
 (
 	FTOM_EP_PTR 	pEP, 
 	FTM_EP_DATA_PTR pData
@@ -876,7 +902,7 @@ FTM_RET	FTOM_EP_setData
 
 	if (xDataType != pData->xType)
 	{
-		ERROR("Data type missmatch[%08x:%08x]!\n", xDataType, pData->xType);
+		ERROR("EP[%s] data type missmatch[%08x:%08x]!\n", pEP->xInfo.pEPID, xDataType, pData->xType);
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
@@ -900,9 +926,9 @@ FTM_RET	FTOM_EP_setData
 	xRet = FTM_LIST_count(&pEP->xDataList, &ulCount);
 	if (xRet == FTM_RET_OK)
 	{
-		if (ulCount >= FTOM_EP_DATA_COUNT)
+		while (ulCount >= FTOM_EP_CACHED_DATA_COUNT)
 		{
-			FTM_EP_DATA_PTR	pTempData;
+			FTM_EP_DATA_PTR	pTempData = NULL;
 
 			xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pTempData);	
 			if (xRet != FTM_RET_OK)
@@ -915,23 +941,19 @@ FTM_RET	FTOM_EP_setData
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR("Data remove failed.\n");	
+				break;
 			}
-			else
-			{
-				FTM_EP_DATA_destroy(pTempData);	
-			}
-		}
-	
-		xRet = FTM_LIST_insert(&pEP->xDataList, pNewData, 0);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR("Data append failed.\n");
-			FTM_EP_DATA_destroy(pNewData);	
+
+			FTM_EP_DATA_destroy(pTempData);	
+			ulCount--;
 		}
 	}
-	else
+	
+	xRet = FTM_LIST_insert(&pEP->xDataList, pNewData, 0);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR("List count get failed.\n");
+		ERROR("Data append failed.\n");
+		FTM_EP_DATA_destroy(pNewData);	
 	}
 
 	return	xRet;
@@ -1217,6 +1239,19 @@ FTM_RET	FTOM_EP_getReportInterval
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTOM_EP_sendMessage
+(
+	FTOM_EP_PTR		pEP,
+	FTOM_MSG_PTR	pMsg
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pMsg != NULL);
+
+	return	FTOM_MSGQ_push(&pEP->xMsgQ, pMsg);
+}
+
 FTM_INT	FTOM_EP_seeker
 (
 	const FTM_VOID_PTR pElement, 

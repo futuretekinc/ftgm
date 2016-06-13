@@ -1025,7 +1025,7 @@ FTM_RET	FTOM_onEPCtrl
 
 	FTM_EP_DATA_initINT(&xData, pMsg->xCtrl);
 
-	xRet = FTOM_EP_pushData(pEP, &xData);
+	xRet = FTOM_EP_remoteSet(pEP, &xData);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP[%s] set failed.\n", pMsg->pEPID);

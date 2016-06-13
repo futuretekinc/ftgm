@@ -619,6 +619,46 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 				}
 				break;
 
+			case	FTOM_MSG_TYPE_TP_REQ_CONTROL_ACTUATOR:
+				{
+					FTOM_MSG_TP_REQ_CONTROL_ACTUATOR_PTR pMsg = (FTOM_MSG_TP_REQ_CONTROL_ACTUATOR_PTR)pBaseMsg;
+					FTOM_EP_PTR	pEP;
+					FTM_EP_DATA	xData;
+
+					xRet = FTOM_EP_get(pMsg->pEPID, &pEP);
+					if (xRet != FTM_RET_OK)
+					{
+						FTOM_TP_CLIENT_respose(pClient, pMsg->pReqID, xRet, "Invalid EPID");
+						break;
+					}
+
+					switch(pMsg->xCtrl)
+					{
+					case	FTM_EP_CTRL_OFF:
+						FTM_EP_DATA_initINT(&xData, 0);
+						break;
+				
+					case	FTM_EP_CTRL_ON:
+						FTM_EP_DATA_initINT(&xData, 1);
+						break;
+
+					case	FTM_EP_CTRL_BLINK:
+						FTM_EP_DATA_initINT(&xData, 2);
+						break;
+					};
+
+					xRet = FTOM_EP_remoteSet(pEP, &xData);
+					if (xRet != FTM_RET_OK)
+					{
+					
+						FTOM_TP_CLIENT_respose(pClient, pMsg->pReqID, xRet, "Remote set error!");
+						break;
+					}
+
+					FTOM_TP_CLIENT_respose(pClient, pMsg->pReqID, 0, "");
+				}
+				break;
+
 			default:
 				{
 					ERROR("Not supported msg[%08x]\n", pBaseMsg->xType);	
@@ -907,6 +947,20 @@ FTM_RET	FTOM_TP_CLIENT_respose
 
 	TRACE("Send response[%s]!\n", pMsgID);
 	return	FTOM_MQTT_CLIENT_response(&pClient->xMQTT, pMsgID, nErrorCode, pMessage);
+}
+
+FTM_RET	FTOM_TP_CLIENT_controlActuator
+(
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_CTRL			xCtrl,
+	FTM_ULONG			ulDuration
+)
+{
+	ASSERT(pClient != NULL);
+
+
+	return	FTM_RET_OK;
 }
 
 

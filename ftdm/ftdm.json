@@ -169,6 +169,23 @@
 				},
 				"did"  	: "00405C8ed5d3",
 				"depid"	: "0x05000001"
+	 		},
+	 		{
+				"epid"  	: "8ed5d306000001",
+				"type"	: "0x06000000",
+				"name"	: "DO 0",
+				"unit"	: "",
+				"enable"	: 1,
+				"update_interval": 10,
+				"report_interval"	: 60,
+				"timeout" : 5,
+				"limit"	: 
+				{
+					"type"	: "count",
+					"count"	: 100
+				},
+				"did"  	: "00405C8ed5d3",
+				"depid"	: "0x06000001"
 	 		}
 		],
 	

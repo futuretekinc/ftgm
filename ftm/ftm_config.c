@@ -27,10 +27,13 @@ FTM_RET	FTM_CONFIG_create
 	}
 
 	xRet = FTM_CONFIG_init(pConfig, pFileName);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		*ppConfig = pConfig;
+		ERROR("Configuration init failed!\n");
+		return	xRet;
 	}
+
+	*ppConfig = pConfig;
 
 	return	xRet;
 }

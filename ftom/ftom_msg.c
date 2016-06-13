@@ -563,6 +563,37 @@ FTM_RET	FTOM_MSG_copy
 /********************************************************************************
  * Requested from the thing+
  ********************************************************************************/
+FTM_RET	FTOM_MSG_EP_createInsertData
+(
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			ulCount,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_EP_INSERT_DATA_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_EP_INSERT_DATA) + sizeof(FTM_EP_DATA) * ulCount;
+
+	pMsg = (FTOM_MSG_EP_INSERT_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_EP_INSERT_DATA;
+	pMsg->ulLen = ulMsgLen;
+	pMsg->ulCount = ulCount;
+	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+/********************************************************************************
+ * Requested from the thing+
+ ********************************************************************************/
 FTM_RET	FTOM_MSG_TP_createReqSetReportInterval
 (
 	FTM_CHAR_PTR	pReqID,
@@ -592,6 +623,38 @@ FTM_RET	FTOM_MSG_TP_createReqSetReportInterval
 	return	FTM_RET_OK;
 }
 
+FTM_RET FTOM_MSG_TP_createReqControlActuator
+(
+	FTM_CHAR_PTR		pReqID,
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_CTRL			xCtrl,
+	FTM_ULONG			ulDuration,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_TP_REQ_CONTROL_ACTUATOR_PTR	pMsg;
+	FTM_ULONG ulMsgLen = sizeof(FTOM_MSG_TP_REQ_CONTROL_ACTUATOR) + strlen(pReqID) + 1;
+
+	pMsg = (FTOM_MSG_TP_REQ_CONTROL_ACTUATOR_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_TP_REQ_CONTROL_ACTUATOR;
+	pMsg->ulLen 	= ulMsgLen;
+	strcpy(pMsg->pReqID, pReqID);
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
+	pMsg->xCtrl		= xCtrl;
+	pMsg->ulDuration= ulDuration;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
 FTM_RET	FTOM_MSG_TP_createResponse
 (
 	FTM_CHAR_PTR	pMsgID,

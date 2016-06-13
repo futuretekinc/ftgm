@@ -1215,7 +1215,24 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 			xRet = FTOM_EP_get(pEPID, &pEP);
 			if (xRet == FTM_RET_OK)
 			{
-				xRet = FTOM_EP_setData(pEP, &xData);	
+				FTOM_MSG_PTR	pMsg;
+
+				xRet = FTOM_MSG_EP_createInsertData(&xData, 1, &pMsg);
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR("Can't creation message[%08x]!\n", xRet);	
+					FTOM_MSG_destroy(&pMsg);
+				}
+				else
+				{
+					xRet = FTOM_EP_sendMessage(pEP, pMsg);	
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("Can't send message[%08x]!\n", xRet);	
+
+						FTOM_MSG_destroy(&pMsg);
+					}
+				}
 			}
 			else
 			{

@@ -81,7 +81,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_disconnectCB
 
 	pClient->bConnected = FTM_FALSE;
 
-	TRACE("MQTT TPGW is connected.\n");
+	TRACE("MQTT TPGW is disconnected.\n");
 }
 
 FTM_VOID FTOM_MQTT_CLIENT_TPGW_publishCB
@@ -361,7 +361,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 				}	
 			}
 
-			xRet = FTOM_MSG_createEPCtrl(pEPID, xEPCtrl, ulDuration, (FTOM_MSG_EP_CTRL_PTR _PTR_)ppMsg);
+			xRet = FTOM_MSG_TP_createReqControlActuator(pReqID, pEPID, xEPCtrl, ulDuration, ppMsg);
 
 		}
 		break;

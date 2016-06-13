@@ -139,18 +139,6 @@ FTM_RET	FTOM_EP_getDataCount
 	FTM_ULONG_PTR		pulCount
 );
 
-FTM_RET	FTOM_EP_setData
-(
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-);
-
-FTM_RET	FTOM_EP_getData
-(
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-);
-
 FTM_RET	FTOM_EP_getDataList
 (
 	FTOM_EP_PTR		pEP,
@@ -184,18 +172,6 @@ FTM_RET	FTOM_EP_getDataInfo
 	FTM_ULONG_PTR	pulCount
 );
 
-FTM_RET	FTOM_EP_pushData
-(
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-);
-
-FTM_RET	FTOM_EP_pullData
-(
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-);
-
 FTM_RET FTOM_EP_setFloat
 (
 	FTOM_EP_PTR 	pEP, 
@@ -215,12 +191,6 @@ FTM_RET	FTOM_EP_getTriggerAt
 	FTM_ULONG 		ulIndex, 
 	FTM_CHAR_PTR	pTriggerID
 );
-
-FTM_RET FTOM_EP_trap
-(
-	FTOM_EP_PTR 	pEP, 
-	FTM_EP_DATA_PTR pData)
-;
 
 FTM_RET FTOM_EP_getIDList
 (
@@ -272,6 +242,27 @@ FTM_RET	FTOM_EP_print
 FTM_RET	FTOM_EP_printList
 (
 	FTM_VOID
+);
+
+FTM_RET	FTOM_EP_sendMessage
+(
+	FTOM_EP_PTR		pEP,
+	FTOM_MSG_PTR	pMsg
+);
+
+/******************************************
+ * Remote device control
+ ******************************************/
+FTM_RET	FTOM_EP_remoteSet
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTOM_EP_remoteGet
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
 );
 
 #endif

@@ -9,6 +9,7 @@ typedef	struct
 	pthread_t	xThread;
 	FTM_BOOL	bStop;
 	FTM_BOOL	bDI;
+	FTM_BOOL	bDO;
 	FTM_ULONG	ulCO2;
 	FTM_FLOAT	fHumidity;
 	FTM_FLOAT	pTemperatures[11];
@@ -30,6 +31,7 @@ FTM_VOID_PTR	FTOM_NODE_VIRTUAL_FTE_ES7_process
 
 	pES7->bStop = FTM_FALSE;
 	pES7->bDI = FTM_FALSE;
+	pES7->bDO = FTM_FALSE;
 	pES7->ulCO2 = 400;
 	pES7->fHumidity = 60.0;
 	for(i = 0  ; i < 11 ; i++)
@@ -214,6 +216,16 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_getEPData
 		}
 		break;
 
+	case	FTM_EP_TYPE_DO:
+		{
+			if (pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1] == '1')
+			{
+				pData->xType = FTM_EP_DATA_TYPE_INT;
+				FTM_VALUE_initINT(&pData->xValue, pES7->bDO); 
+			}
+		}
+		break;
+
 	case	FTM_EP_TYPE_TEMPERATURE:
 		{
 			FTM_ULONG	ulIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1], 0, 16);
@@ -255,6 +267,38 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_setEPData
 	FTM_EP_DATA_PTR 	pData
 )
 {
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+	ASSERT(pData != NULL);
+	FTM_RET	xRet;
+	FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR pES7 = (FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR)pNode->pData;
+
+	switch(pEP->xInfo.xType)
+	{
+	case	FTM_EP_TYPE_DO:
+		{
+			FTOM_MSG_PTR	pMsg;
+
+			pES7->bDO = pData->xValue.xValue.nValue;
+
+			xRet = FTOM_MSG_EP_createInsertData(pData, 1, &pMsg);
+			if (xRet == FTM_RET_OK)
+			{
+				xRet =FTOM_EP_sendMessage(pEP, pMsg);
+				if (xRet != FTM_RET_OK)
+				{
+					FTOM_MSG_destroy(&pMsg);	
+				}
+			}
+		}
+		break;
+
+	default:
+		{
+			return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+		}
+	}
+
 	return	FTM_RET_OK;
 }
 

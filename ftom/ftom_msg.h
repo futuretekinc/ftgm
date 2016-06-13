@@ -12,7 +12,6 @@ typedef	enum
 {
 	FTOM_MSG_TYPE_QUIT				=	0,
 	FTOM_MSG_TYPE_REPORT_GW_STATUS,
-	FTOM_MSG_TYPE_EP_CTRL,
 	FTOM_MSG_TYPE_RULE,
 	FTOM_MSG_TYPE_SEND_EP_STATUS,
 	FTOM_MSG_TYPE_SEND_EP_DATA,
@@ -29,8 +28,11 @@ typedef	enum
 	FTOM_MSG_TYPE_DISCOVERY_DONE,
 	FTOM_MSG_TYPE_SERVER_SYNC,
 	FTOM_MSG_TYPE_INITIALIZE_DONE,
+	FTOM_MSG_TYPE_EP_INSERT_DATA,
+	FTOM_MSG_TYPE_EP_CTRL,
 	FTOM_MSG_TYPE_TP_REQ_SET_REPORT_INTERVAL,
 	FTOM_MSG_TYPE_TP_REQ_RESTART,
+	FTOM_MSG_TYPE_TP_REQ_CONTROL_ACTUATOR,
 	FTOM_MSG_TYPE_TP_RESPONSE,
 	FTOM_MSG_TYPE_MAX
 }	FTOM_MSG_TYPE, _PTR_ FTOM_MSG_TYPE_PTR;
@@ -185,6 +187,14 @@ typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
 	FTM_ULONG		ulLen;
+	FTM_ULONG		ulCount;
+	FTM_EP_DATA		pData[];
+}	FTOM_MSG_EP_INSERT_DATA, _PTR_ FTOM_MSG_EP_INSERT_DATA_PTR;
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
 	FTM_CHAR		pReqID[];
 }	FTOM_MSG_TP_REQ_RESTART, _PTR_ FTOM_MSG_TP_REQ_RESTART_PTR;
 
@@ -195,6 +205,17 @@ typedef	struct
 	FTM_ULONG		ulReportIntervalMS;
 	FTM_CHAR		pReqID[];
 }	FTOM_MSG_TP_REQ_SET_REPORT_INTERVAL, _PTR_ FTOM_MSG_TP_REQ_SET_REPORT_INTERVAL_PTR;
+
+typedef struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTOM_MSG_ID		xMsgID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	FTM_EP_CTRL		xCtrl;
+	FTM_ULONG		ulDuration;	
+	FTM_CHAR		pReqID[];
+}	FTOM_MSG_TP_REQ_CONTROL_ACTUATOR, _PTR_ FTOM_MSG_TP_REQ_CONTROL_ACTUATOR_PTR;
 
 typedef	struct
 {
@@ -330,6 +351,20 @@ FTM_RET	FTOM_MSG_createServerSync
 	FTOM_MSG_SERVER_SYNC_PTR _PTR_ 	ppMsg
 );
 
+/*************************************************
+ * EP
+ *************************************************/
+
+FTM_RET	FTOM_MSG_EP_createInsertData
+(
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			ulCount,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+);
+
+/************************************************
+ * Thing+ 
+ ************************************************/
 FTM_RET	FTOM_MSG_TP_createReqRestart
 (
 	FTM_CHAR_PTR		pReqID,
@@ -340,6 +375,15 @@ FTM_RET	FTOM_MSG_TP_createReqSetReportInterval
 (
 	FTM_CHAR_PTR		pReqID,
 	FTM_ULONG			ulReportIntervalMS,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+);
+
+FTM_RET	FTOM_MSG_TP_createReqControlActuator
+(
+	FTM_CHAR_PTR		pReqID,
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_CTRL			xCtrl,
+	FTM_ULONG			ulDuration,
 	FTOM_MSG_PTR _PTR_ 	ppMsg
 );
 

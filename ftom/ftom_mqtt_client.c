@@ -524,7 +524,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 		TRACE("  Cert : %s\n", pClient->xConfig.pCertFile);
 		mosquitto_username_pw_set(pClient->pMosquitto, pClient->xConfig.pUserID, pClient->xConfig.pPasswd);
 		mosquitto_tls_set(pClient->pMosquitto, pClient->xConfig.pCertFile, NULL, NULL, NULL, NULL);
-		mosquitto_tls_insecure_set(pClient->pMosquitto, 1);
+		mosquitto_tls_insecure_set(pClient->pMosquitto, 1L);
 		mosquitto_tls_opts_set(pClient->pMosquitto, 1, NULL, NULL);
 	}
 
