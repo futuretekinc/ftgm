@@ -248,6 +248,12 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 			INFO("Can not find a report interval for the TPClient!\n");
 		}
 	
+		xRet = FTM_CONFIG_ITEM_getItemULONG(&xSection, "retry_interval", &pClient->xConfig.ulRetryInterval);
+		if (xRet != FTM_RET_OK)
+		{
+			INFO("Can not find max connection retry interval for the TPClient!\n");
+		}
+	
 	}
 
 	FTOM_MQTT_CLIENT_CONFIG	xMQTTConfig;
@@ -356,6 +362,12 @@ FTM_RET	FTOM_TP_CLIENT_saveConfig
 		INFO("Can not save a report interval for the TPClient!\n");
 	}
 
+	xRet = FTM_CONFIG_ITEM_setItemULONG(&xSection, "retry_interval", pClient->xConfig.ulRetryInterval);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Can not save a max retry interval for the TPClient!\n");
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -367,10 +379,14 @@ FTM_RET	FTOM_TP_CLIENT_showConfig
 	ASSERT(pClient != NULL);
 
 	MESSAGE("\n[ ThingPlus Client Configuration ]\n");
-	MESSAGE("%16s : %s\n", "Host", 		pClient->xConfig.pHost);
-	MESSAGE("%16s : %d\n", "Port", 		pClient->xConfig.usPort);
-	MESSAGE("%16s : %s\n", "API Key", 	pClient->xConfig.pAPIKey);
+	MESSAGE("%16s : %s\n", "Gateay ID", pClient->xConfig.pGatewayID);
+	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.pHost);
+	MESSAGE("%16s : %d\n", "Port", pClient->xConfig.usPort);
+	MESSAGE("%16s : %s\n", "API Key", pClient->xConfig.pAPIKey);
 	MESSAGE("%16s : %s\n", "Cert File", pClient->xConfig.pCertFile);
+	MESSAGE("%16s : %lu\n","Report Interval", pClient->xConfig.ulReportInterval);
+	MESSAGE("%16s : %lu\n","Retry Interval", pClient->xConfig.ulRetryInterval);
+
 	return	FTM_RET_OK;
 }
 
@@ -571,6 +587,7 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 		xRet = FTOM_MSGQ_timedPop(&pMain->xMsgQ, ullDiffTime, &pBaseMsg);
 		if (xRet == FTM_RET_OK)
 		{
+			TRACE("Received Message : %d\n", pBaseMsg->xType);
 			switch(pBaseMsg->xType)
 			{
 			case	FTOM_MSG_TYPE_INITIALIZE_DONE:

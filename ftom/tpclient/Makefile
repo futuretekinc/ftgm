@@ -16,7 +16,7 @@ CLIENT_LDFLAGS=$(LDFLAGS) -L./ -ltpclient -lftom -lftomcl -lftomc -lftm -lmosqui
 
 all: $(LIBTPCLIENT) $(CLIENT)
 
-$(CLIENT): $(CLIENT_OBJS) $(LIBTPCLIENT_OBJS)
+$(CLIENT): $(CLIENT_OBJS) $(LIBTPCLIENT)
 	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)
 
 $(LIBTPCLIENT): $(LIBTPCLIENT_OBJS)

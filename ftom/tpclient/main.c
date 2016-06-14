@@ -79,6 +79,8 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		goto error;
 	}
 
+	FTOM_TP_CLIENT_showConfig(pTPClient);
+
 	if (bDaemon)
 	{
 		if (fork() != 0)
