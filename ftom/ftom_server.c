@@ -721,7 +721,7 @@ FTM_RET	FTOM_SERVER_sendMessage
 		pParam->xRet	= FTM_RET_OK;
 		memcpy(&pParam->xMsg, pMsg, pMsg->ulLen);
 
-		//TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pParam->ulReqID, pParam->ulLen);
+		TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pParam->ulReqID, pParam->ulLen);
 		send(pSession->hSocket, pParam, ulParamLen, MSG_DONTWAIT);
 
 		FTM_MEM_free(pParam);

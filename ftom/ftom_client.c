@@ -77,7 +77,8 @@ FTM_RET	FTOM_CLIENT_loadConfigFromFile
 FTM_RET	FTOM_CLIENT_setNotifyCallback
 (
 	FTOM_CLIENT_PTR		pClient,
-	FTOM_CLIENT_NOTIFY_CALLBACK	pCB
+	FTOM_CLIENT_NOTIFY_CALLBACK	pCB,
+	FTM_VOID_PTR		pData
 )
 {
 	ASSERT(pClient != NULL);
@@ -85,7 +86,7 @@ FTM_RET	FTOM_CLIENT_setNotifyCallback
 
 	if (pClient->fSetNotifyCallback != NULL)
 	{
-		return	pClient->fSetNotifyCallback(pClient, pCB);
+		return	pClient->fSetNotifyCallback(pClient, pCB, pData);
 	}
 
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;

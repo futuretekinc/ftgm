@@ -9,6 +9,13 @@
 #include "ftom_mqtt_client.h"
 #include "ftom_mqtt_client_tpgw.h"
 
+static
+FTM_RET	FTOM_TP_CLIENT_notifyCallback
+(
+	FTOM_MSG_PTR	pMsg,
+	FTM_VOID_PTR	pData
+);
+
 static 
 FTM_VOID_PTR FTOM_TP_CLIENT_process
 (
@@ -55,7 +62,7 @@ FTM_RET	FTOM_TP_CLIENT_create
 	xRet = FTOM_TP_CLIENT_init(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MQTT Client initialization was failed.\n");	
+		ERROR2(xRet, "MQTT Client initialization was failed.\n");	
 		FTM_MEM_free(pClient);
 	}
 	else
@@ -102,21 +109,27 @@ FTM_RET	FTOM_TP_CLIENT_init
 	xRet = FTOM_CLIENT_NET_create((FTOM_CLIENT_NET_PTR _PTR_)&pClient->pFTOMC);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to create client[%08x]\n", xRet);
+		ERROR2(xRet, "Failed to create client!\n");
 		return	0;	
+	}
+	
+	xRet =FTOM_CLIENT_setNotifyCallback(pClient->pFTOMC, FTOM_TP_CLIENT_notifyCallback, pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set notify callback\n");	
 	}
 
 	xRet = FTOM_TP_RESTAPI_init(&pClient->xRESTApi);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("TP REST API initialize failed!\n");
+		ERROR2(xRet, "TP REST API initialize failed!\n");
 		goto error;	
 	}
 
 	xRet = FTOM_MQTT_CLIENT_init(&pClient->xMQTT);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MQTT Client initialize failed!\n");
+		ERROR2(xRet, "MQTT Client initialize failed!\n");
 		goto error;
 	}
 
@@ -125,7 +138,7 @@ FTM_RET	FTOM_TP_CLIENT_init
 	xRet = FTOM_MSGQ_init(&pClient->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MsgQ init failed!\n");
+		ERROR2(xRet, "MsgQ init failed!\n");
 		goto error;	
 	}
 
@@ -177,7 +190,7 @@ FTM_RET	FTOM_TP_CLIENT_setConfig
 	xRet = FTOM_MQTT_CLIENT_setConfig(&pClient->xMQTT, &xMQTTConfig);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MQTT Client configation loading failed!\n");
+		ERROR2(xRet, "MQTT Client configation loading failed!\n");
 		return	0;	
 	}
 
@@ -202,25 +215,25 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "id", pClient->xConfig.pGatewayID, FTM_GWID_LEN);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Can not find the gateway id for the TPClient!\n");
+			ERROR2(xRet, "Can not find the gateway id for the TPClient!\n");
 		}
 	
 		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "cert", pClient->xConfig.pCertFile, FTM_FILE_NAME_LEN);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Can not find the certificate information for the TPClient!\n");
+			ERROR2(xRet, "Can not find the certificate information for the TPClient!\n");
 		}
 	
 		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "apikey", pClient->xConfig.pAPIKey, FTM_PASSWD_LEN);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Can not find a APIKEY information for the TPClient!\n");
+			ERROR2(xRet, "Can not find a APIKEY information for the TPClient!\n");
 		}
 	
 		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "host", pClient->xConfig.pHost, FTM_HOST_LEN);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Can not find a host for the TPClient!\n");
+			ERROR2(xRet, "Can not find a host for the TPClient!\n");
 		}
 	
 		xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xSection, "port", &pClient->xConfig.usPort);
@@ -252,7 +265,7 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 	xRet = FTOM_MQTT_CLIENT_setConfig(&pClient->xMQTT, &xMQTTConfig);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MQTT Client configation loading failed!\n");
+		ERROR2(xRet, "MQTT Client configation loading failed!\n");
 		return	xRet;	
 	}
 
@@ -274,7 +287,7 @@ FTM_RET	FTOM_TP_CLIENT_loadConfigFromFile
 	xRet = FTM_CONFIG_create(pFileName, &pConfig);
 	if (xRet !=  FTM_RET_OK)
 	{
-		ERROR("Configration loading failed!\n");
+		ERROR2(xRet, "Configration loading failed!\n");
 		return	xRet;	
 	}
 
@@ -310,25 +323,25 @@ FTM_RET	FTOM_TP_CLIENT_saveConfig
 	xRet = FTM_CONFIG_ITEM_setItemString(&xSection, "id", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can not save the gateway id for the TPClient!\n");
+		ERROR2(xRet, "Can not save the gateway id for the TPClient!\n");
 	}
 
 	xRet = FTM_CONFIG_ITEM_setItemString(&xSection, "cert", pClient->xConfig.pCertFile);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can not save the certificate information for the TPClient!\n");
+		ERROR2(xRet, "Can not save the certificate information for the TPClient!\n");
 	}
 
 	xRet = FTM_CONFIG_ITEM_setItemString(&xSection, "apikey", pClient->xConfig.pAPIKey);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can not save a APIKEY information for the TPClient!\n");
+		ERROR2(xRet, "Can not save a APIKEY information for the TPClient!\n");
 	}
 
 	xRet = FTM_CONFIG_ITEM_setItemString(&xSection, "host", pClient->xConfig.pHost);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can not save a host for the TPClient!\n");
+		ERROR2(xRet, "Can not save a host for the TPClient!\n");
 	}
 
 	xRet = FTM_CONFIG_ITEM_setItemUSHORT(&xSection, "port", pClient->xConfig.usPort);
@@ -468,9 +481,24 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 	TRACE("TPClient[%s] started.\n", pMain->xConfig.pGatewayID);
 
 
-	FTOM_TP_RESTAPI_setUserID(&pMain->xRESTApi, pMain->xConfig.pGatewayID);
-	FTOM_TP_RESTAPI_setPasswd(&pMain->xRESTApi, pMain->xConfig.pAPIKey);
-	FTOM_TP_RESTAPI_GW_setID(&pMain->xRESTApi, pMain->xConfig.pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setUserID(&pMain->xRESTApi, pMain->xConfig.pGatewayID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set User ID!\n");
+	}
+
+	xRet = FTOM_TP_RESTAPI_setPasswd(&pMain->xRESTApi, pMain->xConfig.pAPIKey);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set password!\n");
+	}
+
+	xRet = FTOM_TP_RESTAPI_GW_setID(&pMain->xRESTApi, pMain->xConfig.pGatewayID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set gateway id!\n");
+	}
+
 	FTOM_TP_RESTAPI_setVerbose(&pMain->xRESTApi, FTM_TRUE);
 
 	FTM_TIMER_initS(&pMain->xRetryTimer,	0);
@@ -481,15 +509,15 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 	sprintf(pTopic, "v/a/g/%s/req", pMain->xConfig.pGatewayID);
 	FTOM_MQTT_CLIENT_subscribe(&pMain->xMQTT, pTopic);
 
-	pMain->bConnected = FTM_FALSE;
-	pMain->bStop 		= FTM_FALSE;
+	pMain->bConnected 	= FTM_FALSE;
+	pMain->bStop		= FTM_FALSE;
 
+	xRet = FTOM_CLIENT_start(pMain->pFTOMC);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to start FTOM client\n");
+	}
 
-
-
-
-
-	FTOM_CLIENT_start(pMain->pFTOMC);
 	FTOM_MQTT_CLIENT_start(&pMain->xMQTT);
 
 	FTM_TIME_getCurrent(&xBaseTime);
@@ -988,3 +1016,30 @@ FTM_RET	FTOM_TP_CLIENT_controlActuator
 }
 
 
+FTM_RET	FTOM_TP_CLIENT_notifyCallback
+(
+	FTOM_MSG_PTR	pMsg,
+	FTM_VOID_PTR	pData
+)
+{
+	ASSERT(pMsg != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET				xRet;
+	FTOM_TP_CLIENT_PTR	pClient = (FTOM_TP_CLIENT_PTR)pData;
+	FTOM_MSG_PTR		pNewMsg = NULL;
+
+	xRet = FTOM_MSG_copy(pMsg, &pNewMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTOM_MSGQ_push(&pClient->xMsgQ, pNewMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		FTOM_MSG_destroy(&pNewMsg);	
+	}
+
+	return	xRet;
+}

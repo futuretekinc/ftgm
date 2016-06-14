@@ -228,7 +228,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_process(FTM_VOID_PTR pData)
 					ERROR("Received Notify [%08x]\n",pNotify->xCmd);	
 					if (pClient->fNotifyCallback != NULL)
 					{
-						pClient->fNotifyCallback(&pNotify->xMsg);	
+						pClient->fNotifyCallback(&pNotify->xMsg, pClient->pNotifyData);	
 					}
 				}
 				else
@@ -351,13 +351,15 @@ FTM_RET FTOM_CLIENT_NET_isConnected
 FTM_RET	FTOM_CLIENT_NET_setNotifyCallback
 (
 	FTOM_CLIENT_NET_PTR		pClient,
-	FTOM_CLIENT_NOTIFY_CALLBACK	pCB
+	FTOM_CLIENT_NOTIFY_CALLBACK	pCB,
+	FTM_VOID_PTR			pData
 )
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pCB != NULL);
 
 	pClient->fNotifyCallback = pCB;
+	pClient->pNotifyData = pData;
 
 	return	FTM_RET_OK;
 }

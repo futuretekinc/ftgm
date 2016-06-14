@@ -362,6 +362,123 @@ FTM_RET	FTM_TRACE_out
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_TRACE_out2
+(
+	unsigned long	ulLevel,
+	const char *	pFunction,
+	int				nLine,
+	FTM_RET			xRet,
+	const char *	format, 
+	...
+)
+{
+	static	FTM_INT	nOutputLine = 0;
+    va_list 		argptr;
+	time_t			xTime;
+	FTM_BOOL		bFile = FTM_FALSE;
+	FTM_BOOL		bLine = FTM_FALSE;
+	FTM_CHAR_PTR	pPath;
+	FTM_CHAR_PTR	pPrefix;
+	FTM_INT			nLen = 0;
+	FTM_CHAR		szBuff[2048];
+	FTM_CHAR		szTime[32];
+	FTM_BOOL		bTimeInfo = FTM_FALSE;
+	FTM_BOOL		bFunctionInfo = FTM_FALSE;
+
+	if (ulLevel < _xConfig.ulLevel)
+	{
+		return FTM_RET_OK;	
+	}
+
+	switch(ulLevel)
+	{
+	case	FTM_TRACE_LEVEL_TRACE:
+		if (_xConfig.xTrace.bToFile)
+		{
+			bFile 	= FTM_TRUE;
+			pPath	= _xConfig.xTrace.pPath;
+			pPrefix = _xConfig.xTrace.pPrefix;
+		}
+		bLine	= _xConfig.xTrace.bLine;
+		break;
+
+	case	FTM_TRACE_LEVEL_ERROR:
+		if (_xConfig.xError.bToFile)
+		{
+			bFile = FTM_TRUE;
+			pPath	= _xConfig.xTrace.pPath;
+			pPrefix = _xConfig.xTrace.pPrefix;
+		}
+		bLine	= _xConfig.xError.bLine;
+		break;
+	}
+
+	va_start ( argptr, format );           
+	xTime = time(NULL);
+
+	strftime(szTime, sizeof(szTime), "%Y-%m-%d %H:%M:%S", localtime(&xTime));
+
+	if (bShowIndex)
+	{
+		nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%4d : ", ++nOutputLine);
+	}
+
+	if (bTimeInfo)
+	{
+		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s]", szTime);
+	}
+
+	if (ulLevel != FTM_TRACE_LEVEL_MESSAGE)
+	{
+		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s] - ", FTM_TRACE_levelString(ulLevel));
+	}
+
+	if (bFunctionInfo || (bLine && (pFunction != NULL)))
+	{
+		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%s[%04d] - ", pFunction, nLine);
+	}
+	nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, format, argptr);
+	va_end(argptr);
+
+	szBuff[nLen] = '\0';
+
+	switch(_xOut)
+	{
+	case	FTM_TRACE_OUT_TERM:
+		{
+			FTM_TRACE_printToTerm(szBuff);
+		}
+		break;
+
+	case	FTM_TRACE_OUT_FILE:
+		{
+			FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
+		}
+		break;
+
+	case	FTM_TRACE_OUT_SYSLOG:
+		{
+			syslog(LOG_INFO, "%s", szBuff);
+		}
+		break;
+
+	default:
+		{
+			if (bFile)
+			{
+				FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
+		
+			}
+			else
+			{
+				FTM_TRACE_printToTerm(szBuff);
+			}
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szMsg)
 {
 	fprintf(stdout, "%s", szMsg);

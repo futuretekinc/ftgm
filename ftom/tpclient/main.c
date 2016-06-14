@@ -21,6 +21,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	FTM_ULONG			ulDebugLevel = FTM_TRACE_LEVEL_ERROR;
 	FTOM_TP_CLIENT_PTR	pTPClient = NULL;
 	FTM_CHAR			pConfigFileName[1024];
+	FTM_SHELL			xShell;
 
 	sprintf(pConfigFileName, "/etc/%s.conf", FTM_getProgramName());
 
@@ -92,9 +93,10 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		//FTOM_SHELL_PTR pShell;
 
 		FTOM_TP_CLIENT_start(pTPClient);
-		//FTOM_SHELL_create(&pShell);
-		//FTOM_SHELL_process(pShell);
-		//FTOM_SHELL_destroy(&pShell);
+		FTM_SHELL_init(&xShell, NULL);
+		FTM_SHELL_setPrompt(&xShell, "tpclient> ");
+		FTM_SHELL_run(&xShell);
+		FTM_SHELL_final(&xShell);
 		FTOM_TP_CLIENT_waitingForFinished(pTPClient);
 	}
 	

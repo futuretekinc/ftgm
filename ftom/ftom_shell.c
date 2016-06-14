@@ -59,7 +59,6 @@ FTM_RET	FTOM_SHELL_init
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_INT	i;
-
 		for(i = 0 ; i < FTOM_shellCmdCount; i++)
 		{
 			FTM_SHELL_appendCmd(&pShell->xShell, &FTOM_shellCmds[i]);
