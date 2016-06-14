@@ -144,11 +144,13 @@ FTM_RET	FTOM_CLIENT_NET_start
 {
 	ASSERT(pClient != NULL);
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	if (!pClient->bStop)
 	{
 		return	FTM_RET_ALREADY_RUNNING;
 	}
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	if (pthread_create(&pClient->xThread, NULL, FTOM_CLIENT_NET_process, pClient) < 0)
 	{
 		return	FTM_RET_ERROR;	

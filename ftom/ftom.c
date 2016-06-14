@@ -161,7 +161,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_SERVER_final,
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SERVER_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_SERVER_stop,
-		.fIsRun		=	NULL,
+		.fIsRun		=	(FTOM_SERVICE_IS_RUN)FTOM_SERVER_isRun,
 		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_SERVER_setServiceCallback,
 		.fCallback	=	FTOM_callback,
 		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_SERVER_loadConfig,
@@ -229,6 +229,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fSendMessage	=	(FTOM_SERVICE_SEND_MESSAGE)FTOM_DMC_sendMessage,
 		.pData		= 	NULL
 	},
+#if 0
 	{
 		.xType		=	FTOM_SERVICE_TPCLIENT,
 		.xID		=	FTOM_SERVICE_TPCLIENT,
@@ -249,7 +250,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fSendMessage	=	(FTOM_SERVICE_SEND_MESSAGE)FTOM_TP_CLIENT_sendMessage,
 		.pData		= 	NULL
 	},
-#if 0
+
 	{
 		.xType		=	FTOM_SERVICE_MQTT_CLIENT,
 		.xID		=	FTOM_SERVICE_MQTT_CLIENT,
@@ -1048,16 +1049,16 @@ FTM_RET	FTOM_onReportGWStatus
 	FTOM_MSG_PTR	pNewMsg;
 	FTM_BOOL		bRun = FTM_FALSE;
 
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_TPCLIENT, &pService);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Service[TPClient] not found\n");
+		ERROR("Service[SERVER] not found\n");
 		return	xRet;	
 	}
 
 	if ((pService->fIsRun == NULL) || (pService->fSendMessage == NULL))
 	{
-		ERROR("Service[TPClient] not found\n");
+		ERROR("Service[SERVER] not found\n");
 		return	FTM_RET_OK;			
 	}
 
@@ -1088,16 +1089,16 @@ FTM_RET	FTOM_onSendEPStatus
 	FTOM_MSG_PTR	pNewMsg;
 	FTM_BOOL		bRun = FTM_FALSE;
 
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_TPCLIENT, &pService);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Service[TPClient] not found\n");
+		ERROR("Service[SERVER] not found\n");
 		return	xRet;	
 	}
 
 	if ((pService->fIsRun == NULL) || (pService->fSendMessage == NULL))
 	{
-		ERROR("Service[TPClient] not found\n");
+		ERROR("Service[SERVER] not found\n");
 		return	FTM_RET_OK;			
 	}
 
@@ -1128,16 +1129,16 @@ FTM_RET	FTOM_onSendEPData
 	FTOM_MSG_PTR	pNewMsg;
 	FTM_BOOL		bRun = FTM_FALSE;
 
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_TPCLIENT, &pService);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Service[TPClient] not found\n");
+		ERROR("Service[SERVER] not found\n");
 		return	xRet;	
 	}
 
 	if ((pService->fIsRun == NULL) || (pService->fSendMessage == NULL))
 	{
-		ERROR("Service[TPClient] not found\n");
+		ERROR("Service[SERVER] not found\n");
 		return	FTM_RET_OK;			
 	}
 
@@ -2446,10 +2447,10 @@ FTM_RET	FTOM_serverSync
 	FTOM_SERVICE_PTR	pService;
 	FTOM_MSG_SERVER_SYNC_PTR	pMsg;
 
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_TPCLIENT, &pService);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("TPClient not supported!\n");
+		WARN("Server not supported!\n");
 		return	xRet;	
 	}
 

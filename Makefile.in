@@ -1,6 +1,6 @@
 #MODEL=ftm-50s
-MODEL=ftm-100s
-#MODEL=i686
+#MODEL=ftm-100s
+MODEL=i686
 
 TARGET=$(TOPDIR)/target/$(MODEL)
 EXEC_PREFIX=$(TARGET)/usr/bin

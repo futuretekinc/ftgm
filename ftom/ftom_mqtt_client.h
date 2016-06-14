@@ -23,6 +23,8 @@
 
 #define	FTOM_MQTT_CLIENT_DEFAULT_CB_SET				1
 
+typedef	FTM_RET (*FTOM_MQTT_CLIENT_MESSAGE_CB)(FTM_VOID_PTR pObject, FTOM_MSG_PTR pMsg);
+
 typedef	struct
 {
 	FTM_CHAR	pGatewayID[FTM_GWID_LEN+1];
@@ -59,16 +61,19 @@ typedef	struct FTOM_MQTT_CLIENT_STRUCT
 	FTM_ULONG				ulNewSubscribe;
 	FTM_LIST_PTR			pSubscribeList;
 
+	FTOM_MQTT_CLIENT_MESSAGE_CB	fMessageCB;
+	FTM_VOID_PTR			pMessageCBObject;
+
 	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
 }	FTOM_MQTT_CLIENT, _PTR_ FTOM_MQTT_CLIENT_PTR;
 
-typedef	FTM_VOID (*FTOM_MQTT_CLIENT_CONNECT_CB)(struct mosquitto *mosq, void *pObj, int nResult);
-typedef	FTM_VOID (*FTOM_MQTT_CLIENT_DISCONNECT_CB)(struct mosquitto *mosq, void *pObj, int nResult);
-typedef	FTM_VOID (*FTOM_MQTT_CLIENT_PUBLISH_CB)(struct mosquitto *mosq, void *pObj, int nResult);
-typedef	FTM_VOID (*FTOM_MQTT_CLIENT_MESSAGE_CB)(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
-typedef FTM_VOID (*FTOM_MQTT_CLIENT_SUBSCRIBE_CB)(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
-typedef FTM_VOID (*FTOM_MQTT_CLIENT_TIMER_CB)(struct mosquitto *mosq, void *pObj);
+typedef	FTM_VOID (*FTOM_MOSQUITTO_CONNECT_CB)(struct mosquitto *mosq, void *pObj, int nResult);
+typedef	FTM_VOID (*FTOM_MOSQUITTO_DISCONNECT_CB)(struct mosquitto *mosq, void *pObj, int nResult);
+typedef	FTM_VOID (*FTOM_MOSQUITTO_PUBLISH_CB)(struct mosquitto *mosq, void *pObj, int nResult);
+typedef	FTM_VOID (*FTOM_MOSQUITTO_MESSAGE_CB)(struct mosquitto *mosq, void *pObj, const struct mosquitto_message *message);
+typedef FTM_VOID (*FTOM_MOSQUITTO_SUBSCRIBE_CB)(struct mosquitto *mosq, void *pObj, int nMID, int nQoS, const int *pGrantedQoS);
+typedef FTM_VOID (*FTOM_MOSQUITTO_TIMER_CB)(struct mosquitto *mosq, void *pObj);
 
 typedef FTM_RET	 (*FTOM_MQTT_CLIENT_REPORT_GW_STATUS)
 (
@@ -121,12 +126,12 @@ typedef	struct
 
 typedef	struct
 {
-	FTOM_MQTT_CLIENT_CONNECT_CB				fConnect;
-	FTOM_MQTT_CLIENT_DISCONNECT_CB			fDisconnect;
-	FTOM_MQTT_CLIENT_PUBLISH_CB				fPublish;
-	FTOM_MQTT_CLIENT_MESSAGE_CB				fMessage;
-	FTOM_MQTT_CLIENT_SUBSCRIBE_CB			fSubscribe;
-	FTOM_MQTT_CLIENT_TIMER_CB				fTimer;
+	FTOM_MOSQUITTO_CONNECT_CB				fConnect;
+	FTOM_MOSQUITTO_DISCONNECT_CB			fDisconnect;
+	FTOM_MOSQUITTO_PUBLISH_CB				fPublish;
+	FTOM_MOSQUITTO_MESSAGE_CB				fMessage;
+	FTOM_MOSQUITTO_SUBSCRIBE_CB				fSubscribe;
+	FTOM_MOSQUITTO_TIMER_CB					fTimer;
 	FTOM_MQTT_CLIENT_REPORT_GW_STATUS		fReportGWStatus;
 	FTOM_MQTT_CLIENT_PUBLISH_EP_STATUS		fPublishEPStatus;
 	FTOM_MQTT_CLIENT_PUBLISH_EP_DATA		fPublishEPData;
@@ -184,6 +189,13 @@ FTM_RET	FTOM_MQTT_CLIENT_isConnected
 (
 	FTOM_MQTT_CLIENT_PTR pClient,
 	FTM_BOOL_PTR		 pbConnected
+);
+
+FTM_RET	FTOM_MQTT_CLIENT_setMessageCB
+(
+	FTOM_MQTT_CLIENT_PTR 	pClient, 
+	FTOM_MQTT_CLIENT_MESSAGE_CB	fMessageCB,
+	FTM_VOID_PTR			pData
 );
 
 FTM_RET	FTOM_MQTT_CLIENT_setCallback

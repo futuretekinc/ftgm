@@ -673,6 +673,24 @@ FTM_RET	FTOM_SERVER_stop
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_SERVER_isRun
+(
+	FTOM_SERVER_PTR	pServer,
+	FTM_BOOL_PTR	pbRun
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pbRun != NULL);
+
+	if ((pServer != NULL) && (!pServer->bStop))
+	{
+		*pbRun = FTM_TRUE;	
+	}
+	*pbRun = FTM_FALSE;	
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_SERVER_sendMessage
 (
 	FTOM_SERVER_PTR	pServer,

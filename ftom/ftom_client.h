@@ -143,6 +143,36 @@ FTM_RET FTOM_CLIENT_NODE_set
 	FTM_NODE_PTR	pInfo
 );
 
+FTM_RET	FTOm_CLIENT_NODE_registerAtServer
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID
+);
+
+FTM_RET	FTOM_CLIENT_NODE_setServerRegistered
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID,
+	FTM_BOOL		bRegistered
+);
+
+FTM_RET	FTOM_CLIENT_NODE_getServerRegistered
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID,
+	FTM_BOOL_PTR	pbRegistered
+);
+
+FTM_RET	FTOM_CLIENT_NODE_setReportInterval
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID,
+	FTM_ULONG		ulReportInterval
+);
+/*****************************************************
+ *
+ *****************************************************/
+
 FTM_RET FTOM_CLIENT_EP_create
 (
 	FTOM_CLIENT_PTR	pClient,
@@ -193,6 +223,37 @@ FTM_RET FTOM_CLIENT_EP_set
 	FTM_EP_FIELD	xFields,
 	FTM_EP_PTR		pInfo
 );
+
+FTM_RET	FTOM_CLIENT_EP_setReportInterval
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulReportInterval
+);
+
+FTM_RET	FTOM_CLIENT_EP_remoteSet
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pData
+);
+
+FTM_RET	FTOM_CLIENT_EP_setServerRegistered
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL		bRegistered
+);
+
+FTM_RET	FTOM_CLIENT_EP_getServerRegistered
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL_PTR	pbRegistered
+);
+/*****************************************************
+ *
+ *****************************************************/
 
 FTM_RET	FTOM_CLIENT_EP_DATA_info
 (

@@ -4,19 +4,27 @@ endif
 
 include $(TOPDIR)/Makefile.in
 
-CLIENT=tprestapi
+LIBTPCLIENT=libtpclient
+LIBTPCLIENT_SRCS=ftom_tp_client.c ftom_tp_restapi.c ftom_tp_restapi_gateway.c
+LIBTPCLIENT_OBJS=$(LIBTPCLIENT_SRCS:.c=.o)
+
+CLIENT=tpclient
 CLIENT_SRCS=main.c 
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftm -lcurl -lcjson -lpthread  -lm -lrt
+CLIENT_LDFLAGS=$(LDFLAGS) -L./ -ltpclient -lftom -lftomcl -lftomc -lftm -lmosquitto -lcurl -lcjson -lpthread  -lm -lrt
 
-all: $(CLIENT)
+all: $(LIBTPCLIENT) $(CLIENT)
 
-$(CLIENT): $(CLIENT_OBJS) 
+$(CLIENT): $(CLIENT_OBJS) $(LIBTPCLIENT_OBJS)
 	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)
 
-.c.o:  $(CLIENT_SRCS) *.h
+$(LIBTPCLIENT): $(LIBTPCLIENT_OBJS)
+	$(AR) rcs $(LIBTPCLIENT).a $(LIBTPCLIENT_OBJS)
+	$(CC) -shared -o $(LIBTPCLIENT).so.1.0.1 $(LIBTPCLIENT_OBJS) $(LDFLAGS)
+
+.c.o:  $(LIBTPCLIENT_SRCS) $(CLIENT_SRCS) *.h
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm $(CLIENT) *.a *.o
+	rm $(LIBTPCLIENT) $(CLIENT) *.a *.o

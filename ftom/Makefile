@@ -8,21 +8,33 @@ include $(TOPDIR)/Makefile.in
 		-D__need_malloc_and_calloc=1
 
 FTOM=ftom
-FTOM_SRCS=ftom_main.c ftom.c
+FTOM_SRCS=ftom_main.c \
+		ftom.c\
+		ftom_server.c\
+		ftom_service.c\
+		ftom_snmpc.c\
+		ftom_snmptrapd.c\
+		ftom_node_snmp_client.c\
+		ftom_node_snmp_client_gen.c\
+		ftom_node_fins_client.c\
+		ftom_node_fins_client_hhtw.c\
+		ftom_node_virtual.c\
+		ftom_node_virtual_fte_es7.c\
+		ftom_discovery.c\
+		ftom_tp_client.c\
+		ftom_tp_restapi.c\
+		ftom_tp_restapi_gateway.c
+
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)
 FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lcurl -lcjson -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl -lm
 
 LIB_FTOM=libftom
 LIB_FTOM_INCS= ftom.h 
-LIB_FTOM_SRCS= ftom.c \
-			   ftom_msg.c \
+LIB_FTOM_SRCS= ftom_msg.c \
 			   ftom_message_queue.c \
-			   ftom_server.c\
 			   ftom_node.c\
 			   ftom_node_class.c\
 			   ftom_ep.c\
-			   ftom_snmpc.c\
-			   ftom_snmptrapd.c\
 			   ftom_shell_cmds.c\
 			   ftom_dmc.c\
 			   ftom_trigger.c\
@@ -32,18 +44,7 @@ LIB_FTOM_SRCS= ftom.c \
 			   ftom_mqtt_client_ft.c\
 			   ftom_mqtt_client_tpgw.c\
 			   ftom_utils.c\
-			   ftom_service.c\
-			   ftom_shell.c\
-			   ftom_discovery.c\
-			   ftom_node_snmp_client.c\
-			   ftom_node_snmp_client_gen.c\
-			   ftom_node_fins_client.c\
-			   ftom_node_fins_client_hhtw.c\
-			   ftom_node_virtual.c\
-			   ftom_node_virtual_fte_es7.c\
-			   ftom_tp_client.c\
-			   ftom_tp_restapi.c\
-			   ftom_tp_restapi_gateway.c
+			   ftom_shell.c
 LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)
 
 LIB_FTOMC=libftomc

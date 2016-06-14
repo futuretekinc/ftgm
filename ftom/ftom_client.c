@@ -356,6 +356,163 @@ FTM_RET FTOM_CLIENT_NODE_set
 	return	xResp.xRet;
 }
 
+FTM_RET	FTOm_CLIENT_NODE_registerAtServer
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pDID != NULL);
+
+	FTM_RET						xRet;
+	FTM_ULONG					ulRespLen;
+	FTOM_REQ_NODE_REGISTER_AT_SERVER_PARAMS 	xReq;
+	FTOM_RESP_NODE_REGISTER_AT_SERVER_PARAMS 	xResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_NODE_REGISTER_AT_SERVER;
+	xReq.ulLen	=	sizeof(xReq);
+	strncpy(xReq.pDID, pDID, FTM_ID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_NODE_setServerRegistered
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID,
+	FTM_BOOL		bRegistered
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pDID != NULL);
+
+	FTM_RET						xRet;
+	FTM_ULONG					ulRespLen;
+	FTOM_REQ_NODE_SET_SERVER_REGISTERED_PARAMS 	xReq;
+	FTOM_RESP_NODE_SET_SERVER_REGISTERED_PARAMS 	xResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_NODE_SET_SERVER_REGISTERED;
+	xReq.ulLen	=	sizeof(xReq);
+	xReq.bRegistered =	bRegistered;
+	strncpy(xReq.pDID, pDID, FTM_ID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_NODE_getServerRegistered
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID,
+	FTM_BOOL_PTR	pbRegistered
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pDID != NULL);
+	ASSERT(pbRegistered != NULL);
+
+	FTM_RET						xRet;
+	FTM_ULONG					ulRespLen;
+	FTOM_REQ_NODE_GET_SERVER_REGISTERED_PARAMS 	xReq;
+	FTOM_RESP_NODE_GET_SERVER_REGISTERED_PARAMS 	xResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_NODE_GET_SERVER_REGISTERED;
+	xReq.ulLen	=	sizeof(xReq);
+	strncpy(xReq.pDID, pDID, FTM_ID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+	else
+	{
+		if (xResp.xRet == FTM_RET_OK)
+		{
+			*pbRegistered = xResp.bRegistered;	
+		}
+	}
+
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_NODE_setReportInterval
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID,
+	FTM_ULONG		ulReportInterval
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pDID != NULL);
+
+	FTM_RET					xRet;
+	FTM_ULONG				ulRespLen;
+	FTOM_REQ_NODE_SET_REPORT_INTERVAL_PARAMS	xReq;
+	FTOM_RESP_NODE_SET_REPORT_INTERVAL_PARAMS	xResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd = FTOM_CMD_NODE_SET_REPORT_INTERVAL;
+	xReq.ulLen= sizeof(xReq);
+	strncpy(xReq.pDID, pDID, FTM_DID_LEN);
+	xReq.ulReportInterval = ulReportInterval;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+/************************************************
+ * EP
+ ************************************************/
 FTM_RET FTOM_CLIENT_EP_create
 (
 	FTOM_CLIENT_PTR	pClient,
@@ -634,6 +791,204 @@ FTM_RET FTOM_CLIENT_EP_set
 	xReq.xFields=	xFields;
 	strncpy(xReq.pEPID, pEPID, FTM_ID_LEN);
 	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOm_CLIENT_EP_registerAtServer
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pEPID != NULL);
+
+	FTM_RET						xRet;
+	FTM_ULONG					ulRespLen;
+	FTOM_REQ_EP_REGISTER_AT_SERVER_PARAMS 	xReq;
+	FTOM_RESP_EP_REGISTER_AT_SERVER_PARAMS 	xResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_NODE_REGISTER_AT_SERVER;
+	xReq.ulLen	=	sizeof(xReq);
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_EP_setServerRegistered
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL		bRegistered
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pEPID != NULL);
+
+	FTM_RET						xRet;
+	FTM_ULONG					ulRespLen;
+	FTOM_REQ_EP_SET_SERVER_REGISTERED_PARAMS 	xReq;
+	FTOM_RESP_EP_SET_SERVER_REGISTERED_PARAMS 	xResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_EP_SET_SERVER_REGISTERED;
+	xReq.ulLen	=	sizeof(xReq);
+	xReq.bRegistered =	bRegistered;
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET	FTOM_CLIENT_EP_getServerRegistered
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL_PTR	pbRegistered
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pEPID != NULL);
+	ASSERT(pbRegistered != NULL);
+
+	FTM_RET						xRet;
+	FTM_ULONG					ulRespLen;
+	FTOM_REQ_EP_GET_SERVER_REGISTERED_PARAMS 	xReq;
+	FTOM_RESP_EP_GET_SERVER_REGISTERED_PARAMS 	xResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_EP_GET_SERVER_REGISTERED;
+	xReq.ulLen	=	sizeof(xReq);
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+	else
+	{
+		if (xResp.xRet == FTM_RET_OK)
+		{
+			*pbRegistered = xResp.bRegistered;	
+		}
+	}
+
+
+	return	xResp.xRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET	FTOM_CLIENT_EP_setReportInterval
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulReportInterval
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pEPID != NULL);
+
+	FTM_RET					xRet;
+	FTM_ULONG				ulRespLen;
+	FTOM_REQ_EP_SET_REPORT_INTERVAL_PARAMS	xReq;
+	FTOM_RESP_EP_SET_REPORT_INTERVAL_PARAMS	xResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd = FTOM_CMD_EP_SET_REPORT_INTERVAL;
+	xReq.ulLen= sizeof(xReq);
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
+	xReq.ulReportInterval = ulReportInterval;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET	FTOM_CLIENT_EP_remoteSet
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pData
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pEPID != NULL);
+	ASSERT(pData != NULL);
+
+	FTM_RET					xRet;
+	FTM_ULONG				ulRespLen;
+	FTOM_REQ_EP_REMOTE_SET_PARAMS	xReq;
+	FTOM_RESP_EP_REMOTE_SET_PARAMS	xResp;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd = FTOM_CMD_EP_REMOTE_SET;
+	xReq.ulLen= sizeof(xReq);
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
+	memcpy(&xReq.xData, pData, sizeof(FTM_EP_DATA));
 
 	xRet = pClient->fRequest(
 				pClient, 

@@ -138,7 +138,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 		return;
 	}
 
-	if(strcmp(pIDs[4], "req") == 0)
+	if((strcmp(pIDs[4], "req") == 0) && (pClient->fMessageCB != NULL))
 	{
 		FTOM_MSG_PTR pMsg;
 
@@ -149,7 +149,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 			return;
 		}
 
-		xRet = FTOM_sendMessage(FTOM_SERVICE_TPCLIENT, pMsg);
+		xRet = pClient->fMessageCB(pClient->pMessageCBObject, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			FTOM_MSG_destroy(&pMsg);

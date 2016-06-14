@@ -80,6 +80,12 @@ FTM_RET	FTOM_SERVER_stop
 	FTOM_SERVER_PTR	pServer
 );
 
+FTM_RET	FTOM_SERVER_isRun
+(
+	FTOM_SERVER_PTR	pServer,
+	FTM_BOOL_PTR	pbRun
+);
+
 FTM_RET FTOM_SERVER_loadConfig
 (
 	FTOM_SERVER_PTR	pServer,

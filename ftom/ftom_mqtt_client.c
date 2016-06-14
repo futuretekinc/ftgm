@@ -190,7 +190,7 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 
 	memset(pClient, 0, sizeof(FTOM_MQTT_CLIENT));
 
-	FTOM_getDID(pClient->pDID, FTM_DID_LEN);
+	//FTOM_getDID(pClient->pDID, FTM_DID_LEN);
 	strcpy(pClient->xConfig.pHost, FTOM_MQTT_CLIENT_DEFAULT_BROKER);
 	pClient->xConfig.usPort = FTOM_MQTT_CLIENT_DEFAULT_PORT;
 	pClient->xConfig.ulRetryInterval = FTOM_MQTT_CLIENT_DEFAULT_RECONNECTION_TIME;
@@ -308,6 +308,21 @@ FTM_RET	FTOM_MQTT_CLIENT_showConfig
 )
 {
 	ASSERT(pClient != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MQTT_CLIENT_setMessageCB
+(
+	FTOM_MQTT_CLIENT_PTR 	pClient, 
+	FTOM_MQTT_CLIENT_MESSAGE_CB	fMessageCB,
+	FTM_VOID_PTR			pObject
+)
+{
+	ASSERT(pClient != NULL);
+
+	pClient->pMessageCBObject = pObject;
+	pClient->fMessageCB	= fMessageCB;
 
 	return	FTM_RET_OK;
 }
