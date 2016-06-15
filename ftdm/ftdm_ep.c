@@ -161,15 +161,17 @@ FTM_RET	FTDM_EP_set
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-
+	
 	xRet = FTM_EP_isValid(pInfo);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "EP is invalid!\n");
 		return	xRet;	
 	}
 
 	if (strcmp(pEP->xInfo.pEPID, pInfo->pEPID) != 0)
 	{
+		ERROR2(xRet, "EPID mismatch!\n");
 		return	FTM_RET_INVALID_ID;	
 	}
 
@@ -182,10 +184,18 @@ FTM_RET	FTDM_EP_set
 		if (FTM_EP_isStatic(pInfo) != FTM_RET_OK)
 		{
 			xRet =FTDM_DBIF_EP_del(pEP->xInfo.pEPID);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to delte EP.\n");
+			}
 		}
 		else
 		{
 			xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to set EP.\n");
+			}
 		}
 	}
 	else
@@ -198,6 +208,14 @@ FTM_RET	FTDM_EP_set
 			if (xRet == FTM_RET_OK)
 			{
 				xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR2(xRet, "Failed to set EP.\n");
+				}
+			}
+			else
+			{
+				ERROR2(xRet, "Failed to append EP to DB.\n");	
 			}
 		}
 	}

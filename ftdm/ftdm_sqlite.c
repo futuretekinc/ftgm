@@ -1084,6 +1084,7 @@ FTM_RET	FTDM_DBIF_EP_set
 		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
 		if( nRC!=SQLITE_OK )
 		{
+			ERROR("SQL error : %s\n", sqlite3_errmsg(_pSQLiteDB));
 			return FTM_RET_ERROR;
 		}
 

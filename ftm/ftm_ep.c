@@ -11,6 +11,12 @@ typedef struct
 	FTM_CHAR_PTR	pTypeString;
 } FTM_EP_TYPE_STRING, _PTR_ FTM_EP_TYPE_STRING_PTR;
 
+typedef struct 
+{
+	FTM_EP_TYPE		xType;
+	FTM_CHAR_PTR	pUnit;
+} FTM_EP_TYPE_UNIT, _PTR_ FTM_EP_TYPE_UNIT_PTR;
+
 FTM_BOOL	FTM_EP_seeker
 (
 	const FTM_VOID_PTR pItem, 
@@ -29,7 +35,25 @@ FTM_BOOL	_FTM_EPOIDInfoSeeker
 	const FTM_VOID_PTR pElement2
 );
 
-static FTM_LIST_PTR	pEPList = NULL;
+static 
+FTM_LIST_PTR	pEPList = NULL;
+
+static
+FTM_EP_TYPE_UNIT	pEPUnits[] =
+{
+	{	.xType = FTM_EP_TYPE_TEMPERATURE,.pUnit = "C"	},
+	{	.xType = FTM_EP_TYPE_HUMIDITY,	.pUnit = "%RH"	},
+	{	.xType = FTM_EP_TYPE_VOLTAGE,	.pUnit = "V"	},
+	{	.xType = FTM_EP_TYPE_CURRENT,	.pUnit = "A"	},
+	{	.xType = FTM_EP_TYPE_DI	,		.pUnit = ""	},
+	{	.xType = FTM_EP_TYPE_DO	,		.pUnit = ""	},
+	{	.xType = FTM_EP_TYPE_GAS,		.pUnit = "ppm"	},
+	{	.xType = FTM_EP_TYPE_POWER,		.pUnit = "W"	},
+	{	.xType = FTM_EP_TYPE_AI	,		.pUnit = ""	},
+	{	.xType = FTM_EP_TYPE_COUNT	,	.pUnit = ""	},
+	{	.xType = FTM_EP_TYPE_PRESSURE,	.pUnit = ""	},
+	{	.xType = FTM_EP_TYPE_MULTI,		.pUnit = ""	}
+};
 
 FTM_RET	FTM_EP_init(FTM_VOID)
 {
@@ -304,38 +328,46 @@ FTM_RET	FTM_EP_isValid(FTM_EP_PTR pEP)
 
 	if ((i == 0) || (i == (FTM_EPID_LEN+1)))
 	{
+		ERROR("Invalid EP ID[%s]\n", pEP->pEPID);
 		return	FTM_RET_INVALID_ID;
 	}
 
 	if (pEP->xType == 0)
 	{
+		ERROR("Invalid EP Type[%d]\n", pEP->xType);
 		return	FTM_RET_INVALID_TYPE;	
 	}
 
 	xRet = FTM_isValidName(pEP->pName);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Invalid EP Name[%s]\n", pEP->pName);
 		return	xRet;
 	}
 
 	xRet = FTM_isValidUnit(pEP->pUnit);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Invalid EP Unit[%s]\n", pEP->pUnit);
 		return	xRet;
 	}
 	
 	xRet = FTM_isValidInterval(pEP->ulUpdateInterval);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Invalid EP UpdateInterval[%lu]\n", pEP->ulUpdateInterval);
 		return	xRet;
 	}
-	
+
+#if 0
 	xRet = FTM_EP_isValidTimeout(pEP, pEP->ulTimeout);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Invalid EP Timeout[%lu]\n", pEP->ulTimeout);
 		return	xRet;
 	}
-	
+#endif
+
 	return	xRet;
 }
 
@@ -455,6 +487,26 @@ FTM_CHAR_PTR FTM_getEPTypeString(FTM_EP_TYPE xType)
 	}
 
 	return	pItem->pTypeString;	
+}
+
+FTM_RET	FTM_EP_getDefaultUnit
+(
+	FTM_EP_TYPE		xType,
+	FTM_CHAR_PTR	pUnit,
+	FTM_ULONG		ulLen
+)
+{
+	FTM_INT	i;
+	for(i = 0 ; i < sizeof(pEPUnits) / sizeof(FTM_EP_TYPE_UNIT) ; i++)
+	{
+		if (pEPUnits[i].xType == (xType & FTM_EP_TYPE_MASK))
+		{
+			strncpy(pUnit, pEPUnits[i].pUnit, ulLen);	
+			return	FTM_RET_OK;
+		}
+	}
+
+	return	FTM_RET_INVALID_TYPE;
 }
 
 int	_FTM_EPTypeSeeker(const void *pElement, const void *pKey)

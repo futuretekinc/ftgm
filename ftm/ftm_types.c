@@ -51,7 +51,7 @@ FTM_RET	FTM_isValidUnit(FTM_CHAR_PTR pUnit)
 		return	FTM_RET_INVALID_UNIT;	
 	}
 
-	for(i = 1 ; i < FTM_UNIT_LEN ; i++)
+	for(i = 0 ; i < FTM_UNIT_LEN ; i++)
 	{
 		if (pUnit[i] == '\0')
 		{

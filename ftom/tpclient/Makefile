@@ -12,7 +12,7 @@ CLIENT=tpclient
 CLIENT_SRCS=main.c 
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_LDFLAGS=$(LDFLAGS) -L./ -ltpclient -lftom -lftomcl -lftomc -lftm -lmosquitto -lcurl -lcjson -lpthread  -lm -lrt
+CLIENT_LDFLAGS=$(LDFLAGS) -L./ -ltpclient -lftom -lftomcl -lftomc -lftm -lmosquitto -lcrypto -lssl -lcurl -lcjson -lpthread  -lm -lrt
 
 all: $(LIBTPCLIENT) $(CLIENT)
 
@@ -28,3 +28,15 @@ $(LIBTPCLIENT): $(LIBTPCLIENT_OBJS)
 
 clean:
 	rm $(LIBTPCLIENT) $(CLIENT) *.a *.o
+
+install: $(LIBTPCLIENT) $(CLIENT)
+	install -d $(EXEC_PREFIX)	
+	install -t $(EXEC_PREFIX) $(CLIENT)
+	install -d $(LIB_PREFIX)
+	install -t $(LIB_PREFIX) $(LIBTPCLIENT).a
+	install -t $(LIB_PREFIX) $(LIBTPCLIENT).so.1.0.1
+	install -d $(CONF_PREFIX)
+	install -t $(CONF_PREFIX) $(CLIENT).conf
+	for dir in $(SUBDIR); do\
+		make -C $$dir install;\
+	done

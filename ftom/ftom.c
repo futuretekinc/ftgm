@@ -2427,6 +2427,8 @@ FTM_RET	FTOM_discoveryEP
 		return	xRet;	
 	}
 
+	FTM_EP_getDefaultUnit(xType, pEPInfo->pUnit, FTM_UNIT_LEN);
+
 	strcpy(pEPInfo->pDID, pNode->xInfo.pDID);
 
 	if (strlen(pEPInfo->pEPID) == 8)

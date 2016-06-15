@@ -236,6 +236,13 @@ FTM_CHAR_PTR 	FTM_getEPTypeString
 	FTM_EP_TYPE nType
 );
 
+FTM_RET	FTM_EP_getDefaultUnit
+(
+	FTM_EP_TYPE		nType,
+	FTM_CHAR_PTR	pUnit,
+	FTM_ULONG		ulLen
+);
+
 FTM_RET	FTM_EP_DATA_create
 (
 	FTM_EP_DATA_PTR pSrcData, 
