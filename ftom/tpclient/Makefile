@@ -9,7 +9,8 @@ LIBTPCLIENT_SRCS=ftom_tp_client.c ftom_tp_restapi.c ftom_tp_restapi_gateway.c
 LIBTPCLIENT_OBJS=$(LIBTPCLIENT_SRCS:.c=.o)
 
 CLIENT=tpclient
-CLIENT_SRCS=main.c 
+CLIENT_SRCS=main.c \
+			ftom_tp_client_shell_cmds.c
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_LDFLAGS=$(LDFLAGS) -L./ -ltpclient -lftom -lftomcl -lftomc -lftm -lmosquitto -lcrypto -lssl -lcurl -lcjson -lpthread  -lm -lrt

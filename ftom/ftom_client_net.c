@@ -180,11 +180,22 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_process(FTM_VOID_PTR pData)
 	ASSERT(pData != NULL);
 	
 	FTM_RET			xRet;
-	FTOM_CLIENT_NET_PTR	pClient = (FTOM_CLIENT_NET_PTR)pData;
+	FTOM_CLIENT_NET_PTR		pClient = (FTOM_CLIENT_NET_PTR)pData;
+	FTM_ULONG				ulRespLen = 4096;
+	FTOM_RESP_PARAMS_PTR 	pResp = NULL;
 
 	pClient->bStop = FTM_FALSE;
 
+	pResp = (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(4096);
 	TRACE("Client started.\n");
+
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 100000;
+	if (setsockopt(pClient->hSock, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) 
+	{
+   	 	ERROR("Failed to set socket timeout!\n");
+	}
 
 	while(!pClient->bStop)
 	{
@@ -203,43 +214,41 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_process(FTM_VOID_PTR pData)
 		}
 		else
 		{
-			FTM_BYTE				pBuff[2048];
-			FTOM_RESP_PARAMS_PTR 	pResp = (FTOM_RESP_PARAMS_PTR)pBuff;
-	
-			int	nLen = recv(pClient->hSock, pResp, 2048, MSG_DONTWAIT);
+			int	nLen = recv(pClient->hSock, pResp, ulRespLen, 0);
 			if (nLen > 0)
 			{
 				FTOM_CLIENT_NET_TRANS_PTR	pTrans;
-				FTM_ULONG		ulCount = 0;
-	
-				FTM_LIST_count(&pClient->xTransList, &ulCount);
-				if (FTM_LIST_get(&pClient->xTransList, &pResp->ulReqID, (FTM_VOID_PTR _PTR_)&pTrans) == FTM_RET_OK)
-				{
-					memcpy(pTrans->pResp, pResp, nLen);
-					pTrans->ulRespLen = nLen;
-	
-					sem_post(&pTrans->xDone);
-				}
-				else if (pResp->ulReqID == 0)
+
+				if (pResp->xCmd == FTOM_CMD_SERVER_NOTIFY)
 				{
 					FTOM_RESP_NOTIFY_PARAMS_PTR pNotify = (FTOM_RESP_NOTIFY_PARAMS_PTR)pResp;
 					if (pClient->xCommon.fNotifyCB != NULL)
 					{
-						pClient->xCommon.fNotifyCB(&pNotify->xMsg, pClient->xCommon.pNotifyData);	
+						ERROR("Received Notify(%08x, %08x, %08x)\n", pNotify->ulReqID, pNotify->xCmd, pNotify->ulLen);
+						//pClient->xCommon.fNotifyCB(&pNotify->xMsg, pClient->xCommon.pNotifyData);	
 					}
 					else
 					{
 						WARN("Notify CB not assigned!\n");
 					}
 				}
+				else if (FTM_LIST_get(&pClient->xTransList, &pResp->ulReqID, (FTM_VOID_PTR _PTR_)&pTrans) == FTM_RET_OK)
+				{
+					memcpy(pTrans->pResp, pResp, nLen);
+					pTrans->ulRespLen = nLen;
+	
+					sem_post(&pTrans->xDone);
+				}
 				else
 				{
 					ERROR("Invalid ReqID[%lu]\n", pResp->ulReqID);	
 				}
-			}	
+			}
+			else if (nLen == 0)
+			{
+				pClient->bConnected = FTM_FALSE;
+			}
 		}
-
-		usleep(1000);
 	}
 
 	FTOM_CLIENT_NET_disconnect(pClient);

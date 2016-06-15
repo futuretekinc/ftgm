@@ -838,13 +838,13 @@ FTM_RET	FTOM_SERVER_sendMessage
 			return	FTM_RET_NOT_ENOUGH_MEMORY;
 		}
 
-		pParam->ulReqID = 0;
+		pParam->ulReqID = 0;//pServer->ulReqID++;
 		pParam->xCmd	= FTOM_CMD_SERVER_NOTIFY;
 		pParam->ulLen	= ulParamLen;
 		pParam->xRet	= FTM_RET_OK;
 		memcpy(&pParam->xMsg, pMsg, pMsg->ulLen);
 
-		TRACE("send(%08x, %08x, %d, MSG_DONTWAIT)\n", pSession->hSocket, pParam->ulReqID, pParam->ulLen);
+		TRACE("send(%08x, %08x, %08x, %d)\n", pSession->hSocket, pParam->ulReqID, pParam->xCmd, pParam->ulLen);
 		send(pSession->hSocket, pParam, ulParamLen, MSG_DONTWAIT);
 
 		FTM_MEM_free(pParam);

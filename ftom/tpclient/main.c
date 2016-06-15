@@ -92,10 +92,16 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	else
 	{
 		FTM_SHELL			xShell;
+		FTM_INT				i;
+		for(i = 0 ; i < FTOM_shellCmdCount ; i++)
+		{
+			FTOM_shellCmds[i].pData = pTPClient;	
+		}
 
 		FTOM_TP_CLIENT_start(pTPClient);
 		FTM_SHELL_init(&xShell, NULL);
 		FTM_SHELL_setPrompt(&xShell, "tpclient> ");
+		FTM_SHELL_addCmds(&xShell, FTOM_shellCmds, FTOM_shellCmdCount);
 		FTM_SHELL_run(&xShell);
 		FTM_SHELL_final(&xShell);
 		FTOM_TP_CLIENT_waitingForFinished(pTPClient);

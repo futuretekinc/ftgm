@@ -80,6 +80,7 @@ LDFLAGS= -L/usr/local/lib \
 		-L$(TOPDIR)/mosquitto-1.4.8/lib \
 		-L$(TOPDIR)/libconfig-1.4.9/lib \
 		-L$(TOPDIR)/qdecoder-12.0.4/src \
+		-L$(TOPDIR)/openssl-1.0.2g \
 		-L$(TOPDIR)/mxml-2.9\
 		-L$(TOPDIR)/cjson
 
