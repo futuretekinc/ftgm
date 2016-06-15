@@ -18,10 +18,9 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	FTM_RET				xRet;
 	FTM_INT				nOpt;
 	FTM_BOOL			bDaemon = FTM_FALSE;
-	FTM_ULONG			ulDebugLevel = FTM_TRACE_LEVEL_ERROR;
+	FTM_ULONG			ulDebugLevel = FTM_TRACE_LEVEL_ALL;
 	FTOM_TP_CLIENT_PTR	pTPClient = NULL;
 	FTM_CHAR			pConfigFileName[1024];
-	FTM_SHELL			xShell;
 
 	sprintf(pConfigFileName, "/etc/%s.conf", FTM_getProgramName());
 
@@ -63,7 +62,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		goto finish;	
 	}
 
-	FTM_TRACE_setLevel(0);
+	FTM_TRACE_setLevel(ulDebugLevel);
 
 	xRet = FTOM_TP_CLIENT_create(&pTPClient);
 	if (xRet != FTM_RET_OK)
@@ -92,7 +91,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	}
 	else
 	{
-		//FTOM_SHELL_PTR pShell;
+		FTM_SHELL			xShell;
 
 		FTOM_TP_CLIENT_start(pTPClient);
 		FTM_SHELL_init(&xShell, NULL);

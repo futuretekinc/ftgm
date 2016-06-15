@@ -42,7 +42,7 @@ FTM_RET	FTOM_CLIENT_NET_init
 	pClient->xCommon.fStop = (FTOM_CLIENT_STOP)FTOM_CLIENT_NET_stop;
 	pClient->xCommon.fSetConfig = (FTOM_CLIENT_SET_CONFIG)FTOM_CLIENT_NET_setConfig;
 	pClient->xCommon.fLoadConfigFromFile = (FTOM_CLIENT_LOAD_CONFIG_FROM_FILE)FTOM_CLIENT_NET_loadConfigFromFile;
-	pClient->xCommon.fSetNotifyCallback = (FTOM_CLIENT_SET_NOTIFY_CALLBACK)FTOM_CLIENT_NET_setNotifyCallback;
+	pClient->xCommon.fSetNotifyCB = NULL;
 	pClient->xCommon.fRequest = (FTOM_CLIENT_REQUEST)FTOM_CLIENT_NET_request;	
 
 	strcpy(pClient->xConfig.xServer.pHost, "127.0.0.1");
@@ -144,13 +144,11 @@ FTM_RET	FTOM_CLIENT_NET_start
 {
 	ASSERT(pClient != NULL);
 
-	TRACE("%s[%d]\n", __func__, __LINE__);
 	if (!pClient->bStop)
 	{
 		return	FTM_RET_ALREADY_RUNNING;
 	}
 
-	TRACE("%s[%d]\n", __func__, __LINE__);
 	if (pthread_create(&pClient->xThread, NULL, FTOM_CLIENT_NET_process, pClient) < 0)
 	{
 		return	FTM_RET_ERROR;	
@@ -225,10 +223,13 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_process(FTM_VOID_PTR pData)
 				else if (pResp->ulReqID == 0)
 				{
 					FTOM_RESP_NOTIFY_PARAMS_PTR pNotify = (FTOM_RESP_NOTIFY_PARAMS_PTR)pResp;
-					ERROR("Received Notify [%08x]\n",pNotify->xCmd);	
-					if (pClient->fNotifyCallback != NULL)
+					if (pClient->xCommon.fNotifyCB != NULL)
 					{
-						pClient->fNotifyCallback(&pNotify->xMsg, pClient->pNotifyData);	
+						pClient->xCommon.fNotifyCB(&pNotify->xMsg, pClient->xCommon.pNotifyData);	
+					}
+					else
+					{
+						WARN("Notify CB not assigned!\n");
 					}
 				}
 				else
@@ -307,6 +308,29 @@ FTM_RET	FTOM_CLIENT_NET_connect
 		return	FTM_RET_ERROR;	
 	}
 
+	if (pClient->xCommon.fNotifyCB != NULL)
+	{
+		FTM_RET	xRet;
+		FTOM_MSG_PTR	pMsg;
+	
+		xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_TRUE, &pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to create message!\n");	
+		}
+		else
+		{
+			xRet =pClient->xCommon.fNotifyCB(pMsg, pClient->xCommon.pNotifyData);	
+			if (xRet != FTM_RET_OK)
+			{
+				WARN("Failed to notify!\n");	
+			}
+
+			FTOM_MSG_destroy(&pMsg);
+		}
+
+	}
+
 	pClient->bConnected = FTM_TRUE;
 
 	return	FTM_RET_OK;
@@ -329,6 +353,28 @@ FTM_RET FTOM_CLIENT_NET_disconnect
 		}
 
 		pClient->bConnected = FTM_FALSE;
+
+		if (pClient->xCommon.fNotifyCB != NULL)
+		{
+			FTM_RET	xRet;
+			FTOM_MSG_PTR	pMsg;
+		
+			xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_FALSE, &pMsg);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to create message!\n");	
+			}
+			else
+			{
+				xRet =pClient->xCommon.fNotifyCB(pMsg, pClient->xCommon.pNotifyData);	
+				if (xRet != FTM_RET_OK)
+				{
+					WARN("Failed to notify!\n");	
+				}
+	
+				FTOM_MSG_destroy(&pMsg);
+			}
+		}	
 	}
 	
 	return	FTM_RET_OK;
@@ -344,22 +390,6 @@ FTM_RET FTOM_CLIENT_NET_isConnected
 	ASSERT(pbConnected != NULL);
 
 	*pbConnected = pClient->bConnected;	
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_CLIENT_NET_setNotifyCallback
-(
-	FTOM_CLIENT_NET_PTR		pClient,
-	FTOM_CLIENT_NOTIFY_CALLBACK	pCB,
-	FTM_VOID_PTR			pData
-)
-{
-	ASSERT(pClient != NULL);
-	ASSERT(pCB != NULL);
-
-	pClient->fNotifyCallback = pCB;
-	pClient->pNotifyData = pData;
 
 	return	FTM_RET_OK;
 }

@@ -17,8 +17,6 @@
 #define		FTOM_CLIENT_MAX_ARGS	16
 
 
-static FTM_RET	FTOM_CLIENT_notifyCallback(FTM_VOID_PTR pData);
-
 extern FTM_CHAR_PTR 	_strPrompt;
 extern FTM_SHELL_CMD	_cmds[];
 extern FTM_ULONG		ulCmds;
@@ -40,7 +38,6 @@ int main(int argc , char *argv[])
 
 	/* load configuraton */
 	FTOM_CLIENT_loadConfigFromFile(pClient, pConfigFileName);
-	FTOM_CLIENT_setNotifyCallback(pClient, FTOM_CLIENT_notifyCallback);
 
 
 	FTM_SHELL_init(&xShell, NULL);
@@ -63,10 +60,3 @@ int main(int argc , char *argv[])
 	return	0;
 }
 
-FTM_RET	FTOM_CLIENT_notifyCallback(FTM_VOID_PTR pData)
-{
-	ASSERT(pData != NULL);
-
-	return	FTM_RET_OK;
-
-}

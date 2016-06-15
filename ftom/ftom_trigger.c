@@ -362,6 +362,7 @@ FTM_RET	FTOM_TRIGGER_setInfo
 
 	FTM_RET	xRet;
 
+	TRACE("Trigger[%s] set[%08x]\n", pTrigger->xInfo.pID, xFields);
 	xRet = FTOM_DB_TRIGGER_setInfo(pTrigger->xInfo.pID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{

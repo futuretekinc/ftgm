@@ -1098,23 +1098,38 @@ FTM_RET	FTOM_onSendEPStatus
 
 	if ((pService->fIsRun == NULL) || (pService->fSendMessage == NULL))
 	{
-		ERROR("Service[SERVER] not found\n");
+		ERROR2(xRet, "Service[SERVER] not found\n");
 		return	FTM_RET_OK;			
 	}
 
 	xRet = pService->fIsRun(pService->pData, &bRun);
-	if ((xRet != FTM_RET_OK) || (!bRun))
+	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Service[SERVER] status unknown.\n");
+		return	FTM_RET_OK;	
+	}
+
+	if (!bRun)
+	{
+		ERROR2(xRet, "Service[SERVER] stopped.\n");
 		return	FTM_RET_OK;	
 	}
 
 	xRet = FTOM_MSG_copy((FTOM_MSG_PTR)pMsg, &pNewMsg);	
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to copy message.\n");
 		return	xRet;	
 	}
 
-	return	pService->fSendMessage(pService->pData, pNewMsg);
+	xRet = pService->fSendMessage(pService->pData, pNewMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to send message.\n");
+		FTOM_MSG_destroy(&pNewMsg);	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_onSendEPData
@@ -1143,18 +1158,33 @@ FTM_RET	FTOM_onSendEPData
 	}
 
 	xRet = pService->fIsRun(pService->pData, &bRun);
-	if ((xRet != FTM_RET_OK) || (!bRun))
+	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Service[SERVER] status is unknwon.\n");
+		return	FTM_RET_OK;	
+	}
+
+	if (!bRun)
+	{
+		ERROR2(xRet, "Service[SERVER] stopped.\n");
 		return	FTM_RET_OK;	
 	}
 
 	xRet = FTOM_MSG_copy((FTOM_MSG_PTR)pMsg, &pNewMsg);	
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to copy message.\n");
 		return	xRet;	
 	}
 
-	return	pService->fSendMessage(pService->pData, pNewMsg);
+	xRet = pService->fSendMessage(pService->pData, pNewMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to send message.\n");
+		FTOM_MSG_destroy(&pNewMsg);	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_onRule

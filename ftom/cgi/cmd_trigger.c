@@ -45,8 +45,18 @@ FTM_RET	FTOM_CGI_addTrigger
 
 	xRet = FTOM_CGI_getTriggerType(pReq, &xTriggerInfo.xType, FTM_FALSE);
 	xRet |= FTOM_CGI_getEPID(pReq, xTriggerInfo.pEPID, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
 	xRet |= FTOM_CGI_getDetectTime(pReq, &xTriggerInfo.xParams.xCommon.ulDetectionTime, FTM_TRUE);
 	xRet |= FTOM_CGI_getHoldTime(pReq, &xTriggerInfo.xParams.xCommon.ulHoldingTime, FTM_TRUE);
+	xRet |= FTOM_CGI_getName(pReq, xTriggerInfo.pName, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
 
 	xRet = FTOM_CLIENT_EP_DATA_type(pClient, xTriggerInfo.pEPID, &xDataType);
 	if (xRet != FTM_RET_OK)
@@ -234,7 +244,7 @@ FTM_RET	FTOM_CGI_setTrigger
 	case FTM_TRIGGER_TYPE_ABOVE:
 	case FTM_TRIGGER_TYPE_BELOW:
 		{
-			xRet |= FTOM_CGI_getValue(pReq, 
+			xRet = FTOM_CGI_getValue(pReq, 
 						xInfo.xParams.xAbove.xValue.xType, 
 						&xInfo.xParams.xAbove.xValue, FTM_FALSE);
 			if (xRet == FTM_RET_OK)
@@ -251,7 +261,7 @@ FTM_RET	FTOM_CGI_setTrigger
 	case FTM_TRIGGER_TYPE_INCLUDE:
 	case FTM_TRIGGER_TYPE_EXCEPT:
 		{
-			xRet |= FTOM_CGI_getLowerValue(pReq, 
+			xRet = FTOM_CGI_getLowerValue(pReq, 
 						xInfo.xParams.xInclude.xLower.xType, 
 						&xInfo.xParams.xInclude.xLower, FTM_FALSE);
 			if (xRet == FTM_RET_OK)
@@ -263,7 +273,7 @@ FTM_RET	FTOM_CGI_setTrigger
 				goto finish;
 			}
 		
-			xRet |= FTOM_CGI_getUpperValue(pReq, 
+			xRet = FTOM_CGI_getUpperValue(pReq, 
 						xInfo.xParams.xInclude.xUpper.xType, 
 						&xInfo.xParams.xInclude.xUpper, FTM_FALSE);
 			if (xRet == FTM_RET_OK)

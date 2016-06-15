@@ -257,9 +257,9 @@ FTM_RET	FTOM_TP_RESTAPI_init
 	{
  		curl_easy_setopt(pClient->pCURL, CURLOPT_VERBOSE, 0L);
 	}
-	//jcurl_easy_setopt(pClient->pCURL, CURLOPT_SSL_VERIFYPEER, 0L);
-	curl_easy_setopt(pClient->pCURL, CURLOPT_SSL_VERIFYHOST, 0L);
-	curl_easy_setopt(pClient->pCURL, CURLOPT_CAINFO, "/etc/ca-cert.pem");
+	//curl_easy_setopt(pClient->pCURL, CURLOPT_SSL_VERIFYPEER, 0L);
+	//curl_easy_setopt(pClient->pCURL, CURLOPT_SSL_VERIFYHOST, 0L);
+	//curl_easy_setopt(pClient->pCURL, CURLOPT_CAINFO, "/etc/ca-cert.pem");
 	//curl_easy_setopt(pClient->pCURL, CURLOPT_SSL_ENABLE_ALPN, 0L);
 	//curl_easy_setopt(pClient->pCURL, CURLOPT_SSL_ENABLE_NPN, 0L);
 	curl_easy_setopt(pClient->pCURL, CURLOPT_WRITEFUNCTION, FTOM_TP_RESTAPI_CB_response);

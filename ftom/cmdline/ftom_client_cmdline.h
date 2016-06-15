@@ -70,12 +70,6 @@ FTM_RET	FTOM_CLIENT_CL_loadConfigFromFile
 	FTM_CHAR_PTR		pFileName
 );
 
-FTM_RET	FTOM_CLIENT_CL_setNotifyCallback
-(
-	FTOM_CLIENT_CL_PTR	pClient,
-	FTOM_CLIENT_NOTIFY_CALLBACK	pCB
-);
-
 FTM_RET FTOM_CLIENT_CL_request
 (
 	FTOM_CLIENT_CL_PTR		pClient, 

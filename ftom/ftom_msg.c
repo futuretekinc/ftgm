@@ -52,6 +52,38 @@ FTM_RET FTOM_MSG_createQuit
 	return	FTM_RET_OK;
 }
 /*******************************************************************
+ * Connection management
+ *******************************************************************/
+FTM_RET	FTOM_MSG_createConnectionStatus
+(
+	FTM_ULONG		xObjectID,
+	FTM_BOOL		bConnected,
+	FTOM_MSG_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_CONNECTION_STATUS_PTR	pMsg;
+	FTM_ULONG		ulMsgLen = sizeof(FTOM_MSG_CONNECTION_STATUS);
+
+	pMsg = (FTOM_MSG_CONNECTION_STATUS_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_CONNECTION_STATUS;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xObjectID = xObjectID;
+	pMsg->bConnected= bConnected;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+/*******************************************************************
  * Gateway management
  *******************************************************************/
 FTM_RET	FTOM_MSG_createReportGWStatus

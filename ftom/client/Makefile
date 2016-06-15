@@ -15,7 +15,7 @@ CLIENT_SRCS=main.c\
 			cmd_discovery.c
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftm -lcjson -lpthread  -lrt -lm
+CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftom -lftm -lcjson -lpthread  -lrt -lm
 
 all: $(CLIENT) 
 

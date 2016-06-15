@@ -52,6 +52,12 @@ FTM_RET	FTOM_CGI_addAction
 		goto finish;	
 	}
 
+	xRet = FTOM_CGI_getName(pReq, xActionInfo.pName, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
 	switch(xActionInfo.xType)
 	{
 	case	FTM_ACTION_TYPE_SET:

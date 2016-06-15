@@ -74,22 +74,28 @@ FTM_RET	FTOM_CLIENT_loadConfigFromFile
 }
 
 
-FTM_RET	FTOM_CLIENT_setNotifyCallback
+FTM_RET	FTOM_CLIENT_setNotifyCB
 (
-	FTOM_CLIENT_PTR		pClient,
-	FTOM_CLIENT_NOTIFY_CALLBACK	pCB,
-	FTM_VOID_PTR		pData
+	FTOM_CLIENT_PTR			pClient,
+	FTOM_CLIENT_NOTIFY_CB	pCB,
+	FTM_VOID_PTR			pData
 )
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pCB != NULL);
 
-	if (pClient->fSetNotifyCallback != NULL)
+	if (pClient->fSetNotifyCB != NULL)
 	{
-		return	pClient->fSetNotifyCallback(pClient, pCB, pData);
+		return	pClient->fSetNotifyCB(pClient, pCB, pData);
+	}
+	else
+	{
+		ERROR("Set Notify Callback : %08x\n", pData);
+		pClient->fNotifyCB	= pCB;
+		pClient->pNotifyData= pData;
 	}
 
-	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+	return	FTM_RET_OK;
 }
 
 FTM_RET FTOM_CLIENT_NODE_create

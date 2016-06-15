@@ -44,8 +44,6 @@ typedef	struct
 	FTM_BOOL			bRequested;
 	sem_t				xReqLock;
 	FTM_LIST			xTransList;
-	FTOM_CLIENT_NOTIFY_CALLBACK 	fNotifyCallback;
-	FTM_VOID_PTR		pNotifyData;
 }	FTOM_CLIENT_NET, _PTR_ FTOM_CLIENT_NET_PTR;
 
 FTM_RET	FTOM_CLIENT_NET_init
@@ -111,13 +109,6 @@ FTM_RET FTOM_CLIENT_NET_isConnected
 (
 	FTOM_CLIENT_NET_PTR	pClient,
 	FTM_BOOL_PTR		pbConnected
-);
-
-FTM_RET	FTOM_CLIENT_NET_setNotifyCallback
-(
-	FTOM_CLIENT_NET_PTR	pClient,
-	FTOM_CLIENT_NOTIFY_CALLBACK	pCB,
-	FTM_VOID_PTR		pData
 );
 
 FTM_RET FTOM_CLIENT_NET_request

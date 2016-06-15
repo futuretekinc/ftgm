@@ -50,7 +50,8 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 	FTM_VOID_PTR	pData
 );
 
-static FTM_RET	FTOM_SERVER_serviceCall
+static 
+FTM_RET	FTOM_SERVER_serviceCall
 (
 	FTOM_SERVER_PTR			pServer,
 	FTOM_REQ_PARAMS_PTR		pReq,
@@ -59,7 +60,8 @@ static FTM_RET	FTOM_SERVER_serviceCall
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_NODE_create
+static 
+FTM_RET	FTOM_SERVER_NODE_create
 (
 	FTOM_SERVER_PTR					pServer,
 	FTOM_REQ_NODE_CREATE_PARAMS_PTR		pReq,
@@ -68,7 +70,8 @@ static FTM_RET	FTOM_SERVER_NODE_create
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_NODE_destroy
+static 
+FTM_RET	FTOM_SERVER_NODE_destroy
 (
 	FTOM_SERVER_PTR					pServer,
 	FTOM_REQ_NODE_DESTROY_PARAMS_PTR	pReq,
@@ -77,7 +80,8 @@ static FTM_RET	FTOM_SERVER_NODE_destroy
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_NODE_count
+static 
+FTM_RET	FTOM_SERVER_NODE_count
 (
 	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_NODE_COUNT_PARAMS_PTR		pReq,
@@ -86,7 +90,8 @@ static FTM_RET	FTOM_SERVER_NODE_count
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_NODE_get
+static 
+FTM_RET	FTOM_SERVER_NODE_get
 (
 	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_NODE_GET_PARAMS_PTR		pReq,
@@ -95,7 +100,8 @@ static FTM_RET	FTOM_SERVER_NODE_get
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_NODE_getAt
+static 
+FTM_RET	FTOM_SERVER_NODE_getAt
 (
 	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_NODE_GET_AT_PARAMS_PTR		pReq,
@@ -104,7 +110,8 @@ static FTM_RET	FTOM_SERVER_NODE_getAt
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_NODE_set
+static 
+FTM_RET	FTOM_SERVER_NODE_set
 (
 	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_NODE_SET_PARAMS_PTR		pReq,
@@ -113,7 +120,48 @@ static FTM_RET	FTOM_SERVER_NODE_set
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_create
+static 
+FTM_RET	FTOM_SERVER_NODE_registerAtServer
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_NODE_REGISTER_AT_SERVER_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_REGISTER_AT_SERVER_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_NODE_setRegistered
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_NODE_SET_SERVER_REGISTERED_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_SET_SERVER_REGISTERED_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_NODE_getRegistered
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_NODE_GET_SERVER_REGISTERED_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_GET_SERVER_REGISTERED_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_NODE_setReportInterval
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_NODE_SET_REPORT_INTERVAL_PARAMS_PTR	pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_SET_REPORT_INTERVAL_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_EP_create
 (
 	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_CREATE_PARAMS_PTR		pReq,
@@ -122,7 +170,8 @@ static FTM_RET	FTOM_SERVER_EP_create
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_destroy
+static 
+FTM_RET	FTOM_SERVER_EP_destroy
 (
 	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_DESTROY_PARAMS_PTR		pReq,
@@ -131,7 +180,8 @@ static FTM_RET	FTOM_SERVER_EP_destroy
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_count
+static 
+FTM_RET	FTOM_SERVER_EP_count
 (
 	FTOM_SERVER_PTR					pServer,
  	FTOM_REQ_EP_COUNT_PARAMS_PTR		pReq,
@@ -140,7 +190,8 @@ static FTM_RET	FTOM_SERVER_EP_count
 	FTM_ULONG				ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_getList
+static 
+FTM_RET	FTOM_SERVER_EP_getList
 (
 	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_GET_LIST_PARAMS_PTR		pReq,
@@ -149,7 +200,8 @@ static FTM_RET	FTOM_SERVER_EP_getList
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_get
+static 
+FTM_RET	FTOM_SERVER_EP_get
 (
 	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_GET_PARAMS_PTR			pReq,
@@ -158,7 +210,8 @@ static FTM_RET	FTOM_SERVER_EP_get
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_getAt
+static 
+FTM_RET	FTOM_SERVER_EP_getAt
 (
 	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_GET_AT_PARAMS_PTR		pReq,
@@ -167,7 +220,8 @@ static FTM_RET	FTOM_SERVER_EP_getAt
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_set
+static 
+FTM_RET	FTOM_SERVER_EP_set
 (
 	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_SET_PARAMS_PTR			pReq,
@@ -176,7 +230,58 @@ static FTM_RET	FTOM_SERVER_EP_set
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
+static 
+FTM_RET	FTOM_SERVER_EP_remoteSet
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_EP_REMOTE_SET_PARAMS_PTR			pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_REMOTE_SET_PARAMS_PTR			pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_EP_registerAtServer
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_EP_REGISTER_AT_SERVER_PARAMS_PTR pReq,
+	FTM_ULONG ulReqLen,
+	FTOM_RESP_EP_REGISTER_AT_SERVER_PARAMS_PTR pResp,
+	FTM_ULONG ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_EP_setRegistered
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_EP_SET_SERVER_REGISTERED_PARAMS_PTR pReq,
+	FTM_ULONG	ulReqLen,
+	FTOM_RESP_EP_SET_SERVER_REGISTERED_PARAMS_PTR pResp,
+	FTM_ULONG ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_EP_getRegistered
+(
+	FTOM_SERVER_PTR pServer,
+	FTOM_REQ_EP_GET_SERVER_REGISTERED_PARAMS_PTR pReq,
+	FTM_ULONG ulReqLen,
+	FTOM_RESP_EP_GET_SERVER_REGISTERED_PARAMS_PTR pResp,
+	FTM_ULONG ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_EP_setReportInterval
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_EP_SET_REPORT_INTERVAL_PARAMS_PTR	pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_SET_REPORT_INTERVAL_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
 (
 	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_REG_NOTIFY_RECEIVER_PARAMS_PTR	pReq,
@@ -185,7 +290,8 @@ static FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_DATA_del
+static 
+FTM_RET	FTOM_SERVER_EP_DATA_del
 (
 	FTOM_SERVER_PTR	pServer,
 	FTOM_REQ_EP_DATA_DEL_PARAMS_PTR 	pReq,
@@ -194,7 +300,8 @@ static FTM_RET	FTOM_SERVER_EP_DATA_del
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_DATA_delWithTime
+static 
+FTM_RET	FTOM_SERVER_EP_DATA_delWithTime
 (
 	FTOM_SERVER_PTR	pServer,
 	FTOM_REQ_EP_DATA_DEL_WITH_TIME_PARAMS_PTR 	pReq,
@@ -203,7 +310,8 @@ static FTM_RET	FTOM_SERVER_EP_DATA_delWithTime
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_DATA_info
+static 
+FTM_RET	FTOM_SERVER_EP_DATA_info
 (
 	FTOM_SERVER_PTR	pServer,
 	FTOM_REQ_EP_DATA_INFO_PARAMS_PTR 	pReq,
@@ -212,7 +320,8 @@ static FTM_RET	FTOM_SERVER_EP_DATA_info
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_DATA_count
+static 
+FTM_RET	FTOM_SERVER_EP_DATA_count
 (
 	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_DATA_COUNT_PARAMS_PTR		pReq,
@@ -221,7 +330,8 @@ static FTM_RET	FTOM_SERVER_EP_DATA_count
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_DATA_type
+static 
+FTM_RET	FTOM_SERVER_EP_DATA_type
 (
 	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_DATA_TYPE_PARAMS_PTR		pReq,
@@ -230,7 +340,8 @@ static FTM_RET	FTOM_SERVER_EP_DATA_type
 	FTM_ULONG		ulRespLen
 );
 
-static FTM_RET	FTOM_SERVER_EP_DATA_getLast
+static 
+FTM_RET	FTOM_SERVER_EP_DATA_getLast
 (
 	FTOM_SERVER_PTR	pServer,
  	FTOM_REQ_EP_DATA_GET_LAST_PARAMS_PTR	pReq,
@@ -478,6 +589,10 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_NODE_GET,				FTOM_SERVER_NODE_get),
 	MK_CMD_SET(FTOM_CMD_NODE_GET_AT,			FTOM_SERVER_NODE_getAt),
 	MK_CMD_SET(FTOM_CMD_NODE_SET,				FTOM_SERVER_NODE_set),
+	MK_CMD_SET(FTOM_CMD_NODE_REGISTER_AT_SERVER,FTOM_SERVER_NODE_registerAtServer),
+	MK_CMD_SET(FTOM_CMD_NODE_SET_SERVER_REGISTERED, FTOM_SERVER_NODE_setRegistered),
+	MK_CMD_SET(FTOM_CMD_NODE_GET_SERVER_REGISTERED, FTOM_SERVER_NODE_getRegistered),
+	MK_CMD_SET(FTOM_CMD_NODE_SET_REPORT_INTERVAL, FTOM_SERVER_NODE_setReportInterval),
 
 	MK_CMD_SET(FTOM_CMD_EP_CREATE,				FTOM_SERVER_EP_create),
 	MK_CMD_SET(FTOM_CMD_EP_DESTROY,				FTOM_SERVER_EP_destroy),
@@ -486,6 +601,11 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_GET,					FTOM_SERVER_EP_get),
 	MK_CMD_SET(FTOM_CMD_EP_GET_AT,				FTOM_SERVER_EP_getAt),
 	MK_CMD_SET(FTOM_CMD_EP_SET,					FTOM_SERVER_EP_set),
+	MK_CMD_SET(FTOM_CMD_EP_REMOTE_SET,			FTOM_SERVER_EP_remoteSet),
+	MK_CMD_SET(FTOM_CMD_EP_REGISTER_AT_SERVER,FTOM_SERVER_EP_registerAtServer),
+	MK_CMD_SET(FTOM_CMD_EP_SET_SERVER_REGISTERED, FTOM_SERVER_EP_setRegistered),
+	MK_CMD_SET(FTOM_CMD_EP_GET_SERVER_REGISTERED, FTOM_SERVER_EP_getRegistered),
+	MK_CMD_SET(FTOM_CMD_EP_SET_REPORT_INTERVAL, FTOM_SERVER_EP_setReportInterval),
 
 	MK_CMD_SET(FTOM_CMD_EP_REG_NOTIFY_RECEIVER, FTOM_SERVER_EP_registrationNotifyReceiver),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_DEL,			FTOM_SERVER_EP_DATA_del),
@@ -686,7 +806,10 @@ FTM_RET	FTOM_SERVER_isRun
 	{
 		*pbRun = FTM_TRUE;	
 	}
-	*pbRun = FTM_FALSE;	
+	else
+	{
+		*pbRun = FTM_FALSE;	
+	}
 
 	return	FTM_RET_OK;
 }
@@ -716,7 +839,7 @@ FTM_RET	FTOM_SERVER_sendMessage
 		}
 
 		pParam->ulReqID = 0;
-		pParam->xCmd	= 1;
+		pParam->xCmd	= FTOM_CMD_SERVER_NOTIFY;
 		pParam->ulLen	= ulParamLen;
 		pParam->xRet	= FTM_RET_OK;
 		memcpy(&pParam->xMsg, pMsg, pMsg->ulLen);
@@ -837,12 +960,12 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 	FTOM_SESSION_PTR		pSession= (FTOM_SESSION_PTR)pData;
 	FTOM_REQ_PARAMS_PTR		pReq 	= (FTOM_REQ_PARAMS_PTR)pSession->pReqBuff;
 	FTOM_RESP_PARAMS_PTR	pResp 	= (FTOM_RESP_PARAMS_PTR)pSession->pRespBuff;
+
+#if 0
 	struct timeval			xTimeval;
 
 	xTimeval.tv_sec = 0;
 	xTimeval.tv_usec = 1000000;
-
-	pSession->bStop = FTM_FALSE;
 
 	if (setsockopt(pSession->hSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&xTimeval, sizeof(xTimeval)) != 0)
 	{
@@ -850,7 +973,9 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 		ERROR("Timeout set failed.\n");
    		return 0;
 	}
+#endif
 
+	pSession->bStop = FTM_FALSE;
 	while(!pSession->bStop)
 	{
 		FTM_INT	ulReqLen;
@@ -1084,14 +1209,14 @@ FTM_RET	FTOM_SERVER_serviceCall
 	{
 		if (pSet->xCmd == pReq->xCmd)
 		{
-#if	FTOM_TRACE_IO
+#if	1 //FTOM_TRACE_IO
 			FTM_RET	xRet;
 
 			TRACE("CMD : %s\n", pSet->pCmdString);
 			xRet = 
 #endif
 			pSet->fService(pServer, pReq, ulReqLen, pResp, ulRespLen);
-#if	FTOM_TRACE_IO
+#if	1 //FTOM_TRACE_IO
 			TRACE("RET : %08lx\n", xRet);
 #endif
 			return	FTM_RET_OK;
@@ -1263,6 +1388,109 @@ FTM_RET	FTOM_SERVER_NODE_set
 	}
 
 	return	pResp->xRet;
+}
+
+FTM_RET	FTOM_SERVER_NODE_registerAtServer
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_NODE_REGISTER_AT_SERVER_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_REGISTER_AT_SERVER_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SERVER_NODE_setRegistered
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_NODE_SET_SERVER_REGISTERED_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_SET_SERVER_REGISTERED_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+	
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		pNode->xServer.bRegistered = pReq->bRegistered;
+	}
+	pResp->xRet = xRet;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SERVER_NODE_getRegistered
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_NODE_GET_SERVER_REGISTERED_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_GET_SERVER_REGISTERED_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		pResp->bRegistered = pNode->xServer.bRegistered;
+	}
+	pResp->xRet = xRet;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SERVER_NODE_setReportInterval
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_NODE_SET_REPORT_INTERVAL_PARAMS_PTR	pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_SET_REPORT_INTERVAL_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_NODE_setReportInterval(pNode, pReq->ulReportInterval);
+	}
+	pResp->xRet = xRet;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_SERVER_EP_create
@@ -1456,6 +1684,139 @@ FTM_RET	FTOM_SERVER_EP_set
 	pResp->xRet = xRet;
 
 	return	xRet;
+}
+
+FTM_RET	FTOM_SERVER_EP_remoteSet
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_EP_REMOTE_SET_PARAMS_PTR		pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_REMOTE_SET_PARAMS_PTR		pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+	
+	FTM_RET	xRet;
+	FTOM_EP_PTR	pEP;
+
+	xRet= FTOM_EP_get(pReq->pEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_EP_remoteSet(pEP, &pReq->xData);
+	}
+
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = xRet;
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_SERVER_EP_registerAtServer
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_EP_REGISTER_AT_SERVER_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_REGISTER_AT_SERVER_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SERVER_EP_setRegistered
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_EP_SET_SERVER_REGISTERED_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_SET_SERVER_REGISTERED_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+	
+	FTM_RET			xRet;
+	FTOM_EP_PTR	pEP;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		pEP->xServer.bRegistered = pReq->bRegistered;
+	}
+	pResp->xRet = xRet;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SERVER_EP_getRegistered
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_EP_GET_SERVER_REGISTERED_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_GET_SERVER_REGISTERED_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET			xRet;
+	FTOM_EP_PTR	pEP;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		pResp->bRegistered = pEP->xServer.bRegistered;
+	}
+	pResp->xRet = xRet;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SERVER_EP_setReportInterval
+(
+	FTOM_SERVER_PTR					pServer,
+	FTOM_REQ_EP_SET_REPORT_INTERVAL_PARAMS_PTR	pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_EP_SET_REPORT_INTERVAL_PARAMS_PTR	pResp,
+	FTM_ULONG				ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET			xRet;
+	FTOM_EP_PTR	pEP;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+
+	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_EP_setReportInterval(pEP, pReq->ulReportInterval);
+	}
+	pResp->xRet = xRet;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_SERVER_EP_registrationNotifyReceiver
