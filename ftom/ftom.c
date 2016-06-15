@@ -13,7 +13,6 @@
 #include "ftom_dmc.h"
 #include "ftom_shell.h"
 #include "ftom_mqtt_client.h"
-#include "ftom_tp_client.h"
 #include "ftom_msg.h"
 #include "ftom_message_queue.h"
 #include "ftom_trigger.h"
