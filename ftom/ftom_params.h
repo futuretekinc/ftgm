@@ -568,6 +568,15 @@ typedef	struct
 	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
 	FTOM_MSG			xMsg;
+}	FTOM_REQ_NOTIFY_PARAMS, _PTR_ FTOM_REQ_NOTIFY_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+	FTOM_MSG			xMsg;
 }	FTOM_RESP_NOTIFY_PARAMS, _PTR_ FTOM_RESP_NOTIFY_PARAMS_PTR;
 
 typedef	struct

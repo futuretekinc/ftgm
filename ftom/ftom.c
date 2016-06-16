@@ -345,7 +345,6 @@ FTM_RET	FTOM_init
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_INFO]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryInfo;
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_DONE]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryDone;
 
-	TRACE("Discovery Info CB : %08x:%08x\n", onMessage[FTOM_MSG_TYPE_DISCOVERY_INFO], (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryInfo);
 	xRet = FTOM_MSGQ_create(&pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
@@ -863,12 +862,13 @@ FTM_RET	FTOM_TASK_processing
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg = NULL;
 	FTM_TIMER		xLoopTimer;
-	
+
 	FTM_TIMER_initMS(&xLoopTimer, FTOM_LOOP_INTERVAL);
 
 	xRet = FTOM_MSG_createInitializeDone(&pMsg);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Failed to initialize message!\n");
 		return	0;	
 	}
 

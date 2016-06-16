@@ -9,16 +9,7 @@
 #include "ftom_node.h"
 #include "ftom_service.h"
 
-typedef	struct
-{
-	FTM_INT				hSocket;
-	struct sockaddr_in	xPeer;
-	pthread_t			xPThread;
-	struct FTOM_SERVER_STRUCT _PTR_		pServer;
-	FTM_BOOL			bStop;
-	FTM_BYTE			pReqBuff[FTOM_DEFAULT_PACKET_SIZE];
-	FTM_BYTE			pRespBuff[FTOM_DEFAULT_PACKET_SIZE];
-}	FTOM_SESSION, _PTR_ FTOM_SESSION_PTR;
+struct FTOM_SERVER_STRUCT _PTR_		pServer;
 
 typedef	FTM_RET	(*FTOM_SERVER_CALLBACK)(struct FTOM_SERVER_STRUCT _PTR_ pServer, FTOM_REQ_PARAMS_PTR, FTM_ULONG, FTOM_RESP_PARAMS_PTR, FTM_ULONG);
 
@@ -34,6 +25,11 @@ typedef	struct
 	FTM_USHORT		usPort;
 	FTM_ULONG		ulMaxSession;
 	FTM_CHAR		pSMKeyFile[FTM_FILE_NAME_LEN + 1];
+	struct	
+	{
+		FTM_USHORT	usPort;
+		FTM_ULONG	ulMaxSubscribe;
+	}	xPublisher;
 }	FTOM_SERVER_CONFIG, _PTR_ FTOM_SERVER_CONFIG_PTR;
 
 typedef	struct FTOM_SERVER_STRUCT
@@ -49,6 +45,14 @@ typedef	struct FTOM_SERVER_STRUCT
 	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
 	FTM_ULONG				ulReqID;
+
+	struct
+	{
+		pthread_t	xThread;
+		sem_t		xLock;
+		FTM_LIST	xSubscriberList;
+		FTM_INT		hSocket;
+	}	xPublisher;
 }	FTOM_SERVER, _PTR_ FTOM_SERVER_PTR;
 
 FTM_RET	FTOM_SERVER_create

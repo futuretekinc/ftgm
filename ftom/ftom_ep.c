@@ -660,6 +660,7 @@ FTM_VOID_PTR FTOM_EP_process
 
 		if (FTM_TIMER_isExpired(&pEP->xUpdateTimer))
 		{
+			TRACE("EP[%s] update!\n", pEP->xInfo.pEPID);
 			xRet = FTOM_EP_remoteGet(pEP, &xData);
 			if (xRet == FTM_RET_OK)
 			{
@@ -679,6 +680,7 @@ FTM_VOID_PTR FTOM_EP_process
 		{
 			FTM_ULONG	ulPrevTime, ulCurrentTime;
 
+			TRACE("EP[%s] report!\n", pEP->xInfo.pEPID);
 			FTM_TIMER_getTime(&pEP->xReportTimer, &ulCurrentTime);
 			ulPrevTime = ulCurrentTime - pEP->xInfo.ulReportInterval;
 
@@ -1136,12 +1138,14 @@ FTM_RET	FTOM_EP_reportDataInTime
 
 	if (nCount == 0)
 	{
+		TRACE("EP[%s] data count is 0.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_OK;
 	}
 
 	pDataList = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * nCount);
 	if (pDataList == NULL)
 	{
+		ERROR("Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -1158,6 +1162,7 @@ FTM_RET	FTOM_EP_reportDataInTime
 		}
 	}
 
+	TRACE("EP[%s] data is published!\n", pEP->xInfo.pEPID);
 	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pDataList, nDataCount);
 	FTM_MEM_free(pDataList);
 

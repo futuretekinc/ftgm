@@ -18,7 +18,7 @@
 #include "ftm_shared_memory.h"
 #include "ftom_server_cmd.h"
 #include "ftom_discovery.h"
-
+#include "ftom_session.h"
 
 //#ifndef	FTOM_TRACE_IO
 #define	FTOM_TRACE_IO		1
@@ -34,6 +34,18 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 static 
 FTM_VOID_PTR FTOM_SERVER_serviceHandler
+(
+	FTM_VOID_PTR 	pData
+);
+
+static 
+FTM_VOID_PTR FTOM_SERVER_publishProcess
+(
+	FTM_VOID_PTR 	pData
+);
+
+static
+FTM_VOID_PTR FTOM_SERVER_publishHandler
 (
 	FTM_VOID_PTR 	pData
 );
@@ -590,8 +602,8 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_NODE_GET_AT,			FTOM_SERVER_NODE_getAt),
 	MK_CMD_SET(FTOM_CMD_NODE_SET,				FTOM_SERVER_NODE_set),
 	MK_CMD_SET(FTOM_CMD_NODE_REGISTER_AT_SERVER,FTOM_SERVER_NODE_registerAtServer),
-	MK_CMD_SET(FTOM_CMD_NODE_SET_SERVER_REGISTERED, FTOM_SERVER_NODE_setRegistered),
-	MK_CMD_SET(FTOM_CMD_NODE_GET_SERVER_REGISTERED, FTOM_SERVER_NODE_getRegistered),
+	MK_CMD_SET(FTOM_CMD_NODE_SET_REGISTERED, 	FTOM_SERVER_NODE_setRegistered),
+	MK_CMD_SET(FTOM_CMD_NODE_GET_REGISTERED, 	FTOM_SERVER_NODE_getRegistered),
 	MK_CMD_SET(FTOM_CMD_NODE_SET_REPORT_INTERVAL, FTOM_SERVER_NODE_setReportInterval),
 
 	MK_CMD_SET(FTOM_CMD_EP_CREATE,				FTOM_SERVER_EP_create),
@@ -602,9 +614,9 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_GET_AT,				FTOM_SERVER_EP_getAt),
 	MK_CMD_SET(FTOM_CMD_EP_SET,					FTOM_SERVER_EP_set),
 	MK_CMD_SET(FTOM_CMD_EP_REMOTE_SET,			FTOM_SERVER_EP_remoteSet),
-	MK_CMD_SET(FTOM_CMD_EP_REGISTER_AT_SERVER,FTOM_SERVER_EP_registerAtServer),
-	MK_CMD_SET(FTOM_CMD_EP_SET_SERVER_REGISTERED, FTOM_SERVER_EP_setRegistered),
-	MK_CMD_SET(FTOM_CMD_EP_GET_SERVER_REGISTERED, FTOM_SERVER_EP_getRegistered),
+	MK_CMD_SET(FTOM_CMD_EP_REGISTER_AT_SERVER,	FTOM_SERVER_EP_registerAtServer),
+	MK_CMD_SET(FTOM_CMD_EP_SET_REGISTERED, 		FTOM_SERVER_EP_setRegistered),
+	MK_CMD_SET(FTOM_CMD_EP_GET_REGISTERED, 		FTOM_SERVER_EP_getRegistered),
 	MK_CMD_SET(FTOM_CMD_EP_SET_REPORT_INTERVAL, FTOM_SERVER_EP_setReportInterval),
 
 	MK_CMD_SET(FTOM_CMD_EP_REG_NOTIFY_RECEIVER, FTOM_SERVER_EP_registrationNotifyReceiver),
@@ -702,9 +714,13 @@ FTM_RET	FTOM_SERVER_init
 
 	pServer->xConfig.usPort			= FTOM_DEFAULT_SERVER_PORT;
 	pServer->xConfig.ulMaxSession	= FTOM_DEFAULT_SERVER_SESSION_COUNT	;
+	FTM_LIST_init(&pServer->xSessionList);
+
+	pServer->xConfig.xPublisher.usPort			= 9000;
+	pServer->xConfig.xPublisher.ulMaxSubscribe	= FTOM_DEFAULT_SERVER_SESSION_COUNT	;
+	FTM_LIST_init(&pServer->xPublisher.xSubscriberList);
 
 	pServer->bStop = FTM_TRUE;
-	FTM_LIST_init(&pServer->xSessionList);
 
 	return	FTM_RET_OK;
 }
@@ -740,6 +756,12 @@ FTM_RET	FTOM_SERVER_start
 	pServer->bStop = FTM_FALSE;
 	
 	nRet = pthread_create(&pServer->xPThread, NULL, FTOM_SERVER_process, (FTM_VOID_PTR)pServer);
+	if (nRet != 0)
+	{
+		ERROR("Can't create Net interface[%d]\n", nRet);
+	}
+
+	nRet = pthread_create(&pServer->xPublisher.xThread, NULL, FTOM_SERVER_publishProcess, (FTM_VOID_PTR)pServer);
 	if (nRet != 0)
 	{
 		ERROR("Can't create Net interface[%d]\n", nRet);
@@ -822,32 +844,36 @@ FTM_RET	FTOM_SERVER_sendMessage
 {
 	ASSERT(pServer != NULL);
 	ASSERT(pMsg != NULL);
+	
+	FTOM_SESSION_PTR	pSession = NULL;
 
-	FTOM_SESSION_PTR	pSession;
-
-	FTM_LIST_iteratorStart(&pServer->xSessionList);
-	while(FTM_LIST_iteratorNext(&pServer->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
+	FTM_LIST_iteratorStart(&pServer->xPublisher.xSubscriberList);
+	while(FTM_LIST_iteratorNext(&pServer->xPublisher.xSubscriberList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
 	{
-		FTOM_RESP_NOTIFY_PARAMS_PTR	pParam;
-		FTM_ULONG	ulParamLen  = sizeof(FTOM_RESP_NOTIFY_PARAMS) - sizeof(FTOM_MSG) + pMsg->ulLen;
+		FTOM_REQ_NOTIFY_PARAMS_PTR	pParam = (FTOM_REQ_NOTIFY_PARAMS_PTR)pSession->pReqBuff;
+		FTM_ULONG	ulParamLen  = sizeof(FTOM_REQ_NOTIFY_PARAMS) - sizeof(FTOM_MSG) + pMsg->ulLen;
+		FTM_INT		nSendLen = 0;
+		FTM_INT		nRecvLen = 0;
 
-		pParam = (FTOM_RESP_NOTIFY_PARAMS_PTR)FTM_MEM_malloc(ulParamLen);
-		if (pParam  == NULL)
-		{
-			ERROR("Not enough memory!\n");
-			return	FTM_RET_NOT_ENOUGH_MEMORY;
-		}
-
-		pParam->ulReqID = 0;//pServer->ulReqID++;
+		pParam->ulReqID = pSession->ulReqID++;
 		pParam->xCmd	= FTOM_CMD_SERVER_NOTIFY;
-		pParam->ulLen	= ulParamLen;
-		pParam->xRet	= FTM_RET_OK;
+		pParam->ulLen	= sizeof(FTOM_REQ_NOTIFY_PARAMS) - sizeof(FTOM_MSG) + pMsg->ulLen;
 		memcpy(&pParam->xMsg, pMsg, pMsg->ulLen);
 
-		TRACE("send(%08x, %08x, %08x, %d)\n", pSession->hSocket, pParam->ulReqID, pParam->xCmd, pParam->ulLen);
-		send(pSession->hSocket, pParam, ulParamLen, MSG_DONTWAIT);
-
-		FTM_MEM_free(pParam);
+		TRACE("Message[%d] send to host[%s:%d]\n", pParam->ulReqID, inet_ntoa(pSession->xPeer.sin_addr), ntohs(pSession->xPeer.sin_port));
+		nSendLen = send(pSession->hSocket, pParam, ulParamLen, 0);
+		if(nSendLen == ulParamLen )
+		{
+			nRecvLen = recv(pSession->hSocket, pSession->pRespBuff, sizeof(pSession->pRespBuff), 0);
+			if (nRecvLen <= 0)
+			{
+				pSession->bStop = FTM_TRUE;	
+			}
+		}
+		else
+		{
+			pSession->bStop = FTM_TRUE;	
+		}
 	}
 
 	FTOM_MSG_destroy(&pMsg);
@@ -936,7 +962,7 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 					pSession->hSocket = hClient;
 					memcpy(&pSession->xPeer, &xClientAddr, sizeof(xClientAddr));
-					pSession->pServer = pServer;
+					pSession->pData = (FTM_VOID_PTR)pServer;
 					if (pthread_create(&pSession->xPThread, NULL, FTOM_SERVER_serviceHandler, pSession) == 0)
 					{
 						FTM_LIST_append(&pServer->xSessionList, pSession);	
@@ -960,20 +986,6 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 	FTOM_SESSION_PTR		pSession= (FTOM_SESSION_PTR)pData;
 	FTOM_REQ_PARAMS_PTR		pReq 	= (FTOM_REQ_PARAMS_PTR)pSession->pReqBuff;
 	FTOM_RESP_PARAMS_PTR	pResp 	= (FTOM_RESP_PARAMS_PTR)pSession->pRespBuff;
-
-#if 0
-	struct timeval			xTimeval;
-
-	xTimeval.tv_sec = 0;
-	xTimeval.tv_usec = 1000000;
-
-	if (setsockopt(pSession->hSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&xTimeval, sizeof(xTimeval)) != 0)
-	{
-		pSession->bStop = FTM_TRUE;
-		ERROR("Timeout set failed.\n");
-   		return 0;
-	}
-#endif
 
 	pSession->bStop = FTM_FALSE;
 	while(!pSession->bStop)
@@ -999,7 +1011,7 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 #endif
 			pResp->ulReqID = pReq->ulReqID;
 
-			if (FTM_RET_OK != FTOM_SERVER_serviceCall(pSession->pServer, pReq, ulReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE))
+			if (FTM_RET_OK != FTOM_SERVER_serviceCall((FTOM_SERVER_PTR)pSession->pData, pReq, ulReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE))
 			{
 				pResp->xCmd = pReq->xCmd;
 				pResp->xRet = FTM_RET_INTERNAL_ERROR;
@@ -1030,9 +1042,134 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
 	close(pSession->hSocket);
 	TRACE("The session(%08x) was closed\n", pSession->hSocket);
 
-	FTM_LIST_remove(&pSession->pServer->xSessionList, pSession);	
-	sem_post(&pSession->pServer->xLock);
+	FTM_LIST_remove(&((FTOM_SERVER_PTR)pSession->pData)->xSessionList, pSession);	
+	sem_post(&((FTOM_SERVER_PTR)pSession->pData)->xLock);
 	FTM_MEM_free(pSession);
+	return	0;
+}
+
+FTM_VOID_PTR FTOM_SERVER_publishProcess
+(
+	FTM_VOID_PTR pData
+)
+{
+	ASSERT(pData != NULL);
+	
+	FTOM_SERVER_PTR 	pServer = (FTOM_SERVER_PTR)pData;
+	FTM_INT				nRet;
+	struct sockaddr_in	xLocalAddr;
+
+	
+	if (sem_init(&pServer->xPublisher.xLock, 0, pServer->xConfig.xPublisher.ulMaxSubscribe) < 0)
+	{
+		ERROR("Can't alloc semaphore!\n");
+		return	0;	
+	}
+
+	pServer->xPublisher.hSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (pServer->xPublisher.hSocket == -1)
+	{
+		ERROR("Could not create socket\n");
+		return	0;
+	}
+
+	xLocalAddr.sin_family 		= AF_INET;
+	xLocalAddr.sin_addr.s_addr = INADDR_ANY;
+	xLocalAddr.sin_port 		= htons( pServer->xConfig.xPublisher.usPort );
+
+	nRet = bind( pServer->xPublisher.hSocket, (struct sockaddr *)&xLocalAddr, sizeof(xLocalAddr));
+	if (nRet < 0)
+	{
+		ERROR("bind failed.[%d]\n", nRet);
+		return	0;
+	}
+
+	listen(pServer->xPublisher.hSocket, 3);
+
+	while(!pServer->bStop)
+	{
+		FTM_INT	nRet;
+		FTM_INT	hClient;
+		FTM_INT	nValue;
+		struct  sockaddr_in	xRemoteAddr;
+		FTM_INT	nRemoteAddrLen = sizeof(xRemoteAddr);	
+		struct  timespec	xTimeout ;
+
+		clock_gettime(CLOCK_REALTIME, &xTimeout);
+		xTimeout.tv_sec += 1;
+		nRet =sem_timedwait(&pServer->xPublisher.xLock, &xTimeout);
+		if (nRet == 0)
+		{
+			hClient = accept(pServer->xPublisher.hSocket, (struct sockaddr *)&xRemoteAddr, (socklen_t *)&nRemoteAddrLen);
+			if (hClient > 0)
+			{
+				TRACE("Accept new subscriber.[ %s:%d ]\n", inet_ntoa(xRemoteAddr.sin_addr), ntohs(xRemoteAddr.sin_port));
+
+				FTOM_SESSION_PTR pSession = (FTOM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTOM_SESSION));
+				if (pSession == NULL)
+				{
+					ERROR("System memory is not enough!\n");
+					TRACE("The subscriber(%08x) was closed.\n", hClient);
+					close(hClient);
+				}
+				else
+				{
+					TRACE("The new subscriber(%08x) has beed connected\n", hClient);
+
+					pSession->hSocket = hClient;
+					memcpy(&pSession->xPeer, &xRemoteAddr, sizeof(xRemoteAddr));
+					pSession->pData = (FTM_VOID_PTR)pServer;
+
+					if (pthread_create(&pSession->xPThread, NULL, FTOM_SERVER_publishHandler, pSession) < 0)
+					{
+						TRACE("The new subscriber(%08x) was closed with error\n", hClient);
+						close(pSession->hSocket);
+						FTM_MEM_free(pSession);
+
+						sem_post(&pServer->xPublisher.xLock);
+					}
+				}
+			}
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR FTOM_SERVER_publishHandler
+(
+	FTM_VOID_PTR pData
+)
+{
+	ASSERT(pData != NULL);
+
+	FTOM_SESSION_PTR		pSession= (FTOM_SESSION_PTR)pData;
+	FTOM_SERVER_PTR		pServer = (FTOM_SERVER_PTR)pSession->pData;
+
+	FTM_RET	xRet;
+
+	xRet = FTM_LIST_append(&pServer->xPublisher.xSubscriberList, pSession);	
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;
+	}
+
+	pSession->bStop = FTM_FALSE;
+	while(!pSession->bStop)
+	{
+		sleep(1);
+	}
+
+	TRACE("Publish Session[ %s:%d ] was closed\n", inet_ntoa(pSession->xPeer.sin_addr), ntohs(pSession->xPeer.sin_port));
+
+	FTM_LIST_remove(&pServer->xPublisher.xSubscriberList, pSession);	
+
+finish:
+	close(pSession->hSocket);
+	FTM_MEM_free(pSession);
+
+	sem_post(&pServer->xPublisher.xLock);
+
 	return	0;
 }
 

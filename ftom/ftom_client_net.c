@@ -8,24 +8,19 @@
 #include "ftm.h"
 #include "ftom_client_net.h"
 #include "ftom_params.h"
+#include "ftom_session.h"
 
 static 
-FTM_RET FTOM_CLIENT_NET_TRANS_init
+FTM_VOID_PTR FTOM_CLIENT_NET_masterProcess
 (
-	FTOM_CLIENT_NET_TRANS_PTR			pTrans,
-	FTOM_REQ_PARAMS_PTR		pReq,
-	FTM_ULONG				ulReqLen,
-	FTOM_RESP_PARAMS_PTR	pResp,
-	FTM_ULONG				ulRespLen
+	FTM_VOID_PTR pData
 );
 
-FTM_RET FTOM_CLIENT_NET_TRANS_final
+static 
+FTM_VOID_PTR FTOM_CLIENT_NET_subscribeProcess
 (
-	FTOM_CLIENT_NET_TRANS_PTR			pTrans
+	FTM_VOID_PTR pData
 );
-
-static FTM_VOID_PTR	FTOM_CLIENT_NET_process(FTM_VOID_PTR pData);
-static FTM_BOOL 	FTOM_CLIENT_NET_transSeeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 
 FTM_RET	FTOM_CLIENT_NET_init
 (
@@ -46,7 +41,9 @@ FTM_RET	FTOM_CLIENT_NET_init
 	pClient->xCommon.fRequest = (FTOM_CLIENT_REQUEST)FTOM_CLIENT_NET_request;	
 
 	strcpy(pClient->xConfig.xServer.pHost, "127.0.0.1");
-	pClient->xConfig.xServer.usPort = 8889;
+	pClient->xConfig.xServer.usPort 		= 8889;
+	strcpy(pClient->xConfig.xPublishServer.pHost, "127.0.0.1");
+	pClient->xConfig.xPublishServer.usPort 	= 9000;
 
 	pClient->bStop 		= FTM_TRUE;
 	pClient->bConnected = FTM_FALSE;
@@ -54,8 +51,6 @@ FTM_RET	FTOM_CLIENT_NET_init
 	pClient->ulTimeout 	= 5000000;
 
 	sem_init(&pClient->xReqLock, 0, 0);
-	FTM_LIST_init(&pClient->xTransList);
-	FTM_LIST_setSeeker(&pClient->xTransList, FTOM_CLIENT_NET_transSeeker);
 
 	xRet = FTM_MSGQ_create(&pClient->pMsgQ);
 	if (xRet != FTM_RET_OK)
@@ -87,7 +82,6 @@ FTM_RET	FTOM_CLIENT_NET_final
 		FTOM_CLIENT_NET_stop(pClient);	
 	}
 
-	FTM_LIST_final(&pClient->xTransList);
 	sem_destroy(&pClient->xReqLock);
 	FTM_MSGQ_destroy(pClient->pMsgQ);
 
@@ -149,7 +143,12 @@ FTM_RET	FTOM_CLIENT_NET_start
 		return	FTM_RET_ALREADY_RUNNING;
 	}
 
-	if (pthread_create(&pClient->xThread, NULL, FTOM_CLIENT_NET_process, pClient) < 0)
+	if (pthread_create(&pClient->xThread, NULL, FTOM_CLIENT_NET_masterProcess, pClient) < 0)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (pthread_create(&pClient->xSubscriber.xThread, NULL, FTOM_CLIENT_NET_subscribeProcess, pClient) < 0)
 	{
 		return	FTM_RET_ERROR;	
 	}
@@ -170,88 +169,202 @@ FTM_RET	FTOM_CLIENT_NET_stop
 	}
 
 	pClient->bStop = FTM_TRUE;
+	pthread_join(pClient->xSubscriber.xThread, NULL);
 	pthread_join(pClient->xThread, NULL);
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR	FTOM_CLIENT_NET_process(FTM_VOID_PTR pData)
+FTM_VOID_PTR	FTOM_CLIENT_NET_masterProcess
+(
+	FTM_VOID_PTR pData
+)
 {
 	ASSERT(pData != NULL);
 	
-	FTM_RET			xRet;
+	FTOM_CLIENT_NET_PTR		pClient = (FTOM_CLIENT_NET_PTR)pData;
+
+	TRACE("Client started.\n");
+
+	pClient->hSock = socket(AF_INET, SOCK_STREAM, 0);
+	if (pClient->hSock == -1)
+	{
+		ERROR("Faile to create socket.\n");	
+		goto finish;
+	}
+
+	struct timeval tv = { .tv_sec = 0, .tv_usec = 2000000};
+	if (setsockopt(pClient->hSock, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) 
+	{
+   	 	ERROR("Failed to set socket timeout!\n");
+	}
+		
+	pClient->bStop = FTM_FALSE;
+	while(!pClient->bStop)
+	{
+		if (!pClient->bConnected)
+		{
+			ASSERT(pClient != NULL);
+		
+			struct sockaddr_in 	xServer;
+		
+			xServer.sin_family 		= AF_INET;
+			xServer.sin_addr.s_addr	= inet_addr(pClient->xConfig.xServer.pHost);
+			xServer.sin_port 		= htons(pClient->xConfig.xServer.usPort);
+		
+			if (connect(pClient->hSock, (struct sockaddr *)&xServer, sizeof(xServer)) == 0)
+			{
+				if (pClient->xCommon.fNotifyCB != NULL)
+				{
+					FTM_RET	xRet;
+					FTOM_MSG_PTR	pMsg;
+				
+					xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_TRUE, &pMsg);
+					if (xRet == FTM_RET_OK)
+					{
+						xRet =pClient->xCommon.fNotifyCB(pMsg, pClient->xCommon.pNotifyData);	
+						if (xRet != FTM_RET_OK)
+						{
+							WARN("Failed to notify!\n");	
+						}
+			
+						FTOM_MSG_destroy(&pMsg);
+					}
+				}	
+			}
+		
+			pClient->bConnected = FTM_TRUE;
+		}
+		else
+		{
+			sleep(1);
+		}
+	}
+
+	if (pClient->bConnected)
+	{
+
+		if (pClient->xCommon.fNotifyCB != NULL)
+		{
+			FTM_RET	xRet;
+			FTOM_MSG_PTR	pMsg;
+		
+			xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_FALSE, &pMsg);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to create message!\n");	
+			}
+			else
+			{
+				xRet =pClient->xCommon.fNotifyCB(pMsg, pClient->xCommon.pNotifyData);	
+				if (xRet != FTM_RET_OK)
+				{
+					WARN("Failed to notify!\n");	
+				}
+	
+				FTOM_MSG_destroy(&pMsg);
+			}
+		}	
+
+		pClient->bConnected = FTM_FALSE;
+	}
+	
+finish:
+	TRACE("Client stopped.\n");
+
+	return	0;
+}
+
+FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
+(
+	FTM_VOID_PTR pData
+)
+{
+	ASSERT(pData != NULL);
+	
 	FTOM_CLIENT_NET_PTR		pClient = (FTOM_CLIENT_NET_PTR)pData;
 	FTM_ULONG				ulRespLen = 4096;
 	FTOM_RESP_PARAMS_PTR 	pResp = NULL;
 
-	pClient->bStop = FTM_FALSE;
-
 	pResp = (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(4096);
-	TRACE("Client started.\n");
+	TRACE("Subscribe started.\n");
 
-	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = 100000;
-	if (setsockopt(pClient->hSock, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) 
+	pClient->xSubscriber.hSock = socket(AF_INET, SOCK_STREAM, 0);
+	if (pClient->xSubscriber.hSock == -1)
+	{
+		ERROR("Failed to create subscribe socket.\n");	
+		return	0;	
+	}
+
+	struct timeval tv = { .tv_sec = 0, .tv_usec = 100000};
+	if (setsockopt(pClient->xSubscriber.hSock, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) 
 	{
    	 	ERROR("Failed to set socket timeout!\n");
 	}
 
 	while(!pClient->bStop)
 	{
-		if (!pClient->bConnected)
+		if (!pClient->xSubscriber.bConnected)
 		{
-			xRet = FTOM_CLIENT_NET_connect(pClient);
-			if (xRet != FTM_RET_OK)
+			struct sockaddr_in 	xServer;
+		
+			xServer.sin_family 		= AF_INET;
+			xServer.sin_addr.s_addr	= inet_addr(pClient->xConfig.xPublishServer.pHost);
+			xServer.sin_port 		= htons(pClient->xConfig.xPublishServer.usPort);
+			
+			if (connect(pClient->xSubscriber.hSock, (struct sockaddr *)&xServer, sizeof(xServer)) == 0)
 			{
-				ERROR("Server connection failed!\n");	
-				sleep(5);
-			}
+				pClient->xSubscriber.bConnected = FTM_TRUE;
+
+				if (pClient->xCommon.fNotifyCB != NULL)
+				{
+					FTM_RET	xRet;
+					FTOM_MSG_PTR	pMsg;
+				
+					xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_TRUE, &pMsg);
+					if (xRet == FTM_RET_OK)
+					{
+						xRet =pClient->xCommon.fNotifyCB(pMsg, pClient->xCommon.pNotifyData);	
+						if (xRet != FTM_RET_OK)
+						{
+							WARN("Failed to notify!\n");	
+						}
+			
+						FTOM_MSG_destroy(&pMsg);
+					}
+				}
+			}	
 			else
 			{
-				MESSAGE("Connected to server.\n");	
+				TRACE("Failed to subscriber connection!\n");
+				sleep(1);	
 			}
 		}
 		else
 		{
-			int	nLen = recv(pClient->hSock, pResp, ulRespLen, 0);
+			int	nLen = recv(pClient->xSubscriber.hSock, pResp, ulRespLen, 0);
 			if (nLen > 0)
 			{
-				FTOM_CLIENT_NET_TRANS_PTR	pTrans;
-
-				if (pResp->xCmd == FTOM_CMD_SERVER_NOTIFY)
+				FTOM_REQ_NOTIFY_PARAMS_PTR pNotify = (FTOM_REQ_NOTIFY_PARAMS_PTR)pResp;
+				if (pClient->xCommon.fNotifyCB != NULL)
 				{
-					FTOM_RESP_NOTIFY_PARAMS_PTR pNotify = (FTOM_RESP_NOTIFY_PARAMS_PTR)pResp;
-					if (pClient->xCommon.fNotifyCB != NULL)
-					{
-						ERROR("Received Notify(%08x, %08x, %08x)\n", pNotify->ulReqID, pNotify->xCmd, pNotify->ulLen);
-						//pClient->xCommon.fNotifyCB(&pNotify->xMsg, pClient->xCommon.pNotifyData);	
-					}
-					else
-					{
-						WARN("Notify CB not assigned!\n");
-					}
-				}
-				else if (FTM_LIST_get(&pClient->xTransList, &pResp->ulReqID, (FTM_VOID_PTR _PTR_)&pTrans) == FTM_RET_OK)
-				{
-					memcpy(pTrans->pResp, pResp, nLen);
-					pTrans->ulRespLen = nLen;
-	
-					sem_post(&pTrans->xDone);
+					ERROR("Received Notify(%08x, %08x, %08x)\n", pNotify->ulReqID, pNotify->xCmd, pNotify->ulLen);
+					pClient->xCommon.fNotifyCB(&pNotify->xMsg, pClient->xCommon.pNotifyData);	
 				}
 				else
 				{
-					ERROR("Invalid ReqID[%lu]\n", pResp->ulReqID);	
+					WARN("Notify CB not assigned!\n");
 				}
+				
+				send(pClient->xSubscriber.hSock, pResp, ulRespLen, 0);
 			}
-			else if (nLen == 0)
+			else if (nLen <= 0)
 			{
-				pClient->bConnected = FTM_FALSE;
+				close(pClient->xSubscriber.hSock);
+				pClient->xSubscriber.bConnected = FTM_FALSE;
 			}
 		}
 	}
-
-	FTOM_CLIENT_NET_disconnect(pClient);
 
 	TRACE("Client stopped.\n");
 
@@ -278,70 +391,6 @@ FTM_RET	FTOM_CLIENT_NET_loadConfigFromFile
 	FTM_CHAR_PTR 	pFileName
 )
 {
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_CLIENT_NET_connect
-(
-	FTOM_CLIENT_NET_PTR		pClient
-)
-{
-	ASSERT(pClient != NULL);
-
-	struct sockaddr_in 	xServer;
-
-	if (pClient->bConnected)
-	{
-		ERROR("Already connected.\n");
-		return	FTM_RET_COMM_ALREADY_CONNECTED;	
-	}
-
-	ERROR("Try connect to server.\n");
-	if (pClient->hSock == -1)
-	{
-		pClient->hSock = socket(AF_INET, SOCK_STREAM, 0);
-		if (pClient->hSock == -1)
-		{
-			ERROR("Could not create socket.\n");	
-			return	FTM_RET_COMM_ERROR;
-		}
-	}
-
-	xServer.sin_family 		= AF_INET;
-	xServer.sin_addr.s_addr	= inet_addr(pClient->xConfig.xServer.pHost);
-	xServer.sin_port 		= htons(pClient->xConfig.xServer.usPort);
-
-	if (connect(pClient->hSock, (struct sockaddr *)&xServer, sizeof(xServer)) < 0)
-	{
-		
-		return	FTM_RET_ERROR;	
-	}
-
-	if (pClient->xCommon.fNotifyCB != NULL)
-	{
-		FTM_RET	xRet;
-		FTOM_MSG_PTR	pMsg;
-	
-		xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_TRUE, &pMsg);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to create message!\n");	
-		}
-		else
-		{
-			xRet =pClient->xCommon.fNotifyCB(pMsg, pClient->xCommon.pNotifyData);	
-			if (xRet != FTM_RET_OK)
-			{
-				WARN("Failed to notify!\n");	
-			}
-
-			FTOM_MSG_destroy(&pMsg);
-		}
-
-	}
-
-	pClient->bConnected = FTM_TRUE;
-
 	return	FTM_RET_OK;
 }
 
@@ -406,6 +455,7 @@ FTM_RET FTOM_CLIENT_NET_isConnected
 /*****************************************************************
  * Internal Functions
  *****************************************************************/
+
 FTM_RET FTOM_CLIENT_NET_request
 (
 	FTOM_CLIENT_NET_PTR		pClient, 
@@ -416,6 +466,32 @@ FTM_RET FTOM_CLIENT_NET_request
 	FTM_ULONG_PTR			pulRespLen
 )
 {
+#if 1
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+	ASSERT(pulRespLen != NULL);
+
+	FTM_RET		xRet;
+	FTM_INT		nRecvLen;
+
+	pReq->ulReqID = ++pClient->ulReqID;
+
+	TRACE("SEND(%08x,%08x)\n", pReq->xCmd, pReq->ulReqID);
+	if( send(pClient->hSock, pReq, ulReqLen, 0) < 0)
+	{
+		TRACE("SEND[%08lx:%08x] - send failed\n", pClient->hSock, pReq->ulReqID);
+		return	FTM_RET_ERROR;	
+	}
+
+	nRecvLen  = recv(pClient->hSock, pResp, ulRespLen, 0);
+	if (nRecvLen > 0)
+	{
+		*pulRespLen = nRecvLen;
+
+		xRet = FTM_RET_OK;
+	}
+#else
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
@@ -424,11 +500,13 @@ FTM_RET FTOM_CLIENT_NET_request
 	FTM_RET		xRet;
 	FTOM_CLIENT_NET_TRANS	xTrans;
 	FTM_INT		nRet;
+	FTM_INT		nRecvLen;
 
 	pReq->ulReqID = ++pClient->ulReqID;
 
 	FTOM_CLIENT_NET_TRANS_init(&xTrans, pReq, ulReqLen, pResp, ulRespLen);
 
+	TRACE("SEND(%08x,%08x)\n", pReq->xCmd, pReq->ulReqID);
 	if( send(pClient->hSock, pReq, ulReqLen, 0) < 0)
 	{
 		TRACE("SEND[%08lx:%08x] - send failed\n", pClient->hSock, xTrans.pReq->ulReqID);
@@ -494,56 +572,8 @@ FTM_RET FTOM_CLIENT_NET_request
 
 	FTM_LIST_remove(&pClient->xTransList, (FTM_VOID_PTR)&xTrans);
 	FTOM_CLIENT_NET_TRANS_final(&xTrans);
-
+#endif
 	return	xRet;	
 }
 
 
-FTM_BOOL FTOM_CLIENT_NET_transSeeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
-{
-	ASSERT(pElement != NULL);
-	ASSERT(pIndicator != NULL);
-
-	FTOM_CLIENT_NET_TRANS_PTR	pTrans = (FTOM_CLIENT_NET_TRANS_PTR)pElement;
-	FTM_ULONG_PTR	pReqID = (FTM_ULONG_PTR)pIndicator;
-
-	return	(pTrans->pReq->ulReqID == *pReqID);
-}
-
-FTM_RET FTOM_CLIENT_NET_TRANS_init
-(
-	FTOM_CLIENT_NET_TRANS_PTR	pTrans,
-	FTOM_REQ_PARAMS_PTR		pReq,
-	FTM_ULONG				ulReqLen,
-	FTOM_RESP_PARAMS_PTR	pResp,
-	FTM_ULONG				ulRespLen
-)
-{
-	ASSERT(pTrans != NULL);
-	ASSERT(pReq != NULL);
-	ASSERT(pResp != NULL);
-
-	pTrans->pReq 		= pReq;
-	pTrans->ulReqLen 	= ulReqLen;
-	pTrans->pResp 		= pResp;
-	pTrans->ulRespLen 	= ulRespLen;
-	sem_init(&pTrans->xDone, 0, 0);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTOM_CLIENT_NET_TRANS_final
-(
-	FTOM_CLIENT_NET_TRANS_PTR		pTrans
-)
-{
-	ASSERT(pTrans != NULL);
-
-	pTrans->pReq 		= NULL;
-	pTrans->ulReqLen 	= 0;
-	pTrans->pResp 		= NULL;
-	pTrans->ulRespLen 	= 0;
-	sem_destroy(&pTrans->xDone);
-
-	return	FTM_RET_OK;
-}

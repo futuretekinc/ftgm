@@ -24,6 +24,12 @@ typedef	struct
 		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];
 		FTM_USHORT	usPort;
 	}	xServer;
+
+	struct
+	{
+		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];
+		FTM_USHORT	usPort;
+	}	xPublishServer;
 }	FTOM_CLIENT_NET_CONFIG, _PTR_ FTOM_CLIENT_NET_CONFIG_PTR;
 
 typedef	struct
@@ -43,7 +49,13 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTM_BOOL			bRequested;
 	sem_t				xReqLock;
-	FTM_LIST			xTransList;
+
+	struct	
+	{
+		pthread_t		xThread;
+		FTM_BOOL		bConnected;
+		FTM_INT			hSock;
+	}	xSubscriber;
 }	FTOM_CLIENT_NET, _PTR_ FTOM_CLIENT_NET_PTR;
 
 FTM_RET	FTOM_CLIENT_NET_init
