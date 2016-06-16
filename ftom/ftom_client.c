@@ -90,7 +90,6 @@ FTM_RET	FTOM_CLIENT_setNotifyCB
 	}
 	else
 	{
-		ERROR("Set Notify Callback : %08x\n", pData);
 		pClient->fNotifyCB	= pCB;
 		pClient->pNotifyData= pData;
 	}
@@ -415,7 +414,7 @@ FTM_RET	FTOM_CLIENT_NODE_setServerRegistered
 
 	memset(&xReq, 0, sizeof(xReq));
 
-	xReq.xCmd	=	FTOM_CMD_NODE_SET_SERVER_REGISTERED;
+	xReq.xCmd	=	FTOM_CMD_NODE_SET_REGISTERED;
 	xReq.ulLen	=	sizeof(xReq);
 	xReq.bRegistered =	bRegistered;
 	strncpy(xReq.pDID, pDID, FTM_ID_LEN);
@@ -453,7 +452,7 @@ FTM_RET	FTOM_CLIENT_NODE_getServerRegistered
 
 	memset(&xReq, 0, sizeof(xReq));
 
-	xReq.xCmd	=	FTOM_CMD_NODE_GET_SERVER_REGISTERED;
+	xReq.xCmd	=	FTOM_CMD_NODE_GET_REGISTERED;
 	xReq.ulLen	=	sizeof(xReq);
 	strncpy(xReq.pDID, pDID, FTM_ID_LEN);
 
@@ -866,7 +865,7 @@ FTM_RET	FTOM_CLIENT_EP_setServerRegistered
 
 	memset(&xReq, 0, sizeof(xReq));
 
-	xReq.xCmd	=	FTOM_CMD_EP_SET_SERVER_REGISTERED;
+	xReq.xCmd	=	FTOM_CMD_EP_SET_REGISTERED;
 	xReq.ulLen	=	sizeof(xReq);
 	xReq.bRegistered =	bRegistered;
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
@@ -904,7 +903,7 @@ FTM_RET	FTOM_CLIENT_EP_getServerRegistered
 
 	memset(&xReq, 0, sizeof(xReq));
 
-	xReq.xCmd	=	FTOM_CMD_EP_GET_SERVER_REGISTERED;
+	xReq.xCmd	=	FTOM_CMD_EP_GET_REGISTERED;
 	xReq.ulLen	=	sizeof(xReq);
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 

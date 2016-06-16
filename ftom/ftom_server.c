@@ -881,7 +881,12 @@ FTM_RET	FTOM_SERVER_sendMessage
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_SERVER_setServiceCallback(FTOM_SERVER_PTR pServer, FTOM_SERVICE_ID xServiceID, FTOM_SERVICE_CALLBACK fServiceCB)
+FTM_RET	FTOM_SERVER_setServiceCallback
+(
+	FTOM_SERVER_PTR 		pServer, 
+	FTOM_SERVICE_ID 		xServiceID, 
+	FTOM_SERVICE_CALLBACK 	fServiceCB
+)
 {
 	ASSERT(pServer != NULL);
 	ASSERT(fServiceCB != NULL);
@@ -979,7 +984,10 @@ FTM_VOID_PTR FTOM_SERVER_process
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_SERVER_serviceHandler(FTM_VOID_PTR pData)
+FTM_VOID_PTR FTOM_SERVER_serviceHandler
+(
+	FTM_VOID_PTR pData
+)
 {
 	ASSERT(pData != NULL);
 
@@ -1077,6 +1085,7 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 	xLocalAddr.sin_addr.s_addr = INADDR_ANY;
 	xLocalAddr.sin_port 		= htons( pServer->xConfig.xPublisher.usPort );
 
+	TRACE("bind[ %s:%d ]\n", inet_ntoa(xLocalAddr.sin_addr), ntohs(xLocalAddr.sin_port));
 	nRet = bind( pServer->xPublisher.hSocket, (struct sockaddr *)&xLocalAddr, sizeof(xLocalAddr));
 	if (nRet < 0)
 	{
@@ -1090,7 +1099,6 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 	{
 		FTM_INT	nRet;
 		FTM_INT	hClient;
-		FTM_INT	nValue;
 		struct  sockaddr_in	xRemoteAddr;
 		FTM_INT	nRemoteAddrLen = sizeof(xRemoteAddr);	
 		struct  timespec	xTimeout ;
@@ -1100,6 +1108,7 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 		nRet =sem_timedwait(&pServer->xPublisher.xLock, &xTimeout);
 		if (nRet == 0)
 		{
+			TRACE("Waiting for subscriber...\n");
 			hClient = accept(pServer->xPublisher.hSocket, (struct sockaddr *)&xRemoteAddr, (socklen_t *)&nRemoteAddrLen);
 			if (hClient > 0)
 			{
@@ -1151,13 +1160,21 @@ FTM_VOID_PTR FTOM_SERVER_publishHandler
 	xRet = FTM_LIST_append(&pServer->xPublisher.xSubscriberList, pSession);	
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Failed to put Subscribe !\n");
 		goto finish;
 	}
 
 	pSession->bStop = FTM_FALSE;
 	while(!pSession->bStop)
 	{
-		sleep(1);
+		FTM_INT	nError = 0;
+		FTM_INT	nErrorLen = sizeof(nError);
+		 getsockopt(pSession->hSocket, SOL_SOCKET, SO_ERROR, &nError, &nErrorLen);
+		 //if (nError != 0)
+		 {
+			TRACE("###################### nError : %d\n"); 
+		 }
+		sleep(2);
 	}
 
 	TRACE("Publish Session[ %s:%d ] was closed\n", inet_ntoa(pSession->xPeer.sin_addr), ntohs(pSession->xPeer.sin_port));

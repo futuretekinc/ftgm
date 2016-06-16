@@ -287,7 +287,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
 	FTOM_RESP_PARAMS_PTR 	pResp = NULL;
 
 	pResp = (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(4096);
-	TRACE("Subscribe started.\n");
+	TRACE("Subscriber started.\n");
 
 	pClient->xSubscriber.hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (pClient->xSubscriber.hSock == -1)
@@ -302,6 +302,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
    	 	ERROR("Failed to set socket timeout!\n");
 	}
 
+	pClient->bStop = FTM_FALSE;
 	while(!pClient->bStop)
 	{
 		if (!pClient->xSubscriber.bConnected)
@@ -312,6 +313,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
 			xServer.sin_addr.s_addr	= inet_addr(pClient->xConfig.xPublishServer.pHost);
 			xServer.sin_port 		= htons(pClient->xConfig.xPublishServer.usPort);
 			
+			TRACE("Subscriber connect to host[%s:%d]\n", pClient->xConfig.xPublishServer.pHost, pClient->xConfig.xPublishServer.usPort);
 			if (connect(pClient->xSubscriber.hSock, (struct sockaddr *)&xServer, sizeof(xServer)) == 0)
 			{
 				pClient->xSubscriber.bConnected = FTM_TRUE;
@@ -345,20 +347,28 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
 			int	nLen = recv(pClient->xSubscriber.hSock, pResp, ulRespLen, 0);
 			if (nLen > 0)
 			{
-				FTOM_REQ_NOTIFY_PARAMS_PTR pNotify = (FTOM_REQ_NOTIFY_PARAMS_PTR)pResp;
+				FTM_RET	xRet;
+				FTOM_REQ_NOTIFY_PARAMS_PTR 	pReq = (FTOM_REQ_NOTIFY_PARAMS_PTR)pResp;
+				FTOM_RESP_NOTIFY_PARAMS		xResp;
+
 				if (pClient->xCommon.fNotifyCB != NULL)
 				{
-					ERROR("Received Notify(%08x, %08x, %08x)\n", pNotify->ulReqID, pNotify->xCmd, pNotify->ulLen);
-					pClient->xCommon.fNotifyCB(&pNotify->xMsg, pClient->xCommon.pNotifyData);	
+					xRet = pClient->xCommon.fNotifyCB(&pReq->xMsg, pClient->xCommon.pNotifyData);	
 				}
 				else
 				{
 					WARN("Notify CB not assigned!\n");
+					xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
 				}
-				
-				send(pClient->xSubscriber.hSock, pResp, ulRespLen, 0);
+			
+				xResp.ulReqID 	= pReq->ulReqID;
+				xResp.xCmd 		= pReq->xCmd;	
+				xResp.ulLen		= sizeof(FTOM_RESP_NOTIFY_PARAMS);
+				xResp.xRet 		= xRet;
+
+				send(pClient->xSubscriber.hSock, &xResp, xResp.ulLen, 0);
 			}
-			else if (nLen <= 0)
+			else if ((nLen == 0) || (errno != EAGAIN))
 			{
 				close(pClient->xSubscriber.hSock);
 				pClient->xSubscriber.bConnected = FTM_FALSE;
@@ -366,7 +376,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
 		}
 	}
 
-	TRACE("Client stopped.\n");
+	TRACE("Subscriber stopped.\n");
 
 	return	0;
 }
@@ -466,7 +476,6 @@ FTM_RET FTOM_CLIENT_NET_request
 	FTM_ULONG_PTR			pulRespLen
 )
 {
-#if 1
 	ASSERT(pClient != NULL);
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
@@ -477,11 +486,9 @@ FTM_RET FTOM_CLIENT_NET_request
 
 	pReq->ulReqID = ++pClient->ulReqID;
 
-	TRACE("SEND(%08x,%08x)\n", pReq->xCmd, pReq->ulReqID);
 	if( send(pClient->hSock, pReq, ulReqLen, 0) < 0)
 	{
-		TRACE("SEND[%08lx:%08x] - send failed\n", pClient->hSock, pReq->ulReqID);
-		return	FTM_RET_ERROR;	
+		return	FTM_RET_COMM_FAILED_TO_TRANSMIT_PACKETS;
 	}
 
 	nRecvLen  = recv(pClient->hSock, pResp, ulRespLen, 0);
@@ -491,88 +498,13 @@ FTM_RET FTOM_CLIENT_NET_request
 
 		xRet = FTM_RET_OK;
 	}
-#else
-	ASSERT(pClient != NULL);
-	ASSERT(pReq != NULL);
-	ASSERT(pResp != NULL);
-	ASSERT(pulRespLen != NULL);
-
-	FTM_RET		xRet;
-	FTOM_CLIENT_NET_TRANS	xTrans;
-	FTM_INT		nRet;
-	FTM_INT		nRecvLen;
-
-	pReq->ulReqID = ++pClient->ulReqID;
-
-	FTOM_CLIENT_NET_TRANS_init(&xTrans, pReq, ulReqLen, pResp, ulRespLen);
-
-	TRACE("SEND(%08x,%08x)\n", pReq->xCmd, pReq->ulReqID);
-	if( send(pClient->hSock, pReq, ulReqLen, 0) < 0)
+	else if ((nRecvLen == 0) && (errno != EAGAIN))
 	{
-		TRACE("SEND[%08lx:%08x] - send failed\n", pClient->hSock, xTrans.pReq->ulReqID);
-		return	FTM_RET_ERROR;	
+		close(pClient->hSock);
+		pClient->bConnected = FTM_FALSE;
+	
 	}
 
-	xRet =FTM_LIST_append(&pClient->xTransList, (FTM_VOID_PTR)&xTrans);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
-
-	struct timespec xTimeout;
-
-	clock_gettime(CLOCK_REALTIME, &xTimeout);
-
-	xTimeout.tv_sec  += pClient->ulTimeout / 1000000 + (xTimeout.tv_nsec + (pClient->ulTimeout % 1000000) * 1000) / 1000000000;
-	xTimeout.tv_nsec = (xTimeout.tv_nsec + (pClient->ulTimeout % 1000000) * 1000) % 1000000;
-
-	nRet = sem_timedwait(&xTrans.xDone, &xTimeout);
-	if (nRet != 0)
-	{
-		xRet = FTM_RET_COMM_TIMEOUT;	
-		switch(nRet)
-		{
-   		case	EINTR:  
-			{
-				ERROR("The call was interrupted by a signal handler\n");
-			}
-			break;
-
-        case	 EINVAL: 
-			{
-				ERROR("sem is not a valid semaphore.\n");
-		        ERROR("The following additional error can occur for sem_trywait():\n");
-				ERROR("The value of abs_timeout.tv_nsecs is less than 0, or greater than or equal to 1000 million.\n");
-			}
-			break;
-
-		case	EAGAIN:
-			{
-				ERROR("The operation could not be performed without blocking (i.e., the semaphore currently has the value zero).\n");
-				ERROR("The following additional errors can occur for sem_timedwait():\n");
-			}
-			break;
-
-		case	ETIMEDOUT:
-			{
-				ERROR("The call timed out before the semaphore could be locked.\n");
-			}
-			break;
-
-		default:
-			ERROR("Unknown error[%08x]\n", nRet);
-		}	
-	}
-	else
-	{
-		*pulRespLen = xTrans.ulRespLen;
-
-		xRet = FTM_RET_OK;
-	}
-
-	FTM_LIST_remove(&pClient->xTransList, (FTM_VOID_PTR)&xTrans);
-	FTOM_CLIENT_NET_TRANS_final(&xTrans);
-#endif
 	return	xRet;	
 }
 
