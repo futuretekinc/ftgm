@@ -288,7 +288,7 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 			xRet = FTOM_discoveryStart("255.255.255.255", 1234, 1);
 			if (xRet != FTM_RET_OK)
 			{
-				MESSAGE("Discovery request was failed[%08x].\n", xRet);	
+				MESSAGE("Discovery request was failed[%08lx].\n", xRet);	
 			}
 			else
 			{
@@ -336,7 +336,7 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 				xRet = FTOM_discoveryStart("255.255.255.255", 1234, 1);
 				if (xRet != FTM_RET_OK)
 				{
-					MESSAGE("Discovery request was failed[%08x].\n", xRet);	
+					MESSAGE("Discovery request was failed[%08lx].\n", xRet);	
 				}
 				else
 				{

@@ -5,11 +5,14 @@ endif
 include $(TOPDIR)/Makefile.in
 
 LIBTPCLIENT=libtpclient
-LIBTPCLIENT_SRCS=ftom_tp_client.c ftom_tp_restapi.c ftom_tp_restapi_gateway.c
+LIBTPCLIENT_SRCS=ftom_tp_client.c\
+				ftom_tp_restapi.c\
+				ftom_tp_restapi_gateway.c
 LIBTPCLIENT_OBJS=$(LIBTPCLIENT_SRCS:.c=.o)
 
 CLIENT=tpclient
 CLIENT_SRCS=main.c \
+			ftom_mqtt_client_tpgw.c\
 			ftom_tp_client_shell_cmds.c
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
@@ -28,7 +31,7 @@ $(LIBTPCLIENT): $(LIBTPCLIENT_OBJS)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm $(LIBTPCLIENT) $(CLIENT) *.a *.o
+	rm -f $(LIBTPCLIENT) $(CLIENT) *.a *.o
 
 install: $(LIBTPCLIENT) $(CLIENT)
 	install -d $(EXEC_PREFIX)	

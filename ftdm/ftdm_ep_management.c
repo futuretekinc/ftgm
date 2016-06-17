@@ -451,7 +451,7 @@ FTM_RET FTDM_EPM_showList
 				MESSAGE("%8s ", "DISABLE");
 			}
 
-			MESSAGE("%8lu %8lu %8lu %16s %8d %10d %10d\n",
+			MESSAGE("%8lu %8lu %8lu %16s %8lu %10lu %10lu\n",
 				pEP->xInfo.ulUpdateInterval,
 				pEP->xInfo.ulReportInterval,
 				pEP->xInfo.ulTimeout,

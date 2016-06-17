@@ -55,7 +55,7 @@ FTM_RET	FTOM_CLIENT_NET_init
 	xRet = FTM_MSGQ_create(&pClient->pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		MESSAGE("Can't create message queue.[%08x]\n", xRet);	
+		MESSAGE("Can't create message queue.[%08lx]\n", xRet);	
 	}
 	else
 	{

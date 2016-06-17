@@ -114,7 +114,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 
 	if (xRet != FTM_RET_OK)
 	{
-		MESSAGE("ERROR : %08x\n", xRet);
+		MESSAGE("ERROR : %08lx\n", xRet);
 	}
 error:
 	FTM_MEM_final();

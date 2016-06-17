@@ -683,7 +683,6 @@ FTOM_SNMPTRAPD_inputCB
     oid trapOid[MAX_OID_LEN+2] = {0};
     int trapOidLen;
 
-	TRACE("SNMPTRAP Received.\n");
     switch (nOP) 
 	{
     case NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE:
@@ -1336,14 +1335,12 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 	{
 	case	cJSON_String:
 		{
-			TRACE("VALUE : %s\n", pItem->valuestring);
 			FTM_EP_DATA_init(&xData, xDataType, (FTM_CHAR_PTR)pItem->valuestring);
 		}
 		break;
 	
 	case 	cJSON_Number:
 		{
-			TRACE("VALUE : %d\n", pItem->valueint);
 			switch(xDataType)
 			{
 			case	FTM_EP_DATA_TYPE_INT:

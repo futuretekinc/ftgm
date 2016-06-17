@@ -63,6 +63,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	}
 
 	FTM_TRACE_setLevel(ulDebugLevel);
+	FTM_TRACE_setModule(0xFFFFFFFF, FTM_TRUE);
 
 	xRet = FTOM_TP_CLIENT_create(&pTPClient);
 	if (xRet != FTM_RET_OK)

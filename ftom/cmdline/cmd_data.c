@@ -92,7 +92,7 @@ FTM_RET	FTOM_CL_EP_DATA_getList
 		for(i = 0 ; i < ulCount ; i++)
 		{
 			FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pData[i]);
-			MESSAGE("%d|%08x|%lu|%s\n", i+1, pEPID, pData[i].ulTime, pBuff);
+			MESSAGE("%d|%16s|%lu|%s\n", i+1, pEPID, pData[i].ulTime, pBuff);
 		}
 	}
 

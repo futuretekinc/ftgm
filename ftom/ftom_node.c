@@ -743,7 +743,7 @@ FTM_VOID_PTR FTOM_NODE_process
 	FTOM_MSG_PTR	pMsg;
 	FTM_TIMER		xLoopTimer;
 
-	TRACE("Node[%s] start.\n", pNode->xInfo.pDID);
+	TRACE("Node[%s] started.\n", pNode->xInfo.pDID);
 
 	FTM_TIMER_initS(&xLoopTimer, 0);
 	FTM_TIMER_initS(&pNode->xReportTimer, 0);
@@ -938,28 +938,28 @@ FTM_RET	FTOM_NODE_print
 #endif
 	case	FTM_NODE_TYPE_FINS:
 		{
-			MESSAGE("%16s   %10s - %d\n", "", "Version", 	pNode->xInfo.xOption.xFINS.ulVersion);	
+			MESSAGE("%16s   %10s - %lu\n", "", "Version", 	pNode->xInfo.xOption.xFINS.ulVersion);	
 			MESSAGE("%16s   %10s - %s\n", "", "DestIP", 	pNode->xInfo.xOption.xFINS.pDIP);
 			MESSAGE("%16s   %10s - %lu\n","", "DestPort",	pNode->xInfo.xOption.xFINS.ulDP);
 			MESSAGE("%16s   %10s - %lu\n","", "SrcPort", 	pNode->xInfo.xOption.xFINS.ulSP);
 			MESSAGE("%16s   %10s - %02x:%02x:%02x\n","", "DestAddr",	
-					(pNode->xInfo.xOption.xFINS.ulDA >> 16) & 0xFF,
-					(pNode->xInfo.xOption.xFINS.ulDA >>  8) & 0xFF,
-					(pNode->xInfo.xOption.xFINS.ulDA >>  0) & 0xFF);
+					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >> 16) & 0xFF),
+					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >>  8) & 0xFF),
+					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >>  0) & 0xFF));
 			MESSAGE("%16s   %10s - %02x:%02x:%02x\n","", "SrcAddr", 
-					(pNode->xInfo.xOption.xFINS.ulSA >> 16) & 0xFF,
-					(pNode->xInfo.xOption.xFINS.ulSA >>  8) & 0xFF,
-					(pNode->xInfo.xOption.xFINS.ulSA >>  0) & 0xFF);
+					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >> 16) & 0xFF),
+					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >>  8) & 0xFF),
+					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >>  0) & 0xFF));
 			MESSAGE("%16s   %10s - %lu\n","", "ServerID", 	pNode->xInfo.xOption.xFINS.ulServerID);
 		}
 		break;
 	}
 
 	MESSAGE("%16s : %s\n", "State", 	FTOM_NODE_stateToStr(pNode->xState));
-	MESSAGE("%16s : %d\n", "Report Interval", 	pNode->xInfo.ulReportInterval);
-	MESSAGE("%16s : %d\n", "Timeout", 	pNode->xInfo.ulTimeout);
+	MESSAGE("%16s : %lu\n", "Report Interval", 	pNode->xInfo.ulReportInterval);
+	MESSAGE("%16s : %lu\n", "Timeout", 	pNode->xInfo.ulTimeout);
 	FTOM_NODE_getEPCount(pNode, &ulEPCount);
-	MESSAGE("%16s : %d\n", "EPs",		ulEPCount);
+	MESSAGE("%16s : %lu\n", "EPs",		ulEPCount);
 	for(j = 0; j < ulEPCount ; j++)
 	{
 		if (FTOM_NODE_getEPAt(pNode, j, &pEP) == FTM_RET_OK)
@@ -967,11 +967,11 @@ FTM_RET	FTOM_NODE_print
 			MESSAGE("%16s   %d - %16s\n", "", j+1, pEP->xInfo.pEPID);
 		}
 	}
-	MESSAGE("%16s : %d\n", "Tx Count", 		pNode->xStatistics.ulTxCount);
-	MESSAGE("%16s : %d\n", "Rx Count", 		pNode->xStatistics.ulRxCount);
-	MESSAGE("%16s : %d\n", "Tx Error", 		pNode->xStatistics.ulTxError);
-	MESSAGE("%16s : %d\n", "Rx Error", 		pNode->xStatistics.ulRxError);
-	MESSAGE("%16s : %d\n", "Invalid Frame", pNode->xStatistics.ulInvalidFrame);
+	MESSAGE("%16s : %lu\n", "Tx Count", 		pNode->xStatistics.ulTxCount);
+	MESSAGE("%16s : %lu\n", "Rx Count", 		pNode->xStatistics.ulRxCount);
+	MESSAGE("%16s : %lu\n", "Tx Error", 		pNode->xStatistics.ulTxError);
+	MESSAGE("%16s : %lu\n", "Rx Error", 		pNode->xStatistics.ulRxError);
+	MESSAGE("%16s : %lu\n", "Invalid Frame", pNode->xStatistics.ulInvalidFrame);
 
 	return	FTM_RET_OK;
 }
@@ -1000,11 +1000,11 @@ FTM_RET	FTOM_NODE_printList
 		MESSAGE("%16s ", pNode->xInfo.pName);
 		MESSAGE("%16s ", FTM_NODE_typeString(pNode->xInfo.xType));
 		MESSAGE("%16s ", FTOM_NODE_stateToStr(pNode->xState));
-		MESSAGE("%8d ", pNode->xInfo.ulReportInterval);
-		MESSAGE("%8d ", pNode->xInfo.ulTimeout);
+		MESSAGE("%8lu ", pNode->xInfo.ulReportInterval);
+		MESSAGE("%8lu ", pNode->xInfo.ulTimeout);
 
 		FTOM_NODE_getEPCount(pNode, &ulEPCount);
-		MESSAGE("%3d\n", ulCount);
+		MESSAGE("%3lu\n", ulCount);
 	}
 
 	return	FTM_RET_OK;

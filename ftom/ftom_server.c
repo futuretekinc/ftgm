@@ -20,9 +20,9 @@
 #include "ftom_discovery.h"
 #include "ftom_session.h"
 
-//#ifndef	FTOM_TRACE_IO
-#define	FTOM_TRACE_IO		1
-//#endif
+#ifndef	FTOM_TRACE_IO
+//#define	FTOM_TRACE_IO		1
+#endif
 
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTOM_SERVER_CALLBACK)FUN }
 
@@ -45,9 +45,19 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 );
 
 static
-FTM_VOID_PTR FTOM_SERVER_publishHandler
+FTM_RET	FTOM_SERVER_addSubscribeSession
 (
-	FTM_VOID_PTR 	pData
+	FTOM_SERVER_PTR				pServer,
+	FTM_INT						hSocket,
+	struct  sockaddr_in	_PTR_ 	pPeer,
+	FTOM_SESSION_PTR _PTR_		ppSession
+);
+
+static
+FTM_RET	FTOM_SERVER_removeSubscribeSession
+(
+	FTOM_SERVER_PTR			pServer,
+	FTOM_SESSION_PTR _PTR_ 	ppSession
 );
 
 static
@@ -720,6 +730,24 @@ FTM_RET	FTOM_SERVER_init
 	pServer->xConfig.xPublisher.ulMaxSubscribe	= FTOM_DEFAULT_SERVER_SESSION_COUNT	;
 	FTM_LIST_init(&pServer->xPublisher.xSubscriberList);
 
+	if (sem_init(&pServer->xPublisher.xLock, 0, 1) < 0)
+	{
+		ERROR("Failed to initialize semaphore!\n");
+		FTM_LIST_final(&pServer->xPublisher.xSubscriberList);
+		FTM_LIST_final(&pServer->xSessionList);
+		return	FTM_RET_FAILED_TO_INIT_SEM;
+	}
+
+	if (sem_init(&pServer->xPublisher.xSlot, 0, pServer->xConfig.xPublisher.ulMaxSubscribe) < 0)
+	{
+		ERROR("Failed to initialize semaphore!\n");
+		sem_destroy(&pServer->xPublisher.xLock);
+		FTM_LIST_final(&pServer->xPublisher.xSubscriberList);
+		FTM_LIST_final(&pServer->xSessionList);
+		return	FTM_RET_FAILED_TO_INIT_SEM;
+	}
+
+
 	pServer->bStop = FTM_TRUE;
 
 	return	FTM_RET_OK;
@@ -735,6 +763,9 @@ FTM_RET	FTOM_SERVER_final
 	FTOM_SERVER_stop(pServer);
 
 	FTM_LIST_final(&pServer->xSessionList);
+	FTM_LIST_final(&pServer->xPublisher.xSubscriberList);
+	sem_destroy(&pServer->xPublisher.xSlot);
+	sem_destroy(&pServer->xPublisher.xLock);
 
 	return	FTM_RET_OK;
 }
@@ -860,20 +891,26 @@ FTM_RET	FTOM_SERVER_sendMessage
 		pParam->ulLen	= sizeof(FTOM_REQ_NOTIFY_PARAMS) - sizeof(FTOM_MSG) + pMsg->ulLen;
 		memcpy(&pParam->xMsg, pMsg, pMsg->ulLen);
 
-		TRACE("Message[%d] send to host[%s:%d]\n", pParam->ulReqID, inet_ntoa(pSession->xPeer.sin_addr), ntohs(pSession->xPeer.sin_port));
-		nSendLen = send(pSession->hSocket, pParam, ulParamLen, 0);
-		if(nSendLen == ulParamLen )
+		nRecvLen = recv(pSession->hSocket, pSession->pRespBuff, sizeof(pSession->pRespBuff), MSG_DONTWAIT);
+		if (nRecvLen == 0)
 		{
-			nRecvLen = recv(pSession->hSocket, pSession->pRespBuff, sizeof(pSession->pRespBuff), 0);
-			if (nRecvLen <= 0)
-			{
-				pSession->bStop = FTM_TRUE;	
-			}
+			close(pSession->hSocket);
+			FTOM_SERVER_removeSubscribeSession(pServer, &pSession);
 		}
 		else
 		{
-			pSession->bStop = FTM_TRUE;	
-		}
+			nSendLen = send(pSession->hSocket, pParam, ulParamLen, 0);
+			if(nSendLen == ulParamLen )
+			{
+				nRecvLen = recv(pSession->hSocket, pSession->pRespBuff, sizeof(pSession->pRespBuff), 0);
+			}
+	
+			if (nSendLen <= 0)
+			{
+				close(pSession->hSocket);
+				FTOM_SERVER_removeSubscribeSession(pServer, &pSession);
+			}
+		}	
 	}
 
 	FTOM_MSG_destroy(&pMsg);
@@ -1063,12 +1100,20 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 {
 	ASSERT(pData != NULL);
 	
+	FTM_RET	xRet;
 	FTOM_SERVER_PTR 	pServer = (FTOM_SERVER_PTR)pData;
 	FTM_INT				nRet;
 	struct sockaddr_in	xLocalAddr;
+	FTOM_SESSION_PTR	pSession;
 
 	
-	if (sem_init(&pServer->xPublisher.xLock, 0, pServer->xConfig.xPublisher.ulMaxSubscribe) < 0)
+	if (sem_init(&pServer->xPublisher.xLock, 0, 1) < 0)
+	{
+		ERROR("Can't alloc semaphore!\n");
+		return	0;	
+	}
+
+	if (sem_init(&pServer->xPublisher.xSlot, 0, pServer->xConfig.xPublisher.ulMaxSubscribe) < 0)
 	{
 		ERROR("Can't alloc semaphore!\n");
 		return	0;	
@@ -1085,7 +1130,6 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 	xLocalAddr.sin_addr.s_addr = INADDR_ANY;
 	xLocalAddr.sin_port 		= htons( pServer->xConfig.xPublisher.usPort );
 
-	TRACE("bind[ %s:%d ]\n", inet_ntoa(xLocalAddr.sin_addr), ntohs(xLocalAddr.sin_port));
 	nRet = bind( pServer->xPublisher.hSocket, (struct sockaddr *)&xLocalAddr, sizeof(xLocalAddr));
 	if (nRet < 0)
 	{
@@ -1093,101 +1137,123 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 		return	0;
 	}
 
+	TRACE("Publisher started.\n");
 	listen(pServer->xPublisher.hSocket, 3);
 
 	while(!pServer->bStop)
 	{
-		FTM_INT	nRet;
+		FTM_INT	nValue;
 		FTM_INT	hClient;
 		struct  sockaddr_in	xRemoteAddr;
 		FTM_INT	nRemoteAddrLen = sizeof(xRemoteAddr);	
-		struct  timespec	xTimeout ;
 
-		clock_gettime(CLOCK_REALTIME, &xTimeout);
-		xTimeout.tv_sec += 1;
-		nRet =sem_timedwait(&pServer->xPublisher.xLock, &xTimeout);
-		if (nRet == 0)
+
+		sem_getvalue(&pServer->xLock, &nValue);
+		TRACE("Waiting for subscriber[%d]...\n", nValue);
+		hClient = accept(pServer->xPublisher.hSocket, (struct sockaddr *)&xRemoteAddr, (socklen_t *)&nRemoteAddrLen);
+		if (hClient > 0)
 		{
-			TRACE("Waiting for subscriber...\n");
-			hClient = accept(pServer->xPublisher.hSocket, (struct sockaddr *)&xRemoteAddr, (socklen_t *)&nRemoteAddrLen);
-			if (hClient > 0)
+
+			TRACE("Accept new subscriber.[ %s:%d ]\n", inet_ntoa(xRemoteAddr.sin_addr), ntohs(xRemoteAddr.sin_port));
+
+			xRet = FTOM_SERVER_addSubscribeSession(pServer, hClient, &xRemoteAddr, &pSession);
+			if (xRet != FTM_RET_OK)
 			{
-				TRACE("Accept new subscriber.[ %s:%d ]\n", inet_ntoa(xRemoteAddr.sin_addr), ntohs(xRemoteAddr.sin_port));
-
-				FTOM_SESSION_PTR pSession = (FTOM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTOM_SESSION));
-				if (pSession == NULL)
-				{
-					ERROR("System memory is not enough!\n");
-					TRACE("The subscriber(%08x) was closed.\n", hClient);
-					close(hClient);
-				}
-				else
-				{
-					TRACE("The new subscriber(%08x) has beed connected\n", hClient);
-
-					pSession->hSocket = hClient;
-					memcpy(&pSession->xPeer, &xRemoteAddr, sizeof(xRemoteAddr));
-					pSession->pData = (FTM_VOID_PTR)pServer;
-
-					if (pthread_create(&pSession->xPThread, NULL, FTOM_SERVER_publishHandler, pSession) < 0)
-					{
-						TRACE("The new subscriber(%08x) was closed with error\n", hClient);
-						close(pSession->hSocket);
-						FTM_MEM_free(pSession);
-
-						sem_post(&pServer->xPublisher.xLock);
-					}
-				}
+				close(hClient);
 			}
 		}
+
 	}
+	TRACE("Publisher stopped.\n");
+
+	FTM_LIST_iteratorStart(&pServer->xPublisher.xSubscriberList);
+	while(FTM_LIST_iteratorNext(&pServer->xPublisher.xSubscriberList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
+	{
+		close(pSession->hSocket);
+		FTOM_SERVER_removeSubscribeSession(pServer, &pSession);
+	}
+
+	sem_destroy(&pServer->xPublisher.xLock);
+	sem_destroy(&pServer->xPublisher.xSlot);
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_SERVER_publishHandler
+FTM_RET	FTOM_SERVER_addSubscribeSession
 (
-	FTM_VOID_PTR pData
+	FTOM_SERVER_PTR				pServer,
+	FTM_INT						hSocket,
+	struct  sockaddr_in	_PTR_ 	pPeer,
+	FTOM_SESSION_PTR _PTR_		ppSession
 )
 {
-	ASSERT(pData != NULL);
+	ASSERT(pServer != NULL);
+	ASSERT(ppSession != NULL);
 
-	FTOM_SESSION_PTR		pSession= (FTOM_SESSION_PTR)pData;
-	FTOM_SERVER_PTR		pServer = (FTOM_SERVER_PTR)pSession->pData;
+	FTM_RET				xRet;
+	struct  timespec	xTimeout ;
+	FTOM_SESSION_PTR	pSession;
 
-	FTM_RET	xRet;
+	clock_gettime(CLOCK_REALTIME, &xTimeout);
+	xTimeout.tv_sec += 1;
+	nRet =sem_timedwait(&pServer->xPublisher.xSlot, &xTimeout);
+	if (nRet != 0)
+	{
+		ERROR("Session is full!\n");
+		return	FTM_RET_COMM_SESSION_IS_FULL;
+	}
 
+	pSession = (FTOM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTOM_SESSION));
+	if (pSession == NULL)
+	{
+		ERROR("Not enough memory!n");
+		sem_post(&pServer->xPublisher.xSlot);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pSession->hSocket = hSocket;
+	memcpy(&pSession->xPeer, pPeer, sizeof(struct sockaddr_in));
+	pSession->pData = (FTM_VOID_PTR)pServer;
+
+	sem_wait(&pServer->xPublisher.xLock);
 	xRet = FTM_LIST_append(&pServer->xPublisher.xSubscriberList, pSession);	
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Failed to put Subscribe !\n");
-		goto finish;
-	}
-
-	pSession->bStop = FTM_FALSE;
-	while(!pSession->bStop)
-	{
-		FTM_INT	nError = 0;
-		FTM_INT	nErrorLen = sizeof(nError);
-		 getsockopt(pSession->hSocket, SOL_SOCKET, SO_ERROR, &nError, &nErrorLen);
-		 //if (nError != 0)
-		 {
-			TRACE("###################### nError : %d\n"); 
-		 }
-		sleep(2);
-	}
-
-	TRACE("Publish Session[ %s:%d ] was closed\n", inet_ntoa(pSession->xPeer.sin_addr), ntohs(pSession->xPeer.sin_port));
-
-	FTM_LIST_remove(&pServer->xPublisher.xSubscriberList, pSession);	
-
-finish:
-	close(pSession->hSocket);
-	FTM_MEM_free(pSession);
-
 	sem_post(&pServer->xPublisher.xLock);
 
-	return	0;
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pSession);	
+		sem_post(&pServer->xPublisher.xSlot);
+	}
+	else
+	{
+		*ppSession = pSession;	
+		TRACE("New subscribe session[%d]\n", (*ppSession)->hSocket);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_SERVER_removeSubscribeSession
+(
+	FTOM_SERVER_PTR			pServer,
+	FTOM_SESSION_PTR _PTR_ 	ppSession
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(ppSession != NULL);
+	FTM_RET	xRet;
+
+	sem_wait(&pServer->xPublisher.xLock);
+	xRet = FTM_LIST_remove(&pServer->xPublisher.xSubscriberList, (*ppSession));
+	sem_post(&pServer->xPublisher.xLock);
+	if (xRet == FTM_RET_OK)
+	{
+		TRACE("Remove subscribe session[%d]\n", (*ppSession)->hSocket);
+		FTM_MEM_free(*ppSession);	
+		sem_post(&pServer->xPublisher.xSlot);
+	}
+
+	return	xRet;
 }
 
 FTM_VOID_PTR	FTOM_SERVER_processPipe
@@ -1311,7 +1377,7 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 		return	0;	
 	}
 
-	FTM_SMP_createKeyFile(pSMP, pServer->xConfig.pSMKeyFile);
+	FTM_SMP_createKeyFile(pSMP, pServer->xConfig.xSM.pKeyFile);
 
 	while(!pServer->bStop)
 	{
@@ -1363,14 +1429,14 @@ FTM_RET	FTOM_SERVER_serviceCall
 	{
 		if (pSet->xCmd == pReq->xCmd)
 		{
-#if	1 //FTOM_TRACE_IO
+#if	FTOM_TRACE_IO
 			FTM_RET	xRet;
 
 			TRACE("CMD : %s\n", pSet->pCmdString);
 			xRet = 
 #endif
 			pSet->fService(pServer, pReq, ulReqLen, pResp, ulRespLen);
-#if	1 //FTOM_TRACE_IO
+#if	FTOM_TRACE_IO
 			TRACE("RET : %08lx\n", xRet);
 #endif
 			return	FTM_RET_OK;
@@ -2949,7 +3015,7 @@ FTM_RET FTOM_SERVER_loadConfig
 
 	FTM_CONFIG_ITEM_getItemULONG(&xServer, "max_session", &pServer->xConfig.ulMaxSession);
 	FTM_CONFIG_ITEM_getItemUSHORT(&xServer, "port", 		&pServer->xConfig.usPort);
-	FTM_CONFIG_ITEM_getItemString(&xServer, "sm_key_file", pServer->xConfig.pSMKeyFile, sizeof(pServer->xConfig.pSMKeyFile) - 1);
+	FTM_CONFIG_ITEM_getItemString(&xServer, "sm_key_file", pServer->xConfig.xSM.pKeyFile, sizeof(pServer->xConfig.xSM.pKeyFile) - 1);
 
 finish:
 	return	xRet;
@@ -3006,7 +3072,7 @@ FTM_RET FTOM_SERVER_saveConfig
 
 	FTM_CONFIG_ITEM_setItemULONG(&xServer, 	"max_session", 	pServer->xConfig.ulMaxSession);
 	FTM_CONFIG_ITEM_setItemUSHORT(&xServer, "port", 		pServer->xConfig.usPort);
-	FTM_CONFIG_ITEM_setItemString(&xServer, "sm_key_file", 	pServer->xConfig.pSMKeyFile);
+	FTM_CONFIG_ITEM_setItemString(&xServer, "sm_key_file", 	pServer->xConfig.xSM.pKeyFile);
 
 finish:
 	return	xRet;

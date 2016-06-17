@@ -50,7 +50,7 @@ FTM_RET	FTOM_CL_EP_count
 	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%d\n",	ulCount);
+		MESSAGE("%lu\n",	ulCount);
 	}
 	return	xRet;	
 }
@@ -78,13 +78,13 @@ FTM_RET	FTOM_CL_EP_get
 	xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%s|%s|%08x|%s|%s|%d|%d|%lu|%lu|%s\n", 
+		MESSAGE("%s|%s|%08x|%s|%s|%lu|%lu|%lu|%lu|%s\n", 
 			xInfo.pEPID, 
 			FTM_EP_typeString(xInfo.xType), 
 			xInfo.xFlags, 
 			xInfo.pName, 
 			xInfo.pUnit,
-			xInfo.bEnable,
+			(FTM_ULONG)xInfo.bEnable,
 			xInfo.ulTimeout,
 			xInfo.ulUpdateInterval,
 			xInfo.ulReportInterval,
@@ -117,13 +117,13 @@ FTM_RET	FTOM_CL_EP_getAt
 	xRet = FTOM_CLIENT_EP_getAt(pClient, ulIndex, &xInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%s|%s|%08x|%s|%s|%d:%d|%d|%d|%s\n", 
+		MESSAGE("%s|%s|%08x|%s|%s|%lu:%lu|%lu|%lu|%s\n", 
 			xInfo.pEPID, 
 			FTM_EP_typeString(xInfo.xType), 
 			xInfo.xFlags, 
 			xInfo.pName, 
 			xInfo.pUnit,
-			xInfo.bEnable,
+			(FTM_ULONG)xInfo.bEnable,
 			xInfo.ulTimeout,
 			xInfo.ulUpdateInterval,
 			xInfo.ulReportInterval,

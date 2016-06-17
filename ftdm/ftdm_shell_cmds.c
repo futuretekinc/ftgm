@@ -28,7 +28,7 @@ FTM_RET	FTDM_SHELL_showNodeList(FTDM_NODEM_PTR pNodeM)
 			xRet = FTDM_NODEM_getAt(pNodeM, i, &pNode);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%16s %16s %16s %8d %8d ", 
+				MESSAGE("%16s %16s %16s %8lu %8lu ", 
 					pNode->xInfo.pDID, 
 					FTM_NODE_typeString(pNode->xInfo.xType), 
 				pNode->xInfo.pLocation,
@@ -48,7 +48,7 @@ FTM_RET	FTDM_SHELL_showNodeList(FTDM_NODEM_PTR pNodeM)
 
 				case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 					{
-						MESSAGE("%16s %16d", 
+						MESSAGE("%16s %16lu", 
 							pNode->xInfo.xOption.xMB.pURL,
 							pNode->xInfo.xOption.xMB.ulPort);
 					}
@@ -165,7 +165,7 @@ FTM_RET	FTDM_SHELL_showEPList(FTDM_EPM_PTR pEPM)
 			"STATE", "UPDATE", "REPORT", "TIMEOUT", "DID", "DEPID");
 	if (FTDM_EPM_count(pEPM, 0, &ulCount) == FTM_RET_OK)
 	{
-		FTM_ULONG	i;
+		FTM_INT	i;
 
 		for(i = 0 ; i < ulCount ; i++)
 		{
@@ -229,7 +229,8 @@ FTM_RET	FTDM_SHELL_showEPData
 )
 {
 	FTM_RET			xRet;
-	FTM_ULONG		i, ulTotalCount = 0;
+	FTM_INT			i;
+	FTM_ULONG		ulTotalCount = 0;
 	FTDM_EP_PTR		pEP;
 	FTM_EP_DATA_PTR pData;
 
@@ -277,7 +278,7 @@ FTM_RET	FTDM_SHELL_showEPData
 		strcpy(pTime, ctime((time_t *)&pData[i].ulTime));
 		pTime[strlen(pTime) - 1] = '\0';
 
-			MESSAGE("%4d : %16s ", ulBegin + i + 1, pTime);
+			MESSAGE("%4lu : %16s ", ulBegin + i + 1, pTime);
 		switch(pData[i].xState)
 		{
 		case	FTM_EP_DATA_STATE_VALID:
@@ -352,7 +353,7 @@ FTM_RET	FTDM_SHELL_delEPData
 		return	xRet;
 	}
 
-	MESSAGE("%d data has been deleted.\n", ulTotalCount - ulNewCount);
+	MESSAGE("%lu data has been deleted.\n", ulTotalCount - ulNewCount);
 
 	return	xRet;
 }

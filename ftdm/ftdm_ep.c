@@ -517,7 +517,7 @@ FTM_RET	FTDM_EP_print
 	xRet = FTDM_EP_DATA_count(pEP, &ulCount);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%-16s : %d\n", "data count", ulCount);
+		MESSAGE("%-16s : %lu\n", "data count", ulCount);
 	}
 	else
 	{

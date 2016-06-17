@@ -157,7 +157,7 @@ FTM_RET	FTOM_CL_NODE_count
 	xRet = FTOM_CLIENT_NODE_count(pClient, &ulCount);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%d\n",	ulCount);
+		MESSAGE("%lu\n",	ulCount);
 	}
 	return	xRet;	
 }
@@ -183,7 +183,7 @@ FTM_RET	FTOM_CL_NODE_get
 	xRet = FTOM_CLIENT_NODE_get(pClient, pArgv[0], &xInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%s|%s|%08x|%s|%d|%d|%d|%s|%s\n", 
+		MESSAGE("%s|%s|%08lx|%s|%lu|%lu|%lu|%s|%s\n", 
 			xInfo.pDID, 
 			FTM_NODE_typeString(xInfo.xType),
 			xInfo.xFlags,
@@ -221,7 +221,7 @@ FTM_RET	FTOM_CL_NODE_getAt
 	xRet = FTOM_CLIENT_NODE_getAt(pClient, ulIndex, &xInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		MESSAGE("%s|%s|%08x|%s|%d|%d|%d|%s|%s\n", 
+		MESSAGE("%s|%s|%08lx|%s|%lu|%lu|%lu|%s|%s\n", 
 			xInfo.pDID, 
 			FTM_NODE_typeString(xInfo.xType),
 			xInfo.xFlags,

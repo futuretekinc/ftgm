@@ -17,6 +17,7 @@ FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szmsg);
 FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
 
 extern char *program_invocation_short_name;
+static FTM_ULONG		_ulModules = 0x0;
 static FTM_TRACE_OUT	_xOut = FTM_TRACE_OUT_TERM;
 static FTM_TRACE_CFG	_xConfig = 
 {
@@ -238,6 +239,23 @@ FTM_RET	FTM_TRACE_getLevel
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_TRACE_setModule
+(
+	FTM_ULONG	ulModule,
+	FTM_BOOL	bTraceOn
+)
+{
+	if (bTraceOn)
+	{
+		_ulModules |= ulModule;
+	}
+	else
+	{
+		_ulModules &= ~ulModule;
+	}
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTM_TRACE_setOut(FTM_TRACE_OUT xOut)
 {
@@ -248,11 +266,12 @@ FTM_RET	FTM_TRACE_setOut(FTM_TRACE_OUT xOut)
 
 FTM_RET	FTM_TRACE_out
 (
-	unsigned long	ulLevel,
+	FTM_ULONG		ulModule,
+	FTM_ULONG		ulLevel,
 	const char *	pFunction,
-	int				nLine,
-	int				bTimeInfo,
-	int				bFunctionInfo,
+	FTM_INT			nLine,
+	FTM_INT			bTimeInfo,
+	FTM_INT			bFunctionInfo,
 	const char *	format, 
 	...
 )
@@ -267,6 +286,11 @@ FTM_RET	FTM_TRACE_out
 	FTM_INT			nLen = 0;
 	FTM_CHAR		szBuff[2048];
 	FTM_CHAR		szTime[32];
+
+	if (!(ulModule & _ulModules))
+	{
+		return	FTM_RET_OK;	
+	}
 
 	if (ulLevel < _xConfig.ulLevel)
 	{

@@ -156,7 +156,8 @@ FTM_RET	FTDMS_SHELL_CMD_session
 )
 {
 	FTM_RET			xRet;
-	FTM_ULONG		i, ulCount;
+	FTM_INT			i;
+	FTM_ULONG		ulCount;
 	FTDM_SESSION	xSession;
 	FTDM_SERVER_PTR	pServer;
 
@@ -210,9 +211,9 @@ FTM_RET FTDMS_SHELL_CMD_trace
 				MESSAGE("Usage : %s [<cmd> <level>]\n",	pArgv[0]);
 				MESSAGE("    Trace configuration\n");
 				MESSAGE("  Commands:\n");
-				MESSAGE("    %8s   Set trace level\n", "level");
+				MESSAGE("    %8s   Set trace level\n", "set");
 				MESSAGE("  Parameters:\n");
-				MESSAGE("    %8s   trace level (0 ~ 6)\n");
+				MESSAGE("    %8s   trace level (0 ~ 6)\n", "level");
 			}
 		}
 		break;

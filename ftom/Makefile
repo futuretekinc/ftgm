@@ -20,10 +20,7 @@ FTOM_SRCS=ftom_main.c \
 		ftom_node_fins_client_hhtw.c\
 		ftom_node_virtual.c\
 		ftom_node_virtual_fte_es7.c\
-		ftom_discovery.c\
-		ftom_tp_client.c\
-		ftom_tp_restapi.c\
-		ftom_tp_restapi_gateway.c
+		ftom_discovery.c
 
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)
 FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lcurl -lcjson -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl -lm
@@ -42,7 +39,6 @@ LIB_FTOM_SRCS= ftom_msg.c \
 			   ftom_rule.c\
 			   ftom_mqtt_client.c\
 			   ftom_mqtt_client_ft.c\
-			   ftom_mqtt_client_tpgw.c\
 			   ftom_utils.c\
 			   ftom_shell.c
 LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)

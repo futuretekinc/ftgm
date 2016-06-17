@@ -162,8 +162,8 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 			MESSAGE("%16s : %s\n", 	"DID", 		xInfo.pDID);
 			MESSAGE("%16s : %s\n",	"Type",		FTM_NODE_typeString(xInfo.xType));
 			MESSAGE("%16s : %s\n", 	"Location", xInfo.pLocation);
-			MESSAGE("%16S : %lu\n",	"Interval",	xInfo.ulReportInterval);
-			MESSAGE("%16S : %lu\n",	"Timeout",	xInfo.ulTimeout);
+			MESSAGE("%16s : %lu\n",	"Interval",	xInfo.ulReportInterval);
+			MESSAGE("%16s : %lu\n",	"Timeout",	xInfo.ulTimeout);
 			MESSAGE("Options\n");
 			switch(xInfo.xType)
 			{
@@ -191,27 +191,27 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 	}
 	else if (strcasecmp(pArgv[1], "list") == 0)
 	{
-		FTM_ULONG	i, nNodeCount = 0;
+		FTM_INT		i;
+		FTM_ULONG	ulNodeCount = 0;
 
-		xRet = FTOM_CLIENT_NODE_count(pClient, &nNodeCount);
+		xRet = FTOM_CLIENT_NODE_count(pClient, &ulNodeCount);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
 		}
 
-		MESSAGE("NODE COUNT : %d\n", nNodeCount);
+		MESSAGE("NODE COUNT : %lu\n", ulNodeCount);
 
-		MESSAGE("%16s %16s %16s %8s %16s %16s %16s\n", 
-			"DID", "TYPE", "LOCATION", "INTERVAL", "OPT0", "OPT1", "OPT2", "OPT3");
+		MESSAGE("%16s %16s %16s %8s %16s\n", "DID", "TYPE", "LOCATION", "INTERVAL", "OPT");
 
-		for(i = 0 ; i < nNodeCount; i++)
+		for(i = 0 ; i < ulNodeCount; i++)
 		{
 			FTM_NODE	xInfo;
 
 			xRet = FTOM_CLIENT_NODE_getAt(pClient, i, &xInfo);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%16s %16s %16s %8d ", 
+				MESSAGE("%16s %16s %16s %8lu ", 
 					xInfo.pDID, 
 					FTM_NODE_typeString(xInfo.xType), 
 					xInfo.pLocation,
@@ -221,7 +221,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 				{
 				case	FTM_NODE_TYPE_SNMP:
 					{
-						MESSAGE("%16d %16s %16s", 
+						MESSAGE("%16lu %16s %16s", 
 							xInfo.xOption.xSNMP.ulVersion,
 							xInfo.xOption.xSNMP.pURL,
 							xInfo.xOption.xSNMP.pCommunity);

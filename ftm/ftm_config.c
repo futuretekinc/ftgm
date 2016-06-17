@@ -1184,12 +1184,38 @@ FTM_RET	FTM_CONFIG_ITEM_getBOOL
 	ASSERT(pItem != NULL);
 	ASSERT(pbValue != NULL);
 
-	if ((pItem->pObject == NULL) || (pItem->pObject->type != cJSON_Number))
+	if (pItem->pObject == NULL)
+	{
+		return	FTM_RET_CONFIG_INVALID_OBJECT;	
+	}
+ 	
+	if (pItem->pObject->type == cJSON_Number)
+	{
+		*pbValue = (pItem->pObject->valueint != 0);
+	}
+	else if (pItem->pObject->type == cJSON_String)
+	{
+		if ( (strcasecmp(pItem->pObject->valuestring, "true") == 0)
+		  || (strcasecmp(pItem->pObject->valuestring, "on") == 0))
+		{
+			*pbValue = FTM_TRUE;
+		}
+		else if ((strcasecmp(pItem->pObject->valuestring, "false") == 0)
+		     ||  (strcasecmp(pItem->pObject->valuestring, "off") == 0))
+
+		{
+			*pbValue = FTM_FALSE;
+		}
+		else
+		{
+		return	FTM_RET_CONFIG_INVALID_OBJECT;	
+		}
+	}
+	else
 	{
 		return	FTM_RET_CONFIG_INVALID_OBJECT;	
 	}
 
-	*pbValue = (pItem->pObject->valueint != 0);
 
 	return	FTM_RET_OK;
 }

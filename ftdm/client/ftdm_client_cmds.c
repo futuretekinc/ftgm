@@ -392,8 +392,8 @@ FTM_RET	FTDMC_NODE_cmd
 			MESSAGE("%16s : %s\n", "DID", 		xInfo.pDID);
 			MESSAGE("%16s : %s\n", "Type", 		FTM_NODE_typeString(xInfo.xType));
 			MESSAGE("%16s : %s\n", "Location", 	xInfo.pLocation);
-			MESSAGE("%16s : %d\n", "Interval", 	xInfo.ulReportInterval);
-			MESSAGE("%16s : %d\n", "Timeout", 	xInfo.ulTimeout);
+			MESSAGE("%16s : %lu\n", "Interval", 	xInfo.ulReportInterval);
+			MESSAGE("%16s : %lu\n", "Timeout", 	xInfo.ulTimeout);
 			MESSAGE("%16s : %s\n", "Version", 	FTM_SNMP_versionString(xInfo.xOption.xSNMP.ulVersion));
 			MESSAGE("%16s : %s\n", "URL", 		xInfo.xOption.xSNMP.pURL);
 			MESSAGE("%16s : %s\n", "Community", 	xInfo.xOption.xSNMP.pCommunity);
@@ -418,7 +418,7 @@ FTM_RET	FTDMC_NODE_cmd
 			xRet = FTDMC_NODE_getAt(&_xSession, i, &xInfo);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%16s %8s %16s %8d %8d %8s %16s %8s\n", 
+				MESSAGE("%16s %8s %16s %8lu %8lu %8s %16s %8s %16s\n", 
 						xInfo.pDID,
 						FTM_NODE_typeString(xInfo.xType),
 						FTM_NODE_isStatic(&xInfo)?"Static":"Dynamic",
@@ -642,9 +642,9 @@ FTM_RET	FTDMC_EP_cmd
 				MESSAGE("%16s : %s\n", "Name", xInfo.pName);
 				MESSAGE("%16s : %s\n", "Unit", xInfo.pUnit);
 				MESSAGE("%16s : %s\n", "State", (xInfo.bEnable)?"ENABLE":"DISABLE");
-				MESSAGE("%16s : %d\n", "Timeout", xInfo.ulTimeout);
-				MESSAGE("%16s : %d\n", "Update Interval", xInfo.ulUpdateInterval);
-				MESSAGE("%16s : %d\n", "Report Interval", xInfo.ulReportInterval);
+				MESSAGE("%16s : %lu\n", "Timeout", xInfo.ulTimeout);
+				MESSAGE("%16s : %lu\n", "Update Interval", xInfo.ulUpdateInterval);
+				MESSAGE("%16s : %lu\n", "Report Interval", xInfo.ulReportInterval);
 				MESSAGE("%16s : %s\n", "DID", xInfo.pDID);
 			}
 			break;
@@ -678,9 +678,9 @@ FTM_RET	FTDMC_EP_DATA_cmd
 	FTM_CHAR_PTR	pEPID;
 	FTM_EP_DATA		xData;
 	FTM_EP_DATA_PTR	pEPData;	
-	FTM_ULONG		nStartIndex=0;
-	FTM_ULONG		nMaxCount=50;
-	FTM_ULONG		nCount=0;
+	FTM_INT			nStartIndex=0;
+	FTM_INT			nMaxCount=50;
+	FTM_ULONG		ulCount=0;
 
 	if (nArgc < 2)
 	{
@@ -948,15 +948,15 @@ FTM_RET	FTDMC_EP_DATA_cmd
 				}
 
 				xRet = FTDMC_EP_DATA_get(&_xSession, pEPID, nStartIndex,
-						pEPData, nMaxCount, &nCount);
-				TRACE("FTDMC_EP_DATA_get(hClient, %s, %d, %d, pEPData, %d, %d) = %08lx\n",
-						pEPID, nBeginTime, nEndTime, nMaxCount, nCount, xRet);
+						pEPData, nMaxCount, &ulCount);
+				TRACE("FTDMC_EP_DATA_get(hClient, %s, %d, %d, pEPData, %d, %lu) = %08lx\n",
+						pEPID, nBeginTime, nEndTime, nMaxCount, ulCount, xRet);
 				if (xRet == FTM_RET_OK)
 				{
 					FTM_INT	i;
 
 					MESSAGE("%8s %32s %8s\n", "INDEX", "DATE", "VALUE");	
-					for(i = 0 ; i < nCount ; i++)
+					for(i = 0 ; i < ulCount ; i++)
 					{
 						FTM_CHAR	pTime[64];
 						time_t		xTime = pEPData[i].ulTime;
@@ -1106,7 +1106,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 			return	xRet;
 		}
 
-		MESSAGE("\t%16s %8s %16s %s\n", "ID", "EPID", "TYPE", "CONDITION");
+		MESSAGE("\t%16s %16s %16s %s\n", "ID", "EPID", "TYPE", "CONDITION");
 		for(i = 0 ; i < ulCount ; i++)
 		{
 			FTM_TRIGGER	xTrigger;
@@ -1116,7 +1116,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 				FTM_CHAR	pBuff[1024];
 
 				FTM_TRIGGER_conditionToString(&xTrigger, pBuff, sizeof(pBuff) );
-				MESSAGE("\t%16s %08x %16s %s\n", xTrigger.pID, xTrigger.pEPID, FTM_TRIGGER_typeString(xTrigger.xType), pBuff);
+				MESSAGE("\t%16s %16s %16s %s\n", xTrigger.pID, xTrigger.pEPID, FTM_TRIGGER_typeString(xTrigger.xType), pBuff);
 			}
 		}
 	}

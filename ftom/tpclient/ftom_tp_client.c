@@ -43,6 +43,21 @@ FTM_RET	FTOM_TP_CLIENT_notifyCB
 	FTM_VOID_PTR	pData
 );
 
+static 
+FTOM_MQTT_CLIENT_CBSET	xMQTTCBSet =
+{
+	.fConnect 			= FTOM_MQTT_CLIENT_TPGW_connectCB,
+	.fDisconnect		= FTOM_MQTT_CLIENT_TPGW_disconnectCB,
+	.fPublish 			= FTOM_MQTT_CLIENT_TPGW_publishCB,
+	.fMessage 			= FTOM_MQTT_CLIENT_TPGW_messageCB,
+	.fSubscribe 		= FTOM_MQTT_CLIENT_TPGW_subscribeCB,
+	.fReportGWStatus	= FTOM_MQTT_CLIENT_TPGW_reportGWStatus,
+	.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
+	.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
+	.fTPResponse		= FTOM_MQTT_CLIENT_TPGW_response,
+};
+
+
 FTM_RET	FTOM_TP_CLIENT_create
 (
 	FTOM_TP_CLIENT_PTR _PTR_ 	ppClient
@@ -133,13 +148,23 @@ FTM_RET	FTOM_TP_CLIENT_init
 		goto error;
 	}
 
-	FTOM_MQTT_CLIENT_setMessageCB(&pClient->xMQTT, (FTOM_MQTT_CLIENT_MESSAGE_CB)FTOM_TP_CLIENT_sendMessage, pClient);
+	xRet = FTOM_MQTT_CLIENT_setMessageCB(&pClient->xMQTT, (FTOM_MQTT_CLIENT_MESSAGE_CB)FTOM_TP_CLIENT_sendMessage, pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set MQTT client message callback!\n");
+	}
 
 	xRet = FTOM_MSGQ_init(&pClient->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "MsgQ init failed!\n");
 		goto error;	
+	}
+
+	xRet = FTOM_MQTT_CLIENT_setCBSet(&pClient->xMQTT, &xMQTTCBSet);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set MQTT client callback set!\n");
 	}
 
 error:
@@ -164,6 +189,20 @@ FTM_RET	FTOM_TP_CLIENT_final
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_TP_CLIENT_getConfig
+(
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTOM_TP_CLIENT_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfig != NULL);
+
+	memcpy(pConfig, &pClient->xConfig, sizeof(FTOM_TP_CLIENT_CONFIG));
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_TP_CLIENT_setConfig
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
@@ -173,6 +212,7 @@ FTM_RET	FTOM_TP_CLIENT_setConfig
 	ASSERT(pClient != NULL);
 	ASSERT(pConfig != NULL);
 	FTM_RET	xRet;
+	FTOM_CLIENT_NET_CONFIG	xNetConfig;
 	FTOM_MQTT_CLIENT_CONFIG	xMQTTConfig;
 
 	memcpy(&pClient->xConfig, pConfig, sizeof(FTOM_TP_CLIENT_CONFIG));
@@ -184,8 +224,7 @@ FTM_RET	FTOM_TP_CLIENT_setConfig
 	strncpy(xMQTTConfig.pCertFile, 	pClient->xConfig.pCertFile, FTM_FILE_NAME_LEN);
 	xMQTTConfig.usPort 			= pClient->xConfig.usPort;
 	xMQTTConfig.ulRetryInterval = pClient->xConfig.ulRetryInterval;
-	xMQTTConfig.bTLS 			= FTM_TRUE;
-	xMQTTConfig.ulCBSet 		= 1;
+	xMQTTConfig.bTLS 			= pClient->xConfig.bSecure;
 
 	xRet = FTOM_MQTT_CLIENT_setConfig(&pClient->xMQTT, &xMQTTConfig);
 	if (xRet != FTM_RET_OK)
@@ -208,74 +247,74 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 
 	FTM_RET				xRet;
 	FTM_CONFIG_ITEM		xSection;
+	FTOM_TP_CLIENT_CONFIG	xTPConfig;
+
+	xRet = FTOM_TP_CLIENT_getConfig(pClient, &xTPConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get client configuration!\n");
+		return	FTM_RET_ERROR;	
+	}
 
 	xRet = FTM_CONFIG_getItem(pConfig, "tpclient", &xSection);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "id", pClient->xConfig.pGatewayID, FTM_GWID_LEN);
+		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "id", xTPConfig.pGatewayID, FTM_GWID_LEN);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Can not find the gateway id for the TPClient!\n");
 		}
-	
-		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "cert", pClient->xConfig.pCertFile, FTM_FILE_NAME_LEN);
+
+		xRet = FTM_CONFIG_ITEM_getItemBOOL(&xSection, "secure", &xTPConfig.bSecure);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Can not find secure mode !\n");
+		}
+
+		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "cert", xTPConfig.pCertFile, FTM_FILE_NAME_LEN);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Can not find the certificate information for the TPClient!\n");
 		}
 	
-		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "apikey", pClient->xConfig.pAPIKey, FTM_PASSWD_LEN);
+		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "apikey", xTPConfig.pAPIKey, FTM_PASSWD_LEN);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Can not find a APIKEY information for the TPClient!\n");
 		}
 	
-		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "host", pClient->xConfig.pHost, FTM_HOST_LEN);
+		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "host", xTPConfig.pHost, FTM_HOST_LEN);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Can not find a host for the TPClient!\n");
 		}
 	
-		xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xSection, "port", &pClient->xConfig.usPort);
+		xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xSection, "port", &xTPConfig.usPort);
 		if (xRet != FTM_RET_OK)
 		{
 			INFO("Can not find a port for the TPClient!\n");
 		}
 	
-		xRet = FTM_CONFIG_ITEM_getItemULONG(&xSection, "report_interval", &pClient->xConfig.ulReportInterval);
+		xRet = FTM_CONFIG_ITEM_getItemULONG(&xSection, "report_interval", &xTPConfig.ulReportInterval);
 		if (xRet != FTM_RET_OK)
 		{
 			INFO("Can not find a report interval for the TPClient!\n");
 		}
 	
-		xRet = FTM_CONFIG_ITEM_getItemULONG(&xSection, "retry_interval", &pClient->xConfig.ulRetryInterval);
+		xRet = FTM_CONFIG_ITEM_getItemULONG(&xSection, "retry_interval", &xTPConfig.ulRetryInterval);
 		if (xRet != FTM_RET_OK)
 		{
 			INFO("Can not find max connection retry interval for the TPClient!\n");
 		}
-	
 	}
 
-	FTOM_MQTT_CLIENT_CONFIG	xMQTTConfig;
-
-	strncpy(xMQTTConfig.pGatewayID,	pClient->xConfig.pGatewayID,FTM_GWID_LEN);
-	strncpy(xMQTTConfig.pHost, 		pClient->xConfig.pHost, 	FTM_HOST_LEN);
-	strncpy(xMQTTConfig.pUserID, 	pClient->xConfig.pGatewayID,FTM_USER_ID_LEN);
-	strncpy(xMQTTConfig.pPasswd, 	pClient->xConfig.pAPIKey, 	FTM_PASSWD_LEN);
-	strncpy(xMQTTConfig.pCertFile, 	pClient->xConfig.pCertFile, FTM_FILE_NAME_LEN);
-	xMQTTConfig.usPort 			= pClient->xConfig.usPort;
-	xMQTTConfig.ulRetryInterval = pClient->xConfig.ulRetryInterval;
-	xMQTTConfig.bTLS 			= FTM_TRUE;
-	xMQTTConfig.ulCBSet 		= 1;
-
-	xRet = FTOM_MQTT_CLIENT_setConfig(&pClient->xMQTT, &xMQTTConfig);
+	xRet = FTOM_TP_CLIENT_setConfig(pClient, &xTPConfig);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "MQTT Client configation loading failed!\n");
-		return	xRet;	
+		ERROR2(xRet, "Failed to set TP Client configuration!\n");
 	}
 
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 FTM_RET	FTOM_TP_CLIENT_loadConfigFromFile
@@ -383,24 +422,10 @@ FTM_RET	FTOM_TP_CLIENT_showConfig
 	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.pHost);
 	MESSAGE("%16s : %d\n", "Port", pClient->xConfig.usPort);
 	MESSAGE("%16s : %s\n", "API Key", pClient->xConfig.pAPIKey);
+	MESSAGE("%16s : %s\n", "Secure Mode", (pClient->xConfig.bSecure)?"on":"off");
 	MESSAGE("%16s : %s\n", "Cert File", pClient->xConfig.pCertFile);
 	MESSAGE("%16s : %lu\n","Report Interval", pClient->xConfig.ulReportInterval);
 	MESSAGE("%16s : %lu\n","Retry Interval", pClient->xConfig.ulRetryInterval);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_TP_CLIENT_setCallback
-(
-	FTOM_TP_CLIENT_PTR 		pClient, 
-	FTOM_SERVICE_ID 		xServiceID, 
-	FTOM_SERVICE_CALLBACK 	fServiceCB
-)
-{
-	ASSERT(pClient != NULL);
-
-	pClient->xServiceID	= xServiceID;
-	pClient->fServiceCB	= fServiceCB;
 
 	return	FTM_RET_OK;
 }
@@ -587,7 +612,6 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 		xRet = FTOM_MSGQ_timedPop(&pClient->xMsgQ, ullDiffTime, &pBaseMsg);
 		if (xRet == FTM_RET_OK)
 		{
-			ERROR("Received Message : %d\n", pBaseMsg->xType);
 			switch(pBaseMsg->xType)
 			{
 			case	FTOM_MSG_TYPE_CONNECTION_STATUS:
@@ -997,7 +1021,6 @@ FTM_RET	FTOM_TP_CLIENT_sendEPStatus
 	ASSERT(pClient != NULL);
 	ASSERT(pEPID != NULL);
 
-	TRACE("EP[%s] send status!\n", pEPID);
 	return	FTOM_MQTT_CLIENT_publishEPStatus(&pClient->xMQTT, pEPID, bStatus, ulTimeout);
 }
 
@@ -1013,7 +1036,6 @@ FTM_RET	FTOM_TP_CLIENT_sendEPData
 	ASSERT(pEPID != NULL);
 	ASSERT(pDatas != NULL);
 
-	TRACE("EP[%s] send data!\n", pEPID);
 	return	FTOM_MQTT_CLIENT_publishEPData(&pClient->xMQTT, pEPID, pDatas, ulCount);
 }
 
@@ -1029,7 +1051,6 @@ FTM_RET	FTOM_TP_CLIENT_respose
 	ASSERT(pMsgID != NULL);
 	ASSERT(pMessage != NULL);
 
-	TRACE("Send response[%s]!\n", pMsgID);
 	return	FTOM_MQTT_CLIENT_response(&pClient->xMQTT, pMsgID, nErrorCode, pMessage);
 }
 

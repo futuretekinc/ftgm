@@ -98,7 +98,7 @@ FTM_RET	FTOM_CL_CGI_getSensingList
 			for(i = 0 ; i < ulDataCount ; i++)
 			{
 				FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pData[i]);
-				MESSAGE("%d|%s|%s|%s|\"%s\"|1234|run|0|1|123456|10|123456|123456|1\n", 
+				MESSAGE("%lu|%s|%s|%s|\"%s\"|1234|run|0|1|123456|10|123456|123456|1\n", 
 					++ulIndex,
 					xEPInfo.pDID,
 					xEPInfo.pEPID,
@@ -109,7 +109,7 @@ FTM_RET	FTOM_CL_CGI_getSensingList
 		}
 		else
 		{
-			MESSAGE("# EP[%s] get list error: %08x\n", xEPInfo.pEPID, xRet);
+			MESSAGE("# EP[%s] get list error: %08lx\n", xEPInfo.pEPID, xRet);
 		}
 
 		if (ulDataCount == 0)

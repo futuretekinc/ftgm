@@ -647,7 +647,7 @@ FTM_VOID_PTR FTOM_EP_process
 	FTM_TIMER	xLoopTimer;
 
 
-	TRACE("EP[%s] process start.\n", pEP->xInfo.pEPID);
+	TRACE("EP[%s] started.\n", pEP->xInfo.pEPID);
 
 	pEP->bStop = FTM_FALSE;
 	FTM_TIMER_initS(&pEP->xUpdateTimer, 0);
@@ -660,7 +660,6 @@ FTM_VOID_PTR FTOM_EP_process
 
 		if (FTM_TIMER_isExpired(&pEP->xUpdateTimer))
 		{
-			TRACE("EP[%s] update!\n", pEP->xInfo.pEPID);
 			xRet = FTOM_EP_remoteGet(pEP, &xData);
 			if (xRet == FTM_RET_OK)
 			{
@@ -680,7 +679,6 @@ FTM_VOID_PTR FTOM_EP_process
 		{
 			FTM_ULONG	ulPrevTime, ulCurrentTime;
 
-			TRACE("EP[%s] report!\n", pEP->xInfo.pEPID);
 			FTM_TIMER_getTime(&pEP->xReportTimer, &ulCurrentTime);
 			ulPrevTime = ulCurrentTime - pEP->xInfo.ulReportInterval;
 
@@ -745,6 +743,8 @@ FTM_VOID_PTR FTOM_EP_process
 			FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
 		}
 	} 
+
+	TRACE("EP[%s] stopped.\n", pEP->xInfo.pEPID);
 
 	return	0;
 }
@@ -1138,7 +1138,6 @@ FTM_RET	FTOM_EP_reportDataInTime
 
 	if (nCount == 0)
 	{
-		TRACE("EP[%s] data count is 0.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_OK;
 	}
 
@@ -1162,7 +1161,6 @@ FTM_RET	FTOM_EP_reportDataInTime
 		}
 	}
 
-	TRACE("EP[%s] data is published!\n", pEP->xInfo.pEPID);
 	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pDataList, nDataCount);
 	FTM_MEM_free(pDataList);
 
@@ -1452,8 +1450,8 @@ FTM_RET	FTOM_EP_printList
 			}
 	
 			MESSAGE("%16s ", (!pEP->bStop)?"RUN":"STOP");
-			MESSAGE("%8d ", pEP->xInfo.ulUpdateInterval);
-			MESSAGE("%8d ", pEP->xInfo.ulReportInterval);
+			MESSAGE("%8lu ", pEP->xInfo.ulUpdateInterval);
+			MESSAGE("%8lu ", pEP->xInfo.ulReportInterval);
 			MESSAGE("%8s ", FTM_VALUE_print(&xData.xValue));
 			MESSAGE("%24s\n", pTimeString);
 		}

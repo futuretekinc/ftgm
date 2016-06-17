@@ -17,16 +17,27 @@
 
 typedef	struct
 {
-	FTM_CHAR	pGatewayID[FTM_GWID_LEN+1];
-	FTM_CHAR	pAPIKey[FTM_PASSWD_LEN+1];
+	struct
+	{
+		FTM_CHAR	pGatewayID[FTM_GWID_LEN+1];
+		FTM_CHAR	pAPIKey[FTM_PASSWD_LEN+1];
+	
+		FTM_CHAR	pHost[FTM_HOST_LEN+1];
+		FTM_UINT16	usPort;
+	
+		FTM_BOOL	bSecure;
+		FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
+	
+		FTM_ULONG	ulReportInterval;
+		FTM_ULONG	ulRetryInterval;
+	}	xMQTT;
 
-	FTM_CHAR	pHost[FTM_HOST_LEN+1];
-	FTM_UINT16	usPort;
+	struct	
+	{
+	
+	}	xRESTApi;
 
-	FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
 
-	FTM_ULONG	ulReportInterval;
-	FTM_ULONG	ulRetryInterval;
 }	FTOM_TP_CLIENT_CONFIG, _PTR_ FTOM_TP_CLIENT_CONFIG_PTR;
 
 typedef	struct FTOM_TP_CLIENT_STRUCT
@@ -118,13 +129,6 @@ FTM_RET	FTOM_TP_CLIENT_isRun
 FTM_RET	FTOM_TP_CLIENT_waitingForFinished
 (
 	FTOM_TP_CLIENT_PTR 	pClient
-);
-
-FTM_RET	FTOM_TP_CLIENT_setCallback
-(
-	FTOM_TP_CLIENT_PTR 	pClient, 
-	FTOM_SERVICE_ID 		xID, 
-	FTOM_SERVICE_CALLBACK fCB
 );
 
 FTM_RET	FTOM_TP_CLIENT_sendMessage

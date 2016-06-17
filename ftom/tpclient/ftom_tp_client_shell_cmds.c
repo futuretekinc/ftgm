@@ -179,15 +179,18 @@ FTM_RET	FTOM_SHELL_CMD_quit
 	FTM_VOID_PTR 	pData
 )
 {
-	FTM_RET	xRet;
 #if 0
+	FTM_RET	xRet;
+
 	xRet = FTOM_stop();
 	if (xRet == FTM_RET_OK)
 	{
 		return	FTM_RET_SHELL_QUIT;
 	}
-#endif
 	return	xRet;
+#endif
+
+	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 
 FTM_RET	FTOM_SHELL_CMD_task

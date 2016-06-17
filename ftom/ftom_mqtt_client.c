@@ -101,6 +101,7 @@ FTM_BOOL FTOM_MQTT_PUBLISH_LIST_seeker
 	const FTM_VOID_PTR pKey
 );
 
+#if 0
 static FTOM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
 {
 	{
@@ -126,7 +127,21 @@ static FTOM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
 		.fTPResponse		= FTOM_MQTT_CLIENT_TPGW_response,
 	},
 };
-
+#else
+static 
+FTOM_MQTT_CLIENT_CBSET	xCBDefaultSet =
+{
+	.fConnect 	= FTOM_MQTT_CLIENT_FT_connectCB,
+	.fDisconnect= FTOM_MQTT_CLIENT_FT_disconnectCB,
+	.fPublish 	= FTOM_MQTT_CLIENT_FT_publishCB,
+	.fMessage 	= FTOM_MQTT_CLIENT_FT_messageCB,
+	.fSubscribe = FTOM_MQTT_CLIENT_FT_subscribeCB,
+	.fReportGWStatus	= FTOM_MQTT_CLIENT_TPGW_reportGWStatus,
+	.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
+	.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
+	.fTPResponse		= FTOM_MQTT_CLIENT_TPGW_response,
+};
+#endif
 static 	FTM_ULONG	ulClientInstance = 0;
 
 FTM_RET	FTOM_MQTT_CLIENT_create
@@ -194,7 +209,7 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 	strcpy(pClient->xConfig.pHost, FTOM_MQTT_CLIENT_DEFAULT_BROKER);
 	pClient->xConfig.usPort = FTOM_MQTT_CLIENT_DEFAULT_PORT;
 	pClient->xConfig.ulRetryInterval = FTOM_MQTT_CLIENT_DEFAULT_RECONNECTION_TIME;
-	pClient->xConfig.ulCBSet = FTOM_MQTT_CLIENT_DEFAULT_CB_SET;
+	pClient->pCBSet = &xCBDefaultSet;
 
 	pClient->bStop = FTM_TRUE;
 	FTOM_MSGQ_create(&pClient->pMsgQ);
@@ -327,17 +342,15 @@ FTM_RET	FTOM_MQTT_CLIENT_setMessageCB
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MQTT_CLIENT_setCallback
+FTM_RET	FTOM_MQTT_CLIENT_setCBSet
 (
 	FTOM_MQTT_CLIENT_PTR 	pClient, 
-	FTOM_SERVICE_ID 		xServiceID, 
-	FTOM_SERVICE_CALLBACK fServiceCB
+	FTOM_MQTT_CLIENT_CBSET_PTR	pCBSet
 )
 {
 	ASSERT(pClient != NULL);
 
-	pClient->xServiceID	= xServiceID;
-	pClient->fServiceCB	= fServiceCB;
+	pClient->pCBSet = pCBSet;
 
 	return	FTM_RET_OK;
 }
@@ -378,9 +391,9 @@ FTM_RET	FTOM_MQTT_CLIENT_onReportGWStatus
 
 	FTM_RET	xRet;
 
-	if (pCBSet[pClient->xConfig.ulCBSet].fReportGWStatus != NULL)
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fReportGWStatus != NULL))
 	{
-		xRet = pCBSet[pClient->xConfig.ulCBSet].fReportGWStatus(pClient, pMsg->pGatewayID, pMsg->bStatus, pMsg->ulTimeout);
+		xRet = pClient->pCBSet->fReportGWStatus(pClient, pMsg->pGatewayID, pMsg->bStatus, pMsg->ulTimeout);
 	}
 	else
 	{
@@ -401,9 +414,9 @@ FTM_RET	FTOM_MQTT_CLIENT_onPublishEPStatus
 
 	FTM_RET	xRet;
 
-	if (pCBSet[pClient->xConfig.ulCBSet].fPublishEPStatus != NULL)
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fPublishEPStatus != NULL))
 	{
-		xRet = pCBSet[pClient->xConfig.ulCBSet].fPublishEPStatus(pClient, pMsg->pEPID, pMsg->bStatus, pMsg->ulTimeout);
+		xRet = pClient->pCBSet->fPublishEPStatus(pClient, pMsg->pEPID, pMsg->bStatus, pMsg->ulTimeout);
 	}
 	else
 	{
@@ -424,9 +437,9 @@ FTM_RET	FTOM_MQTT_CLIENT_onPublishEPData
 
 	FTM_RET	xRet;
 
-	if (pCBSet[pClient->xConfig.ulCBSet].fPublishEPData != NULL)
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fPublishEPData != NULL))
 	{
-		xRet = pCBSet[pClient->xConfig.ulCBSet].fPublishEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
+		xRet = pClient->pCBSet->fPublishEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
 	}
 	else
 	{
@@ -447,9 +460,9 @@ FTM_RET	FTOM_MQTT_CLIENT_onTPResponse
 
 	FTM_RET	xRet;
 
-	if (pCBSet[pClient->xConfig.ulCBSet].fTPResponse != NULL)
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fTPResponse != NULL))
 	{
-		xRet = pCBSet[pClient->xConfig.ulCBSet].fTPResponse(pClient, pMsg->pMsgID, pMsg->nCode, pMsg->pMessage);
+		xRet = pClient->pCBSet->fTPResponse(pClient, pMsg->pMsgID, pMsg->nCode, pMsg->pMessage);
 	}
 	else
 	{
@@ -1030,9 +1043,9 @@ FTM_VOID FTOM_MQTT_CLIENT_connectCB
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 
 	TRACE("MQTT is connected!\n");
-	if (pCBSet[pClient->xConfig.ulCBSet].fConnect != NULL)
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fConnect != NULL))
 	{
-		pCBSet[pClient->xConfig.ulCBSet].fConnect(mosq, pObj, nResult);
+		pClient->pCBSet->fConnect(mosq, pObj, nResult);
 	}
 	else
 	{
@@ -1055,9 +1068,9 @@ FTM_VOID FTOM_MQTT_CLIENT_disconnectCB
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 
 	TRACE("MQTT is disconnected.\n");
-	if (pCBSet[pClient->xConfig.ulCBSet].fDisconnect != NULL)
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fDisconnect != NULL))
 	{
-		pCBSet[pClient->xConfig.ulCBSet].fDisconnect(mosq, pObj, nResult);
+		pClient->pCBSet->fDisconnect(mosq, pObj, nResult);
 	}
 	else
 	{
@@ -1084,9 +1097,9 @@ FTM_VOID FTOM_MQTT_CLIENT_publishCB
 	FTOM_MQTT_PUBLISH_PTR	pPublish;
 
 
-	if (pCBSet[pClient->xConfig.ulCBSet].fPublish != NULL)
+	if ((pClient->pCBSet != NULL) &&(pClient->pCBSet->fPublish != NULL))
 	{
-		pCBSet[pClient->xConfig.ulCBSet].fPublish(mosq, pObj, nMID);
+		pClient->pCBSet->fPublish(mosq, pObj, nMID);
 	}
 	else
 	{
@@ -1115,9 +1128,9 @@ FTM_VOID FTOM_MQTT_CLIENT_messageCB
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 
 	TRACE("MQTT received message.\n");
-	if (pCBSet[pClient->xConfig.ulCBSet].fMessage != NULL)
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fMessage != NULL))
 	{
-		pCBSet[pClient->xConfig.ulCBSet].fMessage(mosq, pObj, pMessage);
+		pClient->pCBSet->fMessage(mosq, pObj, pMessage);
 	}
 }
 
@@ -1136,9 +1149,9 @@ FTM_VOID FTOM_MQTT_CLIENT_subscribeCB
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
 	FTOM_MQTT_SUBSCRIBE_PTR	pSubscribe = NULL;
 
-	if (pCBSet[pClient->xConfig.ulCBSet].fSubscribe != NULL)
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fSubscribe != NULL))
 	{
-		pCBSet[pClient->xConfig.ulCBSet].fSubscribe(mosq, pObj, nMID, nQoS, pGrantedQoS);
+		pClient->pCBSet->fSubscribe(mosq, pObj, nMID, nQoS, pGrantedQoS);
 	}
 
 	xRet = FTM_LIST_get(pClient->pSubscribeList, &nMID, (FTM_VOID_PTR _PTR_)&pSubscribe); 

@@ -371,12 +371,12 @@ FTM_RET FTOM_SNMPC_showConfig
 	FTM_ULONG	ulCount;
 
 	MESSAGE("\n[ SNMP CONFIGURATION ]\n");
-	MESSAGE("%16s : %d\n", "MAX RETRY COUNT", pClient->xConfig.ulMaxRetryCount);
+	MESSAGE("%16s : %lu\n", "MAX RETRY COUNT", pClient->xConfig.ulMaxRetryCount);
 	if (FTM_LIST_count(&pClient->xConfig.xMIBList, &ulCount) == FTM_RET_OK)
 	{
-		FTM_ULONG i;
+		FTM_INT	i;
 
-		MESSAGE("%16s : %d\n", "MIBs", ulCount);
+		MESSAGE("%16s : %lu\n", "MIBs", ulCount);
 		for(i = 0 ; i < ulCount ; i++)
 		{
 			FTM_VOID_PTR	pValue;

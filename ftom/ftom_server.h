@@ -24,12 +24,16 @@ typedef	struct
 {
 	FTM_USHORT		usPort;
 	FTM_ULONG		ulMaxSession;
-	FTM_CHAR		pSMKeyFile[FTM_FILE_NAME_LEN + 1];
 	struct	
 	{
 		FTM_USHORT	usPort;
 		FTM_ULONG	ulMaxSubscribe;
 	}	xPublisher;
+
+	struct
+	{
+		FTM_CHAR	pKeyFile[FTM_FILE_NAME_LEN + 1];
+	}	xSM;
 }	FTOM_SERVER_CONFIG, _PTR_ FTOM_SERVER_CONFIG_PTR;
 
 typedef	struct FTOM_SERVER_STRUCT
@@ -49,6 +53,7 @@ typedef	struct FTOM_SERVER_STRUCT
 	struct
 	{
 		pthread_t	xThread;
+		sem_t		xSlot;
 		sem_t		xLock;
 		FTM_LIST	xSubscriberList;
 		FTM_INT		hSocket;

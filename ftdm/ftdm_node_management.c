@@ -449,7 +449,7 @@ FTM_RET	FTDM_NODEM_showList
 			FTDM_NODE_PTR	pNode;
 
 			FTDM_NODEM_getAt(pNodeM, i, &pNode);
-			MESSAGE("\t%16s %16s %16s %16s %16s %8d %8d ",
+			MESSAGE("\t%16s %16s %16s %16s %16s %8lu %8lu ",
 				pNode->xInfo.pDID,
 				pNode->xInfo.pModel,
 				FTM_NODE_typeString(pNode->xInfo.xType),
@@ -473,7 +473,7 @@ FTM_RET	FTDM_NODEM_showList
 
 			case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
 				{
-					MESSAGE(" %16s %16d %16d\n",
+					MESSAGE(" %16s %16lu %16lu\n",
 						pNode->xInfo.xOption.xMB.pURL,
 						pNode->xInfo.xOption.xMB.ulPort,
 						pNode->xInfo.xOption.xMB.ulSlaveID);
@@ -482,14 +482,14 @@ FTM_RET	FTDM_NODEM_showList
 
 			case	FTM_NODE_TYPE_FINS:
 				{
-					MESSAGE(" %16s %02x:%02x:%02x %02x:%02x:%02x %d\n",
+					MESSAGE(" %16s %02x:%02x:%02x %02x:%02x:%02x %lu\n",
 						pNode->xInfo.xOption.xFINS.pDIP,
-						(pNode->xInfo.xOption.xFINS.ulDA >> 16) & 0xFF, 
-						(pNode->xInfo.xOption.xFINS.ulDA >> 8) & 0xFF, 
-						(pNode->xInfo.xOption.xFINS.ulDA >> 0) & 0xFF, 
-						(pNode->xInfo.xOption.xFINS.ulSA >> 16) & 0xFF, 
-						(pNode->xInfo.xOption.xFINS.ulSA >> 8) & 0xFF, 
-						(pNode->xInfo.xOption.xFINS.ulSA >> 0) & 0xFF, 
+						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >> 16) & 0xFF), 
+						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >> 8) & 0xFF), 
+						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >> 0) & 0xFF), 
+						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >> 16) & 0xFF), 
+						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >> 8) & 0xFF), 
+						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >> 0) & 0xFF), 
 						pNode->xInfo.xOption.xFINS.ulServerID);
 				}
 				break;
