@@ -165,7 +165,6 @@ static 	FTOM_SERVICE	pServices[] =
 		.fCallback	=	FTOM_callback,
 		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_SERVER_loadConfig,
 		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_SERVER_saveConfig,
-		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SERVER_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_SERVER_showConfig,
 		.fSendMessage	=	(FTOM_SERVICE_SEND_MESSAGE)FTOM_SERVER_sendMessage,
 		.pData		= 	NULL
@@ -185,7 +184,6 @@ static 	FTOM_SERVICE	pServices[] =
 		.fCallback	=	FTOM_callback,
 		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_SNMPC_loadConfig,
 		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_SNMPC_saveConfig,
-		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SNMPC_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_SNMPC_showConfig,
 		.pData		= 	NULL
 	},
@@ -204,7 +202,6 @@ static 	FTOM_SERVICE	pServices[] =
 		.fCallback	=	FTOM_callback,
 		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_SNMPTRAPD_loadConfig,
 		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_SNMPTRAPD_saveConfig,
-		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_SNMPTRAPD_loadFromFile,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_SNMPTRAPD_showConfig,
 		.pData		= 	NULL
 	},
@@ -221,55 +218,12 @@ static 	FTOM_SERVICE	pServices[] =
 		.fIsRun		=	NULL,
 		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_DMC_setServiceCallback,
 		.fCallback	=	FTOM_callback,
-		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_DMC_loadFromFile,
 		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_DMC_loadConfig,
 		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_DMC_saveConfig,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_DMC_showConfig,
-		.fSendMessage	=	(FTOM_SERVICE_SEND_MESSAGE)FTOM_DMC_sendMessage,
+		.fSendMessage=	(FTOM_SERVICE_SEND_MESSAGE)FTOM_DMC_sendMessage,
 		.pData		= 	NULL
 	},
-#if 0
-	{
-		.xType		=	FTOM_SERVICE_TPCLIENT,
-		.xID		=	FTOM_SERVICE_TPCLIENT,
-		.pName		=	"MQTT Client",
-		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_TP_CLIENT_create,
-		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_TP_CLIENT_destroy,
-		.fInit		=	(FTOM_SERVICE_INIT)FTOM_TP_CLIENT_init,
-		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_TP_CLIENT_final,
-		.fStart 	=	(FTOM_SERVICE_START)FTOM_TP_CLIENT_start,
-		.fStop		=	(FTOM_SERVICE_STOP)FTOM_TP_CLIENT_stop,
-		.fIsRun		=	(FTOM_SERVICE_IS_RUN)FTOM_TP_CLIENT_isRun,
-		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_TP_CLIENT_setCallback,
-		.fCallback	=	FTOM_callback,
-		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_TP_CLIENT_loadConfig,
-		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_TP_CLIENT_saveConfig,
-		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_TP_CLIENT_loadConfigFromFile,
-		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_TP_CLIENT_showConfig,
-		.fSendMessage	=	(FTOM_SERVICE_SEND_MESSAGE)FTOM_TP_CLIENT_sendMessage,
-		.pData		= 	NULL
-	},
-
-	{
-		.xType		=	FTOM_SERVICE_MQTT_CLIENT,
-		.xID		=	FTOM_SERVICE_MQTT_CLIENT,
-		.pName		=	"MQTT Client",
-		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_MQTT_CLIENT_create,
-		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_MQTT_CLIENT_destroy,
-		.fInit		=	(FTOM_SERVICE_INIT)FTOM_MQTT_CLIENT_init,
-		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_MQTT_CLIENT_final,
-		.fStart 	=	(FTOM_SERVICE_START)FTOM_MQTT_CLIENT_start,
-		.fStop		=	(FTOM_SERVICE_STOP)FTOM_MQTT_CLIENT_stop,
-		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_MQTT_CLIENT_setCallback,
-		.fCallback	=	FTOM_callback,
-		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_MQTT_CLIENT_loadConfig,
-		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_MQTT_CLIENT_saveConfig,
-		.fLoadFromFile=	(FTOM_SERVICE_LOAD_FROM_FILE)FTOM_MQTT_CLIENT_loadFromFile,
-		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_MQTT_CLIENT_showConfig,
-		.fSendMessage	=	(FTOM_SERVICE_SEND_MESSAGE)FTOM_MQTT_CLIENT_sendMessage,
-		.pData		= 	NULL
-	},
-#endif
 	{
 		.xType		=	FTOM_SERVICE_DISCOVERY,
 		.xID		=	FTOM_SERVICE_DISCOVERY,
@@ -283,9 +237,8 @@ static 	FTOM_SERVICE	pServices[] =
 		.fIsRun		=	NULL,
 		.fSetCallback=	NULL,
 		.fCallback	=	NULL,
-		.fLoadFromFile=	NULL,
 		.fShowConfig=	NULL,
-		.fSendMessage	=	NULL,
+		.fSendMessage=	NULL,
 		.pData		= 	NULL
 	},
 };
@@ -440,17 +393,42 @@ FTM_RET	FTOM_final
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_loadFromFile
+FTM_RET	FTOM_loadConfigFromFile
 (
 	FTM_CHAR_PTR 	pFileName
 )
 {
 	ASSERT(pFileName != NULL);
+	FTM_RET	xRet;
 
-	FTOM_SERVICE_loadFromFile(FTOM_SERVICE_ALL, pFileName);
+	xRet = FTOM_SERVICE_loadConfigFromFile(FTOM_SERVICE_ALL, pFileName);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration from file[%s]\n", pFileName);
+	}
 
-	TRACE("loaded configuration.\n");
+	TRACE("Configuraion loaded.\n");
+
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_saveConfigToFile
+(
+	FTM_CHAR_PTR	pFileName
+)
+{
+	ASSERT(pFileName != NULL);
+	FTM_RET	xRet;
+
+	xRet =FTOM_SERVICE_saveConfigToFile(FTOM_SERVICE_ALL, pFileName);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to save configuration to file[%s]\n", pFileName);
+	}
+
+	TRACE("Configuration saved.\n");
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_showConfig
@@ -830,9 +808,9 @@ FTM_RET	FTOM_TASK_start
 {
 	FTM_ULONG	i, ulCount;
 	
-	FTOM_RULE_start();
-	FTOM_ACTION_start();
-	FTOM_TRIGGER_start();
+	FTOM_RULE_start(NULL);
+	FTOM_ACTION_start(NULL);
+	FTOM_TRIGGER_start(NULL);
 
 	FTOM_NODE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -914,9 +892,9 @@ FTM_RET	FTOM_TASK_stop
 {
 	FTM_ULONG	i, ulCount;
 	
-	FTOM_TRIGGER_stop();
-	FTOM_ACTION_stop();
-	FTOM_RULE_stop();
+	FTOM_TRIGGER_stop(NULL);
+	FTOM_ACTION_stop(NULL);
+	FTOM_RULE_stop(NULL);
 	FTOM_EP_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{

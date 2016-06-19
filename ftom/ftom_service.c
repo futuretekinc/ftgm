@@ -47,7 +47,10 @@ FTM_RET	FTOM_SERVICE_init
 	return	xRet;
 }
 
-FTM_RET	FTOM_SERVICE_final(FTM_VOID)
+FTM_RET	FTOM_SERVICE_final
+(
+	FTM_VOID
+)
 {
 	FTM_RET				xRet;
 	FTOM_SERVICE_PTR	pService;
@@ -83,7 +86,10 @@ FTM_RET	FTOM_SERVICE_final(FTM_VOID)
 }
 
 
-FTM_RET	FTOM_SERVICE_register(FTOM_SERVICE_PTR pService)
+FTM_RET	FTOM_SERVICE_register
+(
+	FTOM_SERVICE_PTR pService
+)
 {
 	ASSERT(pServiceList != NULL);
 	ASSERT(pService != NULL);
@@ -178,7 +184,7 @@ FTM_RET FTOM_SERVICE_getAt
 
 FTM_RET	FTOM_SERVICE_loadConfig
 (
-	FTOM_SERVICE_TYPE 	xType, 
+	FTOM_SERVICE_TYPE 	xType,
 	FTM_CONFIG_PTR		pConfig
 )
 {
@@ -193,7 +199,7 @@ FTM_RET	FTOM_SERVICE_loadConfig
 		FTM_LIST_iteratorStart(pServiceList);
 		while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
 		{
-			if (pService->fLoadFromFile != NULL)
+			if (pService->fLoadConfig != NULL)
 			{
 				pService->xRet = pService->fLoadConfig(pService->pData, pConfig);
 			}
@@ -209,7 +215,7 @@ FTM_RET	FTOM_SERVICE_loadConfig
 			return	xRet;	
 		}
 
-		if (pService->fLoadFromFile == NULL)
+		if (pService->fLoadConfig == NULL)
 		{
 			return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 		}
@@ -222,7 +228,7 @@ FTM_RET	FTOM_SERVICE_loadConfig
 	return	xRet;
 }
 
-FTM_RET	FTOM_SERVICE_loadFromFile
+FTM_RET	FTOM_SERVICE_loadConfigFromFile
 (
 	FTOM_SERVICE_TYPE xType, 
 	FTM_CHAR_PTR pFileName
@@ -232,16 +238,41 @@ FTM_RET	FTOM_SERVICE_loadFromFile
 	ASSERT(pFileName != NULL);
 
 	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pConfig;
+
+	xRet =FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("SERVER configuration file[%s] load failed\n", pFileName);
+		return	xRet;	
+	}
+
+	xRet = FTOM_SERVICE_loadConfig(xType, pConfig);
+
+	FTM_CONFIG_destroy(&pConfig);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_SERVICE_saveConfig
+(
+	FTOM_SERVICE_TYPE 	xType,
+	FTM_CONFIG_PTR		pConfig
+)
+{
+	ASSERT(pServiceList != NULL);
+
+	FTM_RET				xRet;
 	FTOM_SERVICE_PTR	pService;
-	
+
 	if (xType == FTOM_SERVICE_ALL)
 	{
 		FTM_LIST_iteratorStart(pServiceList);
 		while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
 		{
-			if (pService->fLoadFromFile != NULL)
+			if (pService->fLoadConfig != NULL)
 			{
-				pService->xRet = pService->fLoadFromFile(pService->pData, pFileName);
+				pService->xRet = pService->fSaveConfig(pService->pData, pConfig);
 			}
 		}
 
@@ -255,20 +286,51 @@ FTM_RET	FTOM_SERVICE_loadFromFile
 			return	xRet;	
 		}
 
-		if (pService->fLoadFromFile == NULL)
+		if (pService->fLoadConfig == NULL)
 		{
 			return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 		}
 
-		pService->xRet = pService->fLoadFromFile(pService->pData, pFileName);
-		xRet = pService->xRet;
+		pService->xRet = pService->fSaveConfig(pService->pData, pConfig);
 
+		xRet = pService->xRet;
 	}
+
+	FTM_CONFIG_destroy(&pConfig);
 
 	return	xRet;
 }
 
-FTM_RET	FTOM_SERVICE_showConfig(FTOM_SERVICE_TYPE xType)
+FTM_RET	FTOM_SERVICE_saveConfigToFile
+(
+	FTOM_SERVICE_TYPE xType, 
+	FTM_CHAR_PTR pFileName
+)
+{
+	ASSERT(pServiceList != NULL);
+	ASSERT(pFileName != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pConfig;
+
+	xRet =FTM_CONFIG_create(pFileName, &pConfig, FTM_TRUE);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to create configuration file[%s].\n", pFileName);
+		return	xRet;	
+	}
+
+	xRet = FTOM_SERVICE_saveConfig(xType, pConfig);
+
+	FTM_CONFIG_destroy(&pConfig);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_SERVICE_showConfig
+(
+	FTOM_SERVICE_TYPE xType
+)
 {
 	ASSERT(pServiceList != NULL);
 
@@ -309,7 +371,10 @@ FTM_RET	FTOM_SERVICE_showConfig(FTOM_SERVICE_TYPE xType)
 	return	xRet;
 }
 
-FTM_RET	FTOM_SERVICE_start(FTOM_SERVICE_TYPE xType)
+FTM_RET	FTOM_SERVICE_start
+(
+	FTOM_SERVICE_TYPE xType
+)
 {
 	ASSERT(pServiceList != NULL);
 
@@ -350,7 +415,10 @@ FTM_RET	FTOM_SERVICE_start(FTOM_SERVICE_TYPE xType)
 	return	xRet;
 }
 
-FTM_RET	FTOM_SERVICE_stop(FTOM_SERVICE_TYPE xType)
+FTM_RET	FTOM_SERVICE_stop
+(
+	FTOM_SERVICE_TYPE xType
+)
 {
 	ASSERT(pServiceList != NULL);
 
@@ -393,7 +461,11 @@ FTM_RET	FTOM_SERVICE_stop(FTOM_SERVICE_TYPE xType)
 	return	xRet;
 }
 
-FTM_RET	FTOM_SERVICE_sendMessage(FTOM_SERVICE_TYPE xType, FTOM_MSG_PTR pMsg)
+FTM_RET	FTOM_SERVICE_sendMessage
+(
+	FTOM_SERVICE_TYPE 	xType, 
+	FTOM_MSG_PTR 		pMsg
+)
 {
 	ASSERT(pServiceList != NULL);
 
@@ -446,7 +518,11 @@ FTM_RET	FTOM_SERVICE_sendMessage(FTOM_SERVICE_TYPE xType, FTOM_MSG_PTR pMsg)
 	return	xRet;
 }
 
-FTM_BOOL FTOM_SERVICE_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator)
+FTM_BOOL FTOM_SERVICE_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+)
 {
 	ASSERT(pElement != NULL);
 	ASSERT(pIndicator != NULL);

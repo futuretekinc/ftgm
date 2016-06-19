@@ -832,4 +832,77 @@ typedef	struct
 	FTM_ULONG			ulCount;
 	FTM_ID				pIDs[];
 }	FTDM_RESP_RULE_GET_ID_LIST_PARAMS, _PTR_ FTDM_RESP_RULE_GET_ID_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_LOG     		xRule;
+}	FTDM_REQ_LOG_ADD_PARAMS, _PTR_ FTDM_REQ_LOG_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTDM_RESP_LOG_ADD_PARAMS, _PTR_	FTDM_RESP_LOG_ADD_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_UINT64			ullID;
+}	FTDM_REQ_LOG_DEL_PARAMS, _PTR_	FTDM_REQ_LOG_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+}	FTDM_RESP_LOG_DEL_PARAMS, _PTR_ 	FTDM_RESP_LOG_DEL_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+}	FTDM_REQ_LOG_COUNT_PARAMS, _PTR_ 	FTDM_REQ_LOG_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_ULONG			nCount;
+}	FTDM_RESP_LOG_COUNT_PARAMS, _PTR_	FTDM_RESP_LOG_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
+}	FTDM_REQ_LOG_GET_PARAMS, _PTR_ 	FTDM_REQ_LOG_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_LOG			xRule;
+}	FTDM_RESP_LOG_GET_PARAMS, _PTR_	FTDM_RESP_LOG_GET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_ULONG			nIndex;
+}	FTDM_REQ_LOG_GET_AT_PARAMS, _PTR_	FTDM_REQ_LOG_GET_AT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTDM_CMD			xCmd;
+	FTM_ULONG			nLen;
+	FTM_RET				nRet;
+	FTM_LOG			xRule;
+}	FTDM_RESP_LOG_GET_AT_PARAMS, _PTR_	FTDM_RESP_LOG_GET_AT_PARAMS_PTR;
+
 #endif

@@ -195,55 +195,61 @@ FTM_RET	FTOM_ACTION_destroy
 
 FTM_RET	FTOM_ACTION_start
 (
-	FTM_VOID
+	FTOM_ACTION_PTR pAction
 )
 {
 	FTM_INT	nRet;
 
-	if (bStop)
+	if (pAction == NULL)
 	{
-		return	FTM_RET_ALREADY_STARTED;	
+		if (bStop)
+		{
+			return	FTM_RET_ALREADY_STARTED;	
+		}
+	
+		nRet = pthread_create(&xThread, NULL, FTOM_ACTION_process, NULL);
+		if (nRet < 0)
+		{
+			ERROR("Can't start Act Manager!\n");
+			return	FTM_RET_ERROR;
+		}
+	
+		TRACE("Action management started.\n");
 	}
-
-	nRet = pthread_create(&xThread, NULL, FTOM_ACTION_process, NULL);
-	if (nRet < 0)
-	{
-		ERROR("Can't start Act Manager!\n");
-		return	FTM_RET_ERROR;
-	}
-
-	TRACE("Action management started.\n");
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_ACTION_stop
 (
-	FTM_VOID
+	FTOM_ACTION_PTR pAction
 )
 {
-	if (!bStop)
+	if (pAction == NULL)
 	{
-		return	FTM_RET_NOT_START;	
-	}
+		if (!bStop)
+		{
+			return	FTM_RET_NOT_START;	
+		}
+		
+		FTM_RET			xRet;
+		FTOM_MSG_PTR	pMsg;
 	
-	FTM_RET			xRet;
-	FTOM_MSG_PTR	pMsg;
-
-	xRet = FTOM_MSG_createQuit(&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
+		xRet = FTOM_MSG_createQuit(&pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			return	xRet;	
+		}
+	
+		xRet = FTOM_MSGQ_push(pMsgQ, pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			pthread_cancel(xThread);
+		}
+	
+		pthread_join(xThread, NULL);
+		TRACE("Action management stopped.\n");
 	}
-
-	xRet = FTOM_MSGQ_push(pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		pthread_cancel(xThread);
-	}
-
-	pthread_join(xThread, NULL);
-	TRACE("Action management stopped.\n");
 
 	return	FTM_RET_OK;
 }
@@ -414,6 +420,17 @@ FTM_BOOL	FTOM_ACTION_seeker
 	FTM_CHAR_PTR	pActionID = (FTM_CHAR_PTR)pIndicator;
 
 	return	strcasecmp(pAction->xInfo.pID, pActionID) == 0;
+}
+
+FTM_RET	FTOM_ACTION_print
+(
+	FTOM_ACTION_PTR	pAction
+)
+{
+	MESSAGE("%16s : %s\n", "ID", pAction->xInfo.pID);
+	MESSAGE("%16s : %s\n", "Type", FTM_ACTION_typeString(pAction->xInfo.xType));
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_ACTION_printList

@@ -100,7 +100,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		}
 
 		FTOM_TP_CLIENT_start(pTPClient);
-		FTM_SHELL_init(&xShell, NULL);
+		FTM_SHELL_init(&xShell,pTPClient);
 		FTM_SHELL_setPrompt(&xShell, "tpclient> ");
 		FTM_SHELL_addCmds(&xShell, FTOM_shellCmds, FTOM_shellCmdCount);
 		FTM_SHELL_run(&xShell);

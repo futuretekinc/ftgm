@@ -55,6 +55,8 @@ int main(int nArgc, char *pArgv[])
 
 	FTM_MEM_init();
 	FTM_TRACE_setLevel(ulDebugLevel);
+	FTM_TRACE_setModule(0xFFFFFFFF, FTM_TRUE);
+
 	xRet = FTOM_init();
 	if (xRet != FTM_RET_OK)
 	{
@@ -62,7 +64,7 @@ int main(int nArgc, char *pArgv[])
 		return	-1;	
 	}
 
-	FTOM_loadFromFile(pConfigFileName);
+	FTOM_loadConfigFromFile(pConfigFileName);
 
 	if (bDaemon)
 	{

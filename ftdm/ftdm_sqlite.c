@@ -3045,3 +3045,324 @@ FTM_RET	FTDM_DBIF_count
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_DBIF_LOG_initTable
+(
+	FTM_VOID
+)
+{
+	FTM_RET			xRet;
+	FTM_CHAR_PTR	pTableName = "log";
+	FTM_BOOL		bExist = FTM_FALSE;
+
+	xRet = _FTDM_DBIF_isExistTable(pTableName, &bExist);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_DBIF_ERROR;	
+	}
+
+	if (bExist != FTM_TRUE)
+	{
+		TRACE("%s table is not exist.\n", pTableName);
+		FTM_CHAR_PTR	pErrMsg = NULL;
+		char			pSQL[1024];
+
+		if (_pSQLiteDB == NULL)
+		{
+			return	FTM_RET_NOT_INITIALIZED;	
+		}
+
+		sprintf(pSQL, "CREATE TABLE %s ("\
+						"ID	INT64 PRIMARY KEY,"\
+						"VALUE	BLOB)" , pTableName);
+
+		xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+		if (xRet != SQLITE_OK)
+		{
+        	ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+			sqlite3_free(pErrMsg);
+
+			return	FTM_RET_ERROR;
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+
+FTM_BOOL FTDM_DBIF_LOG_isTableExist
+(
+	FTM_VOID
+)
+{
+	FTM_RET			xRet;
+	FTM_CHAR_PTR	pTableName = "log";
+	FTM_BOOL		bExist = FTM_FALSE;
+
+	xRet = _FTDM_DBIF_isExistTable(pTableName, &bExist);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_FALSE;	
+	}
+
+	return	bExist;
+}
+
+FTM_RET	FTDM_DBIF_LOG_append
+(
+ 	FTM_LOG_PTR	pLog
+)
+{
+	ASSERT(pLog != NULL);
+
+	FTM_INT			nRC;
+	sqlite3_stmt 	*pStmt;
+	FTM_CHAR		pSQL[1024];
+
+	if (_pSQLiteDB == NULL)
+	{
+		TRACE("DB is not initialize.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "INSERT INTO log (ID,VALUE) VALUES (?,?)");
+	do 
+	{
+		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRC!=SQLITE_OK )
+		{
+			return FTM_RET_ERROR;
+		}
+
+		sqlite3_bind_int64(pStmt, 1, pLog->ullID);
+		sqlite3_bind_blob(pStmt, 2, pLog, sizeof(FTM_LOG), SQLITE_STATIC);
+
+		nRC = sqlite3_step(pStmt);
+		ASSERT( nRC != SQLITE_ROW);
+
+		nRC = sqlite3_finalize(pStmt);
+	}  while (nRC == SQLITE_SCHEMA);
+
+	return FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_LOG_del
+(
+	FTM_UINT64		ullID
+)
+{
+	FTM_RET		xRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+
+	if (_pSQLiteDB == NULL)
+	{
+		ERROR("DB not initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	sprintf(pSQL, "DELETE FROM log WHERE ID = \'%llu\'", ullID);
+	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+	if (xRet != SQLITE_OK)
+	{
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+FTM_RET	FTDM_DBIF_LOG_count
+(
+	FTM_ULONG_PTR		pulCount
+)
+{
+	return	FTDM_DBIF_count("log", pulCount);
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+static 
+FTM_INT	_FTDM_DBIF_LOG_countCB
+(
+	FTM_VOID_PTR	pData, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR _PTR_	pArgv, 
+	FTM_CHAR_PTR _PTR_ pColName
+)
+{
+	FTM_ULONG_PTR pnCount = (FTM_ULONG_PTR)pData;
+
+	if (nArgc != 0)
+	{
+		*pnCount = atoi(pArgv[0]);
+	}
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_LOG_isExist
+(
+	FTM_UINT64		ullID,
+	FTM_BOOL_PTR	pbExist
+)
+{
+    FTM_INT			nRet;
+    FTM_CHAR		pSQL[1024];
+    FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_ULONG		ulCount = 0;
+
+	if (_pSQLiteDB == NULL)
+	{
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+	if (FTDM_DBIF_LOG_isTableExist() == FTM_TRUE)
+	{
+    	sprintf(pSQL, "SELECT COUNT(*) FROM log WHERE ID = \'%llu\'", ullID);
+    	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_LOG_countCB, &ulCount, &pErrMsg);
+    	if (nRet != SQLITE_OK)
+    	{
+        	ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        	sqlite3_free(pErrMsg);
+
+    		return  FTM_RET_ERROR;
+    	}
+	}
+
+	*pbExist = (ulCount != 0);
+
+	return	FTM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+typedef struct
+{
+	FTM_ULONG			nMaxCount;
+	FTM_ULONG			nCount;
+	FTM_LOG_PTR	pLogs;
+}	FTDM_DBIF_CB_GET_LOG_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_LOG_LIST_PARAMS_PTR;
+
+FTM_INT	_FTDM_DBIF_LOG_getListCB
+(
+	FTM_VOID_PTR	pData, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR _PTR_	pArgv, 
+	FTM_CHAR_PTR _PTR_ pColName
+)
+{
+	FTDM_DBIF_CB_GET_LOG_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_LOG_LIST_PARAMS_PTR)pData;
+
+	if (nArgc != 0)
+	{
+		FTM_INT	i;
+
+		for(i = 0 ; i < nArgc ; i++)
+		{
+			if (strcmp(pColName[i], "VALUE") == 0)
+			{
+				memcpy(&pParams->pLogs[pParams->nCount-1], pArgv[i], sizeof(FTM_LOG));
+			}
+		}
+	}
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_LOG_getList
+(
+	FTM_LOG_PTR		pLogs, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
+)
+{
+    FTM_INT			xRet;
+    FTM_CHAR		pSQL[1024];
+    FTM_CHAR_PTR	pErrMsg = NULL;
+	FTDM_DBIF_CB_GET_LOG_LIST_PARAMS xParams= 
+	{
+		.nMaxCount 	= nMaxCount,
+		.nCount		= 0,
+		.pLogs		= pLogs
+	};
+
+	if (_pSQLiteDB == NULL)
+	{
+		ERROR("DB not initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+    sprintf(pSQL, "SELECT VALUE FROM log");
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_LOG_getListCB, &xParams, &pErrMsg);
+    if (xRet != SQLITE_OK)
+    {
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
+
+    	return  FTM_RET_ERROR;
+    }
+
+	*pulCount = xParams.nCount;
+
+	return	FTM_RET_OK;
+}
+
+/***************************************************************
+ *
+ ***************************************************************/
+int _FTDM_DBIF_LOG_getCB(void *pData, int nArgc, char **pArgv, char **pColName)
+{
+	FTM_LOG_PTR pLog = (FTM_LOG_PTR)pData;
+
+	if (nArgc != 0)
+	{
+		if (strcmp(pColName[0], "VALUE") == 0)
+		{
+			memcpy(pLog, pArgv[0], sizeof(FTM_LOG));
+		}
+	}
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_DBIF_LOG_get
+(
+	FTM_UINT64		ullID,
+ 	FTM_LOG_PTR		pLOG
+)
+{
+    int     xRet;
+    char    pSQL[1024];
+    char    *pErrMsg = NULL;
+	FTM_LOG	xLOG;
+
+	if (_pSQLiteDB == NULL)
+	{
+		ERROR("DB not initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;	
+	}
+
+    sprintf(pSQL, "SELECT VALUE FROM log WHERE ID = \'%llu\'", ullID);
+    xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_LOG_getCB, &xLOG, &pErrMsg);
+    if (xRet != SQLITE_OK)
+    {
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        sqlite3_free(pErrMsg);
+
+    	return  FTM_RET_ERROR;
+    }
+	
+	if (xLOG.ullID == ullID)
+	{
+		return	FTM_RET_OBJECT_NOT_FOUND;	
+	}
+
+	memcpy(pLOG, &xLOG, sizeof(FTM_LOG));
+
+	return	FTM_RET_OK;
+}
+

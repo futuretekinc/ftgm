@@ -51,9 +51,14 @@ FTM_RET	FTOM_final
 	FTM_VOID
 );
 
-FTM_RET	FTOM_loadFromFile
+FTM_RET	FTOM_loadConfigFromFile
 (
 	FTM_CHAR_PTR 	pConfigFileName
+);
+
+FTM_RET	FTOM_saveConfigToFile
+(
+	FTM_CHAR_PTR	pFileName
 );
 
 FTM_RET	FTOM_showConfig

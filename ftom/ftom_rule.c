@@ -73,7 +73,7 @@ FTM_RET	FTOM_RULE_final
 
 	if (!bStop)
 	{
-		FTOM_RULE_stop();	
+		FTOM_RULE_stop(NULL);	
 	}
 
 	if (pMsgQ)
@@ -232,49 +232,59 @@ FTM_RET	FTOM_RULE_destroy
 
 FTM_RET	FTOM_RULE_start
 (
-	FTM_VOID
+	FTOM_RULE_PTR	pRule
 )
 {
 	FTM_INT	nRet;
-
-	if (!bStop)
+	
+	if (pRule == NULL)
 	{
-		return	FTM_RET_ALREADY_STARTED;	
+		if (!bStop)
+		{
+			return	FTM_RET_ALREADY_STARTED;	
+		}
+	
+		nRet = pthread_create(&xThread, NULL, FTOM_RULE_process, NULL);
+		if (nRet < 0)
+		{
+			return	FTM_RET_THREAD_CREATION_ERROR;
+		}
+	
+		TRACE("Rule management started.\n");
 	}
-
-	nRet = pthread_create(&xThread, NULL, FTOM_RULE_process, NULL);
-	if (nRet < 0)
-	{
-		return	FTM_RET_THREAD_CREATION_ERROR;
-	}
-
-	TRACE("Rule management started.\n");
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_RULE_stop
 (
-	FTM_VOID
+	FTOM_RULE_PTR	pRule
 )
 {
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createQuit(&pMsg);
-	if (xRet != FTM_RET_OK)
+	if (pRule == NULL)
 	{
-		return	xRet;	
+		xRet = FTOM_MSG_createQuit(&pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			return	xRet;	
+		}
+	
+		xRet = FTOM_MSGQ_push(pMsgQ, pMsg);
+		if (xRet != FTM_RET_OK)
+		{
+			pthread_cancel(xThread);
+		}
+	
+		pthread_join(xThread, NULL);
+	
+		TRACE("Rule management stopped.\n");
 	}
-
-	xRet = FTOM_MSGQ_push(pMsgQ, pMsg);
-	if (xRet != FTM_RET_OK)
+	else
 	{
-		pthread_cancel(xThread);
+		pRule->xInfo.xState = FTM_RULE_STATE_DEACTIVATE;
 	}
-
-	pthread_join(xThread, NULL);
-
-	TRACE("Rule management stopped.\n");
 
 	return	FTM_RET_OK;
 }
@@ -522,6 +532,28 @@ FTM_BOOL	FTOM_RULE_seeker
 	return	strcasecmp(pRule->xInfo.pID, pRuleID) == 0;
 }
 
+FTM_RET	FTOM_RULE_print
+(
+	FTOM_RULE_PTR	pRule
+)
+{
+	FTM_INT	i;
+
+	MESSAGE("%16s : %s\n", "ID", pRule->xInfo.pID);
+	MESSAGE("%16s : %s\n", "Trigger", pRule->xInfo.xParams.pTriggers[0]);
+	for(i = 1 ; i < pRule->xInfo.xParams.ulTriggers ; i++)
+	{
+		MESSAGE("%16s   %s\n", "", pRule->xInfo.xParams.pTriggers[i]);
+	}
+	MESSAGE("%16s : %s\n", "Action", pRule->xInfo.xParams.pActions[0]);
+	for(i = 1 ; i < pRule->xInfo.xParams.ulActions ; i++)
+	{
+		MESSAGE("%16s   %s\n", "", pRule->xInfo.xParams.pActions[i]);
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_RULE_printList
 (
 	FTM_VOID
@@ -533,7 +565,7 @@ FTM_RET	FTOM_RULE_printList
 
 	MESSAGE("\n# Rule Information\n");
 	FTOM_RULE_count(&ulCount);
-	MESSAGE("%16s %24s %24s\n", "ID","TRIGGER", "ACTION");
+	MESSAGE("%16s %16s %16s\n", "ID","TRIGGER", "ACTION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_RULE_PTR	pRule;
@@ -554,20 +586,20 @@ FTM_RET	FTOM_RULE_printList
 
 				if (j < pRule->xInfo.xParams.ulTriggers)
 				{
-					MESSAGE(" %24s", pRule->xInfo.xParams.pTriggers[j]);
+					MESSAGE(" %16s", pRule->xInfo.xParams.pTriggers[j]);
 				}
 				else
 				{
-					MESSAGE(" %24s", "");
+					MESSAGE(" %16s", "");
 				}
 
 				if (j < pRule->xInfo.xParams.ulActions)
 				{
-					MESSAGE(" %24s", pRule->xInfo.xParams.pActions[j]);
+					MESSAGE(" %16s", pRule->xInfo.xParams.pActions[j]);
 				}
 				else
 				{
-					MESSAGE(" %24s", "");
+					MESSAGE(" %16s", "");
 				}
 			}
 			MESSAGE("\n");

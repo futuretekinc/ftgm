@@ -41,12 +41,12 @@ FTM_RET	FTOM_ACTION_destroy
 
 FTM_RET	FTOM_ACTION_start
 (
-	FTM_VOID
+	FTOM_ACTION_PTR pActionM
 );
 
 FTM_RET	FTOM_ACTION_stop
 (
-	FTM_VOID
+	FTOM_ACTION_PTR pActionM
 );
 
 FTM_RET	FTOM_ACTION_count
@@ -77,6 +77,11 @@ FTM_RET	FTOM_ACTION_active
 (
 	FTM_CHAR_PTR		pActionID,
 	FTM_BOOL			bActivate
+);
+
+FTM_RET	FTOM_ACTION_print
+(
+	FTOM_ACTION_PTR		pAction
 );
 
 FTM_RET	FTOM_ACTION_printList

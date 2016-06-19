@@ -37,12 +37,12 @@ FTM_RET	FTOM_TRIGGER_final
 
 FTM_RET	FTOM_TRIGGER_start
 (
-	FTM_VOID
+	FTOM_TRIGGER_PTR	pTrigger
 );
 
 FTM_RET	FTOM_TRIGGER_stop
 (	
-	FTM_VOID
+	FTOM_TRIGGER_PTR	pTrigger
 );
 
 FTM_RET	FTOM_TRIGGER_create
@@ -92,8 +92,14 @@ FTM_RET	FTOM_TRIGGER_updateEP
 	FTM_EP_DATA_PTR pData
 );
 
+FTM_RET	FTOM_TRIGGER_print
+(
+	FTOM_TRIGGER_PTR	pTrigger
+);
+
 FTM_RET	FTOM_TRIGGER_printList
 (
 	FTM_VOID
 );
+
 #endif

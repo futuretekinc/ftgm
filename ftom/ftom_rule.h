@@ -41,12 +41,12 @@ FTM_RET	FTOM_RULE_destroy
 
 FTM_RET	FTOM_RULE_start
 (
-	FTM_VOID
+	FTOM_RULE_PTR pRule
 );
 
 FTM_RET	FTOM_RULE_stop
 (
-	FTM_VOID
+	FTOM_RULE_PTR pRule
 );
 
 FTM_RET	FTOM_RULE_count
@@ -86,6 +86,11 @@ FTM_RET	FTOM_RULE_activate
 FTM_RET	FTOM_RULE_deactivate
 (
 	FTM_CHAR_PTR	pRuleID
+);
+
+FTM_RET	FTOM_RULE_print
+(
+	FTOM_RULE_PTR	pRule
 );
 
 FTM_RET	FTOM_RULE_printList

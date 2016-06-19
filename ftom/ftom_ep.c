@@ -1402,10 +1402,13 @@ FTM_RET	FTOM_EP_print
 	MESSAGE("%16s : %s\n", 	"EPID", pEP->xInfo.pEPID);
 	MESSAGE("%16s : %s\n", 	"Type", FTM_EP_typeString(pEP->xInfo.xType));
 	MESSAGE("%16s : %s\n", 	"Name", pEP->xInfo.pName);
-	MESSAGE("%16s : %s\n", 	"DID", 	pEP->pNode->xInfo.pDID);
 	MESSAGE("%16s : %s\n", 	"State",(!pEP->bStop)?"RUN":"STOP");
 	MESSAGE("%16s : %s\n", 	"Value",FTM_VALUE_print(&xData.xValue));
+	MESSAGE("%16s : %s\n", 	"Unit",	pEP->xInfo.pUnit);
+	MESSAGE("%16s : %s\n", 	"DID", 	pEP->pNode->xInfo.pDID);
 	MESSAGE("%16s : %s\n", 	"Time", pTimeString);
+	MESSAGE("%16s : %lu\n", "Update Interval", pEP->xInfo.ulUpdateInterval);
+	MESSAGE("%16s : %lu\n", "Report Interval", pEP->xInfo.ulReportInterval);
 	
 	return	FTM_RET_OK;
 }
@@ -1420,7 +1423,7 @@ FTM_RET	FTOM_EP_printList
 	FTOM_EP_PTR	pEP;
 	
 	MESSAGE("\n# EP Information\n");
-	MESSAGE("%16s %16s %16s %16s %16s %8s %8s %8s %24s\n", "EPID", "TYPE", "NAME", "DID", "STATE", "UPDATE", "REPORT", "VALUE", "TIME");
+	MESSAGE("%16s %16s %16s %16s %8s %8s %8s %8s %8s %24s\n", "EPID", "TYPE", "NAME", "DID", "STATE", "VALUE", "UNIT", "UPDATE", "REPORT", "TIME");
 	FTOM_EP_count(&ulCount);
 	for(i = 0; i < ulCount ; i++)
 	{
@@ -1449,10 +1452,11 @@ FTM_RET	FTOM_EP_printList
 				MESSAGE("%16s ", "");
 			}
 	
-			MESSAGE("%16s ", (!pEP->bStop)?"RUN":"STOP");
+			MESSAGE("%8s ", (!pEP->bStop)?"RUN":"STOP");
+			MESSAGE("%8s ", FTM_VALUE_print(&xData.xValue));
+			MESSAGE("%8s ", pEP->xInfo.pUnit);
 			MESSAGE("%8lu ", pEP->xInfo.ulUpdateInterval);
 			MESSAGE("%8lu ", pEP->xInfo.ulReportInterval);
-			MESSAGE("%8s ", FTM_VALUE_print(&xData.xValue));
 			MESSAGE("%24s\n", pTimeString);
 		}
 	}

@@ -524,12 +524,21 @@ FTM_RET FTOM_NODE_getEPData
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
+	FTM_RET	xRet;
+
 	if (pNode->pClass->fGetEPData == NULL)
 	{
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pNode->pClass->fGetEPData(pNode, pEP, pData);
+	pNode->xStatistics.ulGetCount++;
+	xRet = pNode->pClass->fGetEPData(pNode, pEP, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		pNode->xStatistics.ulGetError++;
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_NODE_setEPData
@@ -542,12 +551,21 @@ FTM_RET	FTOM_NODE_setEPData
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
+	FTM_RET	xRet;
+
 	if (pNode->pClass->fSetEPData == NULL)
 	{
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pNode->pClass->fSetEPData(pNode, pEP, pData);
+	pNode->xStatistics.ulGetCount++;
+	xRet = pNode->pClass->fSetEPData(pNode, pEP, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		pNode->xStatistics.ulSetError++;
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_NODE_getEPCount
@@ -967,8 +985,12 @@ FTM_RET	FTOM_NODE_print
 			MESSAGE("%16s   %d - %16s\n", "", j+1, pEP->xInfo.pEPID);
 		}
 	}
+	MESSAGE("%16s : %lu\n", "Get Count", 		pNode->xStatistics.ulGetCount);
+	MESSAGE("%16s : %lu\n", "Set Count", 		pNode->xStatistics.ulSetCount);
 	MESSAGE("%16s : %lu\n", "Tx Count", 		pNode->xStatistics.ulTxCount);
 	MESSAGE("%16s : %lu\n", "Rx Count", 		pNode->xStatistics.ulRxCount);
+	MESSAGE("%16s : %lu\n", "Get Error", 		pNode->xStatistics.ulGetError);
+	MESSAGE("%16s : %lu\n", "Set Error", 		pNode->xStatistics.ulSetError);
 	MESSAGE("%16s : %lu\n", "Tx Error", 		pNode->xStatistics.ulTxError);
 	MESSAGE("%16s : %lu\n", "Rx Error", 		pNode->xStatistics.ulRxError);
 	MESSAGE("%16s : %lu\n", "Invalid Frame", pNode->xStatistics.ulInvalidFrame);

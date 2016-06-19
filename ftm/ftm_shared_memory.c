@@ -346,12 +346,12 @@ FTM_RET	FTM_SMQ_print
 {
 	MESSAGE("%16s : %08x\n","Key", 			pSMQ->xMemKey);
 	MESSAGE("%16s : %d\n", 	"ID", 			pSMQ->nShmID);
-	MESSAGE("%16s : %08x\n","Locker",  		pSMQ->pLocker);
-	MESSAGE("%16s : %d\n", 	"Reference",  	pSMQ->pHead->ulReference);
-	MESSAGE("%16s : %d\n", 	"Slot Size", 	pSMQ->pHead->ulSlotSize);
-	MESSAGE("%16s : %d\n", 	"Slot Count", 	pSMQ->pHead->ulSlotCount);
-	MESSAGE("%16s : %d\n", 	"Head Index", 	pSMQ->pHead->ulFirst);
-	MESSAGE("%16s : %d\n", 	"Packet Count",	pSMQ->pHead->ulCount);
+	MESSAGE("%16s : %08lx\n","Locker",  		(FTM_ULONG)pSMQ->pLocker);
+	MESSAGE("%16s : %lu\n",	"Reference",  	pSMQ->pHead->ulReference);
+	MESSAGE("%16s : %lu\n",	"Slot Size", 	pSMQ->pHead->ulSlotSize);
+	MESSAGE("%16s : %lu\n",	"Slot Count", 	pSMQ->pHead->ulSlotCount);
+	MESSAGE("%16s : %lu\n",	"Head Index", 	pSMQ->pHead->ulFirst);
+	MESSAGE("%16s : %lu\n",	"Packet Count",	pSMQ->pHead->ulCount);
 
 	return	FTM_RET_OK;
 }
@@ -715,16 +715,16 @@ FTM_RET	FTM_SMP_print
 
 	MESSAGE("%16s : %08x\n",	"Key", 	pSMP->xKey);
 	MESSAGE("%16s : %08x\n",	"ID", 	pSMP->nShmID);
-	MESSAGE("%16s : %08x\n",	"Locker", pSMP->pLocker);
+	MESSAGE("%16s : %08lx\n",	"Locker", (FTM_ULONG)pSMP->pLocker);
 
 	MESSAGE("%16s : %s\n", 		"Name", pSMP->pBlock->pLockerName);
 	sem_getvalue(&pSMP->pBlock->xReq, &nValue);
 	MESSAGE("%16s : %d\n",		"Req",	nValue); 
 	sem_getvalue(&pSMP->pBlock->xResp, &nValue);
 	MESSAGE("%16s : %d\n",		"Resp",	nValue); 
-	MESSAGE("%16s : %d\n", 		"Reference", pSMP->pBlock->ulReference);
-	MESSAGE("%16s : %d\n", 		"Req Length", pSMP->pBlock->ulReqLen);
-	MESSAGE("%16s : %d\n", 		"Resp Length",pSMP->pBlock->ulRespLen);
+	MESSAGE("%16s : %lu\n", 		"Reference", pSMP->pBlock->ulReference);
+	MESSAGE("%16s : %lu\n", 		"Req Length", pSMP->pBlock->ulReqLen);
+	MESSAGE("%16s : %lu\n", 		"Resp Length",pSMP->pBlock->ulRespLen);
 
 	return	FTM_RET_OK;
 }

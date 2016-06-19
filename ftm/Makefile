@@ -11,6 +11,7 @@ LIB_FTM_INCS= ftm_types.h ftm_node.h ftm_ep.h ftm_object.h ftm_debug.h ftm_list.
 LIB_FTM_SRCS= ftm_types.c \
 			  ftm_trace.c \
 			  ftm_log.c \
+			  ftm_logger.c \
 			  ftm_node.c \
 			  ftm_node_management.c \
 			  ftm_ep.c \

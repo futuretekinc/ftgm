@@ -384,7 +384,7 @@ FTM_RET FTOM_SNMPTRAPD_loadConfig
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_SNMPTRAPD_loadFromFile
+FTM_RET FTOM_SNMPTRAPD_loadConfigFromFile
 (
 	FTOM_SNMPTRAPD_PTR 	pSNMPTRAPD, 
 	FTM_CHAR_PTR 			pFileName
@@ -396,7 +396,7 @@ FTM_RET FTOM_SNMPTRAPD_loadFromFile
 	FTM_RET				xRet;
 	FTM_CONFIG_PTR		pConfig;
 
-	xRet = FTM_CONFIG_create(pFileName, &pConfig);	
+	xRet = FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);	
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_CONFIG_LOAD_FAILED;
@@ -517,7 +517,7 @@ FTM_RET FTOM_SNMPTRAPD_showConfig
 {
 	ASSERT(pSNMPTRAPD != NULL);
 
-	MESSAGE("[ SNMPTRAPD CONFIGURATION ]\n");
+	MESSAGE("\n[ SNMPTRAPD CONFIGURATION ]\n");
 	MESSAGE("%16s : %s\n", "Name", pSNMPTRAPD->xConfig.pName);
 	MESSAGE("%16s : %d\n", "Port", pSNMPTRAPD->xConfig.usPort);
 

@@ -17,24 +17,40 @@
 
 typedef	struct
 {
+	FTM_CHAR	pGatewayID[FTM_GWID_LEN+1];
+	FTM_CHAR	pAPIKey[FTM_PASSWD_LEN+1];
+	FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
+	FTM_CHAR	pUserID[FTM_USER_ID_LEN+1];
+	FTM_CHAR	pPasswd[FTM_PASSWD_LEN+1];
+	FTM_ULONG	ulReportInterval;
+
 	struct
 	{
-		FTM_CHAR	pGatewayID[FTM_GWID_LEN+1];
-		FTM_CHAR	pAPIKey[FTM_PASSWD_LEN+1];
-	
+		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];
+		FTM_USHORT	usPort;
+	}	xFTOMC;
+
+	struct
+	{
+		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];
+		FTM_USHORT	usPort;
+	}	xSubscriber;
+
+	struct
+	{
 		FTM_CHAR	pHost[FTM_HOST_LEN+1];
 		FTM_UINT16	usPort;
 	
 		FTM_BOOL	bSecure;
-		FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
 	
-		FTM_ULONG	ulReportInterval;
 		FTM_ULONG	ulRetryInterval;
 	}	xMQTT;
 
 	struct	
 	{
+		FTM_CHAR	pBaseURL[FTM_URL_LEN+1];
 	
+		FTM_BOOL	bSecure;
 	}	xRESTApi;
 
 
@@ -103,6 +119,12 @@ FTM_RET	FTOM_TP_CLIENT_saveConfig
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
 	FTM_CONFIG_PTR		pConfig
+);
+
+FTM_RET	FTOM_TP_CLIENT_saveConfigToFile
+(
+	FTOM_TP_CLIENT_PTR 	pClient, 
+	FTM_CHAR_PTR 		pFileName
 );
 
 FTM_RET	FTOM_TP_CLIENT_showConfig

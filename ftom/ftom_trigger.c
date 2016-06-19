@@ -212,21 +212,24 @@ FTM_RET	FTOM_TRIGGER_destroy
 
 FTM_RET	FTOM_TRIGGER_start
 (
-	FTM_VOID
+	FTOM_TRIGGER_PTR	pTrigger
 )
 {
 	FTM_INT	nRet;
 
-	if (bStop)
+	if (pTrigger == NULL)
 	{
-		return	FTM_RET_ALREADY_STARTED;	
-	}
-
-	nRet = pthread_create(&xTriggerThread, NULL, FTOM_TRIGGER_process, NULL);
-	if (nRet < 0)
-	{
-		ERROR("Can't start Trigger Manager!\n");
-		return	FTM_RET_ERROR;
+		if (bStop)
+		{
+			return	FTM_RET_ALREADY_STARTED;	
+		}
+	
+		nRet = pthread_create(&xTriggerThread, NULL, FTOM_TRIGGER_process, NULL);
+		if (nRet < 0)
+		{
+			ERROR("Can't start Trigger Manager!\n");
+			return	FTM_RET_ERROR;
+		}
 	}
 
 	return	FTM_RET_OK;
@@ -234,16 +237,19 @@ FTM_RET	FTOM_TRIGGER_start
 
 FTM_RET	FTOM_TRIGGER_stop
 (
-	FTM_VOID
+	FTOM_TRIGGER_PTR	pTrigger
 )
 {
-	if (!bStop)
+	if (pTrigger == NULL)
 	{
-		return	FTM_RET_NOT_START;	
+		if (!bStop)
+		{
+			return	FTM_RET_NOT_START;	
+		}
+	
+		bStop = FTM_TRUE;
+		pthread_join(xTriggerThread, NULL);
 	}
-
-	bStop = FTM_TRUE;
-	pthread_join(xTriggerThread, NULL);
 
 	return	FTM_RET_OK;
 }
@@ -540,6 +546,27 @@ FTM_RET	FTOM_TRIGGER_printList
 		}
 
 	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_TRIGGER_print
+(
+	FTOM_TRIGGER_PTR	pTrigger
+)
+{
+	FTM_CHAR	pCondition[1024];
+
+	MESSAGE("\n# Trigger Information\n");
+	FTM_TRIGGER_conditionToString(&pTrigger->xInfo, pCondition, sizeof(pCondition));
+
+	MESSAGE("%16s : %s\n", 	"ID", 		pTrigger->xInfo.pID); 
+	MESSAGE("%16s : %s\n", 	"Name",		pTrigger->xInfo.pName); 
+	MESSAGE("%16s : %s\n", 	"Type",		FTM_TRIGGER_typeString(pTrigger->xInfo.xType));
+	MESSAGE("%16s : %8.3f\n","Detect",	pTrigger->xInfo.xParams.xCommon.ulDetectionTime / 1000000.0);
+	MESSAGE("%16s : %8.3f\n","Hold", 	pTrigger->xInfo.xParams.xCommon.ulHoldingTime / 1000000.0);
+	MESSAGE("%16s : %s\n", 	"Condition", pCondition);
+	MESSAGE("%16s : %s\n", 	"EPID", 	pTrigger->xInfo.pEPID);
 
 	return	FTM_RET_OK;
 }

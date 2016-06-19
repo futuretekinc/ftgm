@@ -919,7 +919,7 @@ FTM_RET FTOM_DMC_loadFromFile
 	FTM_RET				xRet;
 	FTM_CONFIG_PTR		pConfig;
 
-	xRet = FTM_CONFIG_create(pFileName, &pConfig);
+	xRet = FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;

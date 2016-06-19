@@ -131,6 +131,34 @@ FTM_RET	FTOM_CLIENT_NET_destroy
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_CLIENT_NET_setConfig
+(
+	FTOM_CLIENT_NET_PTR	pClient,
+	FTOM_CLIENT_NET_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfig != NULL);
+
+	memcpy(&pClient->xConfig, pConfig, sizeof(FTOM_CLIENT_NET_CONFIG));
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CLIENT_NET_getConfig
+(
+	FTOM_CLIENT_NET_PTR	pClient,
+	FTOM_CLIENT_NET_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfig != NULL);
+
+	memcpy(pConfig, &pClient->xConfig, sizeof(FTOM_CLIENT_NET_CONFIG));
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_CLIENT_NET_start
 (
 	FTOM_CLIENT_NET_PTR	pClient
@@ -162,11 +190,6 @@ FTM_RET	FTOM_CLIENT_NET_stop
 )
 {
 	ASSERT(pClient != NULL);
-
-	if (!pClient->bStop)
-	{
-		return	FTM_RET_NOT_START;	
-	}
 
 	pClient->bStop = FTM_TRUE;
 	pthread_join(pClient->xSubscriber.xThread, NULL);
@@ -218,7 +241,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_masterProcess
 				{
 					FTM_RET	xRet;
 					FTOM_MSG_PTR	pMsg;
-				
+			
 					xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_TRUE, &pMsg);
 					if (xRet == FTM_RET_OK)
 					{
@@ -286,15 +309,15 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
 	FTM_ULONG				ulRespLen = 4096;
 	FTOM_RESP_PARAMS_PTR 	pResp = NULL;
 
-	pResp = (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(4096);
-	TRACE("Subscriber started.\n");
-
 	pClient->xSubscriber.hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (pClient->xSubscriber.hSock == -1)
 	{
 		ERROR("Failed to create subscribe socket.\n");	
 		return	0;	
 	}
+
+	pResp = (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(4096);
+	TRACE("Subscriber started.\n");
 
 	struct timeval tv = { .tv_sec = 0, .tv_usec = 100000};
 	if (setsockopt(pClient->xSubscriber.hSock, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) 
@@ -317,24 +340,6 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
 			if (connect(pClient->xSubscriber.hSock, (struct sockaddr *)&xServer, sizeof(xServer)) == 0)
 			{
 				pClient->xSubscriber.bConnected = FTM_TRUE;
-
-				if (pClient->xCommon.fNotifyCB != NULL)
-				{
-					FTM_RET	xRet;
-					FTOM_MSG_PTR	pMsg;
-				
-					xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_TRUE, &pMsg);
-					if (xRet == FTM_RET_OK)
-					{
-						xRet =pClient->xCommon.fNotifyCB(pMsg, pClient->xCommon.pNotifyData);	
-						if (xRet != FTM_RET_OK)
-						{
-							WARN("Failed to notify!\n");	
-						}
-			
-						FTOM_MSG_destroy(&pMsg);
-					}
-				}
 			}	
 			else
 			{
@@ -376,23 +381,15 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
 		}
 	}
 
+	if (pResp != NULL)
+	{
+		FTM_MEM_free(pResp);
+		pResp = NULL;
+	}
+
 	TRACE("Subscriber stopped.\n");
 
 	return	0;
-}
-
-FTM_RET	FTOM_CLIENT_NET_setConfig
-(
-	FTOM_CLIENT_NET_PTR			pClient,
-	FTOM_CLIENT_NET_CONFIG_PTR	pConfig
-)
-{
-	ASSERT(pClient != NULL);
-	ASSERT(pConfig != NULL);
-
-	memcpy(&pClient->xConfig, pConfig, sizeof(FTOM_CLIENT_NET_CONFIG));
-
-	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_CLIENT_NET_loadConfigFromFile

@@ -497,12 +497,6 @@ FTM_RET	FTOM_MQTT_CLIENT_stop
 {
 	ASSERT(pClient != NULL);
 	
-	if (pClient->bStop == FTM_TRUE)
-	{
-		INFO("MQTT client is already stopped!\n");
-		return	FTM_RET_NOT_START;	
-	}
-
 	pClient->bStop = FTM_TRUE;
 
 	pthread_join(pClient->xMain, NULL);

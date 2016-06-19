@@ -827,6 +827,15 @@ FTM_RET	FTOM_SERVER_stop
 		return	FTM_RET_NOT_START;
 	}
 
+	FTM_LIST_iteratorStart(&pServer->xPublisher.xSubscriberList);
+	while(FTM_LIST_iteratorNext(&pServer->xPublisher.xSubscriberList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
+	{
+		pthread_cancel(pSession->xPThread);
+		pthread_join(pSession->xPThread, NULL);
+
+		FTM_MEM_free(pSession);		
+	}
+
 	FTM_LIST_iteratorStart(&pServer->xSessionList);
 	while(FTM_LIST_iteratorNext(&pServer->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
 	{
@@ -963,6 +972,7 @@ FTM_VOID_PTR FTOM_SERVER_process
 	xServerAddr.sin_addr.s_addr = INADDR_ANY;
 	xServerAddr.sin_port 		= htons( pServer->xConfig.usPort );
 
+	TRACE("Server[ %s:%d ]\n", inet_ntoa(xServerAddr.sin_addr), ntohs(xServerAddr.sin_port));
 	nRet = bind( pServer->hSocket, (struct sockaddr *)&xServerAddr, sizeof(xServerAddr));
 	if (nRet < 0)
 	{
@@ -985,7 +995,7 @@ FTM_VOID_PTR FTOM_SERVER_process
 		if (sem_timedwait(&pServer->xLock, &xTimeout) == 0)
 		{
 			sem_getvalue(&pServer->xLock, &nValue);
-			MESSAGE("Waiting for connections ...[%d]\n", nValue);
+			TRACE("Waiting for connections ...[%d]\n", nValue);
 			hClient = accept(pServer->hSocket, (struct sockaddr *)&xClientAddr, (socklen_t *)&nSockAddrIulLen);
 			if (hClient > 0)
 			{
@@ -1130,6 +1140,7 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 	xLocalAddr.sin_addr.s_addr = INADDR_ANY;
 	xLocalAddr.sin_port 		= htons( pServer->xConfig.xPublisher.usPort );
 
+	TRACE("Local [ %s:%d ]\n", inet_ntoa(xLocalAddr.sin_addr), ntohs(xLocalAddr.sin_port));
 	nRet = bind( pServer->xPublisher.hSocket, (struct sockaddr *)&xLocalAddr, sizeof(xLocalAddr));
 	if (nRet < 0)
 	{
@@ -1148,7 +1159,7 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 		FTM_INT	nRemoteAddrLen = sizeof(xRemoteAddr);	
 
 
-		sem_getvalue(&pServer->xLock, &nValue);
+		sem_getvalue(&pServer->xPublisher.xSlot, &nValue);
 		TRACE("Waiting for subscriber[%d]...\n", nValue);
 		hClient = accept(pServer->xPublisher.hSocket, (struct sockaddr *)&xRemoteAddr, (socklen_t *)&nRemoteAddrLen);
 		if (hClient > 0)
@@ -3015,13 +3026,13 @@ FTM_RET FTOM_SERVER_loadConfig
 
 	FTM_CONFIG_ITEM_getItemULONG(&xServer, "max_session", &pServer->xConfig.ulMaxSession);
 	FTM_CONFIG_ITEM_getItemUSHORT(&xServer, "port", 		&pServer->xConfig.usPort);
-	FTM_CONFIG_ITEM_getItemString(&xServer, "sm_key_file", pServer->xConfig.xSM.pKeyFile, sizeof(pServer->xConfig.xSM.pKeyFile) - 1);
+	FTM_CONFIG_ITEM_getItemString(&xServer, "sm_key_file", pServer->xConfig.xSM.pKeyFile, FTM_FILE_NAME_LEN);
 
 finish:
 	return	xRet;
 }
 
-FTM_RET FTOM_SERVER_loadFromFile
+FTM_RET FTOM_SERVER_loadConfigFromFile
 (
 	FTOM_SERVER_PTR	pServer,
 	FTM_CHAR_PTR 	pFileName
@@ -3033,7 +3044,7 @@ FTM_RET FTOM_SERVER_loadFromFile
 	FTM_RET				xRet;
 	FTM_CONFIG_PTR		pRoot;
 
-	xRet =FTM_CONFIG_create(pFileName, &pRoot);
+	xRet =FTM_CONFIG_create(pFileName, &pRoot, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("SERVER configuration file[%s] load failed\n", pFileName);
@@ -3086,8 +3097,9 @@ FTM_RET FTOM_SERVER_showConfig
 	ASSERT(pServer != NULL);
 
 	MESSAGE("\n[ SERVER CONFIGURATION ]\n");
-	MESSAGE("%16s : %d\n", "PORT", pServer->xConfig.usPort);
-	MESSAGE("%16s : %lu\n", "MAX SESSION", pServer->xConfig.ulMaxSession);
+	MESSAGE("%16s : %d\n", "Port", pServer->xConfig.usPort);
+	MESSAGE("%16s : %lu\n", "Max Session", pServer->xConfig.ulMaxSession);
+	MESSAGE("%16s : %s",	"SMKey File", pServer->xConfig.xSM.pKeyFile);
 
 	return	FTM_RET_OK;
 }

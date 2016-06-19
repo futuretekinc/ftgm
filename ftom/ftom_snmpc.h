@@ -66,7 +66,7 @@ FTM_RET FTOM_SNMPC_loadConfig
 	FTM_CONFIG_PTR		pConfig
 );
 
-FTM_RET FTOM_SNMPC_loadFromFile
+FTM_RET FTOM_SNMPC_loadConfigFromFile
 (
 	FTOM_SNMPC_PTR pClient, 
 	FTM_CHAR_PTR pFileName

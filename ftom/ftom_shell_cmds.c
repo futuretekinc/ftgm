@@ -26,6 +26,46 @@ FTM_RET	FTOM_SHELL_CMD_object
 	FTM_VOID_PTR 	pData
 );
 
+FTM_RET	FTOM_SHELL_CMD_node
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
+FTM_RET	FTOM_SHELL_CMD_ep
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
+FTM_RET	FTOM_SHELL_CMD_action
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
+FTM_RET	FTOM_SHELL_CMD_trigger
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
+FTM_RET	FTOM_SHELL_CMD_rule
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
 FTM_RET	FTOM_SHELL_CMD_task
 (
 	FTM_SHELL_PTR	pShell,
@@ -61,46 +101,84 @@ FTM_RET	FTOM_SHELL_CMD_server
 FTM_SHELL_CMD	FTOM_shellCmds[] = 
 {
 	{
+		.pString	= "action",
+		.function	= FTOM_SHELL_CMD_action,
+		.pShortHelp	= "Action management.",
+		.pHelp		= "\n"\
+					  "    Action management.\n"\
+					  "  Commands:\n"\
+					  "    <ActionID>  Show Action Information.\n"
+	},
+	{
 		.pString	= "config",
 		.function	= FTOM_SHELL_CMD_config,
 		.pShortHelp	= "Configuration Management",
 		.pHelp		= "\n"\
-					  "\tConfiguration Management.\n"
+					  "    Configuration Management.\n"
+	},
+	{
+		.pString	= "ep",
+		.function	= FTOM_SHELL_CMD_ep,
+		.pShortHelp	= "End Point management.",
+		.pHelp		= "\n"\
+					  "    End point management.\n"\
+					  "  Commands:\n"\
+					  "    <EPID>  Show EP Information.\n"
+	},
+	{
+		.pString	= "node",
+		.function	= FTOM_SHELL_CMD_node,
+		.pShortHelp	= "Node management.",
+		.pHelp		= "\n"\
+					  "    Node management.\n"\
+					  "  Commands:\n"\
+					  "    <EPID>  Show node Information.\n"
 	},
 	{
 		.pString	= "object",
 		.function	= FTOM_SHELL_CMD_object,
 		.pShortHelp	= "show object.",
 		.pHelp		= "\n"\
-					  "\tShow object.\n"
+					  "    Show object.\n"
 	},
 	{
 		.pString	= "quit",
 		.function	= FTOM_SHELL_CMD_quit,
 		.pShortHelp	= "quit.",
 		.pHelp		= "\n"\
-					  "\tquit.\n"
+					  "    quit.\n"
+	},
+	{
+		.pString	= "rule",
+		.function	= FTOM_SHELL_CMD_rule,
+		.pShortHelp	= "Rule management.",
+		.pHelp		= "\n"\
+					  "    Rule management.\n"\
+					  "  Commands:\n"\
+					  "    <RuleID>  Show Rule Information.\n"
 	},
 	{
 		.pString	= "task",
 		.function	= FTOM_SHELL_CMD_task,
 		.pShortHelp	= "task management",
 		.pHelp		= "\n"\
-					  "\ttask management.\n"
+					  "    task management.\n"
+	},
+	{
+		.pString	= "trigger",
+		.function	= FTOM_SHELL_CMD_trigger,
+		.pShortHelp	= "Trigger management.",
+		.pHelp		= "\n"\
+					  "    Trigger management.\n"\
+					  "  Commands:\n"\
+					  "    <TriggerID>  Show Trigger Information.\n"
 	},
 	{
 		.pString	= "server",
 		.function	= FTOM_SHELL_CMD_server,
 		.pShortHelp	= "Server management.",
 		.pHelp		= "\n"\
-					  "\tServer management.\n"
-	},
-	{
-		.pString	= "discovery",
-		.function	= FTOM_SHELL_CMD_discovery,
-		.pShortHelp	= "Node discovery.",
-		.pHelp		= "\n"\
-					  "\tNode discovery.\n"
+					  "    Server management.\n"
 	}
 
 };
@@ -120,6 +198,225 @@ FTM_RET	FTOM_SHELL_CMD_config
 	{
 	case	1:
 		FTOM_showConfig();
+		break;
+
+	case	3:
+		{
+			if (strcasecmp(pArgv[1], "save") == 0)
+			{
+				FTM_RET	xRet;
+
+				xRet = FTOM_saveConfigToFile(pArgv[2]);
+				if (xRet == FTM_RET_OK)
+				{
+					MESSAGE("This configuration has been saved successfully[%s].\n", pArgv[2]);	
+				}
+				else
+				{
+					MESSAGE("Failed to save configuration to a file[%s].\n", pArgv[2]);	
+				}
+			}
+		}		
+		break;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_CMD_node
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
+)
+{
+	ASSERT(pShell != NULL);
+	ASSERT(pArgv != NULL);
+
+	FTM_RET	xRet;
+	switch(nArgc)
+	{
+	case	1:
+		{
+			FTOM_NODE_printList();
+		}
+		break;
+
+	case	2:
+		{
+			FTOM_NODE_PTR	pNode;
+
+			xRet = FTOM_NODE_get(pArgv[1], &pNode);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Can't found Node[%s]!\n", pArgv[1]);
+				break;
+			}
+
+			FTOM_NODE_print(pNode);
+
+		}
+		break;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_CMD_ep
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
+)
+{
+	ASSERT(pShell != NULL);
+	ASSERT(pArgv != NULL);
+
+	FTM_RET	xRet;
+	switch(nArgc)
+	{
+	case	1:
+		{
+			FTOM_EP_printList();
+		}
+		break;
+
+	case	2:
+		{
+			FTOM_EP_PTR	pEP;
+
+			xRet = FTOM_EP_get(pArgv[1], &pEP);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Can't found EP[%s]!\n", pArgv[1]);
+				break;
+			}
+
+			FTOM_EP_print(pEP);
+
+		}
+		break;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_CMD_trigger
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
+)
+{
+	ASSERT(pShell != NULL);
+	ASSERT(pArgv != NULL);
+
+	FTM_RET	xRet;
+	switch(nArgc)
+	{
+	case	1:
+		{
+			FTOM_TRIGGER_printList();
+		}
+		break;
+
+	case	2:
+		{
+			FTOM_TRIGGER_PTR	pTrigger;
+
+			xRet = FTOM_TRIGGER_get(pArgv[1], &pTrigger);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Can't found Trigger[%s]!\n", pArgv[1]);
+				break;
+			}
+
+			FTOM_TRIGGER_print(pTrigger);
+
+		}
+		break;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_CMD_action
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
+)
+{
+	ASSERT(pShell != NULL);
+	ASSERT(pArgv != NULL);
+
+	FTM_RET	xRet;
+	switch(nArgc)
+	{
+	case	1:
+		{
+			FTOM_ACTION_printList();
+		}
+		break;
+
+	case	2:
+		{
+			FTOM_ACTION_PTR	pAction;
+
+			xRet = FTOM_ACTION_get(pArgv[1], &pAction);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Can't found Action[%s]!\n", pArgv[1]);
+				break;
+			}
+
+			FTOM_ACTION_print(pAction);
+
+		}
+		break;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_CMD_rule
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
+)
+{
+	ASSERT(pShell != NULL);
+	ASSERT(pArgv != NULL);
+
+	FTM_RET	xRet;
+	switch(nArgc)
+	{
+	case	1:
+		{
+			FTOM_RULE_printList();
+		}
+		break;
+
+	case	2:
+		{
+			FTOM_RULE_PTR	pRule;
+
+			xRet = FTOM_RULE_get(pArgv[1], &pRule);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Can't found Rule[%s]!\n", pArgv[1]);
+				break;
+			}
+
+			FTOM_RULE_print(pRule);
+
+		}
 		break;
 	}
 
@@ -149,8 +446,11 @@ FTM_RET	FTOM_SHELL_CMD_object
 	case	2:
 		{
 			FTM_RET	xRet;
-			FTOM_NODE_PTR	pNode;
-			FTOM_EP_PTR		pEP;
+			FTOM_NODE_PTR		pNode;
+			FTOM_EP_PTR			pEP;
+			FTOM_TRIGGER_PTR	pTrigger;
+			FTOM_ACTION_PTR		pAction;
+			FTOM_RULE_PTR		pRule;
 
 			xRet = FTOM_NODE_get(pArgv[1], &pNode);
 			if (xRet == FTM_RET_OK)
@@ -164,6 +464,112 @@ FTM_RET	FTOM_SHELL_CMD_object
 			{
 				FTOM_EP_print(pEP);
 				break;
+			}
+
+			xRet = FTOM_TRIGGER_get(pArgv[1], &pTrigger);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_TRIGGER_print(pTrigger);
+				break;	
+			}
+
+			xRet = FTOM_ACTION_get(pArgv[1], &pAction);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_ACTION_print(pAction);
+				break;	
+			}
+
+			xRet = FTOM_RULE_get(pArgv[1], &pRule);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_RULE_print(pRule);
+				break;	
+			}
+				
+		}
+		break;
+
+	case	3:
+		{
+			FTM_RET	xRet;
+			FTOM_NODE_PTR		pNode;
+			FTOM_EP_PTR			pEP;
+			FTOM_TRIGGER_PTR	pTrigger;
+			FTOM_ACTION_PTR		pAction;
+			FTOM_RULE_PTR		pRule;
+			FTM_BOOL			bEnable = FTM_FALSE;
+
+			if ((strcasecmp(pArgv[2], "enable") == 0)
+			   || (strcasecmp(pArgv[2], "run") == 0))
+			{
+				bEnable = FTM_TRUE;
+			}
+			else if ((strcasecmp(pArgv[2], "disable") == 0)
+			       || (strcasecmp(pArgv[2], "stop") == 0))
+			{
+				bEnable = FTM_FALSE;
+			}
+			else
+			{
+				MESSAGE("Invalid arguments!\n");
+			}
+
+			xRet = FTOM_NODE_get(pArgv[1], &pNode);
+			if (xRet == FTM_RET_OK)
+			{
+				if (bEnable)
+				{
+					FTOM_NODE_start(pNode);
+				}
+				else
+				{
+					FTOM_NODE_stop(pNode);
+				}
+
+				break;
+			}
+
+			xRet = FTOM_EP_get(pArgv[1], &pEP);
+			if (xRet == FTM_RET_OK)
+			{
+				if (bEnable)
+				{
+					FTOM_EP_start(pEP);
+				}
+				else
+				{
+					FTOM_EP_stop(pEP, FTM_FALSE);
+				}
+				break;
+			}
+
+			xRet = FTOM_TRIGGER_get(pArgv[1], &pTrigger);
+			if (xRet == FTM_RET_OK)
+			{
+				if (bEnable)
+				{
+					FTOM_TRIGGER_start(pTrigger);
+				}
+				else
+				{
+					FTOM_TRIGGER_stop(pTrigger);
+				}
+				break;	
+			}
+
+			xRet = FTOM_ACTION_get(pArgv[1], &pAction);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_ACTION_print(pAction);
+				break;	
+			}
+
+			xRet = FTOM_RULE_get(pArgv[1], &pRule);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_RULE_print(pRule);
+				break;	
 			}
 				
 		}

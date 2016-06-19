@@ -45,11 +45,11 @@ FTM_RET			FTM_MEM_final(void)
 	{
 		FTM_MEM_BLOCK_PTR	pMB;
 
-		MESSAGE("Memory leak detected : %d\n", ulLeakedBlockCount);	
+		MESSAGE("Memory leak detected : %lu\n", ulLeakedBlockCount);	
 		for(i = 0 ; i < ulLeakedBlockCount ; i++)
 		{
 			FTM_LIST_getAt(pMemList, i, (FTM_VOID_PTR _PTR_)&pMB);
-			MESSAGE("%3d : %s[%3d] - %08lx(%d)\n", i, pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
+			MESSAGE("%3lu : %s[%3lu] - %08lx(%u)\n", i, pMB->pFile, pMB->ulLine, (FTM_ULONG)pMB->pMem, pMB->xSize);
 			if (pMB->pFile != NULL)
 			{
 				free(pMB->pFile);	
@@ -141,7 +141,7 @@ FTM_RET	FTM_MEM_TRACE_free(FTM_VOID_PTR pMem, const char *pFile, unsigned long u
 	
 		if (bTrace)
 		{
-			MESSAGE("%s[%3d] - %08lx(%d)\n", pMB->pFile, pMB->ulLine, pMB->pMem, pMB->xSize);
+			MESSAGE("%s[%3lu] - %08lx(%u)\n", pMB->pFile, pMB->ulLine, (FTM_ULONG)pMB->pMem, pMB->xSize);
 		}
 		FTM_LIST_remove(pMemList, pMB);
 		if (pMB->pFile != NULL)

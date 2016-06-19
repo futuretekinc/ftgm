@@ -46,6 +46,10 @@ typedef	struct FTOM_NODE_STRUCT
 
 	struct
 	{
+		FTM_ULONG	ulGetCount;
+		FTM_ULONG	ulGetError;
+		FTM_ULONG	ulSetCount;
+		FTM_ULONG	ulSetError;
 		FTM_ULONG	ulTxCount;
 		FTM_ULONG	ulRxCount;
 		FTM_ULONG	ulTxError;

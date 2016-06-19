@@ -10,6 +10,8 @@
 
 typedef	struct
 {
+	FTM_BOOL		bNew;
+	FTM_CHAR		pFileName[FTM_FILE_NAME_LEN+1];
 	cJSON	_PTR_	pRoot;
 	FTM_CHAR_PTR	pData;
 	FTM_ULONG		ulLen;
@@ -23,7 +25,8 @@ typedef	struct
 FTM_RET	FTM_CONFIG_create
 (
 	FTM_CHAR_PTR 		pFileName, 
-	FTM_CONFIG_PTR _PTR_ pConfig
+	FTM_CONFIG_PTR _PTR_ pConfig,
+	FTM_BOOL			bNew
 );
 
 FTM_RET	FTM_CONFIG_destroy
@@ -34,7 +37,8 @@ FTM_RET	FTM_CONFIG_destroy
 FTM_RET	FTM_CONFIG_init
 (
 	FTM_CONFIG_PTR 		pConfig, 
-	FTM_CHAR_PTR 		pFileName
+	FTM_CHAR_PTR 		pFileName,
+	FTM_BOOL			bNew
 );
 
 FTM_RET	FTM_CONFIG_final

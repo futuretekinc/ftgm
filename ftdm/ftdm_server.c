@@ -78,6 +78,11 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_RULE_GET,				FTDMS_RULE_get ),
 	MK_CMD_SET(FTDM_CMD_RULE_GET_AT,			FTDMS_RULE_getAt ),
 	MK_CMD_SET(FTDM_CMD_RULE_GET_ID_LIST,		FTDMS_RULE_getIDList ),
+	MK_CMD_SET(FTDM_CMD_LOG_ADD,				FTDMS_LOG_add ),
+	MK_CMD_SET(FTDM_CMD_LOG_DEL,				FTDMS_LOG_del ),
+	MK_CMD_SET(FTDM_CMD_LOG_COUNT,				FTDMS_LOG_count ),
+	MK_CMD_SET(FTDM_CMD_LOG_GET,				FTDMS_LOG_get ),
+	MK_CMD_SET(FTDM_CMD_LOG_GET_AT,				FTDMS_LOG_getAt ),
 	MK_CMD_SET(FTDM_CMD_UNKNOWN, 				NULL)
 };
 
@@ -1499,3 +1504,93 @@ FTM_RET	FTDMS_RULE_getIDList
 	return	pResp->nRet;
 }
 
+FTM_RET	FTDMS_LOG_add
+(
+	FTDM_SERVER_PTR				pServer,
+	FTDM_REQ_LOG_ADD_PARAMS_PTR	pReq,
+	FTDM_RESP_LOG_ADD_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+	//pResp->nRet = FTDM_LOG_create(&pReq->xRule);
+
+	return	pResp->nRet;
+}
+
+
+FTM_RET	FTDMS_LOG_del
+(
+	FTDM_SERVER_PTR				pServer,
+ 	FTDM_REQ_LOG_DEL_PARAMS_PTR	pReq,
+	FTDM_RESP_LOG_DEL_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd = pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+	//pResp->nRet = FTDM_LOG_destroy(pReq->ullLogID);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_LOG_count
+(
+	FTDM_SERVER_PTR					pServer,
+ 	FTDM_REQ_LOG_COUNT_PARAMS_PTR	pReq,
+	FTDM_RESP_LOG_COUNT_PARAMS_PTR	pResp
+)
+{
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+	//pResp->nRet = FTDM_LOG_count(&pResp->nCount);
+
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_LOG_get
+(
+	FTDM_SERVER_PTR					pServer,
+ 	FTDM_REQ_LOG_GET_PARAMS_PTR		pReq,
+	FTDM_RESP_LOG_GET_PARAMS_PTR	pResp
+)
+{
+	//FTDM_LOG_PTR	pRule;
+ 
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+#if 0
+	pResp->nRet = FTDM_LOG_get(pReq->ullLogID, &pRule);
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_LOG));
+	}
+#endif
+	return	pResp->nRet;
+}
+
+FTM_RET	FTDMS_LOG_getAt
+(
+	FTDM_SERVER_PTR					pServer,
+ 	FTDM_REQ_LOG_GET_AT_PARAMS_PTR	pReq,
+	FTDM_RESP_LOG_GET_AT_PARAMS_PTR	pResp
+)
+{
+	//FTDM_LOG_PTR	pRule;
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->nLen = sizeof(*pResp);
+	pResp->nRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+#if 0
+	pResp->nRet = FTDM_LOG_getAt(pReq->nIndex, &pRule);
+	
+	if (pResp->nRet == FTM_RET_OK)
+	{
+		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_LOG));
+	}
+#endif
+	return	pResp->nRet;
+}

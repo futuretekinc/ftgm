@@ -52,7 +52,7 @@ FTM_RET	FTM_TRACE_configLoad
 	FTM_CONFIG_ITEM	xSection;
 	FTM_CONFIG_ITEM	xSubSection;
 
-	xRet = FTM_CONFIG_create(pFileName, &pRoot);
+	xRet = FTM_CONFIG_create(pFileName, &pRoot, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;

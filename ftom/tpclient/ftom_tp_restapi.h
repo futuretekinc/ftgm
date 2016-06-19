@@ -7,6 +7,28 @@
 
 typedef	struct
 {
+	FTM_CHAR			pGatewayID[FTM_DID_LEN+1];
+	FTM_CHAR			pUserID[FTM_USER_ID_LEN+1];
+	FTM_CHAR			pPasswd[FTM_PASSWD_LEN+1];
+	FTM_CHAR			pBaseURL[FTM_URL_LEN+1];
+	FTM_BOOL			bSecure;
+}	FTOM_TP_RESTAPI_CONFIG, _PTR_ FTOM_TP_RESTAPI_CONFIG_PTR;
+
+typedef	struct
+{
+	FTOM_TP_RESTAPI_CONFIG	xConfig;
+
+	FTM_CHAR			pURL[1024];
+	FTM_CHAR_PTR		pData;
+	FTM_CHAR_PTR		pResp;
+	FTM_ULONG			ulRespLen;
+
+	struct curl_slist	_PTR_ pHTTPHeader;
+	CURL 				_PTR_ pCURL;
+}	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;
+
+typedef	struct
+{
 	FTM_CHAR		pID[FTM_EPID_LEN+1];
 	FTM_CHAR		pName[FTM_NAME_LEN+1];
 	FTM_CHAR		pOwnerID[FTM_DID_LEN+1];
@@ -17,21 +39,6 @@ typedef	struct
 	FTM_UINT64		ullCTime;
 	FTM_UINT64		ullMTime;
 }	FTOM_TP_RESTAPI_SENSOR, _PTR_ FTOM_TP_RESTAPI_SENSOR_PTR;
-
-typedef	struct
-{
-	FTM_CHAR			pGatewayID[FTM_DID_LEN+1];
-	FTM_CHAR			pUserID[FTM_USER_ID_LEN+1];
-	FTM_CHAR			pPasswd[FTM_PASSWD_LEN+1];
-	FTM_CHAR			pBase[1024];
-	FTM_CHAR			pURL[1024];
-	FTM_CHAR_PTR		pData;
-	FTM_CHAR_PTR		pResp;
-	FTM_ULONG			ulRespLen;
-
-	struct curl_slist	_PTR_ pHTTPHeader;
-	CURL 				_PTR_ pCURL;
-}	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;
 
 FTM_RET	FTOM_TP_RESTAPI_create
 (
@@ -53,7 +60,13 @@ FTM_RET	FTOM_TP_RESTAPI_init
 
 FTM_RET	FTOM_TP_RESTAPI_final
 (
-	FTOM_TP_RESTAPI_PTR 	pClient
+	FTOM_TP_RESTAPI_PTR pClient
+);
+
+FTM_RET	FTOM_TP_RESTAPI_setConfig
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTOM_TP_RESTAPI_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTOM_TP_RESTAPI_setUserID
@@ -67,6 +80,19 @@ FTM_RET	FTOM_TP_RESTAPI_setPasswd
 	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pPasswd
 );
+
+FTM_RET	FTOM_TP_RESTAPI_setGatewayID
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pGatewayID
+);
+
+FTM_RET	FTOM_TP_RESTAPI_setBaseURL
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pBaseURL
+);
+
 /********************************************************************
  * Gateway mangement
  ********************************************************************/
@@ -74,12 +100,6 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getModel
 (
 	FTOM_TP_RESTAPI_PTR pClient,
 	FTM_ULONG			ulModel
-);
-
-FTM_RET	FTOM_TP_RESTAPI_GW_setID
-(
-	FTOM_TP_RESTAPI_PTR	pClient,
-	FTM_CHAR_PTR		pGatewayID
 );
 
 FTM_RET	FTOM_TP_RESTAPI_GW_getInfo

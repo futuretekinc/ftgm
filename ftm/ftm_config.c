@@ -10,8 +10,9 @@
 
 FTM_RET	FTM_CONFIG_create
 (
-	FTM_CHAR_PTR pFileName, 
-	FTM_CONFIG_PTR _PTR_ ppConfig
+	FTM_CHAR_PTR 	pFileName, 
+	FTM_CONFIG_PTR _PTR_ ppConfig,
+	FTM_BOOL		bNew
 )
 {
 	ASSERT(pFileName != NULL);
@@ -26,7 +27,7 @@ FTM_RET	FTM_CONFIG_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;		
 	}
 
-	xRet = FTM_CONFIG_init(pConfig, pFileName);
+	xRet = FTM_CONFIG_init(pConfig, pFileName, bNew);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Configuration init failed!\n");
@@ -56,8 +57,9 @@ FTM_RET	FTM_CONFIG_destroy
 
 FTM_RET	FTM_CONFIG_init
 (
-	FTM_CONFIG_PTR pConfig, 
-	FTM_CHAR_PTR pFileName
+	FTM_CONFIG_PTR 	pConfig, 
+	FTM_CHAR_PTR 	pFileName,
+	FTM_BOOL		bNew
 )
 {
 	ASSERT(pConfig != NULL);
@@ -66,57 +68,70 @@ FTM_RET	FTM_CONFIG_init
 	FILE *fp;
 	FTM_ULONG		ulReadSize;
 
-	fp = fopen(pFileName, "rt");
-	if (fp == NULL)
+	if (!bNew)
 	{
-		ERROR("Can't open file[%s]\n", pFileName);
-		return	FTM_RET_CONFIG_LOAD_FAILED;	
-	}
-
-	fseek(fp, 0L, SEEK_END);
-	pConfig->ulLen = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
-
-	if (pConfig->pData != NULL)
-	{
-		FTM_MEM_free(pConfig->pData);
-		pConfig->pData = NULL;
-		pConfig->ulLen = 0;
-	}
-
-	pConfig->pData = (FTM_CHAR_PTR)FTM_MEM_malloc(pConfig->ulLen);
-	if (pConfig->pData == NULL)
-	{
-		ERROR("Not enough memory[size = %d]\n", pConfig->ulLen);
-		pConfig->ulLen = 0;
+		fp = fopen(pFileName, "rt");
+		if (fp == NULL)
+		{
+			ERROR("Can't open file[%s]\n", pFileName);
+			return	FTM_RET_CONFIG_LOAD_FAILED;	
+		}
+	
+		fseek(fp, 0L, SEEK_END);
+		pConfig->ulLen = ftell(fp);
+		fseek(fp, 0L, SEEK_SET);
+	
+		if (pConfig->pData != NULL)
+		{
+			FTM_MEM_free(pConfig->pData);
+			pConfig->pData = NULL;
+			pConfig->ulLen = 0;
+		}
+	
+		pConfig->pData = (FTM_CHAR_PTR)FTM_MEM_malloc(pConfig->ulLen);
+		if (pConfig->pData == NULL)
+		{
+			ERROR("Not enough memory[size = %d]\n", pConfig->ulLen);
+			pConfig->ulLen = 0;
+			fclose(fp);
+			return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		}
+	
+		ulReadSize = fread(pConfig->pData, 1, pConfig->ulLen, fp);
+		if (ulReadSize != pConfig->ulLen)
+		{
+			ERROR("Size missmatch[%d:%d]\n", pConfig->ulLen, ulReadSize);
+			FTM_MEM_free(pConfig->pData);
+			pConfig->pData = NULL;
+			pConfig->ulLen = 0;
+			fclose(fp);
+			return	FTM_RET_CONFIG_LOAD_FAILED;	
+		}
+	
 		fclose(fp);
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	
+		pConfig->pRoot = cJSON_Parse(pConfig->pData);
+		if (pConfig->pRoot == NULL)
+		{
+			FTM_MEM_free(pConfig->pData);
+			pConfig->pData = NULL;
+			pConfig->ulLen = 0;
+	
+			return	FTM_RET_CONFIG_LOAD_FAILED;	
+		}
 	}
-
-	ulReadSize = fread(pConfig->pData, 1, pConfig->ulLen, fp);
-	if (ulReadSize != pConfig->ulLen)
+	else
 	{
-		ERROR("Size missmatch[%d:%d]\n", pConfig->ulLen, ulReadSize);
-		FTM_MEM_free(pConfig->pData);
-		pConfig->pData = NULL;
-		pConfig->ulLen = 0;
-		fclose(fp);
-		return	FTM_RET_CONFIG_LOAD_FAILED;	
+		pConfig->pRoot = cJSON_CreateObject();
+		if (pConfig->pRoot == NULL)
+		{
+			return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		}
+
+		strncpy(pConfig->pFileName, pFileName, FTM_FILE_NAME_LEN);
 	}
 
-	fclose(fp);
-
-	pConfig->pRoot = cJSON_Parse(pConfig->pData);
-	if (pConfig->pRoot == NULL)
-	{
-		printf("File Name : %s", pFileName);
-		printf("%s", pConfig->pData);
-		FTM_MEM_free(pConfig->pData);
-		pConfig->pData = NULL;
-		pConfig->ulLen = 0;
-
-		return	FTM_RET_CONFIG_LOAD_FAILED;	
-	}
+	pConfig->bNew = bNew;
 
 	return	FTM_RET_OK;
 }
@@ -130,6 +145,34 @@ FTM_RET	FTM_CONFIG_final
 
 	if (pConfig->pRoot != NULL)
 	{
+		if (pConfig->bNew)
+		{
+			FILE _PTR_		pFP;
+			FTM_CHAR_PTR	pPrintOut;
+
+			pFP = fopen(pConfig->pFileName, "wt");
+			if (pFP == NULL)
+			{
+				ERROR("Can't open file[%s]\n", pConfig->pFileName);
+				return	FTM_RET_CONFIG_LOAD_FAILED;	
+			}
+	
+			pPrintOut = cJSON_Print(pConfig->pRoot);
+			if (pPrintOut != NULL)
+			{
+				FTM_INT	nWriteLen;
+				
+				nWriteLen = fwrite(pPrintOut, 1, strlen(pPrintOut), pFP);
+				if (nWriteLen != strlen(pPrintOut))
+				{
+					ERROR("Failed to write configuration to file[%s]\n", pConfig->pFileName);	
+				}
+
+				fclose(pFP);
+				free(pPrintOut);
+			}
+		}
+
 		cJSON_Delete(pConfig->pRoot);
 		pConfig->pRoot = NULL;
 	}
@@ -239,6 +282,11 @@ FTM_RET	FTM_CONFIG_ITEM_getChildItem
 	ASSERT(pChildItem != NULL);
 
 	cJSON _PTR_ pObject;
+
+	if (pItem->pObject == NULL)
+	{
+		return	FTM_RET_OBJECT_NOT_FOUND;	
+	}
 
 	pObject = cJSON_GetObjectItem(pItem->pObject, pName);
 	if (pObject == NULL)

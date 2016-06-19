@@ -928,11 +928,11 @@ FTM_RET	FTM_EP_print
 	MESSAGE("%16s : %s\n", 	"did", 		pEP->pDID);
 	if (pEP->xLimit.xType == FTM_EP_LIMIT_TYPE_COUNT)
 	{
-		MESSAGE("%16s : %s(%d)\n", 	"limit", 	"count", pEP->xLimit.xParams.ulCount);
+		MESSAGE("%16s : %s(%lu)\n", 	"limit", 	"count", pEP->xLimit.xParams.ulCount);
 	}
 	else
 	{
-		MESSAGE("%16s : %s(%d:%d)\n", 	"limit", 	"time", 
+		MESSAGE("%16s : %s(%lu:%lu)\n", 	"limit", 	"time", 
 			pEP->xLimit.xParams.xTime.ulStart,pEP->xLimit.xParams.xTime.ulEnd);
 	}
 

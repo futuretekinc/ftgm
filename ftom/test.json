@@ -1,0 +1,27 @@
+{
+	"server":	{
+		"max_session":	10,
+		"port":	8889,
+		"sm_key_file":	"/tmp/ftom.smkey"
+	},
+	"snmpc":	{
+		"mibs":	["FTM50S-MIB.txt", "FTE-E.txt"],
+		"retry_count":	3
+	},
+	"snmptrapd":	{
+		"name":	"ftom",
+		"port":	162,
+		"target":	"ft",
+		"traps":	[{
+				"msg":	"alert",
+				"oid":	"FTE-E::msgAlert.0"
+			}, {
+				"msg":	"discovery",
+				"oid":	"FTE-E::msgDiscovery.0"
+			}]
+	},
+	"client":	{
+		"server_ip":	"127.0.0.1",
+		"port":	8888
+	}
+}

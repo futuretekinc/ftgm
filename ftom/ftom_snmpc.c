@@ -272,7 +272,7 @@ FTM_RET FTOM_SNMPC_loadConfig
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_SNMPC_loadFromFile
+FTM_RET FTOM_SNMPC_loadConfigFromFile
 (
 	FTOM_SNMPC_PTR 	pClient, 
 	FTM_CHAR_PTR 	pFileName
@@ -284,7 +284,7 @@ FTM_RET FTOM_SNMPC_loadFromFile
 	FTM_RET				xRet;
 	FTM_CONFIG_PTR		pConfig;
 
-	xRet = FTM_CONFIG_create(pFileName, &pConfig);
+	xRet = FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_CONFIG_LOAD_FAILED;
@@ -310,7 +310,7 @@ FTM_RET FTOM_SNMPC_saveConfig
 	FTM_CONFIG_ITEM		xSection;	
 
 	xRet = FTM_CONFIG_getItem(pConfig, "snmpc", &xSection);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		xRet = FTM_CONFIG_addItem(pConfig, "snmpc", &xSection);
 		if (xRet != FTM_RET_OK)
@@ -322,7 +322,7 @@ FTM_RET FTOM_SNMPC_saveConfig
 	FTM_CONFIG_ITEM	xArray;
 
 	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "mibs", &xArray);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		xRet = FTM_CONFIG_ITEM_createChildList(&xSection, "mibs", &xArray);
 		if (xRet != FTM_RET_OK)
@@ -344,7 +344,7 @@ FTM_RET FTOM_SNMPC_saveConfig
 	{
 		FTM_CHAR_PTR	pMIBFileName = NULL;
 
-		xRet = FTM_LIST_getAt(&pClient->xConfig.xMIBList, i, (FTM_VOID_PTR _PTR_)pMIBFileName);
+		xRet = FTM_LIST_getAt(&pClient->xConfig.xMIBList, i, (FTM_VOID_PTR _PTR_)&pMIBFileName);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_CONFIG_ITEM	xElement;

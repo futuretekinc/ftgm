@@ -159,6 +159,9 @@ FTOM_TP_RESTAPI_SENSOR_TYPE_INFO pSensorTypeInfo[] =
 	}
 };
 
+static
+FTM_CHAR	pRESTAPIDefaultBase[] = "https://api.thingplus.net/v1";
+
 static 
 FTM_BOOL	bGlobalInit = FTM_FALSE;
 static 
@@ -216,7 +219,6 @@ FTM_RET	FTOM_TP_RESTAPI_init
 )
 {
 	ASSERT(pClient != NULL);
-	FTM_CHAR	pBuff[1024];
 
 	if (!bGlobalInit)
 	{
@@ -232,19 +234,7 @@ FTM_RET	FTOM_TP_RESTAPI_init
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	strcpy(pClient->pBase, "https://api.thingplus.net/v1");
-
-	if (strlen(pClient->pUserID) != 0)
-	{
-		sprintf(pBuff, "username:%s", pClient->pUserID);
-		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
-	}
-
-	if (strlen(pClient->pPasswd) != 0)
-	{
-		sprintf(pBuff, "apikey:%s", pClient->pPasswd);
-		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
-	}
+	strcpy(pClient->xConfig.pBaseURL, pRESTAPIDefaultBase);
 
 	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "Content-Type:application/json");
 
@@ -309,6 +299,20 @@ FTM_RET	FTOM_TP_RESTAPI_final
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_TP_RESTAPI_setConfig
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTOM_TP_RESTAPI_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfig != NULL);
+
+	memcpy(&pClient->xConfig, pConfig, sizeof(FTOM_TP_RESTAPI_CONFIG));
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_TP_RESTAPI_setUserID
 (
 	FTOM_TP_RESTAPI_PTR	pClient,
@@ -319,7 +323,7 @@ FTM_RET	FTOM_TP_RESTAPI_setUserID
 	ASSERT(pUserID != NULL);
 	FTM_CHAR	pBuff[1024];
 
-	strncpy(pClient->pUserID, pUserID, FTM_USER_ID_LEN);
+	strncpy(pClient->xConfig.pUserID, pUserID, FTM_USER_ID_LEN);
 
 	if (pClient->pHTTPHeader != NULL)
 	{
@@ -327,15 +331,15 @@ FTM_RET	FTOM_TP_RESTAPI_setUserID
 		pClient->pHTTPHeader = NULL;		
 	}
 
-	if (strlen(pClient->pUserID) != 0)
+	if (strlen(pClient->xConfig.pUserID) != 0)
 	{
-		sprintf(pBuff, "username:%s", pClient->pUserID);
+		sprintf(pBuff, "username:%s", pClient->xConfig.pUserID);
 		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
 	}
 
-	if (strlen(pClient->pPasswd) != 0)
+	if (strlen(pClient->xConfig.pPasswd) != 0)
 	{
-		sprintf(pBuff, "apikey:%s", pClient->pPasswd);
+		sprintf(pBuff, "apikey:%s", pClient->xConfig.pPasswd);
 		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
 	}
 
@@ -356,7 +360,7 @@ FTM_RET	FTOM_TP_RESTAPI_setPasswd
 	ASSERT(pPasswd != NULL);
 	FTM_CHAR	pBuff[1024];
 
-	strncpy(pClient->pPasswd, pPasswd, FTM_PASSWD_LEN);
+	strncpy(pClient->xConfig.pPasswd, pPasswd, FTM_PASSWD_LEN);
 
 	if (pClient->pHTTPHeader != NULL)
 	{
@@ -364,21 +368,49 @@ FTM_RET	FTOM_TP_RESTAPI_setPasswd
 		pClient->pHTTPHeader = NULL;		
 	}
 
-	if (strlen(pClient->pUserID) != 0)
+	if (strlen(pClient->xConfig.pUserID) != 0)
 	{
-		sprintf(pBuff, "username:%s", pClient->pUserID);
+		sprintf(pBuff, "username:%s", pClient->xConfig.pUserID);
 		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
 	}
 
-	if (strlen(pClient->pPasswd) != 0)
+	if (strlen(pClient->xConfig.pPasswd) != 0)
 	{
-		sprintf(pBuff, "apikey:%s", pClient->pPasswd);
+		sprintf(pBuff, "apikey:%s", pClient->xConfig.pPasswd);
 		pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, pBuff);
 	}
 
 	pClient->pHTTPHeader = curl_slist_append(pClient->pHTTPHeader, "Content-Type:application/json");
 
 	curl_easy_setopt(pClient->pCURL, CURLOPT_HTTPHEADER, pClient->pHTTPHeader);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_TP_RESTAPI_setGatewayID
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pGatewayID
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pGatewayID != NULL);
+
+	strncpy(pClient->xConfig.pGatewayID, pGatewayID, FTM_DID_LEN);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_TP_RESTAPI_setBaseURL
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pBaseURL
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pBaseURL != NULL);
+
+	strncpy(pClient->xConfig.pBaseURL, pBaseURL, FTM_DID_LEN);
 
 	return	FTM_RET_OK;
 }
@@ -415,20 +447,6 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getModel
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_RESTAPI_GW_setID
-(
-	FTOM_TP_RESTAPI_PTR	pClient,
-	FTM_CHAR_PTR		pGatewayID
-)
-{
-	ASSERT(pClient != NULL);
-	ASSERT(pGatewayID != NULL);
-
-	strncpy(pClient->pGatewayID, pGatewayID, FTM_DID_LEN);
-
-	return	FTM_RET_OK;
-}
-
 FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 (
 	FTOM_TP_RESTAPI_PTR 	pClient,
@@ -444,7 +462,7 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 	cJSON _PTR_ pSensors = NULL;
 	cJSON _PTR_ pItem = NULL;
 
-	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s", pClient->pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
@@ -588,7 +606,7 @@ FTM_RET	FTOM_TP_RESTAPI_GW_setStatus
 	FTM_RET			xRet;
 	cJSON _PTR_ 	pRoot = NULL;
 
-	xRet = FTOM_TP_RESTAPI_setPutURL(pClient, "/gateways/%s/status", pClient->pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setPutURL(pClient, "/gateways/%s/status", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
@@ -646,7 +664,7 @@ FTM_RET	FTOM_TP_RESTAPI_DEVICE_create
 	cJSON_AddStringToObject(pRoot, "name", 	pName);
 	cJSON_AddStringToObject(pRoot, "model", pModel);
 
-	xRet = FTOM_TP_RESTAPI_setPostURL(pClient, "/gateways/%s/devices", pClient->pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setPostURL(pClient, "/gateways/%s/devices", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
@@ -685,7 +703,7 @@ FTM_RET	FTOM_TP_RESTAPI_DEVICE_delete
 
 	FTM_RET			xRet;
 
-	xRet = FTOM_TP_RESTAPI_setDeleteURL(pClient, "/gateways/%s/devices/%s", pClient->pGatewayID, pDeviceID);
+	xRet = FTOM_TP_RESTAPI_setDeleteURL(pClient, "/gateways/%s/devices/%s", pClient->xConfig.pGatewayID, pDeviceID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
@@ -753,7 +771,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_create
 	}
 	else
 	{
-		cJSON_AddStringToObject(pRoot, "deviceId", pClient->pGatewayID);
+		cJSON_AddStringToObject(pRoot, "deviceId", pClient->xConfig.pGatewayID);
 	}
 	cJSON_AddStringToObject(pRoot, "type", pType);
 	cJSON_AddStringToObject(pRoot, "network", "future");
@@ -811,7 +829,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_delete
 
 	FTM_RET			xRet;
 
-	xRet = FTOM_TP_RESTAPI_setDeleteURL(pClient, "/gateways/%s/sensors/%s", pClient->pGatewayID, pSensorID);
+	xRet = FTOM_TP_RESTAPI_setDeleteURL(pClient, "/gateways/%s/sensors/%s", pClient->xConfig.pGatewayID, pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
@@ -841,7 +859,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getStatus
 
 	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, 
 				"/gateways/%s/sensors/%s/status", 
-				pClient->pGatewayID, 
+				pClient->xConfig.pGatewayID, 
 				pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
@@ -874,7 +892,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_setStatus
 
 	xRet = FTOM_TP_RESTAPI_setPutURL(pClient, 
 				"/gateways/%s/sensors/%s/status", 
-				pClient->pGatewayID, 
+				pClient->xConfig.pGatewayID, 
 				pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
@@ -923,7 +941,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getValue
 
 	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, 
 				"/gateways/%s/sensors/%s/series", 
-				pClient->pGatewayID, 
+				pClient->xConfig.pGatewayID, 
 				pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
@@ -957,7 +975,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_setValues
 
 	xRet = FTOM_TP_RESTAPI_setPutURL(pClient, 
 				"/gateways/%s/sensors/%s/series", 
-				pClient->pGatewayID, 
+				pClient->xConfig.pGatewayID, 
 				pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
@@ -1012,7 +1030,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 	cJSON _PTR_ pRoot;
 	FTM_ULONG		i, ulCount = 0;
 
-	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s/sensors", pClient->pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s/sensors", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("An error has occurred in the client settings of the URL.\n");
@@ -1200,7 +1218,7 @@ FTM_RET	FTOM_TP_RESTAPI_EP_create
 
 	xRet = FTOM_TP_RESTAPI_SENSOR_create(
 				pClient, 
-				pClient->pGatewayID, 
+				pClient->xConfig.pGatewayID, 
 				pEPInfo->pEPID,
 				pTypeInfo->pName,
 				pEPInfo->pName,
@@ -1269,7 +1287,7 @@ FTM_RET	FTOM_TP_RESTAPI_setGetURL
 	ASSERT(pClient != NULL);
 	va_list pArgs;
 
-	strcpy(pClient->pURL, pClient->pBase);
+	strcpy(pClient->pURL, pClient->xConfig.pBaseURL);
 
 	va_start(pArgs, pFormat);
 	vsprintf(&pClient->pURL[strlen(pClient->pURL)], pFormat, pArgs);
@@ -1301,7 +1319,7 @@ FTM_RET	FTOM_TP_RESTAPI_setPutURL
 	ASSERT(pClient != NULL);
 	va_list pArgs;
 
-	strcpy(pClient->pURL, pClient->pBase);
+	strcpy(pClient->pURL, pClient->xConfig.pBaseURL);
 
 	va_start(pArgs, pFormat);
 	vsprintf(&pClient->pURL[strlen(pClient->pURL)], pFormat, pArgs);
@@ -1333,7 +1351,7 @@ FTM_RET	FTOM_TP_RESTAPI_setPostURL
 	ASSERT(pClient != NULL);
 	va_list pArgs;
 
-	strcpy(pClient->pURL, pClient->pBase);
+	strcpy(pClient->pURL, pClient->xConfig.pBaseURL);
 
 	va_start(pArgs, pFormat);
 	vsprintf(&pClient->pURL[strlen(pClient->pURL)], pFormat, pArgs);
@@ -1365,7 +1383,7 @@ FTM_RET	FTOM_TP_RESTAPI_setDeleteURL
 	ASSERT(pClient != NULL);
 	va_list pArgs;
 
-	strcpy(pClient->pURL, pClient->pBase);
+	strcpy(pClient->pURL, pClient->xConfig.pBaseURL);
 
 	va_start(pArgs, pFormat);
 	vsprintf(&pClient->pURL[strlen(pClient->pURL)], pFormat, pArgs);

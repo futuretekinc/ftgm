@@ -54,7 +54,6 @@ FTM_RET	FTOM_SHELL_CMD_server
 
 FTM_SHELL_CMD	FTOM_shellCmds[] = 
 {
-#if 0
 	{
 		.pString	= "config",
 		.function	= FTOM_SHELL_CMD_config,
@@ -62,6 +61,7 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pHelp		= "\n"\
 					  "\tConfiguration Management.\n"
 	},
+#if 0
 	{
 		.pString	= "object",
 		.function	= FTOM_SHELL_CMD_object,
@@ -69,6 +69,7 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pHelp		= "\n"\
 					  "\tShow object.\n"
 	},
+#endif
 	{
 		.pString	= "quit",
 		.function	= FTOM_SHELL_CMD_quit,
@@ -76,6 +77,7 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pHelp		= "\n"\
 					  "\tquit.\n"
 	},
+#if 0
 	{
 		.pString	= "task",
 		.function	= FTOM_SHELL_CMD_task,
@@ -113,10 +115,31 @@ FTM_RET	FTOM_SHELL_CMD_config
 	FTM_VOID_PTR 	pData
 )
 {
+	FTOM_TP_CLIENT_PTR	pClient = (FTOM_TP_CLIENT_PTR)pData;
+
 	switch(nArgc)
 	{
 	case	1:
-		//FTOM_showConfig();
+		FTOM_TP_CLIENT_showConfig(pClient);
+		break;
+
+	case	3:
+		{
+			if (strcasecmp(pArgv[1], "save") == 0)
+			{
+				FTM_RET	xRet;
+
+				xRet = FTOM_TP_CLIENT_saveConfigToFile(pClient, pArgv[2]);
+				if (xRet == FTM_RET_OK)
+				{
+					MESSAGE("This configuration has been saved successfully[%s].\n", pArgv[2]);	
+				}
+				else
+				{
+					MESSAGE("Failed to save configuration to a file[%s].\n", pArgv[2]);	
+				}
+			}
+		}		
 		break;
 	}
 
@@ -179,18 +202,16 @@ FTM_RET	FTOM_SHELL_CMD_quit
 	FTM_VOID_PTR 	pData
 )
 {
-#if 0
 	FTM_RET	xRet;
-
-	xRet = FTOM_stop();
-	if (xRet == FTM_RET_OK)
+	FTOM_TP_CLIENT_PTR	pClient = (FTOM_TP_CLIENT_PTR)pData;
+	
+	xRet = FTOM_TP_CLIENT_stop(pClient);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_SHELL_QUIT;
+		return	xRet;	
 	}
-	return	xRet;
-#endif
 
-	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+	return	FTM_RET_SHELL_QUIT;
 }
 
 FTM_RET	FTOM_SHELL_CMD_task

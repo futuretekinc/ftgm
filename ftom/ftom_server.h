@@ -102,7 +102,7 @@ FTM_RET FTOM_SERVER_loadConfig
 	FTM_CONFIG_PTR	pConfig
 );
 
-FTM_RET	FTOM_SERVER_loadFromFile
+FTM_RET	FTOM_SERVER_loadConfigFromFile
 (
 	FTOM_SERVER_PTR	pServer, 
 	FTM_CHAR_PTR		pFileName
