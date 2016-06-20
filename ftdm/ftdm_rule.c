@@ -5,6 +5,7 @@
 #include "ftdm_action.h"
 #include "ftdm_trigger.h"
 #include "ftdm_sqlite.h"
+#include "ftdm_log.h"
 
 FTM_RET	FTDM_RULE_init
 (
@@ -22,24 +23,17 @@ FTM_RET FTDM_RULE_final
 	return	FTM_RULE_final();
 }
 
-FTM_RET	FTDM_RULE_loadFromFile
+FTM_RET	FTDM_RULE_loadConfig
 (
-	FTM_CHAR_PTR			pFileName
+	FTM_CONFIG_PTR		pConfig
 )
 {
-	ASSERT(pFileName != NULL);
+	ASSERT(pConfig != NULL);
 
 	FTM_RET				xRet;
-	FTM_CONFIG_PTR		pConfig;
 	FTM_CONFIG_ITEM		xRule;
 	FTM_CONFIG_ITEM		xRules;
 	FTM_CONFIG_ITEM		xRuleItem;
-
-	xRet = FTM_CONFIG_create(pFileName, &pConfig);
-	if (xRet != FTM_RET_OK)
-	{
-		return	FTM_RET_CONFIG_LOAD_FAILED;
-	}
 
 	xRet = FTM_CONFIG_getItem(pConfig, "event", &xRule);
 	if (xRet == FTM_RET_OK)
@@ -161,7 +155,8 @@ FTM_RET	FTDM_RULE_loadFromFile
 						
 						}
 
-						FTDM_RULE_create(&xInfo);
+						xRet = FTDM_RULE_create(&xInfo);
+						FTDM_LOG_createRule(xInfo.pID, xRet);
 					
 					}
 				}
@@ -173,10 +168,30 @@ FTM_RET	FTDM_RULE_loadFromFile
 		TRACE("Section [action] not found.\n");
 	}
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_RULE_loadFromFile
+(
+	FTM_CHAR_PTR			pFileName
+)
+{
+	ASSERT(pFileName != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pConfig;
+
+	xRet = FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_CONFIG_LOAD_FAILED;
+	}
+
+	xRet = FTDM_RULE_loadConfig(pConfig);
 
 	FTM_CONFIG_destroy(&pConfig);
 
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 FTM_RET	FTDM_RULE_loadFromDB

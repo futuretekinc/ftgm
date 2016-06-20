@@ -2049,6 +2049,114 @@ FTM_RET	FTDMC_RULE_set
 	return	xResp.nRet;
 }
 
+/////////////////////////////////////////////////////////////////////
+//
+//
+/////////////////////////////////////////////////////////////////////
+FTM_RET	FTDMC_LOG_add
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_LOG_PTR     		pLog
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pLog != NULL);
+
+	FTM_RET						nRet;
+	FTDM_REQ_LOG_ADD_PARAMS	xReq;
+	FTDM_RESP_LOG_ADD_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_LOG_ADD;
+	xReq.nLen	=	sizeof(xReq);
+	memcpy(&xReq.xLog, pLog, sizeof(FTM_LOG));
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_LOG_del
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG				ulCount,
+	FTM_ULONG_PTR			pulDeletedCount
+)
+{
+	ASSERT(pSession != NULL);
+
+	FTM_RET						nRet;
+	FTDM_REQ_LOG_DEL_PARAMS		xReq;
+	FTDM_RESP_LOG_DEL_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_LOG_DEL;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.ulIndex=	ulIndex;
+	xReq.ulCount=	ulCount;
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if ((xResp.nRet == FTM_RET_OK) && (pulDeletedCount != NULL))
+	{
+		*pulDeletedCount = xResp.ulCount;
+	}
+
+	return	xResp.nRet;
+}
+
+FTM_RET	FTDMC_LOG_count
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG_PTR			pulCount
+)
+{
+	ASSERT(pSession != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET							nRet;
+ 	FTDM_REQ_LOG_COUNT_PARAMS		xReq;
+	FTDM_RESP_LOG_COUNT_PARAMS	xResp;
+
+	xReq.xCmd	=	FTDM_CMD_RULE_COUNT;
+	xReq.nLen	=	sizeof(xReq);
+
+	nRet = FTDMC_request(
+				pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		*pulCount = xResp.nCount;
+	}
+
+	return	xResp.nRet;
+}
+
 /*****************************************************************
  *
  *****************************************************************/

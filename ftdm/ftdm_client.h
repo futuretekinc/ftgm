@@ -379,5 +379,25 @@ FTM_RET	FTDMC_RULE_getIDList
 	FTM_ULONG_PTR			pulCount
 );
 
+
+FTM_RET	FTDMC_LOG_add
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_LOG_PTR     		pLog
+);
+
+FTM_RET	FTDMC_LOG_del
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG				ulCount,
+	FTM_ULONG_PTR			pulDeletedCount
+);
+
+FTM_RET	FTDMC_LOG_count
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG_PTR			pulCount
+);
 #endif
 

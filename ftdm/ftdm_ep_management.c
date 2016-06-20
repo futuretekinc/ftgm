@@ -108,7 +108,7 @@ FTM_RET	FTDM_EPM_loadFromFile
 	FTM_CONFIG_PTR		pConfig;
 	FTM_CONFIG_ITEM		xSection;
 
-	xRet = FTM_CONFIG_create(pFileName, &pConfig);
+	xRet = FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_CONFIG_LOAD_FAILED;
@@ -149,8 +149,9 @@ FTM_RET	FTDM_EPM_loadFromFile
 							}
 							else
 							{
-								FTDM_EPM_append(pEPM, pEP);
+								xRet = FTDM_EPM_append(pEPM, pEP);
 							}
+							FTDM_LOG_createEP(xInfo.pEPID, xRet);
 						}
 						else
 						{

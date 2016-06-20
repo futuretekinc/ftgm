@@ -264,8 +264,17 @@ FTM_RET	FTOM_DMC_NODE_add
 {
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
+	
+	FTM_RET	xRet;
 
-	return	FTDMC_NODE_append(&pDMC->xSession, pInfo);
+	xRet = FTDMC_NODE_append(&pDMC->xSession, pInfo);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_LOG	xLog;
+
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_DMC_NODE_remove

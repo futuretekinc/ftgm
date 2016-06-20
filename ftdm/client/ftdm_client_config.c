@@ -36,7 +36,7 @@ FTM_RET	FTDMC_CFG_load
 	}
 
 	
-	xRet = FTM_CONFIG_create(pFileName, &pRoot);
+	xRet = FTM_CONFIG_create(pFileName, &pRoot, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Configuration loading failed.[FILE = %s]\n", pFileName);

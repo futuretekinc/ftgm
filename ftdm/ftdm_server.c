@@ -1513,8 +1513,7 @@ FTM_RET	FTDMS_LOG_add
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
-	//pResp->nRet = FTDM_LOG_create(&pReq->xRule);
+	pResp->nRet = FTDM_LOGGER_add(pServer->pDM->pLogger, &pReq->xLog);
 
 	return	pResp->nRet;
 }
@@ -1527,10 +1526,11 @@ FTM_RET	FTDMS_LOG_del
 	FTDM_RESP_LOG_DEL_PARAMS_PTR	pResp
 )
 {
+	FTM_ULONG	ulDeletedCount;
+
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
-	//pResp->nRet = FTDM_LOG_destroy(pReq->ullLogID);
+	pResp->nRet = FTDM_LOGGER_del(pServer->pDM->pLogger, pReq->ulIndex, pReq->ulCount, &ulDeletedCount);
 
 	return	pResp->nRet;
 }
@@ -1544,8 +1544,7 @@ FTM_RET	FTDMS_LOG_count
 {
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
-	//pResp->nRet = FTDM_LOG_count(&pResp->nCount);
+	pResp->nRet = FTDM_LOGGER_count(pServer->pDM->pLogger, &pResp->nCount);
 
 	return	pResp->nRet;
 }
@@ -1557,18 +1556,15 @@ FTM_RET	FTDMS_LOG_get
 	FTDM_RESP_LOG_GET_PARAMS_PTR	pResp
 )
 {
-	//FTDM_LOG_PTR	pRule;
- 
+	FTM_LOG_PTR		pLogs;
+
 	pResp->xCmd	= pReq->xCmd;
-	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
-#if 0
-	pResp->nRet = FTDM_LOG_get(pReq->ullLogID, &pRule);
+	pResp->nRet = FTDM_LOGGER_get(pServer->pDM->pLogger, pReq->ulIndex, pResp->pLogs, pReq->ulCount, &pResp->ulCount);
 	if (pResp->nRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_LOG));
+		pResp->nLen = sizeof(*pResp) + sizeof(FTM_LOG) * pResp->ulCount;
 	}
-#endif
+
 	return	pResp->nRet;
 }
 

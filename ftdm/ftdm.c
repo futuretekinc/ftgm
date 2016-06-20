@@ -18,7 +18,17 @@
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
 
-static FTDM_SERVER	xServer;
+extern 
+char *program_invocation_short_name;
+
+static 
+FTDM_SERVER	xServer;
+
+static 
+FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName);
+
+FTDM_CONTEXT	xFTDM;
+
 
 FTM_RET 	FTDM_init(FTDM_CONTEXT_PTR pDM)
 {
@@ -41,6 +51,12 @@ FTM_RET 	FTDM_init(FTDM_CONTEXT_PTR pDM)
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("EP management initialization fialed.[%08x]\n", xRet);
+	}
+
+	xRet = FTDM_LOGGER_create(&pDM->pLogger);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to create logger!\n");
 	}
 
 	xRet = FTDM_TRIGGER_init();
@@ -108,6 +124,12 @@ FTM_RET	FTDM_final(FTDM_CONTEXT_PTR pFTDM)
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Trigger management finalize failed.[%08x]\n", xRet);	
+	}
+
+	xRet = FTDM_LOGGER_destroy(&pFTDM->pLogger);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to destroy logger[%08x].\n", xRet);	
 	}
 
 	xRet = FTDM_EPM_destroy(&pFTDM->pEPM);
@@ -360,14 +382,6 @@ FTM_RET	FTDM_removeInvalidData
 	return	FTM_RET_OK;
 }
 
-static FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName);
-
-
-extern char *program_invocation_short_name;
-
-
-static 	FTDM_CONTEXT	xFTDM;
-
 int main(int nArgc, char *pArgv[])
 {
 	FTM_RET		xRet;
@@ -448,6 +462,8 @@ int main(int nArgc, char *pArgv[])
 
 	/* apply configuration */
 		
+	FTM_TRACE_setModule(0xFFFFFFFF, 1);
+
 	FTDM_init(&xFTDM);
 	FTDM_loadConfigFromFile(&xFTDM, pConfigFileName);
 
@@ -463,6 +479,8 @@ int main(int nArgc, char *pArgv[])
 		return	0;	
 	}
 
+	FTDM_LOGGER_init(xFTDM.pLogger);
+	
 	if (bDBErase)
 	{
 		MESSAGE("Erase all data!\n");	

@@ -60,7 +60,7 @@ FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 	ASSERT(pConfig != NULL);
 	ASSERT(pFileName != NULL);
 
-	xRet = FTM_CONFIG_create(pFileName, &pRoot);
+	xRet = FTM_CONFIG_create(pFileName, &pRoot, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;

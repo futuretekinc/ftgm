@@ -168,7 +168,7 @@ FTM_RET	FTDM_NODEM_loadFromFile
 	FTM_CONFIG_PTR		pRoot;
 	FTM_CONFIG_ITEM		xNodeSection;
 
-	xRet = FTM_CONFIG_create(pFileName, &pRoot);
+	xRet = FTM_CONFIG_create(pFileName, &pRoot, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Config initialize failed[%08x].\n", xRet);
@@ -215,6 +215,7 @@ FTM_RET	FTDM_NODEM_loadFromFile
 							ERROR("Node[%s] creation failed[%08x].\n", xInfo.pDID, xRet);	
 						
 						}
+						FTDM_LOG_createNode(xInfo.pDID, xRet);
 					}
 				}
 			}

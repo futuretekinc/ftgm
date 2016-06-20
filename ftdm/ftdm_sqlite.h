@@ -404,4 +404,85 @@ FTM_RET	FTDM_DBIF_RULE_set
  	FTM_RULE_PTR	pRule
 );
 
+FTM_RET	FTDM_DBIF_LOG_initTable
+(
+	FTM_CHAR_PTR	pTableName
+);
+
+FTM_RET	FTDM_DBIF_LOG_isTableExist
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_BOOL_PTR	pbExist
+);
+
+FTM_RET	FTDM_DBIF_LOG_info
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG_PTR	pulCount,
+	FTM_ULONG_PTR	pulStart,
+	FTM_ULONG_PTR	pulEnd
+);
+
+FTM_RET	FTDM_DBIF_LOG_append
+(
+	FTM_CHAR_PTR	pTableName,
+ 	FTM_LOG_PTR	pLog
+);
+
+FTM_RET	FTDM_DBIF_LOG_del
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+);
+
+FTM_RET	FTDM_DBIF_LOG_delWithTime
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulDeletedCount
+);
+
+FTM_RET	FTDM_DBIF_LOG_count
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_LOG_countWithTime
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_LOG_isExist
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_UINT64		ullID,
+	FTM_BOOL_PTR	pbExist
+);
+
+FTM_RET	FTDM_DBIF_LOG_get
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulIndex,
+	FTM_LOG_PTR		pLogs, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_LOG_getWithTime
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_LOG_PTR		pLogs, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
 #endif

@@ -2,6 +2,14 @@
 #define	__FTM_LOGGER_H__
 
 #include "ftm_log.h"
+#include "ftm_limit.h"
+
+typedef	struct	FTM_LOGGER_CONFIG_STRUCT
+{
+	FTM_CHAR	pName[FTM_NAME_LEN+1];
+	FTM_LIMIT	xLimit;
+}	FTM_LOGGER_CONFIG, _PTR_ FTM_LOGGER_CONFIG_PTR;
+
 typedef	struct	FTM_LOGGER_STRUCT
 {
 	FTM_LIST	xLogList;

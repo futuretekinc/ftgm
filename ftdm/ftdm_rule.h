@@ -23,6 +23,11 @@ FTM_RET	FTDM_RULE_showList
 	FTM_VOID
 );
 
+FTM_RET	FTDM_RULE_loadConfig
+(
+	FTM_CONFIG_PTR		pConfig
+);
+
 FTM_RET	FTDM_RULE_loadFromFile
 (
 	FTM_CHAR_PTR pFileName

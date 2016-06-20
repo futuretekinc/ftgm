@@ -837,7 +837,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_LOG     		xRule;
+	FTM_LOG     		xLog;
 }	FTDM_REQ_LOG_ADD_PARAMS, _PTR_ FTDM_REQ_LOG_ADD_PARAMS_PTR;
 
 typedef	struct
@@ -851,7 +851,8 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_UINT64			ullID;
+	FTM_ULONG			ulIndex;
+	FTM_ULONG			ulCount;
 }	FTDM_REQ_LOG_DEL_PARAMS, _PTR_	FTDM_REQ_LOG_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -859,6 +860,7 @@ typedef	struct
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				nRet;
+	FTM_ULONG			ulCount;
 }	FTDM_RESP_LOG_DEL_PARAMS, _PTR_ 	FTDM_RESP_LOG_DEL_PARAMS_PTR;
 
 typedef	struct
@@ -879,7 +881,8 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_CHAR			pRuleID[FTM_ID_LEN+1];
+	FTM_ULONG			ulIndex;
+	FTM_ULONG			ulCount;
 }	FTDM_REQ_LOG_GET_PARAMS, _PTR_ 	FTDM_REQ_LOG_GET_PARAMS_PTR;
 
 typedef	struct
@@ -887,7 +890,8 @@ typedef	struct
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				nRet;
-	FTM_LOG			xRule;
+	FTM_ULONG			ulCount;
+	FTM_LOG				pLogs[];
 }	FTDM_RESP_LOG_GET_PARAMS, _PTR_	FTDM_RESP_LOG_GET_PARAMS_PTR;
 
 typedef	struct

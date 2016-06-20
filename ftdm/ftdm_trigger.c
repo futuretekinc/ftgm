@@ -6,6 +6,7 @@
 #include "ftdm_config.h"
 #include "ftdm_trigger.h"
 #include "ftdm_sqlite.h"
+#include "ftdm_log.h"
 
 FTM_RET	FTDM_TRIGGER_init
 (
@@ -23,26 +24,17 @@ FTM_RET FTDM_TRIGGER_final
 	return	FTM_TRIGGER_final();
 }
 
-FTM_RET	FTDM_TRIGGER_loadFromFile
+FTM_RET	FTDM_TRIGGER_loadConfig
 (
-	FTM_CHAR_PTR			pFileName
+	FTM_CONFIG_PTR	pConfig
 )
 {
-	ASSERT(pFileName != NULL);
+	ASSERT(pConfig != NULL);
 
 	FTM_RET				xRet;
-	FTM_CONFIG_PTR		pConfig;
 	FTM_CONFIG_ITEM		xTrigger;
 	FTM_CONFIG_ITEM		xTriggers;
 	FTM_CONFIG_ITEM		xTriggerItem;
-
-	xRet = FTM_CONFIG_create(pFileName, &pConfig);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Trigger configuration load failed.\n");
-
-		return	FTM_RET_CONFIG_LOAD_FAILED;
-	}
 
 	xRet = FTM_CONFIG_getItem(pConfig, "event", &xTrigger);
 	if (xRet == FTM_RET_OK)
@@ -216,6 +208,7 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 						{
 							pTrigger->ulIndex = ulIndex;	
 						}
+						FTDM_LOG_createTrigger(xInfo.pID, xRet);
 					}
 				}
 			}
@@ -230,6 +223,28 @@ FTM_RET	FTDM_TRIGGER_loadFromFile
 		TRACE("Section [trigger] not found.\n");
 	}
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_TRIGGER_loadFromFile
+(
+	FTM_CHAR_PTR			pFileName
+)
+{
+	ASSERT(pFileName != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pConfig;
+
+	xRet = FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Trigger configuration load failed.\n");
+
+		return	FTM_RET_CONFIG_LOAD_FAILED;
+	}
+
+	xRet = FTDM_TRIGGER_loadConfig(pConfig);
 
 	FTM_CONFIG_destroy(&pConfig);
 

@@ -1,9 +1,127 @@
 #include "ftdm.h"
+#include "ftm_log.h"
+#include "ftdm_log.h"
 
-FTM_RET	FTDM_LOG_create
+extern
+FTDM_CONTEXT	xFTDM;
+
+FTM_RET	FTDM_LOG_createNode
 (
-	FTM_LOG_PTR	pLog
+	FTM_CHAR_PTR	pDID,
+	FTM_RET			xResult
 )
 {
-	return	FTM_LOG_add(pLog);
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_createObject(pDID, &pLog);
+	if (xRet == FTM_RET_OK)
+	{
+		pLog->xType = FTM_LOG_TYPE_CREATE_NODE;
+		xRet = FTDM_LOGGER_add(xFTDM.pLogger, pLog);
+		if (xRet != FTM_RET_OK)
+		{
+		
+			FTM_LOG_destroy(&pLog);	
+		}
+	}
+
+	return	FTM_RET_OK;
 }
+
+FTM_RET	FTDM_LOG_createEP
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_RET			xResult
+)
+{
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_createObject(pEPID, &pLog);
+	if (xRet == FTM_RET_OK)
+	{
+		pLog->xType = FTM_LOG_TYPE_CREATE_EP;
+		xRet = FTDM_LOGGER_add(xFTDM.pLogger, pLog);
+		if (xRet != FTM_RET_OK)
+		{
+		
+			FTM_LOG_destroy(&pLog);	
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_LOG_createTrigger
+(
+	FTM_CHAR_PTR	pID,
+	FTM_RET			xResult
+)
+{
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_createObject(pID, &pLog);
+	if (xRet == FTM_RET_OK)
+	{
+		pLog->xType = FTM_LOG_TYPE_CREATE_TRIGGER;
+		xRet = FTDM_LOGGER_add(xFTDM.pLogger, pLog);
+		if (xRet != FTM_RET_OK)
+		{
+		
+			FTM_LOG_destroy(&pLog);	
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_LOG_createAction
+(
+	FTM_CHAR_PTR	pID,
+	FTM_RET			xResult
+)
+{
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_createObject(pID, &pLog);
+	if (xRet == FTM_RET_OK)
+	{
+		pLog->xType = FTM_LOG_TYPE_CREATE_ACTION;
+		xRet = FTDM_LOGGER_add(xFTDM.pLogger, pLog);
+		if (xRet != FTM_RET_OK)
+		{
+		
+			FTM_LOG_destroy(&pLog);	
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_LOG_createRule
+(
+	FTM_CHAR_PTR	pID,
+	FTM_RET			xResult
+)
+{
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_createObject(pID, &pLog);
+	if (xRet == FTM_RET_OK)
+	{
+		pLog->xType = FTM_LOG_TYPE_CREATE_RULE;
+		xRet = FTDM_LOGGER_add(xFTDM.pLogger, pLog);
+		if (xRet != FTM_RET_OK)
+		{
+		
+			FTM_LOG_destroy(&pLog);	
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+

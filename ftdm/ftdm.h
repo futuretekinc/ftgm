@@ -11,11 +11,13 @@
 #include "ftdm_ep_management.h"
 #include "ftdm_ep_class.h"
 #include "ftdm_server.h"
+#include "ftdm_logger.h"
 
 typedef struct FTDM_CONTEXT_STRUCT
 {
 	FTDM_NODEM_PTR	pNodeM;	
 	FTDM_EPM_PTR	pEPM;	
+	FTDM_LOGGER_PTR	pLogger;
 } FTDM_CONTEXT, _PTR_ FTDM_CONTEXT_PTR;
 
 FTM_RET	FTDM_init

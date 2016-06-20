@@ -5,6 +5,7 @@
 #include "ftdm_node.h"
 #include "ftdm_sqlite.h"
 #include "ftm_mem.h"
+#include "ftdm_log.h"
 
 FTM_RET    FTDM_NODE_create
 (   
@@ -31,6 +32,7 @@ FTM_RET    FTDM_NODE_create
 		{
 			return	xRet;
 		}
+
 	}
 
 	pNode = (FTDM_NODE_PTR)FTM_MEM_malloc(sizeof(FTDM_NODE));

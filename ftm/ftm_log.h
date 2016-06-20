@@ -31,11 +31,13 @@ typedef	enum	FTM_LOG_TYPE_ENUM
 typedef	struct
 {
 	FTM_CHAR	pObjectID[FTM_ID_LEN+1];
+	FTM_RET		xRet;
 }	FTM_LOG_CREATE_OBJECT_PARAMS, _PTR_ FTM_LOG_CREATE_OBJECT_PARAMS_PTR;
 
 typedef	struct
 {
 	FTM_CHAR	pObjectID[FTM_ID_LEN+1];
+	FTM_RET		xRet;
 }	FTM_LOG_DESTROY_OBJECT_PARAMS, _PTR_ FTM_LOG_DESTROY_OBJECT_PARAMS_PTR;
 
 typedef	struct
@@ -46,7 +48,7 @@ typedef	struct
 	
 typedef	struct FTM_LOG_ITEM_STRUCT
 {
-	FTM_UINT64		ullID;
+	FTM_CHAR		pID[FTM_ID_LEN+1];
 	FTM_LOG_TYPE	xType;
 	FTM_ULONG		ulTime;
 	FTM_ULONG		xFlags;
@@ -68,15 +70,29 @@ FTM_RET	FTM_LOG_destroy
 	FTM_LOG_PTR _PTR_ ppLog
 );
 
+FTM_RET	FTM_LOG_duplicate
+(
+	FTM_LOG_PTR	pLog,
+	FTM_LOG_PTR _PTR_ ppNewLog
+);
+
 FTM_RET	FTM_LOG_createObject
 (
 	FTM_CHAR_PTR	pObjectID,
 	FTM_LOG_PTR	_PTR_ ppLog
 );
 
+FTM_RET	FTM_LOG_destroyObject
+(
+	FTM_CHAR_PTR	pObjectID,
+	FTM_RET			xResult,
+	FTM_LOG_PTR	_PTR_ ppLog
+);
+
 FTM_RET	FTM_LOG_createEvent
 (
 	FTM_CHAR_PTR	pObjectID,
+	FTM_BOOL		bOccurred,
 	FTM_LOG_PTR	_PTR_ ppLog
 );
 

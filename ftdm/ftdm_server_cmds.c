@@ -14,15 +14,79 @@
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
 
-FTM_RET	FTDMS_SHELL_CMD_config(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_object(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_session(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_trace(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_node(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTDMS_SHELL_CMD_ep(FTM_SHELL_PTR pShell, FTM_INT	nArgc, FTM_CHAR_PTR	pArgv[], FTM_VOID_PTR	pData);
-FTM_RET	FTDMS_SHELL_CMD_EP_showData(FTM_SHELL_PTR pShell, FTM_CHAR_PTR pEPID, FTM_ULONG ulBegin, FTM_ULONG ulCount);
+static
+FTM_RET	FTDMS_SHELL_CMD_config
+(
+	FTM_SHELL_PTR 	pShell, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR	pData
+);
 
-static FTDM_CFG	xConfig;
+static
+FTM_RET	FTDMS_SHELL_CMD_object
+(
+	FTM_SHELL_PTR 	pShell, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR	pData
+);
+
+static
+FTM_RET	FTDMS_SHELL_CMD_session
+(
+	FTM_SHELL_PTR 	pShell, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR	pData
+);
+
+static
+FTM_RET	FTDMS_SHELL_CMD_trace
+(
+	FTM_SHELL_PTR 	pShell, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR	pData
+);
+
+static
+FTM_RET	FTDMS_SHELL_CMD_node
+(
+	FTM_SHELL_PTR 	pShell, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR	pData
+);
+
+static
+FTM_RET	FTDMS_SHELL_CMD_ep
+(
+	FTM_SHELL_PTR 	pShell, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR	pData
+);
+
+static
+FTM_RET	FTDMS_SHELL_CMD_log
+(
+	FTM_SHELL_PTR 	pShell, 
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR	pData
+);
+
+FTM_RET	FTDMS_SHELL_CMD_EP_showData
+(
+	FTM_SHELL_PTR 	pShell, 
+	FTM_CHAR_PTR 	pEPID, 
+	FTM_ULONG 		ulBegin, 
+	FTM_ULONG 		ulCount
+);
+
+static 
+FTDM_CFG	xConfig;
 FTM_SHELL_CMD	FTDMS_pCmdList[] =
 {
 	{
@@ -33,25 +97,24 @@ FTM_SHELL_CMD	FTDMS_pCmdList[] =
 					  "\tConfiguration Data Manager.\n"
 	},
 	{
-		.pString	= "object",
-		.function	= FTDMS_SHELL_CMD_object,
-		.pShortHelp	= "Object management.",
-		.pHelp		= "\n"\
-					  "\tObject management.\n"
+		.pString	= "ep",
+		.function	= FTDMS_SHELL_CMD_ep,
+		.pShortHelp	= "End Point Manager.",
+		.pHelp		= " [<EPID> [<cmd>] [<index> <count>]]\n"\
+					  "    EP management\n"\
+				      "  Commands:\n"\
+				      "    data  Display data\n"\
+				      "  Parameters:\n"\
+				      "    EPID  Identifer of EP\n"\
+				      "    index The starting index of the data for display.\n"\
+				      "    count Number of the data for display.\n"
 	},
 	{
-		.pString	= "trace",
-		.function	= FTDMS_SHELL_CMD_trace,
-		.pShortHelp	= "Trace configuration.",
+		.pString	= "log",
+		.function	= FTDMS_SHELL_CMD_log,
+		.pShortHelp	= "Log management.",
 		.pHelp		= "\n"\
-					  "\tTrace configuration.\n"
-	},
-	{
-		.pString	= "session",
-		.function	= FTDMS_SHELL_CMD_session,
-		.pShortHelp	= "Session Manager.",
-		.pHelp		= "\n"\
-					  "\tSession Manager.\n"
+					  "\tLog management.\n"
 	},
 	{
 		.pString	= "node",
@@ -61,11 +124,25 @@ FTM_SHELL_CMD	FTDMS_pCmdList[] =
 					  "\tNode Manager.\n"
 	},
 	{
-		.pString	= "ep",
-		.function	= FTDMS_SHELL_CMD_ep,
-		.pShortHelp	= "End Point Manager.",
+		.pString	= "object",
+		.function	= FTDMS_SHELL_CMD_object,
+		.pShortHelp	= "Object management.",
 		.pHelp		= "\n"\
-					  "\tEnd Point Manager.\n"
+					  "\tObject management.\n"
+	},
+	{
+		.pString	= "session",
+		.function	= FTDMS_SHELL_CMD_session,
+		.pShortHelp	= "Session Manager.",
+		.pHelp		= "\n"\
+					  "\tSession Manager.\n"
+	},
+	{
+		.pString	= "trace",
+		.function	= FTDMS_SHELL_CMD_trace,
+		.pShortHelp	= "Trace configuration.",
+		.pHelp		= "\n"\
+					  "\tTrace configuration.\n"
 	},
 };
 
@@ -367,6 +444,122 @@ FTM_RET FTDMS_SHELL_CMD_ep
 				}
 			}
 		}
+	}
+
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTDMS_SHELL_CMD_log
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR	pData
+)
+{
+	FTM_RET	xRet;
+	FTDM_SERVER_PTR	pServer = (FTDM_SERVER_PTR)pData;
+
+	switch (nArgc)
+	{
+	case	1:	
+		{
+			FTM_ULONG	ulBeginTime, ulEndTime, ulCount;
+
+			xRet = FTDM_LOGGER_info(pServer->pDM->pLogger, &ulBeginTime, &ulEndTime, &ulCount);
+			if (xRet != FTM_RET_OK)
+			{
+				MESSAGE("Error : %08lx\n", xRet);	
+			}
+			else
+			{
+				FTM_CHAR	pTimeString[128];
+				memset(pTimeString, 0, sizeof(pTimeString));
+
+				MESSAGE("# Logger Information\n");	
+				MESSAGE("%16s : %lu\n", "Count", ulCount);
+				if (ulCount != 0)
+				{
+					strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&ulBeginTime));
+					MESSAGE("%16s : %s\n", "Begin", pTimeString);
+					strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&ulEndTime));
+					MESSAGE("%16s : %s\n", "End", pTimeString);
+				}
+			}
+		}
+		break;
+
+	case	2:
+		{
+			if(strcasecmp(pArgv[1], "show") == 0)
+			{
+				FTM_LOG_PTR	pLogs;
+				FTM_ULONG	i, ulCount = 0;
+				FTM_CHAR	pTimeString[128];
+
+				memset(pTimeString, 0, sizeof(pTimeString));
+
+				pLogs = (FTM_LOG_PTR)FTM_MEM_malloc(sizeof(FTM_LOG) * 100);
+				if (pLogs == NULL)
+				{
+					MESSAGE("Error : not enough memory!\n");
+					break;	
+				}
+				xRet = FTDM_LOGGER_get(pServer->pDM->pLogger, 0, pLogs,  100, &ulCount);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Error : %08lx\n", xRet);	
+				}
+
+				MESSAGE("# Log List\n");	
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&pLogs[i].ulTime));
+					MESSAGE("%3lu : %16s %s", i+1, pLogs[i].pID, pTimeString);
+
+					switch(pLogs[i].xType)
+					{
+					case FTM_LOG_TYPE_CREATE_OBJECT:
+						MESSAGE(" - Object[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
+						break;
+
+					case FTM_LOG_TYPE_CREATE_NODE:
+						MESSAGE(" - Node[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
+						break;
+
+					case FTM_LOG_TYPE_CREATE_EP:
+						MESSAGE(" - EP[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
+						break;
+
+					case FTM_LOG_TYPE_CREATE_TRIGGER:
+						MESSAGE(" - Trigger[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
+						break;
+
+					case FTM_LOG_TYPE_CREATE_ACTION:
+						MESSAGE(" - Action[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
+						break;
+
+					case FTM_LOG_TYPE_CREATE_RULE:
+						MESSAGE(" - Rule[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
+						break;
+
+					default:
+						MESSAGE(" - Unknown type[%08lx]", (FTM_ULONG)pLogs[i].xType);
+					}
+					MESSAGE("\n");
+				}
+
+				FTM_MEM_free(pLogs);
+			}
+		}
+			
+		break;
+
+	case	3:
+		{
+		}
+		break;
 	}
 
 

@@ -19,6 +19,11 @@ FTM_RET FTDM_TRIGGER_final
 	FTM_VOID
 );
 
+FTM_RET	FTDM_TRIGGER_loadConfig
+(
+	FTM_CONFIG_PTR		pConfig
+);
+
 FTM_RET	FTDM_TRIGGER_loadFromFile
 (
 	FTM_CHAR_PTR pFileName

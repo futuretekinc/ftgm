@@ -31,7 +31,9 @@ LIB_FTDM_SRCS= 	ftdm_config.c\
 				ftdm_shell_cmds.c\
 				ftdm_trigger.c\
 				ftdm_action.c\
-				ftdm_rule.c 
+				ftdm_rule.c \
+				ftdm_logger.c\
+				ftdm_log.c
 LIB_FTDM_OBJS=$(LIB_FTDM_SRCS:.c=.o)
 
 LIB_FTDMC=libftdmc
