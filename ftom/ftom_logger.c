@@ -1,4 +1,5 @@
 #include "ftom.h"
+#include "ftm_logger.h"
 #include "ftom_logger.h"
 #include "ftom_server.h"
 
@@ -409,7 +410,6 @@ FTM_RET	FTOM_LOG_remove
 	return	FTM_RET_OK;
 }
 
-
 FTM_RET	FTOM_LOG_event
 (
 	FTM_RULE_PTR	pRuleInfo,
@@ -441,7 +441,6 @@ FTM_RET	FTOM_LOG_event
 
 	return	FTM_RET_OK;
 }
-
 
 FTM_RET	FTOM_LOG_DMC_add
 (

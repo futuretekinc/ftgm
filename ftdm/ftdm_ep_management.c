@@ -6,6 +6,7 @@
 #include "ftdm_ep.h"
 #include "ftdm_ep_management.h"
 #include "ftdm_sqlite.h"
+#include "ftdm_log.h"
 
 static 
 FTM_BOOL	FTDM_EPM_seekEP

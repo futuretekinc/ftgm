@@ -1556,8 +1556,6 @@ FTM_RET	FTDMS_LOG_get
 	FTDM_RESP_LOG_GET_PARAMS_PTR	pResp
 )
 {
-	FTM_LOG_PTR		pLogs;
-
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nRet = FTDM_LOGGER_get(pServer->pDM->pLogger, pReq->ulIndex, pResp->pLogs, pReq->ulCount, &pResp->ulCount);
 	if (pResp->nRet == FTM_RET_OK)

@@ -198,15 +198,12 @@ FTM_RET	FTOM_NODE_destroy
 {
 	ASSERT(ppNode != NULL);
 
-	FTM_RET			xRet;
 	FTOM_EP_PTR		pEP;
 
 	if ((*ppNode)->pClass->fFinal!= NULL)
 	{
 		(*ppNode)->pClass->fFinal(*ppNode);
 	}
-
-	FTOM_NODE_lock((*ppNode));
 
 	FTM_LIST_iteratorStart(&(*ppNode)->xEPList);
 	while(FTM_LIST_iteratorNext(&(*ppNode)->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
@@ -215,8 +212,6 @@ FTM_RET	FTOM_NODE_destroy
 		FTOM_EP_detach(pEP);
 	}
 	FTM_LIST_final(&(*ppNode)->xEPList);
-
-	FTOM_NODE_unlock((*ppNode));
 
 	pthread_mutex_destroy(&(*ppNode)->xMutexLock);
 

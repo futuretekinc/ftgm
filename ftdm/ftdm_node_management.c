@@ -5,6 +5,7 @@
 #include "ftdm_node.h"
 #include "ftdm_node_management.h"
 #include "ftdm_sqlite.h"
+#include "ftdm_log.h"
 #include "ftm_mem.h"
 
 static FTM_BOOL FTDM_NODEM_seekNode
