@@ -270,7 +270,6 @@ FTM_RET	FTOM_DMC_NODE_add
 	xRet = FTDMC_NODE_append(&pDMC->xSession, pInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		FTM_LOG	xLog;
 
 	}
 
@@ -881,6 +880,79 @@ FTM_RET	FTOM_DMC_RULE_getIDList
 	return	FTDMC_RULE_getIDList(&pDMC->xSession, pIDs, ulIndex, ulMaxCount, pulCount);
 }
 
+/*********************************************************************
+ *
+ *********************************************************************/
+FTM_RET	FTOM_DMC_LOG_add
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_LOG_PTR		pLog
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pLog != NULL);
+
+	return	FTDMC_LOG_add(&pDMC->xSession, pLog);
+}
+
+FTM_RET	FTOM_DMC_LOG_del
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pulDeletedCount != NULL);
+
+	return	FTDMC_LOG_del(&pDMC->xSession, ulIndex, ulCount, pulDeletedCount);
+}
+
+FTM_RET	FTOM_DMC_LOG_count
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pulCount != NULL);
+	
+	return	FTDMC_LOG_count(&pDMC->xSession, pulCount);
+}
+
+FTM_RET	FTOM_DMC_LOG_get
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_LOG_PTR		pLogs,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pLogs != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTDMC_LOG_get(&pDMC->xSession, ulIndex, ulCount, pLogs, pulCount);
+}
+
+FTM_RET	FTOM_DMC_LOG_getAt
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_ULONG		ulIndex,
+	FTM_LOG_PTR		pLog
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pLog != NULL);
+
+	return	FTDMC_LOG_getAt(&pDMC->xSession, ulIndex, pLog);
+}
+
+/*******************************************************************************
+ *
+ *******************************************************************************/
 FTM_RET FTOM_DMC_loadConfig
 (
 	FTOM_DMC_PTR 	pDMC, 

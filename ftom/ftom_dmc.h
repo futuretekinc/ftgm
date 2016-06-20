@@ -401,5 +401,41 @@ FTM_RET	FTOM_DMC_RULE_getIDList
 	FTM_ULONG_PTR	pulCount
 );
 
+FTM_RET	FTOM_DMC_LOG_add
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_LOG_PTR		pLog
+);
+
+FTM_RET	FTOM_DMC_LOG_del
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+);
+
+FTM_RET	FTOM_DMC_LOG_count
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_DMC_LOG_get
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_LOG_PTR		pLogs,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_DMC_LOG_getAt
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_ULONG		ulIndex,
+	FTM_LOG_PTR		pLog
+);
+
 #endif
 

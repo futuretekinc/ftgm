@@ -399,5 +399,21 @@ FTM_RET	FTDMC_LOG_count
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pulCount
 );
+
+FTM_RET	FTDMC_LOG_get
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG				ulCount,
+	FTM_LOG_PTR				pLogs,
+	FTM_ULONG_PTR			pulCount
+);
+
+FTM_RET	FTDMC_LOG_getAt
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_ULONG				ulIndex,
+	FTM_LOG_PTR				pLog
+);
 #endif
 

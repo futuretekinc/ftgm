@@ -3,6 +3,9 @@
 
 #include "ftm_types.h"
 #include "ftm_trigger.h"
+
+#define	FTDM_RESP_PARAMS_MAX_SIZE	4096
+
 typedef	struct
 {
 	FTDM_CMD			xCmd;
@@ -898,7 +901,7 @@ typedef	struct
 {
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
-	FTM_ULONG			nIndex;
+	FTM_ULONG			ulIndex;
 }	FTDM_REQ_LOG_GET_AT_PARAMS, _PTR_	FTDM_REQ_LOG_GET_AT_PARAMS_PTR;
 
 typedef	struct
@@ -906,7 +909,7 @@ typedef	struct
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				nRet;
-	FTM_LOG			xRule;
+	FTM_LOG				xLog;
 }	FTDM_RESP_LOG_GET_AT_PARAMS, _PTR_	FTDM_RESP_LOG_GET_AT_PARAMS_PTR;
 
 #endif

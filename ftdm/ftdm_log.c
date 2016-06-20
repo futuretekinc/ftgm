@@ -14,7 +14,7 @@ FTM_RET	FTDM_LOG_createNode
 	FTM_RET		xRet;
 	FTM_LOG_PTR	pLog;
 
-	xRet = FTM_LOG_createObject(pDID, &pLog);
+	xRet = FTM_LOG_createObject(pDID, xResult, &pLog);
 	if (xRet == FTM_RET_OK)
 	{
 		pLog->xType = FTM_LOG_TYPE_CREATE_NODE;
@@ -38,7 +38,7 @@ FTM_RET	FTDM_LOG_createEP
 	FTM_RET		xRet;
 	FTM_LOG_PTR	pLog;
 
-	xRet = FTM_LOG_createObject(pEPID, &pLog);
+	xRet = FTM_LOG_createObject(pEPID, xResult, &pLog);
 	if (xRet == FTM_RET_OK)
 	{
 		pLog->xType = FTM_LOG_TYPE_CREATE_EP;
@@ -62,7 +62,7 @@ FTM_RET	FTDM_LOG_createTrigger
 	FTM_RET		xRet;
 	FTM_LOG_PTR	pLog;
 
-	xRet = FTM_LOG_createObject(pID, &pLog);
+	xRet = FTM_LOG_createObject(pID, xResult, &pLog);
 	if (xRet == FTM_RET_OK)
 	{
 		pLog->xType = FTM_LOG_TYPE_CREATE_TRIGGER;
@@ -86,7 +86,7 @@ FTM_RET	FTDM_LOG_createAction
 	FTM_RET		xRet;
 	FTM_LOG_PTR	pLog;
 
-	xRet = FTM_LOG_createObject(pID, &pLog);
+	xRet = FTM_LOG_createObject(pID, xResult, &pLog);
 	if (xRet == FTM_RET_OK)
 	{
 		pLog->xType = FTM_LOG_TYPE_CREATE_ACTION;
@@ -110,7 +110,7 @@ FTM_RET	FTDM_LOG_createRule
 	FTM_RET		xRet;
 	FTM_LOG_PTR	pLog;
 
-	xRet = FTM_LOG_createObject(pID, &pLog);
+	xRet = FTM_LOG_createObject(pID, xResult, &pLog);
 	if (xRet == FTM_RET_OK)
 	{
 		pLog->xType = FTM_LOG_TYPE_CREATE_RULE;

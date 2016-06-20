@@ -97,7 +97,7 @@ FTM_RET	FTM_LOG_createObject
 	}
 
 	pLog->xType = FTM_LOG_TYPE_CREATE_OBJECT;
-	pLog->xResult=xRet;
+	pLog->xParams.xCreateObject.xResult=xRet;
 	strncpy(pLog->xParams.xCreateObject.pObjectID, pObjectID, FTM_ID_LEN);
 	
 	*ppLog = pLog;
@@ -125,7 +125,7 @@ FTM_RET	FTM_LOG_destroyObject
 	}
 
 	pLog->xType = FTM_LOG_TYPE_DESTROY_OBJECT;
-	pLog->xResult=xRet;
+	pLog->xParams.xDestroyObject.xResult=xRet;
 	strncpy(pLog->xParams.xCreateObject.pObjectID, pObjectID, FTM_ID_LEN);
 	
 	*ppLog = pLog;

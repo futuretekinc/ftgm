@@ -299,7 +299,7 @@ FTM_RET	FTOM_LOGGER_event
 	strncpy(pLog->xParams.xEvent.pRuleID, pRuleID, FTM_ID_LEN);
 	pLog->xParams.xEvent.bOccurred = bOccurred;
 
-	xRet  = FTM_LOGGER_add(pLogger, pLog);
+	xRet  = FTM_LOGGER_add(pLogger->xCommon, pLog);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_LOG_destroy(&pLog);

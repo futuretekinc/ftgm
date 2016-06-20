@@ -2157,6 +2157,103 @@ FTM_RET	FTDMC_LOG_count
 	return	xResp.nRet;
 }
 
+FTM_RET	FTDMC_LOG_get
+(
+	FTDMC_SESSION_PTR	pSession,
+	FTM_ULONG			ulIndex,
+	FTM_ULONG			ulCount,
+	FTM_LOG_PTR			pLogs,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	ASSERT(pSession != NULL);
+
+	FTM_RET							nRet;
+	FTDM_REQ_LOG_GET_PARAMS			xReq;
+	FTDM_RESP_LOG_GET_PARAMS_PTR	pResp;
+	FTM_ULONG						ulRespLen = 0;
+
+	FTM_ULONG	ulMaxCount = (FTDM_RESP_PARAMS_MAX_SIZE - sizeof(FTDM_RESP_LOG_GET_PARAMS)) / sizeof(FTM_LOG);
+	if (ulCount > ulMaxCount)
+	{
+		ulCount = ulMaxCount;	
+	}
+	
+	xReq.xCmd	=	FTDM_CMD_LOG_GET;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.ulIndex=	ulIndex;
+	xReq.ulCount=	ulCount;
+
+	ulRespLen =  sizeof(FTDM_RESP_LOG_GET_PARAMS) + sizeof(FTM_LOG) * ulCount;
+	pResp = (FTDM_RESP_LOG_GET_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+	if (pResp == NULL)
+	{
+		nRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+		goto finish;
+	}
+
+	nRet = FTDMC_request(
+				pSession, 
+			(FTM_VOID_PTR)&xReq, 
+			sizeof(xReq), 
+			(FTM_VOID_PTR)pResp, 
+			ulRespLen);
+	if (nRet != FTM_RET_OK)
+	{
+		goto finish;
+	}
+
+	nRet = pResp->nRet;
+	if ((nRet == FTM_RET_OK) && (pulCount != NULL))
+	{
+		memcpy(pLogs, pResp->pLogs, sizeof(FTM_LOG) * pResp->ulCount);
+		*pulCount = pResp->ulCount;
+	}
+
+finish:
+	if (pResp != NULL)
+	{
+		FTM_MEM_free(pResp);	
+	}
+
+	return	nRet;
+}
+
+FTM_RET	FTDMC_LOG_getAt
+(
+	FTDMC_SESSION_PTR	pSession,
+	FTM_ULONG			ulIndex,
+	FTM_LOG_PTR			pLog
+)
+{
+	ASSERT(pSession != NULL);
+
+	FTM_RET							nRet;
+	FTDM_REQ_LOG_GET_AT_PARAMS		xReq;
+	FTDM_RESP_LOG_GET_AT_PARAMS		xResp;
+	
+	xReq.xCmd	=	FTDM_CMD_LOG_GET_AT;
+	xReq.nLen	=	sizeof(xReq);
+	xReq.ulIndex=	ulIndex;
+
+	nRet = FTDMC_request(
+				pSession, 
+			(FTM_VOID_PTR)&xReq, 
+			sizeof(xReq), 
+			(FTM_VOID_PTR)&xResp, 
+			sizeof(xResp));
+	if (nRet != FTM_RET_OK)
+	{
+		return	nRet;
+	}
+
+	if (xResp.nRet == FTM_RET_OK)
+	{
+		memcpy(pLog, &xResp.xLog, sizeof(FTM_LOG));
+	}
+
+	return	xResp.nRet;
+}
 /*****************************************************************
  *
  *****************************************************************/
