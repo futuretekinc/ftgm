@@ -68,18 +68,21 @@ $(FTOM): $(FTOM_OBJS) $(LIB_FTOM)
 	$(CC) -g -o $@ $(FTOM_OBJS) $(FTOM_LDFLAGS)
 
 $(LIB_FTOM): $(LIB_FTOM_OBJS)
+	rm -f $(LIB_FTOM).a $(LIB_FTOM).so.1.0.1
 	$(AR) rcs $(LIB_FTOM).a $(LIB_FTOM_OBJS)
 	$(CC) -shared -o $(LIB_FTOM).so.1.0.1 $(LIB_FTOM_OBJS) $(LDFLAGS)
 
 $(LIB_FTOMC): $(LIB_FTOMC_OBJS)
+	rm -f $(LIB_FTOMC).a $(LIB_FTOMC).so.1.0.1
 	$(AR) rcs $(LIB_FTOMC).a $(LIB_FTOMC_OBJS)
 	$(CC) -shared -o $(LIB_FTOMC).so.1.0.1 $(LIB_FTOMC_OBJS) $(LDFLAGS)
 
 $(LIB_HHTW): $(LIB_HHTW_OBJS)
+	rm -f $(LIB_HHTW).a $(LIB_HHTW).so
 	$(AR) rcs $(LIB_HHTW).a $(LIB_HHTW_OBJS)
 	$(CC) -shared -o $(LIB_HHTW).so $(LIB_HHTW_OBJS) $(LDFLAGS)
 
-.c.o:  $(CLIENT_SRC) $(LIB_FTOMC_OBJS) *.h $(SERVER_SRC)
+.c.o: 
 	$(CC) $(CFLAGS) $< -o $@
 
 install: $(FTOM) $(LIB_FTOM) $(LIB_FTOMC)

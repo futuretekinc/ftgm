@@ -8,6 +8,7 @@
 #include "ftom_rule.h"
 #include "ftom_msg.h"
 #include "libconfig.h"
+#include "ftom_logger.h"
 
 static 
 FTM_VOID_PTR FTOM_TRIGGER_process
@@ -140,7 +141,16 @@ FTM_RET	FTOM_TRIGGER_create
 		return	xRet;
 	}
 
-	FTM_LIST_append(pTriggerList, pTrigger);
+
+	xRet = FTM_LIST_append(pTriggerList, pTrigger);
+	if (xRet != FTM_RET_OK)
+	{
+		FTOM_DB_TRIGGER_remove(pTrigger->xInfo.pID);
+		FTM_MEM_free(pTrigger);
+		return	xRet;
+	}
+
+	FTOM_LOG_createTrigger(&pTrigger->xInfo);
 
 	*ppTrigger = pTrigger; 
 
@@ -199,6 +209,8 @@ FTM_RET	FTOM_TRIGGER_destroy
 )
 {
 	ASSERT(ppTrigger != NULL);
+
+	FTOM_LOG_destroyTrigger(&(*ppTrigger)->xInfo);
 
 	FTM_LIST_remove(pTriggerList, (*ppTrigger));
 

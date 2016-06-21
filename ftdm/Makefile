@@ -48,13 +48,16 @@ all: $(LIB_FTDMC) $(LIB_FTDM) $(SERVER)
 	done
 
 $(SERVER): $(SERVER_OBJS) $(LIB_FTDM)
+	rm -f $@
 	$(CC) -o $@ $(SERVER_OBJS) $(SERVER_LDFLAGS)
 
 $(LIB_FTDM): $(LIB_FTDM_OBJS)
+	rm -f $(LIB_FTDM).a $(LIB_FTDM).so.1.0.1 
 	$(AR) rcs $(LIB_FTDM).a $(LIB_FTDM_OBJS)
 	$(CC) -shared -o $(LIB_FTDM).so.1.0.1 $(LIB_FTDM_OBJS) 
 
 $(LIB_FTDMC): $(LIB_FTDMC_OBJS)
+	rm -f $(LIB_FTDMC).a $(LIB_FTDMC).so.1.0.1
 	$(AR) rcs $(LIB_FTDMC).a $(LIB_FTDMC_OBJS)
 	$(CC) -shared -o $(LIB_FTDMC).so.1.0.1 $(LIB_FTDMC_OBJS)
 

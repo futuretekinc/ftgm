@@ -41,6 +41,7 @@ LIB_FTM_OBJS=$(LIB_FTM_SRCS:.c=.o)
 all: $(LIB_FTM)
 
 $(LIB_FTM): $(LIB_FTM_OBJS)
+	rm -f $(LIB_FTM).a $(LIB_FTM).so.1.0.1
 	$(AR) rcs $(LIB_FTM).a $(LIB_FTM_OBJS)
 	$(CC) -shared -o $(LIB_FTM).so.1.0.1 $(LIB_FTM_OBJS) $(LDFLAGS)
 

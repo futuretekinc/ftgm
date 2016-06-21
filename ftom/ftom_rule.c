@@ -6,6 +6,7 @@
 #include "ftom_rule.h"
 #include "ftom_trigger.h"
 #include "ftom_action.h"
+#include "ftom_logger.h"
 
 #if 0
 #define	TRACE_CALL()	TRACE("%s[%d]\n", __func__, __LINE__)
@@ -149,10 +150,10 @@ FTM_RET	FTOM_RULE_create
 		ERROR("Rule[%s] failed to add to list[%08x].\n", pRule->xInfo.pID, xRet);
 		return	xRet;	
 	}
-	else
-	{
-		*ppRule = pRule;
-	}
+
+	FTOM_LOG_createRule(&pRule->xInfo);
+
+	*ppRule = pRule;
 
 	return	xRet;
 }
@@ -217,6 +218,8 @@ FTM_RET	FTOM_RULE_destroy
 {
 	ASSERT(ppRule != NULL);
 	FTM_RET		xRet;
+
+	FTOM_LOG_destroyRule(&(*ppRule)->xInfo);
 
 	xRet = FTM_LIST_remove(pRuleList, *ppRule);
 	if (xRet == FTM_RET_OK)

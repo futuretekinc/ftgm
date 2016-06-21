@@ -5,6 +5,7 @@
 #include "ftom_action.h"
 #include "ftom_msg.h"
 #include "ftom_message_queue.h"
+#include "ftom_logger.h"
 #include "libconfig.h"
 
 
@@ -132,6 +133,8 @@ FTM_RET	FTOM_ACTION_create
 		return	xRet;	
 	}
 
+	FTOM_LOG_createAction(&pAction->xInfo);
+
 	*ppAction = pAction;
 
 	return	FTM_RET_OK;
@@ -183,6 +186,8 @@ FTM_RET	FTOM_ACTION_destroy
 	FTOM_ACTION_PTR _PTR_ ppAction
 )
 {
+	FTOM_LOG_destroyAction(&(*ppAction)->xInfo);
+
 	FTM_LIST_remove(pActionList, *ppAction);
 
 	FTM_MEM_free(*ppAction);

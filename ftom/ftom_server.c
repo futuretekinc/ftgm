@@ -19,6 +19,7 @@
 #include "ftom_server_cmd.h"
 #include "ftom_discovery.h"
 #include "ftom_session.h"
+#include "ftom_logger.h"
 
 #ifndef	FTOM_TRACE_IO
 //#define	FTOM_TRACE_IO		1
@@ -1477,16 +1478,40 @@ FTM_RET	FTOM_SERVER_NODE_create
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
+	FTM_RET			xRet;
 	FTOM_NODE_PTR	pNode;
+
+	xRet = FTOM_NODE_get(pReq->xNodeInfo.pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_RET_ALREADY_EXISTS;	
+	}
+	else
+	{
+		xRet = FTOM_NODE_create(&pReq->xNodeInfo, &pNode);
+		if(xRet == FTM_RET_OK)
+		{
+			xRet = FTOM_DB_NODE_add(&pReq->xNodeInfo);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_LOG_createNode(&pReq->xNodeInfo);
+			}
+			else
+			{
+				FTOM_NODE_destroy(&pNode);
+				ERROR2(xRet, NULL);
+			}
+		}
+	}
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_NODE_create(&pReq->xNodeInfo, &pNode);
-	
-	if (pResp->xRet == FTM_RET_OK)
+	pResp->xRet = xRet;
+	if (xRet == FTM_RET_OK)
 	{
 		strcpy(pResp->pDID, pNode->xInfo.pDID);
 	}
+
 	return	pResp->xRet;
 }
 
@@ -1504,16 +1529,37 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
+	FTM_RET			xRet;
 	FTOM_NODE_PTR	pNode;
 
+	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_NODE	xInfo;
+
+		memcpy(&xInfo, &pNode->xInfo, sizeof(FTM_NODE));
+
+		xRet = FTOM_DB_NODE_getInfo(pReq->pDID, &xInfo);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTOM_DB_NODE_remove(pReq->pDID);
+			if (xRet != FTM_RET_OK)
+			{
+				goto finish;	
+			}
+		}
+
+		xRet = FTOM_NODE_destroy(&pNode);
+		if (xRet == FTM_RET_OK)
+		{
+			FTOM_LOG_destroyNode(&xInfo);
+		}
+	}
+
+finish:
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_NODE_get(pReq->pDID, &pNode);
-	
-	if (pResp->xRet == FTM_RET_OK)
-	{
-		pResp->xRet = FTOM_NODE_destroy(&pNode);
-	}
+	pResp->xRet = xRet;
 
 	return	pResp->xRet;
 }
@@ -1781,10 +1827,15 @@ FTM_RET	FTOM_SERVER_EP_destroy
 	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
+		FTM_EP	xInfo;
+
+		memcpy(&xInfo, &pEP->xInfo, sizeof(FTM_EP));
+
 		xRet = FTOM_EP_destroy(&pEP);
 		if (xRet == FTM_RET_OK)
 		{
 			xRet = FTOM_DB_EP_remove(pReq->pEPID);
+			FTOM_LOG_destroyEP(&xInfo);
 		}
 	}
 
@@ -2323,6 +2374,7 @@ FTM_RET	FTOM_SERVER_TRIGGER_add
 	if (xRet == FTM_RET_OK)
 	{
 		strcpy(pResp->pTriggerID, pTrigger->xInfo.pID);
+		FTOM_LOG_createTrigger(&pTrigger->xInfo);
 	}
 	else
 	{
@@ -2356,10 +2408,18 @@ FTM_RET	FTOM_SERVER_TRIGGER_del
 	xRet = FTOM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
 	if (xRet == FTM_RET_OK)
 	{
+		FTM_TRIGGER	xInfo;
+
+		memcpy(&xInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+
 		xRet = FTOM_TRIGGER_destroy(&pTrigger);
 		if (xRet != FTM_RET_OK)
 		{
 			TRACE("Trigger[%s] failed to remove[%08x].\n", pReq->pTriggerID, xRet);
+		}
+		else
+		{
+			FTOM_LOG_destroyTrigger(&xInfo);
 		}
 	}
 	else
@@ -2512,6 +2572,7 @@ FTM_RET	FTOM_SERVER_ACTION_add
 	if (xRet == FTM_RET_OK)
 	{
 		strcpy(pResp->pActionID, pAction->xInfo.pID);
+		FTOM_LOG_createAction(&pAction->xInfo);
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -2541,10 +2602,18 @@ FTM_RET	FTOM_SERVER_ACTION_del
 	xRet = FTOM_ACTION_get(pReq->pActionID, &pAction);
 	if (xRet == FTM_RET_OK)
 	{
+		FTM_ACTION	xInfo;
+
+		memcpy(&xInfo, &pAction->xInfo, sizeof(FTM_ACTION));
+
 		xRet = FTOM_ACTION_destroy(&pAction);
 		if (xRet != FTM_RET_OK)
 		{
 			TRACE("Failed to delete the action[%s].\n", pReq->pActionID);
+		}
+		else
+		{
+			FTOM_LOG_destroyAction(&xInfo);
 		}
 	}
 	else
@@ -2688,6 +2757,7 @@ FTM_RET	FTOM_SERVER_RULE_add
 	if (xRet == FTM_RET_OK)
 	{
 		strcpy(pResp->pRuleID, pRule->xInfo.pID);	
+		FTOM_LOG_createRule(&pRule->xInfo);
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -2718,7 +2788,19 @@ FTM_RET	FTOM_SERVER_RULE_del
 	xRet = FTOM_RULE_get(pReq->pRuleID, &pRule);
 	if (xRet == FTM_RET_OK)
 	{
+		FTM_RULE	xInfo;
+
+		memcpy(&xInfo, &pRule->xInfo, sizeof(FTM_RULE));
+
 		xRet = FTOM_RULE_destroy(&pRule);
+		if (xRet != FTM_RET_OK)
+		{
+			TRACE("Failed to delete the rule[%s].\n", pReq->pRuleID);
+		}
+		else
+		{
+			FTOM_LOG_destroyRule(&xInfo);
+		}
 	}
 
 	pResp->xCmd = pReq->xCmd;

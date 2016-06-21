@@ -8,6 +8,7 @@
 #include "ftm_list.h"
 #include "ftom_node_class.h"
 #include "ftom_message_queue.h"
+#include "ftom_logger.h"
 
 static
 FTM_INT	FTOM_NODE_seeker
@@ -154,93 +155,6 @@ FTM_RET	FTOM_NODE_create
 		return	xRet;	
 	}
 
-	xRet = FTOM_DB_NODE_add(pInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Node[%s] failed to create to DB[%08x].\n", pInfo->pDID, xRet);
-		FTM_MEM_free(pNode);
-		return	xRet;	
-	}
-
-	xRet = FTM_LIST_init(&pNode->xEPList);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("List initialize failed[%08x].\n", xRet);
-		FTM_MEM_free(pNode);
-
-		return	xRet;	
-	}
-	
-	xRet = FTOM_MSGQ_init(&pNode->xMsgQ);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message queue initialize failed[%08x].\n", xRet);
-		FTM_MEM_free(pNode);
-		return	xRet;	
-	}
-
-	pthread_mutex_init(&pNode->xMutexLock, NULL);
-	
-	pNode->bStop = FTM_TRUE;
-	pNode->xState = FTOM_NODE_STATE_INITIALIZED;
-
-	if (pNode->pClass->fInit != NULL)
-	{
-		pNode->pClass->fInit(pNode);
-	}
-
-	pNode->xState = FTOM_NODE_STATE_CREATED;
-
-	FTM_LIST_append(pNodeList, pNode);
-
-	*ppNode = pNode;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_NODE_createFromDB
-(
-	FTM_CHAR_PTR	pDID,
-	FTOM_NODE_PTR _PTR_ ppNode
-)
-{
-	ASSERT(pDID != NULL);
-	ASSERT(ppNode != NULL);
-
-	FTM_RET			xRet;
-	FTM_NODE		xInfo;
-	FTOM_NODE_PTR	pNode;
-	FTOM_NODE_CLASS_PTR	pClass = NULL;
-
-	xRet = FTM_LIST_get(pNodeList, pDID, (FTM_VOID_PTR _PTR_)&pNode);
-	if (xRet == FTM_RET_OK)
-	{
-		return	FTM_RET_ALREADY_EXIST_OBJECT;	
-	}
-
-	xRet = FTOM_DB_NODE_getInfo(pDID, &xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Node[%s] get info failed!\n", pDID);
-		return	xRet;	
-	}
-
-	xRet = FTOM_NODE_CLASS_get(xInfo.pModel, xInfo.xType, &pClass);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Node[%s] not found!\n", xInfo.pModel);
-		return	xRet;	
-	}
-
-	ASSERT(pClass->fCreate != NULL);
-
-	xRet = pClass->fCreate(&xInfo, &pNode);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Class[%s] creation failed!\n", xInfo.pModel);
-		return	xRet;	
-	}
-
 	xRet = FTM_LIST_init(&pNode->xEPList);
 	if (xRet != FTM_RET_OK)
 	{
@@ -292,17 +206,12 @@ FTM_RET	FTOM_NODE_destroy
 		(*ppNode)->pClass->fFinal(*ppNode);
 	}
 
-	xRet = FTOM_DB_NODE_remove((*ppNode)->xInfo.pDID);
-	if (xRet != FTM_RET_OK)
-	{
-		INFO("Node[%s] failed to remove from DB[%08x]\n", (*ppNode)->xInfo.pDID, xRet);	
-	}
-
 	FTOM_NODE_lock((*ppNode));
 
 	FTM_LIST_iteratorStart(&(*ppNode)->xEPList);
 	while(FTM_LIST_iteratorNext(&(*ppNode)->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
 	{
+		FTOM_EP_stop(pEP, FTM_TRUE);
 		FTOM_EP_detach(pEP);
 	}
 	FTM_LIST_final(&(*ppNode)->xEPList);

@@ -1,39 +1,71 @@
 #ifndef	__FTOM_LOGGER_H__
 #define	__FTOM_LOGGER_H__
 
-#include "ftm_logger.h"
+#include "ftom_logger.h"
 
-typedef	struct	FTOM_LOGGER_STRUCT 
-{
-	FTM_LOGGER	xCommon;
-}	FTOM_LOGGER, _PTR_ FTOM_LOGGER_PTR;
-
-FTM_RET	FTOM_LOGGER_create
+FTM_RET	FTOM_LOGGER_init
 (
-	FTOM_LOGGER_PTR	_PTR_ ppLogger
+	FTM_VOID
 );
 
-FTM_RET	FTOM_LOGGER_destroy
+FTM_RET	FTOM_LOGGER_final
 (
-	FTOM_LOGGER_PTR	_PTR_ ppLogger
+	FTM_VOID
 );
 
-FTM_RET	FTOM_LOGGER_createNode
+FTM_RET	FTOM_LOG_createNode
 (
-	FTOM_LOGGER_PTR	pLogger,
-	FTM_CHAR_PTR	pDID
+	FTM_NODE_PTR	pNodeInfo
 );
 
-FTM_RET	FTOM_LOGGER_createEP
+FTM_RET	FTOM_LOG_destroyNode
 (
-	FTOM_LOGGER_PTR	pLogger,
-	FTM_CHAR_PTR	pDID
+	FTM_NODE_PTR	pNodeInfo
 );
 
-FTM_RET	FTOM_LOGGER_event
+FTM_RET	FTOM_LOG_createEP
 (
-	FTOM_LOGGER_PTR	pLogger,
-	FTM_CHAR_PTR	pRuleID,
+	FTM_EP_PTR		pEPInfo
+);
+
+FTM_RET	FTOM_LOG_destroyEP
+(
+	FTM_EP_PTR		pEPInfo
+);
+
+FTM_RET	FTOM_LOG_createTrigger
+(
+	FTM_TRIGGER_PTR	pTriggerInfo
+);
+
+FTM_RET	FTOM_LOG_destroyTrigger
+(
+	FTM_TRIGGER_PTR	pTriggerInfo
+);
+
+FTM_RET	FTOM_LOG_createAction
+(
+	FTM_ACTION_PTR	pActionInfo
+);
+
+FTM_RET	FTOM_LOG_destroyAction
+(
+	FTM_ACTION_PTR	pActionInfo
+);
+
+FTM_RET	FTOM_LOG_createRule
+(
+	FTM_RULE_PTR	pRuleInfo
+);
+
+FTM_RET	FTOM_LOG_destroyRule
+(
+	FTM_RULE_PTR	pRuleInfo
+);
+
+FTM_RET	FTOM_LOG_event
+(
+	FTM_RULE_PTR	pRuleInfo,
 	FTM_BOOL		bOccurred
 );
 

@@ -6,6 +6,7 @@
 #include "ftom_dmc.h"
 #include "ftom_message_queue.h"
 #include "ftom_node_snmp_client.h"
+#include "ftom_logger.h"
 
 #define	FTOM_EP_CACHED_DATA_COUNT	100
 
@@ -230,13 +231,16 @@ FTM_RET	FTOM_EP_create
 	xRet = FTM_LIST_append(pEPList, pEP);
 	if (xRet != FTM_RET_OK)
 	{
+		FTOM_DB_EP_remove(pEP->xInfo.pEPID);
 		FTM_MEM_free(pEP);
 		ERROR("EP[%s] failed to add to list[%08x].\n", pEP->xInfo.pEPID, xRet);
+
+		return	xRet;
 	}
-	else
-	{
-		*ppEP = pEP;
-	}
+	
+	FTOM_LOG_createEP(&pEP->xInfo);
+
+	*ppEP = pEP;
 
 	return	xRet;
 }
@@ -328,6 +332,8 @@ FTM_RET	FTOM_EP_destroy
 	FTM_EP_DATA_PTR	pData;
 
 	FTOM_EP_stop(*ppEP, TRUE);
+
+	FTOM_LOG_destroyEP(&(*ppEP)->xInfo);
 
 	FTM_LIST_remove(pEPList, *ppEP);
 

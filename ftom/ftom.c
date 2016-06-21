@@ -20,6 +20,7 @@
 #include "ftom_rule.h"
 #include "ftom_discovery.h"
 #include "ftom_utils.h"
+#include "ftom_logger.h"
 
 FTM_VOID_PTR	FTOM_process
 (
@@ -298,6 +299,12 @@ FTM_RET	FTOM_init
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_INFO]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryInfo;
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_DONE]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryDone;
 
+	xRet = FTOM_LOGGER_init();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to initialize logger!\n");	
+	}
+
 	xRet = FTOM_MSGQ_create(&pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
@@ -387,6 +394,12 @@ FTM_RET	FTOM_final
 
 	FTOM_EP_final();
 	FTOM_NODE_final();
+
+	xRet = FTOM_LOGGER_init();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to finalize logger!\n");	
+	}
 
 	TRACE("Finalize done.\n");
 
@@ -590,9 +603,18 @@ FTM_RET	FTOM_TASK_sync
 			{
 				for(i = 0 ; i  < ulCount; i++)	
 				{
+					FTM_NODE		xInfo;
 					FTOM_NODE_PTR	pNode;
+
+					xRet = FTOM_DB_NODE_getInfo(pDIDs[i], &xInfo);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("Failed to get Node[%s] information!\n", pDIDs[i]);
+						continue;
+					}
+
 	
-					xRet = FTOM_NODE_createFromDB(pDIDs[i], &pNode);
+					xRet = FTOM_NODE_create(&xInfo, &pNode);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR("Node creation failed[%08lx].\n", xRet);
