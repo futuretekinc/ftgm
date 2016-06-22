@@ -1479,31 +1479,53 @@ FTM_RET	FTOM_SERVER_NODE_create
 	ASSERT(pResp != NULL);
 
 	FTM_RET			xRet;
-	FTOM_NODE_PTR	pNode;
+	FTOM_NODE_PTR	pNode = NULL;
 
+	TRACE("Received a request to create a Node[%s].\n", pReq->xNodeInfo.pDID);
 	xRet = FTOM_NODE_get(pReq->xNodeInfo.pDID, &pNode);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_RET_ALREADY_EXISTS;	
-	}
-	else
-	{
-		xRet = FTOM_NODE_create(&pReq->xNodeInfo, &pNode);
-		if(xRet == FTM_RET_OK)
-		{
-			xRet = FTOM_DB_NODE_add(&pReq->xNodeInfo);
-			if (xRet == FTM_RET_OK)
-			{
-				FTOM_LOG_createNode(&pReq->xNodeInfo);
-			}
-			else
-			{
-				FTOM_NODE_destroy(&pNode);
-				ERROR2(xRet, NULL);
-			}
-		}
+		goto finish;
 	}
 
+	xRet = FTOM_NODE_create(&pReq->xNodeInfo, &pNode);
+	if(xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to create node[%s]\n", pReq->xNodeInfo.pDID);
+		goto finish;
+	}
+
+
+	xRet = FTOM_NODE_start(pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to start node[%s]\n", pNode->xInfo.pDID);
+		goto error;
+	}
+
+	xRet = FTOM_DB_NODE_add(&pNode->xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to add node[%s] to DB.\n", pNode->xInfo.pDID);
+		goto error;
+	}
+
+
+	xRet = FTOM_LOG_createNode(&pNode->xInfo);	
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Failed to create log on the node[%s] creation!\n", pNode->xInfo.pDID);
+	}
+
+error:
+	if (pNode != NULL)
+	{
+		FTOM_NODE_stop(pNode);
+		FTOM_NODE_destroy(&pNode);
+	}
+
+finish:
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->xRet = xRet;
@@ -1532,29 +1554,64 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 	FTM_RET			xRet;
 	FTOM_NODE_PTR	pNode;
 
+	TRACE("Received request to destroy Node[%s].\n", pReq->pDID);
 	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		FTM_NODE	xInfo;
-
-		memcpy(&xInfo, &pNode->xInfo, sizeof(FTM_NODE));
-
-		xRet = FTOM_DB_NODE_getInfo(pReq->pDID, &xInfo);
-		if (xRet == FTM_RET_OK)
-		{
-			xRet = FTOM_DB_NODE_remove(pReq->pDID);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
-		}
-
-		xRet = FTOM_NODE_destroy(&pNode);
-		if (xRet == FTM_RET_OK)
-		{
-			FTOM_LOG_destroyNode(&xInfo);
-		}
+		ERROR("Faile to get node[%s]\n", pReq->pDID);
+		goto finish;
 	}
+
+	xRet = FTOM_NODE_stop(pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to stop Node[%s]\n", pNode->xInfo.pDID);
+		goto finish;
+	}
+
+	FTM_NODE	xInfo;
+	FTOM_EP_PTR	pEP;
+
+	while(FTM_LIST_getFirst(&pNode->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
+	{
+		FTM_EP	xEPInfo;
+
+		memcpy(&xEPInfo, &pEP->xInfo, sizeof(FTM_EP));
+
+		xRet = FTOM_DB_EP_remove(xEPInfo.pEPID);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Failed to remove EP[%s] from DB.\n", pEP->xInfo.pEPID);
+			goto finish;
+		}
+		
+		xRet = FTOM_EP_destroy(&pEP);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Failed to destroy EP[%s].\n", xEPInfo.pEPID);
+			goto finish;
+		}
+
+		FTOM_LOG_destroyEP(&xEPInfo);
+	}
+
+	memcpy(&xInfo, &pNode->xInfo, sizeof(FTM_NODE));
+
+	xRet = FTOM_DB_NODE_remove(xInfo.pDID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to remove Node[%s] from DB.\n", xInfo.pDID);
+		goto finish;
+	}
+
+	xRet = FTOM_NODE_destroy(&pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to destroy Node[%s].\n", xInfo.pDID);
+		goto finish;
+	}
+
+	FTOM_LOG_destroyNode(&xInfo);
 
 finish:
 	pResp->xCmd = pReq->xCmd;
@@ -1783,29 +1840,45 @@ FTM_RET	FTOM_SERVER_EP_create
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	FTM_RET		xRet;
-	FTOM_EP_PTR	pEP;
+	FTM_RET			xRet;
+	FTOM_EP_PTR		pEP;
+	FTOM_NODE_PTR	pNode;
 
 	xRet = FTOM_EP_create(&pReq->xInfo, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to create EP[%s].\n", pReq->xInfo.pEPID);
+		goto finish;
+	}
 
+	xRet = FTOM_DB_EP_add(&pEP->xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to add EP[%s] to DB!\n", pEP->xInfo.pEPID);
+		FTOM_EP_destroy(&pEP);
+		goto finish;
+	}
+
+	xRet = FTOM_NODE_get(pEP->xInfo.pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		FTOM_NODE_linkEP(pNode, pEP);
+	}
+	else
+	{
+		WARN("Node[%s] not found for EP[%s]!\n", pEP->xInfo.pDID, pEP->xInfo.pEPID);
+	}
+
+	memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
+
+	FTOM_LOG_createEP(&pEP->xInfo);
+
+finish:
 	pResp->xCmd 	= pReq->xCmd;
 	pResp->ulLen 	= sizeof(*pResp);
 	pResp->xRet 	= xRet;
 
-	if (xRet == FTM_RET_OK)
-	{
-		FTOM_NODE_PTR	pNode;
-
-		xRet = FTOM_NODE_get(pEP->xInfo.pDID, &pNode);
-		if (xRet == FTM_RET_OK)
-		{
-			FTOM_EP_attach(pEP, pNode);
-		}
-
-		memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
-	}
-
-	return	pResp->xRet;
+	return	xRet;
 }
 
 FTM_RET	FTOM_SERVER_EP_destroy
@@ -1822,28 +1895,41 @@ FTM_RET	FTOM_SERVER_EP_destroy
 	ASSERT(pResp != NULL);
 
 	FTM_RET		xRet;
+	FTM_EP		xInfo;
 	FTOM_EP_PTR	pEP;
 
 	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		FTM_EP	xInfo;
-
-		memcpy(&xInfo, &pEP->xInfo, sizeof(FTM_EP));
-
-		xRet = FTOM_EP_destroy(&pEP);
-		if (xRet == FTM_RET_OK)
-		{
-			xRet = FTOM_DB_EP_remove(pReq->pEPID);
-			FTOM_LOG_destroyEP(&xInfo);
-		}
+		ERROR("Failed to find EP[%s].\n", pReq->pEPID);
+		goto finish;
 	}
+
+	memcpy(&xInfo, &pEP->xInfo, sizeof(FTM_EP));
+
+	xRet = FTOM_EP_destroy(&pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to remove EP[%s].\n", xInfo.pEPID);
+		goto finish;
+	}
+
+	xRet = FTOM_DB_EP_remove(xInfo.pEPID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to remove EP[%s] from DB.\n", xInfo.pEPID);
+		goto finish;
+	}
+
+	FTOM_LOG_destroyEP(&xInfo);
+
+finish:
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->xRet = xRet;
 
-	return	pResp->xRet;
+	return	xRet;
 }
 
 FTM_RET	FTOM_SERVER_EP_count
@@ -2371,16 +2457,24 @@ FTM_RET	FTOM_SERVER_TRIGGER_add
 	FTOM_TRIGGER_PTR	pTrigger;
 
 	xRet = FTOM_TRIGGER_create(&pReq->xTrigger, &pTrigger);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		strcpy(pResp->pTriggerID, pTrigger->xInfo.pID);
-		FTOM_LOG_createTrigger(&pTrigger->xInfo);
-	}
-	else
-	{
-		ERROR("Trigger[%s] creation failed[%08x].\n", pReq->xTrigger.pID, xRet);
+		ERROR("Failed to create trigger[%s].\n", pReq->xTrigger.pID);
+		goto finish;
 	}
 
+	xRet = FTOM_DB_TRIGGER_add(&pTrigger->xInfo);	
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to add trigger[%s] to DB.\n", pTrigger->xInfo.pID);
+		FTOM_TRIGGER_destroy(&pTrigger);
+		goto finish;
+	}
+
+	strcpy(pResp->pTriggerID, pTrigger->xInfo.pID);
+	FTOM_LOG_createTrigger(&pTrigger->xInfo);
+
+finish:
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->xRet = xRet;
@@ -2403,30 +2497,35 @@ FTM_RET	FTOM_SERVER_TRIGGER_del
 	ASSERT(pResp != NULL);
 	
 	FTM_RET	xRet;
+	FTM_TRIGGER			xInfo;
 	FTOM_TRIGGER_PTR	pTrigger;
 
 	xRet = FTOM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		FTM_TRIGGER	xInfo;
-
-		memcpy(&xInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
-
-		xRet = FTOM_TRIGGER_destroy(&pTrigger);
-		if (xRet != FTM_RET_OK)
-		{
-			TRACE("Trigger[%s] failed to remove[%08x].\n", pReq->pTriggerID, xRet);
-		}
-		else
-		{
-			FTOM_LOG_destroyTrigger(&xInfo);
-		}
-	}
-	else
-	{
-		TRACE("Trigger[%s] is not found[%08x].\n", pReq->pTriggerID, xRet);
+		ERROR("Failed to find trigger[%s].\n", pReq->pTriggerID);
+		goto finish;
 	}
 
+	memcpy(&xInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+
+	xRet = FTOM_DB_TRIGGER_remove(pTrigger->xInfo.pID);	
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Failed to remove trigger[%s] from DB!\n", pTrigger->xInfo.pID);	
+		goto finish;	
+	}
+
+	xRet = FTOM_TRIGGER_destroy(&pTrigger);
+	if (xRet != FTM_RET_OK)
+	{
+		TRACE("Failed to remove trigger[%s].\n", pReq->pTriggerID);
+		goto finish;
+	}
+
+	FTOM_LOG_destroyTrigger(&xInfo);
+
+finish:
 	pResp->xRet = xRet;
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
@@ -2569,12 +2668,24 @@ FTM_RET	FTOM_SERVER_ACTION_add
 	FTOM_ACTION_PTR	pAction;
 
 	xRet = FTOM_ACTION_create(&pReq->xAction, &pAction);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		strcpy(pResp->pActionID, pAction->xInfo.pID);
-		FTOM_LOG_createAction(&pAction->xInfo);
+		ERROR("Failed to create action.\n");
+		goto finish;
 	}
 
+	xRet = FTOM_DB_ACTION_add(&pAction->xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to add action[%s] to DB.\n", pAction->xInfo.pID);
+		FTOM_ACTION_destroy(&pAction);
+		goto finish;
+	}
+
+	strcpy(pResp->pActionID, pAction->xInfo.pID);
+	FTOM_LOG_createAction(&pAction->xInfo);
+
+finish:
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->xRet = xRet;
@@ -2597,35 +2708,38 @@ FTM_RET	FTOM_SERVER_ACTION_del
 	ASSERT(pResp != NULL);
 	
 	FTM_RET	xRet;
+	FTM_ACTION		xInfo;
 	FTOM_ACTION_PTR	pAction;
 
 	xRet = FTOM_ACTION_get(pReq->pActionID, &pAction);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		FTM_ACTION	xInfo;
-
-		memcpy(&xInfo, &pAction->xInfo, sizeof(FTM_ACTION));
-
-		xRet = FTOM_ACTION_destroy(&pAction);
-		if (xRet != FTM_RET_OK)
-		{
-			TRACE("Failed to delete the action[%s].\n", pReq->pActionID);
-		}
-		else
-		{
-			FTOM_LOG_destroyAction(&xInfo);
-		}
-	}
-	else
-	{
-		TRACE("Action[%s] is not found.\n", pReq->pActionID);
+		ERROR("Failed to find action[%s].\n", pReq->pActionID);
+		goto finish;
 	}
 
+	xRet = FTOM_DB_ACTION_remove(pAction->xInfo.pID);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Failed to remove action[%s] from DB!\n", pAction->xInfo.pID);
+		goto finish;
+	}
+
+	xRet = FTOM_ACTION_destroy(&pAction);
+	if (xRet != FTM_RET_OK)
+	{
+		TRACE("Failed to delete the action[%s].\n", pReq->pActionID);
+		goto finish;
+	}
+
+	FTOM_LOG_destroyAction(&xInfo);
+
+finish:
 	pResp->xRet = xRet;
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
-	return	pResp->xRet;
+	return	xRet;
 }
 
 static 
@@ -2754,12 +2868,24 @@ FTM_RET	FTOM_SERVER_RULE_add
 	FTOM_RULE_PTR	pRule = NULL;
 
 	xRet = FTOM_RULE_create(&pReq->xRule, &pRule);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		strcpy(pResp->pRuleID, pRule->xInfo.pID);	
-		FTOM_LOG_createRule(&pRule->xInfo);
+		ERROR("Failed to create rule[%s].\n", pReq->xRule.pID);
+		goto finish;
 	}
 
+	xRet = FTOM_DB_RULE_add(&pRule->xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to add rule[%s] to DB!\n", pRule->xInfo.pID);
+		FTOM_RULE_destroy(&pRule);
+		goto finish;
+	}
+
+	strcpy(pResp->pRuleID, pRule->xInfo.pID);	
+	FTOM_LOG_createRule(&pRule->xInfo);
+
+finish:
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->xRet = xRet;
@@ -2782,27 +2908,36 @@ FTM_RET	FTOM_SERVER_RULE_del
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	FTM_RET	xRet;
+	FTM_RET			xRet;
+	FTM_RULE		xInfo;
 	FTOM_RULE_PTR	pRule;
 
 	xRet = FTOM_RULE_get(pReq->pRuleID, &pRule);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		FTM_RULE	xInfo;
-
-		memcpy(&xInfo, &pRule->xInfo, sizeof(FTM_RULE));
-
-		xRet = FTOM_RULE_destroy(&pRule);
-		if (xRet != FTM_RET_OK)
-		{
-			TRACE("Failed to delete the rule[%s].\n", pReq->pRuleID);
-		}
-		else
-		{
-			FTOM_LOG_destroyRule(&xInfo);
-		}
+		ERROR("Failed to find rule[%s]\n", pReq->pRuleID);
+		goto finish;
 	}
 
+	memcpy(&xInfo, &pRule->xInfo, sizeof(FTM_RULE));
+
+	xRet = FTOM_DB_RULE_remove(xInfo.pID);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Failed to remove rule[%s] from DB!\n", xInfo.pID);
+		goto finish;
+	}
+
+	xRet = FTOM_RULE_destroy(&pRule);
+	if (xRet != FTM_RET_OK)
+	{
+		TRACE("Failed to delete the rule[%s].\n", pReq->pRuleID);
+		goto finish;
+	}
+
+	FTOM_LOG_destroyRule(&xInfo);
+
+finish:
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->xRet	= xRet;

@@ -134,23 +134,12 @@ FTM_RET	FTOM_TRIGGER_create
 		FTM_makeID(pTrigger->xInfo.pID, 16);
 	}
 
-	xRet = FTOM_DB_TRIGGER_add(&pTrigger->xInfo);	
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pTrigger);
-		return	xRet;
-	}
-
-
 	xRet = FTM_LIST_append(pTriggerList, pTrigger);
 	if (xRet != FTM_RET_OK)
 	{
-		FTOM_DB_TRIGGER_remove(pTrigger->xInfo.pID);
 		FTM_MEM_free(pTrigger);
 		return	xRet;
 	}
-
-	FTOM_LOG_createTrigger(&pTrigger->xInfo);
 
 	*ppTrigger = pTrigger; 
 
@@ -209,8 +198,6 @@ FTM_RET	FTOM_TRIGGER_destroy
 )
 {
 	ASSERT(ppTrigger != NULL);
-
-	FTOM_LOG_destroyTrigger(&(*ppTrigger)->xInfo);
 
 	FTM_LIST_remove(pTriggerList, (*ppTrigger));
 

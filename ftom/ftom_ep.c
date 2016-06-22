@@ -220,18 +220,9 @@ FTM_RET	FTOM_EP_create
 		return	xRet;
 	}
 
-	xRet = FTOM_DB_EP_add(&pEP->xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pEP);
-		ERROR("EP[%s] failed to add to DB[%08x].\n", pEP->xInfo.pEPID, xRet);
-		return	xRet;	
-	}
-
 	xRet = FTM_LIST_append(pEPList, pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		FTOM_DB_EP_remove(pEP->xInfo.pEPID);
 		FTM_MEM_free(pEP);
 		ERROR("EP[%s] failed to add to list[%08x].\n", pEP->xInfo.pEPID, xRet);
 
@@ -606,7 +597,6 @@ FTM_RET	FTOM_EP_stop
 
 	if (pEP->bStop)
 	{
-		WARN("EP[%s] is not started.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_NOT_START;	
 	}
 
@@ -638,6 +628,7 @@ FTM_RET	FTOM_EP_stop
 		pthread_join(pEP->xPThread, NULL);
 	}
 
+	TRACE("EP[%s] is stopped!\n", pEP->xInfo.pEPID);
 	return	FTM_RET_OK;
 }
 

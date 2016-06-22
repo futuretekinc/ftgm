@@ -1349,7 +1349,7 @@ FTM_RET	FTOM_DB_NODE_add
 	xRet = FTOM_DMC_NODE_add(pService->pData, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		INFO("Node[%s] failed to add to DB[%08x].\n", pInfo->pDID, xRet);	
+		WARN("Failed to add Node[%s] to DB[%08x].\n", pInfo->pDID, xRet);	
 	}
 
 	return	xRet;
@@ -1372,7 +1372,7 @@ FTM_RET	FTOM_DB_NODE_remove
 	xRet = FTOM_DMC_NODE_remove(pService->pData, pDID);
 	if (xRet != FTM_RET_OK)
 	{
-		INFO("Node[%s] failed to remove from DB[%08x].\n", pDID, xRet);	
+		INFO("Failed to remove Node[%s] from DB[%08x].\n", pDID, xRet);	
 	}
 
 	return	xRet;
@@ -1494,7 +1494,13 @@ FTM_RET	FTOM_DB_EP_add
 		return	xRet;	
 	}
 
-	return	FTOM_DMC_EP_add(pService->pData, pInfo);
+	xRet = FTOM_DMC_EP_add(pService->pData, pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Failed to add EP[%s] to DB!\n", pInfo->pEPID);
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_DB_EP_remove
@@ -1512,7 +1518,13 @@ FTM_RET	FTOM_DB_EP_remove
 		return	xRet;	
 	}
 
-	return	FTOM_DMC_EP_remove(pService->pData, pEPID);
+	xRet = FTOM_DMC_EP_remove(pService->pData, pEPID);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Failed to remove EP[%s] from DB!\n", pEPID);
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_DB_EP_getInfo

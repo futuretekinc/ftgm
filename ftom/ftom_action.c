@@ -117,17 +117,9 @@ FTM_RET	FTOM_ACTION_create
 		FTM_makeID(pAction->xInfo.pID, 16);
 	}
 
-	xRet = FTOM_DB_ACTION_add(&pAction->xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pAction);
-		return	xRet;
-	}
-
 	xRet = FTM_LIST_append(pActionList, pAction);
 	if (xRet != FTM_RET_OK)
 	{
-		FTOM_DB_ACTION_remove(pAction->xInfo.pID);
 		FTM_MEM_free(pAction);
 		ERROR("Action[%s] failed to add to list[%08x].\n", pAction->xInfo.pID, xRet);
 		return	xRet;	
@@ -186,8 +178,6 @@ FTM_RET	FTOM_ACTION_destroy
 	FTOM_ACTION_PTR _PTR_ ppAction
 )
 {
-	FTOM_LOG_destroyAction(&(*ppAction)->xInfo);
-
 	FTM_LIST_remove(pActionList, *ppAction);
 
 	FTM_MEM_free(*ppAction);

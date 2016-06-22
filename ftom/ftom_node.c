@@ -198,19 +198,27 @@ FTM_RET	FTOM_NODE_destroy
 {
 	ASSERT(ppNode != NULL);
 
+	FTM_RET			xRet;
 	FTOM_EP_PTR		pEP;
+	FTM_ULONG		ulCount;
+
+	FTOM_NODE_stop((*ppNode));
 
 	if ((*ppNode)->pClass->fFinal!= NULL)
 	{
 		(*ppNode)->pClass->fFinal(*ppNode);
 	}
 
-	FTM_LIST_iteratorStart(&(*ppNode)->xEPList);
-	while(FTM_LIST_iteratorNext(&(*ppNode)->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
+	while((FTM_LIST_count(&(*ppNode)->xEPList, &ulCount) == FTM_RET_OK) && (ulCount != 0))
 	{
-		FTOM_EP_stop(pEP, FTM_TRUE);
-		FTOM_EP_detach(pEP);
+		xRet = FTM_LIST_getFirst(&(*ppNode)->xEPList, (FTM_VOID_PTR _PTR_)&pEP);
+		if (xRet == FTM_RET_OK)
+		{
+			FTOM_NODE_unlinkEP((*ppNode), pEP);
+			FTOM_EP_destroy(&pEP);
+		}
 	}
+
 	FTM_LIST_final(&(*ppNode)->xEPList);
 
 	pthread_mutex_destroy(&(*ppNode)->xMutexLock);
@@ -410,6 +418,7 @@ FTM_RET	FTOM_NODE_unlinkEP
 
 	FTOM_NODE_lock(pNode);
 
+	FTOM_EP_stop(pEP, FTM_TRUE);
 	FTOM_EP_detach(pEP);
 	FTM_LIST_remove(&pNode->xEPList, pEP);
 	
@@ -594,7 +603,6 @@ FTM_RET FTOM_NODE_stop
 
 	if (pNode->bStop)
 	{
-		ERROR("Node[%s] not started.\n", pNode->xInfo.pDID);
 		return	FTM_RET_NOT_START;
 	}
 
@@ -653,6 +661,7 @@ FTM_RET FTOM_NODE_stop
 		}
 	}
 
+	TRACE("Node[%s] is stopped!\n", pNode->xInfo.pDID);
 	return	FTM_RET_OK;
 }
 

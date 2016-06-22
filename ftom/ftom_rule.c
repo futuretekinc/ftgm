@@ -133,25 +133,15 @@ FTM_RET	FTOM_RULE_create
 		FTM_makeID(pRule->xInfo.pID, 16);
 	}
 
-	xRet = FTOM_DB_RULE_add(&pRule->xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pRule);
-		return	xRet;
-	}
-
 	FTM_LOCK_init(&pRule->xLock);
 
 	xRet = FTM_LIST_append(pRuleList, pRule);
 	if (xRet != FTM_RET_OK)
 	{
-		FTOM_DB_RULE_remove(pRule->xInfo.pID);
 		FTM_MEM_free(pRule);
 		ERROR("Rule[%s] failed to add to list[%08x].\n", pRule->xInfo.pID, xRet);
 		return	xRet;	
 	}
-
-	FTOM_LOG_createRule(&pRule->xInfo);
 
 	*ppRule = pRule;
 
@@ -198,7 +188,6 @@ FTM_RET	FTOM_RULE_createFromDB
 	xRet = FTM_LIST_append(pRuleList, pRule);
 	if (xRet != FTM_RET_OK)
 	{
-		FTOM_DB_RULE_remove(pRule->xInfo.pID);
 		FTM_MEM_free(pRule);
 		ERROR("Rule[%s] failed to add to list[%08x].\n", pRule->xInfo.pID, xRet);
 		return	xRet;	
@@ -218,8 +207,6 @@ FTM_RET	FTOM_RULE_destroy
 {
 	ASSERT(ppRule != NULL);
 	FTM_RET		xRet;
-
-	FTOM_LOG_destroyRule(&(*ppRule)->xInfo);
 
 	xRet = FTM_LIST_remove(pRuleList, *ppRule);
 	if (xRet == FTM_RET_OK)

@@ -71,6 +71,10 @@ FTM_RET	FTOM_NODE_SNMPC_create
 	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
 
 	pNode->xCommon.pClass = pClass;
+	if (strlen(pNode->xCommon.xInfo.pName) == 0)
+	{
+		snprintf(pNode->xCommon.xInfo.pName, FTM_NAME_LEN, "node_%s", pNode->xCommon.xInfo.pDID);
+	}
 
 	*ppNode = (FTOM_NODE_PTR)pNode;
 
