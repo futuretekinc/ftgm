@@ -1496,45 +1496,36 @@ FTM_RET	FTOM_SERVER_NODE_create
 		goto finish;
 	}
 
+	xRet = FTOM_DB_NODE_add(&pNode->xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to add node[%s] to DB.\n", pNode->xInfo.pDID);
+		goto finish;
+	}
 
 	xRet = FTOM_NODE_start(pNode);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to start node[%s]\n", pNode->xInfo.pDID);
-		goto error;
 	}
 
-	xRet = FTOM_DB_NODE_add(&pNode->xInfo);
-	if (xRet != FTM_RET_OK)
+finish:
+	if (xRet == FTM_RET_OK)
 	{
-		ERROR("Failed to add node[%s] to DB.\n", pNode->xInfo.pDID);
-		goto error;
+		FTOM_LOG_createNode(&pNode->xInfo);	
+		strcpy(pResp->pDID, pNode->xInfo.pDID);
 	}
-
-
-	xRet = FTOM_LOG_createNode(&pNode->xInfo);	
-	if (xRet != FTM_RET_OK)
-	{
-		WARN("Failed to create log on the node[%s] creation!\n", pNode->xInfo.pDID);
-	}
-
-error:
-	if (pNode != NULL)
+	else if (pNode != NULL)
 	{
 		FTOM_NODE_stop(pNode);
 		FTOM_NODE_destroy(&pNode);
 	}
 
-finish:
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 	pResp->xRet = xRet;
-	if (xRet == FTM_RET_OK)
-	{
-		strcpy(pResp->pDID, pNode->xInfo.pDID);
-	}
 
-	return	pResp->xRet;
+	return	xRet;
 }
 
 
@@ -1552,6 +1543,8 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 	ASSERT(pResp != NULL);
 
 	FTM_RET			xRet;
+	FTM_NODE		xInfo;
+	FTOM_EP_PTR		pEP;
 	FTOM_NODE_PTR	pNode;
 
 	TRACE("Received request to destroy Node[%s].\n", pReq->pDID);
@@ -1568,9 +1561,6 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 		ERROR("Failed to stop Node[%s]\n", pNode->xInfo.pDID);
 		goto finish;
 	}
-
-	FTM_NODE	xInfo;
-	FTOM_EP_PTR	pEP;
 
 	while(FTM_LIST_getFirst(&pNode->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
 	{
@@ -1618,7 +1608,7 @@ finish:
 	pResp->ulLen = sizeof(*pResp);
 	pResp->xRet = xRet;
 
-	return	pResp->xRet;
+	return	xRet;
 }
 
 FTM_RET	FTOM_SERVER_NODE_count
@@ -1907,17 +1897,17 @@ FTM_RET	FTOM_SERVER_EP_destroy
 
 	memcpy(&xInfo, &pEP->xInfo, sizeof(FTM_EP));
 
-	xRet = FTOM_EP_destroy(&pEP);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Failed to remove EP[%s].\n", xInfo.pEPID);
-		goto finish;
-	}
-
 	xRet = FTOM_DB_EP_remove(xInfo.pEPID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to remove EP[%s] from DB.\n", xInfo.pEPID);
+		goto finish;
+	}
+
+	xRet = FTOM_EP_destroy(&pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to remove EP[%s].\n", xInfo.pEPID);
 		goto finish;
 	}
 

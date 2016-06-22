@@ -335,6 +335,20 @@ FTM_VOID_PTR FTOM_RULE_process
 	return	0;
 }
 
+FTM_RET	FTOM_RULE_sendMessage
+(
+	FTOM_MSG_PTR	pMsg
+)
+{
+	ASSERT(pMsg != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_MSGQ_push(pMsgQ, pMsg);
+
+	return	xRet;
+}
+
 FTM_RET	FTOM_RULE_notifyChanged
 (
 	FTM_CHAR_PTR	pTriggerID

@@ -284,7 +284,10 @@ FTM_VOID_PTR FTOM_TRIGGER_process
 				{
 					if (FTM_TIMER_isExpired(&pTrigger->xDetectionTimer))
 					{
+						FTOM_MSG_PTR	pMsg;
+
 						INFO("Trigger[%s] occurred!\n", pTrigger->xInfo.pID);
+
 						pTrigger->xState = FTOM_TRIGGER_STATE_SET;
 						FTM_TIME_getCurrent(&pTrigger->xOccurrenceTime);
 						FTM_TIMER_initS(&pTrigger->xHoldingTimer, pTrigger->xInfo.xParams.xCommon.ulHoldingTime);

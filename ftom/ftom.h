@@ -372,12 +372,6 @@ FTM_RET	FTOM_setMessageCallback
 	FTM_VOID_PTR _PTR_			pOldData
 );
 
-FTM_RET	FTOM_NOTIFY_rule
-(
-	FTM_CHAR_PTR	pRuleID,
-	FTM_RULE_STATE	xRuleState
-);
-
 FTM_RET	FTOM_NOTIFY_SNMPTrap
 (
 	FTM_CHAR_PTR 		pTrapMsg

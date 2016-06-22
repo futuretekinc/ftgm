@@ -1625,33 +1625,6 @@ FTM_RET	FTOM_DB_EP_getDataInfo
 	return	FTOM_DMC_EP_DATA_info(pService->pData, pEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
-FTM_RET	FTOM_NOTIFY_rule
-(
-	FTM_CHAR_PTR	pRuleID,
-	FTM_RULE_STATE	xRuleState
-)
-{
-	FTM_RET			xRet;
-	FTOM_MSG_RULE_PTR	pMsg;
-
-	xRet = FTOM_MSG_createRule(pRuleID, xRuleState, &pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message creation failed.\n");
-		return	xRet;
-	}
-
-	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Message send failed.\n");
-		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);		
-		return	xRet;
-	}
-
-	return	xRet;
-}
-
 FTM_RET	FTOM_callback
 (
 	FTOM_SERVICE_ID 	xID, 

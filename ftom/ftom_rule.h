@@ -88,6 +88,11 @@ FTM_RET	FTOM_RULE_deactivate
 	FTM_CHAR_PTR	pRuleID
 );
 
+FTM_RET	FTOM_RULE_sendMessage
+(
+	FTOM_MSG_PTR	pMsg
+);
+
 FTM_RET	FTOM_RULE_print
 (
 	FTOM_RULE_PTR	pRule
