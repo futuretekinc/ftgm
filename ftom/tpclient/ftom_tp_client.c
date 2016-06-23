@@ -699,21 +699,21 @@ FTM_RET	FTOM_TP_CLIENT_showConfig
 	MESSAGE("%16s : %s\n", "Password", pClient->xConfig.pPasswd);
 	MESSAGE("%16s : %lu\n","Report Interval", pClient->xConfig.ulReportInterval);
 
-	MESSAGE("%16s\n", "FTOMC");
+	MESSAGE("\n# %s \n", "FTOMC");
 	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.xFTOMC.pHost);
 	MESSAGE("%16s : %d\n", "Port", pClient->xConfig.xFTOMC.usPort);
 
-	MESSAGE("%16s\n", "Subscriber");
+	MESSAGE("\n# %s\n", "Subscriber");
 	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.xSubscriber.pHost);
 	MESSAGE("%16s : %d\n", "Port", pClient->xConfig.xSubscriber.usPort);
 
-	MESSAGE("%16s\n", "MQTT");
+	MESSAGE("\n# %s\n", "MQTT");
 	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.xMQTT.pHost);
 	MESSAGE("%16s : %d\n", "Port", pClient->xConfig.xMQTT.usPort);
 	MESSAGE("%16s : %s\n", "Secure Mode", (pClient->xConfig.xMQTT.bSecure)?"on":"off");
 	MESSAGE("%16s : %lu\n","Retry Interval", pClient->xConfig.xMQTT.ulRetryInterval);
 
-	MESSAGE("%16s\n", "RESTAPI");
+	MESSAGE("\n# %s\n", "RESTAPI");
 	MESSAGE("%16s : %s\n", "Base URL", pClient->xConfig.xRESTApi.pBaseURL);
 	MESSAGE("%16s : %s\n", "Secure Mode", (pClient->xConfig.xRESTApi.bSecure)?"on":"off");
 

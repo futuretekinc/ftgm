@@ -3259,7 +3259,7 @@ FTM_RET	FTDM_DBIF_LOG_initTable
 		sprintf(pSQL, "CREATE TABLE %s ("\
 						"ID	INT PRIMARY KEY,"\
 						"TIME INT,"\
-						"LEVEL INT."\
+						"LEVEL INT,"\
 						"VALUE	BLOB)" , pTableName);
 
 		xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
