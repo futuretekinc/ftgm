@@ -13,6 +13,26 @@ FTM_RET	FTOM_LOGGER_final
 	FTM_VOID
 );
 
+FTM_RET	FTOM_LOGGER_remove
+(
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulRemovedCount
+);
+
+FTM_RET	FTOM_LOGGER_count
+(
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_LOGGER_getAt
+(
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_LOG_PTR		pLogs,
+	FTM_ULONG_PTR	pulCount
+);
+
 FTM_RET	FTOM_LOG_createNode
 (
 	FTM_NODE_PTR	pNodeInfo

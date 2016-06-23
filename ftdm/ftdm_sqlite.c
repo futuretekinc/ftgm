@@ -3257,8 +3257,9 @@ FTM_RET	FTDM_DBIF_LOG_initTable
 		}
 
 		sprintf(pSQL, "CREATE TABLE %s ("\
-						"ID	TEXT PRIMARY KEY,"\
+						"ID	INT PRIMARY KEY,"\
 						"TIME INT,"\
+						"LEVEL INT."\
 						"VALUE	BLOB)" , pTableName);
 
 		xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
@@ -3302,7 +3303,7 @@ FTM_RET	FTDM_DBIF_LOG_append
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	sprintf(pSQL, "INSERT INTO %s (ID, TIME, VALUE) VALUES (?,?,?)", pTableName);
+	sprintf(pSQL, "INSERT INTO %s (ID, TIME, LEVEL, VALUE) VALUES (?,?,?,?)", pTableName);
 	do 
 	{
 		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
@@ -3311,9 +3312,10 @@ FTM_RET	FTDM_DBIF_LOG_append
 			return FTM_RET_ERROR;
 		}
 
-		sqlite3_bind_text(pStmt, 1, pLog->pID, strlen(pLog->pID), 0);
+		sqlite3_bind_int64(pStmt, 1, pLog->ullID);
 		sqlite3_bind_int(pStmt, 2, pLog->ulTime);
-		sqlite3_bind_blob(pStmt, 3, pLog, sizeof(FTM_LOG), SQLITE_STATIC);
+		sqlite3_bind_int(pStmt, 3, pLog->xLevel);
+		sqlite3_bind_blob(pStmt, 4, pLog, sizeof(FTM_LOG), SQLITE_STATIC);
 
 		nRC = sqlite3_step(pStmt);
 		ASSERT( nRC != SQLITE_ROW);
@@ -3332,9 +3334,11 @@ FTM_RET	FTDM_DBIF_LOG_del
 	FTM_ULONG_PTR	pulDeletedCount
 )
 {
-	//FTM_RET		xRet;
-	//FTM_CHAR_PTR	pErrMsg = NULL;
-	//FTM_CHAR		pSQL[1024];
+	FTM_RET			xRet;
+	FTM_CHAR_PTR	pErrMsg = NULL;
+	FTM_CHAR		pSQL[1024];
+	FTM_ULONG		ulTotalCount = 0, ulRetCount = 0;
+	FTM_LOG			xFirstLog, xLastLog;
 
 	if (_pSQLiteDB == NULL)
 	{
@@ -3342,6 +3346,66 @@ FTM_RET	FTDM_DBIF_LOG_del
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
+	xRet = FTDM_DBIF_LOG_count("log", &ulTotalCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (ulTotalCount == 0)
+	{
+		return	FTM_RET_OK;	
+	}
+
+	if (ulIndex >= 0)
+	{
+		if (ulIndex >= ulTotalCount)
+		{
+			return	FTM_RET_OK;	
+		}
+
+		if (ulIndex + ulCount > ulTotalCount)
+		{
+			ulCount = ulTotalCount - ulIndex;	
+		}
+	}
+	else
+	{
+		if (ulCount > ulTotalCount)
+		{
+			ulIndex = 0;
+			ulCount = ulTotalCount;
+		}
+		else
+		{
+			ulIndex = ulTotalCount - ulCount;	
+		}
+	
+	}
+
+	xRet = FTDM_DBIF_LOG_get("log", ulIndex, &xFirstLog, 1, &ulRetCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTDM_DBIF_LOG_get("log", ulIndex + ulCount - 1, &xLastLog, 1, &ulRetCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	sprintf(pSQL, " DELETE FROM log WHERE %llu <= ID AND ID <= %llu", xFirstLog.ullID, xLastLog.ullID);
+	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
+	if (xRet != SQLITE_OK)
+	{
+        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+		sqlite3_free(pErrMsg);
+
+		return	FTM_RET_ERROR;
+	}
+
+	*pulDeletedCount = ulCount;
 
 	return	FTM_RET_OK;
 }
@@ -3417,8 +3481,8 @@ FTM_RET	FTDM_DBIF_LOG_isExist
  ***************************************************************/
 typedef struct
 {
-	FTM_ULONG			nMaxCount;
-	FTM_ULONG			nCount;
+	FTM_ULONG	ulMaxCount;
+	FTM_ULONG	ulCount;
 	FTM_LOG_PTR	pLogs;
 }	FTDM_DBIF_CB_GET_LOG_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_LOG_LIST_PARAMS_PTR;
 
@@ -3432,7 +3496,7 @@ FTM_INT	_FTDM_DBIF_LOG_getListCB
 {
 	FTDM_DBIF_CB_GET_LOG_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_LOG_LIST_PARAMS_PTR)pData;
 
-	if (nArgc != 0)
+	if ((nArgc != 0) && (pParams->ulCount < pParams->ulMaxCount))
 	{
 		FTM_INT	i;
 
@@ -3440,27 +3504,30 @@ FTM_INT	_FTDM_DBIF_LOG_getListCB
 		{
 			if (strcmp(pColName[i], "VALUE") == 0)
 			{
-				memcpy(&pParams->pLogs[pParams->nCount-1], pArgv[i], sizeof(FTM_LOG));
+				memcpy(&pParams->pLogs[pParams->ulCount++], pArgv[i], sizeof(FTM_LOG));
 			}
 		}
 	}
 	return	FTM_RET_OK;
 }
-
+			
 FTM_RET	FTDM_DBIF_LOG_getList
 (
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
 	FTM_LOG_PTR		pLogs, 
-	FTM_ULONG		nMaxCount,
 	FTM_ULONG_PTR	pulCount
 )
 {
     FTM_INT			xRet;
+	FTM_INT			nSQLLen;
     FTM_CHAR		pSQL[1024];
     FTM_CHAR_PTR	pErrMsg = NULL;
 	FTDM_DBIF_CB_GET_LOG_LIST_PARAMS xParams= 
 	{
-		.nMaxCount 	= nMaxCount,
-		.nCount		= 0,
+		.ulMaxCount	= ulMaxCount,
+		.ulCount	= 0,
 		.pLogs		= pLogs
 	};
 
@@ -3470,7 +3537,8 @@ FTM_RET	FTDM_DBIF_LOG_getList
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(pSQL, "SELECT VALUE FROM log");
+    nSQLLen = sprintf(pSQL, "SELECT VALUE FROM log");
+	nSQLLen += sprintf(&pSQL[nSQLLen], " ORDER BY ID DESC LIMIT %lu OFFSET %lu", ulMaxCount, ulIndex);
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_LOG_getListCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
@@ -3480,7 +3548,7 @@ FTM_RET	FTDM_DBIF_LOG_getList
     	return  FTM_RET_ERROR;
     }
 
-	*pulCount = xParams.nCount;
+	*pulCount = xParams.ulCount;
 
 	return	FTM_RET_OK;
 }
@@ -3577,11 +3645,10 @@ FTM_INT	_FTDM_DBIF_LOG_getCB
 			{
 				if (pParams->nCount <= pParams->nMaxCount)
 				{
-					memcpy(&pParams->pLogs[pParams->nCount], pArgv[i], sizeof(FTM_LOG));
+					memcpy(&pParams->pLogs[pParams->nCount++], pArgv[i], sizeof(FTM_LOG));
 				}
 			}
 		}
-		pParams->nCount++;
 	}
 
 	return	FTM_RET_OK;

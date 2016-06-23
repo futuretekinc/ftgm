@@ -58,35 +58,43 @@ FTM_RET	FTM_LOGGER_add
 	return	FTM_LIST_append(&pLogger->xLogList, pLog);
 }
 
-FTM_RET	FTM_LOGGER_remove
-(
-	FTM_LOGGER_PTR	pLogger,
-	FTM_LOG_PTR		pLog
-)
-{
-	ASSERT(pLogger != NULL);
-	ASSERT(pLog != NULL);
-
-	return	FTM_LIST_remove(&pLogger->xLogList, pLog);
-}
-
 FTM_RET	FTM_LOGGER_removeAt
 (
 	FTM_LOGGER_PTR	pLogger,
-	FTM_ULONG		ulIndex
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulRemovedCount
 )
 {
 	ASSERT(pLogger != NULL);
 	FTM_RET		xRet;
 	FTM_LOG_PTR	pLog;
+	FTM_ULONG	i;
+	FTM_ULONG	ulRemovedCount = 0;
 
-	xRet = FTM_LIST_getAt(&pLogger->xLogList, ulIndex, (FTM_VOID_PTR _PTR_)&pLog);
-	if (xRet != FTM_RET_OK)
+	for(i = 0 ; i < ulCount ; i++)
 	{
-		return	xRet;	
+		xRet = FTM_LIST_getAt(&pLogger->xLogList, ulIndex, (FTM_VOID_PTR _PTR_)&pLog);
+		if (xRet != FTM_RET_OK)
+		{
+			break;
+		}
+
+		xRet = FTM_LIST_remove(&pLogger->xLogList, pLog);
+		if (xRet != FTM_RET_OK)
+		{
+			break;
+		}
+
+		ulRemovedCount++;
 	}
 
-	return	FTM_LIST_remove(&pLogger->xLogList, pLog);
+	if (pulRemovedCount != NULL)
+	{
+		*pulRemovedCount = ulRemovedCount;
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_LOGGER_getAt

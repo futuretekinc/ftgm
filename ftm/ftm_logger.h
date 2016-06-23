@@ -37,16 +37,12 @@ FTM_RET	FTM_LOGGER_add
 	FTM_LOG_PTR		pLog
 );
 
-FTM_RET	FTM_LOGGER_remove
-(
-	FTM_LOGGER_PTR	pLogger,
-	FTM_LOG_PTR		pLog
-);
-
 FTM_RET	FTM_LOGGER_removeAt
 (
 	FTM_LOGGER_PTR	pLogger,
-	FTM_ULONG		ulIndex
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulCount
 );
 
 FTM_RET	FTM_LOGGER_getAt

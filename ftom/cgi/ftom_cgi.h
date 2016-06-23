@@ -58,6 +58,12 @@ FTM_RET	FTOM_CGI_rule
 	qentry_t *pReq
 );
 
+FTM_RET	FTOM_CGI_log
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+);
+
 FTM_RET	FTOM_CGI_discovery
 (
 	FTOM_CLIENT_PTR pClient, 
@@ -119,6 +125,13 @@ FTM_RET	FTOM_CGI_getEPFlags
 (
 	qentry_t *pReq, 
 	FTM_EP_FLAG_PTR	pFlags,
+	FTM_BOOL	bAllowEmpty
+);
+
+FTM_RET	FTOM_CGI_getModel
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pModel,
 	FTM_BOOL	bAllowEmpty
 );
 
@@ -354,6 +367,7 @@ FTM_RET	FTOM_CGI_addEPInfoToObject
 	FTM_EP_PTR			pEPInfo,
 	FTM_EP_FIELD		xFields
 );
+
 #undef	TRACE
 #define	TRACE(format, ...) 	syslog(LOG_INFO, format, ## __VA_ARGS__)
 

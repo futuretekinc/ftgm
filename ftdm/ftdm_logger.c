@@ -168,11 +168,11 @@ FTM_RET	FTDM_LOGGER_get
 	ASSERT(pLoggerData != NULL);
 	ASSERT(pCount != NULL);
 
-	return	FTDM_DBIF_LOG_get(
+	return	FTDM_DBIF_LOG_getList(
 				pLogger->xConfig.pName, 
 				nStartIndex,
-				pLoggerData, 
 				nMaxCount, 
+				pLoggerData, 
 				pCount);
 }
 
@@ -213,6 +213,7 @@ FTM_RET	FTDM_LOGGER_del
 	xRet = FTDM_LOGGER_infoInternal(pLogger->xConfig.pName, &ulFirstTime, &ulLastTime, &ulCount1);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR("Failed to get log information.\n");
 		return	xRet;	
 	}
 
@@ -238,6 +239,8 @@ FTM_RET	FTDM_LOGGER_del
 			{
 				*pulCount = 0;
 			}
+
+			TRACE("Log deleted[%lu, %lu, %lu]\n", ulFirstTime, ulLastTime, *pulCount);
 		}
 	
 	}

@@ -2172,45 +2172,73 @@ FTM_RET	FTDMC_LOG_get
 	FTDM_REQ_LOG_GET_PARAMS			xReq;
 	FTDM_RESP_LOG_GET_PARAMS_PTR	pResp;
 	FTM_ULONG						ulRespLen = 0;
+	FTM_ULONG						ulReadCount = 0;
 
-	FTM_ULONG	ulMaxCount = (FTDM_RESP_PARAMS_MAX_SIZE - sizeof(FTDM_RESP_LOG_GET_PARAMS)) / sizeof(FTM_LOG);
-	if (ulCount > ulMaxCount)
+	while(ulCount > 0)
 	{
-		ulCount = ulMaxCount;	
-	}
+		FTM_ULONG	ulRequestCount = 0;
+		if (ulCount > 20)
+		{
+			ulRequestCount = 20;	
+		}
+		else
+		{
+			ulRequestCount = ulCount;	
+		}
 	
-	xReq.xCmd	=	FTDM_CMD_LOG_GET;
-	xReq.nLen	=	sizeof(xReq);
-	xReq.ulIndex=	ulIndex;
-	xReq.ulCount=	ulCount;
+		xReq.xCmd	=	FTDM_CMD_LOG_GET;
+		xReq.nLen	=	sizeof(xReq);
+		xReq.ulIndex=	ulIndex;
+		xReq.ulCount=	ulRequestCount;
 
-	ulRespLen =  sizeof(FTDM_RESP_LOG_GET_PARAMS) + sizeof(FTM_LOG) * ulCount;
-	pResp = (FTDM_RESP_LOG_GET_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
-	if (pResp == NULL)
-	{
-		nRet = FTM_RET_NOT_ENOUGH_MEMORY;	
-		goto finish;
+		TRACE("%s[%d] : %lu, %lu\n", __func__, __LINE__, ulIndex, ulRequestCount);
+		ulRespLen =  sizeof(FTDM_RESP_LOG_GET_PARAMS) + sizeof(FTM_LOG) * ulRequestCount;
+		pResp = (FTDM_RESP_LOG_GET_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+		if (pResp == NULL)
+		{
+			nRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+			break;
+		}
+
+		nRet = FTDMC_request(pSession, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)pResp, 
+				ulRespLen);
+		if (nRet != FTM_RET_OK)
+		{
+			break;
+		}
+
+		nRet = pResp->nRet;
+		if (nRet != FTM_RET_OK) 
+		{
+			break;
+		}
+
+		if (pResp->ulCount > ulCount)
+		{
+			nRet = FTM_RET_ERROR;
+			ERROR("The requested quantity[%lu] has been exceeded[%lu]\n", ulRequestCount, pResp->ulCount);	
+			break;
+		}
+
+		memcpy(&pLogs[ulReadCount], pResp->pLogs, sizeof(FTM_LOG) * pResp->ulCount);
+		ulIndex += pResp->ulCount;
+		ulReadCount += pResp->ulCount;
+		ulCount -= pResp->ulCount;
+		if (ulRequestCount > pResp->ulCount)
+		{
+			break;
+		}
 	}
 
-	nRet = FTDMC_request(
-				pSession, 
-			(FTM_VOID_PTR)&xReq, 
-			sizeof(xReq), 
-			(FTM_VOID_PTR)pResp, 
-			ulRespLen);
-	if (nRet != FTM_RET_OK)
+
+	if (nRet == FTM_RET_OK)
 	{
-		goto finish;
+		*pulCount = ulReadCount;	
 	}
 
-	nRet = pResp->nRet;
-	if ((nRet == FTM_RET_OK) && (pulCount != NULL))
-	{
-		memcpy(pLogs, pResp->pLogs, sizeof(FTM_LOG) * pResp->ulCount);
-		*pulCount = pResp->ulCount;
-	}
-
-finish:
 	if (pResp != NULL)
 	{
 		FTM_MEM_free(pResp);	
@@ -2351,7 +2379,7 @@ FTM_RET FTDMC_request
 		while(--nTimeout > 0)
 		{
 			int	nLen = recv(pSession->hSock, pResp, nRespLen, MSG_DONTWAIT);
-			//TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
+//			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
 			if (nLen > 0)
 			{
 				break;

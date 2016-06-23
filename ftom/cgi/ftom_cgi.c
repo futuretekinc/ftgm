@@ -10,6 +10,7 @@
 #include "cmd_trigger.h"
 #include "cmd_action.h"
 #include "cmd_rule.h"
+#include "cmd_log.h"
 #include "cmd_discovery.h"
 
 static 
@@ -86,6 +87,13 @@ FTOM_CGI_COMMAND	pRuleCmds[] =
 	{	NULL,		NULL					}
 };
 
+static 
+FTOM_CGI_COMMAND	pLogCmds[] =
+{
+	{	"get",	FTOM_CGI_getLog			},
+	{	"del",	FTOM_CGI_delLog			},
+	{	NULL,		NULL					}
+};
 static 
 FTOM_CGI_COMMAND	pDiscoveryCmds[] =
 {
@@ -168,6 +176,15 @@ FTM_RET	FTOM_CGI_rule
 )
 {
 	return	FTOM_CGI_service(pClient, pReq, pRuleCmds);
+}
+
+FTM_RET	FTOM_CGI_log
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t *pReq
+)
+{
+	return	FTOM_CGI_service(pClient, pReq, pLogCmds);
 }
 
 FTM_RET	FTOM_CGI_discovery
@@ -512,6 +529,38 @@ FTM_RET	FTOM_CGI_getEPFlags
 		}
 	}
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CGI_getModel
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pModel,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pModel != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, "model", false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else if((strlen(pValue) > FTM_NAME_LEN))
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+	else
+	{
+		strcpy(pModel, pValue);
+	}
+	
 	return	FTM_RET_OK;
 }
 

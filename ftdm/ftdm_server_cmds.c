@@ -516,38 +516,7 @@ FTM_RET FTDMS_SHELL_CMD_log
 				for(i = 0 ; i < ulCount ; i++)
 				{
 					strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&pLogs[i].ulTime));
-					MESSAGE("%3lu : %16s %s", i+1, pLogs[i].pID, pTimeString);
-
-					switch(pLogs[i].xType)
-					{
-					case FTM_LOG_TYPE_CREATE_OBJECT:
-						MESSAGE(" - Object[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
-						break;
-
-					case FTM_LOG_TYPE_CREATE_NODE:
-						MESSAGE(" - Node[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
-						break;
-
-					case FTM_LOG_TYPE_CREATE_EP:
-						MESSAGE(" - EP[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
-						break;
-
-					case FTM_LOG_TYPE_CREATE_TRIGGER:
-						MESSAGE(" - Trigger[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
-						break;
-
-					case FTM_LOG_TYPE_CREATE_ACTION:
-						MESSAGE(" - Action[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
-						break;
-
-					case FTM_LOG_TYPE_CREATE_RULE:
-						MESSAGE(" - Rule[%s] created.", pLogs[i].xParams.xCreateObject.pObjectID);
-						break;
-
-					default:
-						MESSAGE(" - Unknown type[%08lx]", (FTM_ULONG)pLogs[i].xType);
-					}
-					MESSAGE("\n");
+					MESSAGE("%3lu : %16llu %s - %s\n", i+1, pLogs[i].ullID, pTimeString, FTM_LOG_print(&pLogs[i]));
 				}
 
 				FTM_MEM_free(pLogs);

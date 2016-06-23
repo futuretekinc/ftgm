@@ -254,9 +254,9 @@ FTM_VOID_PTR FTOM_ACTION_process
 	FTM_VOID_PTR	pData
 )
 {
-	FTM_RET					xRet;
-	FTOM_MSG_ACTION_PTR		pMsg;
-	FTM_TIMER				xTimer;
+	FTM_RET				xRet;
+	FTOM_MSG_PTR		pBaseMsg;
+	FTM_TIMER			xTimer;
 	
 	FTM_TIMER_initS(&xTimer, 0);
 
@@ -272,10 +272,10 @@ FTM_VOID_PTR FTOM_ACTION_process
 
 			FTM_TIMER_remainMS(&xTimer, &ulRemain);
 
-			xRet = FTOM_MSGQ_timedPop(pMsgQ, ulRemain, (FTOM_MSG_PTR _PTR_)&pMsg);
+			xRet = FTOM_MSGQ_timedPop(pMsgQ, ulRemain, (FTOM_MSG_PTR _PTR_)&pBaseMsg);
 			if (xRet == FTM_RET_OK)
 			{
-				switch(pMsg->xType)
+				switch(pBaseMsg->xType)
 				{
 				case	FTOM_MSG_TYPE_QUIT:
 					{
@@ -283,18 +283,27 @@ FTM_VOID_PTR FTOM_ACTION_process
 					}
 					break;
 
-				case	FTOM_MSG_TYPE_ACTION:
+				case	FTOM_MSG_TYPE_ACTION_ACTIVATION:
 					{
-						TRACE("Actor[%s] is updated.\n",	pMsg->pActionID);
+						FTOM_MSG_ACTION_ACTIVATION_PTR pMsg = (FTOM_MSG_ACTION_ACTIVATION_PTR)pBaseMsg;
+
+						if(pMsg->bActivation)
+						{
+							TRACE("Action[%s] bas been activated.\n",	pMsg->pActionID);
+						}
+						else
+						{
+							TRACE("Action[%s] bas been disabled.\n",	pMsg->pActionID);
+						}
 					}
 					break;
 
 				default:
 					{
-						TRACE("Unknown message[%08x].\n", pMsg->xType);	
+						TRACE("Unknown message[%08x].\n", pBaseMsg->xType);	
 					}
 				}
-				FTM_MEM_free(pMsg);
+				FTOM_MSG_destroy(&pBaseMsg);
 			}
 		}	
 		while (!bStop && (FTM_TIMER_isExpired(&xTimer) != FTM_TRUE));
@@ -377,16 +386,16 @@ FTM_RET	FTOM_ACTION_setInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_ACTION_active
+FTM_RET	FTOM_ACTION_activation
 (
 	FTM_CHAR_PTR	pActionID,
-	FTM_BOOL		bActivate
+	FTM_BOOL		bActivation
 )
 {
-	FTM_RET				xRet;
-	FTOM_MSG_ACTION_PTR	pMsg;
+	FTM_RET			xRet;
+	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createAction(pActionID, bActivate, &pMsg);
+	xRet = FTOM_MSG_ACTION_createActivation(pActionID, bActivation, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Action message creation failed[%08x].\n", xRet);

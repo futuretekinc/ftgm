@@ -1530,7 +1530,7 @@ FTM_RET	FTDMS_LOG_del
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->nRet = FTDM_LOGGER_del(pServer->pDM->pLogger, pReq->ulIndex, pReq->ulCount, &ulDeletedCount);
+	pResp->nRet = FTDM_LOGGER_del(pServer->pDM->pLogger, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
 
 	return	pResp->nRet;
 }

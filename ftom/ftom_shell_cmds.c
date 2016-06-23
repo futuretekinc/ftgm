@@ -7,6 +7,7 @@
 #include "ftom_action.h"
 #include "ftom_rule.h"
 #include "ftom_discovery.h"
+#include "ftom_logger.h"
 
 FTM_ULONG	ulGetheringTime = 3;
 
@@ -98,6 +99,14 @@ FTM_RET	FTOM_SHELL_CMD_server
 	FTM_VOID_PTR 	pData
 );
 
+FTM_RET	FTOM_SHELL_CMD_log
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR 	pData
+);
+
 FTM_SHELL_CMD	FTOM_shellCmds[] = 
 {
 	{
@@ -124,6 +133,15 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 					  "    End point management.\n"\
 					  "  Commands:\n"\
 					  "    <EPID>  Show EP Information.\n"
+	},
+	{
+		.pString	= "log",
+		.function	= FTOM_SHELL_CMD_log,
+		.pShortHelp	= "Log management.",
+		.pHelp		= "\n"\
+					  "    Log management.\n"\
+					  "  Commands:\n"\
+					  "    <INDEX>  log index.\n"
 	},
 	{
 		.pString	= "node",
@@ -772,6 +790,130 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 			}
 				
 		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SHELL_CMD_log
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT			nArgc,
+	FTM_CHAR_PTR	pArgv[],
+	FTM_VOID_PTR 	pData
+)
+{
+	ASSERT(pShell != NULL);
+	ASSERT(pArgv != NULL);
+
+	FTM_RET	xRet;
+	switch(nArgc)
+	{
+	case	1:
+		{
+		}
+		break;
+
+	case	2:
+		{
+			FTM_LOG_PTR	pLogs ;
+			FTM_ULONG	ulCount = 0, ulGetCount = 0;
+			FTM_INT		i;
+			FTM_CHAR    pTimeString[128];
+
+			ulCount = strtoul(pArgv[1], 0, 10);
+			if (ulCount == 0)
+			{
+				break;	
+			}
+			
+			if (ulCount > 100)
+			{
+				ulCount = 100;	
+			}
+
+			pLogs = (FTM_LOG_PTR)FTM_MEM_malloc(sizeof(FTM_LOG) * ulCount);
+
+			xRet = FTOM_LOGGER_getAt(0, ulCount, pLogs, &ulGetCount);
+			if (xRet != FTM_RET_OK)
+			{
+				MESSAGE("Failed to get log!\n");	
+				FTM_MEM_free(pLogs);
+				break;
+			}
+
+			for(i = 0 ; i < ulGetCount ; i++)
+			{
+				strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&pLogs[i].ulTime));
+				MESSAGE("%3d : %16llu %s - %s\n", i+1, pLogs[i].ullID, pTimeString, FTM_LOG_print(&pLogs[i]));
+			}
+
+
+			FTM_MEM_free(pLogs);
+		}
+		break;
+	
+	case	3:
+		{
+			FTM_LOG_PTR	pLogs ;
+			FTM_ULONG	ulIndex, ulCount = 0;
+			FTM_INT		i;
+			FTM_CHAR    pTimeString[128];
+
+			if (strcasecmp(pArgv[1], "del") == 0)
+			{
+				ulCount = strtoul(pArgv[2], 0, 10);
+				if (ulCount == 0)
+				{
+					break;	
+				}
+		
+				xRet = FTOM_LOGGER_remove(0, ulCount, &ulCount);
+				if(xRet == FTM_RET_OK)
+				{
+					MESSAGE("Removed %lu logs.\n", ulCount);
+				}
+				else
+				{
+					MESSAGE("Failed to remove logs.\n");
+				}
+			}
+			else
+			{
+				ulIndex = strtoul(pArgv[1], 0, 10);
+				if (ulIndex == 0)
+				{
+					break;	
+				}
+	
+				ulCount = strtoul(pArgv[2], 0, 10);
+				if (ulCount == 0)
+				{
+					break;	
+				}
+				
+				if (ulCount > 100)
+				{
+					ulCount = 100;	
+				}
+	
+				pLogs = (FTM_LOG_PTR)FTM_MEM_malloc(sizeof(FTM_LOG) * ulCount);
+	
+				xRet = FTOM_LOGGER_getAt(ulIndex, ulCount, pLogs, &ulCount);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Failed to get log!\n");	
+					break;
+				}
+	
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&pLogs[i].ulTime));
+					MESSAGE("%3d : %16llu %s - %s\n", i+1, pLogs[i].ullID, pTimeString, FTM_LOG_print(&pLogs[i]));
+				}
+			}
+		}
+		break;
 	}
 
 	return	FTM_RET_OK;

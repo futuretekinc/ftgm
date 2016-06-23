@@ -285,7 +285,6 @@ FTM_VOID_PTR FTOM_RULE_process
 )
 {
 	FTM_RET					xRet;
-	FTOM_MSG_RULE_PTR		pMsg;
 	FTM_TIMER				xTimer;
 	
 	FTM_TIMER_initS(&xTimer, 0);
@@ -298,14 +297,15 @@ FTM_VOID_PTR FTOM_RULE_process
 	
 		do
 		{
-			FTM_ULONG	ulRemain = 0;	
+			FTM_ULONG		ulRemain = 0;	
+			FTOM_MSG_PTR	pBaseMsg;
 
 			FTM_TIMER_remainMS(&xTimer, &ulRemain);
 
-			xRet = FTOM_MSGQ_timedPop(pMsgQ, ulRemain, (FTOM_MSG_PTR _PTR_)&pMsg);
+			xRet = FTOM_MSGQ_timedPop(pMsgQ, ulRemain, (FTOM_MSG_PTR _PTR_)&pBaseMsg);
 			if (xRet == FTM_RET_OK)
 			{
-				switch(pMsg->xType)
+				switch(pBaseMsg->xType)
 				{
 				case	FTOM_MSG_TYPE_QUIT:
 					{
@@ -313,19 +313,94 @@ FTM_VOID_PTR FTOM_RULE_process
 					}
 					break;
 
-				case	FTOM_MSG_TYPE_RULE:
+				case	FTOM_MSG_TYPE_EVENT:
+					{	
+						FTOM_MSG_EVENT_PTR	pMsg = (FTOM_MSG_EVENT_PTR)pBaseMsg;
+						FTOM_RULE_PTR	pRule;
+
+						FTM_LOCK_set(&xLock);
+					
+						FTM_LIST_iteratorStart(pRuleList);
+						while(FTM_LIST_iteratorNext(pRuleList, (FTM_VOID_PTR _PTR_)&pRule) == FTM_RET_OK)
+						{
+							FTM_INT	i;
+					
+							for(i = 0 ; i < pRule->xInfo.xParams.ulTriggers; i++)
+							{
+								if (strcasecmp(pRule->xInfo.xParams.pTriggers[i], pMsg->pTriggerID) == 0)
+								{
+									FTM_BOOL		bActivation  = FTM_TRUE;
+									FTM_INT			j;
+						
+									for(j = 0 ; j < pRule->xInfo.xParams.ulTriggers; j++)
+									{
+										FTOM_TRIGGER_PTR	pTrigger;
+										xRet = FTOM_TRIGGER_get(pRule->xInfo.xParams.pTriggers[j], &pTrigger);
+										if ((xRet != FTM_RET_OK) || (pTrigger->xState != FTOM_TRIGGER_STATE_SET))
+										{
+											bActivation  = FTM_FALSE;
+											break;
+										}
+									}
+						
+					
+									FTOM_RULE_activation(pRule->xInfo.pID, bActivation);
+			
+								}
+							}
+						}
+
+						FTM_LOCK_reset(&xLock);
+					}
+					break;
+
+				case	FTOM_MSG_TYPE_RULE_ACTIVATION:
 					{
-						TRACE("Rule [%s] is updated.\n",	pMsg->pRuleID);
+						FTOM_MSG_RULE_ACTIVATION_PTR	pMsg = (FTOM_MSG_RULE_ACTIVATION_PTR)pBaseMsg;
+						FTOM_RULE_PTR	pRule;
+						FTM_INT			i;
+
+						xRet = FTOM_RULE_get(pMsg->pRuleID, &pRule);
+						if (xRet != FTM_RET_OK)
+						{
+							break;	
+						}
+
+						if (pRule->bActive == pMsg->bActivation)
+						{
+							INFO("The rule[%s] have been already activated.\n", pMsg->pRuleID);
+							break;
+						}
+
+						if (pMsg->bActivation)
+						{
+							pRule->bActive = FTM_TRUE;
+							FTOM_LOG_event(&pRule->xInfo, FTM_TRUE);
+							INFO("The rule[%s] have been activated.\n", pMsg->pRuleID);
+						}
+						else
+						{
+						
+							pRule->bActive = FTM_FALSE;
+							FTOM_LOG_event(&pRule->xInfo, FTM_FALSE);
+							INFO("The rule[%s] have been disabled.\n", pMsg->pRuleID);
+						}
+
+
+						for(i = 0 ; i < pRule->xInfo.xParams.ulActions ; i++)
+						{
+							FTOM_ACTION_activation(pRule->xInfo.xParams.pActions[i], pRule->bActive);
+						}
 					}
 					break;
 
 				default:
 					{
-						TRACE("Unknown message[%08x].\n", pMsg->xType);	
+						TRACE("Unknown message[%08x].\n",	pBaseMsg->xType);	
 					}
 				}
 
-				FTM_MEM_free(pMsg);
+				FTOM_MSG_destroy(&pBaseMsg);
 			}
 		}
 		while(!bStop && (FTM_TIMER_isExpired(&xTimer) != FTM_TRUE));
@@ -347,57 +422,6 @@ FTM_RET	FTOM_RULE_sendMessage
 	xRet = FTOM_MSGQ_push(pMsgQ, pMsg);
 
 	return	xRet;
-}
-
-FTM_RET	FTOM_RULE_notifyChanged
-(
-	FTM_CHAR_PTR	pTriggerID
-)
-{
-	FTM_RET			xRet;
-	FTOM_RULE_PTR	pRule;
-
-	FTM_LOCK_set(&xLock);
-
-	FTM_LIST_iteratorStart(pRuleList);
-	while(FTM_LIST_iteratorNext(pRuleList, (FTM_VOID_PTR _PTR_)&pRule) == FTM_RET_OK)
-	{
-		FTM_INT	i;
-
-		for(i = 0 ; i < pRule->xInfo.xParams.ulTriggers; i++)
-		{
-			if (strcasecmp(pRule->xInfo.xParams.pTriggers[i], pTriggerID) == 0)
-			{
-				FTM_BOOL		bActive = FTM_TRUE;
-				FTM_INT			j;
-	
-				for(j = 0 ; j < pRule->xInfo.xParams.ulTriggers; j++)
-				{
-					FTOM_TRIGGER_PTR	pTrigger;
-					xRet = FTOM_TRIGGER_get(pRule->xInfo.xParams.pTriggers[j], &pTrigger);
-					if ((xRet != FTM_RET_OK) || (pTrigger->xState != FTOM_TRIGGER_STATE_SET))
-					{
-						bActive = FTM_FALSE;
-						break;
-					}
-				}
-	
-	
-				if (bActive)
-				{
-					FTOM_RULE_activate(pRule->xInfo.pID);
-				}
-				else
-				{
-					FTOM_RULE_deactivate(pRule->xInfo.pID);
-				}
-			}
-		}
-	}
-
-	FTM_LOCK_reset(&xLock);
-
-	return	FTM_RET_OK;
 }
 
 FTM_RET FTOM_RULE_count
@@ -471,42 +495,18 @@ FTM_RET	FTOM_RULE_setInfo
 }
 
 
-FTM_RET	FTOM_RULE_activate
+FTM_RET	FTOM_RULE_activation
 (
-	FTM_CHAR_PTR	pRuleID
+	FTM_CHAR_PTR	pRuleID,
+	FTM_BOOL		bActivation
 )
 {
 	ASSERT(pRuleID != NULL);
 
-	FTM_RET				xRet;
-	FTOM_MSG_RULE_PTR	pMsg;
+	FTM_RET			xRet;
+	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createRule(pRuleID, FTM_TRUE, &pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_RULE_deactivate
-(
-	FTM_CHAR_PTR	pRuleID
-)
-{
-	ASSERT(pRuleID != NULL);
-
-	FTM_RET				xRet;
-	FTOM_MSG_RULE_PTR	pMsg;
-
-	xRet = FTOM_MSG_createRule(pRuleID, FTM_FALSE, &pMsg);
+	xRet = FTOM_MSG_RULE_createActivation(pRuleID, bActivation, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	

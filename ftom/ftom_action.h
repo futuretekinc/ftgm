@@ -73,10 +73,10 @@ FTM_RET	FTOM_ACTION_setInfo
 	FTM_ACTION_PTR		xInfo
 );
 
-FTM_RET	FTOM_ACTION_active
+FTM_RET	FTOM_ACTION_activation
 (
 	FTM_CHAR_PTR		pActionID,
-	FTM_BOOL			bActivate
+	FTM_BOOL			bActivation
 );
 
 FTM_RET	FTOM_ACTION_print

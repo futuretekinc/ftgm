@@ -2145,6 +2145,148 @@ FTM_RET	FTOM_CLIENT_RULE_set
 	return	xResp.xRet;
 }
 
+FTM_RET	FTOM_CLIENT_LOG_getList
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulStartIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_LOG_PTR		pLogs,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pLogs != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET								xRet;
+	FTOM_REQ_LOG_GET_LIST_PARAMS		xReq;
+	FTM_ULONG							nRespSize = 0;
+	FTOM_RESP_LOG_GET_LIST_PARAMS_PTR	pResp = NULL;
+	FTM_ULONG							ulRespLen;
+	FTM_ULONG							ulRespCount = 0;
+	FTM_BOOL							bStop = FTM_FALSE;
+
+	while(!bStop)
+	{
+		FTM_ULONG	ulReqCount;
+
+		if (ulMaxCount > 20) 
+		{
+			ulReqCount = 20;	
+		}
+		else
+		{
+			ulReqCount = ulMaxCount;	
+		}
+
+		nRespSize = sizeof(FTOM_RESP_LOG_GET_LIST_PARAMS) + sizeof(FTM_LOG) * ulReqCount;
+		pResp = (FTOM_RESP_LOG_GET_LIST_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
+		if (pResp == NULL)
+		{
+			ERROR("Not enough memory[size = %d]!\n", nRespSize);
+			return	FTM_RET_NOT_ENOUGH_MEMORY;
+		}
+	
+		memset(&xReq, 0, sizeof(xReq));
+
+		xReq.xCmd		=	FTOM_CMD_LOG_GET_LIST;
+		xReq.ulLen		=	sizeof(xReq);
+		xReq.ulIndex	=	ulStartIndex;
+		xReq.ulCount	=	ulReqCount;
+	
+		xRet = pClient->fRequest(
+					pClient, 
+					(FTM_VOID_PTR)&xReq, 
+					sizeof(xReq), 
+					(FTM_VOID_PTR)pResp, 
+					nRespSize,
+					&ulRespLen);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Request error!\n");
+			FTM_MEM_free(pResp);
+			return	FTM_RET_ERROR;	
+		}
+	
+		xRet = pResp->xRet;
+
+		if (pResp->xRet == FTM_RET_OK)
+		{
+			FTM_INT	i;
+	
+			for( i = 0 ; i < pResp->ulCount && i < ulReqCount ; i++)
+			{
+				memcpy(&pLogs[ulRespCount + i], &pResp->pLogs[i], sizeof(FTM_LOG));
+			}
+
+			ulRespCount += pResp->ulCount;
+			ulStartIndex += pResp->ulCount;
+			ulMaxCount -= pResp->ulCount;
+
+			if ((pResp->ulCount != ulReqCount) || (ulMaxCount == 0))
+			{
+				bStop = FTM_TRUE;	
+			}
+		}
+		else
+		{
+			ERROR("FTOM request error[%08x]!", pResp->xRet);
+			bStop = FTM_TRUE;
+		}
+	
+		FTM_MEM_free(pResp);
+	}
+
+	*pulCount = ulRespCount;
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_CLIENT_LOG_del
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pulDeletedCount != NULL);
+
+	FTM_RET							xRet;
+	FTOM_REQ_LOG_DEL_PARAMS			xReq;
+	FTOM_RESP_LOG_DEL_PARAMS		xResp;
+	FTM_ULONG						ulRespLen;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd		=	FTOM_CMD_LOG_DEL;
+	xReq.ulLen		=	sizeof(xReq);
+	xReq.ulIndex	=	ulIndex;
+	xReq.ulCount	=	ulCount;
+	
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Request error!\n");
+		return	FTM_RET_ERROR;	
+	}
+	
+	xRet = xResp.xRet;
+	if (xRet == FTM_RET_OK)
+	{
+		*pulDeletedCount = xResp.ulCount;
+	}
+
+	return	xRet;
+}
+
 /*****************************************************************
  * Discovery Functions
  *****************************************************************/

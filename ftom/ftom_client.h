@@ -476,6 +476,32 @@ FTM_RET	FTOM_CLIENT_RULE_set
 /****************************************************************
  *
  ***************************************************************/
+FTM_RET	FTOM_CLIENT_LOG_getList
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_LOG_PTR		pLogs,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_CLIENT_LOG_count
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_CLIENT_LOG_del
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+);
+
+/****************************************************************
+ *
+ ***************************************************************/
 FTM_RET	FTOM_CLIENT_DISCOVERY_start
 (
 	FTOM_CLIENT_PTR	pClient,

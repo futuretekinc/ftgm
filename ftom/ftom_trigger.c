@@ -292,18 +292,23 @@ FTM_VOID_PTR FTOM_TRIGGER_process
 						FTM_TIME_getCurrent(&pTrigger->xOccurrenceTime);
 						FTM_TIMER_initS(&pTrigger->xHoldingTimer, pTrigger->xInfo.xParams.xCommon.ulHoldingTime);
 
-						FTOM_RULE_notifyChanged(pTrigger->xInfo.pID);
+						FTOM_MSG_createEvent(pTrigger->xInfo.pID, FTM_TRUE, &pMsg);
+						FTOM_RULE_sendMessage(pMsg);
 					}
 				}
 				else if (pTrigger->xState == FTOM_TRIGGER_STATE_PRERESET)
 				{
 					if (FTM_TIMER_isExpired(&pTrigger->xHoldingTimer))
 					{
+						FTOM_MSG_PTR	pMsg;
+
 						INFO("Trigger[%s] clrean!\n", pTrigger->xInfo.pID);
+
 						pTrigger->xState = FTOM_TRIGGER_STATE_RESET;
 						FTM_TIME_getCurrent(&pTrigger->xReleaseTime);
 
-						FTOM_RULE_notifyChanged(pTrigger->xInfo.pID);
+						FTOM_MSG_createEvent(pTrigger->xInfo.pID, FTM_FALSE, &pMsg);
+						FTOM_RULE_sendMessage(pMsg);
 					}
 				}
 

@@ -466,6 +466,15 @@ FTM_RET	FTDM_DBIF_LOG_isExist
 	FTM_BOOL_PTR	pbExist
 );
 
+FTM_RET	FTDM_DBIF_LOG_getList
+(
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_LOG_PTR		pLogs, 
+	FTM_ULONG_PTR	pulCount
+);
+
 FTM_RET	FTDM_DBIF_LOG_get
 (
 	FTM_CHAR_PTR	pTableName,

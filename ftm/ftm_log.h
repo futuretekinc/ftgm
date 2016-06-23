@@ -28,6 +28,20 @@ typedef	enum	FTM_LOG_TYPE_ENUM
 
 #define	FTM_LOG_FLAG_SAVED	0x00000001
 
+typedef	FTM_ULONG	FTM_LOG_FIELD, _PTR_ FTM_LOG_FIELD_PTR;
+
+#define	FTM_LOG_FIELD_ID			(1 << 0)
+#define	FTM_LOG_FIELD_TIME			(1 << 1)
+#define	FTM_LOG_FIELD_VALUE			(1 << 2)
+#define	FTM_LOG_FIELD_ALL			(0xFFFF)
+
+typedef	enum	FTM_LOG_LEVEL
+{
+	FTM_LOG_LEVEL_INFO = 0,
+	FTM_LOG_LEVEL_WARN = 5,
+	FTM_LOG_LEVEL_ALERT= 10
+}	FTM_LOG_LEVEL, _PTR_ FTM_LOG_LEVEL_PTR;
+
 typedef	struct
 {
 	FTM_CHAR	pObjectID[FTM_ID_LEN+1];
@@ -48,9 +62,10 @@ typedef	struct
 	
 typedef	struct FTM_LOG_ITEM_STRUCT
 {
-	FTM_CHAR		pID[FTM_ID_LEN+1];
+	FTM_UINT64		ullID;
 	FTM_LOG_TYPE	xType;
 	FTM_ULONG		ulTime;
+	FTM_LOG_LEVEL	xLevel;
 	FTM_ULONG		xFlags;
 	union
 	{
@@ -95,6 +110,11 @@ FTM_RET	FTM_LOG_createEvent
 	FTM_CHAR_PTR	pObjectID,
 	FTM_BOOL		bOccurred,
 	FTM_LOG_PTR	_PTR_ ppLog
+);
+
+FTM_CHAR_PTR	FTM_LOG_print
+(
+	FTM_LOG_PTR	pLog
 );
 
 #endif

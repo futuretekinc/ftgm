@@ -603,7 +603,7 @@ FTM_RET FTOM_NODE_stop
 
 	if (pNode->bStop)
 	{
-		return	FTM_RET_NOT_START;
+		return	FTM_RET_OK;
 	}
 
 	if (pNode->pClass->fStop != NULL)

@@ -73,20 +73,12 @@ FTM_RET	FTOM_RULE_setInfo
 	FTM_RULE_PTR	pInfo
 );
 
-FTM_RET	FTOM_RULE_notifyChanged
+FTM_RET	FTOM_RULE_activation
 (
-	FTM_CHAR_PTR	pTriggerID
+	FTM_CHAR_PTR	pRuleID,
+	FTM_BOOL		bActivation
 );
 
-FTM_RET	FTOM_RULE_activate
-(
-	FTM_CHAR_PTR	pRuleID
-);
-
-FTM_RET	FTOM_RULE_deactivate
-(
-	FTM_CHAR_PTR	pRuleID
-);
 
 FTM_RET	FTOM_RULE_sendMessage
 (

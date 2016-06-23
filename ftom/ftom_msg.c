@@ -593,7 +593,7 @@ FTM_RET	FTOM_MSG_copy
 }
 
 /********************************************************************************
- * Requested from the thing+
+ * EP
  ********************************************************************************/
 FTM_RET	FTOM_MSG_EP_createInsertData
 (
@@ -617,6 +617,99 @@ FTM_RET	FTOM_MSG_EP_createInsertData
 	pMsg->ulLen = ulMsgLen;
 	pMsg->ulCount = ulCount;
 	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+/********************************************************************************
+ * Event  
+ ********************************************************************************/
+FTM_RET	FTOM_MSG_createEvent
+(
+	FTM_CHAR_PTR	pTriggerID,
+	FTM_BOOL		bOccurred,
+	FTOM_MSG_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_EVENT_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_EVENT);
+
+	pMsg = (FTOM_MSG_EVENT_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_EVENT;
+	pMsg->ulLen = ulMsgLen;
+	strncpy(pMsg->pTriggerID, pTriggerID, FTM_ID_LEN);
+	pMsg->bOccurred = bOccurred;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+/********************************************************************************
+ * Rule 
+ ********************************************************************************/
+FTM_RET	FTOM_MSG_RULE_createActivation
+(
+	FTM_CHAR_PTR	pRuleID,
+	FTM_BOOL		bActivation,
+	FTOM_MSG_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_RULE_ACTIVATION_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_RULE_ACTIVATION);
+
+	pMsg = (FTOM_MSG_RULE_ACTIVATION_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_RULE_ACTIVATION;
+	pMsg->ulLen = ulMsgLen;
+	strncpy(pMsg->pRuleID, pRuleID, FTM_ID_LEN);
+	pMsg->bActivation = bActivation;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+/********************************************************************************
+ * Action
+ ********************************************************************************/
+FTM_RET	FTOM_MSG_ACTION_createActivation
+(
+	FTM_CHAR_PTR	pActionID,
+	FTM_BOOL		bActivation,
+	FTOM_MSG_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_ACTION_ACTIVATION_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_ACTION_ACTIVATION);
+
+	pMsg = (FTOM_MSG_ACTION_ACTIVATION_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_ACTION_ACTIVATION;
+	pMsg->ulLen = ulMsgLen;
+	strncpy(pMsg->pActionID, pActionID, FTM_ID_LEN);
+	pMsg->bActivation = bActivation;
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
 

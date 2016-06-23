@@ -14,6 +14,7 @@ typedef	enum
 	FTOM_MSG_TYPE_CONNECTION_STATUS,
 	FTOM_MSG_TYPE_REPORT_GW_STATUS,
 	FTOM_MSG_TYPE_RULE,
+	FTOM_MSG_TYPE_RULE_ACTIVATION,
 	FTOM_MSG_TYPE_SEND_EP_STATUS,
 	FTOM_MSG_TYPE_SEND_EP_DATA,
 	FTOM_MSG_TYPE_ADD_EP_DATA,
@@ -23,6 +24,7 @@ typedef	enum
 	FTOM_MSG_TYPE_CONNECTED,
 	FTOM_MSG_TYPE_DISCONNECTED,
 	FTOM_MSG_TYPE_ACTION,
+	FTOM_MSG_TYPE_ACTION_ACTIVATION,
 	FTOM_MSG_TYPE_ALERT,
 	FTOM_MSG_TYPE_DISCOVERY,
 	FTOM_MSG_TYPE_DISCOVERY_INFO,
@@ -31,6 +33,7 @@ typedef	enum
 	FTOM_MSG_TYPE_INITIALIZE_DONE,
 	FTOM_MSG_TYPE_EP_INSERT_DATA,
 	FTOM_MSG_TYPE_EP_CTRL,
+	FTOM_MSG_TYPE_EVENT,
 	FTOM_MSG_TYPE_TP_REQ_SET_REPORT_INTERVAL,
 	FTOM_MSG_TYPE_TP_REQ_RESTART,
 	FTOM_MSG_TYPE_TP_REQ_CONTROL_ACTUATOR,
@@ -375,6 +378,60 @@ FTM_RET	FTOM_MSG_EP_createInsertData
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount,
 	FTOM_MSG_PTR _PTR_ 	ppMsg
+);
+
+/************************************************
+ * Event  
+ ************************************************/
+typedef struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_CHAR		pTriggerID[FTM_ID_LEN+1];
+	FTM_BOOL		bOccurred;
+}	FTOM_MSG_EVENT, _PTR_ FTOM_MSG_EVENT_PTR;
+
+FTM_RET	FTOM_MSG_createEvent
+(
+	FTM_CHAR_PTR	pTriggerID,
+	FTM_BOOL		bOccurred,
+	FTOM_MSG_PTR _PTR_ ppMsg
+);
+
+/************************************************
+ * Rule 
+ ************************************************/
+typedef struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_CHAR		pRuleID[FTM_ID_LEN+1];
+	FTM_BOOL		bActivation;
+}	FTOM_MSG_RULE_ACTIVATION, _PTR_ FTOM_MSG_RULE_ACTIVATION_PTR;
+
+FTM_RET	FTOM_MSG_RULE_createActivation
+(
+	FTM_CHAR_PTR	pRuleID,
+	FTM_BOOL		bActivation,
+	FTOM_MSG_PTR _PTR_ ppMsg
+);
+
+/************************************************
+ * Action
+ ************************************************/
+typedef struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_CHAR		pActionID[FTM_ID_LEN+1];
+	FTM_BOOL		bActivation;
+}	FTOM_MSG_ACTION_ACTIVATION, _PTR_ FTOM_MSG_ACTION_ACTIVATION_PTR;
+
+FTM_RET	FTOM_MSG_ACTION_createActivation
+(
+	FTM_CHAR_PTR	pActionID,
+	FTM_BOOL		bActivation,
+	FTOM_MSG_PTR _PTR_ ppMsg
 );
 
 /************************************************

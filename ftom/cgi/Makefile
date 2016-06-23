@@ -25,6 +25,7 @@ SRCS=	main.o\
 		cmd_trigger.o\
 		cmd_action.o\
 		cmd_rule.o\
+		cmd_log.o\
 		cmd_discovery.o
 
 ifeq ($(MODEL),"FTM-50S")

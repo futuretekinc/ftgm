@@ -882,6 +882,67 @@ typedef	struct
 	FTM_RET				xRet;
 }	FTOM_RESP_RULE_SET_PARAMS, _PTR_ FTOM_RESP_RULE_SET_PARAMS_PTR;
 
+
+/**********************************************************************
+ * Log 
+ **********************************************************************/
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_ULONG			ulIndex;
+	FTM_ULONG			ulCount; 
+}	FTOM_REQ_LOG_GET_LIST_PARAMS, _PTR_	FTOM_REQ_LOG_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+	FTM_ULONG			ulCount; 
+	FTM_LOG 			pLogs[];
+}	FTOM_RESP_LOG_GET_LIST_PARAMS, _PTR_ FTOM_RESP_LOG_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTOM_REQ_LOG_COUNT_PARAMS, _PTR_ FTOM_REQ_LOG_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+	FTM_ULONG			ulCount;
+}	FTOM_RESP_LOG_COUNT_PARAMS, _PTR_ FTOM_RESP_LOG_COUNT_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_ULONG 			ulIndex; 
+	FTM_ULONG			ulCount;
+}	FTOM_REQ_LOG_DEL_PARAMS, _PTR_ FTOM_REQ_LOG_DEL_PARAMS_PTR; 
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+	FTM_ULONG			ulCount;
+}	FTOM_RESP_LOG_DEL_PARAMS, _PTR_ 	FTOM_RESP_LOG_DEL_PARAMS_PTR;
+
+/**********************************************************************
+ * Discovery
+ **********************************************************************/
 typedef	struct
 {
 	FTM_ULONG			ulReqID;

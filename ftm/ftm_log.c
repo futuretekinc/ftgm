@@ -30,7 +30,7 @@ FTM_RET	FTM_LOG_create
 
 	gettimeofday(&xTime, NULL);
 
-	snprintf(pLog->pID, FTM_ID_LEN, "%lu%06lu", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
+	pLog->ullID = ((FTM_UINT64)xTime.tv_sec) * 1000000 + (FTM_UINT64)xTime.tv_usec;
 	pLog->xType = FTM_LOG_TYPE_UNKNOWN;
 	pLog->ulTime= xTime.tv_sec;
 
@@ -161,3 +161,42 @@ FTM_RET	FTM_LOG_createEvent
 	return	FTM_RET_OK;
 }
 
+FTM_CHAR_PTR	FTM_LOG_print
+(
+	FTM_LOG_PTR	pLog
+)
+{
+	static FTM_CHAR	pBuff[256];
+
+	switch(pLog->xType)
+	{
+	case FTM_LOG_TYPE_CREATE_OBJECT:
+		sprintf(pBuff,"Object[%s] created.", pLog->xParams.xCreateObject.pObjectID);
+		break;
+
+	case FTM_LOG_TYPE_CREATE_NODE:
+		sprintf(pBuff,"Node[%s] created.", pLog->xParams.xCreateObject.pObjectID);
+		break;
+
+	case FTM_LOG_TYPE_CREATE_EP:
+		sprintf(pBuff,"EP[%s] created.", pLog->xParams.xCreateObject.pObjectID);
+		break;
+
+	case FTM_LOG_TYPE_CREATE_TRIGGER:
+		sprintf(pBuff,"Trigger[%s] created.", pLog->xParams.xCreateObject.pObjectID);
+		break;
+
+	case FTM_LOG_TYPE_CREATE_ACTION:
+		sprintf(pBuff,"Action[%s] created.", pLog->xParams.xCreateObject.pObjectID);
+		break;
+
+	case FTM_LOG_TYPE_CREATE_RULE:
+		sprintf(pBuff,"Rule[%s] created.", pLog->xParams.xCreateObject.pObjectID);
+		break;
+
+	default:
+		sprintf(pBuff,"Unknown type[%08lx]", (FTM_ULONG)pLog->xType);
+	}
+
+	return	pBuff;
+}

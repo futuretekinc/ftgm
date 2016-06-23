@@ -174,6 +174,14 @@ FTM_RET	FTOM_CGI_getNodeList
 		{
 			xFields |= FTM_NODE_FIELD_TYPE;
 		}
+		else if (strcasecmp(pValue, "model") == 0)
+		{
+			xFields |= FTM_NODE_FIELD_MODEL;
+		}
+		else if (strcasecmp(pValue, "name") == 0)
+		{
+			xFields |= FTM_NODE_FIELD_NAME;
+		}
 		else if (strcasecmp(pValue, "flags") == 0)
 		{
 			xFields |= FTM_NODE_FIELD_FLAGS;
@@ -250,6 +258,26 @@ FTM_RET	FTOM_CGI_setNode
 		goto finish;	
 	}
 
+	xRet = FTOM_CGI_getModel(pReq, xInfo.pModel, FTM_TRUE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_NODE_FIELD_MODEL;
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;
+	}
+
+	xRet = FTOM_CGI_getName(pReq, xInfo.pName, FTM_TRUE);
+	if (xRet == FTM_RET_OK)
+	{
+		xFields |= FTM_NODE_FIELD_NAME;
+	}
+	else if (xRet != FTM_RET_OBJECT_NOT_FOUND)
+	{
+		goto finish;
+	}
+
 	xRet = FTOM_CGI_getLocation(pReq, xInfo.pLocation, FTM_TRUE);
 	if (xRet == FTM_RET_OK)
 	{
@@ -321,6 +349,16 @@ FTM_RET	FTOM_CGI_addNodeInfoToObject
 		cJSON_AddStringToObject(pRoot,	"type", 	FTM_NODE_typeString(pNodeInfo->xType));
 	}
 	
+	if (xFields & FTM_NODE_FIELD_MODEL)
+	{
+		cJSON_AddStringToObject(pRoot,	"model", pNodeInfo->pModel);
+	}
+	
+	if (xFields & FTM_NODE_FIELD_NAME)
+	{
+		cJSON_AddStringToObject(pRoot,	"name", pNodeInfo->pName);
+	}
+	
 	if (xFields & FTM_NODE_FIELD_LOCATION )
 	{
 		cJSON_AddStringToObject(pRoot,	"location", pNodeInfo->pLocation);
@@ -361,8 +399,8 @@ FTM_RET	FTOM_CGI_addNodeInfoToObject
 				cJSON_AddItemToObject(pRoot, "snmp", pSNMP = cJSON_CreateObject());
 				if (xFields & FTM_NODE_FIELD_SNMP_VERSION)
 				{
-					cJSON_AddNumberToObject(pSNMP, "version", 	pNodeInfo->xOption.xSNMP.ulVersion);
-					//cJSON_AddStringToObject(pSNMP, "version", 	FTM_SNMP_versionString(pNodeInfo->xOption.xSNMP.ulVersion));
+					//cJSON_AddNumberToObject(pSNMP, "version", 	pNodeInfo->xOption.xSNMP.ulVersion);
+					cJSON_AddStringToObject(pSNMP, "version", 	FTM_SNMP_versionString(pNodeInfo->xOption.xSNMP.ulVersion));
 				}
 
 				if (xFields & FTM_NODE_FIELD_SNMP_URL)

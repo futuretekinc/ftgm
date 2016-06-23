@@ -563,6 +563,36 @@ FTM_RET	FTOM_SERVER_RULE_set
 	FTM_ULONG		ulRespLen
 );
 
+static 
+FTM_RET	FTOM_SERVER_LOG_count
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_LOG_COUNT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_LOG_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_LOG_getList
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_LOG_GET_LIST_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_LOG_GET_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_LOG_del
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_LOG_DEL_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_LOG_DEL_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
 static
 FTM_RET	FTOM_SERVER_DISCOVERY_start
 (
@@ -660,6 +690,10 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_RULE_GET_AT,			FTOM_SERVER_RULE_getAt),
 	MK_CMD_SET(FTOM_CMD_RULE_SET,				FTOM_SERVER_RULE_set),
 	
+	MK_CMD_SET(FTOM_CMD_LOG_DEL,				FTOM_SERVER_LOG_del),
+	MK_CMD_SET(FTOM_CMD_LOG_COUNT,				FTOM_SERVER_LOG_count),
+	MK_CMD_SET(FTOM_CMD_LOG_GET_LIST,			FTOM_SERVER_LOG_getList),
+
 	MK_CMD_SET(FTOM_CMD_DISCOVERY_START,		FTOM_SERVER_DISCOVERY_start),
 	MK_CMD_SET(FTOM_CMD_DISCOVERY_GET_INFO,		FTOM_SERVER_DISCOVERY_getInfo),
 	MK_CMD_SET(FTOM_CMD_DISCOVERY_GET_NODE,		FTOM_SERVER_DISCOVERY_getNodeList),
@@ -1574,7 +1608,14 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 			ERROR("Failed to remove EP[%s] from DB.\n", pEP->xInfo.pEPID);
 			goto finish;
 		}
-		
+	
+		xRet = FTM_LIST_remove(&pNode->xEPList, pEP);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR("Failed to remove EP[%s].\n", xEPInfo.pEPID);
+			goto finish;
+		}
+
 		xRet = FTOM_EP_destroy(&pEP);
 		if (xRet != FTM_RET_OK)
 		{
@@ -3045,6 +3086,81 @@ FTM_RET	FTOM_SERVER_RULE_set
 	pResp->ulLen = sizeof(*pResp);
 
 	return	xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_LOG_getList
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_LOG_GET_LIST_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_LOG_GET_LIST_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_LOGGER_getAt(pReq->ulIndex, pReq->ulCount, pResp->pLogs, &pResp->ulCount);
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(FTOM_RESP_LOG_GET_LIST_PARAMS) + sizeof(FTM_LOG) * pResp->ulCount;
+	pResp->xRet = xRet;
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_LOG_count
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_LOG_COUNT_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_LOG_COUNT_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_LOGGER_count(&pResp->ulCount);
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(FTOM_RESP_LOG_COUNT_PARAMS);
+	pResp->xRet = xRet;
+
+	return	pResp->xRet;
+}
+
+static 
+FTM_RET	FTOM_SERVER_LOG_del
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_LOG_DEL_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_LOG_DEL_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_LOGGER_remove(pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(FTOM_RESP_LOG_DEL_PARAMS);
+	pResp->xRet = xRet;
+
+	return	pResp->xRet;
 }
 
 static
