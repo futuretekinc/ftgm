@@ -53,6 +53,12 @@ FTM_RET	FTOM_EP_reportDataInTime
 	FTM_ULONG		ulEndTime
 );
 
+static
+FTM_RET	FTOM_EP_reportLastData
+(
+	FTOM_EP_PTR 	pEP
+);
+
 static 
 FTM_INT	FTOM_EP_seeker
 (
@@ -1160,6 +1166,27 @@ FTM_RET	FTOM_EP_reportDataInTime
 
 	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pDataList, nDataCount);
 	FTM_MEM_free(pDataList);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_EP_reportLastData
+(
+	FTOM_EP_PTR 	pEP
+)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET			xRet;
+	FTM_EP_DATA_PTR	pData;
+
+	xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_OK;
+	}
+
+	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pData, 1);
 
 	return	xRet;
 }

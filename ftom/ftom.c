@@ -120,6 +120,13 @@ FTM_RET	FTOM_onAlert
 	FTM_VOID_PTR		pData
 );
 
+static
+FTM_RET	FTOM_onInitializeDone
+(
+	FTOM_MSG_INITIALIZE_DONE_PTR pMsg,
+	FTM_VOID_PTR		pData
+);
+
 static 
 FTM_RET	FTOM_onDiscovery
 (

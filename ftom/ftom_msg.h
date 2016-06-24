@@ -62,6 +62,13 @@ FTM_RET	FTOM_MSG_copy
 /**************************************************************
  * System initialize done 
  **************************************************************/
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTOM_MSG_ID		xMsgID;
+}	FTOM_MSG_INITIALIZE_DONE, _PTR_ FTOM_MSG_INITIALIZE_DONE_PTR;
+
 FTM_RET FTOM_MSG_createInitializeDone
 (
 	FTOM_MSG_PTR _PTR_ ppMsg
