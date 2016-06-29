@@ -319,6 +319,11 @@ FTM_RET FTOM_NODE_set
 		pNode->xInfo.xFlags = pInfo->xFlags;
 	}
 
+	if (xFields & FTM_NODE_FIELD_NAME)
+	{
+		strcpy(pNode->xInfo.pName, pInfo->pName);
+	}
+
 	if (xFields & FTM_NODE_FIELD_LOCATION)
 	{
 		strcpy(pNode->xInfo.pLocation, pInfo->pLocation);
