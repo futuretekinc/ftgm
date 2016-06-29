@@ -186,11 +186,15 @@ FTM_RET	FTOM_LOGGER_getAt
 
 		for(i = 0 ; i < ulCount ; i++)
 		{
-			xRet = FTM_LOGGER_getAt(&pLogger->xCommon, ulIndex + i, &pLogs[i]);
+			FTM_LOG_PTR	pLog;
+
+			xRet = FTM_LOGGER_getAt(&pLogger->xCommon, ulIndex + i, &pLog);
 			if (xRet != FTM_RET_OK)
 			{
 				break;
 			}
+
+			memcpy(&pLogs[i], pLog, sizeof(FTM_LOG));
 		}
 
 		*pulCount = i;

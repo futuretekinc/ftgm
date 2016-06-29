@@ -60,6 +60,12 @@ FTM_RET	FTOM_EP_reportLastData
 );
 
 static 
+FTM_RET	FTOM_EP_reportLastData
+(
+	FTOM_EP_PTR 	pEP
+);
+
+static 
 FTM_INT	FTOM_EP_seeker
 (
 	const FTM_VOID_PTR pElement, 
@@ -717,6 +723,12 @@ FTM_VOID_PTR FTOM_EP_process
 			TRACE("Receive Message : EP[%s], MSG[%08x]\n", pEP->xInfo.pEPID, pBaseMsg->xType);
 			switch(pBaseMsg->xType)
 			{
+			case	FTOM_MSG_TYPE_PUBLISH_EP_LAST_DATA:
+				{
+					FTOM_EP_reportLastData(pEP);
+				}
+				break;
+
 			case	FTOM_MSG_TYPE_EP_INSERT_DATA:
 				{
 					FTM_INT	i;
@@ -1180,10 +1192,10 @@ FTM_RET	FTOM_EP_reportLastData
 	FTM_RET			xRet;
 	FTM_EP_DATA_PTR	pData;
 
-	xRet = FTM_LIST_getLast(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
+	xRet = FTM_LIST_getFirst(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
 	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_OK;
+		return	xRet;	
 	}
 
 	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pData, 1);
