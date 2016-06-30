@@ -204,12 +204,15 @@ FTM_RET	FTOM_CGI_getNodeList
 		}
 	}
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTOM_CLIENT_NODE_count(pClient, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		TRACE("Failed to get node count[%08lx]!\n", xRet);
 		goto finish;	
 	}
 
+	TRACE("Node Count : %lu\n", ulCount);
 	for(FTM_INT i = 0 ; i < ulCount ; i++)
 	{
 		cJSON _PTR_ pObject;
@@ -217,6 +220,7 @@ FTM_RET	FTOM_CGI_getNodeList
 		xRet = FTOM_CLIENT_NODE_getAt(pClient, i, &xNodeInfo);
 		if (xRet != FTM_RET_OK)
 		{
+			ERROR("Failed to get node info[%08lx]!\n", xRet);
 			continue;	
 		}
 		

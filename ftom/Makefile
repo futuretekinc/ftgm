@@ -23,7 +23,7 @@ FTOM_SRCS=ftom_main.c \
 		ftom_discovery.c
 
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)
-FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lcurl -lcjson -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl -lm
+FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lcjson -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl -lm
 
 LIB_FTOM=libftom
 LIB_FTOM_INCS= ftom.h 

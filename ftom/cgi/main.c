@@ -32,6 +32,7 @@ FTM_INT	main(FTM_INT	nArgc, FTM_CHAR_PTR pArgv[])
 
 	FTM_MEM_init();	
 
+	FTM_TRACE_setLevel(FTM_TRACE_LEVEL_ALL);
 	FTM_TRACE_setOut(FTM_TRACE_OUT_SYSLOG);
 
 	while(pCmd->pName != NULL)

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <syslog.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -248,6 +249,10 @@ FTM_RET FTOM_CLIENT_CL_requestSM
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_SMP_call(pSMP, pReq, ulReqLen, pResp, ulMaxRespLen, pulRespLen, 1000000);
+		if (xRet != FTM_RET_OK)
+		{
+			TRACE("FTM_SMP_call error[%08lx]!\n", xRet);
+		}
 		FTM_SMP_destroy(&pSMP);
 	}
 	else
@@ -269,7 +274,7 @@ FTM_RET	FTOM_CLIENT_CL_getSMKey
 	*pxKey	= 1234;
 	*pnShmID= 0;
 
-	pFile = fopen("/run/ftom/ftom.smkey", "r");
+	pFile = fopen("/var/run/ftom.smkey", "r");
 	if (pFile != NULL)
 	{
 		FTM_RET	nCount;
