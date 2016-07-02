@@ -465,7 +465,8 @@ FTM_RET	FTDM_ACTION_showList
 	FTM_ACTION_PTR	pAction;
 	FTM_ULONG		i, ulCount;
 	MESSAGE("\n# Action Information\n");
-	MESSAGE("\t%16s %16s %8s %16s %8s\n", "ID", "NAME", "TYPE", "TARGET", "VALUE");
+	MESSAGE("\t%16s %16s %8s %16s %16s %8s\n", 
+		"ID", "NAME", "STATE", "TARGET", "TYPE", "VALUE");
 
 	FTM_ACTION_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -474,12 +475,14 @@ FTM_RET	FTDM_ACTION_showList
 		{
 			MESSAGE("\t%16s ", pAction->pID);
 			MESSAGE("%16s ", pAction->pName);
+			MESSAGE("%8s ", "Running");
 			switch(pAction->xType)
 			{
 			case	FTM_ACTION_TYPE_SET:
 				{
-					MESSAGE("%8s %16s %8s\n", "Set", 
+					MESSAGE("%16s %16s %8s\n", 
 						pAction->xParams.xSet.pEPID,
+						"Set",
 						FTM_VALUE_print(&pAction->xParams.xSet.xValue));
 				}
 				break;
