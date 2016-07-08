@@ -1580,6 +1580,7 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 	FTM_NODE		xInfo;
 	FTOM_EP_PTR		pEP;
 	FTOM_NODE_PTR	pNode;
+	FTM_ULONG		ulCount = 0;
 
 	TRACE("Received request to destroy Node[%s].\n", pReq->pDID);
 	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
@@ -1596,6 +1597,14 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 		goto finish;
 	}
 
+	xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to ep count of node[%s].\n", pNode->xInfo.pDID);
+		goto finish;	
+	}
+
+	TRACE("Node[%s] has %lu EP.\n", pNode->xInfo.pDID, ulCount);
 	while(FTM_LIST_getFirst(&pNode->xEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
 	{
 		FTM_EP	xEPInfo;
@@ -1622,7 +1631,9 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 			ERROR("Failed to destroy EP[%s].\n", xEPInfo.pEPID);
 			goto finish;
 		}
-
+	
+		ulCount--;
+		TRACE("Remain EP Count : %lu\n", ulCount);
 		FTOM_LOG_destroyEP(&xEPInfo);
 	}
 
@@ -1875,6 +1886,13 @@ FTM_RET	FTOM_SERVER_EP_create
 	FTOM_EP_PTR		pEP;
 	FTOM_NODE_PTR	pNode;
 
+	xRet = FTOM_NODE_get(pReq->xInfo.pDID, &pNode);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Node[%s] not found for EP[%s]!\n", pReq->xInfo.pDID, pReq->xInfo.pEPID);
+		goto finish;
+	}
+
 	xRet = FTOM_EP_create(&pReq->xInfo, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
@@ -1890,15 +1908,7 @@ FTM_RET	FTOM_SERVER_EP_create
 		goto finish;
 	}
 
-	xRet = FTOM_NODE_get(pEP->xInfo.pDID, &pNode);
-	if (xRet == FTM_RET_OK)
-	{
-		FTOM_NODE_linkEP(pNode, pEP);
-	}
-	else
-	{
-		WARN("Node[%s] not found for EP[%s]!\n", pEP->xInfo.pDID, pEP->xInfo.pEPID);
-	}
+	FTOM_NODE_linkEP(pNode, pEP);
 
 	memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
 

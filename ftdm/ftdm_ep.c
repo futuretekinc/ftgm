@@ -102,18 +102,10 @@ FTM_RET	FTDM_EP_destroy
 
 	FTM_RET		xRet;
 
-	xRet = FTM_EP_isStatic(&(*ppEP)->xInfo);
-	if (xRet == FTM_RET_OK)
+	xRet = FTDM_DBIF_EP_remove((*ppEP)->xInfo.pEPID);
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTDM_DBIF_EP_remove((*ppEP)->xInfo.pEPID);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR("The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
-		}
-	}
-	else
-	{
-		xRet = FTM_RET_OK;	
+		ERROR("The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
 	}
 
 	FTM_MEM_free(*ppEP);
@@ -177,47 +169,12 @@ FTM_RET	FTDM_EP_set
 
 	xRet = FTM_RET_OK;	
 
-	if (FTM_EP_isStatic(&pEP->xInfo) == FTM_RET_OK)
-	{
-		memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
+	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
 
-		if (FTM_EP_isStatic(pInfo) != FTM_RET_OK)
-		{
-			xRet =FTDM_DBIF_EP_remove(pEP->xInfo.pEPID);
-			if (xRet != FTM_RET_OK)
-			{
-				ERROR2(xRet, "Failed to delte EP.\n");
-			}
-		}
-		else
-		{
-			xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
-			if (xRet != FTM_RET_OK)
-			{
-				ERROR2(xRet, "Failed to set EP.\n");
-			}
-		}
-	}
-	else
+	xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
-
-		if (FTM_EP_isStatic(pInfo) == FTM_RET_OK)
-		{
-			xRet =FTDM_DBIF_EP_append(&pEP->xInfo);
-			if (xRet == FTM_RET_OK)
-			{
-				xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
-				if (xRet != FTM_RET_OK)
-				{
-					ERROR2(xRet, "Failed to set EP.\n");
-				}
-			}
-			else
-			{
-				ERROR2(xRet, "Failed to append EP to DB.\n");	
-			}
-		}
+		ERROR2(xRet, "Failed to set EP.\n");
 	}
 
 	return	xRet;

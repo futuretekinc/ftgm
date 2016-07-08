@@ -174,6 +174,7 @@ FTM_RET	FTM_NODE_isStatic
 	FTM_NODE_PTR pNode
 )
 {
+#if 0
 	ASSERT(pNode != NULL);
 
 	if ((pNode->xFlags & FTM_NODE_FLAG_DYNAMIC) != FTM_NODE_FLAG_DYNAMIC)
@@ -184,6 +185,9 @@ FTM_RET	FTM_NODE_isStatic
 	{
 		return	FTM_RET_FALSE;
 	}
+#else
+	return	FTM_RET_TRUE;
+#endif
 }
 
 FTM_RET	FTM_NODE_isDynamic
@@ -191,6 +195,7 @@ FTM_RET	FTM_NODE_isDynamic
 	FTM_NODE_PTR pNode
 )
 {
+#if 0
 	ASSERT(pNode != NULL);
 
 	if ((pNode->xFlags & FTM_NODE_FLAG_DYNAMIC) == FTM_NODE_FLAG_DYNAMIC)
@@ -201,6 +206,9 @@ FTM_RET	FTM_NODE_isDynamic
 	{
 		return	FTM_RET_FALSE;
 	}
+#else
+		return	FTM_RET_FALSE;
+#endif
 }
 
 FTM_RET	FTM_NODE_setDID

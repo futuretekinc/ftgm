@@ -24,26 +24,18 @@ FTM_RET    FTDM_NODE_create
 		return	xRet;
 	}
 
-	xRet = FTM_NODE_isStatic(pInfo);
-	if (xRet == FTM_RET_OK)
+	xRet = FTDM_DBIF_NODE_create(pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTDM_DBIF_NODE_create(pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			return	xRet;
-		}
-
+		ERROR("Failed to create node[%s] to DB : error - %08x\n", pInfo->pDID, xRet);
+		return	xRet;
 	}
 
 	pNode = (FTDM_NODE_PTR)FTM_MEM_malloc(sizeof(FTDM_NODE));
 	if (pNode == NULL)
 	{
 		ERROR("Not enough memory!\n");
-		xRet = FTM_NODE_isStatic(pInfo);
-		if (xRet == FTM_RET_OK)
-		{
-			FTDM_DBIF_NODE_destroy(pInfo->pDID);
-		}
+		FTDM_DBIF_NODE_destroy(pInfo->pDID);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
@@ -63,10 +55,10 @@ FTM_RET 	FTDM_NODE_destroy
 	ASSERT(ppNode != NULL);
 	FTM_RET	xRet;
 
-	xRet = FTM_NODE_isStatic(&(*ppNode)->xInfo);
-	if (xRet == FTM_RET_OK)
+	xRet = FTDM_DBIF_NODE_destroy((*ppNode)->xInfo.pDID);
+	if (xRet != FTM_RET_OK)
 	{
-		FTDM_DBIF_NODE_destroy((*ppNode)->xInfo.pDID);
+		ERROR("Failed to remove node[%s] from DB[%08x].\n", (*ppNode)->xInfo.pDID);
 	}
 
 	FTM_MEM_free(*ppNode);
@@ -74,6 +66,38 @@ FTM_RET 	FTDM_NODE_destroy
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET    FTDM_NODE_create2
+(   
+	FTM_NODE_PTR	pInfo,
+	FTDM_NODE_PTR _PTR_ ppNode
+)   
+{
+	ASSERT(pInfo != NULL);
+
+	FTM_RET    		xRet;
+	FTDM_NODE_PTR	pNode;
+	
+	xRet = FTM_NODE_isValid(pInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	pNode = (FTDM_NODE_PTR)FTM_MEM_malloc(sizeof(FTDM_NODE));
+	if (pNode == NULL)
+	{
+		ERROR("Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	memset(pNode, 0, sizeof(FTDM_NODE));
+	memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
+
+	*ppNode = pNode;
+
+	return  FTM_RET_OK;
+}	  
 
 FTM_RET 	FTDM_NODE_destroy2
 (
@@ -105,34 +129,6 @@ FTM_RET	FTDM_NODE_setInfo
 		return	xRet;	
 	}
 
-	xRet = FTM_NODE_isStatic(&pNode->xInfo);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTM_NODE_isStatic(pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			xRet = FTDM_DBIF_NODE_destroy(pInfo->pDID);
-			if (xRet != FTM_RET_OK)
-			{
-				ERROR("Node[%s] can't change from static to dynamic.\n", pInfo->pDID);	
-				return	xRet;
-			}
-		}
-	}
-	else
-	{
-		xRet = FTM_NODE_isStatic(pInfo);
-		if (xRet == FTM_RET_OK)
-		{
-			xRet = FTDM_DBIF_NODE_create(pInfo);
-			if (xRet != FTM_RET_OK)
-			{
-				ERROR("Node[%s] can't change from dynamic to static.\n", pInfo->pDID);	
-				return	xRet;
-			}
-		}
-	}
-	
 	memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
 
 	return	FTM_RET_OK;

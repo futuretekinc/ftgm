@@ -490,8 +490,13 @@ FTM_RET	FTDMS_NODE_add
 		xRet = FTDM_NODEM_append(pServer->pDM->pNodeM, pNode);
 		if (xRet != FTM_RET_OK)
 		{
+			ERROR("Failed to add node[%s] : Error Code - %08x\n", pReq->xNodeInfo.pDID, xRet);
 			FTDM_NODE_destroy(&pNode);
 		}
+	}
+	else
+	{
+		ERROR("Failed to add node[%s] : Error Code - %08x\n", pReq->xNodeInfo.pDID, xRet);
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -513,6 +518,7 @@ FTM_RET	FTDMS_NODE_del
 	FTDM_NODE_PTR	pNode;
 
 
+	TRACE("Try to remove node[%s].\n", pReq->pDID);
 	xRet = FTDM_NODEM_get(pServer->pDM->pNodeM, pReq->pDID, &pNode);
 	if (xRet == FTM_RET_OK)
 	{
@@ -521,6 +527,14 @@ FTM_RET	FTDMS_NODE_del
 		{
 			FTDM_NODE_destroy(&pNode);
 		}
+		else
+		{
+			ERROR("Failed to remove node[%s] from list : Error Code - %08x\n", pReq->pDID, xRet);
+		}
+	}
+	else
+	{
+		ERROR("Failed to get node[%s] : Error Code - %08x\n", pReq->pDID, xRet);
 	}
 
 	pResp->xCmd = pReq->xCmd;

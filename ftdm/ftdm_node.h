@@ -17,6 +17,12 @@ FTM_RET	FTDM_NODE_create
 	FTDM_NODE_PTR _PTR_ ppNode
 );
 
+FTM_RET    FTDM_NODE_create2
+(   
+	FTM_NODE_PTR	pInfo,
+	FTDM_NODE_PTR _PTR_ ppNode
+) ;
+
 FTM_RET FTDM_NODE_destroy
 (
 	FTDM_NODE_PTR _PTR_ ppNode

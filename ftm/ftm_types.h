@@ -69,7 +69,7 @@ typedef	FTM_EPID _PTR_	FTM_EPID_PTR;
 #define	FTM_NAME_LEN						256
 #define	FTM_UNIT_LEN						32
 
-#define	FTM_INTERVAL_MIN					1
+#define	FTM_INTERVAL_MIN					0
 #define	FTM_INTERVAL_MAX					(60 * 60 * 24)
 
 #define	FTM_RET_OK							0x00000000

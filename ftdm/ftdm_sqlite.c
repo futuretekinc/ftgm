@@ -946,6 +946,7 @@ FTM_RET	FTDM_DBIF_NODE_create
 
 	if (bExist == FTM_TRUE)
 	{
+		ERROR("Node[%s] is already exist.\n", pInfo->pDID);
 		return	FTM_RET_ALREADY_EXISTS;	
 	}
 
@@ -985,6 +986,7 @@ FTM_RET	FTDM_DBIF_NODE_destroy
 	FTM_CHAR_PTR	pErrMsg = NULL;
 	FTM_CHAR		pSQL[1024];
 
+	TRACE("Remove node[%s] from DB.\n", pDID);
 	if (_pSQLiteDB == NULL)
 	{
 		ERROR("DB not initialized.\n");
@@ -2172,7 +2174,7 @@ FTM_RET _FTDM_DBIF_NODE_isExist
 	FTM_BOOL_PTR pExist
 )
 {
-	_FTDM_DBIF_CB_IS_EXIST_PARAMS xParams = {.bExist = FTM_TRUE };
+	_FTDM_DBIF_CB_IS_EXIST_PARAMS xParams = {.bExist = FTM_FALSE };
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
     FTM_CHAR_PTR	pErrMsg = NULL;

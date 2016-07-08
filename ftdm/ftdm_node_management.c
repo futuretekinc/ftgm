@@ -139,13 +139,13 @@ FTM_RET	FTDM_NODEM_loadFromDB
 			{
 				FTDM_NODE_PTR	pNode;
 
-				xRet = FTDM_NODE_create(&pInfos[i], &pNode);
+				xRet = FTDM_NODE_create2(&pInfos[i], &pNode);
 				if (xRet == FTM_RET_OK)
 				{
 					xRet = FTM_LIST_append(pNodeM->pList, pNode);
 					if (xRet != FTM_RET_OK)
 					{
-						FTDM_NODE_destroy(&pNode);	
+						FTDM_NODE_destroy2(&pNode);	
 					}
 				}
 			}

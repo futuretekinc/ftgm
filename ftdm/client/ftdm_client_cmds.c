@@ -409,7 +409,7 @@ FTM_RET	FTDMC_NODE_cmd
 			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
 		}
 
-		MESSAGE("%16s %8s %16s %8s %8s %8s %16s %8s %16s\n", "DID", "Type", "Flags", "Interval", "Timeout", "Version", "URL", "Community", "Location");
+		MESSAGE("%16s %8s %8s %8s %8s %8s %16s %8s %16s\n", "DID", "Type", "Flags", "Interval", "Timeout", "Version", "URL", "Community", "Location");
 
 		for(i = 0 ; i < nNodeCount; i++)
 		{
@@ -418,10 +418,10 @@ FTM_RET	FTDMC_NODE_cmd
 			xRet = FTDMC_NODE_getAt(&_xSession, i, &xInfo);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%16s %8s %16s %8lu %8lu %8s %16s %8s %16s\n", 
+				MESSAGE("%16s %8s %08x %8lu %8lu %8s %16s %8s %16s\n", 
 						xInfo.pDID,
 						FTM_NODE_typeString(xInfo.xType),
-						FTM_NODE_isStatic(&xInfo)?"Static":"Dynamic",
+						xInfo.xFlags,
 						xInfo.ulReportInterval,
 						xInfo.ulTimeout,
 						FTM_SNMP_versionString(xInfo.xOption.xSNMP.ulVersion),

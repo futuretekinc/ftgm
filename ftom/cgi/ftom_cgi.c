@@ -130,7 +130,6 @@ FTM_RET	FTOM_CGI_node
 	qentry_t *pReq
 )
 {
-	TRACE("Node Server!\n");
 	return	FTOM_CGI_service(pClient, pReq, pNodeCmds);
 }
 
