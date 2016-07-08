@@ -105,7 +105,7 @@ FTM_RET	FTDM_EP_destroy
 	xRet = FTM_EP_isStatic(&(*ppEP)->xInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_DBIF_EP_del((*ppEP)->xInfo.pEPID);
+		xRet = FTDM_DBIF_EP_remove((*ppEP)->xInfo.pEPID);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
@@ -183,7 +183,7 @@ FTM_RET	FTDM_EP_set
 
 		if (FTM_EP_isStatic(pInfo) != FTM_RET_OK)
 		{
-			xRet =FTDM_DBIF_EP_del(pEP->xInfo.pEPID);
+			xRet =FTDM_DBIF_EP_remove(pEP->xInfo.pEPID);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR2(xRet, "Failed to delte EP.\n");

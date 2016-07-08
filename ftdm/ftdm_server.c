@@ -1526,8 +1526,6 @@ FTM_RET	FTDMS_LOG_del
 	FTDM_RESP_LOG_DEL_PARAMS_PTR	pResp
 )
 {
-	FTM_ULONG	ulDeletedCount;
-
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
 	pResp->nRet = FTDM_LOGGER_del(pServer->pDM->pLogger, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);

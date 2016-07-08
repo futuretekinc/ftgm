@@ -136,7 +136,7 @@ FTM_RET	FTDM_DBIF_EP_append
  	FTM_EP_PTR		pInfo
 );
 
-FTM_RET	FTDM_DBIF_EP_del
+FTM_RET	FTDM_DBIF_EP_remove
 (
 	FTM_CHAR_PTR	pEPID
 );

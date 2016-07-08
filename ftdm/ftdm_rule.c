@@ -509,7 +509,7 @@ FTM_RET	FTDM_RULE_showList
 	pSpace[16] = 0;
 
 	MESSAGE("\n# Rule Information\n");
-	MESSAGE("\t%16s %16s %16s %16s %16s\n", "ID", "NAME", "STATE", "RULE", "ACTION");
+	MESSAGE("\t%16s %16s %8s %16s %16s\n", "ID", "NAME", "STATE", "RULE", "ACTION");
 
 	FTM_RULE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -522,11 +522,11 @@ FTM_RET	FTDM_RULE_showList
 			{
 				if (j == 0)
 				{
-					MESSAGE("\t%16s %16s %16s", pRule->pID, pRule->pName, (pRule->xState == FTM_RULE_STATE_ACTIVATE)?"Active":"Deactive");
+					MESSAGE("\t%16s %16s %8s", pRule->pID, pRule->pName, (pRule->xState == FTM_RULE_STATE_ACTIVATE)?"Running":"Stopped");
 				}
 				else
 				{
-					MESSAGE("\t%16s %16s %16s", pSpace, pSpace, pSpace);
+					MESSAGE("\t%16s %16s %8s", pSpace, pSpace, pSpace);
 				}
 				if (pRule->xParams.pTriggers[j] != 0)
 				{

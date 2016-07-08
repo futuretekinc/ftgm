@@ -595,37 +595,42 @@ FTM_RET	FTDM_TRIGGER_showList
 	FTDM_TRIGGER_PTR	pTrigger;
 	FTM_ULONG			i, ulCount;
 	MESSAGE("\n# Trigger Information\n");
-	MESSAGE("\t%16s %16s %8s %8s %s\n", "ID", "EPID", "DETECT", "HOLD", "CONDITION");
+	MESSAGE("\t%16s %16s %8s %16s %16s %8s %s\n", 
+		"ID", "NAME", "STATE", "EPID", "DETECT", "HOLD", "CONDITION");
 
 	FTM_TRIGGER_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		if (FTDM_TRIGGER_getAt(i, &pTrigger) == FTM_RET_OK)
 		{
-			MESSAGE("\t%16s %16s ", pTrigger->xInfo.pID, pTrigger->xInfo.pEPID);
+			MESSAGE("\t%16s %16s %8s %16s ", 
+				pTrigger->xInfo.pID, 
+				pTrigger->xInfo.pName, 
+				"Running",
+				pTrigger->xInfo.pEPID);
 
 			switch(pTrigger->xInfo.xType)
 			{
 			case	FTM_TRIGGER_TYPE_ABOVE:
 				{
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xAbove.ulDetectionTime) / 1000000.0);
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xAbove.ulHoldingTime) / 1000000.0); 
+					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xAbove.ulDetectionTime) / 1000000.0);
+					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xAbove.ulHoldingTime) / 1000000.0); 
 					MESSAGE("x >= %s ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xAbove.xValue));
 				}
 				break;
 
 			case	FTM_TRIGGER_TYPE_BELOW:
 				{
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xBelow.ulDetectionTime) / 1000000.0);
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xBelow.ulHoldingTime) / 1000000.0); 
+					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xBelow.ulDetectionTime) / 1000000.0);
+					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xBelow.ulHoldingTime) / 1000000.0); 
 					MESSAGE("x <= %s ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xBelow.xValue));
 				}
 				break;
 
 			case	FTM_TRIGGER_TYPE_INCLUDE:
 				{
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xInclude.ulDetectionTime) / 1000000.0);
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xInclude.ulHoldingTime) / 1000000.0); 
+					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xInclude.ulDetectionTime) / 1000000.0);
+					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xInclude.ulHoldingTime) / 1000000.0); 
 					MESSAGE("(%s <= x <= ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xInclude.xLower));
 					MESSAGE("%s) ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xInclude.xUpper));
 				}
@@ -633,8 +638,8 @@ FTM_RET	FTDM_TRIGGER_showList
 
 			case	FTM_TRIGGER_TYPE_EXCEPT:
 				{
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xExcept.ulDetectionTime) / 1000000.0);
-					MESSAGE("%8.1f ", (pTrigger->xInfo.xParams.xExcept.ulHoldingTime) / 1000000.0); 
+					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xExcept.ulDetectionTime) / 1000000.0);
+					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xExcept.ulHoldingTime) / 1000000.0); 
 					MESSAGE("(x < %s) && ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xExcept.xLower));
 					MESSAGE("(%s < x) ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xExcept.xUpper));
 				}

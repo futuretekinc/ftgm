@@ -62,9 +62,8 @@ FTM_RET _FTDM_DBIF_NODE_createTable
 	FTM_CHAR_PTR	pTableName
 );
 
-FTM_RET _FTDM_DBIF_isExistNode
+FTM_RET _FTDM_DBIF_NODE_isExist
 (	
-	FTM_CHAR_PTR	pTableName, 
 	FTM_CHAR_PTR	pDID,
 	FTM_BOOL_PTR 	pExist
 );
@@ -926,14 +925,28 @@ FTM_RET	FTDM_DBIF_NODE_create
 {
 	ASSERT(pInfo != NULL);
 
+	FTM_RET			xRet;
 	FTM_INT			nRC;
 	sqlite3_stmt 	*pStmt;
 	FTM_CHAR		pSQL[1024];
+	FTM_BOOL		bExist = FTM_FALSE;
 
 	if (_pSQLiteDB == NULL)
 	{
 		TRACE("DB is not initialize.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
+	}
+	
+	xRet = _FTDM_DBIF_NODE_isExist(pInfo->pDID, &bExist);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to check node!\n");
+		return	xRet;	
+	}
+
+	if (bExist == FTM_TRUE)
+	{
+		return	FTM_RET_ALREADY_EXISTS;	
 	}
 
 	sprintf(pSQL, "INSERT INTO node_info (DID,VALUE) VALUES (?,?)");
@@ -1156,14 +1169,29 @@ FTM_RET	FTDM_DBIF_EP_append
 {
 	ASSERT(pInfo != NULL);
 
+	FTM_RET			xRet;
 	FTM_INT			nRC;
 	sqlite3_stmt 	*pStmt;
 	FTM_CHAR		pSQL[1024];
+	FTM_BOOL		bExist = FTM_FALSE;
 
 	if (_pSQLiteDB == NULL)
 	{
 		TRACE("DB is not initialize.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
+	}
+	
+	xRet = FTDM_DBIF_EP_isExist(pInfo->pEPID, &bExist);
+	if ( xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to append EP[%s]!\n", pInfo->pEPID);
+		return	xRet;
+	}
+
+	if (bExist)
+	{
+		WARN("EP[%s] is already exist.\n", pInfo->pEPID);
+		return	FTM_RET_ALREADY_EXISTS;	
 	}
 
 	sprintf(pSQL, "INSERT INTO ep_info (EPID,VALUE) VALUES (?,?)");
@@ -1189,7 +1217,7 @@ FTM_RET	FTDM_DBIF_EP_append
 	return FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_EP_del
+FTM_RET	FTDM_DBIF_EP_remove
 (
 	FTM_CHAR_PTR	pEPID
 )
@@ -2138,10 +2166,9 @@ FTM_INT	_FTDM_DBIF_CB_isExist
     return  FTM_RET_OK;
 }
 
-FTM_RET _FTDM_DBIF_isExistNode
+FTM_RET _FTDM_DBIF_NODE_isExist
 (
-	FTM_CHAR_PTR	pTableName, 
-	FTM_CHAR_PTR 	pDID, 
+	FTM_CHAR_PTR pDID, 
 	FTM_BOOL_PTR pExist
 )
 {
@@ -2155,7 +2182,7 @@ FTM_RET _FTDM_DBIF_isExistNode
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(pSQL, "SELECT COUNT(DID) FROM %s WHERE DID = '%s'", pTableName, pDID);
+    sprintf(pSQL, "SELECT COUNT(DID) FROM node_info WHERE DID = '%s'", pDID);
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_isExist, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {

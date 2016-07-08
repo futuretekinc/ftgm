@@ -429,8 +429,8 @@ FTM_RET FTDM_EPM_showList
 	FTM_ULONG	i, ulCount;
 
 	MESSAGE("\n# EP Information\n");
-	MESSAGE("\t%16s %16s %16s %8s %8s %8s %8s %8s %16s %8s %8s\n",
-			"EPID", "TYPE", "NAME", "UNIT", "STATE", "UPDATE", 
+	MESSAGE("\t%16s %16s %8s %16s %8s %8s %8s %8s %16s %8s %8s\n",
+			"EPID", "NAME", "STATE", "TYPE", "UNIT", "UPDATE", 
 			"REPORT", "TIMEOUT", "DID", "COUNT", "TIME");
 	if (FTDM_EPM_count(pEPM, 0, &ulCount) == FTM_RET_OK)
 	{
@@ -439,20 +439,12 @@ FTM_RET FTDM_EPM_showList
 			FTDM_EP_PTR	pEP;
 
 			FTDM_EPM_getAt(pEPM, i, &pEP);
-			MESSAGE("\t%16s %16s %16s %8s ",
+			MESSAGE("\t%16s %16s %8s %16s %8s ",
 				pEP->xInfo.pEPID,
-				FTM_EP_typeString(pEP->xInfo.xType),
 				pEP->xInfo.pName,
+				(pEP->xInfo.bEnable)?"Running":"Stopped",
+				FTM_EP_typeString(pEP->xInfo.xType),
 				pEP->xInfo.pUnit);
-
-			if (pEP->xInfo.bEnable)
-			{
-				MESSAGE("%8s ", "ENABLE");
-			}
-			else
-			{
-				MESSAGE("%8s ", "DISABLE");
-			}
 
 			MESSAGE("%8lu %8lu %8lu %16s %8lu %10lu %10lu\n",
 				pEP->xInfo.ulUpdateInterval,

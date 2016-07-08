@@ -193,9 +193,9 @@ FTM_RET	FTDMS_SHELL_CMD_object
 		{
 			FTDM_NODEM_showList(pServer->pDM->pNodeM);
 			FTDM_EPM_showList(pServer->pDM->pEPM);
+			FTDM_RULE_showList();
 			FTDM_TRIGGER_showList();
 			FTDM_ACTION_showList();
-			FTDM_RULE_showList();
 		}	
 		break;
 

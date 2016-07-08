@@ -343,6 +343,7 @@
 			{
 				"index"	: 1,
 				"type"	: 1,
+				"name"	: "Heater ON",
 				"params"	:
 				{
 					"epid"	: "8ed5d205000001",
@@ -356,6 +357,7 @@
 			{
 				"index"	: 2,
 				"type"	: 1,
+				"name"	: "Heater Off",
 				"params"	:
 				{
 					"epid"	: "8ed5d205000001",
