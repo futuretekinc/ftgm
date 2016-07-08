@@ -267,12 +267,14 @@ FTM_RET	FTDM_loadObjectFromDB
 		ERROR("Failed to load the node.[%08x]\n");
 	}
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTDM_EPM_loadFromDB(pDM->pEPM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to load the EP.[%08x]\n");
 	}
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTDM_TRIGGER_loadFromDB();
 	if (xRet != FTM_RET_OK)
 	{

@@ -1337,16 +1337,15 @@ FTM_INT	_FTDM_DBIF_EP_getListCB
 	{
 		FTM_INT	i;
 
-		for(i = 0 ; i < nArgc ; i++)
+		if (pParams->nCount < pParams->nMaxCount)
 		{
-			if (strcmp(pColName[i], "EPID") == 0)
+			for(i = 0 ; i < nArgc ; i++)
 			{
-				pParams->nCount++;
-				strncpy(pParams->pInfos[pParams->nCount-1].pEPID, pArgv[i], FTM_EPID_LEN);
-			}
-			else if (strcmp(pColName[i], "VALUE") == 0)
-			{
-				memcpy(&pParams->pInfos[pParams->nCount-1], pArgv[i], sizeof(FTM_EP));
+				if (strcmp(pColName[i], "VALUE") == 0)
+				{
+					memcpy(&pParams->pInfos[pParams->nCount], pArgv[i], sizeof(FTM_EP));
+					pParams->nCount++;
+				}
 			}
 		}
 	}
@@ -1376,7 +1375,7 @@ FTM_RET	FTDM_DBIF_EP_getList
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-    sprintf(pSQL, "SELECT * FROM ep_info");
+    sprintf(pSQL, "SELECT VALUE FROM ep_info");
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getListCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {

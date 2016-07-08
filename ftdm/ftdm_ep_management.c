@@ -189,7 +189,7 @@ FTM_RET	FTDM_EPM_loadFromDB
 		FTM_EP_PTR	pInfos;
 		FTM_ULONG	nEPCount = 0;
 		
-		pInfos = (FTM_EP_PTR)calloc(nMaxEPCount, sizeof(FTM_EP));
+		pInfos = (FTM_EP_PTR)FTM_MEM_malloc(nMaxEPCount * sizeof(FTM_EP));
 		if (pInfos == NULL)
 		{
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -203,7 +203,6 @@ FTM_RET	FTDM_EPM_loadFromDB
 			{
 				FTDM_EP_PTR	pEP;
 
-				TRACE("EP Enable : %d\n", pEP->xInfo.bEnable);
 				xRet = FTDM_EP_create(&pInfos[i], &pEP);
 				if (xRet == FTM_RET_OK)
 				{
@@ -216,7 +215,7 @@ FTM_RET	FTDM_EPM_loadFromDB
 			}
 		}
 
-		free(pInfos);
+		FTM_MEM_free(pInfos);
 	}
 
 	return	FTM_RET_OK;
