@@ -55,7 +55,6 @@ CFLAGS=-fPIC \
 		-I/home/xtra/ftm/build/ftm-100s/_root/usr/include/cjson
 
 LDFLAGS= $(COMMON_LDFLAGS)\
-		-L$(TOPDIR)/sqlite-3.8.9/ftm-100s \
 		-L/home/xtra/ftm/build/ftm-100s/_root/lib \
 		-L/home/xtra/ftm/build/ftm-100s/_root/usr/lib \
 		-L/home/xtra/ftm/build/ftm-100s/_root/usr/local/lib \

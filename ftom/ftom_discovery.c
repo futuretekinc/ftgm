@@ -241,6 +241,10 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 						{
 							strcpy(pNode->xInfo.xOption.xSNMP.pMIB, "FTM50S-MIB");	
 						}
+						else
+						{
+							strcpy(pNode->xInfo.xOption.xSNMP.pMIB, "FTE-E");	
+						}
 					}
 					strcpy(pNode->pIP, pMsg->pIP);
 

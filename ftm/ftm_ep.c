@@ -35,6 +35,19 @@ FTM_BOOL	_FTM_EPOIDInfoSeeker
 	const FTM_VOID_PTR pElement2
 );
 
+static
+FTM_EP			xDefaultEP =
+{
+	.xType					= 0,
+	.pName 					= {"Unknown"},
+	.bEnable				= FTM_TRUE,
+	.ulTimeout				= 5,
+	.ulUpdateInterval		= 10,
+	.ulReportInterval		= 60,
+	.xLimit.xType 			= FTM_EP_LIMIT_TYPE_COUNT,
+	.xLimit.xParams.ulCount = 100
+};
+
 static 
 FTM_LIST_PTR	pEPList = NULL;
 
@@ -109,16 +122,8 @@ FTM_RET	FTM_EP_setDefault
 
 	gettimeofday(&tv, NULL);
 
-	memset(pEP, 0, sizeof(FTM_EP));
+	memcpy(pEP, &xDefaultEP, sizeof(FTM_EP));
 	sprintf(pEP->pEPID, "%lu%lu", tv.tv_sec, tv.tv_usec);
-	pEP->xType				=	0;
-	strcpy(pEP->pName, "Unknown");
-	pEP->bEnable			=	FTM_FALSE;
-	pEP->ulTimeout			=	30;
-	pEP->ulUpdateInterval	=	10;
-	pEP->ulReportInterval	=	60;
-	pEP->xLimit.xType 		= FTM_EP_LIMIT_TYPE_COUNT;
-	pEP->xLimit.xParams.ulCount = 100;
 
 	return	FTM_RET_OK;
 }

@@ -203,6 +203,7 @@ FTM_RET	FTDM_EPM_loadFromDB
 			{
 				FTDM_EP_PTR	pEP;
 
+				TRACE("EP Enable : %d\n", pEP->xInfo.bEnable);
 				xRet = FTDM_EP_create(&pInfos[i], &pEP);
 				if (xRet == FTM_RET_OK)
 				{

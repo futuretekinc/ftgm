@@ -1435,7 +1435,6 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 		xRet = FTM_SMP_receiveReq(pSMP, pReq, FTOM_DEFAULT_PACKET_SIZE, &ulReqLen, 1000000);
 		if (xRet == FTM_RET_OK)
 		{
-			TRACE("SMP received request!\n");
 			xRet = FTOM_SERVER_serviceCall(pServer, pReq, ulReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE);
 			if (xRet != FTM_RET_OK)
 			{
@@ -1902,6 +1901,12 @@ FTM_RET	FTOM_SERVER_EP_create
 	}
 
 	memcpy(&pResp->xInfo, &pEP->xInfo, sizeof(FTM_EP));
+
+	xRet = FTOM_EP_start(pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Failed to start EP[%s]!\n", pEP->xInfo.pEPID);
+	}
 
 	FTOM_LOG_createEP(&pEP->xInfo);
 
