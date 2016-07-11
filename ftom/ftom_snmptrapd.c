@@ -329,9 +329,8 @@ FTM_RET FTOM_SNMPTRAPD_loadConfig
 						FTM_INT			nRet;
 						FTM_SNMP_OID	xOID;
 
-						xOID.ulOIDLen = FTM_SNMP_OID_LENGTH;
-
-						nRet = read_objid(pOID, xOID.pOID, (size_t *)&xOID.ulOIDLen);
+						xOID.nLen = FTM_SNMP_OID_LENGTH;
+						nRet = read_objid(pOID, xOID.pIDs, &xOID.nLen);
 						if (nRet == 1)
 						{
 							switch(xMsgType)
@@ -604,7 +603,7 @@ FTM_BOOL	FTOM_SNMPTRAPD_seekTrapCB
 	FTOM_TRAP_PTR		pTrap = (FTOM_TRAP_PTR)pElement;
 	FTM_SNMP_OID_PTR	pOID = (FTM_SNMP_OID_PTR)pIndicator;
 
-	return	snmp_oid_compare(pTrap->xOID.pOID, pTrap->xOID.ulOIDLen, pOID->pOID, pOID->ulOIDLen) == 0;
+	return	snmp_oid_compare(pTrap->xOID.pIDs, pTrap->xOID.nLen, pOID->pIDs, pOID->nLen) == 0;
 }
 
 
@@ -736,8 +735,8 @@ FTOM_SNMPTRAPD_inputCB
 						FTOM_TRAP_PTR	pTrap;
 						FTM_SNMP_OID		xOID;
 
-						memcpy(xOID.pOID, vars->name, sizeof(oid) * vars->name_length);
-						xOID.ulOIDLen  = vars->name_length;
+						memcpy(xOID.pIDs, vars->name, sizeof(oid) * vars->name_length);
+						xOID.nLen  = vars->name_length;
 
 						if (FTM_LIST_get(&pSNMPTRAPD->xTrapCBList, &xOID, (FTM_VOID_PTR _PTR_)&pTrap) == FTM_RET_OK)
 						{

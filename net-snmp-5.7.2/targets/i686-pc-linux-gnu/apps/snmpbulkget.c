@@ -1,1 +1,0 @@
-../../../apps/snmpbulkget.c

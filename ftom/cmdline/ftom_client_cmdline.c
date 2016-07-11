@@ -248,7 +248,7 @@ FTM_RET FTOM_CLIENT_CL_requestSM
 	xRet = FTM_SMP_createClient(xKey, nShmID, &pSMP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTM_SMP_call(pSMP, pReq, ulReqLen, pResp, ulMaxRespLen, pulRespLen, 1000000);
+		xRet = FTM_SMP_call(pSMP, pReq, ulReqLen, pResp, ulMaxRespLen, pulRespLen, 5000000);
 		if (xRet != FTM_RET_OK)
 		{
 			TRACE("FTM_SMP_call error[%08lx]!\n", xRet);

@@ -1,6 +1,6 @@
 #MODEL=ftm-50s
-MODEL=ftm-100s
-#MODEL=i686
+#MODEL=ftm-100s
+MODEL=i686
 
 TARGET=$(TOPDIR)/target/$(MODEL)
 EXEC_PREFIX=$(TARGET)/usr/bin
@@ -11,7 +11,7 @@ export MODEL
 
 COMMON_CFLAGS= -c -g -Wall -DDEBUG \
 				-I. \
-				-I$(TOPDIR)/ftm \
+				-I$(TOPDIR)/libftm \
 				-I$(TOPDIR)/ftom \
 				-I$(TOPDIR)/ftdm \
 				-I$(TOPDIR)/ftdm/client \
@@ -20,7 +20,7 @@ COMMON_CFLAGS= -c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftom/tpclient
 COMMON_LDFLAGS= -Wl,--no-as-needed\
 				-L.\
-				-L$(TOPDIR)/ftm \
+				-L$(TOPDIR)/libftm \
 				-L$(TOPDIR)/ftom \
 				-L$(TOPDIR)/ftdm \
 				-L$(TOPDIR)/ftdm/client \
@@ -63,25 +63,12 @@ else
 CC=gcc
 CFLAGS= $(COMMON_CFLAGS) \
 		-I/usr/local/include \
+		-I/usr/local/include/cjson \
 		-I$(TARGET)/usr/local/include\
-		-I$(TOPDIR)/mosquitto-1.4.8/lib \
-		-I$(TOPDIR)/libconfig-1.4.9/lib \
-		-I$(TOPDIR)/net-snmp-5.7.2/include \
-		-I$(TOPDIR)/sqlite-3.8.9\
-		-I$(TOPDIR)/qdecoder-12.0.4/src\
-		-I$(TOPDIR)/mxml-2.9\
-		-I$(TOPDIR)/cjson
+		-I$(TARGET)/usr/local/include/cjson
 
 LDFLAGS= -L/usr/local/lib \
 		$(COMMON_LDFLAGS)\
-		-L/usr/local/lib \
-		-L$(TARGET)/usr/local/lib\
-		-L$(TOPDIR)/sqlite-3.8.9/.libs \
-		-L$(TOPDIR)/mosquitto-1.4.8/lib \
-		-L$(TOPDIR)/libconfig-1.4.9/lib \
-		-L$(TOPDIR)/qdecoder-12.0.4/src \
-		-L$(TOPDIR)/openssl-1.0.2g \
-		-L$(TOPDIR)/mxml-2.9\
-		-L$(TOPDIR)/cjson
+		-L/usr/local/lib 
 
 endif

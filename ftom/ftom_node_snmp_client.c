@@ -115,17 +115,15 @@ FTM_RET		FTOM_NODE_SNMPC_getOID
 	FTOM_NODE_SNMPC_PTR pNode, 
 	FTM_ULONG 			ulType, 
 	FTM_ULONG 			ulIndex, 
-	oid 				*pOID, 
-	size_t 				*pnOIDLen
+	FTM_SNMP_OID_PTR	pOID
 )
 {
 	ASSERT(pNode != NULL);
 	ASSERT(pOID != NULL);
-	ASSERT(pnOIDLen != NULL);
 
 	FTM_CHAR	pBuff[1024];
 
 	sprintf(pBuff, "%s:%sValue.%lu", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pOIDNamePrefix[ulType], ulIndex);
 
-	return	FTOM_SNMPC_getOID(pBuff, pOID, pnOIDLen);
+	return	FTOM_SNMPC_getOID(pBuff, pOID);
 }

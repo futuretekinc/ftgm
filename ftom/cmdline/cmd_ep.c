@@ -47,7 +47,7 @@ FTM_RET	FTOM_CL_EP_count
 	FTM_RET		xRet;
 	FTM_ULONG	ulCount;
 
-	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
+	xRet = FTOM_CLIENT_EP_count(pClient, 0, NULL, &ulCount);
 	if (xRet == FTM_RET_OK)
 	{
 		MESSAGE("%lu\n",	ulCount);

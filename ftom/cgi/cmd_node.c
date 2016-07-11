@@ -77,8 +77,11 @@ FTM_RET	FTOM_CGI_delNode
 	
 	FTM_RET		xRet;
 	FTM_CHAR	pDID[FTM_ID_LEN+1];
+	FTM_EPID	*pEPIDList = NULL;
+	FTM_ULONG	ulEPCount = 0;
+	FTM_ULONG	i;
 	cJSON _PTR_ pRoot;
-
+	
 	pRoot= cJSON_CreateObject();
 
 	xRet = FTOM_CGI_getDID(pReq, pDID, FTM_FALSE);
@@ -87,12 +90,47 @@ FTM_RET	FTOM_CGI_delNode
 		goto finish;	
 	}
 
+	xRet = FTOM_CLIENT_NODE_stop(pClient, pDID);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;
+	}
+
+	xRet = FTOM_CLIENT_EP_count(pClient, 0, pDID, &ulEPCount);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	pEPIDList = (FTM_EPID *)FTM_MEM_malloc(sizeof(FTM_EPID)* ulEPCount);
+	if (pEPIDList == NULL)
+	{
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		goto finish;
+	}
+
+	xRet = FTOM_CLIENT_EP_getList(pClient, 0, pDID, 0, pEPIDList, ulEPCount, &ulEPCount);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;	
+	}
+
+	for(i = 0 ; i < ulEPCount ; i++)
+	{
+		xRet = FTOM_CLIENT_EP_destroy(pClient, pEPIDList[i]);	
+	}
+
 	xRet = FTOM_CLIENT_NODE_destroy(pClient, pDID);
 	if (xRet == FTM_RET_OK)
 	{
 		cJSON_AddStringToObject(pRoot, "did", pDID);
 	}
 finish:
+
+	if (pEPIDList != NULL)
+	{
+		FTM_MEM_free(pEPIDList);	
+	}
 
 	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }

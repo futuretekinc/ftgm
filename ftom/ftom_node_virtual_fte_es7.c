@@ -141,8 +141,8 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 			snprintf(pOIDName, sizeof(pOIDName) - 1, "%s::%s", 
 				pNode->xCommon.xInfo.xOption.xSNMP.pMIB, 
 				pEPClassInfo->xInfo.pValue);
-			pEP->xOption.xSNMP.nOIDLen = MAX_OID_LEN;
-			if (read_objid(pOIDName, pEP->xOption.xSNMP.pOID, &pEP->xOption.xSNMP.nOIDLen) == 0)
+			pEP->xOption.xSNMP.xOID.nLen = MAX_OID_LEN;
+			if (read_objid(pOIDName, pEP->xOption.xSNMP.xOID.pIDs, &pEP->xOption.xSNMP.xOID.nLen) == 0)
 			{
 				TRACE("Can't find MIB\n");
 				continue;
@@ -150,7 +150,7 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 
 			FTM_INT	nIndex;
 			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 3], 0, 16);
-			pEP->xOption.xSNMP.pOID[pEP->xOption.xSNMP.nOIDLen++] = nIndex & 0xFF;
+			pEP->xOption.xSNMP.xOID.pIDs[pEP->xOption.xSNMP.xOID.nLen++] = nIndex & 0xFF;
 			FTM_LIST_append(&pNode->xCommon.xEPList, pEP);
 		}
 	}

@@ -362,6 +362,76 @@ FTM_RET FTOM_CLIENT_NODE_set
 	return	xResp.xRet;
 }
 
+FTM_RET FTOM_CLIENT_NODE_run
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pDID
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pDID != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_NODE_RUN_PARAMS	xReq;
+	FTOM_RESP_NODE_RUN_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_NODE_RUN;
+	xReq.ulLen	=	sizeof(xReq);
+	strncpy(xReq.pDID, pDID, FTM_ID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET FTOM_CLIENT_NODE_stop
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pDID
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pDID != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_NODE_STOP_PARAMS	xReq;
+	FTOM_RESP_NODE_STOP_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_NODE_STOP;
+	xReq.ulLen	=	sizeof(xReq);
+	strncpy(xReq.pDID, pDID, FTM_ID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
 FTM_RET	FTOm_CLIENT_NODE_registerAtServer
 (
 	FTOM_CLIENT_PTR	pClient,
@@ -597,6 +667,7 @@ FTM_RET FTOM_CLIENT_EP_count
 (
 	FTOM_CLIENT_PTR		pClient,
 	FTM_EP_TYPE			xType,
+	FTM_CHAR_PTR		pDID,
 	FTM_ULONG_PTR		pulCount
 )
 {
@@ -613,6 +684,11 @@ FTM_RET FTOM_CLIENT_EP_count
 	xReq.xCmd	=	FTOM_CMD_EP_COUNT;
 	xReq.xType	=	xType;
 	xReq.ulLen	=	sizeof(xReq);
+
+	if (pDID != NULL)
+	{
+		strncpy(xReq.pDID, pDID, FTM_DID_LEN);
+	}
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -638,6 +714,8 @@ FTM_RET	FTOM_CLIENT_EP_getList
 (
 	FTOM_CLIENT_PTR		pClient,
 	FTM_EP_TYPE			xType,
+	FTM_CHAR_PTR		pDID,
+	FTM_ULONG			ulIndex,
 	FTM_CHAR			pEPIDList[][FTM_EPID_LEN+1],
 	FTM_ULONG			ulMaxCount,
 	FTM_ULONG_PTR		pulCount
@@ -651,7 +729,7 @@ FTM_RET	FTOM_CLIENT_EP_getList
 	FTOM_REQ_EP_GET_LIST_PARAMS		xReq;
 	FTM_ULONG						nRespSize = 0;
 	FTOM_RESP_EP_GET_LIST_PARAMS_PTR	pResp;
-	FTM_ULONG					ulRespLen;
+	FTM_ULONG						ulRespLen;
 
 	memset(&xReq, 0, sizeof(xReq));
 
@@ -665,6 +743,10 @@ FTM_RET	FTOM_CLIENT_EP_getList
 	xReq.xCmd		=	FTOM_CMD_EP_GET_LIST;
 	xReq.ulLen		=	sizeof(xReq);
 	xReq.xType		=	xType;
+	if (pDID != NULL)
+	{
+		strncpy(xReq.pDID, pDID, FTM_DID_LEN);
+	}
 	xReq.ulMaxCount	=	ulMaxCount;
 
 	xRet = pClient->fRequest(

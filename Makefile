@@ -1,5 +1,5 @@
 TOPDIR=$(shell pwd)
-SUBDIR=ftm ftdm ftom
+SUBDIR=libftm ftdm ftom
 
 export TOPDIR
 

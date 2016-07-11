@@ -1,1 +1,0 @@
-../../../../../include/net-snmp/agent/var_struct.h

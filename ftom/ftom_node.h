@@ -158,6 +158,19 @@ FTM_RET	FTOM_NODE_setEPData
 	FTM_EP_DATA_PTR pData
 );
 
+FTM_RET	FTOM_NODE_getEPDataAsync
+(
+	FTOM_NODE_PTR	pNode,
+	FTOM_EP_PTR		pEP
+);
+
+FTM_RET	FTOM_NODE_setEPDataAsync
+(
+	FTOM_NODE_PTR 	pNode, 
+	FTOM_EP_PTR 	pEP, 
+	FTM_EP_DATA_PTR pData
+);
+
 FTM_RET	FTOM_NODE_setReportInterval
 (
 	FTOM_NODE_PTR	pNode,

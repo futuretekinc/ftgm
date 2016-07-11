@@ -418,7 +418,7 @@ FTM_RET	FTDMC_NODE_cmd
 			xRet = FTDMC_NODE_getAt(&_xSession, i, &xInfo);
 			if (xRet == FTM_RET_OK)
 			{
-				MESSAGE("%16s %8s %08x %8lu %8lu %8s %16s %8s %16s\n", 
+				MESSAGE("%16s %8s %08lx %8lu %8lu %8s %16s %8s %16s\n", 
 						xInfo.pDID,
 						FTM_NODE_typeString(xInfo.xType),
 						xInfo.xFlags,

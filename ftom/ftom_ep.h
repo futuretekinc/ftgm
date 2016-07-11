@@ -8,6 +8,7 @@
 #include "ftm.h"
 #include "ftom_msg.h"
 #include "ftom_message_queue.h"
+#include "ftm_snmp.h"
 
 typedef	struct FTOM_EP_STRUCT
 {
@@ -39,8 +40,7 @@ typedef	struct FTOM_EP_STRUCT
 	{
 		struct	
 		{
-			oid		pOID[MAX_OID_LEN];
-			size_t	nOIDLen;
+			FTM_SNMP_OID	xOID;
 		}	xSNMP;
 		struct
 		{
@@ -94,6 +94,8 @@ FTM_RET	FTOM_EP_detach
 
 FTM_RET	FTOM_EP_count
 (
+	FTM_EP_TYPE			xType,
+	FTM_CHAR_PTR		pDID,
 	FTM_ULONG_PTR		pulCount
 );
 
@@ -194,6 +196,8 @@ FTM_RET	FTOM_EP_getTriggerAt
 
 FTM_RET FTOM_EP_getIDList
 (
+	FTM_EP_TYPE		xType,
+	FTM_CHAR_PTR	pDID,
 	FTM_CHAR		pEPID[][FTM_EPID_LEN+1],
 	FTM_ULONG 		ulMaxCount, 
 	FTM_ULONG_PTR 	pulCount

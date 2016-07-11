@@ -379,12 +379,41 @@ FTM_RET	FTOM_EP_destroy
 
 FTM_RET	FTOM_EP_count
 (
+	FTM_EP_TYPE			xType,
+	FTM_CHAR_PTR		pDID,
 	FTM_ULONG_PTR		pulCount
 )
 {
 	ASSERT(pulCount != NULL);
 
-	return	FTM_LIST_count(pEPList, pulCount);
+	FTM_ULONG	ulCount = 0;
+
+	if ((xType == 0) && ((pDID == NULL) || (strlen(pDID) == 0)))
+	{
+		return	FTM_LIST_count(pEPList, pulCount);
+	}
+
+	FTOM_EP_PTR	pEP;
+
+	FTM_LIST_iteratorStart(pEPList);
+	while(FTM_LIST_iteratorNext(pEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
+	{
+		if ((xType != 0) && (xType != pEP->xInfo.xType))
+		{
+			continue;	
+		}
+
+		if ((pDID != NULL) && (strcmp(pDID, pEP->xInfo.pDID) != 0))
+		{
+			continue;	
+		}
+
+		ulCount++;
+	}
+
+	*pulCount = ulCount;
+
+	return	FTM_RET_OK;
 }
 
 
@@ -536,13 +565,11 @@ FTM_RET	FTOM_EP_attach
 			FTM_INT	nIndex;
 
 			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 2], 0, 16);
-			pEP->xOption.xSNMP.nOIDLen = MAX_OID_LEN;
 
 			FTOM_NODE_SNMPC_getOID((FTOM_NODE_SNMPC_PTR)pNode, 
 					(pEP->xInfo.xType >> 24) & 0xFF, 
 					nIndex,
-					pEP->xOption.xSNMP.pOID, 
-					&pEP->xOption.xSNMP.nOIDLen);
+					&pEP->xOption.xSNMP.xOID);
 		}
 		break;
 	}
@@ -1117,6 +1144,43 @@ FTM_RET	FTOM_EP_getDataInfo
 	return	FTOM_DB_EP_getDataInfo(pEP->xInfo.pEPID, pulBegin, pulEnd, pulCount);
 }
 
+FTM_RET	FTOM_EP_getDataAsync
+(
+	FTOM_EP_PTR 	pEP 
+)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET			xRet;
+
+	xRet = FTOM_NODE_getEPDataAsync(pEP->pNode, pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%s] data pull error!\n", pEP->xInfo.pEPID);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_EP_setDataAsync
+(
+	FTOM_EP_PTR 	pEP,
+	FTM_EP_DATA_PTR pData
+)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET			xRet;
+
+	xRet = FTOM_NODE_setEPDataAsync(pEP->pNode, pEP, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("EP[%s] data push error!\n", pEP->xInfo.pEPID);
+	}
+
+	return	xRet;
+}
+
 FTM_RET	FTOM_EP_reportStatus
 (
 	FTOM_EP_PTR 	pEP
@@ -1217,6 +1281,8 @@ FTM_RET	FTOM_EP_getEventCount
 
 FTM_RET FTOM_EP_getIDList
 (
+	FTM_EP_TYPE		xType,
+	FTM_CHAR_PTR	pDID,
 	FTM_CHAR		pEPIDList[][FTM_EPID_LEN+1], 
 	FTM_ULONG 		ulMaxCount, 
 	FTM_ULONG_PTR 	pulCount
@@ -1224,7 +1290,7 @@ FTM_RET FTOM_EP_getIDList
 {
 	ASSERT(pEPIDList != NULL);
 	ASSERT(pulCount != NULL);
-
+	FTM_RET		xRet;
 	FTM_ULONG	i, ulTotalCount, ulCount = 0;
 	
 	FTM_LIST_count(pEPList, &ulTotalCount);
@@ -1232,7 +1298,22 @@ FTM_RET FTOM_EP_getIDList
 	{
 		FTOM_EP_PTR	pEP;
 
-		FTM_LIST_getAt(pEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
+		xRet = FTM_LIST_getAt(pEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
+		if (xRet != FTM_RET_OK)
+		{
+			break;	
+		}
+
+		if ((xType != 0) && (pEP->xInfo.xType != xType))
+		{
+			continue;	
+		}
+
+		if ((pDID != NULL) && (strlen(pDID) != 0) && (strcmp(pDID, pEP->xInfo.pDID) != 0))
+		{
+			continue;	
+		}
+
 		strncpy(pEPIDList[ulCount++], pEP->xInfo.pEPID, FTM_EPID_LEN);
 	}
 
@@ -1460,7 +1541,7 @@ FTM_RET	FTOM_EP_printList
 	
 	MESSAGE("\n# EP Information\n");
 	MESSAGE("%16s %16s %16s %16s %8s %8s %8s %8s %8s %24s\n", "EPID", "TYPE", "NAME", "DID", "STATE", "VALUE", "UNIT", "UPDATE", "REPORT", "TIME");
-	FTOM_EP_count(&ulCount);
+	FTOM_EP_count(0, NULL, &ulCount);
 	for(i = 0; i < ulCount ; i++)
 	{
 		if (FTOM_EP_getAt(i, &pEP) == FTM_RET_OK)

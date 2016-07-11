@@ -498,6 +498,41 @@ FTM_RET	FTOM_NODE_getEPCount
 	return FTM_LIST_count(&pNode->xEPList, pulCount);
 }
 
+FTM_RET	FTOM_NODE_getEPDataAsync
+(
+	FTOM_NODE_PTR	pNode,
+	FTOM_EP_PTR		pEP
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+
+	if (pNode->pClass->fGetEPDataAsync == NULL)
+	{
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
+	}
+
+	return	pNode->pClass->fGetEPDataAsync(pNode, pEP);
+}
+
+FTM_RET	FTOM_NODE_setEPDataAsync
+(
+	FTOM_NODE_PTR	pNode,
+	FTOM_EP_PTR		pEP,
+	FTM_EP_DATA_PTR pData
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+
+	if (pNode->pClass->fSetEPDataAsync == NULL)
+	{
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
+	}
+
+	return	pNode->pClass->fSetEPDataAsync(pNode, pEP, pData);
+}
+
 FTM_RET	FTOM_NODE_getEP
 (
 	FTOM_NODE_PTR pNode, 
@@ -619,7 +654,6 @@ FTM_RET FTOM_NODE_stop
 	{
 		FTM_ULONG	ulCount;
 		if (pNode->pClass->fPrestop != NULL)
-
 		{
 			pNode->pClass->fPrestop(pNode);
 		}

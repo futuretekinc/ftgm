@@ -5,6 +5,7 @@
 #include "ftom_node.h"
 #include "ftom_ep.h"
 #include "ftom_snmptrapd.h"
+#include "ftom_msg.h"
 
 #define	FTOM_SNMPC_NAME_LENGTH	128
 #define	FTOM_SNMPC_NAME			"ftom:agent"
@@ -35,6 +36,7 @@ typedef	struct
 	pthread_t				xPThread;
 
 	FTM_BOOL				bStop;
+	FTOM_MSG_QUEUE			xMsgQ;
 	FTM_LOCK				xLock;
 	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CALLBACK	fServiceCB;
@@ -181,9 +183,8 @@ FTM_RET	FTOM_SNMPC_setEPData
 
 FTM_RET	FTOM_SNMPC_getOID
 (	
-	FTM_CHAR_PTR 	pInput, 
-	oid 			*pOID, 
-	size_t 			*pnOIDLen
+	FTM_CHAR_PTR 		pInput, 
+	FTM_SNMP_OID_PTR	pOID
 );
 
 FTM_RET	FTOM_SNMPC_getULONG
@@ -202,5 +203,7 @@ FTM_RET	FTOM_SNMPC_getString
 	FTM_CHAR_PTR		pBuff,
 	FTM_ULONG			ulMaxLen
 );
+
+
 #endif
 

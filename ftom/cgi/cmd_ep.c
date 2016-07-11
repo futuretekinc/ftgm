@@ -278,7 +278,7 @@ FTM_RET	FTOM_CGI_getEPCount
 
 	pRoot = cJSON_CreateObject();
 
-	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
+	xRet = FTOM_CLIENT_EP_count(pClient, 0, NULL, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;
@@ -364,7 +364,7 @@ FTM_RET	FTOM_CGI_getEPList
 		}
 	}
 
-	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
+	xRet = FTOM_CLIENT_EP_count(pClient, 0, NULL, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;
@@ -376,7 +376,7 @@ FTM_RET	FTOM_CGI_getEPList
 		goto finish;	
 	}
 
-	xRet = FTOM_CLIENT_EP_getList(pClient, 0, pEPIDList, ulCount, &ulCount);
+	xRet = FTOM_CLIENT_EP_getList(pClient, 0, NULL,  0, pEPIDList, ulCount, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		goto finish;
@@ -579,7 +579,7 @@ FTM_RET	FTOM_CGI_getEPDataLast
 	}
 	else if (xRet == FTM_RET_OBJECT_NOT_FOUND)
 	{
-		xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
+		xRet = FTOM_CLIENT_EP_count(pClient, 0, NULL, &ulCount);
 		if (xRet != FTM_RET_OK)
 		{
 			goto finish;
@@ -592,7 +592,7 @@ FTM_RET	FTOM_CGI_getEPDataLast
 			goto finish;	
 		}
 
-		xRet = FTOM_CLIENT_EP_getList(pClient, 0, pEPIDList, ulCount, &ulCount);
+		xRet = FTOM_CLIENT_EP_getList(pClient, 0, NULL, 0, pEPIDList, ulCount, &ulCount);
 		if (xRet != FTM_RET_OK)
 		{
 			TRACE("EPID list get failed.\n");

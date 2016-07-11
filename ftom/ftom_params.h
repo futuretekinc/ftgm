@@ -128,6 +128,38 @@ typedef struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_CHAR			pDID[FTM_DID_LEN+1];
+}	FTOM_REQ_NODE_RUN_PARAMS, _PTR_ FTOM_REQ_NODE_RUN_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTOM_RESP_NODE_RUN_PARAMS, _PTR_ FTOM_RESP_NODE_RUN_PARAMS_PTR;
+
+typedef struct	
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pDID[FTM_DID_LEN+1];
+}	FTOM_REQ_NODE_STOP_PARAMS, _PTR_ FTOM_REQ_NODE_STOP_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTOM_RESP_NODE_STOP_PARAMS, _PTR_ FTOM_RESP_NODE_STOP_PARAMS_PTR;
+
+typedef struct	
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pDID[FTM_DID_LEN+1];
 }	FTOM_REQ_NODE_REGISTER_AT_SERVER_PARAMS, _PTR_ FTOM_REQ_NODE_REGISTER_AT_SERVER_PARAMS_PTR;
 
 typedef	struct
@@ -232,7 +264,8 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EP_TYPE		xType;
+	FTM_EP_TYPE			xType;
+	FTM_CHAR			pDID[FTM_DID_LEN+1];
 }	FTOM_REQ_EP_COUNT_PARAMS, _PTR_ 	FTOM_REQ_EP_COUNT_PARAMS_PTR;
 
 typedef	struct
@@ -249,7 +282,8 @@ typedef	struct
 	FTM_ULONG			ulReqID;
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
-	FTM_EP_TYPE		xType;
+	FTM_EP_TYPE			xType;
+	FTM_CHAR			pDID[FTM_DID_LEN+1];
 	FTM_ULONG			ulMaxCount;
 }	FTOM_REQ_EP_GET_LIST_PARAMS, _PTR_ 	FTOM_REQ_EP_GET_LIST_PARAMS_PTR;
 

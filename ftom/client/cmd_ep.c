@@ -141,7 +141,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 
 		if (nArgc == 2)
 		{
-			xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
+			xRet = FTOM_CLIENT_EP_count(pClient, 0, NULL, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				FTM_CHAR		pEPIDs[50][FTM_EPID_LEN+1];
@@ -156,11 +156,11 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 					FTM_ULONG	ulReadCount = 0;
 					if (ulCount > 50)
 					{
-						FTOM_CLIENT_EP_getList(pClient, ulStart, pEPIDs, 50, &ulReadCount);
+						FTOM_CLIENT_EP_getList(pClient, 0, NULL, ulStart, pEPIDs, 50, &ulReadCount);
 					}
 					else
 					{
-						FTOM_CLIENT_EP_getList(pClient, ulStart, pEPIDs, ulCount, &ulReadCount);
+						FTOM_CLIENT_EP_getList(pClient, 0, NULL, ulStart, pEPIDs, ulCount, &ulReadCount);
 					}
 
 					if (ulReadCount == 0)
@@ -202,35 +202,54 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 		else if (nArgc == 3)
 		{
 			FTM_EP_TYPE	xEPClass;
-			FTM_CHAR 	pEPID[50][FTM_EPID_LEN+1];
+			FTM_CHAR 	pEPIDs[50][FTM_EPID_LEN+1];
+			FTM_ULONG	ulIndex = 0;
+			FTM_ULONG	ulTotalCount = 0;
 
 			xEPClass = strtoul(pArgv[2], 0, 16);
-			xRet = FTOM_CLIENT_EP_getList(pClient, xEPClass, pEPID, 50, &ulCount);
-			if (xRet == FTM_RET_OK)
+			xRet = FTOM_CLIENT_EP_count(pClient, xEPClass, NULL, &ulCount);
+			if (xRet != FTM_RET_OK)
 			{
+				MESSAGE("Failed to get EP Count!\n");
+			}
+			else
+			{
+	
 				MESSAGE("%16s %16s %16s %16s %8s %8s %16s %16s\n",
 						"EPID", "TYPE", "NAME", "UNIT", "UPDATE", "UPLOAD", "DID", "PID");
-
-				for(i = 0 ; i< ulCount ; i++)
+	
+				while(ulIndex < ulTotalCount)
 				{
-					FTM_EP	xInfo;
-
-					xRet = FTOM_CLIENT_EP_get(pClient, pEPID[i], &xInfo);
-					if (xRet == FTM_RET_OK)
+					xRet = FTOM_CLIENT_EP_getList(pClient, xEPClass, NULL, ulIndex, pEPIDs, 50, &ulCount);
+					if (xRet != FTM_RET_OK)
 					{
-						MESSAGE("%16s %16s %16s %16s %8lu %8lu %16s\n",
-								xInfo.pEPID,
-								FTM_getEPTypeString(xInfo.xType),
-								xInfo.pName,
-								xInfo.pUnit,
-								xInfo.ulUpdateInterval,
-								xInfo.ulReportInterval,
-								xInfo.pDID);
+						MESSAGE("Failed to get EPID list!\n");
+						break;
 					}
-					else
+	
+					for(i = 0 ; i< ulCount ; i++)
 					{
-						ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+						FTM_EP	xInfo;
+	
+						xRet = FTOM_CLIENT_EP_get(pClient, pEPIDs[i], &xInfo);
+						if (xRet == FTM_RET_OK)
+						{
+							MESSAGE("%16s %16s %16s %16s %8lu %8lu %16s\n",
+									xInfo.pEPID,
+									FTM_getEPTypeString(xInfo.xType),
+									xInfo.pName,
+									xInfo.pUnit,
+									xInfo.ulUpdateInterval,
+									xInfo.ulReportInterval,
+									xInfo.pDID);
+						}
+						else
+						{
+							ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+						}
 					}
+	
+					ulIndex += ulCount;
 				}
 			}
 		}
@@ -269,7 +288,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 	{
 		FTM_ULONG	ulCount;
 
-		xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
+		xRet = FTOM_CLIENT_EP_count(pClient, 0, NULL, &ulCount);
 		if (xRet != FTM_RET_OK)
 		{
 			MESSAGE("%s : ERROR - %lu\n", pArgv[0], xRet);

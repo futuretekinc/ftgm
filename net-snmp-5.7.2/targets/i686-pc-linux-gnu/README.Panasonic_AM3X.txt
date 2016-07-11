@@ -1,1 +1,0 @@
-../.././README.Panasonic_AM3X.txt

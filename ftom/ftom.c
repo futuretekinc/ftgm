@@ -924,7 +924,7 @@ FTM_RET	FTOM_TASK_stop
 	FTOM_TRIGGER_stop(NULL);
 	FTOM_ACTION_stop(NULL);
 	FTOM_RULE_stop(NULL);
-	FTOM_EP_count(&ulCount);
+	FTOM_EP_count(0, NULL, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTOM_EP_PTR	pEP;

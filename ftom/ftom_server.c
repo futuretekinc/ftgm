@@ -144,6 +144,26 @@ FTM_RET	FTOM_SERVER_NODE_set
 );
 
 static 
+FTM_RET	FTOM_SERVER_NODE_run
+(
+	FTOM_SERVER_PTR					pServer,
+ 	FTOM_REQ_NODE_RUN_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_RUN_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_NODE_stop
+(
+	FTOM_SERVER_PTR					pServer,
+ 	FTOM_REQ_NODE_STOP_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_STOP_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+);
+
+static 
 FTM_RET	FTOM_SERVER_NODE_registerAtServer
 (
 	FTOM_SERVER_PTR					pServer,
@@ -646,6 +666,8 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_NODE_SET_REGISTERED, 	FTOM_SERVER_NODE_setRegistered),
 	MK_CMD_SET(FTOM_CMD_NODE_GET_REGISTERED, 	FTOM_SERVER_NODE_getRegistered),
 	MK_CMD_SET(FTOM_CMD_NODE_SET_REPORT_INTERVAL, FTOM_SERVER_NODE_setReportInterval),
+	MK_CMD_SET(FTOM_CMD_NODE_RUN,				FTOM_SERVER_NODE_run),
+	MK_CMD_SET(FTOM_CMD_NODE_STOP,				FTOM_SERVER_NODE_stop),
 
 	MK_CMD_SET(FTOM_CMD_EP_CREATE,				FTOM_SERVER_EP_create),
 	MK_CMD_SET(FTOM_CMD_EP_DESTROY,				FTOM_SERVER_EP_destroy),
@@ -1617,11 +1639,11 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 			ERROR("Failed to remove EP[%s] from DB.\n", pEP->xInfo.pEPID);
 			goto finish;
 		}
-	
-		xRet = FTM_LIST_remove(&pNode->xEPList, pEP);
+
+		xRet = FTOM_NODE_unlinkEP(pNode, pEP);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Failed to remove EP[%s].\n", xEPInfo.pEPID);
+			ERROR("Failed to unlink EP[%s].\n", pEP->xInfo.pEPID);
 			goto finish;
 		}
 
@@ -1762,6 +1784,64 @@ FTM_RET	FTOM_SERVER_NODE_set
 			memcpy(&pResp->xInfo, &pNode->xInfo, sizeof(FTM_NODE));
 		}
 	}
+
+	return	pResp->xRet;
+}
+
+FTM_RET	FTOM_SERVER_NODE_run
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_NODE_RUN_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_NODE_RUN_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+
+	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_NODE_start(pNode);
+	}
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = xRet;
+
+	return	pResp->xRet;
+}
+
+FTM_RET	FTOM_SERVER_NODE_stop
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_NODE_STOP_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_NODE_STOP_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+
+	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_NODE_stop(pNode);
+	}
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = xRet;
 
 	return	pResp->xRet;
 }
@@ -1941,15 +2021,26 @@ FTM_RET	FTOM_SERVER_EP_destroy
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	FTM_RET		xRet;
-	FTM_EP		xInfo;
-	FTOM_EP_PTR	pEP;
+	FTM_RET			xRet;
+	FTM_EP			xInfo;
+	FTOM_NODE_PTR	pNode;
+	FTOM_EP_PTR		pEP;
 
 	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to find EP[%s].\n", pReq->pEPID);
 		goto finish;
+	}
+
+	xRet = FTOM_NODE_get(pEP->xInfo.pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_NODE_unlinkEP(pNode, pEP);	
+		if (xRet != FTM_RET_OK)
+		{
+			goto finish;	
+		}
 	}
 
 	memcpy(&xInfo, &pEP->xInfo, sizeof(FTM_EP));
@@ -1994,7 +2085,7 @@ FTM_RET	FTOM_SERVER_EP_count
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
-	pResp->xRet = FTOM_EP_count(&pResp->nCount);
+	pResp->xRet = FTOM_EP_count(pReq->xType, pReq->pDID, &pResp->nCount);
 
 	return	pResp->xRet;
 }
@@ -2039,7 +2130,7 @@ FTM_RET	FTOM_SERVER_EP_getList
 	ASSERT(pResp != NULL);
 
 	pResp->xCmd = pReq->xCmd;
-	pResp->xRet = FTOM_EP_getIDList(pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
+	pResp->xRet = FTOM_EP_getIDList(pReq->xType, pReq->pDID, pResp->pEPIDList, pReq->ulMaxCount, &pResp->ulCount);
 	pResp->ulLen = sizeof(*pResp) + (FTM_EPID_LEN + 1) * pResp->ulCount;
 
 	return	pResp->xRet;

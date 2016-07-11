@@ -37,8 +37,7 @@ FTM_RET	FTOM_NODE_SNMPC_getOID
 	FTOM_NODE_SNMPC_PTR 	pNode, 
 	FTM_ULONG 				ulType, 
 	FTM_ULONG 				ulIndex, 
-	oid 					*pOID, 
-	size_t 					*pnOIDLen
+	FTM_SNMP_OID_PTR		pOID
 );
 #endif
 

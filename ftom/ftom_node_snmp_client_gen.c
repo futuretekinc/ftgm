@@ -54,8 +54,8 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_init
 			snprintf(pOIDName, sizeof(pOIDName) - 1, "%s::%s", 
 				pNode->xCommon.xInfo.xOption.xSNMP.pMIB, 
 				pEPClassInfo->xInfo.pValue);
-			pEP->xOption.xSNMP.nOIDLen = MAX_OID_LEN;
-			if (read_objid(pOIDName, pEP->xOption.xSNMP.pOID, &pEP->xOption.xSNMP.nOIDLen) == 0)
+			pEP->xOption.xSNMP.xOID.nLen = MAX_OID_LEN;
+			if (read_objid(pOIDName, pEP->xOption.xSNMP.xOID.pIDs, &pEP->xOption.xSNMP.xOID.nLen) == 0)
 			{
 				TRACE("Can't find MIB\n");
 				continue;
@@ -63,11 +63,26 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_init
 
 			FTM_INT	nIndex;
 			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 3], 0, 16);
-			pEP->xOption.xSNMP.pOID[pEP->xOption.xSNMP.nOIDLen++] = nIndex & 0xFF;
+			pEP->xOption.xSNMP.xOID.pIDs[pEP->xOption.xSNMP.xOID.nLen++] = nIndex & 0xFF;
 			FTM_LIST_append(&pNode->xCommon.xEPList, pEP);
 		}
 	}
 	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_SNMPC_GEN_prestop
+(
+	FTOM_NODE_SNMPC_PTR pNode
+)
+{
+	ASSERT(pNode != NULL);
+
+	TRACE("SNMP timeout called!\n");
+	FTM_LOCK_set(pNode->pLock);
+	snmp_timeout();
+	FTM_LOCK_reset(pNode->pLock);
 
 	return	FTM_RET_OK;
 }
@@ -114,6 +129,7 @@ FTOM_NODE_CLASS	xGeneralSNMP =
 	.fDestroy	= (FTOM_NODE_DESTROY)FTOM_NODE_SNMPC_destroy,
 	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_GEN_init,
 	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_GEN_final,
+	.fPrestop	= (FTOM_NODE_PRESTART)FTOM_NODE_SNMPC_GEN_prestop,
 	.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_GEN_getEPData,
 	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_GEN_setEPData,
 };

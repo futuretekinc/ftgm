@@ -22,7 +22,7 @@ FTM_RET	FTOM_CL_CGI_getSensorList
 	FTM_ULONG	ulCount;
 	FTM_INT		i;
 
-	xRet = FTOM_CLIENT_EP_count(pClient, 0, &ulCount);
+	xRet = FTOM_CLIENT_EP_count(pClient, 0, NULL, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	

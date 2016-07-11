@@ -1,1 +1,0 @@
-../../../../../include/net-snmp/agent/agent_registry.h
