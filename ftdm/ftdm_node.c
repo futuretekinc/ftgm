@@ -27,14 +27,14 @@ FTM_RET    FTDM_NODE_create
 	xRet = FTDM_DBIF_NODE_create(pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to create node[%s] to DB : error - %08x\n", pInfo->pDID, xRet);
+		ERROR2(xRet, "Failed to create node[%s] to DB.\n", pInfo->pDID);
 		return	xRet;
 	}
 
 	pNode = (FTDM_NODE_PTR)FTM_MEM_malloc(sizeof(FTDM_NODE));
 	if (pNode == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		FTDM_DBIF_NODE_destroy(pInfo->pDID);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
@@ -58,7 +58,7 @@ FTM_RET 	FTDM_NODE_destroy
 	xRet = FTDM_DBIF_NODE_destroy((*ppNode)->xInfo.pDID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to remove node[%s] from DB[%08x].\n", (*ppNode)->xInfo.pDID);
+		ERROR2(xRet, "Failed to remove node[%s] from DB[%08x].\n", (*ppNode)->xInfo.pDID);
 	}
 
 	FTM_MEM_free(*ppNode);
@@ -87,7 +87,7 @@ FTM_RET    FTDM_NODE_create2
 	pNode = (FTDM_NODE_PTR)FTM_MEM_malloc(sizeof(FTDM_NODE));
 	if (pNode == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 

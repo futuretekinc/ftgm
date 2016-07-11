@@ -71,7 +71,7 @@ FTM_RET	FTDM_EP_create
 		xRet = FTDM_DBIF_EP_append(pInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("EP append failed[%08x].\n", xRet);
+			ERROR2(xRet, "EP append failed.\n");
 			FTM_MEM_free(pEP);
 			return	xRet;
 		}
@@ -105,7 +105,7 @@ FTM_RET	FTDM_EP_destroy
 	xRet = FTDM_DBIF_EP_remove((*ppEP)->xInfo.pEPID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
+		ERROR2(xRet, "The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
 	}
 
 	FTM_MEM_free(*ppEP);
@@ -521,7 +521,7 @@ FTM_RET	FTDM_EP_DATA_del
 		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount2);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
+			ERROR2(xRet, "EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
 		}
 		else
 		{
@@ -569,7 +569,7 @@ FTM_RET	FTDM_EP_DATA_delWithTime
 		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount2);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
+			ERROR2(xRet, "EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
 		}
 		else
 		{

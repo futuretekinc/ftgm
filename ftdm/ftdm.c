@@ -37,56 +37,56 @@ FTM_RET 	FTDM_init(FTDM_CONTEXT_PTR pDM)
 	xRet = FTDM_DBIF_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("FTDM initialization failed. [ %08lx ]\n", xRet);
+		ERROR2(xRet, "FTDM initialization failed.\n");
 		return	FTM_RET_OK;
 	}
 
 	xRet = FTDM_NODEM_create(&pDM->pNodeM);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Node management initialization fialed.[%08x]\n", xRet);
+		ERROR2(xRet, "Node management initialization fialed.\n");
 	}
 
 	xRet = FTDM_EPM_create(&pDM->pEPM);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP management initialization fialed.[%08x]\n", xRet);
+		ERROR2(xRet, "EP management initialization fialed.\n");
 	}
 
 	xRet = FTDM_LOGGER_create(&pDM->pLogger);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to create logger!\n");
+		ERROR2(xRet, "Failed to create logger!\n");
 	}
 
 	xRet = FTDM_TRIGGER_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger management initialization fialed.[%08x]\n", xRet);
+		ERROR2(xRet, "Trigger management initialization fialed.\n");
 	}
 
 	xRet = FTDM_ACTION_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action management initialization fialed.[%08x]\n", xRet);
+		ERROR2(xRet, "Action management initialization fialed.\n");
 	}
 
 	xRet = FTDM_RULE_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Rule management initialization fialed.[%08x]\n", xRet);
+		ERROR2(xRet, "Rule management initialization fialed\n");
 	}
 
 	xRet = FTDM_EP_CLASS_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP type management initialization failed.[%08x]\n", xRet);	
+		ERROR2(xRet, "EP type management initialization failed.\n" );	
 	}
 
 	xRet = FTDMS_init(&xServer, pDM);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Server initialization failed.[%08x]\n", xRet);	
+		ERROR2(xRet, "Server initialization failed.\n");	
 	}
 
 	return	FTM_RET_OK;
@@ -99,55 +99,55 @@ FTM_RET	FTDM_final(FTDM_CONTEXT_PTR pFTDM)
 	xRet = FTDMS_final(&xServer);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Server finalization failed.[%08x]\n", xRet);	
+		ERROR2(xRet, "Server finalization failed.\n");	
 	}
 
 	xRet = FTDM_EP_CLASS_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP Class management finalization failed.[%08x]\n", xRet);	
+		ERROR2(xRet, "EP Class management finalization failed.\n");	
 	}
 
 	xRet = FTDM_RULE_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Rule management finalize failed.[%08x]\n", xRet);	
+		ERROR2(xRet, "Rule management finalize failed.[%08x]\n", xRet);	
 	}
 
 	xRet = FTDM_ACTION_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action management finalize failed.[%08x]\n", xRet);	
+		ERROR2(xRet, "Action management finalize failed.\n");	
 	}
 
 	xRet = FTDM_TRIGGER_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger management finalize failed.[%08x]\n", xRet);	
+		ERROR2(xRet, "Trigger management finalize failed.\n");	
 	}
 
 	xRet = FTDM_LOGGER_destroy(&pFTDM->pLogger);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to destroy logger[%08x].\n", xRet);	
+		ERROR2(xRet, "Failed to destroy logger.\n");	
 	}
 
 	xRet = FTDM_EPM_destroy(&pFTDM->pEPM);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP management finalize failed.[%08x]\n", xRet);	
+		ERROR2(xRet, "EP management finalize failed.\n");	
 	}
 
 	xRet = FTDM_NODEM_destroy(&pFTDM->pNodeM);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Node management finalize failed.[%08x]\n", xRet);	
+		ERROR2(xRet, "Node management finalize failed.\n");	
 	}
 
 	xRet = FTDM_DBIF_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("FTDM finalization failed. [ %08lx ]\n", xRet);
+		ERROR2(xRet, "FTDM finalization failed. [ %08lx ]\n", xRet);
 		return	FTM_RET_OK;
 	}
 
@@ -167,14 +167,14 @@ FTM_RET 	FTDM_loadConfig
 	xRet = FTDM_DBIF_loadConfig(&pConfig->xDB);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("FTDM initialization failed. [ %08lx ]\n", xRet);
+		ERROR2(xRet, "FTDM initialization failed.\n");
 		return	xRet;
 	}
 
 	xRet = FTDM_EP_CLASS_loadConfig(&pConfig->xEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("FTDM_initEPClassInfo failed\n");	
+		ERROR2(xRet, "FTDM_initEPClassInfo failed\n");	
 	}
 
 	FTM_TRACE_configSet(&pConfig->xPrint);

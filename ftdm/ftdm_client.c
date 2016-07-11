@@ -57,7 +57,7 @@ FTM_RET FTDMC_connect
 	hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (hSock == -1)
 	{
-		ERROR("Could not create socket.\n");	
+		ERROR2(FTM_RET_COMM_SOCK_ERROR, "Could not create socket.\n");	
 		return	FTM_RET_ERROR;
 	}
 
@@ -67,6 +67,7 @@ FTM_RET FTDMC_connect
 
 	if (connect(hSock, (struct sockaddr *)&xServer, sizeof(xServer)) < 0)
 	{
+		ERROR2(FTM_RET_ERROR, "Failed to connect server!\n");
 		return	FTM_RET_ERROR;	
 	}
 	
@@ -126,7 +127,7 @@ FTM_RET FTDMC_NODE_append
 	FTM_NODE_PTR		pInfo
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTDM_REQ_NODE_ADD_PARAMS	xReq;
 	FTDM_RESP_NODE_ADD_PARAMS	xResp;
 
@@ -146,18 +147,18 @@ FTM_RET FTDMC_NODE_append
 	xReq.nLen	=	sizeof(xReq);
 	memcpy(&xReq.xNodeInfo, pInfo, sizeof(FTM_NODE));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;
+		return	xRet;
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -169,7 +170,7 @@ FTM_RET FTDMC_NODE_remove
 	FTM_CHAR_PTR			pDID
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTDM_REQ_NODE_DEL_PARAMS	xReq;
 	FTDM_RESP_NODE_DEL_PARAMS	xResp;
 
@@ -189,18 +190,18 @@ FTM_RET FTDMC_NODE_remove
 	xReq.nLen	=	sizeof(xReq);
 	strcpy(xReq.pDID, pDID);
 	
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;
+		return	xRet;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -212,7 +213,7 @@ FTM_RET FTDMC_NODE_count
 	FTM_ULONG_PTR			pnCount
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTDM_REQ_NODE_COUNT_PARAMS		xReq;
 	FTDM_RESP_NODE_COUNT_PARAMS	xResp;
 
@@ -231,23 +232,23 @@ FTM_RET FTDMC_NODE_count
 	xReq.xCmd 	=	FTDM_CMD_NODE_COUNT;
 	xReq.nLen	=	sizeof(xReq);
 	
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;
+		return	xRet;
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pnCount = xResp.nCount;
 	}	
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 
@@ -259,7 +260,7 @@ FTM_RET FTDMC_NODE_getAt
 	FTM_NODE_PTR	pInfo
 )
 {
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTDM_REQ_NODE_GET_AT_PARAMS	xReq;
 	FTDM_RESP_NODE_GET_AT_PARAMS	xResp;
 
@@ -275,23 +276,23 @@ FTM_RET FTDMC_NODE_getAt
 	xReq.nLen	=	sizeof(xReq);
 	xReq.nIndex	=	nIndex;
 	
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xNodeInfo, sizeof(FTM_NODE));
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 /*****************************************************************
  *
@@ -303,7 +304,7 @@ FTM_RET FTDMC_NODE_get
 	FTM_NODE_PTR	pInfo
 )
 {
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTDM_REQ_NODE_GET_PARAMS		xReq;
 	FTDM_RESP_NODE_GET_PARAMS	xResp;
 
@@ -323,23 +324,23 @@ FTM_RET FTDMC_NODE_get
 	xReq.nLen	=	sizeof(xReq);
 	strcpy(xReq.pDID, pDID);
 	
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xNodeInfo, sizeof(FTM_NODE));
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -353,7 +354,7 @@ FTM_RET FTDMC_NODE_set
 	FTM_NODE_PTR	pInfo
 )
 {
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTDM_REQ_NODE_SET_PARAMS		xReq;
 	FTDM_RESP_NODE_SET_PARAMS	xResp;
 
@@ -369,18 +370,18 @@ FTM_RET FTDMC_NODE_set
 	xReq.xFields=	xFields;
 	memcpy(&xReq.xNodeInfo, pInfo, sizeof(FTM_NODE));
 	
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -395,7 +396,7 @@ FTM_RET FTDMC_NODE_getDIDList
 	FTM_ULONG_PTR		pulCount
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTM_ULONG							ulRespLen;
 	FTDM_REQ_NODE_GET_DID_LIST_PARAMS	xReq;
 	FTDM_RESP_NODE_GET_DID_LIST_PARAMS_PTR	pResp = NULL;
@@ -416,25 +417,25 @@ FTM_RET FTDMC_NODE_getDIDList
 	pResp = (FTDM_RESP_NODE_GET_DID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
 	if (pResp == NULL)
 	{
-		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]!\n", ulRespLen);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pResp);
-		return	nRet;	
+		return	xRet;	
 	}
 
-	nRet = pResp->nRet;
+	xRet = pResp->xRet;
 
-	if (nRet == FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
 		*pulCount = pResp->ulCount;
 		memcpy(pDIDs, pResp->pDIDs, sizeof(FTM_DID) * pResp->ulCount);
@@ -442,7 +443,7 @@ FTM_RET FTDMC_NODE_getDIDList
 
 	FTM_MEM_free(pResp);
 
-	return	nRet;
+	return	xRet;
 }
 
 /*****************************************************************
@@ -454,8 +455,8 @@ FTM_RET	FTDMC_EP_append
 	FTM_EP_PTR		pInfo
 )
 {
-	FTM_RET							nRet;
-	FTDM_REQ_EP_ADD_PARAMS		xReq;
+	FTM_RET					xRet;
+	FTDM_REQ_EP_ADD_PARAMS	xReq;
 	FTDM_RESP_EP_ADD_PARAMS	xResp;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
@@ -472,18 +473,18 @@ FTM_RET	FTDMC_EP_append
 	xReq.nLen	=	sizeof(xReq);
 	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -495,7 +496,7 @@ FTM_RET	FTDMC_EP_remove
 	FTM_CHAR_PTR			pEPID
 )
 {
-	FTM_RET					nRet;
+	FTM_RET					xRet;
 	FTDM_REQ_EP_DEL_PARAMS	xReq;
 	FTDM_RESP_EP_DEL_PARAMS	xResp;
 
@@ -508,18 +509,18 @@ FTM_RET	FTDMC_EP_remove
 	xReq.nLen	=	sizeof(xReq);
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;
+		return	xRet;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -532,7 +533,7 @@ FTM_RET	FTDMC_EP_count
 	FTM_ULONG_PTR			pnCount
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_EP_COUNT_PARAMS	xReq;
 	FTDM_RESP_EP_COUNT_PARAMS	xResp;
 
@@ -550,23 +551,23 @@ FTM_RET	FTDMC_EP_count
 	xReq.xType	=	xType;
 	xReq.nLen	=	sizeof(xReq);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pnCount = xResp.nCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -579,7 +580,7 @@ FTM_RET	FTDMC_EP_get
 	FTM_EP_PTR		pInfo
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_EP_GET_PARAMS		xReq;
 	FTDM_RESP_EP_GET_PARAMS	xResp;
 
@@ -597,22 +598,22 @@ FTM_RET	FTDMC_EP_get
 	xReq.nLen	=	sizeof(xReq);
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP));
 	}
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -625,7 +626,7 @@ FTM_RET	FTDMC_EP_getAt
 	FTM_EP_PTR		pInfo
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTDM_REQ_EP_GET_AT_PARAMS	xReq;
 	FTDM_RESP_EP_GET_AT_PARAMS	xResp;
 
@@ -643,23 +644,23 @@ FTM_RET	FTDMC_EP_getAt
 	xReq.nLen	=	sizeof(xReq);
 	xReq.nIndex	=	nIndex;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP));
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -673,7 +674,7 @@ FTM_RET	FTDMC_EP_set
 	FTM_EP_PTR			pInfo
 )
 {
-	FTM_RET					nRet;
+	FTM_RET					xRet;
 	FTDM_REQ_EP_SET_PARAMS	xReq;
 	FTDM_RESP_EP_SET_PARAMS	xResp;
 
@@ -693,18 +694,18 @@ FTM_RET	FTDMC_EP_set
 	strncpy(xReq.pEPID, pEPID, FTM_ID_LEN);
 	memcpy(&xReq.xInfo, pInfo, sizeof(FTM_EP));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -719,7 +720,7 @@ FTM_RET FTDMC_EP_getEPIDList
 	FTM_ULONG_PTR		pulCount
 )
 {
-	FTM_RET	nRet;
+	FTM_RET	xRet;
 	FTM_ULONG	ulRespLen;
 	FTDM_REQ_EP_GET_EPID_LIST_PARAMS	xReq;
 	FTDM_RESP_EP_GET_EPID_LIST_PARAMS_PTR	pResp = NULL;
@@ -740,25 +741,25 @@ FTM_RET FTDMC_EP_getEPIDList
 	pResp = (FTDM_RESP_EP_GET_EPID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
 	if (pResp == NULL)
 	{
-		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]!\n", ulRespLen);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pResp);
-		return	nRet;	
+		return	xRet;	
 	}
 
-	nRet = pResp->nRet;
+	xRet = pResp->xRet;
 
-	if (nRet == FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
 		*pulCount = pResp->ulCount;
 		memcpy(pEPIDs, pResp->pEPIDs, sizeof(FTM_EPID) * pResp->ulCount);
@@ -766,7 +767,7 @@ FTM_RET FTDMC_EP_getEPIDList
 
 	FTM_MEM_free(pResp);
 
-	return	nRet;
+	return	xRet;
 }
 /*****************************************************************
  *
@@ -777,7 +778,7 @@ FTM_RET	FTDMC_EP_CLASS_count
 	FTM_ULONG_PTR			pnCount
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_EP_CLASS_COUNT_PARAMS	xReq;
 	FTDM_RESP_EP_CLASS_COUNT_PARAMS	xResp;
 
@@ -794,23 +795,23 @@ FTM_RET	FTDMC_EP_CLASS_count
 	xReq.xCmd	=	FTDM_CMD_EP_CLASS_COUNT;
 	xReq.nLen	=	sizeof(xReq);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;	
+		return	xRet;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pnCount = xResp.nCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -823,7 +824,7 @@ FTM_RET	FTDMC_EP_CLASS_get
 	FTM_EP_CLASS_PTR	pInfo
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_EP_CLASS_GET_PARAMS		xReq;
 	FTDM_RESP_EP_CLASS_GET_PARAMS	xResp;
 
@@ -841,22 +842,22 @@ FTM_RET	FTDMC_EP_CLASS_get
 	xReq.nLen		=	sizeof(xReq);
 	xReq.xEPClass	=	xEPClass;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_CLASS));
 	}
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -869,7 +870,7 @@ FTM_RET	FTDMC_EP_CLASS_getAt
 	FTM_EP_CLASS_PTR		pInfo
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTDM_REQ_EP_CLASS_GET_AT_PARAMS	xReq;
 	FTDM_RESP_EP_CLASS_GET_AT_PARAMS	xResp;
 
@@ -887,23 +888,23 @@ FTM_RET	FTDMC_EP_CLASS_getAt
 	xReq.nLen	=	sizeof(xReq);
 	xReq.nIndex	=	nIndex;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pInfo, &xResp.xInfo, sizeof(FTM_EP_CLASS));
 	}
 	
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -916,7 +917,7 @@ FTM_RET	FTDMC_EP_DATA_append
 	FTM_EP_DATA_PTR			pEPData
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_EP_DATA_ADD_PARAMS	xReq;
 	FTDM_RESP_EP_DATA_ADD_PARAMS	xResp;
 
@@ -930,18 +931,18 @@ FTM_RET	FTDMC_EP_DATA_append
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&xReq.xData, pEPData, sizeof(FTM_EP_DATA));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -956,7 +957,7 @@ FTM_RET FTDMC_EP_DATA_info
 	FTM_ULONG_PTR			pulCount
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTDM_REQ_EP_DATA_INFO_PARAMS		xReq;
 	FTDM_RESP_EP_DATA_INFO_PARAMS		xResp;
 
@@ -969,13 +970,13 @@ FTM_RET FTDMC_EP_DATA_info
 	xReq.ulLen		=	sizeof(xReq);
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
@@ -984,7 +985,7 @@ FTM_RET FTDMC_EP_DATA_info
 	*pulEndTime 	= xResp.ulEndTime;
 	*pulCount		= xResp.ulCount;
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -997,7 +998,7 @@ FTM_RET FTDMC_EP_DATA_setLimit
 	FTM_EP_LIMIT_PTR		pLimit
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTDM_REQ_EP_DATA_SET_LIMIT_PARAMS	xReq;
 	FTDM_RESP_EP_DATA_SET_LIMIT_PARAMS	xResp;
 
@@ -1011,18 +1012,18 @@ FTM_RET FTDMC_EP_DATA_setLimit
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&xReq.xLimit, pLimit, sizeof(FTM_EP_LIMIT));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -1038,7 +1039,7 @@ FTM_RET	FTDMC_EP_DATA_get
 	FTM_ULONG_PTR		pnCount
 )
 {
-	FTM_RET								nRet;
+	FTM_RET								xRet;
 	FTDM_REQ_EP_DATA_GET_PARAMS			xReq;
 	FTM_ULONG							nRespSize = 0;
 	FTDM_RESP_EP_DATA_GET_PARAMS_PTR	pResp = NULL;
@@ -1061,22 +1062,22 @@ FTM_RET	FTDMC_EP_DATA_get
 	xReq.nStartIndex=	nStartIndex;
 	xReq.nCount		=	nMaxCount;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				nRespSize);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		TRACE("FTDMC_request error[%08x]\n", nRet);
+		TRACE("FTDMC_request error[%08x]\n", xRet);
 		FTM_MEM_free(pResp);
 		return	FTM_RET_ERROR;	
 	}
 
-	nRet = pResp->nRet;
+	xRet = pResp->xRet;
 
-	if (pResp->nRet == FTM_RET_OK)
+	if (pResp->xRet == FTM_RET_OK)
 	{
 		FTM_INT	i;
 
@@ -1090,7 +1091,7 @@ FTM_RET	FTDMC_EP_DATA_get
 
 	FTM_MEM_free(pResp);
 
-	return	nRet;
+	return	xRet;
 }
 
 /*****************************************************************
@@ -1107,7 +1108,7 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 	FTM_ULONG_PTR		pnCount
 )
 {
-	FTM_RET										nRet;
+	FTM_RET										xRet;
 	FTDM_REQ_EP_DATA_GET_WITH_TIME_PARAMS		xReq;
 	FTM_ULONG									nRespSize = 0;
 	FTDM_RESP_EP_DATA_GET_WITH_TIME_PARAMS_PTR	pResp = NULL;
@@ -1131,21 +1132,21 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 	xReq.nEndTime	=	nEndTime;
 	xReq.nCount		=	nMaxCount;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				nRespSize);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pResp);
 		return	FTM_RET_ERROR;	
 	}
 
-	nRet = pResp->nRet;
+	xRet = pResp->xRet;
 
-	if (pResp->nRet == FTM_RET_OK)
+	if (pResp->xRet == FTM_RET_OK)
 	{
 		FTM_INT	i;
 
@@ -1159,7 +1160,7 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 
 	FTM_MEM_free(pResp);
 
-	return	nRet;
+	return	xRet;
 }
 
 /*****************************************************************
@@ -1174,7 +1175,7 @@ FTM_RET	FTDMC_EP_DATA_remove
 	FTM_ULONG_PTR			pulCount
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_EP_DATA_DEL_PARAMS	xReq;
 	FTDM_RESP_EP_DATA_DEL_PARAMS	xResp;
 
@@ -1189,23 +1190,23 @@ FTM_RET	FTDMC_EP_DATA_remove
 	xReq.nIndex		=	nIndex;
 	xReq.nCount		=	nCount;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pulCount = xResp.ulCount;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -1220,7 +1221,7 @@ FTM_RET	FTDMC_EP_DATA_removeWithTime
 	FTM_ULONG_PTR			pulCount
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_EP_DATA_DEL_WITH_TIME_PARAMS	xReq;
 	FTDM_RESP_EP_DATA_DEL_WITH_TIME_PARAMS	xResp;
 
@@ -1235,23 +1236,23 @@ FTM_RET	FTDMC_EP_DATA_removeWithTime
 	xReq.nBeginTime	=	nBeginTime;
 	xReq.nEndTime	=	nEndTime;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pulCount = xResp.ulCount;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_EP_DATA_count
@@ -1261,7 +1262,7 @@ FTM_RET	FTDMC_EP_DATA_count
 	FTM_ULONG_PTR			pCount
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_EP_DATA_COUNT_PARAMS	xReq;
 	FTDM_RESP_EP_DATA_COUNT_PARAMS	xResp;
 
@@ -1274,23 +1275,23 @@ FTM_RET	FTDMC_EP_DATA_count
 	xReq.nLen		=	sizeof(xReq);
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pCount = xResp.nCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_EP_DATA_countWithTime
@@ -1302,7 +1303,7 @@ FTM_RET	FTDMC_EP_DATA_countWithTime
 	FTM_ULONG_PTR			pCount
 )
 {
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_EP_DATA_COUNT_WITH_TIME_PARAMS	xReq;
 	FTDM_RESP_EP_DATA_COUNT_WITH_TIME_PARAMS	xResp;
 
@@ -1317,23 +1318,23 @@ FTM_RET	FTDMC_EP_DATA_countWithTime
 	xReq.nBeginTime	=	nBeginTime;
 	xReq.nEndTime	=	nEndTime;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pCount = xResp.nCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_TRIGGER_add
@@ -1345,7 +1346,7 @@ FTM_RET	FTDMC_TRIGGER_add
 	ASSERT(pSession != NULL);
 	ASSERT(pTrigger != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_TRIGGER_ADD_PARAMS	xReq;
 	FTDM_RESP_TRIGGER_ADD_PARAMS	xResp;
 
@@ -1353,18 +1354,18 @@ FTM_RET	FTDMC_TRIGGER_add
 	xReq.nLen	=	sizeof(xReq);
 	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_TRIGGER_del
@@ -1375,7 +1376,7 @@ FTM_RET	FTDMC_TRIGGER_del
 {
 	ASSERT(pSession != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_TRIGGER_DEL_PARAMS	xReq;
 	FTDM_RESP_TRIGGER_DEL_PARAMS	xResp;
 
@@ -1383,18 +1384,18 @@ FTM_RET	FTDMC_TRIGGER_del
 	xReq.nLen	=	sizeof(xReq);
 	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_TRIGGER_count
@@ -1406,30 +1407,30 @@ FTM_RET	FTDMC_TRIGGER_count
 	ASSERT(pSession != NULL);
 	ASSERT(pulCount != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
  	FTDM_REQ_TRIGGER_COUNT_PARAMS		xReq;
 	FTDM_RESP_TRIGGER_COUNT_PARAMS	xResp;
 
 	xReq.xCmd	=	FTDM_CMD_TRIGGER_COUNT;
 	xReq.nLen	=	sizeof(xReq);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pulCount = xResp.nCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_TRIGGER_get
@@ -1442,7 +1443,7 @@ FTM_RET	FTDMC_TRIGGER_get
 	ASSERT(pSession != NULL);
 	ASSERT(pTrigger != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
  	FTDM_REQ_TRIGGER_GET_PARAMS	xReq;
 	FTDM_RESP_TRIGGER_GET_PARAMS	xResp;
 
@@ -1450,23 +1451,23 @@ FTM_RET	FTDMC_TRIGGER_get
 	xReq.nLen	=	sizeof(xReq);
 	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pTrigger, &xResp.xTrigger, sizeof(FTM_TRIGGER));
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_TRIGGER_getAt
@@ -1480,7 +1481,7 @@ FTM_RET	FTDMC_TRIGGER_getAt
 	ASSERT(pSession != NULL);
 	ASSERT(pTrigger != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
  	FTDM_REQ_TRIGGER_GET_AT_PARAMS	xReq;
 	FTDM_RESP_TRIGGER_GET_AT_PARAMS	xResp;
 
@@ -1488,23 +1489,23 @@ FTM_RET	FTDMC_TRIGGER_getAt
 	xReq.nLen 	=	sizeof(xReq);
 	xReq.nIndex	=	ulIndex;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pTrigger, &xResp.xTrigger, sizeof(FTM_TRIGGER));
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_TRIGGER_set
@@ -1518,7 +1519,7 @@ FTM_RET	FTDMC_TRIGGER_set
 	ASSERT(pSession != NULL);
 	ASSERT(pTrigger != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
  	FTDM_REQ_TRIGGER_SET_PARAMS		xReq;
 	FTDM_RESP_TRIGGER_SET_PARAMS	xResp;
 
@@ -1528,18 +1529,18 @@ FTM_RET	FTDMC_TRIGGER_set
 	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
 	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -1554,7 +1555,7 @@ FTM_RET FTDMC_TRIGGER_getIDList
 	FTM_ULONG_PTR		pulCount
 )
 {
-	FTM_RET	nRet;
+	FTM_RET	xRet;
 	FTM_ULONG	ulRespLen;
 	FTDM_REQ_TRIGGER_GET_ID_LIST_PARAMS	xReq;
 	FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR	pResp = NULL;
@@ -1575,25 +1576,25 @@ FTM_RET FTDMC_TRIGGER_getIDList
 	pResp = (FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
 	if (pResp == NULL)
 	{
-		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]!\n", ulRespLen);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pResp);
-		return	nRet;	
+		return	xRet;	
 	}
 
-	nRet = pResp->nRet;
+	xRet = pResp->xRet;
 
-	if (nRet == FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
 		*pulCount = pResp->ulCount;
 		memcpy(pIDs, pResp->pIDs, sizeof(FTM_ID) * pResp->ulCount);
@@ -1601,7 +1602,7 @@ FTM_RET FTDMC_TRIGGER_getIDList
 
 	FTM_MEM_free(pResp);
 
-	return	nRet;
+	return	xRet;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1617,7 +1618,7 @@ FTM_RET	FTDMC_ACTION_add
 	ASSERT(pSession != NULL);
 	ASSERT(pAct != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_ACTION_ADD_PARAMS	xReq;
 	FTDM_RESP_ACTION_ADD_PARAMS	xResp;
 
@@ -1625,18 +1626,18 @@ FTM_RET	FTDMC_ACTION_add
 	xReq.nLen	=	sizeof(xReq);
 	memcpy(&xReq.xAction, pAct, sizeof(FTM_ACTION));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_ACTION_del
@@ -1647,7 +1648,7 @@ FTM_RET	FTDMC_ACTION_del
 {
 	ASSERT(pSession != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_ACTION_DEL_PARAMS	xReq;
 	FTDM_RESP_ACTION_DEL_PARAMS	xResp;
 
@@ -1655,18 +1656,18 @@ FTM_RET	FTDMC_ACTION_del
 	xReq.nLen	=	sizeof(xReq);
 	strncpy(xReq.pActionID, pActionID, FTM_ID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_ACTION_count
@@ -1678,30 +1679,30 @@ FTM_RET	FTDMC_ACTION_count
 	ASSERT(pSession != NULL);
 	ASSERT(pulCount != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
  	FTDM_REQ_ACTION_COUNT_PARAMS		xReq;
 	FTDM_RESP_ACTION_COUNT_PARAMS	xResp;
 
 	xReq.xCmd	=	FTDM_CMD_ACTION_COUNT;
 	xReq.nLen	=	sizeof(xReq);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pulCount = xResp.nCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_ACTION_get
@@ -1714,7 +1715,7 @@ FTM_RET	FTDMC_ACTION_get
 	ASSERT(pSession != NULL);
 	ASSERT(pAct != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
  	FTDM_REQ_ACTION_GET_PARAMS	xReq;
 	FTDM_RESP_ACTION_GET_PARAMS	xResp;
 
@@ -1722,23 +1723,23 @@ FTM_RET	FTDMC_ACTION_get
 	xReq.nLen	=	sizeof(xReq);
 	strncpy(xReq.pActionID, pActionID, FTM_ID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pAct, &xResp.xAction, sizeof(FTM_ACTION));
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_ACTION_getAt
@@ -1752,7 +1753,7 @@ FTM_RET	FTDMC_ACTION_getAt
 	ASSERT(pSession != NULL);
 	ASSERT(pAct != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
  	FTDM_REQ_ACTION_GET_AT_PARAMS	xReq;
 	FTDM_RESP_ACTION_GET_AT_PARAMS	xResp;
 
@@ -1760,23 +1761,23 @@ FTM_RET	FTDMC_ACTION_getAt
 	xReq.nLen 	=	sizeof(xReq);
 	xReq.nIndex	=	ulIndex;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pAct, &xResp.xAction, sizeof(FTM_ACTION));
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_ACTION_set
@@ -1790,7 +1791,7 @@ FTM_RET	FTDMC_ACTION_set
 	ASSERT(pSession != NULL);
 	ASSERT(pInfo != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
  	FTDM_REQ_ACTION_SET_PARAMS	xReq;
 	FTDM_RESP_ACTION_SET_PARAMS	xResp;
 
@@ -1800,18 +1801,18 @@ FTM_RET	FTDMC_ACTION_set
 	strncpy(xReq.pActionID, pActionID, FTM_ID_LEN);
 	memcpy(&xReq.xAction, pInfo, sizeof(FTM_ACTION));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /*****************************************************************
@@ -1826,7 +1827,7 @@ FTM_RET FTDMC_ACTION_getIDList
 	FTM_ULONG_PTR		pulCount
 )
 {
-	FTM_RET	nRet;
+	FTM_RET	xRet;
 	FTM_ULONG	ulRespLen;
 	FTDM_REQ_ACTION_GET_ID_LIST_PARAMS	xReq;
 	FTDM_RESP_ACTION_GET_ID_LIST_PARAMS_PTR	pResp = NULL;
@@ -1847,25 +1848,25 @@ FTM_RET FTDMC_ACTION_getIDList
 	pResp = (FTDM_RESP_ACTION_GET_ID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
 	if (pResp == NULL)
 	{
-		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]!\n", ulRespLen);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pResp);
-		return	nRet;	
+		return	xRet;	
 	}
 
-	nRet = pResp->nRet;
+	xRet = pResp->xRet;
 
-	if (nRet == FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
 		*pulCount = pResp->ulCount;
 		memcpy(pIDs, pResp->pIDs, sizeof(FTM_ID) * pResp->ulCount);
@@ -1873,7 +1874,7 @@ FTM_RET FTDMC_ACTION_getIDList
 
 	FTM_MEM_free(pResp);
 
-	return	nRet;
+	return	xRet;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1889,7 +1890,7 @@ FTM_RET	FTDMC_RULE_add
 	ASSERT(pSession != NULL);
 	ASSERT(pAct != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_RULE_ADD_PARAMS	xReq;
 	FTDM_RESP_RULE_ADD_PARAMS	xResp;
 
@@ -1897,18 +1898,18 @@ FTM_RET	FTDMC_RULE_add
 	xReq.nLen	=	sizeof(xReq);
 	memcpy(&xReq.xRule, pAct, sizeof(FTM_RULE));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_RULE_del
@@ -1919,7 +1920,7 @@ FTM_RET	FTDMC_RULE_del
 {
 	ASSERT(pSession != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_RULE_DEL_PARAMS	xReq;
 	FTDM_RESP_RULE_DEL_PARAMS	xResp;
 
@@ -1927,18 +1928,18 @@ FTM_RET	FTDMC_RULE_del
 	xReq.nLen	=	sizeof(xReq);
 	strncpy(xReq.pRuleID, pRuleID, FTM_ID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_RULE_count
@@ -1950,30 +1951,30 @@ FTM_RET	FTDMC_RULE_count
 	ASSERT(pSession != NULL);
 	ASSERT(pulCount != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
  	FTDM_REQ_RULE_COUNT_PARAMS		xReq;
 	FTDM_RESP_RULE_COUNT_PARAMS	xResp;
 
 	xReq.xCmd	=	FTDM_CMD_RULE_COUNT;
 	xReq.nLen	=	sizeof(xReq);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pulCount = xResp.nCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_RULE_get
@@ -1986,7 +1987,7 @@ FTM_RET	FTDMC_RULE_get
 	ASSERT(pSession != NULL);
 	ASSERT(pAct != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
  	FTDM_REQ_RULE_GET_PARAMS	xReq;
 	FTDM_RESP_RULE_GET_PARAMS	xResp;
 
@@ -1994,23 +1995,23 @@ FTM_RET	FTDMC_RULE_get
 	xReq.nLen	=	sizeof(xReq);
 	strncpy(xReq.pRuleID, pRuleID, FTM_ID_LEN);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pAct, &xResp.xRule, sizeof(FTM_RULE));
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_RULE_getAt
@@ -2024,7 +2025,7 @@ FTM_RET	FTDMC_RULE_getAt
 	ASSERT(pSession != NULL);
 	ASSERT(pAct != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
  	FTDM_REQ_RULE_GET_AT_PARAMS	xReq;
 	FTDM_RESP_RULE_GET_AT_PARAMS	xResp;
 
@@ -2032,23 +2033,23 @@ FTM_RET	FTDMC_RULE_getAt
 	xReq.nLen 	=	sizeof(xReq);
 	xReq.nIndex	=	ulIndex;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pAct, &xResp.xRule, sizeof(FTM_RULE));
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_RULE_set
@@ -2063,7 +2064,7 @@ FTM_RET	FTDMC_RULE_set
 	ASSERT(pRuleID != NULL);
 	ASSERT(pInfo != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
  	FTDM_REQ_RULE_SET_PARAMS	xReq;
 	FTDM_RESP_RULE_SET_PARAMS	xResp;
 
@@ -2073,18 +2074,18 @@ FTM_RET	FTDMC_RULE_set
 	strncpy(xReq.pRuleID, pRuleID, FTM_ID_LEN);
 	memcpy(&xReq.xRule, pInfo, sizeof(FTM_RULE));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -2100,7 +2101,7 @@ FTM_RET	FTDMC_LOG_add
 	ASSERT(pSession != NULL);
 	ASSERT(pLog != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_LOG_ADD_PARAMS	xReq;
 	FTDM_RESP_LOG_ADD_PARAMS	xResp;
 
@@ -2108,18 +2109,18 @@ FTM_RET	FTDMC_LOG_add
 	xReq.nLen	=	sizeof(xReq);
 	memcpy(&xReq.xLog, pLog, sizeof(FTM_LOG));
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_LOG_del
@@ -2132,7 +2133,7 @@ FTM_RET	FTDMC_LOG_del
 {
 	ASSERT(pSession != NULL);
 
-	FTM_RET						nRet;
+	FTM_RET						xRet;
 	FTDM_REQ_LOG_DEL_PARAMS		xReq;
 	FTDM_RESP_LOG_DEL_PARAMS	xResp;
 
@@ -2141,23 +2142,23 @@ FTM_RET	FTDMC_LOG_del
 	xReq.ulIndex=	ulIndex;
 	xReq.ulCount=	ulCount;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if ((xResp.nRet == FTM_RET_OK) && (pulDeletedCount != NULL))
+	if ((xResp.xRet == FTM_RET_OK) && (pulDeletedCount != NULL))
 	{
 		*pulDeletedCount = xResp.ulCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_LOG_count
@@ -2169,30 +2170,30 @@ FTM_RET	FTDMC_LOG_count
 	ASSERT(pSession != NULL);
 	ASSERT(pulCount != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
  	FTDM_REQ_LOG_COUNT_PARAMS		xReq;
 	FTDM_RESP_LOG_COUNT_PARAMS	xResp;
 
 	xReq.xCmd	=	FTDM_CMD_RULE_COUNT;
 	xReq.nLen	=	sizeof(xReq);
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)&xResp, 
 				sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		*pulCount = xResp.nCount;
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 
 FTM_RET	FTDMC_LOG_get
@@ -2206,7 +2207,7 @@ FTM_RET	FTDMC_LOG_get
 {
 	ASSERT(pSession != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTDM_REQ_LOG_GET_PARAMS			xReq;
 	FTDM_RESP_LOG_GET_PARAMS_PTR	pResp;
 	FTM_ULONG						ulRespLen = 0;
@@ -2234,30 +2235,30 @@ FTM_RET	FTDMC_LOG_get
 		pResp = (FTDM_RESP_LOG_GET_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
 		if (pResp == NULL)
 		{
-			nRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+			xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
 			break;
 		}
 
-		nRet = FTDMC_request(pSession, 
+		xRet = FTDMC_request(pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				ulRespLen);
-		if (nRet != FTM_RET_OK)
+		if (xRet != FTM_RET_OK)
 		{
 			break;
 		}
 
-		nRet = pResp->nRet;
-		if (nRet != FTM_RET_OK) 
+		xRet = pResp->xRet;
+		if (xRet != FTM_RET_OK) 
 		{
 			break;
 		}
 
 		if (pResp->ulCount > ulCount)
 		{
-			nRet = FTM_RET_ERROR;
-			ERROR("The requested quantity[%lu] has been exceeded[%lu]\n", ulRequestCount, pResp->ulCount);	
+			xRet = FTM_RET_ERROR;
+			ERROR2(xRet, "The requested quantity[%lu] has been exceeded[%lu]\n", ulRequestCount, pResp->ulCount);	
 			break;
 		}
 
@@ -2272,7 +2273,7 @@ FTM_RET	FTDMC_LOG_get
 	}
 
 
-	if (nRet == FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
 		*pulCount = ulReadCount;	
 	}
@@ -2282,7 +2283,7 @@ FTM_RET	FTDMC_LOG_get
 		FTM_MEM_free(pResp);	
 	}
 
-	return	nRet;
+	return	xRet;
 }
 
 FTM_RET	FTDMC_LOG_getAt
@@ -2294,7 +2295,7 @@ FTM_RET	FTDMC_LOG_getAt
 {
 	ASSERT(pSession != NULL);
 
-	FTM_RET							nRet;
+	FTM_RET							xRet;
 	FTDM_REQ_LOG_GET_AT_PARAMS		xReq;
 	FTDM_RESP_LOG_GET_AT_PARAMS		xResp;
 	
@@ -2302,23 +2303,23 @@ FTM_RET	FTDMC_LOG_getAt
 	xReq.nLen	=	sizeof(xReq);
 	xReq.ulIndex=	ulIndex;
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 			(FTM_VOID_PTR)&xReq, 
 			sizeof(xReq), 
 			(FTM_VOID_PTR)&xResp, 
 			sizeof(xResp));
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		return	nRet;
+		return	xRet;
 	}
 
-	if (xResp.nRet == FTM_RET_OK)
+	if (xResp.xRet == FTM_RET_OK)
 	{
 		memcpy(pLog, &xResp.xLog, sizeof(FTM_LOG));
 	}
 
-	return	xResp.nRet;
+	return	xResp.xRet;
 }
 /*****************************************************************
  *
@@ -2332,7 +2333,7 @@ FTM_RET FTDMC_RULE_getIDList
 	FTM_ULONG_PTR		pulCount
 )
 {
-	FTM_RET	nRet;
+	FTM_RET	xRet;
 	FTM_ULONG	ulRespLen;
 	FTDM_REQ_RULE_GET_ID_LIST_PARAMS	xReq;
 	FTDM_RESP_RULE_GET_ID_LIST_PARAMS_PTR	pResp = NULL;
@@ -2353,25 +2354,25 @@ FTM_RET FTDMC_RULE_getIDList
 	pResp = (FTDM_RESP_RULE_GET_ID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
 	if (pResp == NULL)
 	{
-		ERROR("Not enough memory[size = %d]!\n", ulRespLen);
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]!\n", ulRespLen);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	nRet = FTDMC_request(
+	xRet = FTDMC_request(
 				pSession, 
 				(FTM_VOID_PTR)&xReq, 
 				sizeof(xReq), 
 				(FTM_VOID_PTR)pResp, 
 				ulRespLen);
-	if (nRet != FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pResp);
-		return	nRet;	
+		return	xRet;	
 	}
 
-	nRet = pResp->nRet;
+	xRet = pResp->xRet;
 
-	if (nRet == FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
 		*pulCount = pResp->ulCount;
 		memcpy(pIDs, pResp->pIDs, sizeof(FTM_ID) * pResp->ulCount);
@@ -2379,7 +2380,7 @@ FTM_RET FTDMC_RULE_getIDList
 
 	FTM_MEM_free(pResp);
 
-	return	nRet;
+	return	xRet;
 }
 
 /*****************************************************************

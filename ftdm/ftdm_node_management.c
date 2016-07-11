@@ -172,8 +172,8 @@ FTM_RET	FTDM_NODEM_loadFromFile
 	xRet = FTM_CONFIG_create(pFileName, &pRoot, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Config initialize failed[%08x].\n", xRet);
-		return	FTM_RET_CONFIG_LOAD_FAILED;
+		ERROR2(xRet, "Config initialize failed.\n");
+		return	xRet;
 	}
 
 	xRet = FTM_CONFIG_getItem(pRoot, "node", &xNodeSection);
@@ -202,7 +202,7 @@ FTM_RET	FTDM_NODEM_loadFromFile
 						xRet = FTM_CONFIG_ITEM_getNode(&xNodeItem, &xInfo);
 						if (xRet != FTM_RET_OK)
 						{
-							ERROR("Node info read failed.[%08x]\n", xRet);
+							ERROR2(xRet, "Node info read failed.\n");
 							continue;
 						}
 				
@@ -213,7 +213,7 @@ FTM_RET	FTDM_NODEM_loadFromFile
 						}
 						else
 						{
-							ERROR("Node[%s] creation failed[%08x].\n", xInfo.pDID, xRet);	
+							ERROR2(xRet, "Node[%s] creation failed.\n", xInfo.pDID);	
 						
 						}
 						FTDM_LOG_createNode(xInfo.pDID, xRet);
@@ -222,17 +222,17 @@ FTM_RET	FTDM_NODEM_loadFromFile
 			}
 			else
 			{
-				ERROR("Node count read failed[%08x].\n", xRet);	
+				ERROR2(xRet, "Node count read failed.\n");	
 			}
 		}
 		else
 		{
-			TRACE("Node list not found!\n");	
+			ERROR2(xRet, "Node list not found!\n");	
 		}
 	}
 	else
 	{
-		ERROR("NODE section not found!\n");	
+		ERROR2(xRet, "NODE section not found!\n");	
 	}
 
 	FTM_CONFIG_destroy(&pRoot);
@@ -254,7 +254,7 @@ FTM_RET	FTDM_NODEM_saveToDB
 	xRet = FTDM_NODEM_count(pNodeM, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't get NODE count.\n");
+		ERROR2(xRet, "Can't get NODE count.\n");
 		return	xRet;
 	}
 
@@ -272,13 +272,13 @@ FTM_RET	FTDM_NODEM_saveToDB
 				xRet = FTDM_DBIF_NODE_create(&pNode->xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
-					ERROR("Failed to save the new node.[%08x]\n", xRet);
+					ERROR2(xRet, "Failed to save the new node.[%08x]\n", xRet);
 				}
 			}
 		}
 		else
 		{
-			ERROR("Failed to get node information[%08x]\n", xRet);
+			ERROR2(xRet, "Failed to get node information[%08x]\n", xRet);
 		}
 	}
 
@@ -338,7 +338,7 @@ FTM_RET	FTDM_NODEM_get
 	xRet = FTM_LIST_get(pNodeM->pList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("List get error[%08x]\n", xRet);
+		ERROR2(xRet, "List get error[%08x]\n", xRet);
 		return	xRet;	
 	}
 

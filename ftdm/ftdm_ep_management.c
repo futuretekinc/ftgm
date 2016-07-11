@@ -63,7 +63,7 @@ FTM_RET	FTDM_EPM_create
 	pEPM = (FTDM_EPM_PTR)FTM_MEM_malloc(sizeof(FTDM_EPM));
 	if (pEPM == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
@@ -146,7 +146,7 @@ FTM_RET	FTDM_EPM_loadFromFile
 							xRet = FTDM_EP_create(&xInfo, &pEP);
 							if (xRet != FTM_RET_OK)
 							{
-								ERROR("Can't not append EP[%s]\n", xInfo.pEPID);
+								ERROR2(xRet, "Can't not append EP[%s]\n", xInfo.pEPID);
 							}
 							else
 							{
@@ -156,12 +156,12 @@ FTM_RET	FTDM_EPM_loadFromFile
 						}
 						else
 						{
-							ERROR("EP configuratoin load failed.\n");	
+							ERROR2(xRet, "EP configuratoin load failed.\n");	
 						}
 					}
 					else
 					{
-						ERROR("EP configuratoin load failed.\n");	
+						ERROR2(xRet, "EP configuratoin load failed.\n");	
 					}
 				}
 			}
@@ -282,13 +282,13 @@ FTM_RET	FTDM_EPM_saveToDB
 				xRet = FTDM_DBIF_EP_append(&pEP->xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
-					ERROR("Failed to save the new EP.[%08x]\n", xRet);
+					ERROR2(xRet, "Failed to save the new EP.[%08x]\n", xRet);
 				}
 			}
 		}
 		else
 		{
-			ERROR("Failed to get EP information[%08x]\n", xRet);
+			ERROR2(xRet, "Failed to get EP information[%08x]\n", xRet);
 		}
 	}
 

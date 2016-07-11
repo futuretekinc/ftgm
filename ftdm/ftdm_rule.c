@@ -66,7 +66,7 @@ FTM_RET	FTDM_RULE_loadConfig
 						xRet = FTM_CONFIG_ITEM_getChildItem(&xRuleItem, "triggers", &xRulesItem);
 						if (xRet != FTM_RET_OK)
 						{
-							ERROR("Get triggers error!\n");
+							ERROR2(xRet, "Failed to get trigger items!\n");
 							continue;
 						}
 				
@@ -75,7 +75,7 @@ FTM_RET	FTDM_RULE_loadConfig
 						xRet = FTM_CONFIG_LIST_getItemCount(&xRulesItem, &ulRuleCount);
 						if (xRet != FTM_RET_OK)
 						{
-							ERROR("Get trigger count error!\n");
+							ERROR2(xRet, "Failed to get trigger count!\n");
 							continue;
 						}
 				
@@ -92,14 +92,14 @@ FTM_RET	FTDM_RULE_loadConfig
 								xRet = FTM_CONFIG_ITEM_getULONG(&xRuleItem, &ulIndex);
 								if (xRet != FTM_RET_OK)
 								{
-									ERROR("Get trigger index error!\n");
+									ERROR2(xRet, "Failed to get rule index!\n");
 									continue;	
 								}
 
 								xRet = FTDM_TRIGGER_getByIndex(ulIndex, &pTrigger);
 								if (xRet != FTM_RET_OK)
 								{
-									ERROR("Get trigger index error!\n");
+									ERROR2(xRet, "Failed to get tirgger at %lu!\n", ulIndex);
 									continue;	
 								}
 
@@ -107,7 +107,7 @@ FTM_RET	FTDM_RULE_loadConfig
 							}
 							else
 							{
-								ERROR("Get rule[%d] load failed.\n", j);	
+								ERROR2(xRet, "Get rule[%d] load failed.\n", j);	
 							}
 						
 						}
@@ -139,14 +139,14 @@ FTM_RET	FTDM_RULE_loadConfig
 								xRet = FTM_CONFIG_ITEM_getULONG(&xActionItem, &ulIndex);
 								if (xRet != FTM_RET_OK)
 								{
-									ERROR("Action index get failed.\n");
+									ERROR2(xRet, "Action index get failed.\n");
 									continue;	
 								}
 
 								xRet = FTDM_ACTION_getByIndex(ulIndex, &pAction);
 								if (xRet != FTM_RET_OK)
 								{
-									ERROR("Action[%d] get failed.\n");
+									ERROR2(xRet, "Action[%d] get failed.\n");
 									continue;	
 								}
 
@@ -257,13 +257,13 @@ FTM_RET	FTDM_RULE_saveToDB
 				xRet = FTDM_DBIF_RULE_create(&xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
-					ERROR("Failed to save the new trigger.[%08x]\n", xRet);
+					ERROR2(xRet, "Failed to save the new trigger.[%08x]\n", xRet);
 				}
 			}
 		}
 		else
 		{
-			ERROR("Failed to get trigger information[%08x]\n", xRet);
+			ERROR2(xRet, "Failed to get trigger information[%08x]\n", xRet);
 		}
 	}
 
@@ -281,7 +281,7 @@ FTM_RET	FTDM_RULE_create
 
 	if (FTDM_RULE_get(pInfo->pID, &pRule) == FTM_RET_OK)
 	{
-		ERROR("Rule[%s] already exist.\n", pInfo->pID);
+		ERROR2(FTM_RET_ALREADY_EXIST_OBJECT, "Rule[%s] already exist.\n", pInfo->pID);
 		return	FTM_RET_ALREADY_EXIST_OBJECT;
 	}
 
@@ -304,7 +304,7 @@ FTM_RET	FTDM_RULE_create
 		pRule = (FTDM_RULE_PTR)FTM_MEM_malloc(sizeof(FTDM_RULE));
 		if (pRule == NULL)
 		{
-			ERROR("Not enough memory!\n");
+			ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 			FTDM_DBIF_RULE_destroy(pInfo->pID);
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
@@ -314,14 +314,14 @@ FTM_RET	FTDM_RULE_create
 		xRet = FTM_RULE_append((FTM_RULE_PTR)pRule);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Rule[%s] append failed.\n", pRule->xInfo.pID);
+			ERROR2(xRet, "Rule[%s] append failed.\n", pRule->xInfo.pID);
 			FTDM_DBIF_RULE_destroy(pInfo->pID);
 			FTM_MEM_free(pRule);
 		}
 	}
 	else
 	{
-		ERROR("Rule[%s] DB append failed.\n", pInfo->pID);	
+		ERROR2(xRet, "Rule[%s] DB append failed.\n", pInfo->pID);	
 	}
 
 	return	xRet;

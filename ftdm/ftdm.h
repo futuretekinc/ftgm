@@ -12,6 +12,7 @@
 #include "ftdm_ep_class.h"
 #include "ftdm_server.h"
 #include "ftdm_logger.h"
+#include "ftdm_modules.h"
 
 typedef struct FTDM_CONTEXT_STRUCT
 {

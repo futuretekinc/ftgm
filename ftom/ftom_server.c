@@ -1259,6 +1259,7 @@ FTM_RET	FTOM_SERVER_addSubscribeSession
 	ASSERT(ppSession != NULL);
 
 	FTM_RET				xRet;
+	FTM_INT				nRet;
 	struct  timespec	xTimeout ;
 	FTOM_SESSION_PTR	pSession;
 

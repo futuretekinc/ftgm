@@ -139,12 +139,16 @@ FTM_RET	FTDMS_loadFromFile
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMS_start(FTDM_SERVER_PTR pServer)
+FTM_RET	FTDMS_start
+(
+	FTDM_SERVER_PTR pServer
+)
 {
 	ASSERT(pServer != NULL);
 
 	if (pthread_create(&pServer->xThread, NULL, FTDMS_process, (void *)pServer) < 0)
 	{
+		ERROR2(FTM_RET_THREAD_CREATION_ERROR, "Failed to create pthread.");
 		return	FTM_RET_THREAD_CREATION_ERROR;
 	}
 
@@ -187,20 +191,20 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 
 	if (sem_init(&pServer->xSemaphore, 0, pServer->xConfig.ulMaxSession) < 0)
 	{
-		ERROR("Can't alloc semaphore!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Can't alloc semaphore!\n");
 		goto error;
 	}
 
 	pServer->hSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (pServer->hSocket == -1)
 	{
-		ERROR("Could not create socket\n");
+		ERROR2(FTM_RET_COMM_SOCK_ERROR, "Could not create socket\n");
 		goto error;
 	}
 
  	if( fcntl(pServer->hSocket, F_SETFL, O_NONBLOCK) == -1 )
 	{
-       ERROR("Listen socket nonblocking\n");
+       ERROR2(FTM_RET_COMM_CTRL_ERROR, "Listen socket nonblocking\n");
        goto error;
 	}
 				 
@@ -212,7 +216,7 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 	nRet = bind( pServer->hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
 	if (nRet < 0)
 	{
-		ERROR("bind failed.[nRet = %d]\n", nRet);
+		ERROR2(FTM_RET_COMM_SOCKET_BIND_FAILED, "bind failed.[nRet = %d]\n", nRet);
 		goto error;
 	}
 
@@ -248,7 +252,7 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 				nRet = pthread_create(&pSession->xThread, NULL, FTDMS_service, pSession);
 				if (nRet != 0)
 				{
-					ERROR("Can't create a thread[%d]\n", nRet);
+					ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create a thread[%d]\n", nRet);
 					FTDMS_destroySession(pServer, &pSession);
 				}
 			}
@@ -311,7 +315,7 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 		}
 		else if (nLen < 0)
 		{
-			ERROR("recv failed[%d]\n", -nLen);
+			ERROR2(FTM_RET_COMM_RECV_ERROR, "recv failed[%d]\n", -nLen);
 			break;	
 		}
 
@@ -327,7 +331,7 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 		nLen = send(pSession->hSocket, pResp, pResp->nLen, MSG_DONTWAIT);
 		if (nLen < 0)
 		{
-			ERROR("send failed[%d]\n", -nLen);	
+			ERROR2(FTM_RET_COMM_SEND_ERROR, "send failed[%d]\n", -nLen);	
 			break;
 		}
 	}
@@ -361,8 +365,7 @@ FTM_RET	FTDMS_serviceCall
 		pSet++;
 	}
 
-	ERROR("FUNCTION NOT SUPPORTED\n");
-	ERROR("CMD : %08lx\n", pReq->xCmd);
+	ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Function[%d] not supported.\n", pReq->xCmd);
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 
@@ -393,7 +396,7 @@ FTM_RET	FTDMS_createSession
 	FTDM_SESSION_PTR pSession = (FTDM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTDM_SESSION));
 	if (pSession == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 
 	}
@@ -404,8 +407,8 @@ FTM_RET	FTDMS_createSession
 
 	if (sem_init(&pSession->xSemaphore, 0, 1) < 0)
 	{
-		ERROR("Can't alloc semaphore!\n");
 		FTM_MEM_free(pSession);
+		ERROR2(FTM_RET_CANT_CREATE_SEMAPHORE, "Can't alloc semaphore!\n");
 
 		return	FTM_RET_CANT_CREATE_SEMAPHORE;
 	}
@@ -491,13 +494,13 @@ FTM_RET	FTDMS_NODE_add
 		xRet = FTDM_NODEM_append(pServer->pDM->pNodeM, pNode);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Failed to add node[%s] : Error Code - %08x\n", pReq->xNodeInfo.pDID, xRet);
+			ERROR2(xRet, "Failed to add node[%s] : Error Code - %08x\n", pReq->xNodeInfo.pDID, xRet);
 			FTDM_NODE_destroy(&pNode);
 		}
 	}
 	else
 	{
-		ERROR("Failed to add node[%s] : Error Code - %08x\n", pReq->xNodeInfo.pDID, xRet);
+		ERROR2(xRet, "Failed to add node[%s] : Error Code - %08x\n", pReq->xNodeInfo.pDID, xRet);
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -530,12 +533,12 @@ FTM_RET	FTDMS_NODE_del
 		}
 		else
 		{
-			ERROR("Failed to remove node[%s] from list : Error Code - %08x\n", pReq->pDID, xRet);
+			ERROR2(xRet, "Failed to remove node[%s] from list : Error Code - %08x\n", pReq->pDID, xRet);
 		}
 	}
 	else
 	{
-		ERROR("Failed to get node[%s] : Error Code - %08x\n", pReq->pDID, xRet);
+		ERROR2(xRet, "Failed to get node[%s] : Error Code - %08x\n", pReq->pDID, xRet);
 	}
 
 	pResp->xCmd = pReq->xCmd;

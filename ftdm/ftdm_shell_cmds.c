@@ -243,7 +243,7 @@ FTM_RET	FTDM_SHELL_showEPData
 	xRet = FTDM_EP_DATA_count(pEP, &ulTotalCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] is not exists.\n", pEPID);
+		ERROR2(xRet, "EP[%s] is not exists.\n", pEPID);
 		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
 
@@ -260,7 +260,7 @@ FTM_RET	FTDM_SHELL_showEPData
 	pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulCount);
 	if (pData == NULL)
 	{
-		ERROR("System is not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "System is not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
@@ -328,7 +328,7 @@ FTM_RET	FTDM_SHELL_delEPData
 	xRet = FTDM_EP_DATA_count(pEP, &ulTotalCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] is not exists.\n", pEPID);
+		ERROR2(xRet, "EP[%s] is not exists.\n", pEPID);
 		return	xRet;
 	}
 
@@ -349,7 +349,7 @@ FTM_RET	FTDM_SHELL_delEPData
 	xRet = FTDM_EP_DATA_count(pEP, &ulNewCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] is not exists.\n", pEPID);
+		ERROR2(xRet, "EP[%s] is not exists.\n", pEPID);
 		return	xRet;
 	}
 

@@ -82,7 +82,8 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_preStart
 )
 {
 	ASSERT(pNode != NULL);
-	
+	FTM_INT	nRet;
+
 	pNode->xSockFD = socket(AF_INET, SOCK_DGRAM, 0);
 	if (pNode->xSockFD < 0)
 	{

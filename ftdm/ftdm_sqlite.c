@@ -8,6 +8,8 @@
 #include "ftm_trigger.h"
 #include "ftdm_sqlite.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTDM_TRACE_MODULE_DBIF
 
 static FTM_BOOL FTDM_DBIF_EP_DATA_bIOTrace = FTM_FALSE;
 static int	_FTDM_DBIF_EP_getListCB(void *pData, int nArgc, char **pArgv, char **pColName);
@@ -123,7 +125,7 @@ FTM_RET	FTDM_DBIF_open
 	xRet = sqlite3_open(_strDefaultDBName, &_pSQLiteDB);
 	if ( xRet )
 	{
-		ERROR("SQL error : %s\n", sqlite3_errmsg(_pSQLiteDB));
+		ERROR2(xRet, "%s\n", sqlite3_errmsg(_pSQLiteDB));
 
 		return	(FTM_RET_DBIF_DB_ERROR | xRet); 	
 	}
@@ -240,8 +242,8 @@ FTM_RET	FTDM_DBIF_countWithTime
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
-		return	FTM_RET_NOT_INITIALIZED;	
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
+		return	FTM_RET_NOT_INITIALIZED;
 	}
 
    	nSQLLen = sprintf(pSQL, "SELECT COUNT(*) FROM %s", pTableName);
@@ -271,7 +273,7 @@ FTM_RET	FTDM_DBIF_countWithTime
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, FTDM_DBIF_countCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -328,7 +330,7 @@ FTM_RET	FTDM_DBIF_getInfo
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -346,7 +348,7 @@ FTM_RET	FTDM_DBIF_getInfo
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_getTimeCB, &xParams, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error : %s\n", pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -358,7 +360,7 @@ FTM_RET	FTDM_DBIF_getInfo
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_getTimeCB, &xParams, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error : %s\n", pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -388,7 +390,7 @@ FTM_RET	FTDM_DBIF_get
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -403,7 +405,7 @@ FTM_RET	FTDM_DBIF_get
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, fCB, pData, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error : %s\n",pErrMsg);
+        ERROR2(xRet, "%s\n",pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -432,7 +434,7 @@ FTM_RET	FTDM_DBIF_getWithTime
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -468,7 +470,7 @@ FTM_RET	FTDM_DBIF_getWithTime
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, fCB, pData, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -516,7 +518,7 @@ FTM_RET	FTDM_DBIF_getTableCount
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_TABLE_countCB, pulCount, &strErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", strErrMsg);
+        ERROR2(xRet, "%s\n", strErrMsg);
         sqlite3_free(strErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -570,14 +572,14 @@ FTM_RET FTDM_DBIF_getTableList
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB is not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
     nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_getTableList, &xParams, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", pErrMsg);
+        ERROR2(nRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
         return  FTM_RET_ERROR;
@@ -669,7 +671,7 @@ FTM_RET	FTDM_DBIF_deleteTable
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -677,7 +679,7 @@ FTM_RET	FTDM_DBIF_deleteTable
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-		ERROR("SQL error : %s\n", pErrMsg);	
+		ERROR2(xRet, "%s\n", pErrMsg);	
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -701,8 +703,8 @@ FTM_RET	FTDM_DBIF_NODE_initTable
 	xRet = _FTDM_DBIF_isExistTable(pTableName, &bExist);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("DB access failure[%08x]\n", xRet);  
-		return	FTM_RET_DBIF_ERROR;	
+		ERROR2(xRet, "Failed to access DB.\n");  
+		return	xRet;	
 	}
 
 	if (bExist != FTM_TRUE)
@@ -711,7 +713,7 @@ FTM_RET	FTDM_DBIF_NODE_initTable
 		xRet = _FTDM_DBIF_NODE_createTable(pTableName);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Can't create a new table[%s][%08x]\n", pTableName, xRet);
+			ERROR2(xRet, "Can't create a new table[%s]\n", pTableName);
 			return	FTM_RET_DBIF_ERROR;	
 		}
 		TRACE("It created new NODE table[%s].\n", pTableName);
@@ -732,7 +734,7 @@ FTM_BOOL	FTDM_DBIF_NODE_isTableExist
 	xRet = _FTDM_DBIF_isExistTable(pTableName, &bExist);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("DB access failure[%08x]\n", xRet);  
+		ERROR2(xRet, "Failed to access DB\n");  
 		return	FTM_FALSE;	
 	}
 
@@ -761,7 +763,7 @@ FTM_RET	FTDM_DBIF_NODE_count
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, FTDM_DBIF_countCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -792,7 +794,7 @@ FTM_RET	FTDM_DBIF_delWithTime
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -826,7 +828,7 @@ FTM_RET	FTDM_DBIF_delWithTime
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error : %s\n", pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -906,7 +908,7 @@ FTM_RET	FTDM_DBIF_NODE_getList
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_getListCB, &xParams, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -926,7 +928,7 @@ FTM_RET	FTDM_DBIF_NODE_create
 	ASSERT(pInfo != NULL);
 
 	FTM_RET			xRet;
-	FTM_INT			nRC;
+	FTM_INT			nRet;
 	sqlite3_stmt 	*pStmt;
 	FTM_CHAR		pSQL[1024];
 	FTM_BOOL		bExist = FTM_FALSE;
@@ -940,23 +942,23 @@ FTM_RET	FTDM_DBIF_NODE_create
 	xRet = _FTDM_DBIF_NODE_isExist(pInfo->pDID, &bExist);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to check node!\n");
+		ERROR2(xRet, "Failed to check node!\n");
 		return	xRet;	
 	}
 
 	if (bExist == FTM_TRUE)
 	{
-		ERROR("Node[%s] is already exist.\n", pInfo->pDID);
+		ERROR2(FTM_RET_ALREADY_EXISTS, "Node[%s] is already exist.\n", pInfo->pDID);
 		return	FTM_RET_ALREADY_EXISTS;	
 	}
 
 	sprintf(pSQL, "INSERT INTO node_info (DID,VALUE) VALUES (?,?)");
 	do 
 	{
-		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
-		if( nRC!=SQLITE_OK )
+		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRet!=SQLITE_OK )
 		{
-			ERROR("SQLite3 prepare error[%d]!\n", nRC);
+			ERROR2(nRet, "SQLite3 prepare error!\n");
 			return FTM_RET_ERROR;
 		}
 
@@ -965,11 +967,11 @@ FTM_RET	FTDM_DBIF_NODE_create
 		sqlite3_bind_text(pStmt, 1, pInfo->pDID, strlen(pInfo->pDID), 0);
 		sqlite3_bind_blob(pStmt, 2, pInfo, sizeof(FTM_NODE), SQLITE_STATIC);
 
-		nRC = sqlite3_step(pStmt);
-		ASSERT( nRC != SQLITE_ROW);
+		nRet = sqlite3_step(pStmt);
+		ASSERT( nRet != SQLITE_ROW);
 
-		nRC = sqlite3_finalize(pStmt);
-	}  while (nRC == SQLITE_SCHEMA);
+		nRet = sqlite3_finalize(pStmt);
+	}  while (nRet == SQLITE_SCHEMA);
 
 	return FTM_RET_OK;
 }
@@ -989,7 +991,7 @@ FTM_RET	FTDM_DBIF_NODE_destroy
 	TRACE("Remove node[%s] from DB.\n", pDID);
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -997,7 +999,7 @@ FTM_RET	FTDM_DBIF_NODE_destroy
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1042,7 +1044,7 @@ FTM_RET	FTDM_DBIF_NODE_get
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -1050,7 +1052,7 @@ FTM_RET	FTDM_DBIF_NODE_get
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_NODE_getCB, pInfo, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -1135,7 +1137,7 @@ FTM_RET	FTDM_DBIF_EP_initTable
 		xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 		if (xRet != SQLITE_OK)
 		{
-        	ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        	ERROR2(xRet, "%s\n", pErrMsg);
 			sqlite3_free(pErrMsg);
 
 			return	FTM_RET_ERROR;
@@ -1172,7 +1174,7 @@ FTM_RET	FTDM_DBIF_EP_append
 	ASSERT(pInfo != NULL);
 
 	FTM_RET			xRet;
-	FTM_INT			nRC;
+	FTM_INT			nRet;
 	sqlite3_stmt 	*pStmt;
 	FTM_CHAR		pSQL[1024];
 	FTM_BOOL		bExist = FTM_FALSE;
@@ -1186,7 +1188,7 @@ FTM_RET	FTDM_DBIF_EP_append
 	xRet = FTDM_DBIF_EP_isExist(pInfo->pEPID, &bExist);
 	if ( xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to append EP[%s]!\n", pInfo->pEPID);
+		ERROR2(xRet, "Failed to append EP[%s]!\n", pInfo->pEPID);
 		return	xRet;
 	}
 
@@ -1199,8 +1201,8 @@ FTM_RET	FTDM_DBIF_EP_append
 	sprintf(pSQL, "INSERT INTO ep_info (EPID,VALUE) VALUES (?,?)");
 	do 
 	{
-		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
-		if( nRC!=SQLITE_OK )
+		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRet!=SQLITE_OK )
 		{
 			return FTM_RET_ERROR;
 		}
@@ -1210,11 +1212,11 @@ FTM_RET	FTDM_DBIF_EP_append
 		sqlite3_bind_text(pStmt, 1, pInfo->pEPID, strlen(pInfo->pEPID), 0);
 		sqlite3_bind_blob(pStmt, 2, pInfo, sizeof(FTM_EP), SQLITE_STATIC);
 
-		nRC = sqlite3_step(pStmt);
-		ASSERT( nRC != SQLITE_ROW);
+		nRet = sqlite3_step(pStmt);
+		ASSERT( nRet != SQLITE_ROW);
 
-		nRC = sqlite3_finalize(pStmt);
-	}  while (nRC == SQLITE_SCHEMA);
+		nRet = sqlite3_finalize(pStmt);
+	}  while (nRet == SQLITE_SCHEMA);
 
 	return FTM_RET_OK;
 }
@@ -1230,7 +1232,7 @@ FTM_RET	FTDM_DBIF_EP_remove
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -1238,7 +1240,7 @@ FTM_RET	FTDM_DBIF_EP_remove
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1301,7 +1303,7 @@ FTM_RET	FTDM_DBIF_EP_isExist
     	nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_countCB, &ulCount, &pErrMsg);
     	if (nRet != SQLITE_OK)
     	{
-        	ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        	ERROR2(nRet, "%s\n", pErrMsg);
         	sqlite3_free(pErrMsg);
 
     		return  FTM_RET_ERROR;
@@ -1371,7 +1373,7 @@ FTM_RET	FTDM_DBIF_EP_getList
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -1379,7 +1381,7 @@ FTM_RET	FTDM_DBIF_EP_getList
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getListCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -1424,7 +1426,7 @@ FTM_RET	FTDM_DBIF_EP_get
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -1432,7 +1434,7 @@ FTM_RET	FTDM_DBIF_EP_get
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_getCB, &xEP, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -1456,7 +1458,7 @@ FTM_RET	FTDM_DBIF_EP_set
 {
 	ASSERT(pInfo != NULL);
 
-	FTM_INT			nRC;
+	FTM_INT			nRet;
 	sqlite3_stmt 	*pStmt;
 	FTM_CHAR		pSQL[1024];
 
@@ -1469,20 +1471,20 @@ FTM_RET	FTDM_DBIF_EP_set
 	sprintf(pSQL, "UPDATE ep_info SET VALUE = ? WHERE EPID = \'%s\'", pEPID);
 	do 
 	{
-		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
-		if( nRC!=SQLITE_OK )
+		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRet!=SQLITE_OK )
 		{
-			ERROR("SQL error : %s\n", sqlite3_errmsg(_pSQLiteDB));
+			ERROR2(nRet, "%s\n", sqlite3_errmsg(_pSQLiteDB));
 			return FTM_RET_ERROR;
 		}
 
 		sqlite3_bind_blob(pStmt, 1, pInfo, sizeof(FTM_EP), SQLITE_STATIC);
 
-		nRC = sqlite3_step(pStmt);
-		ASSERT( nRC != SQLITE_ROW);
+		nRet = sqlite3_step(pStmt);
+		ASSERT( nRet != SQLITE_ROW);
 
-		nRC = sqlite3_finalize(pStmt);
-	}  while (nRC == SQLITE_SCHEMA);
+		nRet = sqlite3_finalize(pStmt);
+	}  while (nRet == SQLITE_SCHEMA);
 
 	return FTM_RET_OK;
 }
@@ -1500,7 +1502,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_initTable
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -1522,7 +1524,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_initTable
 		xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 		if (xRet != SQLITE_OK)
 		{
-        	ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        	ERROR2(xRet, "%s\n", pErrMsg);
 			sqlite3_free(pErrMsg);
 
 			return	FTM_RET_ERROR;
@@ -1547,7 +1549,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -1629,7 +1631,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_append
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1669,7 +1671,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_info
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -1689,7 +1691,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_info
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulEndTime, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1699,7 +1701,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_info
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulBeginTime, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1748,7 +1750,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_CountWithTime
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -1785,7 +1787,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_CountWithTime
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_countCB, pulCount, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -1941,7 +1943,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_del
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -1998,7 +2000,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_del
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2088,14 +2090,14 @@ FTM_RET _FTDM_DBIF_isExistTable
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB is not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB is not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_isExistTable, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
         return  FTM_RET_ERROR;
@@ -2117,7 +2119,7 @@ FTM_RET	_FTDM_DBIF_NODE_createTable
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB is not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -2128,7 +2130,7 @@ FTM_RET	_FTDM_DBIF_NODE_createTable
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2184,7 +2186,7 @@ FTM_RET _FTDM_DBIF_NODE_isExist
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_CB_isExist, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -2243,11 +2245,10 @@ FTM_RET	FTDM_DBIF_TRIGGER_initTable
 
 	if (bExist != FTM_TRUE)
 	{
-		ERROR("%s table is not exist\n", pTableName);
 		xRet = _FTDM_DBIF_TRIGGER_createTable(pTableName);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Can't create a new tables[%s][%08x].\n", pTableName, xRet);
+			ERROR2(xRet, "Can't create a new tables[%s].\n", pTableName);
 			return	xRet;	
 		}
 		TRACE("It created new TRIGGER table[%s].\n", pTableName);
@@ -2271,7 +2272,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_create
 {
 	ASSERT(pTrigger != NULL);
 
-	FTM_INT			nRC;
+	FTM_INT			nRet;
 	sqlite3_stmt 	*pStmt;
 	FTM_CHAR		pSQL[1024];
 
@@ -2284,8 +2285,8 @@ FTM_RET	FTDM_DBIF_TRIGGER_create
 	sprintf(pSQL, "INSERT INTO trigger (ID,VALUE) VALUES (?,?)");
 	do 
 	{
-		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
-		if( nRC!=SQLITE_OK )
+		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRet!=SQLITE_OK )
 		{
 			return FTM_RET_ERROR;
 		}
@@ -2293,11 +2294,11 @@ FTM_RET	FTDM_DBIF_TRIGGER_create
 		sqlite3_bind_text(pStmt, 1, pTrigger->pID, strlen(pTrigger->pID), 0);
 		sqlite3_bind_blob(pStmt, 2, pTrigger, sizeof(FTM_TRIGGER), SQLITE_STATIC);
 
-		nRC = sqlite3_step(pStmt);
-		ASSERT( nRC != SQLITE_ROW);
+		nRet = sqlite3_step(pStmt);
+		ASSERT( nRet != SQLITE_ROW);
 
-		nRC = sqlite3_finalize(pStmt);
-	}  while (nRC == SQLITE_SCHEMA);
+		nRet = sqlite3_finalize(pStmt);
+	}  while (nRet == SQLITE_SCHEMA);
 
 	return FTM_RET_OK;
 }
@@ -2316,7 +2317,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_destroy
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -2324,7 +2325,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_destroy
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2346,7 +2347,7 @@ FTM_RET	_FTDM_DBIF_TRIGGER_createTable
 
 	if (_pSQLiteDB == NULL)
 	{
-		TRACE("DB is not initialize.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -2355,7 +2356,7 @@ FTM_RET	_FTDM_DBIF_TRIGGER_createTable
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2407,7 +2408,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_get
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_TRIGGER_getCB, &xTrigger, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -2487,7 +2488,7 @@ FTM_RET	FTDM_DBIF_TRIGGER_getList
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_TRIGGER_getListCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -2556,17 +2557,16 @@ FTM_RET	FTDM_DBIF_ACTION_initTable
 
 	if (_FTDM_DBIF_isExistTable(pTableName, &bExist) != FTM_RET_OK)
 	{
-		ERROR("%s table check error.\n", pTableName);  
+		ERROR2(FTM_RET_DBIF_ERROR, "%s table check error.\n", pTableName);  
 		return	FTM_RET_DBIF_ERROR;	
 	}
 
 	if (bExist != FTM_TRUE)
 	{
-		ERROR("%s table is not exist.\n", pTableName);
 		xRet = _FTDM_DBIF_ACTION_createTable(pTableName);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Can't not create a new tables[%s][%08x].\n", pTableName, xRet);
+			ERROR2(xRet, "Can't not create a new tables[%s].\n", pTableName);
 			return	xRet;	
 		}
 		TRACE("It created new ACTION table[%s].\n", pTableName);
@@ -2676,7 +2676,7 @@ FTM_RET	FTDM_DBIF_ACTION_destroy
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -2684,7 +2684,7 @@ FTM_RET	FTDM_DBIF_ACTION_destroy
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2706,7 +2706,7 @@ FTM_RET	_FTDM_DBIF_ACTION_createTable
 
 	if (_pSQLiteDB == NULL)
 	{
-		TRACE("DB is not initialize.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -2717,7 +2717,7 @@ FTM_RET	_FTDM_DBIF_ACTION_createTable
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(nRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -2764,6 +2764,7 @@ FTM_RET	FTDM_DBIF_ACTION_get
 
 	if (_pSQLiteDB == NULL)
 	{
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -2773,7 +2774,7 @@ FTM_RET	FTDM_DBIF_ACTION_get
     nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_ACTION_getCB, &xAction, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(nRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -2852,7 +2853,7 @@ FTM_RET	FTDM_DBIF_ACTION_getList
     nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_ACTION_getListCB, &xParams, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(nRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -2877,12 +2878,14 @@ FTM_RET	FTDM_DBIF_RULE_initTable
 
 	if (_pSQLiteDB == NULL)
 	{
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	if (_FTDM_DBIF_isExistTable(pTableName, &bExist) != FTM_RET_OK)
+	xRet = _FTDM_DBIF_isExistTable(pTableName, &bExist);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR("%s table check error.\n", pTableName);  
+		ERROR2(xRet, "%s table check error.\n", pTableName);  
 		return	FTM_RET_DBIF_ERROR;	
 	}
 
@@ -2892,7 +2895,7 @@ FTM_RET	FTDM_DBIF_RULE_initTable
 		xRet = _FTDM_DBIF_RULE_createTable(pTableName);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Can't create a new table[%s][%08x]\n", pTableName, xRet);
+			ERROR2(xRet, "Can't create a new table[%s][%08x]\n", pTableName, xRet);
 			return	xRet;	
 		}
 		TRACE("It created new RULE table[%s].\n", pTableName);
@@ -2973,7 +2976,7 @@ FTM_RET	_FTDM_DBIF_RULE_createTable
 	nRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (nRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(nRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -3014,7 +3017,7 @@ FTM_RET	FTDM_DBIF_RULE_create
 {
 	ASSERT(pRule != NULL);
 
-	FTM_INT			nRC;
+	FTM_INT			nRet;
 	sqlite3_stmt 	*pStmt;
 	FTM_CHAR		pSQL[1024];
 
@@ -3028,21 +3031,21 @@ FTM_RET	FTDM_DBIF_RULE_create
 
 	do 
 	{
-		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
-		if( nRC!=SQLITE_OK )
+		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRet!=SQLITE_OK )
 		{
-			ERROR("SQLite3 prepare failed[%d].\n", nRC);
+			ERROR2(nRet, "SQLite3 prepare failed[%d].\n", nRet);
 			return FTM_RET_ERROR;
 		}
 
 		sqlite3_bind_text(pStmt, 1, pRule->pID, strlen(pRule->pID), 0);
 		sqlite3_bind_blob(pStmt, 2, pRule, sizeof(FTM_RULE), SQLITE_STATIC);
 
-		nRC = sqlite3_step(pStmt);
-		ASSERT( nRC != SQLITE_ROW);
+		nRet = sqlite3_step(pStmt);
+		ASSERT( nRet != SQLITE_ROW);
 
-		nRC = sqlite3_finalize(pStmt);
-	}  while (nRC == SQLITE_SCHEMA);
+		nRet = sqlite3_finalize(pStmt);
+	}  while (nRet == SQLITE_SCHEMA);
 
 	return FTM_RET_OK;
 }
@@ -3061,7 +3064,7 @@ FTM_RET	FTDM_DBIF_RULE_destroy
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -3069,7 +3072,7 @@ FTM_RET	FTDM_DBIF_RULE_destroy
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -3099,7 +3102,7 @@ FTM_RET	FTDM_DBIF_RULE_get
     nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_RULE_getCB, &xRule, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(nRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -3177,7 +3180,7 @@ FTM_RET	FTDM_DBIF_RULE_getList
     nRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_RULE_getListCB, &xParams, &pErrMsg);
     if (nRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(nRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -3247,7 +3250,7 @@ FTM_RET	FTDM_DBIF_count
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, FTDM_DBIF_countCB, pulCount, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error : %s\n", pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -3290,7 +3293,7 @@ FTM_RET	FTDM_DBIF_LOG_initTable
 		xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 		if (xRet != SQLITE_OK)
 		{
-        	ERROR("SQL error : %s\n", pErrMsg);
+        	ERROR2(xRet, "%s\n", pErrMsg);
 			sqlite3_free(pErrMsg);
 
 			return	FTM_RET_ERROR;
@@ -3318,7 +3321,7 @@ FTM_RET	FTDM_DBIF_LOG_append
 {
 	ASSERT(pLog != NULL);
 
-	FTM_INT			nRC;
+	FTM_INT			nRet;
 	sqlite3_stmt 	*pStmt;
 	FTM_CHAR		pSQL[1024];
 
@@ -3331,8 +3334,8 @@ FTM_RET	FTDM_DBIF_LOG_append
 	sprintf(pSQL, "INSERT INTO %s (ID, TIME, LEVEL, VALUE) VALUES (?,?,?,?)", pTableName);
 	do 
 	{
-		nRC = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
-		if( nRC!=SQLITE_OK )
+		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+		if( nRet!=SQLITE_OK )
 		{
 			return FTM_RET_ERROR;
 		}
@@ -3342,11 +3345,11 @@ FTM_RET	FTDM_DBIF_LOG_append
 		sqlite3_bind_int(pStmt, 3, pLog->xLevel);
 		sqlite3_bind_blob(pStmt, 4, pLog, sizeof(FTM_LOG), SQLITE_STATIC);
 
-		nRC = sqlite3_step(pStmt);
-		ASSERT( nRC != SQLITE_ROW);
+		nRet = sqlite3_step(pStmt);
+		ASSERT( nRet != SQLITE_ROW);
 
-		nRC = sqlite3_finalize(pStmt);
-	}  while (nRC == SQLITE_SCHEMA);
+		nRet = sqlite3_finalize(pStmt);
+	}  while (nRet == SQLITE_SCHEMA);
 
 	return FTM_RET_OK;
 }
@@ -3367,7 +3370,7 @@ FTM_RET	FTDM_DBIF_LOG_del
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -3424,7 +3427,7 @@ FTM_RET	FTDM_DBIF_LOG_del
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, NULL, 0, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -3490,7 +3493,7 @@ FTM_RET	FTDM_DBIF_LOG_isExist
    	nRet = sqlite3_exec(_pSQLiteDB, pSQL, FTDM_DBIF_countCB, &xParams, &pErrMsg);
    	if (nRet != SQLITE_OK)
    	{
-       	ERROR("SQL error : %s\n", pErrMsg);
+       	ERROR2(nRet, "%s\n", pErrMsg);
        	sqlite3_free(pErrMsg);
 
    		return  FTM_RET_ERROR;
@@ -3558,7 +3561,7 @@ FTM_RET	FTDM_DBIF_LOG_getList
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -3567,7 +3570,7 @@ FTM_RET	FTDM_DBIF_LOG_getList
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_LOG_getListCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
 
     	return  FTM_RET_ERROR;
@@ -3596,7 +3599,7 @@ FTM_RET	FTDM_DBIF_LOG_info
 
 	if (_pSQLiteDB == NULL)
 	{
-		ERROR("DB not initialized.\n");
+		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
@@ -3621,7 +3624,7 @@ FTM_RET	FTDM_DBIF_LOG_info
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulEndTime, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
@@ -3631,7 +3634,7 @@ FTM_RET	FTDM_DBIF_LOG_info
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, _FTDM_DBIF_EP_DATA_timeCB, pulBeginTime, &pErrMsg);
 	if (xRet != SQLITE_OK)
 	{
-        ERROR("SQL error[%d] : %s\n", __LINE__, pErrMsg);
+        ERROR2(xRet, "%s\n", pErrMsg);
 		sqlite3_free(pErrMsg);
 
 		return	FTM_RET_ERROR;
