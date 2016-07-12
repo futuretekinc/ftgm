@@ -562,14 +562,19 @@ FTM_RET	FTOM_EP_attach
 	{
 	case	FTM_NODE_TYPE_SNMP:
 		{
+			FTM_RET	xRet;
 			FTM_INT	nIndex;
 
 			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 2], 0, 16);
 
-			FTOM_NODE_SNMPC_getOID((FTOM_NODE_SNMPC_PTR)pNode, 
-					(pEP->xInfo.xType >> 24) & 0xFF, 
-					nIndex,
-					&pEP->xOption.xSNMP.xOID);
+			xRet = FTOM_NODE_SNMPC_getOIDForValue((FTOM_NODE_SNMPC_PTR)pNode, 
+						(pEP->xInfo.xType >> 24) & 0xFF, 
+						nIndex,
+						&pEP->xOption.xSNMP.xOID);
+			if (xRet != FTM_RET_OK)
+			{
+				pEP->xInfo.bEnable = FTM_FALSE;	
+			}
 		}
 		break;
 	}
@@ -694,18 +699,25 @@ FTM_VOID_PTR FTOM_EP_process
 		FTM_EP_DATA		xData;
 		FTOM_MSG_PTR	pBaseMsg = NULL;
 
-		if (FTM_TIMER_isExpired(&pEP->xUpdateTimer))
+		if ((pEP->xInfo.ulUpdateInterval > 0) && FTM_TIMER_isExpired(&pEP->xUpdateTimer))
 		{
-			xRet = FTOM_EP_remoteGet(pEP, &xData);
-			if (xRet == FTM_RET_OK)
+			if (FTOM_EP_isAsyncMode(pEP) != FTM_RET_TRUE)
 			{
-				xData.xState = FTM_EP_DATA_STATE_VALID;
-				xData.ulTime = time(NULL);
-				FTOM_EP_setData(pEP, &xData);
+				xRet = FTOM_EP_remoteGetData(pEP, &xData);
+				if (xRet == FTM_RET_OK)
+				{
+					xData.xState = FTM_EP_DATA_STATE_VALID;
+					xData.ulTime = time(NULL);
+					FTOM_EP_setData(pEP, &xData);
+				}
+				else
+				{
+					WARN("It failed to import data from EP[%s].\n", pEP->xInfo.pEPID);
+				}
 			}
 			else
 			{
-				WARN("It failed to import data from EP[%s].\n", pEP->xInfo.pEPID);
+				FTOM_EP_remoteGetDataAsync(pEP);
 			}
 
 			FTM_TIMER_addS(&pEP->xUpdateTimer, pEP->xInfo.ulUpdateInterval);
@@ -747,7 +759,6 @@ FTM_VOID_PTR FTOM_EP_process
 
 		while (!pEP->bStop && (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pBaseMsg) == FTM_RET_OK))
 		{
-			TRACE("Receive Message : EP[%s], MSG[%08x]\n", pEP->xInfo.pEPID, pBaseMsg->xType);
 			switch(pBaseMsg->xType)
 			{
 			case	FTOM_MSG_TYPE_PUBLISH_EP_LAST_DATA:
@@ -803,7 +814,7 @@ FTM_RET	FTOM_EP_getDataType
 	return	FTM_EP_getDataType(&pEP->xInfo, pType);
 }
 
-FTM_RET	FTOM_EP_remoteSet
+FTM_RET	FTOM_EP_remoteSetData
 (
 	FTOM_EP_PTR 	pEP, 
 	FTM_EP_DATA_PTR pData
@@ -823,7 +834,7 @@ FTM_RET	FTOM_EP_remoteSet
 	return	xRet;
 }
 
-FTM_RET	FTOM_EP_remoteGet
+FTM_RET	FTOM_EP_remoteGetData
 (
 	FTOM_EP_PTR 	pEP, 
 	FTM_EP_DATA_PTR pData
@@ -1144,7 +1155,7 @@ FTM_RET	FTOM_EP_getDataInfo
 	return	FTOM_DB_EP_getDataInfo(pEP->xInfo.pEPID, pulBegin, pulEnd, pulCount);
 }
 
-FTM_RET	FTOM_EP_getDataAsync
+FTM_RET	FTOM_EP_remoteGetDataAsync
 (
 	FTOM_EP_PTR 	pEP 
 )
@@ -1162,7 +1173,7 @@ FTM_RET	FTOM_EP_getDataAsync
 	return	xRet;
 }
 
-FTM_RET	FTOM_EP_setDataAsync
+FTM_RET	FTOM_EP_remoteSetDataAsync
 (
 	FTOM_EP_PTR 	pEP,
 	FTM_EP_DATA_PTR pData
@@ -1370,6 +1381,16 @@ FTM_RET	FTOM_EP_sendMessage
 	ASSERT(pMsg != NULL);
 
 	return	FTOM_MSGQ_push(&pEP->xMsgQ, pMsg);
+}
+
+FTM_RET	FTOM_EP_isAsyncMode
+(
+	FTOM_EP_PTR		pEP
+)
+{
+	ASSERT(pEP != NULL);
+
+	return	FTM_EP_isAsyncMode(&pEP->xInfo);
 }
 
 FTM_INT	FTOM_EP_seeker

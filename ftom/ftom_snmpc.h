@@ -7,10 +7,10 @@
 #include "ftom_snmptrapd.h"
 #include "ftom_msg.h"
 
-#define	FTOM_SNMPC_NAME_LENGTH	128
-#define	FTOM_SNMPC_NAME			"ftom:agent"
-#define	FTOM_SNMPC_RETRY_COUNT	3
-
+#define	FTOM_SNMPC_NAME_LENGTH		128
+#define	FTOM_SNMPC_NAME				"ftom:agent"
+#define	FTOM_SNMPC_RETRY_COUNT		3
+#define	FTOM_SNMPC_LOOP_INTERVAL	100 // ms
 struct  FTOM_NODE_SNMPC_STRUCT;
 
 typedef	FTM_ULONG		FTOM_SNMPC_STATE, _PTR_ FTOM_SNMPC_STATE_PTR;
@@ -27,6 +27,7 @@ typedef	struct
 	FTM_CHAR		pName[FTOM_SNMPC_NAME_LENGTH + 1];
 	FTM_LIST		xMIBList;
 
+	FTM_ULONG		ulLoopInterval;
 	FTM_ULONG		ulMaxRetryCount;
 }	FTOM_SNMPC_CONFIG, _PTR_ FTOM_SNMPC_CONFIG_PTR;
 
@@ -176,6 +177,21 @@ FTM_RET	FTOM_SNMPC_getEPData
 
 FTM_RET	FTOM_SNMPC_setEPData
 (
+	struct FTOM_NODE_SNMPC_STRUCT _PTR_ pNode, 
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTOM_SNMPC_getEPDataAsync
+(
+	FTOM_SNMPC_PTR 		pClient, 
+	struct FTOM_NODE_SNMPC_STRUCT _PTR_ pNode, 
+	FTOM_EP_PTR 		pEP 
+);
+
+FTM_RET	FTOM_SNMPC_setEPDataAsync
+(
+	FTOM_SNMPC_PTR 		pClient, 
 	struct FTOM_NODE_SNMPC_STRUCT _PTR_ pNode, 
 	FTOM_EP_PTR 		pEP, 
 	FTM_EP_DATA_PTR 	pData

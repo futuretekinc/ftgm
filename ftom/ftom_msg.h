@@ -39,6 +39,9 @@ typedef	enum
 	FTOM_MSG_TYPE_TP_REQ_RESTART,
 	FTOM_MSG_TYPE_TP_REQ_CONTROL_ACTUATOR,
 	FTOM_MSG_TYPE_TP_RESPONSE,
+
+	FTOM_MSG_TYPE_SNMPC_GET_EP_DATA,
+	FTOM_MSG_TYPE_SNMPC_SET_EP_DATA,
 	FTOM_MSG_TYPE_MAX
 }	FTOM_MSG_TYPE, _PTR_ FTOM_MSG_TYPE_PTR;
 
@@ -440,6 +443,64 @@ FTM_RET	FTOM_MSG_ACTION_createActivation
 	FTM_CHAR_PTR	pActionID,
 	FTM_BOOL		bActivation,
 	FTOM_MSG_PTR _PTR_ ppMsg
+);
+
+/************************************************
+ * SNMP Client
+ ************************************************/
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_CHAR		pDID[FTM_DID_LEN+1];
+	FTM_CHAR		pEPID[FTM_DID_LEN+1];
+	FTM_ULONG		ulVersion;
+	FTM_CHAR		pURL[FTM_URL_LEN+1];
+	FTM_CHAR		pCommunity[FTM_SNMP_COMMUNITY_LEN+1];
+	FTM_SNMP_OID	xOID;
+	FTM_EP_DATA_TYPE	xDataType;
+	FTM_ULONG		ulTimeout;
+}	FTOM_MSG_SNMPC_GET_EP_DATA, _PTR_ FTOM_MSG_SNMPC_GET_EP_DATA_PTR;
+
+FTM_RET	FTOM_MSG_SNMPC_createGetEPData
+(
+	FTM_CHAR_PTR		pDID,
+	FTM_CHAR_PTR		pEPID,
+	FTM_ULONG			ulVersion,
+	FTM_CHAR_PTR		pURL,
+	FTM_CHAR_PTR		pCommunity,
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_EP_DATA_TYPE	xDataType,
+	FTM_ULONG			ulTimeout,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+);
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_CHAR		pDID[FTM_DID_LEN+1];
+	FTM_CHAR		pEPID[FTM_DID_LEN+1];
+	FTM_ULONG		ulVersion;
+	FTM_CHAR		pURL[FTM_URL_LEN+1];
+	FTM_CHAR		pCommunity[FTM_SNMP_COMMUNITY_LEN+1];
+	FTM_SNMP_OID	xOID;
+	FTM_ULONG		ulTimeout;
+	FTM_EP_DATA		xData;
+}	FTOM_MSG_SNMPC_SET_EP_DATA, _PTR_ FTOM_MSG_SNMPC_SET_EP_DATA_PTR;
+
+FTM_RET	FTOM_MSG_SNMPC_createSetEPData
+(
+	FTM_CHAR_PTR		pDID,
+	FTM_CHAR_PTR		pEPID,
+	FTM_ULONG			ulVersion,
+	FTM_CHAR_PTR		pURL,
+	FTM_CHAR_PTR		pCommunity,
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_ULONG			ulTimeout,
+	FTM_EP_DATA_PTR		pData,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
 );
 
 /************************************************

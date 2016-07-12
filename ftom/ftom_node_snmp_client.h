@@ -32,7 +32,55 @@ FTM_RET	FTOM_NODE_SNMPC_destroy
 	FTOM_NODE_SNMPC_PTR _PTR_ pNode
 );
 
-FTM_RET	FTOM_NODE_SNMPC_getOID
+FTM_RET	FTOM_NODE_SNMPC_getOIDForID
+(
+	FTOM_NODE_SNMPC_PTR 	pNode, 
+	FTM_ULONG 				ulType, 
+	FTM_ULONG 				ulIndex, 
+	FTM_SNMP_OID_PTR		pOID
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getOIDForType
+(
+	FTOM_NODE_SNMPC_PTR 	pNode, 
+	FTM_ULONG 				ulType, 
+	FTM_ULONG 				ulIndex, 
+	FTM_SNMP_OID_PTR		pOID
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getOIDForName
+(
+	FTOM_NODE_SNMPC_PTR 	pNode, 
+	FTM_ULONG 				ulType, 
+	FTM_ULONG 				ulIndex, 
+	FTM_SNMP_OID_PTR		pOID
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getOIDForSerialNumber
+(
+	FTOM_NODE_SNMPC_PTR 	pNode, 
+	FTM_ULONG 				ulType, 
+	FTM_ULONG 				ulIndex, 
+	FTM_SNMP_OID_PTR		pOID
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getOIDForValue
+(
+	FTOM_NODE_SNMPC_PTR 	pNode, 
+	FTM_ULONG 				ulType, 
+	FTM_ULONG 				ulIndex, 
+	FTM_SNMP_OID_PTR		pOID
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getOIDForTime
+(
+	FTOM_NODE_SNMPC_PTR 	pNode, 
+	FTM_ULONG 				ulType, 
+	FTM_ULONG 				ulIndex, 
+	FTM_SNMP_OID_PTR		pOID
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getOIDForUpdateInterval
 (
 	FTOM_NODE_SNMPC_PTR 	pNode, 
 	FTM_ULONG 				ulType, 

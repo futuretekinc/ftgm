@@ -8,6 +8,15 @@
 
 FTM_ULONG		active_hosts = 0;
 
+static
+FTM_RET		FTOM_NODE_SNMPC_getOID
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_ULONG 			ulType, 
+	FTM_CHAR_PTR		pFieldName,
+	FTM_ULONG 			ulIndex, 
+	FTM_SNMP_OID_PTR	pOID
+);
 
 static 
 FTOM_NODE_CLASS_PTR	pClasses[] =
@@ -97,20 +106,21 @@ FTM_RET	FTOM_NODE_SNMPC_destroy
 
 static FTM_CHAR_PTR	pOIDNamePrefix[] =
 {
-	"",
 	"temp",
 	"humi",
 	"vlt",
 	"curr",
 	"di",
 	"do",
+	"gas",
+	"pwr",
 	"cnt",
 	"prs",
 	"dsc",
 	"dev"
 };
 
-FTM_RET		FTOM_NODE_SNMPC_getOID
+FTM_RET		FTOM_NODE_SNMPC_getOIDForID
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
 	FTM_ULONG 			ulType, 
@@ -118,12 +128,114 @@ FTM_RET		FTOM_NODE_SNMPC_getOID
 	FTM_SNMP_OID_PTR	pOID
 )
 {
+	return	FTOM_NODE_SNMPC_getOID(pNode, ulType, "ID", ulIndex, pOID);
+}
+
+FTM_RET		FTOM_NODE_SNMPC_getOIDForType
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_ULONG 			ulType, 
+	FTM_ULONG 			ulIndex, 
+	FTM_SNMP_OID_PTR	pOID
+)
+{
+	return	FTOM_NODE_SNMPC_getOID(pNode, ulType, "Type", ulIndex, pOID);
+}
+
+FTM_RET		FTOM_NODE_SNMPC_getOIDForName
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_ULONG 			ulType, 
+	FTM_ULONG 			ulIndex, 
+	FTM_SNMP_OID_PTR	pOID
+)
+{
+	return	FTOM_NODE_SNMPC_getOID(pNode, ulType, "Name", ulIndex, pOID);
+}
+
+FTM_RET		FTOM_NODE_SNMPC_getOIDForSerialNumber
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_ULONG 			ulType, 
+	FTM_ULONG 			ulIndex, 
+	FTM_SNMP_OID_PTR	pOID
+)
+{
+	return	FTOM_NODE_SNMPC_getOID(pNode, ulType, "SN", ulIndex, pOID);
+}
+
+FTM_RET		FTOM_NODE_SNMPC_getOIDForState
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_ULONG 			ulType, 
+	FTM_ULONG 			ulIndex, 
+	FTM_SNMP_OID_PTR	pOID
+)
+{
+	return	FTOM_NODE_SNMPC_getOID(pNode, ulType, "State", ulIndex, pOID);
+}
+
+FTM_RET		FTOM_NODE_SNMPC_getOIDForUpdateInterval
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_ULONG 			ulType, 
+	FTM_ULONG 			ulIndex, 
+	FTM_SNMP_OID_PTR	pOID
+)
+{
+	return	FTOM_NODE_SNMPC_getOID(pNode, ulType, "UpdateInterval", ulIndex, pOID);
+}
+
+FTM_RET		FTOM_NODE_SNMPC_getOIDForTime
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_ULONG 			ulType, 
+	FTM_ULONG 			ulIndex, 
+	FTM_SNMP_OID_PTR	pOID
+)
+{
+	return	FTOM_NODE_SNMPC_getOID(pNode, ulType, "LastTime", ulIndex, pOID);
+}
+
+FTM_RET		FTOM_NODE_SNMPC_getOIDForValue
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_ULONG 			ulType, 
+	FTM_ULONG 			ulIndex, 
+	FTM_SNMP_OID_PTR	pOID
+)
+{
+	return	FTOM_NODE_SNMPC_getOID(pNode, ulType, "Value", ulIndex, pOID);
+}
+
+FTM_RET		FTOM_NODE_SNMPC_getOID
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_ULONG 			ulType, 
+	FTM_CHAR_PTR		pFieldName,
+	FTM_ULONG 			ulIndex, 
+	FTM_SNMP_OID_PTR	pOID
+)
+{
 	ASSERT(pNode != NULL);
 	ASSERT(pOID != NULL);
 
+	FTM_RET		xRet;
 	FTM_CHAR	pBuff[1024];
 
-	sprintf(pBuff, "%s:%sValue.%lu", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pOIDNamePrefix[ulType], ulIndex);
+	if ((ulType == 0) || (ulType > sizeof(pOIDNamePrefix) / sizeof(FTM_CHAR_PTR)))
+	{
+		return	FTM_RET_INVALID_TYPE;
 
-	return	FTOM_SNMPC_getOID(pBuff, pOID);
+	}
+
+	sprintf(pBuff, "%s:%s%s.%lu", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pOIDNamePrefix[ulType - 1], pFieldName, ulIndex);
+
+	xRet = FTOM_SNMPC_getOID(pBuff, pOID);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Failed to get OID[%s]\n", pBuff);	
+	}
+
+	return	xRet;
 }

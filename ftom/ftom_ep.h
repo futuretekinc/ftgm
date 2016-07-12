@@ -254,20 +254,35 @@ FTM_RET	FTOM_EP_sendMessage
 	FTOM_MSG_PTR	pMsg
 );
 
+FTM_RET	FTOM_EP_isAsyncMode
+(
+	FTOM_EP_PTR		pEP
+);
+
 /******************************************
  * Remote device control
  ******************************************/
-FTM_RET	FTOM_EP_remoteSet
+FTM_RET	FTOM_EP_remoteSetData
 (
 	FTOM_EP_PTR 		pEP, 
 	FTM_EP_DATA_PTR 	pData
 );
 
-FTM_RET	FTOM_EP_remoteGet
+FTM_RET	FTOM_EP_remoteGetData
 (
 	FTOM_EP_PTR 		pEP, 
 	FTM_EP_DATA_PTR 	pData
 );
 
+FTM_RET	FTOM_EP_remoteGetDataAsync
+(
+	FTOM_EP_PTR 		pEP 
+);
+
+FTM_RET	FTOM_EP_remoteSetDataAsync
+(
+	FTOM_EP_PTR 		pEP,
+	FTM_EP_DATA_PTR 	pData
+);
 #endif
 

@@ -2,6 +2,7 @@
 #define	__FTM_TYPES_H__
 
 #include <stdint.h>
+#include <linux/types.h>
 
 #define	_PTR_	*
 

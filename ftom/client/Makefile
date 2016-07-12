@@ -6,7 +6,6 @@ include $(TOPDIR)/Makefile.in
 
 CLIENT=ftomc
 CLIENT_SRCS=main.c\
-			ftom_client_config.c\
 			ftom_client_cmds.c\
 			cmd_node.c\
 			cmd_ep.c\

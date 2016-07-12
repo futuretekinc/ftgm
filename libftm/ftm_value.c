@@ -418,6 +418,48 @@ FTM_RET	FTM_VALUE_getULONG
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_VALUE_setFromString
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_CHAR_PTR	pValue
+)
+{
+	ASSERT(pObject != NULL);
+	ASSERT(pValue != NULL);
+
+	switch(pObject->xType)
+	{
+	case	FTM_VALUE_TYPE_BOOL:
+		{
+			FTM_VALUE_initBOOL(pObject, (strtol(pValue, NULL, 10) == 1));
+		}
+		break;
+
+	case	FTM_VALUE_TYPE_INT:
+		{
+			FTM_VALUE_initINT(pObject, strtol(pValue, NULL, 10));
+		}
+		break;
+
+	case	FTM_VALUE_TYPE_ULONG:
+		{
+			FTM_VALUE_initULONG(pObject, strtoul(pValue, NULL, 10));
+		}
+		break;
+
+	case	FTM_VALUE_TYPE_FLOAT:
+		{
+			FTM_VALUE_initFLOAT(pObject, strtod(pValue, NULL));
+		}
+		break;
+
+	default:
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTM_VALUE_compare
 (
 	FTM_VALUE_PTR pValue1, 

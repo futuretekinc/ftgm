@@ -143,6 +143,12 @@ FTM_RET	FTM_VALUE_setBOOL
 	FTM_BOOL		bValue
 );
 
+FTM_RET	FTM_VALUE_setFromString
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_CHAR_PTR	pValue
+);
+
 FTM_RET	FTM_VALUE_compare
 (
 	FTM_VALUE_PTR pValue1, 

@@ -719,6 +719,97 @@ FTM_RET	FTOM_MSG_ACTION_createActivation
 /********************************************************************************
  * Requested from the thing+
  ********************************************************************************/
+FTM_RET	FTOM_MSG_SNMPC_createGetEPData
+(
+	FTM_CHAR_PTR		pDID,
+	FTM_CHAR_PTR		pEPID,
+	FTM_ULONG			ulVersion,
+	FTM_CHAR_PTR		pURL,
+	FTM_CHAR_PTR		pCommunity,
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_ULONG			ulTimeout,
+	FTM_EP_DATA_TYPE	xDataType,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+)
+{
+	ASSERT(pDID != NULL);
+	ASSERT(pEPID != NULL);
+	ASSERT(pURL != NULL);
+	ASSERT(pCommunity != NULL);
+	ASSERT(pOID != NULL);
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_SNMPC_GET_EP_DATA_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_SNMPC_GET_EP_DATA);
+
+	pMsg = (FTOM_MSG_SNMPC_GET_EP_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_SNMPC_GET_EP_DATA;
+	pMsg->ulLen = ulMsgLen;
+	strncpy(pMsg->pDID, pDID, FTM_DID_LEN);
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
+	strncpy(pMsg->pURL, pURL, FTM_URL_LEN);
+	strncpy(pMsg->pCommunity, pCommunity, FTM_SNMP_COMMUNITY_LEN);
+	memcpy(&pMsg->xOID, pOID, sizeof(FTM_SNMP_OID));
+	pMsg->ulTimeout = ulTimeout;
+	pMsg->xDataType = xDataType;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MSG_SNMPC_createSetEPData
+(
+	FTM_CHAR_PTR		pDID,
+	FTM_CHAR_PTR		pEPID,
+	FTM_ULONG			ulVersion,
+	FTM_CHAR_PTR		pURL,
+	FTM_CHAR_PTR		pCommunity,
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_ULONG			ulTimeout,
+	FTM_EP_DATA_PTR		pData,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+)
+{
+	ASSERT(pDID != NULL);
+	ASSERT(pEPID != NULL);
+	ASSERT(pURL != NULL);
+	ASSERT(pCommunity != NULL);
+	ASSERT(pOID != NULL);
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_SNMPC_SET_EP_DATA_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_SNMPC_SET_EP_DATA);
+
+	pMsg = (FTOM_MSG_SNMPC_SET_EP_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_SNMPC_SET_EP_DATA;
+	pMsg->ulLen = ulMsgLen;
+	strncpy(pMsg->pDID, pDID, FTM_DID_LEN);
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
+	strncpy(pMsg->pURL, pURL, FTM_URL_LEN);
+	strncpy(pMsg->pCommunity, pCommunity, FTM_SNMP_COMMUNITY_LEN);
+	memcpy(&pMsg->xOID, pOID, sizeof(FTM_SNMP_OID));
+	pMsg->ulTimeout = ulTimeout;
+	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+/********************************************************************************
+ * Requested from the thing+
+ ********************************************************************************/
 FTM_RET	FTOM_MSG_TP_createReqSetReportInterval
 (
 	FTM_CHAR_PTR	pReqID,

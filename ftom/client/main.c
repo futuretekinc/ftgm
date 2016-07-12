@@ -11,7 +11,6 @@
 #include "libconfig.h"
 #include "ftm.h"
 #include "ftom_client_net.h"
-#include "ftom_client_config.h"
 
 #define		FTOM_CLIENT_MAX_LINE	2048
 #define		FTOM_CLIENT_MAX_ARGS	16

@@ -5,7 +5,6 @@
 #include <semaphore.h>
 #include "ftm.h"
 #include "ftom_params.h"
-#include "ftom_client_config.h"
 
 typedef	union	FTOM_CLIENT_CONFIG_UNION _PTR_ FTOM_CLIENT_CONFIG_PTR;
 

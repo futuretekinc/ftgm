@@ -20,5 +20,6 @@
 #include "ftm_log.h"
 #include "ftm_util.h"
 #include "ftm_fins.h"
+#include "ftm_snmp.h"
 #endif
 

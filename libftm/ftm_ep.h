@@ -50,7 +50,8 @@ typedef	unsigned long	FTM_EP_FIELD, _PTR_ FTM_EP_FIELD_PTR;
 
 typedef enum
 {
-	FTM_EP_FLAG_STATIC = (1 << 0)
+	FTM_EP_FLAG_STATIC = (1 << 0),
+	FTM_EP_FLAG_SYNC   = (1 << 1)
 }	FTM_EP_FLAG, _PTR_ FTM_EP_FLAG_PTR;
 
 typedef	enum
@@ -198,6 +199,11 @@ FTM_RET	FTM_EP_isStatic
 	FTM_EP_PTR 	pEP
 );
 
+FTM_RET	FTM_EP_isAsyncMode
+(
+	FTM_EP_PTR 	pEP
+);
+
 FTM_CHAR_PTR FTM_EP_typeString
 (
 	FTM_EP_TYPE nType
@@ -310,6 +316,19 @@ FTM_RET	FTM_EP_DATA_initBOOL
 (	
 	FTM_EP_DATA_PTR pData,
 	FTM_BOOL 		bValue 
+);
+
+FTM_RET	FTM_EP_DATA_initValueFromString
+(
+	FTM_EP_DATA_PTR		pData,
+	FTM_EP_DATA_TYPE	xType,
+	FTM_CHAR_PTR		pValue
+);
+
+FTM_RET	FTM_EP_DATA_setValueFromString
+(
+	FTM_EP_DATA_PTR	pData,
+	FTM_CHAR_PTR	pValue
 );
 
 FTM_RET	FTM_EP_DATA_destroy

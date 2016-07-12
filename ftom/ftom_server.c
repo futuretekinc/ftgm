@@ -2211,7 +2211,7 @@ FTM_RET	FTOM_SERVER_EP_remoteSet
 	xRet= FTOM_EP_get(pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_EP_remoteSet(pEP, &pReq->xData);
+		xRet = FTOM_EP_remoteSetData(pEP, &pReq->xData);
 	}
 
 

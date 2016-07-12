@@ -12,7 +12,6 @@
 #include "ftm.h"
 #include "ftm_snmp.h"
 #include "ftom_client.h"
-#include "ftom_client_config.h"
 
 FTM_RET	FTOM_CLIENT_CMD_NODE
 (

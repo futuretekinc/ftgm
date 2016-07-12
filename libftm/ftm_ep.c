@@ -403,6 +403,20 @@ FTM_RET	FTM_EP_isStatic(FTM_EP_PTR pEP)
 	}
 }
 
+FTM_RET	FTM_EP_isAsyncMode(FTM_EP_PTR pEP)
+{
+	ASSERT(pEP != NULL);
+
+	if (pEP->xFlags & FTM_EP_FLAG_SYNC)
+	{
+		return	FTM_RET_FALSE;
+	}
+	else
+	{
+		return	FTM_RET_TRUE;	
+	}
+}
+
 FTM_BOOL		FTM_EP_seeker(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator)
 {
 	ASSERT(pItem != NULL);
@@ -749,6 +763,63 @@ FTM_RET	FTM_EP_DATA_initBOOL
 	pData->xState = FTM_EP_DATA_STATE_VALID;
 	pData->ulTime = xTimeval.tv_sec * 1000000 + xTimeval.tv_usec;
 	FTM_VALUE_initBOOL(&pData->xValue, bValue);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EP_DATA_initValueFromString
+(
+	FTM_EP_DATA_PTR		pData,
+	FTM_EP_DATA_TYPE	xType,
+	FTM_CHAR_PTR		pValue
+)
+{
+	ASSERT(pData != NULL);
+	ASSERT(pValue != NULL);
+
+	pData->xType = xType;
+
+	return	FTM_EP_DATA_setValueFromString(pData, pValue);
+}
+
+FTM_RET	FTM_EP_DATA_setValueFromString
+(
+	FTM_EP_DATA_PTR	pData,
+	FTM_CHAR_PTR	pValue
+)
+{
+	ASSERT(pData != NULL);
+	ASSERT(pValue != NULL);
+
+	pData->ulTime = time(NULL);
+	pData->xState = FTM_EP_DATA_STATE_VALID;
+	switch(pData->xType)
+	{
+	case	FTM_EP_DATA_TYPE_BOOL:
+		{
+			FTM_VALUE_initBOOL(&pData->xValue, (strtol(pValue, NULL, 10) == 1));
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_INT:
+		{
+			FTM_VALUE_initINT(&pData->xValue, strtol(pValue, NULL, 10));
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_ULONG:
+		{
+			FTM_VALUE_initULONG(&pData->xValue, strtoul(pValue, NULL, 10));
+		}
+		break;
+
+	case	FTM_EP_DATA_TYPE_FLOAT:
+		{
+			FTM_VALUE_initFLOAT(&pData->xValue, strtod(pValue, NULL));
+		}
+		break;
+	}
+
 
 	return	FTM_RET_OK;
 }

@@ -12,9 +12,9 @@ FTM_CHAR_PTR	FTM_SNMP_OID_toStr(FTM_SNMP_OID_PTR pOID)
 	pString[0] = '\0';
 	pString[sizeof(pString) - 1] = '\0';
 
-	for(i = 0 ; i < pOID->ulOIDLen ; i++)
+	for(i = 0 ; i < pOID->nLen ; i++)
 	{
-		ulLen += snprintf(&pString[ulLen], sizeof(pString) - ulLen - 1, ".%lu", pOID->pOID[i]);
+		ulLen += snprintf(&pString[ulLen], sizeof(pString) - ulLen - 1, ".%lu", pOID->pIDs[i]);
 	}
 
 	return	pString;

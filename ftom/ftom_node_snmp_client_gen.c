@@ -101,6 +101,17 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_final
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_NODE_SNMPC_GEN_getEPCount
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_EP_TYPE			xType,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	*pulCount = 0;
+	return	0;
+}
+
 FTM_RET	FTOM_NODE_SNMPC_GEN_getEPData
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
@@ -121,6 +132,43 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_setEPData
 	return	FTOM_SNMPC_setEPData(pNode, pEP, pData);
 }
 
+FTM_RET	FTOM_NODE_SNMPC_GEN_getEPDataAsync
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTOM_EP_PTR 		pEP
+)
+{
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTOM_SNMPC_getEPDataAsync(pService->pData, pNode, pEP);
+}
+
+FTM_RET	FTOM_NODE_SNMPC_GEN_setEPDataAsync
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+)
+{
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	return	FTOM_SNMPC_setEPDataAsync(pService->pData, pNode, pEP, pData);
+}
+
 FTOM_NODE_CLASS	xGeneralSNMP = 
 {
 	.pModel = "general",
@@ -130,7 +178,10 @@ FTOM_NODE_CLASS	xGeneralSNMP =
 	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_GEN_init,
 	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_GEN_final,
 	.fPrestop	= (FTOM_NODE_PRESTART)FTOM_NODE_SNMPC_GEN_prestop,
+	.fGetEPCount= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_SNMPC_GEN_getEPCount,
 	.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_GEN_getEPData,
 	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_GEN_setEPData,
+	.fGetEPDataAsync	= (FTOM_NODE_GET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_GEN_getEPDataAsync,
+	.fSetEPDataAsync	= (FTOM_NODE_SET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_GEN_setEPDataAsync,
 };
 

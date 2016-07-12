@@ -5,7 +5,6 @@
 #include <semaphore.h>
 #include "ftm.h"
 #include "ftom_params.h"
-#include "ftom_client_config.h"
 #include "ftom_client.h"
 
 typedef struct 
@@ -21,13 +20,13 @@ typedef	struct
 {
 	struct
 	{
-		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];
+		FTM_CHAR	pHost[FTM_URL_LEN+1];
 		FTM_USHORT	usPort;
 	}	xServer;
 
 	struct
 	{
-		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];
+		FTM_CHAR	pHost[FTM_URL_LEN+1];
 		FTM_USHORT	usPort;
 	}	xPublishServer;
 }	FTOM_CLIENT_NET_CONFIG, _PTR_ FTOM_CLIENT_NET_CONFIG_PTR;
