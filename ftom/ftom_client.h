@@ -347,7 +347,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_type
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR	pEPID,
-	FTM_EP_DATA_TYPE_PTR pType
+	FTM_VALUE_TYPE_PTR	pType
 );
 
 /*****************************************************************

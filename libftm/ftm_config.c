@@ -1470,25 +1470,58 @@ FTM_RET	FTM_CONFIG_ITEM_getValue
 	{
 	case	FTM_VALUE_TYPE_INT:
 		{
-			xRet = FTM_CONFIG_ITEM_getItemINT(pItem, "value", &xValue.xValue.nValue);
+			FTM_INT	nValue = 0;
+
+			xRet = FTM_CONFIG_ITEM_getItemINT(pItem, "value", &nValue);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Value is invalid.\n");
+				return	FTM_RET_CONFIG_INVALID_OBJECT;
+			}
+
+			FTM_VALUE_initINT(pValue, nValue);
 		}
 		break;
 
 	case	FTM_VALUE_TYPE_ULONG:
 		{
-			xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "value", &xValue.xValue.ulValue);
+			FTM_ULONG	ulValue = 0; 
+			xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "value", &ulValue);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Value is invalid.\n");
+				return	FTM_RET_CONFIG_INVALID_OBJECT;
+			}
+
+			FTM_VALUE_initULONG(pValue, ulValue);
 		}
 		break;
 
 	case	FTM_VALUE_TYPE_FLOAT:
 		{
-			xRet = FTM_CONFIG_ITEM_getItemFLOAT(pItem, "value", &xValue.xValue.fValue);
+			FTM_FLOAT	fValue = 0; 
+			xRet = FTM_CONFIG_ITEM_getItemFLOAT(pItem, "value", &fValue);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Value is invalid.\n");
+				return	FTM_RET_CONFIG_INVALID_OBJECT;
+			}
+
+			FTM_VALUE_initFLOAT(pValue, fValue);
 		}
 		break;
 
 	case	FTM_VALUE_TYPE_BOOL:
 		{
-			xRet = FTM_CONFIG_ITEM_getItemBOOL(pItem, "value", &xValue.xValue.bValue);
+			FTM_BOOL	bValue = 0;
+			xRet = FTM_CONFIG_ITEM_getItemBOOL(pItem, "value", &bValue);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR("Value is invalid.\n");
+				return	FTM_RET_CONFIG_INVALID_OBJECT;
+			}
+
+			FTM_VALUE_initBOOL(pValue, bValue);
 		}
 		break;
 	default:
@@ -1497,8 +1530,6 @@ FTM_RET	FTM_CONFIG_ITEM_getValue
 			return	FTM_RET_CONFIG_INVALID_OBJECT;
 		}
 	}
-
-	memcpy(pValue, &xValue, sizeof(FTM_VALUE));
 
 	return	FTM_RET_OK;
 }
@@ -1667,8 +1698,9 @@ FTM_RET	FTM_CONFIG_ITEM_getEPData
 	ASSERT(pEPData != NULL);
 
 	FTM_RET				xRet;
-	FTM_EP_DATA			xData;
-	FTM_CHAR			pBuff[1024];
+	FTM_ULONG			ulTime = 0;
+	FTM_EP_DATA_STATE	xState = FTM_EP_DATA_STATE_INVALID;
+	FTM_VALUE			xValue;
 	FTM_CONFIG_ITEM		xValueItem;
 
 	if (pItem->pObject == NULL)
@@ -1681,23 +1713,14 @@ FTM_RET	FTM_CONFIG_ITEM_getEPData
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
     }
 */
-	xRet = FTM_CONFIG_ITEM_getItemString(pItem, "type", pBuff, 1023);
+	xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "time", 	&ulTime);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Type is not exist.\n");
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
 	}
 
-	xData.xType = strtoul(pBuff, 0, 16);	
-
-	xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "time", 	&xData.ulTime);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Type is not exist.\n");
-		return	FTM_RET_CONFIG_INVALID_OBJECT;
-	}
-
-	xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "state", (FTM_ULONG_PTR)&xData.xState);
+	xRet = FTM_CONFIG_ITEM_getItemULONG(pItem, "state", (FTM_ULONG_PTR)&xState);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Type is not exist.\n");
@@ -1711,17 +1734,19 @@ FTM_RET	FTM_CONFIG_ITEM_getEPData
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
 	}
 
-	xRet = FTM_CONFIG_ITEM_getValue(&xValueItem, &xData.xValue);
+	xRet = FTM_CONFIG_ITEM_getValue(&xValueItem, &xValue);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
 	}
 
-	xData.xState = FTM_EP_DATA_STATE_VALID;
+	pEPData->ulTime = ulTime;
+	pEPData->xState = xState;
+	xRet = FTM_VALUE_setVALUE(&pEPData->xValue, &xValue);
 
-	memcpy(pEPData, &xData, sizeof(FTM_EP_DATA));
+	FTM_VALUE_final(&xValue);
 
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 FTM_RET	FTM_CONFIG_ITEM_getEPLimit
@@ -2281,7 +2306,6 @@ FTM_RET	FTM_CONFIG_ITEM_setEPData
 	ASSERT(pEPData != NULL);
 
 	FTM_RET				xRet;
-	FTM_CHAR			pBuff[1024];
 	FTM_CONFIG_ITEM		xValueItem;
 
 	if (pItem->pObject == NULL)
@@ -2294,21 +2318,6 @@ FTM_RET	FTM_CONFIG_ITEM_setEPData
 		return	FTM_RET_CONFIG_INVALID_OBJECT;
     }
 */
-	sprintf(pBuff, "0x%08lx", pEPData->xType);
-	xRet = FTM_CONFIG_ITEM_getChildItem(pItem, "type", &xValueItem);
-	if (xRet != FTM_RET_OK)
-	{
-		xRet = FTM_CONFIG_ITEM_addItemString(pItem, "type", pBuff);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR("New item creation failed!\n");	
-		}
-	}
-	else
-	{
-		FTM_CONFIG_ITEM_setString(&xValueItem, pBuff);
-	}
-
 	xRet = FTM_CONFIG_ITEM_getChildItem(pItem,  "time", &xValueItem);
 	if (xRet != FTM_RET_OK)
 	{

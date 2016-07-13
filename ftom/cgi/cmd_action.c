@@ -62,7 +62,7 @@ FTM_RET	FTOM_CGI_addAction
 	{
 	case	FTM_ACTION_TYPE_SET:
 		{
-			FTM_EP_DATA_TYPE	xType;
+			FTM_VALUE_TYPE	xType;
 
 			xRet = FTOM_CGI_getEPID(pReq, xActionInfo.xParams.xSet.pEPID, FTM_FALSE);
 			if (xRet != FTM_RET_OK)
@@ -294,7 +294,7 @@ FTM_RET	FTOM_CGI_setAction
 	{
 	case	FTM_ACTION_TYPE_SET:
 		{
-			FTM_EP_DATA_TYPE	xType;
+			FTM_VALUE_TYPE	xType;
 
 			xRet = FTOM_CLIENT_EP_DATA_type(pClient, xActionInfo.xParams.xSet.pEPID, &xType);
 			if (xRet != FTM_RET_OK)

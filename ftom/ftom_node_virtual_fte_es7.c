@@ -210,7 +210,6 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_getEPData
 		{
 			if (pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1] == '1')
 			{
-				pData->xType = FTM_EP_DATA_TYPE_INT;
 				FTM_VALUE_initINT(&pData->xValue, pES7->bDI); 
 			}
 		}
@@ -220,7 +219,6 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_getEPData
 		{
 			if (pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1] == '1')
 			{
-				pData->xType = FTM_EP_DATA_TYPE_INT;
 				FTM_VALUE_initINT(&pData->xValue, pES7->bDO); 
 			}
 		}
@@ -231,7 +229,6 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_getEPData
 			FTM_ULONG	ulIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1], 0, 16);
 			if (ulIndex < 11)
 			{
-				pData->xType = FTM_EP_DATA_TYPE_FLOAT;
 				FTM_VALUE_initFLOAT(&pData->xValue, pES7->pTemperatures[ulIndex]); 
 			}
 		}
@@ -241,7 +238,6 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_getEPData
 		{
 			if (pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1] == '1')
 			{
-				pData->xType = FTM_EP_DATA_TYPE_FLOAT;
 				FTM_VALUE_initFLOAT(&pData->xValue, pES7->fHumidity); 
 			}
 		}
@@ -250,7 +246,6 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_getEPData
 		{
 			if (pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 1] == '1')
 			{
-				pData->xType = FTM_EP_DATA_TYPE_ULONG;
 				FTM_VALUE_initULONG(&pData->xValue, pES7->ulCO2); 
 			}
 		}

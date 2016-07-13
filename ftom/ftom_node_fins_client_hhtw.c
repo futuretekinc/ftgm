@@ -359,7 +359,6 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_get
 	{
 		pData->ulTime = pHHTWData->ulTime;
 		pData->xState = FTM_EP_DATA_STATE_VALID;
-		pData->xType  = FTM_VALUE_TYPE_FLOAT;
 		xRet = FTM_VALUE_initFLOAT(&pData->xValue, (FTM_FLOAT)pHHTWData->pusRegs[nIndex] / 100.0);
 	}
 	else

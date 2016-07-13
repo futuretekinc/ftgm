@@ -1284,6 +1284,7 @@ FTM_RET FTOM_CGI_getValue
 	FTM_BOOL	bAllowEmpty
 )
 {
+	FTM_RET			xRet;
 	FTM_CHAR_PTR	pItem;
 
 	pItem = pReq->getstr(pReq, "value", false);
@@ -1292,12 +1293,20 @@ FTM_RET FTOM_CGI_getValue
 	{
 		if (!bAllowEmpty)
 		{
-			return	FTM_RET_OBJECT_NOT_FOUND;	
+			xRet = FTM_RET_OBJECT_NOT_FOUND;	
+		}
+		else
+		{
+			xRet = FTM_RET_OK;
 		}
 	}
 	else
 	{
-		return	FTM_VALUE_init(pValue, xType, pItem);
+		xRet = FTM_VALUE_init(pValue, xType);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTM_VALUE_setFromString(pValue, pItem);
+		}
 	}
 
 	return	FTM_RET_OK;
@@ -1311,6 +1320,7 @@ FTM_RET FTOM_CGI_getLowerValue
 	FTM_BOOL	bAllowEmpty
 )
 {
+	FTM_RET			xRet;
 	FTM_CHAR_PTR	pItem;
 
 	pItem = pReq->getstr(pReq, "lower", false);
@@ -1319,13 +1329,22 @@ FTM_RET FTOM_CGI_getLowerValue
 	{
 		if (!bAllowEmpty)
 		{
-			return	FTM_RET_OBJECT_NOT_FOUND;	
+			xRet = FTM_RET_OBJECT_NOT_FOUND;	
+		}
+		else
+		{
+			xRet = FTM_RET_OK;
 		}
 	}
 	else
 	{
-		return	FTM_VALUE_init(pValue, xType, pItem);
+		xRet = FTM_VALUE_init(pValue, xType);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTM_VALUE_setFromString(pValue, pItem);
+		}
 	}
+
 
 	return	FTM_RET_OK;
 }
@@ -1337,6 +1356,7 @@ FTM_RET FTOM_CGI_getUpperValue
 	FTM_BOOL	bAllowEmpty
 )
 {
+	FTM_RET			xRet;
 	FTM_CHAR_PTR	pItem;
 
 	pItem = pReq->getstr(pReq, "upper", false);
@@ -1345,12 +1365,20 @@ FTM_RET FTOM_CGI_getUpperValue
 	{
 		if (!bAllowEmpty)
 		{
-			return	FTM_RET_OBJECT_NOT_FOUND;	
+			xRet = FTM_RET_OBJECT_NOT_FOUND;	
+		}
+		else
+		{
+			xRet = FTM_RET_OK;
 		}
 	}
 	else
 	{
-		return	FTM_VALUE_init(pValue, xType, pItem);
+		xRet = FTM_VALUE_init(pValue, xType);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTM_VALUE_setFromString(pValue, pItem);
+		}
 	}
 
 	return	FTM_RET_OK;

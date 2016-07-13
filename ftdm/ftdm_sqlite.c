@@ -1841,7 +1841,6 @@ FTM_INT	_FTDM_DBIF_EP_DATA_getCB
 						FTM_INT	nValue;
 						
 						nValue  = strtol(&pArgv[i][1], NULL, 10);
-						pParams->pEPData[pParams->nCount-1].xType = FTM_EP_DATA_TYPE_INT;
 						FTM_VALUE_initINT(&pParams->pEPData[pParams->nCount-1].xValue, nValue);
 					}
 					else if (pArgv[i][0] == 'u')
@@ -1849,7 +1848,6 @@ FTM_INT	_FTDM_DBIF_EP_DATA_getCB
 						FTM_ULONG	ulValue;
 						
 						ulValue = strtoul(&pArgv[i][1], NULL, 10);
-						pParams->pEPData[pParams->nCount-1].xType = FTM_VALUE_TYPE_ULONG;
 						FTM_VALUE_initULONG(&pParams->pEPData[pParams->nCount-1].xValue, ulValue);
 					}
 					else if (pArgv[i][0] == 'f')
@@ -1857,7 +1855,6 @@ FTM_INT	_FTDM_DBIF_EP_DATA_getCB
 						FTM_FLOAT	fValue;
 
 						fValue = strtod(&pArgv[i][1], NULL);
-						pParams->pEPData[pParams->nCount-1].xType = FTM_VALUE_TYPE_FLOAT;
 						FTM_VALUE_initFLOAT(&pParams->pEPData[pParams->nCount-1].xValue, fValue);
 					}
 				}

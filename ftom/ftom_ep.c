@@ -569,7 +569,7 @@ FTM_RET	FTOM_EP_attach
 
 			xRet = FTOM_NODE_SNMPC_getOIDForValue((FTOM_NODE_SNMPC_PTR)pNode, 
 						(pEP->xInfo.xType >> 24) & 0xFF, 
-						nIndex,
+						nIndex - 1,
 						&pEP->xOption.xSNMP.xOID);
 			if (xRet != FTM_RET_OK)
 			{
@@ -804,8 +804,8 @@ FTM_VOID_PTR FTOM_EP_process
 
 FTM_RET	FTOM_EP_getDataType
 (
-	FTOM_EP_PTR 			pEP, 
-	FTM_EP_DATA_TYPE_PTR 	pType
+	FTOM_EP_PTR 		pEP, 
+	FTM_VALUE_TYPE_PTR	pType
 )
 {
 	ASSERT(pEP != NULL);
@@ -944,8 +944,7 @@ FTM_RET	FTOM_EP_setData
 
 	FTM_RET				xRet;
 	FTM_ULONG			ulCount;
-	FTM_CHAR			pTimeString[64];
-	FTM_EP_DATA_TYPE	xDataType;
+	FTM_VALUE_TYPE		xDataType;
 	FTM_EP_DATA_PTR		pNewData = NULL;
 
 	xRet = FTM_EP_getDataType(&pEP->xInfo, &xDataType);
@@ -955,20 +954,17 @@ FTM_RET	FTOM_EP_setData
 		return	FTM_RET_ERROR;
 	}
 
-	if (xDataType != pData->xType)
+	if (xDataType != pData->xValue.xType)
 	{
-		ERROR("EP[%s] data type missmatch[%08x:%08x]!\n", pEP->xInfo.pEPID, xDataType, pData->xType);
+		ERROR("EP[%s] data type missmatch[%08x:%08x]!\n", pEP->xInfo.pEPID, xDataType, pData->xValue.xType);
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
 
-	strcpy(pTimeString, ctime((time_t *)&pData->ulTime));
-	pTimeString[strlen(pTimeString) - 1] = 0;
-
 	xRet = FTM_EP_DATA_create(pData, &pNewData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Data creation failed[%08x]!\n", pData->xType);
+		ERROR("Data creation failed[%08x]!\n", pData->xValue.xType);
 		return	xRet;	
 	}
 

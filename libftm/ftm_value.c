@@ -23,7 +23,7 @@ FTM_RET	FTM_VALUE_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
-	xRet = FTM_VALUE_init(pValue, xType, NULL);
+	xRet = FTM_VALUE_init(pValue, xType);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pValue);
@@ -42,21 +42,7 @@ FTM_RET	FTM_VALUE_destroy
 {
 	ASSERT(pValue != NULL);
 
-	if (pValue->xMagic != FTM_VALUE_DYNAMIC_MAGIC)
-	{
-		ERROR("pValue is not dynamic object!\n");
-		return	FTM_RET_ERROR;	
-	}
-
-	if (pValue->xType == FTM_VALUE_TYPE_STRING)
-	{
-		if (pValue->ulLen != 0)
-		{
-			FTM_MEM_free(pValue->xValue.pValue);
-			pValue->xValue.pValue = NULL;
-			pValue->ulLen = 0;
-		}
-	}
+	FTM_VALUE_final(pValue);
 
 	FTM_MEM_free(pValue);
 
@@ -66,19 +52,358 @@ FTM_RET	FTM_VALUE_destroy
 FTM_RET	FTM_VALUE_init
 (
 	FTM_VALUE_PTR	pObject,
-	FTM_VALUE_TYPE	xType,
+	FTM_VALUE_TYPE	xType
+)
+{
+	ASSERT(pObject != NULL);
+
+	FTM_RET	xRet;
+
+	switch(xType)
+	{
+	case	FTM_VALUE_TYPE_INT:		xRet = FTM_VALUE_initINT(pObject, 0); 			break;
+	case	FTM_VALUE_TYPE_ULONG:	xRet = FTM_VALUE_initULONG(pObject, 0); 		break;
+	case	FTM_VALUE_TYPE_FLOAT:	xRet = FTM_VALUE_initFLOAT(pObject, 0); 		break;
+	case	FTM_VALUE_TYPE_BOOL:	xRet = FTM_VALUE_initBOOL(pObject, FTM_FALSE); 	break;
+	case	FTM_VALUE_TYPE_STRING:	xRet = FTM_VALUE_initSTRING(pObject, "");		break;
+	default:
+		{
+			xRet = FTM_RET_INVALID_TYPE;
+		}
+	}
+
+	return	xRet;
+}
+	
+
+FTM_RET	FTM_VALUE_final
+(
+	FTM_VALUE_PTR	pObject
+)
+{
+	ASSERT(pObject != NULL);
+
+	if (pObject->xType == FTM_VALUE_TYPE_STRING)
+	{
+		if (pObject->xValue.pValue != NULL)
+		{
+			FTM_MEM_free(pObject->xValue.pValue);
+			pObject->xValue.pValue = NULL;
+			pObject->ulLen = 0;
+		}
+	}
+
+	pObject->xType = FTM_VALUE_TYPE_UNKNOWN;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_initINT
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_INT			nValue
+)
+{
+	ASSERT(pObject != NULL);
+	
+	pObject->xType = FTM_VALUE_TYPE_INT;
+	pObject->xValue.nValue = nValue;
+	pObject->ulLen = 0;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_initULONG
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_ULONG		ulValue
+)
+{
+	ASSERT(pObject != NULL);
+	
+	pObject->xType = FTM_VALUE_TYPE_ULONG;
+	pObject->xValue.ulValue = ulValue;
+	pObject->ulLen = 0;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_initFLOAT
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_FLOAT		fValue
+)
+{
+	ASSERT(pObject != NULL);
+	
+	pObject->xType = FTM_VALUE_TYPE_FLOAT;
+	pObject->xValue.fValue = fValue;
+	pObject->ulLen = 0;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_initBOOL
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_BOOL		bValue
+)
+{
+	ASSERT(pObject != NULL);
+	
+	pObject->xType = FTM_VALUE_TYPE_BOOL;
+	pObject->xValue.bValue = bValue;
+	pObject->ulLen = 0;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_initSTRING
+(
+	FTM_VALUE_PTR	pObject,
 	FTM_CHAR_PTR	pValue
 )
 {
 	ASSERT(pObject != NULL);
 	ASSERT(pValue != NULL);
 
-	if (strlen(pValue) == 0)
+	if (pObject->xType != FTM_VALUE_TYPE_UNKNOWN)
 	{
-		return	FTM_RET_INVALID_ARGUMENTS;
+		FTM_VALUE_final(pObject);
 	}
 
-	switch(xType)
+	pObject->xType = FTM_VALUE_TYPE_STRING;
+	pObject->ulLen = strlen(pValue) + 1;
+	pObject->xValue.pValue = FTM_MEM_malloc(pObject->ulLen);
+	if (pObject->xValue.pValue == NULL)
+	{
+		pObject->ulLen = 0;
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	strcpy(pObject->xValue.pValue, pValue);
+
+	return	FTM_RET_OK;
+}
+
+FTM_BOOL	FTM_VALUE_isUSHORT
+(
+	FTM_VALUE_PTR pObject
+)
+{
+	return	(pObject->xType == FTM_VALUE_TYPE_USHORT);
+}
+
+FTM_BOOL 	FTM_VALUE_isULONG
+(
+	FTM_VALUE_PTR pObject
+)
+{
+	return	(pObject->xType == FTM_VALUE_TYPE_ULONG);
+}
+
+FTM_BOOL	FTM_VALUE_isSTRING
+(
+	FTM_VALUE_PTR pObject
+)
+{
+	return	(pObject->xType == FTM_VALUE_TYPE_STRING);
+}
+
+
+FTM_RET	FTM_VALUE_setINT
+(
+	FTM_VALUE_PTR 	pObject, 
+	FTM_INT			nValue
+)
+{
+	ASSERT(pObject != NULL);
+
+	if (pObject->xType != FTM_VALUE_TYPE_INT)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	pObject->xValue.nValue = nValue;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_setULONG
+(
+	FTM_VALUE_PTR 	pObject, 
+	FTM_ULONG 		ulValue
+)
+{
+	ASSERT(pObject != NULL);
+
+	if (pObject->xType != FTM_VALUE_TYPE_ULONG)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	pObject->xValue.ulValue = ulValue;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_setFLOAT
+(
+	FTM_VALUE_PTR 	pObject, 
+	FTM_FLOAT		fValue
+)
+{
+	ASSERT(pObject != NULL);
+
+	if (pObject->xType != FTM_VALUE_TYPE_FLOAT)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	pObject->xValue.fValue = fValue;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_setBOOL
+(
+	FTM_VALUE_PTR 	pObject, 
+	FTM_BOOL		bValue
+)
+{
+	ASSERT(pObject != NULL);
+
+	if (pObject->xType != FTM_VALUE_TYPE_BOOL)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	pObject->xValue.bValue = bValue;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_getBOOL
+(
+	FTM_VALUE_PTR 	pObject, 
+	FTM_BOOL_PTR	pbValue
+)
+{
+	ASSERT(pObject != NULL);
+
+	if (pObject->xType != FTM_VALUE_TYPE_BOOL)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	*pbValue = pObject->xValue.bValue;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_getULONG
+(
+	FTM_VALUE_PTR 	pObject, 
+	FTM_ULONG_PTR 	pulValue
+)
+{
+	ASSERT((pObject != NULL) && (pulValue != NULL));
+
+	switch(pObject->xType)
+	{
+	case	FTM_VALUE_TYPE_USHORT:	
+		*pulValue = (FTM_ULONG)pObject->xValue.usValue;
+		break;
+
+	case	FTM_VALUE_TYPE_ULONG:	
+		*pulValue = pObject->xValue.ulValue;
+		break;
+
+	case	FTM_VALUE_TYPE_STRING:	
+		if (pObject->ulLen != 0)
+		{
+			*pulValue = strtoul(pObject->xValue.pValue, 0, 10);
+		}
+		else
+		{
+			*pulValue = 0;
+		}
+		break;
+
+	default:
+		return	FTM_RET_ERROR;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_setSTRING
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_CHAR_PTR	pValue
+)
+{
+	ASSERT(pObject != NULL);
+	ASSERT(pValue != NULL);
+
+	if (pObject->xType != FTM_VALUE_TYPE_STRING)
+	{
+		return	FTM_RET_INVALID_TYPE;
+	}
+
+	if (pObject->xValue.pValue != NULL)
+	{
+		FTM_MEM_free(pObject->xValue.pValue);
+		pObject->xValue.pValue = NULL;
+		pObject->ulLen = 0;
+	}
+
+	pObject->ulLen = strlen(pValue) + 1;
+	pObject->xValue.pValue = FTM_MEM_malloc(pObject->ulLen);
+	if (pObject->xValue.pValue == NULL)
+	{
+		pObject->ulLen = 0;
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	strcpy(pObject->xValue.pValue, pValue);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_getSTRING
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen
+)
+{
+	ASSERT(pObject != NULL);
+	ASSERT(pBuff != NULL);
+
+	FTM_CHAR_PTR	pPrintOut;
+
+	pPrintOut = FTM_VALUE_print(pObject);
+	if (strlen(pPrintOut) + 1 > ulBuffLen)
+	{
+		return	FTM_RET_BUFFER_TOO_SMALL;	
+	}
+
+	strcpy(pBuff, pPrintOut);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_setFromString
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_CHAR_PTR	pValue
+)
+{
+	ASSERT(pObject != NULL);
+	ASSERT(pValue != NULL);
+
+	switch(pObject->xType)
 	{
 	case	FTM_VALUE_TYPE_INT:
 		{
@@ -198,258 +523,9 @@ FTM_RET	FTM_VALUE_init
 		}
 		break;
 
-	default:
-		return	FTM_RET_INVALID_TYPE;
-	}
-
-	return	FTM_RET_OK;
-}	
-
-FTM_RET	FTM_VALUE_initINT
-(
-	FTM_VALUE_PTR	pObject,
-	FTM_INT			nValue
-)
-{
-	ASSERT(pObject != NULL);
-	
-	pObject->xType = FTM_VALUE_TYPE_INT;
-	pObject->xValue.nValue = nValue;
-	pObject->ulLen = 0;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_VALUE_initULONG
-(
-	FTM_VALUE_PTR	pObject,
-	FTM_ULONG		ulValue
-)
-{
-	ASSERT(pObject != NULL);
-	
-	pObject->xType = FTM_VALUE_TYPE_ULONG;
-	pObject->xValue.ulValue = ulValue;
-	pObject->ulLen = 0;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_VALUE_initFLOAT
-(
-	FTM_VALUE_PTR	pObject,
-	FTM_FLOAT		fValue
-)
-{
-	ASSERT(pObject != NULL);
-	
-	pObject->xType = FTM_VALUE_TYPE_FLOAT;
-	pObject->xValue.fValue = fValue;
-	pObject->ulLen = 0;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_VALUE_initBOOL
-(
-	FTM_VALUE_PTR	pObject,
-	FTM_BOOL		bValue
-)
-{
-	ASSERT(pObject != NULL);
-	
-	pObject->xType = FTM_VALUE_TYPE_BOOL;
-	pObject->xValue.bValue = bValue;
-	pObject->ulLen = 0;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_VALUE_final
-(
-	FTM_VALUE_PTR pValue
-)
-{
-	ASSERT(pValue != NULL);
-
-	if (pValue->xType == FTM_VALUE_TYPE_STRING)
-	{
-		if (pValue->ulLen != 0)
+	case	FTM_VALUE_TYPE_STRING:
 		{
-			FTM_MEM_free(pValue->xValue.pValue);
-			pValue->xValue.pValue = NULL;
-			pValue->ulLen = 0;
-		}
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_BOOL	FTM_VALUE_isUSHORT
-(
-	FTM_VALUE_PTR pObject
-)
-{
-	return	(pObject->xType == FTM_VALUE_TYPE_USHORT);
-}
-
-FTM_BOOL 	FTM_VALUE_isULONG
-(
-	FTM_VALUE_PTR pObject
-)
-{
-	return	(pObject->xType == FTM_VALUE_TYPE_ULONG);
-}
-
-FTM_BOOL	FTM_VALUE_isSTRING
-(
-	FTM_VALUE_PTR pObject
-)
-{
-	return	(pObject->xType == FTM_VALUE_TYPE_STRING);
-}
-
-
-FTM_RET	FTM_VALUE_setINT
-(
-	FTM_VALUE_PTR 	pObject, 
-	FTM_INT			nValue
-)
-{
-	ASSERT(pObject != NULL);
-
-	if (pObject->xType != FTM_VALUE_TYPE_INT)
-	{
-		return	FTM_RET_INVALID_TYPE;
-	}
-
-	pObject->xValue.nValue = nValue;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_VALUE_setULONG
-(
-	FTM_VALUE_PTR 	pObject, 
-	FTM_ULONG 		ulValue
-)
-{
-	ASSERT(pObject != NULL);
-
-	if (pObject->xType != FTM_VALUE_TYPE_ULONG)
-	{
-		return	FTM_RET_INVALID_TYPE;
-	}
-
-	pObject->xValue.ulValue = ulValue;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_VALUE_setFLOAT
-(
-	FTM_VALUE_PTR 	pObject, 
-	FTM_FLOAT		fValue
-)
-{
-	ASSERT(pObject != NULL);
-
-	if (pObject->xType != FTM_VALUE_TYPE_FLOAT)
-	{
-		return	FTM_RET_INVALID_TYPE;
-	}
-
-	pObject->xValue.fValue = fValue;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_VALUE_setBOOL
-(
-	FTM_VALUE_PTR 	pObject, 
-	FTM_BOOL		bValue
-)
-{
-	ASSERT(pObject != NULL);
-
-	if (pObject->xType != FTM_VALUE_TYPE_BOOL)
-	{
-		return	FTM_RET_INVALID_TYPE;
-	}
-
-	pObject->xValue.bValue = bValue;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_VALUE_getULONG
-(
-	FTM_VALUE_PTR 	pObject, 
-	FTM_ULONG_PTR 	pulValue
-)
-{
-	ASSERT((pObject != NULL) && (pulValue != NULL));
-
-	switch(pObject->xType)
-	{
-	case	FTM_VALUE_TYPE_USHORT:	
-		*pulValue = (FTM_ULONG)pObject->xValue.usValue;
-		break;
-
-	case	FTM_VALUE_TYPE_ULONG:	
-		*pulValue = pObject->xValue.ulValue;
-		break;
-
-	case	FTM_VALUE_TYPE_STRING:	
-		if (pObject->ulLen != 0)
-		{
-			*pulValue = strtoul(pObject->xValue.pValue, 0, 10);
-		}
-		else
-		{
-			*pulValue = 0;
-		}
-		break;
-
-	default:
-		return	FTM_RET_ERROR;
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_VALUE_setFromString
-(
-	FTM_VALUE_PTR	pObject,
-	FTM_CHAR_PTR	pValue
-)
-{
-	ASSERT(pObject != NULL);
-	ASSERT(pValue != NULL);
-
-	switch(pObject->xType)
-	{
-	case	FTM_VALUE_TYPE_BOOL:
-		{
-			FTM_VALUE_initBOOL(pObject, (strtol(pValue, NULL, 10) == 1));
-		}
-		break;
-
-	case	FTM_VALUE_TYPE_INT:
-		{
-			FTM_VALUE_initINT(pObject, strtol(pValue, NULL, 10));
-		}
-		break;
-
-	case	FTM_VALUE_TYPE_ULONG:
-		{
-			FTM_VALUE_initULONG(pObject, strtoul(pValue, NULL, 10));
-		}
-		break;
-
-	case	FTM_VALUE_TYPE_FLOAT:
-		{
-			FTM_VALUE_initFLOAT(pObject, strtod(pValue, NULL));
+			FTM_VALUE_initSTRING(pObject, pValue);
 		}
 		break;
 
@@ -629,6 +705,208 @@ FTM_RET	FTM_VALUE_compare
 	}
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_VALUE_setVALUE
+(
+	FTM_VALUE_PTR	pValue1,
+	FTM_VALUE_PTR	pValue2
+)
+{
+	ASSERT(pValue1 != NULL);
+	ASSERT(pValue2 != NULL);
+
+	FTM_RET	xRet = FTM_RET_OK;
+
+	switch(pValue1->xType)
+	{
+	case	FTM_VALUE_TYPE_INT:
+		{
+			switch(pValue2->xType)
+			{
+			case	FTM_VALUE_TYPE_INT:
+				{
+					pValue1->xValue.nValue = pValue2->xValue.nValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_ULONG:
+				{
+					pValue1->xValue.nValue = (FTM_INT)pValue2->xValue.ulValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_FLOAT:
+				{
+					pValue1->xValue.nValue = (FTM_INT)pValue2->xValue.fValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_BOOL:
+				{
+					pValue1->xValue.nValue = (FTM_INT)pValue2->xValue.bValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_STRING:
+				{
+					pValue1->xValue.nValue = strtol(pValue2->xValue.pValue, NULL, 10);
+				}
+				break;
+
+			default:
+				return	FTM_RET_INVALID_TYPE;
+			}
+		}
+		break;
+
+	case	FTM_VALUE_TYPE_ULONG:
+		{
+			switch(pValue2->xType)
+			{
+			case	FTM_VALUE_TYPE_INT:
+				{
+					pValue1->xValue.ulValue = (FTM_ULONG)pValue2->xValue.nValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_ULONG:
+				{
+					pValue1->xValue.ulValue = pValue2->xValue.ulValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_FLOAT:
+				{
+					pValue1->xValue.ulValue = (FTM_ULONG)pValue2->xValue.fValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_BOOL:
+				{
+					pValue1->xValue.ulValue = (FTM_ULONG)pValue2->xValue.bValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_STRING:
+				{
+					pValue1->xValue.ulValue = strtoul(pValue2->xValue.pValue, NULL, 10);
+				}
+				break;
+
+			default:
+				return	FTM_RET_INVALID_TYPE;
+			}
+		}
+		break;
+
+	case	FTM_VALUE_TYPE_FLOAT:
+		{
+			switch(pValue2->xType)
+			{
+			case	FTM_VALUE_TYPE_INT:
+				{
+					pValue1->xValue.fValue = (FTM_FLOAT)pValue2->xValue.nValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_ULONG:
+				{
+					pValue1->xValue.fValue = (FTM_FLOAT)pValue2->xValue.ulValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_FLOAT:
+				{
+					pValue1->xValue.fValue = pValue2->xValue.fValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_BOOL:
+				{
+					pValue1->xValue.fValue = (FTM_FLOAT)pValue2->xValue.bValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_STRING:
+				{
+					pValue1->xValue.fValue = strtod(pValue2->xValue.pValue, NULL);
+				}
+				break;
+
+			default:
+				return	FTM_RET_INVALID_TYPE;
+			}
+		}
+		break;
+
+	case	FTM_VALUE_TYPE_BOOL:
+		{
+			switch(pValue2->xType)
+			{
+			case	FTM_VALUE_TYPE_INT:
+				{
+					pValue1->xValue.bValue = (FTM_BOOL)pValue2->xValue.nValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_ULONG:
+				{
+					pValue1->xValue.bValue = (FTM_BOOL)pValue2->xValue.ulValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_FLOAT:
+				{
+					pValue1->xValue.bValue = (FTM_BOOL)pValue2->xValue.fValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_BOOL:
+				{
+					pValue1->xValue.bValue = pValue2->xValue.bValue;
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_STRING:
+				{
+					pValue1->xValue.bValue = (FTM_BOOL)strtoul(pValue2->xValue.pValue, NULL, 10);
+				}
+				break;
+
+			default:
+				return	FTM_RET_INVALID_TYPE;
+			}
+		}
+		break;
+
+	case	FTM_VALUE_TYPE_STRING:
+		{
+			switch(pValue2->xType)
+			{
+			case	FTM_VALUE_TYPE_INT:
+			case	FTM_VALUE_TYPE_ULONG:
+			case	FTM_VALUE_TYPE_FLOAT:
+			case	FTM_VALUE_TYPE_BOOL:
+				{
+					xRet = FTM_VALUE_setSTRING(pValue1, FTM_VALUE_print(pValue2));
+				}
+				break;
+
+			case	FTM_VALUE_TYPE_STRING:
+				{
+					xRet = FTM_VALUE_setSTRING(pValue1, pValue2->xValue.pValue);
+				}
+				break;
+
+			default:
+				return	FTM_RET_INVALID_TYPE;
+			}
+		}
+		break;
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTM_VALUE_snprint

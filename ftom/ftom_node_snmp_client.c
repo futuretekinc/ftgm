@@ -225,11 +225,12 @@ FTM_RET		FTOM_NODE_SNMPC_getOID
 
 	if ((ulType == 0) || (ulType > sizeof(pOIDNamePrefix) / sizeof(FTM_CHAR_PTR)))
 	{
+		ERROR("Invalid type : %08x\n", ulType);
 		return	FTM_RET_INVALID_TYPE;
 
 	}
 
-	sprintf(pBuff, "%s:%s%s.%lu", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pOIDNamePrefix[ulType - 1], pFieldName, ulIndex);
+	sprintf(pBuff, "%s:%s%s.%lu", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pOIDNamePrefix[ulType - 1], pFieldName, ulIndex + 1);
 
 	xRet = FTOM_SNMPC_getOID(pBuff, pOID);
 	if (xRet != FTM_RET_OK)
@@ -238,4 +239,242 @@ FTM_RET		FTOM_NODE_SNMPC_getOID
 	}
 
 	return	xRet;
+}
+
+FTM_RET	FTOM_NODE_SNMPC_getEPID
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_CHAR_PTR			pEPID,
+	FTM_ULONG				ulMaxLen
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEPID != NULL);
+
+	FTM_RET			xRet;
+	FTM_SNMP_OID	xOID;
+	FTOM_SERVICE_PTR pService;
+	FTM_VALUE		xValue;
+
+	if (ulMaxLen < 2)
+	{
+		return	FTM_RET_BUFFER_TOO_SMALL;
+	}
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("SNMP Client not supported!\n");
+		return  xRet;   
+	}
+
+	xRet = FTOM_NODE_SNMPC_getOIDForID(pNode, ulEPType >> 24, ulIndex, &xOID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to get OID for ID.\n");
+		return	xRet;	
+	}
+
+	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_STRING);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to init value[%08x]!\n", xRet);
+		return	xRet;
+	}
+
+	xRet = FTOM_SNMPC_get(
+				pService->pData, 
+				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
+				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
+				&xOID,
+				pNode->xCommon.xInfo.ulTimeout,
+				&xValue);
+	if (xRet == FTM_RET_OK)
+	{
+		memset(pEPID, 0, ulMaxLen);
+		xRet = FTM_VALUE_getSTRING(&xValue, pEPID, ulMaxLen);
+	}
+
+	FTM_VALUE_final(&xValue);
+
+	return	xRet;
+
+}
+
+FTM_RET	FTOM_NODE_SNMPC_getEPName
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_CHAR_PTR			pName,
+	FTM_ULONG				ulMaxLen
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pName != NULL);
+
+	FTM_RET			xRet;
+	FTM_SNMP_OID	xOID;
+	FTOM_SERVICE_PTR pService;
+	FTM_VALUE		xValue;
+
+	if (ulMaxLen < 2)
+	{
+		return	FTM_RET_BUFFER_TOO_SMALL;
+	}
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("SNMP Client not supported!\n");
+		return  xRet;   
+	}
+
+	xRet = FTOM_NODE_SNMPC_getOIDForName(pNode, ulEPType >> 24, ulIndex, &xOID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to get OID for ID.\n");
+		return	xRet;	
+	}
+
+	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_STRING);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to init value[%08x]!\n", xRet);
+		return	xRet;
+	}
+
+	xRet = FTOM_SNMPC_get(
+				pService->pData, 
+				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
+				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
+				&xOID,
+				pNode->xCommon.xInfo.ulTimeout,
+				&xValue);
+	if (xRet == FTM_RET_OK)
+	{
+		memset(pName, 0, ulMaxLen);
+		xRet = FTM_VALUE_getSTRING(&xValue, pName, ulMaxLen);
+	}
+
+	FTM_VALUE_final(&xValue);
+
+	return	xRet;
+
+}
+
+FTM_RET	FTOM_NODE_SNMPC_getEPState
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_BOOL_PTR			pbEnable
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pbEnable != NULL);
+
+	FTM_RET			xRet;
+	FTM_SNMP_OID	xOID;
+	FTOM_SERVICE_PTR pService;
+	FTM_VALUE		xValue;
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("SNMP Client not supported!\n");
+		return  xRet;   
+	}
+
+	xRet = FTOM_NODE_SNMPC_getOIDForState(pNode, ulEPType >> 24, ulIndex, &xOID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to get OID for ID.\n");
+		return	xRet;	
+	}
+
+	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_BOOL);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to init value[%08x]!\n", xRet);
+		return	xRet;
+	}
+
+	xRet = FTOM_SNMPC_get(
+				pService->pData, 
+				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
+				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
+				&xOID,
+				pNode->xCommon.xInfo.ulTimeout,
+				&xValue);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_VALUE_getBOOL(&xValue, pbEnable);
+	}
+
+	FTM_VALUE_final(&xValue);
+
+	return	xRet;
+
+}
+
+FTM_RET	FTOM_NODE_SNMPC_getEPInterval
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG_PTR			pulInterval
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pulInterval != NULL);
+
+	FTM_RET			xRet;
+	FTM_SNMP_OID	xOID;
+	FTOM_SERVICE_PTR pService;
+	FTM_VALUE		xValue;
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("SNMP Client not supported!\n");
+		return  xRet;   
+	}
+
+	xRet = FTOM_NODE_SNMPC_getOIDForUpdateInterval(pNode, ulEPType >> 24, ulIndex, &xOID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to get OID for ID.\n");
+		return	xRet;	
+	}
+
+	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_ULONG);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR("Failed to init value[%08x]!\n", xRet);
+		return	xRet;
+	}
+
+	xRet = FTOM_SNMPC_get(
+				pService->pData, 
+				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
+				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
+				&xOID,
+				pNode->xCommon.xInfo.ulTimeout,
+				&xValue);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_VALUE_getULONG(&xValue, pulInterval);
+	}
+
+	FTM_VALUE_final(&xValue);
+
+	return	xRet;
+
 }

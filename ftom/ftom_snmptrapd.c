@@ -362,11 +362,11 @@ FTM_RET FTOM_SNMPTRAPD_loadConfig
 							}
 							if (xRet == FTM_RET_OK)
 							{
-								TRACE("The trap OID has been registered. - %s\n", FTM_SNMP_OID_toStr(&xOID));
+								TRACE("The trap OID has been registered. - %s\n", FTM_SNMP_OID_print(&xOID));
 							}
 							else
 							{
-								TRACE("The trap OID failed to register. - %s\n", FTM_SNMP_OID_toStr(&xOID));
+								TRACE("The trap OID failed to register. - %s\n", FTM_SNMP_OID_print(&xOID));
 							}
 						}
 						else
@@ -578,7 +578,7 @@ FTM_RET	FTOM_SNMPTRAPD_addTrapOID
 	memcpy(&pTrap->xOID, pOID, sizeof(FTM_SNMP_OID));
 	pTrap->fCB = fTrapCB;
 
-	TRACE("Add Trap : %s\n",FTM_SNMP_OID_toStr(pOID));
+	TRACE("Add Trap : %s\n",FTM_SNMP_OID_print(pOID));
 	xRet = FTM_LIST_append(&pSNMPTRAPD->xTrapCBList, pTrap);
 	if (xRet != FTM_RET_OK)
 	{
@@ -586,7 +586,7 @@ FTM_RET	FTOM_SNMPTRAPD_addTrapOID
 		FTM_MEM_free(pTrap);	
 	}
 
-	TRACE("OID : %s\n", FTM_SNMP_OID_toStr(pOID));
+	TRACE("OID : %s\n", FTM_SNMP_OID_print(pOID));
 
 	return	FTM_RET_OK;
 }
@@ -1117,7 +1117,7 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 				break;
 			}
 
-			FTM_EP_DATA_TYPE	xDataType;
+			FTM_VALUE_TYPE		xDataType;
 			FTOM_EP_PTR			pEP;
 
 			FTOM_EP_getDataType(pEP, &xDataType);
@@ -1141,29 +1141,27 @@ FTM_RET	FTOM_SNMPTRAPD_receiveTrap
 	
 			case 	cJSON_Number:
 				{
-					FTM_EP_DATA_init(&xData, xDataType, NULL);
-
-					switch(xData.xType)
+					switch(xDataType)
 					{
-					case	FTM_EP_DATA_TYPE_INT:
+					case	FTM_VALUE_TYPE_INT:
 						{
 							FTM_EP_DATA_initINT(&xData, pItem->valueint);
 						}
 						break;
 
-					case	FTM_EP_DATA_TYPE_ULONG:
+					case	FTM_VALUE_TYPE_ULONG:
 						{
 							FTM_EP_DATA_initULONG(&xData, pItem->valueint);
 						}
 						break;
 
-					case	FTM_EP_DATA_TYPE_FLOAT:
+					case	FTM_VALUE_TYPE_FLOAT:
 						{
 							FTM_EP_DATA_initFLOAT(&xData, pItem->valuedouble);
 						}
 						break;
 					
-					case	FTM_EP_DATA_TYPE_BOOL:
+					case	FTM_VALUE_TYPE_BOOL:
 						{
 							FTM_EP_DATA_initBOOL(&xData, pItem->valueint);
 						}
@@ -1265,7 +1263,7 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 	FTM_CHAR		pDID[FTM_DID_LEN+1];
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
 	FTOM_EP_PTR		pEP = NULL;
-	FTM_EP_DATA_TYPE	xDataType;
+	FTM_VALUE_TYPE	xDataType;
 	FTM_EP_DATA		xData;
 	cJSON _PTR_		pRoot;
 	cJSON _PTR_		pItem;
@@ -1342,25 +1340,25 @@ FTM_RET	FTOM_SNMPTRAPD_alert
 		{
 			switch(xDataType)
 			{
-			case	FTM_EP_DATA_TYPE_INT:
+			case	FTM_VALUE_TYPE_INT:
 				{
 					FTM_EP_DATA_initINT(&xData, pItem->valueint);
 				}
 				break;
 	
-			case	FTM_EP_DATA_TYPE_ULONG:
+			case	FTM_VALUE_TYPE_ULONG:
 				{
 					FTM_EP_DATA_initULONG(&xData, pItem->valueint);
 				}
 				break;
 	
-			case	FTM_EP_DATA_TYPE_FLOAT:
+			case	FTM_VALUE_TYPE_FLOAT:
 				{
 					FTM_EP_DATA_initFLOAT(&xData, pItem->valuedouble);
 				}
 				break;
 							
-			case	FTM_EP_DATA_TYPE_BOOL:
+			case	FTM_VALUE_TYPE_BOOL:
 				{
 					FTM_EP_DATA_initBOOL(&xData, pItem->valueint);
 				}

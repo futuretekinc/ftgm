@@ -12,27 +12,6 @@
 
 
 FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData);
-static
-FTM_RET	FTOM_SNMPC_get
-(
-	FTM_ULONG			ulVersion,
-	FTM_CHAR_PTR		pURL,
-	FTM_CHAR_PTR		pCommunity,
-	FTM_SNMP_OID_PTR	pOID,
-	FTM_ULONG			ulTimeout,
-	FTM_EP_DATA_PTR 	pData
-);
-
-static
-FTM_RET	FTOM_SNMPC_set
-(
-	FTM_ULONG			ulVersion,
-	FTM_CHAR_PTR		pURL,
-	FTM_CHAR_PTR		pCommunity,
-	FTM_SNMP_OID_PTR	pOID,
-	FTM_ULONG			ulTimeout,
-	FTM_EP_DATA_PTR 	pData
-);
 
 extern int	active_hosts;
 
@@ -249,71 +228,88 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 			case	FTOM_MSG_TYPE_SNMPC_GET_EP_DATA:
 				{
 					FTOM_EP_PTR	pEP;
-					FTM_EP_DATA	xData;
+					FTM_VALUE	xValue;
 					FTOM_MSG_SNMPC_GET_EP_DATA_PTR	pMsg = (FTOM_MSG_SNMPC_GET_EP_DATA_PTR)pBaseMsg;
 
-					xData.xType = pMsg->xDataType;
-					xRet = FTOM_SNMPC_get( pMsg->ulVersion, pMsg->pURL, pMsg->pCommunity, &pMsg->xOID, pMsg->ulTimeout, &xData);
+					FTM_VALUE_init(&xValue, pMsg->xDataType);
+
+					xRet = FTOM_SNMPC_get( pClient, pMsg->ulVersion, pMsg->pURL, pMsg->pCommunity, &pMsg->xOID, pMsg->ulTimeout, &xValue);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("Failed to snmp get[%s:%s:%s:%s]!\n", pMsg->pDID, pMsg->pEPID, pMsg->pURL, FTM_SNMP_OID_toStr(&pMsg->xOID));
-						break;
+						ERROR("Failed to snmp get[%s:%s:%s:%s]!\n", pMsg->pDID, pMsg->pEPID, pMsg->pURL, FTM_SNMP_OID_print(&pMsg->xOID));
 					}
-
-					xRet = FTOM_EP_get(pMsg->pEPID, &pEP); 
-					if (xRet == FTM_RET_OK) 
+					else
 					{
-						FTOM_MSG_PTR	pNewMsg; 
-
-						xRet = FTOM_MSG_EP_createInsertData(&xData, 1, &pNewMsg);
-						if (xRet != FTM_RET_OK) 
-						{ 
-							ERROR("Failed to create message[%08x]!\n", xRet);	
-						}
-						else
+						xRet = FTOM_EP_get(pMsg->pEPID, &pEP); 
+						if (xRet == FTM_RET_OK) 
 						{
-							xRet = FTOM_EP_sendMessage(pEP, pNewMsg);	
+							FTM_EP_DATA		xData;
+							FTOM_MSG_PTR	pNewMsg; 
+
+							xRet = FTM_EP_DATA_initVALUE(&xData, &xValue);	
 							if (xRet != FTM_RET_OK)
 							{
-								ERROR("Failed to send message[%08x]!\n", xRet);	
-								FTOM_MSG_destroy(&pNewMsg);
-							}	
+								ERROR("Failed to create EP data[%08x].\n", xRet);	
+							}
+							else
+							{
+								xRet = FTOM_MSG_EP_createInsertData(&xData, 1, &pNewMsg);
+								if (xRet != FTM_RET_OK) 
+								{ 
+									ERROR("Failed to create message[%08x]!\n", xRet);	
+								}
+								else
+								{
+									xRet = FTOM_EP_sendMessage(pEP, pNewMsg);	
+									if (xRet != FTM_RET_OK)
+									{
+										ERROR("Failed to send message[%08x]!\n", xRet);	
+										FTOM_MSG_destroy(&pNewMsg);
+									}	
+								}
+							}
+
+							FTM_EP_DATA_final(&xData);
 						}
 					}
+
+					FTM_VALUE_final(&xValue);
 				}
 				break;
 
 			case	FTOM_MSG_TYPE_SNMPC_SET_EP_DATA:
 				{
-					FTOM_EP_PTR	pEP;
 					FTOM_MSG_SNMPC_SET_EP_DATA_PTR	pMsg = (FTOM_MSG_SNMPC_SET_EP_DATA_PTR)pBaseMsg;
+					FTOM_MSG_PTR	pNewMsg; 
 
-					xRet = FTOM_SNMPC_set( pMsg->ulVersion, pMsg->pURL, pMsg->pCommunity, &pMsg->xOID, pMsg->ulTimeout, &pMsg->xData);
+					xRet = FTOM_SNMPC_set( pClient, pMsg->ulVersion, pMsg->pURL, pMsg->pCommunity, &pMsg->xOID, pMsg->ulTimeout, &pMsg->xValue);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR("Failed to snmp get!\n");	
 						break;
 					}
 
-					xRet = FTOM_EP_get(pMsg->pEPID, &pEP); 
-					if (xRet == FTM_RET_OK) 
+					xRet = FTOM_MSG_SNMPC_createGetEPData(
+								pMsg->pDID, 
+								pMsg->pEPID,
+								pMsg->ulVersion,
+								pMsg->pURL,
+								pMsg->pCommunity,
+								&pMsg->xOID,
+								pMsg->ulTimeout,
+								pMsg->xValue.xType,
+								&pNewMsg);
+					if (xRet != FTM_RET_OK)
 					{
-						FTOM_MSG_PTR	pNewMsg; 
+						WARN("Failed to get EP Data.\n");
+						break;
+					}
 
-						xRet = FTOM_MSG_EP_createInsertData(&pMsg->xData, 1, &pNewMsg);
-						if (xRet != FTM_RET_OK) 
-						{ 
-							ERROR("Failed to create message[%08x]!\n", xRet);	
-						}
-						else
-						{
-							xRet = FTOM_EP_sendMessage(pEP, pNewMsg);	
-							if (xRet != FTM_RET_OK)
-							{
-								ERROR("Failed to send message[%08x]!\n", xRet);	
-								FTOM_MSG_destroy(&pNewMsg);
-							}	
-						}
+					xRet = FTOM_MSGQ_push(&pClient->xMsgQ, pNewMsg);
+					if (xRet != FTM_RET_OK)
+					{
+						FTOM_MSG_destroy(&pNewMsg);	
+						WARN("Failed to send message.\n");
 					}
 				}
 				break;
@@ -579,6 +575,8 @@ FTM_RET	FTOM_SNMPC_getEPCount
 	ASSERT(pIP != NULL);
 	ASSERT(pulCount != NULL);
 
+	FTM_RET	xRet;
+	FTM_ULONG	ulCount = 0;
 	FTM_SNMP_OID	xOID = 
 	{ 
 		.pIDs = {1,3,6,1,4,1,42251,1,3,0,1,0},
@@ -587,7 +585,13 @@ FTM_RET	FTOM_SNMPC_getEPCount
 
 	xOID.pIDs[9] = (xType >> 16);
 
-	return FTOM_SNMPC_getULONG(pClient, pIP, &xOID, pulCount);
+	xRet = FTOM_SNMPC_getULONG(pClient, pIP, &xOID, &ulCount);
+	if (xRet == FTM_RET_OK)
+	{
+		*pulCount = ulCount;	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_SNMPC_getEPID
@@ -777,155 +781,6 @@ FTM_RET	FTOM_SNMPC_getEPInterval
 	return	FTOM_SNMPC_getULONG(pClient, pIP, &xOID, pulInterval);
 }
 
-FTM_RET	FTOM_SNMPC_getEPData
-(
-	FTOM_NODE_SNMPC_PTR pNode, 
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pEP != NULL);
-	ASSERT(pData != NULL);
-
-	FTM_RET				xRet;
-	FTM_EP_DATA			xData;
-
-	xRet = FTOM_EP_getDataType(pEP, &xData.xType);
-	if (xRet != FTM_RET_OK)
-	{
-		TRACE("Failed to get EP data type!\n");
-		return	xRet;
-	}
-
-	FTM_LOCK_set(pNode->pLock);
-	FTM_LOCK_set(pEP->pLock);
-
-	xRet = FTOM_SNMPC_get( 
-				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
-				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
-				&pEP->xOption.xSNMP.xOID,
-				pNode->xCommon.xInfo.ulTimeout,
-				&xData);
-	if (xRet == FTM_RET_OK)
-	{
-		memcpy(pData, &xData, sizeof(FTM_EP_DATA));	
-	}
-
-	FTM_LOCK_reset(pEP->pLock);
-	FTM_LOCK_reset(pNode->pLock);
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_SNMPC_setEPData
-(
-	FTOM_NODE_SNMPC_PTR pNode, 
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pEP != NULL);
-	ASSERT(pData != NULL);
-
-	FTM_RET	xRet;
-
-	FTM_LOCK_set(pNode->pLock);
-	FTM_LOCK_set(pEP->pLock);
-
-	xRet = FTOM_SNMPC_set(
-				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
-				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
-				&pEP->xOption.xSNMP.xOID,
-				pNode->xCommon.xInfo.ulTimeout,
-				pData);
-			
-
-	FTM_LOCK_reset(pEP->pLock);
-	FTM_LOCK_reset(pNode->pLock);
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_SNMPC_getEPDataAsync
-(
-	FTOM_SNMPC_PTR 		pClient, 
-	FTOM_NODE_SNMPC_PTR pNode, 
-	FTOM_EP_PTR 		pEP 
-)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pEP != NULL);
-	
-	FTM_RET				xRet;
-	FTOM_MSG_PTR		pMsg = NULL;
-	FTM_EP_DATA_TYPE	xDataType;
-
-	xRet = FTOM_EP_getDataType(pEP, &xDataType);
-	if (xRet != FTM_RET_OK)
-	{
-		TRACE("Error! invalid data type\n");
-		return	xRet;
-	}
-
-	xRet = FTOM_MSG_SNMPC_createGetEPData(
-				pNode->xCommon.xInfo.pDID, 
-				pEP->xInfo.pEPID,
-				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
-				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
-				&pEP->xOption.xSNMP.xOID,
-				pNode->xCommon.xInfo.ulTimeout,
-				xDataType,
-				&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
-
-	xRet = FTOM_MSGQ_push(&pClient->xMsgQ, pMsg);
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_SNMPC_setEPDataAsync
-(
-	FTOM_SNMPC_PTR 		pClient, 
-	FTOM_NODE_SNMPC_PTR pNode, 
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pEP != NULL);
-	ASSERT(pData != NULL);
-
-	FTM_RET			xRet;
-	FTOM_MSG_PTR	pMsg = NULL;
-
-	xRet = FTOM_MSG_SNMPC_createSetEPData(
-				pNode->xCommon.xInfo.pDID, 
-				pEP->xInfo.pEPID,
-				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
-				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
-				&pEP->xOption.xSNMP.xOID,
-				pNode->xCommon.xInfo.ulTimeout,
-				pData,
-				&pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
-
-	xRet = FTOM_MSGQ_push(&pClient->xMsgQ, pMsg);
-
-	return	xRet;
-}
-
 FTM_RET	FTOM_SNMPC_getOID
 (
 	FTM_CHAR_PTR 		pInput, 
@@ -950,80 +805,18 @@ FTM_RET	FTOM_SNMPC_getULONG
 	FTM_ULONG_PTR		pulCount
 )
 {
-	ASSERT(pClient != NULL);
-	ASSERT(pIP != NULL);
-	ASSERT(pOID != NULL);
-	ASSERT(pulCount != NULL);
+	FTM_RET		xRet;
+	FTM_VALUE	xValue;
 
-	FTM_RET	xRet = FTM_RET_OK;
-	FTM_INT	nRet;
-	struct snmp_session	*pSession = NULL;
-	struct snmp_session	xSession;
+	FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_ULONG);
 
-	snmp_sess_init(&xSession);			/* initialize session */
-
-	xSession.version 		= FTM_SNMP_VERSION_2;
-	xSession.peername 		= pIP;
-	xSession.community 		= (FTM_UINT8_PTR)"public";
-	xSession.community_len	= 6;
-
-	pSession = snmp_open(&xSession);
-	if (pSession != NULL)
+	xRet = FTOM_SNMPC_get( pClient, FTM_SNMP_VERSION_2, pIP, "public", pOID, 10, &xValue);
+	if (xRet == FTM_RET_OK)
 	{
-		netsnmp_pdu 	*pReqPDU = NULL;
-		netsnmp_pdu		*pRespPDU = NULL; 
-
-		pReqPDU = snmp_pdu_create(SNMP_MSG_GET);	/* send the first GET */
-		if (pReqPDU == NULL)
-		{
-			ERROR("SNMP PDU creation error - %s\n", snmp_errstring(snmp_errno));
-			xRet = FTM_RET_SNMP_ERROR;
-		}
-		else
-		{
-			pReqPDU->time = 1;
-			snmp_add_null_var(pReqPDU, pOID->pIDs, pOID->nLen);
-
-			nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
-			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
-			{
-				struct variable_list *pVariable = pRespPDU->variables;
-				if (pVariable != NULL)
-				{
-					switch (pVariable->val_len)
-					{
-					case	1: 	*pulCount = *(FTM_UINT8_PTR)pVariable->val.integer; break;
-					case	2:	*pulCount = *(FTM_UINT16_PTR)pVariable->val.integer; break;
-					case	4:	*pulCount = *(FTM_UINT32_PTR)pVariable->val.integer; break;
-					default: 	*pulCount = 0;
-					}
-				}
-				else
-				{
-					ERROR("SNMP synch respose error - %s\n", snmp_errstring(snmp_errno));
-					xRet = FTM_RET_SNMP_ERROR;
-				}
-			}
-			else
-			{
-				ERROR("SNMP synch respose error - %s\n", snmp_errstring(snmp_errno));
-				xRet = FTM_RET_SNMP_ERROR;
-			}
-		}
-
-		if (pRespPDU != NULL)
-		{
-			snmp_free_pdu(pRespPDU);
-		}
-
-		snmp_close(pSession);
-
+		FTM_VALUE_getULONG(&xValue, pulCount);
 	}
-	else
-	{
-		ERROR("SNMP open error - %s\n", snmp_errstring(snmp_errno));
-		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
-	}
+
+	FTM_VALUE_final(&xValue);
 
 	return	xRet;
 }
@@ -1037,101 +830,53 @@ FTM_RET	FTOM_SNMPC_getString
 	FTM_ULONG			ulMaxLen
 )
 {
-	ASSERT(pClient != NULL);
-	ASSERT(pIP != NULL);
-	ASSERT(pOID != NULL);
-	ASSERT(pBuff != NULL);
+	FTM_RET		xRet;
+	FTM_VALUE	xValue;
 
-	FTM_RET	xRet = FTM_RET_OK;
-	FTM_INT	nRet;
-	struct snmp_session	*pSession = NULL;
-	struct snmp_session	xSession;
+	FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_STRING);
 
-	snmp_sess_init(&xSession);			/* initialize session */
-
-	xSession.version 		= FTM_SNMP_VERSION_2;
-	xSession.peername 		= pIP;
-	xSession.community 		= (FTM_UINT8_PTR)"public";
-	xSession.community_len	= 6;
-
-	pSession = snmp_open(&xSession);
-	if (pSession != NULL)
+	xRet = FTOM_SNMPC_get( pClient, FTM_SNMP_VERSION_2, pIP, "public", pOID, 1, &xValue);
+	if (xRet == FTM_RET_OK)
 	{
-		netsnmp_pdu 	*pReqPDU = NULL;
-		netsnmp_pdu		*pRespPDU = NULL; 
-
-		pReqPDU = snmp_pdu_create(SNMP_MSG_GET);	/* send the first GET */
-		if (pReqPDU == NULL)
-		{
-			ERROR("SNMP PDU creation error - %s\n", snmp_errstring(snmp_errno));
-			xRet = FTM_RET_SNMP_ERROR;
-		}
-		else
-		{
-			pReqPDU->time = 1;
-			snmp_add_null_var(pReqPDU, pOID->pIDs, pOID->nLen);
-
-			nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
-			if ((nRet == STAT_SUCCESS) && (pRespPDU->errstat == SNMP_ERR_NOERROR))
-			{
-				struct variable_list *pVariable = pRespPDU->variables;
-				if (pVariable != NULL)
-				{
-					if (pVariable->val_len < ulMaxLen)
-					{
-						memcpy(pBuff, pVariable->val.string, pVariable->val_len);
-					}
-					else
-					{
-						memcpy(pBuff, pVariable->val.string, ulMaxLen);
-					}
-				}
-				else
-				{
-					ERROR("SNMP synch respose error - %s\n", snmp_errstring(snmp_errno));
-					xRet = FTM_RET_SNMP_ERROR;
-				}
-			}
-			else
-			{
-				ERROR("SNMP synch respose error - %s\n", snmp_errstring(snmp_errno));
-				xRet = FTM_RET_SNMP_ERROR;
-			}
-		}
-
-		if (pRespPDU != NULL)
-		{
-			snmp_free_pdu(pRespPDU);
-		}
-
-		snmp_close(pSession);
-
+		FTM_VALUE_getSTRING(&xValue, pBuff, ulMaxLen);
 	}
-	else
-	{
-		ERROR("SNMP open error - %s\n", snmp_errstring(snmp_errno));
-		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
-	}
+
+	FTM_VALUE_final(&xValue);
 
 	return	xRet;
 }
 
+FTM_RET	FTOM_SNMPC_sendMessage
+(
+	FTOM_SNMPC_PTR	pClient,
+	FTOM_MSG_PTR	pMsg
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pMsg != NULL);
+
+	FTOM_MSGQ_push(&pClient->xMsgQ, pMsg);
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_SNMPC_get
 (
+	FTOM_SNMPC_PTR		pClient,
 	FTM_ULONG			ulVersion,
 	FTM_CHAR_PTR		pURL,
 	FTM_CHAR_PTR		pCommunity,
 	FTM_SNMP_OID_PTR	pOID,
 	FTM_ULONG			ulTimeout,
-	FTM_EP_DATA_PTR 	pData
+	FTM_VALUE_PTR		pValue
 )
 {
 	ASSERT(pURL != NULL);
 	ASSERT(pCommunity != NULL);
 	ASSERT(pOID != NULL);
-	ASSERT(pData != NULL);
+	ASSERT(pValue != NULL);
 
-	FTM_RET	xRet = FTM_RET_SNMP_ERROR;
+	FTM_RET	xRet = FTM_RET_OK;
 	FTM_INT	nRet;
 	struct snmp_session	*pSession = NULL;
 	struct snmp_session	xSession;
@@ -1167,6 +912,7 @@ FTM_RET	FTOM_SNMPC_get
 	nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
 	if ((nRet != STAT_SUCCESS) || (pRespPDU->errstat != SNMP_ERR_NOERROR))
 	{
+		ERROR("SNMP reponse error!\n");
 		xRet = FTM_RET_SNMP_ERROR;
 		goto finish;
 	}
@@ -1174,9 +920,47 @@ FTM_RET	FTOM_SNMPC_get
 	struct variable_list *pVariable = pRespPDU->variables;
 	if (pVariable != NULL) 
 	{
-		switch(pVariable->name[pVariable->name_length-2])
+		switch(pVariable->type)
 		{
-		case	6:
+		case	ASN_INTEGER:
+			{
+				FTM_INT	nValue;
+
+				switch (pVariable->val_len)
+				{
+				case	1: 	nValue = *(FTM_UINT8_PTR)pVariable->val.integer; break;
+				case	2:	nValue = *(FTM_UINT16_PTR)pVariable->val.integer; break;
+				case	4:	nValue = *(FTM_UINT32_PTR)pVariable->val.integer; break;
+				default: 	nValue = 0;
+				}
+
+				switch(pValue->xType)
+				{
+				case	FTM_VALUE_TYPE_UNKNOWN:	FTM_VALUE_initINT(pValue, nValue);	break;
+				case	FTM_VALUE_TYPE_INT: 	FTM_VALUE_setINT(pValue, nValue);	break;
+				case	FTM_VALUE_TYPE_ULONG: 	FTM_VALUE_setULONG(pValue, (FTM_ULONG)nValue);	break;
+				case	FTM_VALUE_TYPE_BOOL: 	FTM_VALUE_setBOOL(pValue, (nValue != 0));	break;
+				case	FTM_VALUE_TYPE_FLOAT: 	FTM_VALUE_setFLOAT(pValue, (FTM_FLOAT)nValue);	break;
+				case	FTM_VALUE_TYPE_STRING: 	
+					{
+						FTM_CHAR	pBuff[32];
+					
+						memset(pBuff, 0, sizeof(pBuff));
+						snprintf(pBuff, sizeof(pBuff) - 1, "%ld", *pVariable->val.integer);
+						FTM_VALUE_setSTRING(pValue, pBuff);	
+					}
+					break;
+
+				default:
+					{
+						WARN("Invalid value type[%d]!\n", pValue->xType);
+						xRet = FTM_RET_INVALID_TYPE;
+					}
+				}
+			}
+			break;
+
+		case	ASN_OCTET_STR:
 			{
 				FTM_CHAR	pBuff[1024];
 
@@ -1191,10 +975,24 @@ FTM_RET	FTOM_SNMPC_get
 					pBuff[1023] = 0;
 				}
 
-				xRet = FTM_EP_DATA_setValueFromString(pData, pBuff);
+				if (pValue->xType == FTM_VALUE_TYPE_UNKNOWN)
+				{
+					xRet = FTM_VALUE_initSTRING(pValue, pBuff);
+				}
+				else
+				{
+					xRet = FTM_VALUE_setFromString(pValue, pBuff);
+				}
 			}
 			break;
+		default:
+			{
+				ERROR("Invalid data type[%d]!\n", pVariable->type);
+				xRet = FTM_RET_INVALID_TYPE;
+			}
 		}
+		
+		pVariable = pVariable->next_variable;
 	}
 
 finish:
@@ -1213,18 +1011,19 @@ finish:
 
 FTM_RET	FTOM_SNMPC_set
 (
+	FTOM_SNMPC_PTR		pClient,
 	FTM_ULONG			ulVersion,
 	FTM_CHAR_PTR		pURL,
 	FTM_CHAR_PTR		pCommunity,
 	FTM_SNMP_OID_PTR	pOID,
 	FTM_ULONG			ulTimeout,
-	FTM_EP_DATA_PTR 	pData
+	FTM_VALUE_PTR		pValue
 )
 {
 	ASSERT(pURL != NULL);
 	ASSERT(pCommunity != NULL);
 	ASSERT(pOID != NULL);
-	ASSERT(pData != NULL);
+	ASSERT(pValue != NULL);
 
 	FTM_RET		xRet = FTM_RET_SNMP_ERROR;
 	struct snmp_session	*pSession = NULL;
@@ -1251,12 +1050,12 @@ FTM_RET	FTOM_SNMPC_set
 		}
 		else
 		{
-			FTM_CHAR	pValue[32];
+			FTM_CHAR	pBuff[32];
 
 			pReqPDU->time = ulTimeout;
-			FTM_EP_DATA_snprint(pValue, sizeof(pValue), pData);
+			FTM_VALUE_snprint(pBuff, sizeof(pBuff), pValue);
 
-			snmp_add_var(pReqPDU, pOID->pIDs, pOID->nLen, 's', pValue);
+			snmp_add_var(pReqPDU, pOID->pIDs, pOID->nLen, 's', pBuff);
 		
 			int nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
 			TRACE("SNMP set request[%08x]\n", nRet);	

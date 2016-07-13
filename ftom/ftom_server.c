@@ -2471,9 +2471,14 @@ FTM_RET	FTOM_SERVER_EP_DATA_getLast
 		xRet = FTM_LIST_getFirst(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
 		if (xRet != FTM_RET_OK)
 		{	
+			WARN("Failed to get EP[%s] data\n", pReq->pEPID);	
 			return	xRet;
 		}
 		memcpy(&pResp->xData, pData, sizeof(FTM_EP_DATA));
+	}
+	else
+	{
+		WARN("Failed to get EP[%s]\n", pReq->pEPID);	
 	}
 
 	return	pResp->xRet;

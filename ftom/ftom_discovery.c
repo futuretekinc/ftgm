@@ -255,7 +255,6 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 						xRet = FTOM_discoveryEPCount(pNode, pMsg->pTypes[i], &ulCount);
 						if (xRet == FTM_RET_OK)
 						{
-							TRACE("EP[%08x] is %d\n", pMsg->pTypes[i], ulCount);
 							for(j = 0 ; j < ulCount ; j++)
 							{
 								FTM_EP	xEPInfo;

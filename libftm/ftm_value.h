@@ -3,10 +3,11 @@
 
 #include "ftm_types.h"
 
-typedef	FTM_ULONG	FTM_VALUE_TYPE;
+typedef	FTM_ULONG	FTM_VALUE_TYPE, _PTR_ FTM_VALUE_TYPE_PTR;
 
 #define	FTM_VALUE_DYNAMIC_MAGIC	0xA55AC33C
 
+#define	FTM_VALUE_TYPE_UNKNOWN	0
 #define	FTM_VALUE_TYPE_BOOL		1
 #define	FTM_VALUE_TYPE_INT		2
 #define	FTM_VALUE_TYPE_USHORT	3
@@ -44,8 +45,12 @@ FTM_RET	FTM_VALUE_destroy
 FTM_RET	FTM_VALUE_init
 (
 	FTM_VALUE_PTR 	pObject, 
-	FTM_VALUE_TYPE 	xType,
-	FTM_CHAR_PTR	pValue
+	FTM_VALUE_TYPE 	xType
+);
+
+FTM_RET	FTM_VALUE_final
+(
+	FTM_VALUE_PTR 	pObject
 );
 
 FTM_RET	FTM_VALUE_initBOOL
@@ -72,7 +77,7 @@ FTM_RET	FTM_VALUE_initFLOAT
 	FTM_FLOAT		fValue
 );
 
-FTM_RET	FTM_VALUE_initString
+FTM_RET	FTM_VALUE_initSTRING
 (
 	FTM_VALUE_PTR 	pObject, 
 	FTM_CHAR_PTR	pValue
@@ -141,6 +146,31 @@ FTM_RET	FTM_VALUE_setBOOL
 (
 	FTM_VALUE_PTR	pObject,
 	FTM_BOOL		bValue
+);
+
+FTM_RET	FTM_VALUE_getBOOL
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_BOOL_PTR	pbValue
+);
+
+FTM_RET	FTM_VALUE_setSTRING
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_CHAR_PTR	pValue
+);
+
+FTM_RET	FTM_VALUE_getSTRING
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen
+);
+
+FTM_RET	FTM_VALUE_setVALUE
+(
+	FTM_VALUE_PTR	pObject,
+	FTM_VALUE_PTR	pValue
 );
 
 FTM_RET	FTM_VALUE_setFromString

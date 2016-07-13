@@ -707,23 +707,28 @@ FTM_RET	FTDMC_EP_DATA_cmd
 		{
 		case	'I':	
 			{
-				xData.xType = FTM_EP_DATA_TYPE_INT;
-				xData.xValue.xValue.nValue = strtol(&pArgv[5][1], NULL, 10); 
+				FTM_INT		nValue;
+
+				nValue = strtol(&pArgv[5][1], NULL, 10); 
+				FTM_VALUE_initINT(&xData.xValue, nValue);
 			}
 
 			break;
 
 		case	'F':	
 			{
-				xData.xType = FTM_EP_DATA_TYPE_FLOAT;
-				xData.xValue.xValue.fValue = strtod(&pArgv[5][1], NULL); 
+				FTM_FLOAT	fValue;
+
+				fValue = strtod(&pArgv[5][1], NULL); 
+				FTM_VALUE_initFLOAT(&xData.xValue, fValue);
 			} 
 			break;
 
 		case	'U':	
-			{	
-				xData.xType = FTM_EP_DATA_TYPE_ULONG;
-				xData.xValue.xValue.ulValue = strtoul(&pArgv[5][1], NULL, 10); 
+			{
+				FTM_ULONG	ulValue;
+				ulValue = strtoul(&pArgv[5][1], NULL, 10); 
+				FTM_VALUE_initULONG(&xData.xValue, ulValue);
 			}	
 			break;
 
@@ -731,9 +736,11 @@ FTM_RET	FTDMC_EP_DATA_cmd
 		case	'4': case	'5': case	'6': case	'7':	
 		case	'8':	
 		case	'9':	
-			{
-				xData.xType = FTM_EP_DATA_TYPE_INT;
-				xData.xValue.xValue.nValue = strtol(pArgv[4], NULL, 10); 
+			{	
+				FTM_INT	nValue;
+
+				nValue = strtol(pArgv[4], NULL, 10); 
+				FTM_VALUE_initINT(&xData.xValue, nValue);
 			}
 			break;
 
@@ -962,22 +969,22 @@ FTM_RET	FTDMC_EP_DATA_cmd
 						time_t		xTime = pEPData[i].ulTime;
 
 						strftime(pTime, sizeof(pTime), "%Y-%m-%d %H:%M:%S", gmtime(&xTime));
-						switch(pEPData[i].xType)
+						switch(pEPData[i].xValue.xType)
 						{
-						case	FTM_EP_DATA_TYPE_ULONG:
+						case	FTM_VALUE_TYPE_ULONG:
 							{
 								MESSAGE("%8d %32s %8lu\n", 
 										nStartIndex + i, pTime, pEPData[i].xValue.xValue.ulValue);	
 							}
 							break;
 
-						case	FTM_EP_DATA_TYPE_FLOAT:
+						case	FTM_VALUE_TYPE_FLOAT:
 							{
 								MESSAGE("%8d %32s %8.3lf\n", 
 										nStartIndex + i, pTime, pEPData[i].xValue.xValue.fValue);	
 							}
 							break;
-						case	FTM_EP_DATA_TYPE_INT:
+						case	FTM_VALUE_TYPE_INT:
 						default:
 							{
 								MESSAGE("%8d %32s %8d\n", 
@@ -1064,9 +1071,8 @@ FTM_RET	FTDMC_EP_DATA_cmd
 
 			if (FTM_LIST_getAt(&xClientConfig.xDiagnostic.xEPList, nIndex, (FTM_VOID_PTR _PTR_)&pEPID) == FTM_RET_OK)
 			{
-				xData.xType = FTM_EP_DATA_TYPE_INT;
 				xData.ulTime = _startTime + rand() % (_endTime - _startTime);
-				xData.xValue.xValue.nValue = rand();
+				FTM_VALUE_initINT(&xData.xValue, rand());
 
 				FTDMC_EP_DATA_append(&_xSession, pEPID, &xData);
 			}
@@ -1147,19 +1153,24 @@ FTM_RET	FTDMC_TRIGGER_cmd
 			xTrigger.xType = FTM_TRIGGER_TYPE_ABOVE;
 			if ((pArgv[4][0] | 0x20) == 'f')
 			{
-				xTrigger.xParams.xAbove.xValue.xType = FTM_EP_DATA_TYPE_FLOAT;
-				xTrigger.xParams.xAbove.xValue.xValue.fValue = strtod(&pArgv[4][1], 0);
+				FTM_FLOAT	fValue;
+
+				fValue = strtod(&pArgv[4][1], 0);
+				FTM_VALUE_initFLOAT(&xTrigger.xParams.xAbove.xValue, fValue);
 			}
 			else if ((pArgv[4][0] | 0x20) == 'i')
 			{
-		TRACE("3\n");
-				xTrigger.xParams.xAbove.xValue.xType = FTM_EP_DATA_TYPE_INT;
-				xTrigger.xParams.xAbove.xValue.xValue.nValue = strtol(&pArgv[4][1], 0, 10);
+				FTM_INT		nValue;
+
+				nValue = strtol(&pArgv[4][1], 0, 10);
+				FTM_VALUE_initINT(&xTrigger.xParams.xAbove.xValue, nValue);
 			}
 			else if ((pArgv[4][0] | 0x20) == 'b')
 			{
-				xTrigger.xParams.xAbove.xValue.xType = FTM_EP_DATA_TYPE_BOOL;
-				xTrigger.xParams.xAbove.xValue.xValue.bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+				FTM_BOOL	bValue;
+
+				bValue =  (strtoul(&pArgv[4][1], 0, 10) != 0);
+				FTM_VALUE_initBOOL(&xTrigger.xParams.xAbove.xValue, bValue);
 			}
 			else
 			{
@@ -1171,18 +1182,24 @@ FTM_RET	FTDMC_TRIGGER_cmd
 			xTrigger.xType = FTM_TRIGGER_TYPE_BELOW;
 			if ((pArgv[4][0] | 0x20) == 'f')
 			{
-				xTrigger.xParams.xBelow.xValue.xType = FTM_EP_DATA_TYPE_FLOAT;
-				xTrigger.xParams.xBelow.xValue.xValue.fValue = strtod(&pArgv[4][1], 0);
+				FTM_FLOAT	fValue;
+
+				fValue = strtod(&pArgv[4][1], 0);
+				FTM_VALUE_initFLOAT(&xTrigger.xParams.xBelow.xValue, fValue);
 			}
 			else if ((pArgv[4][0] | 0x20) == 'i')
 			{
-				xTrigger.xParams.xBelow.xValue.xType = FTM_EP_DATA_TYPE_INT;
-				xTrigger.xParams.xBelow.xValue.xValue.nValue = strtol(&pArgv[4][1], 0, 10);
+				FTM_INT		nValue;
+
+				nValue = strtol(&pArgv[4][1], 0, 10);
+				FTM_VALUE_initINT(&xTrigger.xParams.xBelow.xValue, nValue);
 			}
 			else if ((pArgv[4][0] | 0x20) == 'b')
 			{
-				xTrigger.xParams.xBelow.xValue.xType = FTM_EP_DATA_TYPE_BOOL;
-				xTrigger.xParams.xBelow.xValue.xValue.bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+				FTM_BOOL	bValue;
+
+				bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+				FTM_VALUE_initBOOL(&xTrigger.xParams.xBelow.xValue, bValue);
 			}
 			else
 			{
@@ -1217,33 +1234,45 @@ FTM_RET	FTDMC_TRIGGER_cmd
 			xTrigger.xType = FTM_TRIGGER_TYPE_INCLUDE;
 			if ((pArgv[4][0] | 0x20) == 'f')
 			{
-				xTrigger.xParams.xInclude.xLower.xType = FTM_EP_DATA_TYPE_FLOAT;
-				xTrigger.xParams.xInclude.xLower.xValue.fValue = strtod(&pArgv[4][1], 0);
+				FTM_FLOAT	fValue;
+
+				fValue = strtod(&pArgv[4][1], 0);
+				FTM_VALUE_initFLOAT(&xTrigger.xParams.xInclude.xLower, fValue);
 			}
 			else if ((pArgv[4][0] | 0x20) == 'i')
 			{
-				xTrigger.xParams.xInclude.xLower.xType = FTM_EP_DATA_TYPE_INT;
-				xTrigger.xParams.xInclude.xLower.xValue.nValue = strtol(&pArgv[4][1], 0, 10);
+				FTM_INT	nValue;
+
+				nValue = strtol(&pArgv[4][1], 0, 10);
+				FTM_VALUE_initINT(&xTrigger.xParams.xInclude.xLower, nValue);
 			}
 			else if ((pArgv[4][0] | 0x20) == 'b')
 			{
-				xTrigger.xParams.xInclude.xLower.xType = FTM_EP_DATA_TYPE_BOOL;
-				xTrigger.xParams.xInclude.xLower.xValue.bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+				FTM_BOOL	bValue;
+
+				bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+				FTM_VALUE_initBOOL(&xTrigger.xParams.xInclude.xLower, bValue);
 			}
 			if ((pArgv[5][0] | 0x20) == 'f')
 			{
-				xTrigger.xParams.xInclude.xUpper.xType = FTM_EP_DATA_TYPE_FLOAT;
-				xTrigger.xParams.xInclude.xUpper.xValue.fValue = strtod(&pArgv[5][1], 0);
+				FTM_FLOAT	fValue;
+
+				fValue = strtod(&pArgv[5][1], 0);
+				FTM_VALUE_initFLOAT(&xTrigger.xParams.xInclude.xUpper, fValue);
 			}
 			else if ((pArgv[5][0] | 0x20) == 'i')
 			{
-				xTrigger.xParams.xInclude.xUpper.xType = FTM_EP_DATA_TYPE_INT;
-				xTrigger.xParams.xInclude.xUpper.xValue.nValue = strtol(&pArgv[5][1], 0, 10);
+				FTM_INT	nValue;
+
+				nValue = strtol(&pArgv[5][1], 0, 10);
+				FTM_VALUE_initINT(&xTrigger.xParams.xInclude.xUpper, nValue);
 			}
 			else if ((pArgv[5][0] | 0x20) == 'b')
 			{
-				xTrigger.xParams.xInclude.xUpper.xType = FTM_EP_DATA_TYPE_BOOL;
-				xTrigger.xParams.xInclude.xUpper.xValue.bValue= (strtoul(&pArgv[5][1], 0, 10) != 0);
+				FTM_BOOL	bValue;
+
+				bValue= (strtoul(&pArgv[5][1], 0, 10) != 0);
+				FTM_VALUE_initBOOL(&xTrigger.xParams.xInclude.xUpper, bValue);
 			}
 			else
 			{
@@ -1255,33 +1284,45 @@ FTM_RET	FTDMC_TRIGGER_cmd
 			xTrigger.xType = FTM_TRIGGER_TYPE_EXCEPT;
 			if ((pArgv[4][0] | 0x20) == 'f')
 			{
-				xTrigger.xParams.xExcept.xLower.xType = FTM_EP_DATA_TYPE_FLOAT;
-				xTrigger.xParams.xExcept.xLower.xValue.fValue = strtod(&pArgv[4][1], 0);
+				FTM_FLOAT	fValue;
+
+				fValue = strtod(&pArgv[4][1], 0);
+				FTM_VALUE_initFLOAT(&xTrigger.xParams.xExcept.xLower, fValue);
 			}
 			else if ((pArgv[4][0] | 0x20) == 'i')
 			{
-				xTrigger.xParams.xExcept.xLower.xType = FTM_EP_DATA_TYPE_INT;
-				xTrigger.xParams.xExcept.xLower.xValue.nValue = strtol(&pArgv[4][1], 0, 10);
+				FTM_INT		nValue;
+
+				nValue = strtol(&pArgv[4][1], 0, 10);
+				FTM_VALUE_initINT(&xTrigger.xParams.xExcept.xLower, nValue);
 			}
 			else if ((pArgv[4][0] | 0x20) == 'b')
 			{
-				xTrigger.xParams.xExcept.xLower.xType = FTM_EP_DATA_TYPE_BOOL;
-				xTrigger.xParams.xExcept.xLower.xValue.bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+				FTM_BOOL	bValue;
+				
+				bValue = (strtoul(&pArgv[4][1], 0, 10) != 0);
+				FTM_VALUE_initBOOL(&xTrigger.xParams.xExcept.xLower, bValue);
 			}
 			if ((pArgv[5][0] | 0x20) == 'f')
 			{
-				xTrigger.xParams.xExcept.xUpper.xType = FTM_EP_DATA_TYPE_FLOAT;
-				xTrigger.xParams.xExcept.xUpper.xValue.fValue = strtod(&pArgv[5][1], 0);
+				FTM_FLOAT	fValue;
+
+				fValue = strtod(&pArgv[5][1], 0);
+				FTM_VALUE_initFLOAT(&xTrigger.xParams.xExcept.xUpper, fValue);
 			}
 			else if ((pArgv[5][0] | 0x20) == 'i')
 			{
-				xTrigger.xParams.xExcept.xUpper.xType = FTM_EP_DATA_TYPE_INT;
-				xTrigger.xParams.xExcept.xUpper.xValue.nValue = strtol(&pArgv[5][1], 0, 10);
+				FTM_INT		nValue;
+
+				nValue = strtol(&pArgv[5][1], 0, 10);
+				FTM_VALUE_initINT(&xTrigger.xParams.xExcept.xUpper, nValue);
 			}
 			else if ((pArgv[5][0] | 0x20) == 'b')
 			{
-				xTrigger.xParams.xExcept.xUpper.xType = FTM_EP_DATA_TYPE_BOOL;
-				xTrigger.xParams.xExcept.xUpper.xValue.bValue = (strtoul(&pArgv[5][1], 0, 10) != 0);
+				FTM_BOOL	bValue;
+
+				bValue = (strtoul(&pArgv[5][1], 0, 10) != 0);
+				FTM_VALUE_initBOOL(&xTrigger.xParams.xExcept.xUpper, bValue);
 			}
 			else
 			{

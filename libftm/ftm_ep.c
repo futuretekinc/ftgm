@@ -281,8 +281,8 @@ FTM_RET	FTM_EP_getAt
 
 FTM_RET	FTM_EP_getDataType
 (
-	FTM_EP_PTR 	pEP, 
-	FTM_EP_DATA_TYPE_PTR pType
+	FTM_EP_PTR 			pEP, 
+	FTM_VALUE_TYPE_PTR	pType
 )
 {
 	ASSERT(pEP != NULL);
@@ -299,7 +299,7 @@ FTM_RET	FTM_EP_getDataType
 	case	FTM_EP_TYPE_AI:
 	case	FTM_EP_TYPE_PRESSURE:
 		{
-			*pType = FTM_EP_DATA_TYPE_FLOAT;
+			*pType = FTM_VALUE_TYPE_FLOAT;
 		}
 		break;
 
@@ -309,7 +309,7 @@ FTM_RET	FTM_EP_getDataType
 	case	FTM_EP_TYPE_MULTI:
 	default:
 		{
-			*pType = FTM_EP_DATA_TYPE_INT;
+			*pType = FTM_VALUE_TYPE_INT;
 		}
 		break;
 	}
@@ -673,22 +673,35 @@ FTM_RET	FTM_EP_DATA_createBool
 FTM_RET	FTM_EP_DATA_init
 (
 	FTM_EP_DATA_PTR	pData,
-	FTM_EP_DATA_TYPE	xType,
+	FTM_VALUE_TYPE	xType,
 	FTM_CHAR_PTR	pValue
 )
 {
 	ASSERT(pData != NULL);
-	ASSERT(pValue != NULL);
+	FTM_RET	xRet;
 
-	struct timeval	xTimeval;
-	gettimeofday(&xTimeval, NULL);
+	xRet = FTM_VALUE_init(&pData->xValue, xType);
+	if (xRet == FTM_RET_OK)
+	{
+		struct timeval	xTimeval;
 
-	pData->xType = xType;
-	pData->xState = FTM_EP_DATA_STATE_VALID;
-	pData->ulTime = xTimeval.tv_sec * 1000000 + xTimeval.tv_usec;
-	FTM_VALUE_init(&pData->xValue, xType, pValue);
+		if (pValue != NULL)
+		{
+			xRet = FTM_VALUE_setFromString(&pData->xValue, pValue);
+			if (xRet != FTM_RET_OK)
+			{
+				return	xRet;
+			}
+		}
 
-	return	FTM_RET_OK;
+		gettimeofday(&xTimeval, NULL);
+
+		pData->xState = FTM_EP_DATA_STATE_VALID;
+		pData->ulTime = xTimeval.tv_sec;
+
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTM_EP_DATA_initINT
@@ -702,9 +715,8 @@ FTM_RET	FTM_EP_DATA_initINT
 	struct timeval	xTimeval;
 	gettimeofday(&xTimeval, NULL);
 
-	pData->xType = FTM_EP_DATA_TYPE_INT;
 	pData->xState = FTM_EP_DATA_STATE_VALID;
-	pData->ulTime = xTimeval.tv_sec * 1000000 + xTimeval.tv_usec;
+	pData->ulTime = xTimeval.tv_sec;
 	FTM_VALUE_initINT(&pData->xValue, nValue);
 
 	return	FTM_RET_OK;
@@ -721,9 +733,8 @@ FTM_RET	FTM_EP_DATA_initULONG
 	struct timeval	xTimeval;
 	gettimeofday(&xTimeval, NULL);
 
-	pData->xType = FTM_EP_DATA_TYPE_ULONG;
 	pData->xState = FTM_EP_DATA_STATE_VALID;
-	pData->ulTime = xTimeval.tv_sec * 1000000 + xTimeval.tv_usec;
+	pData->ulTime = xTimeval.tv_sec;
 	FTM_VALUE_initULONG(&pData->xValue, ulValue);
 
 	return	FTM_RET_OK;
@@ -740,9 +751,8 @@ FTM_RET	FTM_EP_DATA_initFLOAT
 	struct timeval	xTimeval;
 	gettimeofday(&xTimeval, NULL);
 
-	pData->xType = FTM_EP_DATA_TYPE_FLOAT;
 	pData->xState = FTM_EP_DATA_STATE_VALID;
-	pData->ulTime = xTimeval.tv_sec * 1000000 + xTimeval.tv_usec;
+	pData->ulTime = xTimeval.tv_sec;
 	FTM_VALUE_initULONG(&pData->xValue, fValue);
 
 	return	FTM_RET_OK;
@@ -759,27 +769,71 @@ FTM_RET	FTM_EP_DATA_initBOOL
 	struct timeval	xTimeval;
 	gettimeofday(&xTimeval, NULL);
 
-	pData->xType = FTM_EP_DATA_TYPE_BOOL;
 	pData->xState = FTM_EP_DATA_STATE_VALID;
-	pData->ulTime = xTimeval.tv_sec * 1000000 + xTimeval.tv_usec;
+	pData->ulTime = xTimeval.tv_sec;
 	FTM_VALUE_initBOOL(&pData->xValue, bValue);
 
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_EP_DATA_initVALUE
+(
+	FTM_EP_DATA_PTR	pData,
+	FTM_VALUE_PTR	pValue
+)
+{
+	ASSERT(pData != NULL);
+	ASSERT(pValue != NULL);
+	
+	FTM_RET	xRet;
+	struct timeval	xTimeval;
+
+	gettimeofday(&xTimeval, NULL);
+	pData->xState = FTM_EP_DATA_STATE_VALID;
+	pData->ulTime = xTimeval.tv_sec;
+	xRet = FTM_VALUE_init(&pData->xValue, pValue->xType);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_VALUE_setVALUE(&pData->xValue, pValue);
+	}
+	
+	return	xRet;
+
+}
+
+FTM_RET	FTM_EP_DATA_final
+(
+	FTM_EP_DATA_PTR		pData
+)
+{
+	ASSERT(pData != NULL);
+
+	return	FTM_VALUE_final(&pData->xValue);
+}
+
 FTM_RET	FTM_EP_DATA_initValueFromString
 (
-	FTM_EP_DATA_PTR		pData,
-	FTM_EP_DATA_TYPE	xType,
-	FTM_CHAR_PTR		pValue
+	FTM_EP_DATA_PTR	pData,
+	FTM_VALUE_TYPE	xType,
+	FTM_CHAR_PTR	pValue
 )
 {
 	ASSERT(pData != NULL);
 	ASSERT(pValue != NULL);
 
-	pData->xType = xType;
+	FTM_RET	xRet;
+	struct timeval	xTimeval;
 
-	return	FTM_EP_DATA_setValueFromString(pData, pValue);
+	gettimeofday(&xTimeval, NULL);
+	pData->xState = FTM_EP_DATA_STATE_VALID;
+	pData->ulTime = xTimeval.tv_sec;
+	xRet = FTM_VALUE_init(&pData->xValue, xType);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_VALUE_setFromString(&pData->xValue, pValue);
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTM_EP_DATA_setValueFromString
@@ -791,37 +845,37 @@ FTM_RET	FTM_EP_DATA_setValueFromString
 	ASSERT(pData != NULL);
 	ASSERT(pValue != NULL);
 
-	pData->ulTime = time(NULL);
-	pData->xState = FTM_EP_DATA_STATE_VALID;
-	switch(pData->xType)
+	FTM_RET	xRet;
+
+	xRet = FTM_VALUE_setFromString(&pData->xValue, pValue);
+	if (xRet == FTM_RET_OK)
 	{
-	case	FTM_EP_DATA_TYPE_BOOL:
-		{
-			FTM_VALUE_initBOOL(&pData->xValue, (strtol(pValue, NULL, 10) == 1));
-		}
-		break;
-
-	case	FTM_EP_DATA_TYPE_INT:
-		{
-			FTM_VALUE_initINT(&pData->xValue, strtol(pValue, NULL, 10));
-		}
-		break;
-
-	case	FTM_EP_DATA_TYPE_ULONG:
-		{
-			FTM_VALUE_initULONG(&pData->xValue, strtoul(pValue, NULL, 10));
-		}
-		break;
-
-	case	FTM_EP_DATA_TYPE_FLOAT:
-		{
-			FTM_VALUE_initFLOAT(&pData->xValue, strtod(pValue, NULL));
-		}
-		break;
+		pData->ulTime = time(NULL);
+		pData->xState = FTM_EP_DATA_STATE_VALID;
 	}
 
+	return	xRet;
+}
 
-	return	FTM_RET_OK;
+FTM_RET	FTM_EP_DATA_setValue
+(
+	FTM_EP_DATA_PTR	pData,
+	FTM_VALUE_PTR	pValue
+)
+{
+	ASSERT(pData != NULL);
+	ASSERT(pValue != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTM_VALUE_setVALUE(&pData->xValue, pValue);
+	if (xRet == FTM_RET_OK)
+	{
+		pData->ulTime = time(NULL);
+		pData->xState = FTM_EP_DATA_STATE_VALID;
+	}
+	
+	return	xRet;
 }
 
 FTM_RET	FTM_EP_DATA_destroy
@@ -846,11 +900,6 @@ FTM_RET	FTM_EP_DATA_compare
 	ASSERT(pData1 != NULL);
 	ASSERT(pData2 != NULL);
 	ASSERT(pResult != NULL);
-
-	if (pData1->xType != pData2->xType)
-	{
-		return	FTM_RET_INVALID_TYPE;
-	}
 
 	return	FTM_VALUE_compare(&pData1->xValue, &pData2->xValue, pResult);
 }

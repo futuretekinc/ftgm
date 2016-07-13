@@ -36,7 +36,7 @@ FTM_RET	FTOM_CGI_addTrigger
 
 	FTM_RET	xRet;
 	FTM_TRIGGER	xTriggerInfo;	
-	FTM_EP_DATA_TYPE	xDataType;
+	FTM_VALUE_TYPE	xDataType;
 	cJSON _PTR_	pRoot = NULL;
 
 	pRoot = cJSON_CreateObject();

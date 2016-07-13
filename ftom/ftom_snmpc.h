@@ -168,33 +168,10 @@ FTM_RET	FTOM_SNMPC_setServiceCallback
 	FTOM_SERVICE_CALLBACK fServiceCB
 );
 
-FTM_RET	FTOM_SNMPC_getEPData
+FTM_RET	FTOM_SNMPC_sendMessage
 (
-	struct FTOM_NODE_SNMPC_STRUCT _PTR_ pNode, 
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-);
-
-FTM_RET	FTOM_SNMPC_setEPData
-(
-	struct FTOM_NODE_SNMPC_STRUCT _PTR_ pNode, 
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
-);
-
-FTM_RET	FTOM_SNMPC_getEPDataAsync
-(
-	FTOM_SNMPC_PTR 		pClient, 
-	struct FTOM_NODE_SNMPC_STRUCT _PTR_ pNode, 
-	FTOM_EP_PTR 		pEP 
-);
-
-FTM_RET	FTOM_SNMPC_setEPDataAsync
-(
-	FTOM_SNMPC_PTR 		pClient, 
-	struct FTOM_NODE_SNMPC_STRUCT _PTR_ pNode, 
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
+	FTOM_SNMPC_PTR	pClient,
+	FTOM_MSG_PTR	pMsg
 );
 
 FTM_RET	FTOM_SNMPC_getOID
@@ -221,5 +198,26 @@ FTM_RET	FTOM_SNMPC_getString
 );
 
 
+FTM_RET	FTOM_SNMPC_get
+(
+	FTOM_SNMPC_PTR		pClient,
+	FTM_ULONG			ulVersion,
+	FTM_CHAR_PTR		pURL,
+	FTM_CHAR_PTR		pCommunity,
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_ULONG			ulTimeout,
+	FTM_VALUE_PTR		pValue
+);
+
+FTM_RET	FTOM_SNMPC_set
+(
+	FTOM_SNMPC_PTR		pClient,
+	FTM_ULONG			ulVersion,
+	FTM_CHAR_PTR		pURL,
+	FTM_CHAR_PTR		pCommunity,
+	FTM_SNMP_OID_PTR	pOID,
+	FTM_ULONG			ulTimeout,
+	FTM_VALUE_PTR		pValue
+);
 #endif
 

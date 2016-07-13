@@ -132,7 +132,7 @@ FTM_RET FTOM_EP_stop
 FTM_RET	FTOM_EP_getDataType
 (
 	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_TYPE_PTR pType
+	FTM_VALUE_TYPE_PTR	pType
 );
 
 FTM_RET	FTOM_EP_getDataCount

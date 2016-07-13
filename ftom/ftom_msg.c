@@ -728,7 +728,7 @@ FTM_RET	FTOM_MSG_SNMPC_createGetEPData
 	FTM_CHAR_PTR		pCommunity,
 	FTM_SNMP_OID_PTR	pOID,
 	FTM_ULONG			ulTimeout,
-	FTM_EP_DATA_TYPE	xDataType,
+	FTM_VALUE_TYPE		xDataType,
 	FTOM_MSG_PTR _PTR_ 	ppMsg
 )
 {
@@ -772,7 +772,7 @@ FTM_RET	FTOM_MSG_SNMPC_createSetEPData
 	FTM_CHAR_PTR		pCommunity,
 	FTM_SNMP_OID_PTR	pOID,
 	FTM_ULONG			ulTimeout,
-	FTM_EP_DATA_PTR		pData,
+	FTM_VALUE_PTR		pValue,
 	FTOM_MSG_PTR _PTR_ 	ppMsg
 )
 {
@@ -800,7 +800,7 @@ FTM_RET	FTOM_MSG_SNMPC_createSetEPData
 	strncpy(pMsg->pCommunity, pCommunity, FTM_SNMP_COMMUNITY_LEN);
 	memcpy(&pMsg->xOID, pOID, sizeof(FTM_SNMP_OID));
 	pMsg->ulTimeout = ulTimeout;
-	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
+	memcpy(&pMsg->xValue, pValue, sizeof(FTM_VALUE));
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
 

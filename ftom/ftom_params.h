@@ -592,7 +592,7 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
-	FTM_EP_DATA_TYPE	xType;
+	FTM_VALUE_TYPE		xType;
 }	FTOM_RESP_EP_DATA_TYPE_PARAMS, _PTR_ FTOM_RESP_EP_DATA_TYPE_PARAMS_PTR;
 
 typedef	struct

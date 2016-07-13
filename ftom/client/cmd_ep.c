@@ -491,20 +491,20 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 		{
 		case	'I':	
 			{
-				FTM_EP_DATA_init(&xData, FTM_EP_DATA_TYPE_INT, &pArgv[5][1]);
+				FTM_EP_DATA_init(&xData, FTM_VALUE_TYPE_INT, &pArgv[5][1]);
 			}
 
 			break;
 
 		case	'F':	
 			{
-				FTM_EP_DATA_init(&xData, FTM_EP_DATA_TYPE_FLOAT, &pArgv[5][1]);
+				FTM_EP_DATA_init(&xData, FTM_VALUE_TYPE_FLOAT, &pArgv[5][1]);
 			} 
 			break;
 
 		case	'U':	
 			{	
-				FTM_EP_DATA_init(&xData, FTM_EP_DATA_TYPE_ULONG, &pArgv[5][1]);
+				FTM_EP_DATA_init(&xData, FTM_VALUE_TYPE_ULONG, &pArgv[5][1]);
 			}	
 			break;
 
@@ -513,7 +513,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 		case	'8':	
 		case	'9':	
 			{
-				FTM_EP_DATA_init(&xData, FTM_EP_DATA_TYPE_ULONG, pArgv[5]);
+				FTM_EP_DATA_init(&xData, FTM_VALUE_TYPE_ULONG, pArgv[5]);
 			}
 			break;
 

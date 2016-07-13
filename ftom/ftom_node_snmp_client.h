@@ -87,5 +87,40 @@ FTM_RET	FTOM_NODE_SNMPC_getOIDForUpdateInterval
 	FTM_ULONG 				ulIndex, 
 	FTM_SNMP_OID_PTR		pOID
 );
+
+FTM_RET	FTOM_NODE_SNMPC_getEPID
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_CHAR_PTR			pEPID,
+	FTM_ULONG				ulMaxLen
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getEPName
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_CHAR_PTR			pName,
+	FTM_ULONG				ulMaxLen
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getEPState
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_BOOL_PTR			pbEnable
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getEPInterval
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_ULONG_PTR			pulInterval
+);
+
 #endif
 

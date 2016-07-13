@@ -26,13 +26,6 @@ typedef	unsigned long	FTM_EP_STATE, 	_PTR_ FTM_EP_STATE_PTR;
 #define	FTM_EP_TYPE_PRESSURE		0x0C000000
 #define	FTM_EP_TYPE_MULTI			0x7F000000
 
-typedef	unsigned long	FTM_EP_DATA_TYPE, _PTR_ FTM_EP_DATA_TYPE_PTR;
-
-#define	FTM_EP_DATA_TYPE_INT	FTM_VALUE_TYPE_INT
-#define	FTM_EP_DATA_TYPE_ULONG	FTM_VALUE_TYPE_ULONG
-#define	FTM_EP_DATA_TYPE_FLOAT	FTM_VALUE_TYPE_FLOAT
-#define	FTM_EP_DATA_TYPE_BOOL	FTM_VALUE_TYPE_BOOL
-
 typedef	unsigned long	FTM_EP_FIELD, _PTR_ FTM_EP_FIELD_PTR;
 
 #define	FTM_EP_FIELD_ALL			(0xFFFFFFFF)
@@ -63,7 +56,7 @@ typedef	enum
 typedef	struct FTM_EP_DATA_STRUCT
 {
 	FTM_ULONG			ulTime;
-	FTM_EP_DATA_TYPE	xType;
+	//FTM_EP_DATA_TYPE	xType;
 	FTM_EP_DATA_STATE	xState;
 	FTM_VALUE			xValue;
 }	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
@@ -217,8 +210,8 @@ FTM_RET	FTM_EP_strToType
 
 FTM_RET	FTM_EP_getDataType
 (
-	FTM_EP_PTR pEP, 
-	FTM_EP_DATA_TYPE_PTR pType
+	FTM_EP_PTR 	pEP, 
+	FTM_VALUE_TYPE_PTR pType
 );
 
 FTM_RET			FTM_initEPTypeString
@@ -290,7 +283,7 @@ FTM_RET	FTM_EP_DATA_createBool
 FTM_RET	FTM_EP_DATA_init
 (
 	FTM_EP_DATA_PTR	pData,
-	FTM_EP_DATA_TYPE	xType,
+	FTM_VALUE_TYPE	xType,
 	FTM_CHAR_PTR	pValue
 );
 
@@ -318,11 +311,23 @@ FTM_RET	FTM_EP_DATA_initBOOL
 	FTM_BOOL 		bValue 
 );
 
+FTM_RET	FTM_EP_DATA_initVALUE
+(
+	FTM_EP_DATA_PTR	pData,
+	FTM_VALUE_PTR	pValue
+);
+
 FTM_RET	FTM_EP_DATA_initValueFromString
 (
 	FTM_EP_DATA_PTR		pData,
-	FTM_EP_DATA_TYPE	xType,
+	FTM_VALUE_TYPE		xType,
 	FTM_CHAR_PTR		pValue
+);
+
+
+FTM_RET	FTM_EP_DATA_final
+(
+	FTM_EP_DATA_PTR		pData
 );
 
 FTM_RET	FTM_EP_DATA_setValueFromString
