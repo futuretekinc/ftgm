@@ -108,7 +108,7 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 		return	xRet;	
 	}
 
-	xRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, &ulEPCount);
+	xRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, 0, &ulEPCount);
 	if (xRet != FTM_RET_OK)
 	{
 		TRACE("Node[%s] get EP count failed.!\n", pNode->xCommon.xInfo.pDID);

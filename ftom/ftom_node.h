@@ -127,7 +127,42 @@ FTM_RET	FTOM_NODE_unlinkEP
 FTM_RET	FTOM_NODE_getEPCount
 (
 	FTOM_NODE_PTR	pNode, 
+	FTM_EP_TYPE		xType,
 	FTM_ULONG_PTR 	pulCount
+);
+
+FTM_RET	FTOM_NODE_getEPID
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_EP_TYPE		xEPType,
+	FTM_ULONG		ulIndex,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulMaxLen
+);
+
+FTM_RET	FTOM_NODE_getEPName
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_EP_TYPE		xEPType,
+	FTM_ULONG		ulIndex,
+	FTM_CHAR_PTR	pName,
+	FTM_ULONG		ulMaxLen
+);
+
+FTM_RET	FTOM_NODE_getEPState
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_EP_TYPE		xEPType,
+	FTM_ULONG		ulIndex,
+	FTM_BOOL_PTR	pbEnable
+);
+
+FTM_RET	FTOM_NODE_getEPUpdateInterval
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_EP_TYPE		xEPType,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG_PTR	pulUpdateInterval
 );
 
 FTM_RET	FTOM_NODE_getEP

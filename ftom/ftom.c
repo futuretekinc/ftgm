@@ -21,6 +21,7 @@
 #include "ftom_discovery.h"
 #include "ftom_utils.h"
 #include "ftom_logger.h"
+#include "ftom_node_snmp_client.h"
 
 FTM_VOID_PTR	FTOM_process
 (
@@ -117,13 +118,6 @@ static
 FTM_RET	FTOM_onAlert
 (
 	FTOM_MSG_ALERT_PTR pMsg,
-	FTM_VOID_PTR		pData
-);
-
-static
-FTM_RET	FTOM_onInitializeDone
-(
-	FTOM_MSG_INITIALIZE_DONE_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
 
@@ -2350,15 +2344,8 @@ FTM_RET	FTOM_discoveryEPCount
 	ASSERT(pNode != NULL);
 	ASSERT(pulCount != NULL);
 	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
 	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	xRet = FTOM_SNMPC_getEPCount(pService->pData, pNode->pIP, xType, pulCount);
+	xRet = FTOM_NODE_getEPCount(pNode, xType, pulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("SNMP client get EP count failed.\n");	
@@ -2379,56 +2366,33 @@ FTM_RET	FTOM_discoveryEP
 	ASSERT(pEPInfo != NULL);
 
 	FTM_RET		xRet;
-	FTOM_SERVICE_PTR pService;
-
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet != FTM_RET_OK)
-	{
-		return  xRet;   
-	}
 
 	memset(pEPInfo, 0, sizeof(FTM_EP));
 
 	pEPInfo->xType = xType;
 
-#if 1
-	xRet = FTOM_NODE_SNMPC_getEPID(pNode, xType, ulIndex, pEPInfo->pEPID, FTM_EPID_LEN);
-#else
-	xRet = FTOM_SNMPC_getEPID(pService->pData, pNode->pIP, xType, ulIndex, pEPInfo->pEPID, FTM_EPID_LEN);
-#endif
+	xRet = FTOM_NODE_getEPID(pNode, xType, ulIndex, pEPInfo->pEPID, FTM_EPID_LEN);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("SNMP get EPID failed![%08x]\n", xRet);
 		return	xRet;	
 	}
 
-#if 1
-	xRet = FTOM_NODE_SNMPC_getEPName(pNode, xType, ulIndex, pEPInfo->pName, FTM_NAME_LEN);
-#else
-	xRet = FTOM_SNMPC_getEPName(pService->pData, pNode->pIP, xType, ulIndex, pEPInfo->pName, FTM_NAME_LEN);
-#endif
+	xRet = FTOM_NODE_getEPName(pNode, xType, ulIndex, pEPInfo->pName, FTM_NAME_LEN);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("SNMP get EP Name failed![%08x]\n", xRet);
 		return	xRet;	
 	}
 
-#if 1
-	xRet = FTOM_NODE_SNMPC_getEPState(pNode, xType, ulIndex, &pEPInfo->bEnable);
-#else
-	xRet = FTOM_SNMPC_getEPState(pService->pData, pNode->pIP, xType, ulIndex, &pEPInfo->bEnable);
-#endif
+	xRet = FTOM_NODE_getEPState(pNode, xType, ulIndex, &pEPInfo->bEnable);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("SNMP get EP state failed![%08x]\n", xRet);
 		return	xRet;	
 	}
 
-#if 1
-	xRet = FTOM_NODE_SNMPC_getEPInterval(pNode, xType, ulIndex, &pEPInfo->ulUpdateInterval);
-#else
-	xRet = FTOM_SNMPC_getEPInterval(pService->pData, pNode->pIP, xType, ulIndex, &pEPInfo->ulUpdateInterval);
-#endif
+	xRet = FTOM_NODE_getEPUpdateInterval(pNode, xType, ulIndex, &pEPInfo->ulUpdateInterval);
 	if (xRet != FTM_RET_OK)
 	{
 		if (xType != FTM_EP_TYPE_DI)

@@ -4,7 +4,7 @@
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 
-FTM_RET	FTOM_NODE_SNMPC_GEN_init
+FTM_RET	FTOM_NODE_FTE_init
 (
 	FTOM_NODE_SNMPC_PTR pNode
 )
@@ -21,7 +21,7 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_init
 		return	xRet;	
 	}
 
-	xRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, &ulEPCount);
+	xRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, 0, &ulEPCount);
 	if (xRet != FTM_RET_OK)
 	{
 		TRACE("Node[%s] get EP count failed.!\n", pNode->xCommon.xInfo.pDID);
@@ -72,7 +72,7 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_init
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_NODE_SNMPC_GEN_prestart
+FTM_RET	FTOM_NODE_FTE_prestart
 (
 	FTOM_NODE_SNMPC_PTR pNode
 )
@@ -86,7 +86,7 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_prestart
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_NODE_SNMPC_GEN_prestop
+FTM_RET	FTOM_NODE_FTE_prestop
 (
 	FTOM_NODE_SNMPC_PTR pNode
 )
@@ -100,7 +100,7 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_prestop
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_NODE_SNMPC_GEN_final
+FTM_RET	FTOM_NODE_FTE_final
 (
 	FTOM_NODE_SNMPC_PTR pNode
 )
@@ -114,7 +114,7 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_final
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_NODE_SNMPC_GEN_getEPCount
+FTM_RET	FTOM_NODE_FTE_getEPCount
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
 	FTM_EP_TYPE			xType,
@@ -125,7 +125,7 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_getEPCount
 	return	0;
 }
 
-FTM_RET	FTOM_NODE_SNMPC_GEN_getEPData
+FTM_RET	FTOM_NODE_FTE_getEPData
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
 	FTOM_EP_PTR 		pEP, 
@@ -153,7 +153,8 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_getEPData
 	FTM_LOCK_set(pNode->pLock);
 	FTM_LOCK_set(pEP->pLock);
 
-	xValue.xType = xDataType;
+	FTM_VALUE_init(&xValue, xDataType);
+
 	xRet = FTOM_SNMPC_get( 
 				pService->pData,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
@@ -167,13 +168,15 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_getEPData
 		xRet = FTM_EP_DATA_initVALUE(pData, &xValue);
 	}
 
+	FTM_VALUE_final(&xValue);
+
 	FTM_LOCK_reset(pEP->pLock);
 	FTM_LOCK_reset(pNode->pLock);
 
 	return	xRet;
 }
 
-FTM_RET	FTOM_NODE_SNMPC_GEN_setEPData
+FTM_RET	FTOM_NODE_FTE_setEPData
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
 	FTOM_EP_PTR 		pEP, 
@@ -208,7 +211,7 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_setEPData
 	return	xRet;
 }
 
-FTM_RET	FTOM_NODE_SNMPC_GEN_getEPDataAsync
+FTM_RET	FTOM_NODE_FTE_getEPDataAsync
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
 	FTOM_EP_PTR 		pEP
@@ -259,7 +262,7 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_getEPDataAsync
 	return	xRet;
 }
 
-FTM_RET	FTOM_NODE_SNMPC_GEN_setEPDataAsync
+FTM_RET	FTOM_NODE_FTE_setEPDataAsync
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
 	FTOM_EP_PTR 		pEP, 
@@ -300,20 +303,24 @@ FTM_RET	FTOM_NODE_SNMPC_GEN_setEPDataAsync
 	return	xRet;
 }
 
-FTOM_NODE_CLASS	xGeneralSNMP = 
+FTOM_NODE_CLASS	xNodeClassFTE = 
 {
-	.pModel = "general",
+	.pModel = "fte",
 	.xType		= FTOM_NODE_TYPE_SNMPC,
 	.fCreate	= (FTOM_NODE_CREATE)FTOM_NODE_SNMPC_create,
 	.fDestroy	= (FTOM_NODE_DESTROY)FTOM_NODE_SNMPC_destroy,
-	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_GEN_init,
-	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_GEN_final,
-	.fPrestart	= (FTOM_NODE_PRESTART)FTOM_NODE_SNMPC_GEN_prestart,
-	.fPrestop	= (FTOM_NODE_PRESTOP)FTOM_NODE_SNMPC_GEN_prestop,
-	.fGetEPCount= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_SNMPC_GEN_getEPCount,
-	.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_GEN_getEPData,
-	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_GEN_setEPData,
-	.fGetEPDataAsync	= (FTOM_NODE_GET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_GEN_getEPDataAsync,
-	.fSetEPDataAsync	= (FTOM_NODE_SET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_GEN_setEPDataAsync,
+	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_FTE_init,
+	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_FTE_final,
+	.fPrestart	= (FTOM_NODE_PRESTART)FTOM_NODE_FTE_prestart,
+	.fPrestop	= (FTOM_NODE_PRESTOP)FTOM_NODE_FTE_prestop,
+	.fGetEPCount= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_FTE_getEPCount,
+	.fGetEPID	= (FTOM_NODE_GET_EP_ID)FTOM_NODE_SNMPC_getEPID,
+	.fGetEPName	= (FTOM_NODE_GET_EP_NAME)FTOM_NODE_SNMPC_getEPName,
+	.fGetEPState= (FTOM_NODE_GET_EP_STATE)FTOM_NODE_SNMPC_getEPState,
+	.fGetEPUpdateInterval= (FTOM_NODE_GET_EP_UPDATE_INTERVAL)FTOM_NODE_SNMPC_getEPUpdateInterval,
+	.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_FTE_getEPData,
+	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_FTE_setEPData,
+	.fGetEPDataAsync	= (FTOM_NODE_GET_EP_DATA_ASYNC)FTOM_NODE_FTE_getEPDataAsync,
+	.fSetEPDataAsync	= (FTOM_NODE_SET_EP_DATA_ASYNC)FTOM_NODE_FTE_setEPDataAsync,
 };
 

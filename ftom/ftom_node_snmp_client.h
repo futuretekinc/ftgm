@@ -32,6 +32,95 @@ FTM_RET	FTOM_NODE_SNMPC_destroy
 	FTOM_NODE_SNMPC_PTR _PTR_ pNode
 );
 
+FTM_RET	FTOM_NODE_SNMPC_init
+(
+	FTOM_NODE_SNMPC_PTR pNode
+);
+
+FTM_RET	FTOM_NODE_SNMPC_final
+(
+	FTOM_NODE_SNMPC_PTR pNode
+);
+
+FTM_RET	FTOM_NODE_SNMPC_prestart
+(
+	FTOM_NODE_SNMPC_PTR pNode
+);
+
+FTM_RET	FTOM_NODE_SNMPC_prestop
+(
+	FTOM_NODE_SNMPC_PTR pNode
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getEPCount
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_EP_TYPE			xType,
+	FTM_ULONG_PTR		pulCount
+);
+
+
+FTM_RET	FTOM_NODE_SNMPC_getEPID
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_CHAR_PTR			pEPID,
+	FTM_ULONG				ulMaxLen
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getEPName
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_CHAR_PTR			pName,
+	FTM_ULONG				ulMaxLen
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getEPState
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_ULONG				ulEPType,
+	FTM_ULONG				ulIndex,
+	FTM_BOOL_PTR			pbEnable
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
+(
+	FTOM_NODE_SNMPC_PTR	pNode,
+	FTM_ULONG			ulEPType,
+	FTM_ULONG			ulIndex,
+	FTM_ULONG_PTR		pulInterval
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getEPData
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTOM_NODE_SNMPC_setEPData
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getEPDataAsync
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTOM_EP_PTR 		pEP
+);
+
+FTM_RET	FTOM_NODE_SNMPC_setEPDataAsync
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTOM_EP_PTR 		pEP, 
+	FTM_EP_DATA_PTR 	pData
+);
+
 FTM_RET	FTOM_NODE_SNMPC_getOIDForID
 (
 	FTOM_NODE_SNMPC_PTR 	pNode, 

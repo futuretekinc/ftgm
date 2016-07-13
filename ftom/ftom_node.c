@@ -432,6 +432,116 @@ FTM_RET	FTOM_NODE_unlinkEP
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_NODE_getEPID
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_EP_TYPE		xEPType,
+	FTM_ULONG		ulIndex,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulMaxLen
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEPID != NULL);
+
+	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
+
+	FTOM_NODE_lock(pNode);
+	
+	if (pNode->pClass != NULL)
+	{
+		if (pNode->pClass->fGetEPID != NULL)
+		{
+			xRet = pNode->pClass->fGetEPID(pNode, xEPType, ulIndex, pEPID, ulMaxLen);	
+		}
+	}
+	FTOM_NODE_unlock(pNode);
+	
+	return	xRet;
+}
+
+FTM_RET	FTOM_NODE_getEPName
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_EP_TYPE		xEPType,
+	FTM_ULONG		ulIndex,
+	FTM_CHAR_PTR	pName,
+	FTM_ULONG		ulMaxLen
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pName != NULL);
+
+	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
+
+	FTOM_NODE_lock(pNode);
+	
+	if (pNode->pClass != NULL)
+	{
+		if (pNode->pClass->fGetEPName != NULL)
+		{
+			xRet = pNode->pClass->fGetEPName(pNode, xEPType, ulIndex, pName, ulMaxLen);	
+		}
+	}
+	FTOM_NODE_unlock(pNode);
+	
+	return	xRet;
+}
+
+FTM_RET	FTOM_NODE_getEPState
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_EP_TYPE		xEPType,
+	FTM_ULONG		ulIndex,
+	FTM_BOOL_PTR	pbEnable
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pbEnable != NULL);
+
+	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
+
+	FTOM_NODE_lock(pNode);
+	
+	if (pNode->pClass != NULL)
+	{
+		if (pNode->pClass->fGetEPState != NULL)
+		{
+			xRet = pNode->pClass->fGetEPState(pNode, xEPType, ulIndex, pbEnable);	
+		}
+	}
+	FTOM_NODE_unlock(pNode);
+	
+	return	xRet;
+}
+
+FTM_RET	FTOM_NODE_getEPUpdateInterval
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_EP_TYPE		xEPType,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG_PTR	pulUpdateInterval
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pulUpdateInterval != NULL);
+
+	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
+
+	FTOM_NODE_lock(pNode);
+	
+	if (pNode->pClass != NULL)
+	{
+		if (pNode->pClass->fGetEPUpdateInterval != NULL)
+		{
+			xRet = pNode->pClass->fGetEPUpdateInterval(pNode, xEPType, ulIndex, pulUpdateInterval);	
+		}
+	}
+	FTOM_NODE_unlock(pNode);
+	
+	return	xRet;
+}
+
 FTM_RET FTOM_NODE_getEPData
 (
 	FTOM_NODE_PTR pNode, 
@@ -488,14 +598,37 @@ FTM_RET	FTOM_NODE_setEPData
 
 FTM_RET	FTOM_NODE_getEPCount
 (
-	FTOM_NODE_PTR pNode, 
-	FTM_ULONG_PTR pulCount
+	FTOM_NODE_PTR 	pNode, 
+	FTM_EP_TYPE		xType,	
+	FTM_ULONG_PTR 	pulCount
 )
 {
 	ASSERT(pNode != NULL);
 	ASSERT(pulCount != NULL);
+	
+	FTM_RET		xRet;
+	FTM_ULONG	ulCount = 0;
 
-	return FTM_LIST_count(&pNode->xEPList, pulCount);
+	xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	if (ulCount == 0)
+	{
+		if (pNode->pClass->fGetEPCount != NULL)
+		{
+			xRet = pNode->pClass->fGetEPCount(pNode, xType, &ulCount);	
+		}
+	}
+
+	if (xRet == FTM_RET_OK)
+	{
+		*pulCount = ulCount;	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_NODE_getEPDataAsync
@@ -928,7 +1061,7 @@ FTM_RET	FTOM_NODE_print
 	MESSAGE("%16s : %s\n", "State", 	FTOM_NODE_stateToStr(pNode->xState));
 	MESSAGE("%16s : %lu\n", "Report Interval", 	pNode->xInfo.ulReportInterval);
 	MESSAGE("%16s : %lu\n", "Timeout", 	pNode->xInfo.ulTimeout);
-	FTOM_NODE_getEPCount(pNode, &ulEPCount);
+	FTOM_NODE_getEPCount(pNode, 0, &ulEPCount);
 	MESSAGE("%16s : %lu\n", "EPs",		ulEPCount);
 	for(j = 0; j < ulEPCount ; j++)
 	{
@@ -977,7 +1110,7 @@ FTM_RET	FTOM_NODE_printList
 		MESSAGE("%8lu ", pNode->xInfo.ulReportInterval);
 		MESSAGE("%8lu ", pNode->xInfo.ulTimeout);
 
-		FTOM_NODE_getEPCount(pNode, &ulEPCount);
+		FTOM_NODE_getEPCount(pNode, 0, &ulEPCount);
 		MESSAGE("%3lu\n", ulCount);
 	}
 

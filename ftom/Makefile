@@ -15,11 +15,12 @@ FTOM_SRCS=ftom_main.c \
 		ftom_snmpc.c\
 		ftom_snmptrapd.c\
 		ftom_node_snmp_client.c\
-		ftom_node_snmp_client_gen.c\
 		ftom_node_fins_client.c\
 		ftom_node_fins_client_hhtw.c\
 		ftom_node_virtual.c\
 		ftom_node_virtual_fte_es7.c\
+		ftom_node_fte.c\
+		ftom_node_ftm.c\
 		ftom_discovery.c
 
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)

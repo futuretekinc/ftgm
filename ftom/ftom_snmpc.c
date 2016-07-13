@@ -13,8 +13,6 @@
 
 FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData);
 
-extern int	active_hosts;
-
 FTM_RET	FTOM_SNMPC_create
 (
 	FTOM_SNMPC_PTR _PTR_ 	ppSNMPC
@@ -332,7 +330,6 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 		}
 
 #if 1
-		//if (active_hosts) 
 		{
 			FTM_INT	nFDS = 0, nBlock = 0;
 			fd_set xFDSet;
