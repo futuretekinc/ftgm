@@ -12,6 +12,9 @@
 #include "ftm_trace.h"
 #include "ftm_mem.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTM_TRACE_MODULE_LOG
+
 FTM_RET	FTM_LOG_create
 (
 	FTM_LOG_PTR _PTR_ ppLog

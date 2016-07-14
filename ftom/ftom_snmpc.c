@@ -10,6 +10,8 @@
 #include "ftom_ep.h"
 #include "ftom_snmptrapd.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_SNMPC
 
 FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData);
 
@@ -73,29 +75,37 @@ FTM_RET	FTOM_SNMPC_init
 	xRet = FTOM_MSGQ_init(&pClient->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to init message queue[%08x].\n", xRet);
-		return	xRet;	
+		ERROR2(xRet, "Failed to init message queue.\n");
+		goto finish;	
 	}
 
 	xRet = FTM_LOCK_init(&pClient->xLock);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to init lock[%08x].\n", xRet);
-		return	xRet;
+		ERROR2(xRet, "Failed to init lock.\n");
+		goto finish;
 	}
 
 	xRet = FTM_LIST_init(&pClient->xConfig.xMIBList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to init list[%08x].\n", xRet);
-		return	xRet;
+		ERROR2(xRet, "Failed to init list.\n");
+		goto finish;
+	}
+
+	xRet = FTOM_SNMPTRAP_create(&pClient->pTrap);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to create SNMP trap!\n");
+		goto finish;
 	}
 
 	strcpy(pClient->xConfig.pName, FTOM_SNMPC_NAME);
 	pClient->xConfig.ulLoopInterval	= FTOM_SNMPC_LOOP_INTERVAL;
 	pClient->xConfig.ulMaxRetryCount= FTOM_SNMPC_RETRY_COUNT;
 
-	return	FTM_RET_OK;
+finish:
+	return	xRet;
 }
 
 FTM_RET	FTOM_SNMPC_final
@@ -107,7 +117,18 @@ FTM_RET	FTOM_SNMPC_final
 	FTM_RET		xRet;
 	FTM_ULONG 	i, ulCount;
 
-	FTM_LOCK_final(&pClient->xLock);
+	xRet = FTOM_SNMPTRAP_destroy(&pClient->pTrap);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to destroy SNMP trap!\n");
+	}
+
+	xRet = FTM_LOCK_final(&pClient->xLock);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize lock!\n");	
+	}
+
 	FTM_LIST_count(&pClient->xConfig.xMIBList, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
@@ -119,12 +140,16 @@ FTM_RET	FTOM_SNMPC_final
 		}
 	}
 
-	FTM_LIST_final(&pClient->xConfig.xMIBList);
+	xRet = FTM_LIST_final(&pClient->xConfig.xMIBList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize list!\n");
+	}
 
 	xRet = FTOM_MSGQ_final(&pClient->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Failed to release message queue SNMP Client[%08x]!\n", xRet);
+		ERROR2(xRet, "Failed to release message queue SNMP Client!\n");
 	}
 
 	return	FTM_RET_OK;
@@ -142,6 +167,11 @@ FTM_RET FTOM_SNMPC_start
 	if (pClient->bStop)
 	{
 		return	FTM_RET_ALREADY_STARTED;	
+	}
+
+	if (pClient->pTrap != NULL)
+	{
+		FTOM_SNMPTRAP_start(pClient->pTrap);	
 	}
 
 	nRet = pthread_create(&pClient->xPThread, NULL, FTOM_SNMPC_process, pClient);
@@ -189,6 +219,11 @@ FTM_RET	FTOM_SNMPC_stop
 		return	FTM_RET_NOT_START;	
 	}
 
+	if (pClient->pTrap != NULL)
+	{
+		FTOM_SNMPTRAP_stop(pClient->pTrap);	
+	}
+
 	pClient->bStop = FTM_TRUE;
 	pthread_join(pClient->xPThread, &pRet);
 	TRACE("SNMP client finished.\n");
@@ -234,7 +269,7 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 					xRet = FTOM_SNMPC_get( pClient, pMsg->ulVersion, pMsg->pURL, pMsg->pCommunity, &pMsg->xOID, pMsg->ulTimeout, &xValue);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("Failed to snmp get[%s:%s:%s:%s]!\n", pMsg->pDID, pMsg->pEPID, pMsg->pURL, FTM_SNMP_OID_print(&pMsg->xOID));
+						ERROR2(xRet, "Failed to snmp get[%s:%s:%s:%s]!\n", pMsg->pDID, pMsg->pEPID, pMsg->pURL, FTM_SNMP_OID_print(&pMsg->xOID));
 					}
 					else
 					{
@@ -247,21 +282,21 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 							xRet = FTM_EP_DATA_initVALUE(&xData, &xValue);	
 							if (xRet != FTM_RET_OK)
 							{
-								ERROR("Failed to create EP data[%08x].\n", xRet);	
+								ERROR2(xRet, "Failed to create EP data.\n");	
 							}
 							else
 							{
 								xRet = FTOM_MSG_EP_createInsertData(&xData, 1, &pNewMsg);
 								if (xRet != FTM_RET_OK) 
 								{ 
-									ERROR("Failed to create message[%08x]!\n", xRet);	
+									ERROR2(xRet, "Failed to create message!\n");	
 								}
 								else
 								{
 									xRet = FTOM_EP_sendMessage(pEP, pNewMsg);	
 									if (xRet != FTM_RET_OK)
 									{
-										ERROR("Failed to send message[%08x]!\n", xRet);	
+										ERROR2(xRet, "Failed to send message!\n");	
 										FTOM_MSG_destroy(&pNewMsg);
 									}	
 								}
@@ -332,24 +367,27 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 #if 1
 		{
 			FTM_INT	nFDS = 0, nBlock = 0;
-			fd_set xFDSet;
+			fd_set xReadFD;
+			fd_set xWriteFD;
+			fd_set xExceptFD;
 			struct timeval xTimeout = {.tv_sec = 0, .tv_usec = 100000};
 
-			FD_ZERO(&xFDSet);
-			snmp_select_info(&nFDS, &xFDSet, &xTimeout, &nBlock);
-			nFDS = select(nFDS, &xFDSet, NULL, NULL, &xTimeout);
+			FD_ZERO(&xReadFD);
+			FD_ZERO(&xWriteFD);
+			FD_ZERO(&xExceptFD);
+			snmp_select_info(&nFDS, &xReadFD, &xTimeout, &nBlock);
+			nFDS = select(nFDS, &xReadFD, &xWriteFD, &xExceptFD, &xTimeout);
 			if (nFDS < 0) 
 			{
-				perror("select failed");
-				exit(1);
+				WARN("Failed to select file descripters!\n");
 			}
 			else if (nFDS > 0)
 			{
-			//	snmp_read(&fdset);
+				snmp_read(&xReadFD);
 			}
 			else
 			{
-			//	snmp_timeout();
+				run_alarms();
 			}
 		}
 #endif
@@ -422,6 +460,15 @@ FTM_RET FTOM_SNMPC_loadConfig
 		}
 	}
 
+	if (pClient->pTrap != NULL)
+	{
+		xRet = FTOM_SNMPTRAP_loadConfig(pClient->pTrap, pConfig);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to load SNMP client configuration!\n");	
+		}
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -440,10 +487,16 @@ FTM_RET FTOM_SNMPC_loadConfigFromFile
 	xRet = FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to load SNMP client configuration from file!\n");	
 		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
 	xRet = FTOM_SNMPC_loadConfig(pClient, pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load SNMP client configuration!\n");	
+	}
+
 
 	FTM_CONFIG_destroy(&pConfig);
 
@@ -508,7 +561,7 @@ FTM_RET FTOM_SNMPC_saveConfig
 	xRet = FTM_CONFIG_ITEM_setItemULONG(&xSection, "retry_count", pClient->xConfig.ulMaxRetryCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't save retry count[%08x] !\n", xRet);
+		ERROR2(xRet, "Can't save retry count!\n");
 	}
 
 	return	FTM_RET_OK;
@@ -546,9 +599,9 @@ FTM_RET FTOM_SNMPC_showConfig
 
 FTM_RET	FTOM_SNMPC_setServiceCallback
 (
-	FTOM_SNMPC_PTR 			pClient, 
-	FTOM_SERVICE_ID 		xServiceID, 
-	FTOM_SERVICE_CALLBACK 	fServiceCB
+	FTOM_SNMPC_PTR 	pClient, 
+	FTOM_SERVICE_ID	xServiceID, 
+	FTOM_SERVICE_CB	fServiceCB
 )
 {
 	ASSERT(pClient != NULL);

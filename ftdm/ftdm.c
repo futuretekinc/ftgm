@@ -267,14 +267,12 @@ FTM_RET	FTDM_loadObjectFromDB
 		ERROR("Failed to load the node.[%08x]\n");
 	}
 
-	TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTDM_EPM_loadFromDB(pDM->pEPM);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to load the EP.[%08x]\n");
 	}
 
-	TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTDM_TRIGGER_loadFromDB();
 	if (xRet != FTM_RET_OK)
 	{
@@ -554,12 +552,12 @@ FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName)
 	MESSAGE("\t-v LEVEL\tSet message output mode.\n");
 	MESSAGE("PARAMETERS:\n");
 	MESSAGE("\t%8s %s\n", "LEVEL", "Output level");
-	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ALL, 	"all", 	"Output all message");
-	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_TRACE, "trace","Output trace message");
-	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_DEBUG, "debug","Output debug message");
-	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_INFO, 	"info", "Output information message");
-	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_WARN, 	"warn", "Output warning message");
-	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ERROR, "error","Output error message");
-	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_FATAL, "fatal","Output fatal message");
+	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ALL, 	"all", 	"Output all message");
+	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_TRACE, "trace","Output trace message");
+	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_DEBUG, "debug","Output debug message");
+	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_INFO, 	"info", "Output information message");
+	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_WARN, 	"warn", "Output warning message");
+	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ERROR, "error","Output error message");
+	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_FATAL, "fatal","Output fatal message");
 }
 

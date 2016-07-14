@@ -5,6 +5,9 @@
 #include "ftm_node_management.h"
 #include "ftm_mem.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTM_TRACE_MODULE_OBJECT
+
 static FTM_BOOL		FTM_NODEM_seekNode(const FTM_VOID_PTR pItem, const FTM_VOID_PTR pIndicator);
 
 FTM_RET	FTM_NODEM_init(FTM_NODEM_PTR pNodeM)

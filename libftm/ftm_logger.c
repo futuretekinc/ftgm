@@ -2,6 +2,9 @@
 #include "ftm_trace.h"
 #include "ftm_logger.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTM_TRACE_MODULE_LOG
+
 FTM_RET	FTM_LOGGER_init
 (
 	FTM_LOGGER_PTR	pLogger

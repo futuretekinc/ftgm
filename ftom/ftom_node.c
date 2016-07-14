@@ -10,6 +10,9 @@
 #include "ftom_message_queue.h"
 #include "ftom_logger.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_NODE
+
 static
 FTM_INT	FTOM_NODE_seeker
 (
@@ -35,6 +38,9 @@ FTM_RET	FTOM_NODE_unlock
 (
 	FTOM_NODE_PTR pNode
 );
+
+#define	FTOM_NODE_LOCK(x)	{ FTOM_NODE_lock((x)); }
+#define	FTOM_NODE_UNLOCK(x)	{ FTOM_NODE_unlock((x)); }
 
 static 
 FTM_VOID_PTR FTOM_NODE_process
@@ -142,7 +148,7 @@ FTM_RET	FTOM_NODE_create
 	xRet = FTOM_NODE_CLASS_get(pInfo->pModel, pInfo->xType, &pClass);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Node[%s] not found!\n", pInfo->pModel);
+		ERROR2(xRet, "Node[%s] not found!\n", pInfo->pModel);
 		return	xRet;	
 	}
 
@@ -151,14 +157,14 @@ FTM_RET	FTOM_NODE_create
 	xRet = pClass->fCreate(pInfo, &pNode);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Node[%s] creation failed!\n", pInfo->pModel);
+		ERROR2(xRet, "Node[%s] creation failed!\n", pInfo->pModel);
 		return	xRet;	
 	}
 
 	xRet = FTM_LIST_init(&pNode->xEPList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("List initialize failed[%08x].\n", xRet);
+		ERROR2(xRet, "List initialize failed.\n");
 		FTM_MEM_free(pNode);
 
 		return	xRet;	
@@ -167,7 +173,7 @@ FTM_RET	FTOM_NODE_create
 	xRet = FTOM_MSGQ_init(&pNode->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message queue initialize failed[%08x].\n", xRet);
+		ERROR2(xRet, "Message queue initialize failed.\n");
 		FTM_MEM_free(pNode);
 		return	xRet;	
 	}
@@ -177,7 +183,7 @@ FTM_RET	FTOM_NODE_create
 	pNode->bStop = FTM_TRUE;
 	pNode->xState = FTOM_NODE_STATE_INITIALIZED;
 
-	if (pNode->pClass->fInit != NULL)
+	if ((pNode->pClass != NULL) & (pNode->pClass->fInit != NULL))
 	{
 		pNode->pClass->fInit(pNode);
 	}
@@ -303,14 +309,14 @@ FTM_RET FTOM_NODE_set
 	xRet = FTM_LIST_get(pNodeList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Node[%s] not found.[%08x]\n", pDID, xRet);
+		ERROR2(xRet, "Node[%s] not found.\n", pDID);
 		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
 
 	xRet = FTOM_DB_NODE_set(pDID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Node[%s] failed to set[%08x]\n", pDID, xRet);
+		ERROR2(xRet, "Node[%s] failed to set.\n", pDID);
 		return	xRet;	
 	}
 
@@ -402,12 +408,12 @@ FTM_RET	FTOM_NODE_linkEP
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	FTOM_NODE_lock(pNode);
+	FTOM_NODE_LOCK(pNode);
 
 	FTM_LIST_append(&pNode->xEPList, pEP);
 	FTOM_EP_attach(pEP, pNode);
 
-	FTOM_NODE_unlock(pNode);
+	FTOM_NODE_UNLOCK(pNode);
 
 	return	FTM_RET_OK;
 }
@@ -421,13 +427,13 @@ FTM_RET	FTOM_NODE_unlinkEP
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	FTOM_NODE_lock(pNode);
+	FTOM_NODE_LOCK(pNode);
 
 	FTOM_EP_stop(pEP, FTM_TRUE);
 	FTOM_EP_detach(pEP);
 	FTM_LIST_remove(&pNode->xEPList, pEP);
 	
-	FTOM_NODE_unlock(pNode);
+	FTOM_NODE_UNLOCK(pNode);
 
 	return	FTM_RET_OK;
 }
@@ -446,16 +452,14 @@ FTM_RET	FTOM_NODE_getEPID
 
 	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
 
-	FTOM_NODE_lock(pNode);
-	
-	if (pNode->pClass != NULL)
+	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPID != NULL))
 	{
-		if (pNode->pClass->fGetEPID != NULL)
-		{
-			xRet = pNode->pClass->fGetEPID(pNode, xEPType, ulIndex, pEPID, ulMaxLen);	
-		}
+		FTOM_NODE_LOCK(pNode);
+	
+		xRet = pNode->pClass->fGetEPID(pNode, xEPType, ulIndex, pEPID, ulMaxLen);	
+
+		FTOM_NODE_UNLOCK(pNode);
 	}
-	FTOM_NODE_unlock(pNode);
 	
 	return	xRet;
 }
@@ -474,16 +478,14 @@ FTM_RET	FTOM_NODE_getEPName
 
 	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
 
-	FTOM_NODE_lock(pNode);
-	
-	if (pNode->pClass != NULL)
+	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPName != NULL))
 	{
-		if (pNode->pClass->fGetEPName != NULL)
-		{
-			xRet = pNode->pClass->fGetEPName(pNode, xEPType, ulIndex, pName, ulMaxLen);	
-		}
+		FTOM_NODE_LOCK(pNode);
+	
+		xRet = pNode->pClass->fGetEPName(pNode, xEPType, ulIndex, pName, ulMaxLen);	
+
+		FTOM_NODE_UNLOCK(pNode);
 	}
-	FTOM_NODE_unlock(pNode);
 	
 	return	xRet;
 }
@@ -501,16 +503,14 @@ FTM_RET	FTOM_NODE_getEPState
 
 	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
 
-	FTOM_NODE_lock(pNode);
-	
-	if (pNode->pClass != NULL)
+	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPState != NULL))
 	{
-		if (pNode->pClass->fGetEPState != NULL)
-		{
-			xRet = pNode->pClass->fGetEPState(pNode, xEPType, ulIndex, pbEnable);	
-		}
+		FTOM_NODE_LOCK(pNode);
+	
+		xRet = pNode->pClass->fGetEPState(pNode, xEPType, ulIndex, pbEnable);	
+	
+		FTOM_NODE_UNLOCK(pNode);
 	}
-	FTOM_NODE_unlock(pNode);
 	
 	return	xRet;
 }
@@ -528,16 +528,16 @@ FTM_RET	FTOM_NODE_getEPUpdateInterval
 
 	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
 
-	FTOM_NODE_lock(pNode);
 	
-	if (pNode->pClass != NULL)
+	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPUpdateInterval != NULL))
 	{
-		if (pNode->pClass->fGetEPUpdateInterval != NULL)
-		{
-			xRet = pNode->pClass->fGetEPUpdateInterval(pNode, xEPType, ulIndex, pulUpdateInterval);	
-		}
+		FTOM_NODE_LOCK(pNode);
+
+		xRet = pNode->pClass->fGetEPUpdateInterval(pNode, xEPType, ulIndex, pulUpdateInterval);	
+
+		FTOM_NODE_UNLOCK(pNode);
 	}
-	FTOM_NODE_unlock(pNode);
+
 	
 	return	xRet;
 }
@@ -552,18 +552,21 @@ FTM_RET FTOM_NODE_getEPData
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	FTM_RET	xRet;
+	FTM_RET	xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;	
 
-	if (pNode->pClass->fGetEPData == NULL)
-	{
-		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
-	}
 
-	pNode->xStatistics.ulGetCount++;
-	xRet = pNode->pClass->fGetEPData(pNode, pEP, pData);
-	if (xRet != FTM_RET_OK)
+	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPData != NULL))
 	{
-		pNode->xStatistics.ulGetError++;
+		FTOM_NODE_LOCK(pNode);
+
+		pNode->xStatistics.ulGetCount++;
+		xRet = pNode->pClass->fGetEPData(pNode, pEP, pData);
+		if (xRet != FTM_RET_OK)
+		{
+			pNode->xStatistics.ulGetError++;
+		}
+
+		FTOM_NODE_UNLOCK(pNode);
 	}
 
 	return	xRet;
@@ -579,18 +582,22 @@ FTM_RET	FTOM_NODE_setEPData
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	FTM_RET	xRet;
+	FTM_RET	xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;	
 
-	if (pNode->pClass->fSetEPData == NULL)
+	TRACE("pNode = %08x\n", pNode);
+	TRACE("pNode->pClass = %08x\n", pNode->pClass);
+	if ((pNode->pClass != NULL) && (pNode->pClass->fSetEPData != NULL))
 	{
-		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
-	}
+		FTOM_NODE_LOCK(pNode);
 
-	pNode->xStatistics.ulGetCount++;
-	xRet = pNode->pClass->fSetEPData(pNode, pEP, pData);
-	if (xRet != FTM_RET_OK)
-	{
-		pNode->xStatistics.ulSetError++;
+		pNode->xStatistics.ulGetCount++;
+		xRet = pNode->pClass->fSetEPData(pNode, pEP, pData);
+		if (xRet != FTM_RET_OK)
+		{
+			pNode->xStatistics.ulSetError++;
+		}
+
+		FTOM_NODE_UNLOCK(pNode);
 	}
 
 	return	xRet;
@@ -612,12 +619,13 @@ FTM_RET	FTOM_NODE_getEPCount
 	xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to get EP count!\n");
 		return	xRet;	
 	}
 
 	if (ulCount == 0)
 	{
-		if (pNode->pClass->fGetEPCount != NULL)
+		if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPCount != NULL))
 		{
 			xRet = pNode->pClass->fGetEPCount(pNode, xType, &ulCount);	
 		}
@@ -640,7 +648,7 @@ FTM_RET	FTOM_NODE_getEPDataAsync
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	if (pNode->pClass->fGetEPDataAsync == NULL)
+	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPDataAsync == NULL))
 	{
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
@@ -658,7 +666,7 @@ FTM_RET	FTOM_NODE_setEPDataAsync
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	if (pNode->pClass->fSetEPDataAsync == NULL)
+	if ((pNode->pClass != NULL) && (pNode->pClass->fSetEPDataAsync == NULL))
 	{
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
@@ -708,7 +716,7 @@ FTM_RET	FTOM_NODE_start
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
-	if (pNode->pClass->fStart != NULL)
+	if ((pNode->pClass != NULL) && (pNode->pClass->fStart != NULL))
 	{
 		return	pNode->pClass->fStart(pNode);
 	}
@@ -716,14 +724,14 @@ FTM_RET	FTOM_NODE_start
 	{
 		FTM_ULONG	ulCount = 0;
 
-		if (pNode->pClass->fPrestart != NULL)
+		if ((pNode->pClass != NULL) && (pNode->pClass->fPrestart != NULL))
 		{
 			pNode->pClass->fPrestart(pNode);
 		}
 
 
 
-		if (pNode->pClass->fProcess != NULL)
+		if ((pNode->pClass != NULL) && (pNode->pClass->fProcess != NULL))
 		{
 			nRet = pthread_create(&pNode->xThread, NULL, pNode->pClass->fProcess, pNode);
 		}
@@ -756,7 +764,7 @@ FTM_RET	FTOM_NODE_start
 			}
 		}
 
-		if (pNode->pClass->fPoststart != NULL)
+		if ((pNode->pClass != NULL) && (pNode->pClass->fPoststart != NULL))
 		{
 			pNode->pClass->fPoststart(pNode);
 		}
@@ -779,14 +787,14 @@ FTM_RET FTOM_NODE_stop
 		return	FTM_RET_OK;
 	}
 
-	if (pNode->pClass->fStop != NULL)
+	if ((pNode->pClass != NULL) && (pNode->pClass->fStop != NULL))
 	{
 		return	pNode->pClass->fStop(pNode);
 	}
 	else
 	{
 		FTM_ULONG	ulCount;
-		if (pNode->pClass->fPrestop != NULL)
+		if ((pNode->pClass != NULL) && (pNode->pClass->fPrestop != NULL))
 		{
 			pNode->pClass->fPrestop(pNode);
 		}
@@ -827,7 +835,7 @@ FTM_RET FTOM_NODE_stop
 		pthread_join(pNode->xThread, NULL);
 		pNode->xThread = 0;
 	
-		if (pNode->pClass->fPoststop != NULL)
+		if ((pNode->pClass != NULL) && (pNode->pClass->fPoststop != NULL))
 		{
 			pNode->pClass->fPoststop(pNode);
 		}

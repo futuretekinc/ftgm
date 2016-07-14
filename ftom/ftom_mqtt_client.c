@@ -8,6 +8,9 @@
 #include "ftom_mqtt_client_tpgw.h"
 #include "ftom_mqtt_client_ft.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_MQTTC
+
 static FTM_VOID_PTR FTOM_MQTT_CLIENT_process(FTM_VOID_PTR pData);
 
 static FTM_RET	FTOM_MQTT_CLIENT_onReportGWStatus
@@ -163,7 +166,7 @@ FTM_RET	FTOM_MQTT_CLIENT_create
 	xRet = FTOM_MQTT_CLIENT_init(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MQTT Client initialization was failed.\n");	
+		ERROR2(xRet, "MQTT Client initialization was failed.\n");	
 		FTM_MEM_free(pClient);
 	}
 	else
@@ -199,7 +202,7 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 	FTM_RET	xRet;	
 	if (pClient->pMsgQ != NULL)
 	{
-		ERROR("Already initialized.\n");
+		ERROR2(FTM_RET_ALREADY_INITIALIZED, "Already initialized.\n");
 		return	FTM_RET_ALREADY_INITIALIZED;
 	}
 
@@ -217,7 +220,7 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 	xRet = FTM_LIST_create(&pClient->pPublishList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MQTT publish list creation failed[%08x]!\n", xRet);	
+		ERROR2(xRet, "MQTT publish list creation failed!\n");	
 		FTOM_MSGQ_destroy(&pClient->pMsgQ);
 		return	xRet;	
 	}
@@ -225,7 +228,7 @@ FTM_RET	FTOM_MQTT_CLIENT_init
 	xRet = FTM_LIST_create(&pClient->pSubscribeList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MQTT subscribe list creation failed[%08x]!\n", xRet);	
+		ERROR2(xRet, "MQTT subscribe list creation failed!\n");	
 		FTM_LIST_destroy(pClient->pPublishList);
 		pClient->pPublishList = NULL;
 		FTOM_MSGQ_destroy(&pClient->pMsgQ);
@@ -533,7 +536,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 	pClient->pMosquitto = mosquitto_new(pClient->xConfig.pGatewayID, true, pClient);
 	if(pClient->pMosquitto == NULL)
 	{
-		ERROR("MQTT instance creation failed!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "MQTT instance creation failed!\n");
 		return	0;
 	}
 
@@ -826,42 +829,43 @@ FTM_RET	FTOM_MQTT_CLIENT_publish
 
 	case	MOSQ_ERR_INVAL:
 		{
-			ERROR("Invalid arguments.\n");
 			xRet = FTM_RET_INVALID_ARGUMENTS;
+			ERROR2(xRet, "Invalid arguments.\n");
 		}
 		break;
 
 	case	MOSQ_ERR_NOMEM:
 		{
-			ERROR("Not enoguh memory!.\n");
 			xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+			ERROR2(xRet, "Not enoguh memory!.\n");
 		}
 		break;
 
 	case	MOSQ_ERR_NO_CONN:
 		{
-			ERROR("Not connected.\n");
 			xRet = FTM_RET_NOT_CONNECTED;
+			ERROR2(xRet, "Not connected.\n");
 		}
 		break;
 
 	case	MOSQ_ERR_PROTOCOL:
 		{
-			ERROR("Protocol error!\n");
 			xRet = FTM_RET_ERROR;
+			ERROR2(xRet, "Protocol error!\n");
 		}
 		break;
 
 	case	MOSQ_ERR_PAYLOAD_SIZE:
 		{
-			ERROR("Payload is too large.\n");
 			xRet = FTM_RET_PAYLOAD_IS_TOO_LARGE;
+			ERROR2(xRet, "Payload is too large.\n");
 		}
 		break;
 
 	default:
 		{
 			xRet = FTM_RET_ERROR;
+			ERROR2(xRet, "Unknown error[%d]\n", nRet);
 		}
 	}
 	
@@ -1000,7 +1004,7 @@ FTM_RET	FTOM_MQTT_CLIENT_unsubscribe
 			xRet = FTM_LIST_remove(pClient->pSubscribeList, pSubscribe);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("MQTT subscribe remove failed[%08x]!\n", xRet);
+				ERROR2(xRet, "MQTT subscribe remove failed!\n");
 				return	FTM_RET_ERROR;	
 			}
 
@@ -1015,7 +1019,7 @@ FTM_RET	FTOM_MQTT_CLIENT_unsubscribe
 			xRet = FTOM_MQTT_SUBSCRIBE_destroy(&pSubscribe);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("MQTT subscribe destroy failed[%08x]!\n", xRet);
+				ERROR2(xRet, "MQTT subscribe destroy failed!\n");
 			}
 
 			return	xRet ;
@@ -1212,7 +1216,7 @@ FTM_RET	FTOM_MQTT_PUBLISH_create
 	pPublish = FTM_MEM_malloc(sizeof(FTOM_MQTT_PUBLISH) + strlen(pTopic) + 1 + ulMessageLen);
 	if (pPublish == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 

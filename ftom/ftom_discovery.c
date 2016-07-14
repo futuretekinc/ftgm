@@ -1,6 +1,10 @@
 #include "ftom_discovery.h"
 #include "ftom_message_queue.h"
 #include "ftm_list.h"
+#include "ftom_node_class.h"
+
+#undef	__MODULE__
+#define	__MODULE__ FTOM_TRACE_MODULE_DISCOVERY
 
 static
 FTM_RET	FTOM_DISCOVERY_requestInformation
@@ -218,41 +222,59 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 			case	FTOM_MSG_TYPE_DISCOVERY_INFO:
 				{
 					FTOM_MSG_DISCOVERY_INFO_PTR	pMsg = (FTOM_MSG_DISCOVERY_INFO_PTR)pCommonMsg;
-					FTOM_NODE_PTR	pNode;
-					FTM_ULONG		i, j, ulCount;
+					FTOM_NODE_CLASS_PTR	pClass;
+					FTOM_NODE_PTR		pNode;
+					FTM_NODE			xNodeInfo;
+					FTM_ULONG			i, j, ulCount;
 
-					pNode = (FTOM_NODE_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE));
-					if (pNode == NULL)
+					FTM_NODE_setDefault(&xNodeInfo);
+
+					TRACE("Name : %s\n", pMsg->pName);
+					xNodeInfo.xType = FTM_NODE_TYPE_SNMP;
+					if (strncasecmp(pMsg->pName, "FTE-E", 5) == 0)
 					{
+						strcpy(xNodeInfo.pModel, "fte");
+						strcpy(xNodeInfo.xOption.xSNMP.pMIB, "FTE-E");	
+					}
+					else if (strncasecmp(pMsg->pName, "FTM50S", 6) == 0)
+					{
+						strcpy(xNodeInfo.pModel, "ftm");
+						strcpy(xNodeInfo.xOption.xSNMP.pMIB, "FTM50S-MIB");	
+					}
+					else
+					{
+						strcpy(xNodeInfo.pModel, "fte");
+						strcpy(xNodeInfo.xOption.xSNMP.pMIB, "FTE-E");	
+					}
+
+
+					xRet = FTOM_NODE_CLASS_get(xNodeInfo.pModel, xNodeInfo.xType, &pClass);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR("Failed to get Node[%s] class!\n", xNodeInfo.pModel);
 						break;
 					}
 
-					FTM_NODE_setDefault(&pNode->xInfo);
-					strcpy(pNode->xInfo.pDID, pMsg->pDID);
-					strcpy(pNode->xInfo.xOption.xSNMP.pURL, pMsg->pIP);
-					if (strlen(pMsg->pName) != 0)
+					strcpy(xNodeInfo.pDID, pMsg->pDID);
+					strcpy(xNodeInfo.xOption.xSNMP.pURL, pMsg->pIP);
+
+					xRet = pClass->fCreate(&xNodeInfo, &pNode);
+					if (xRet != FTM_RET_OK)
 					{
-						TRACE("Name : %s\n", pMsg->pName);
-						if (strncasecmp(pMsg->pName, "FTE-E", 5) == 0)
-						{
-							strcpy(pNode->xInfo.xOption.xSNMP.pMIB, "FTE-E");	
-						}
-						else if (strncasecmp(pMsg->pName, "FTM50S", 6) == 0)
-						{
-							strcpy(pNode->xInfo.xOption.xSNMP.pMIB, "FTM50S-MIB");	
-						}
-						else
-						{
-							strcpy(pNode->xInfo.xOption.xSNMP.pMIB, "FTE-E");	
-						}
+						ERROR("Failed to create Node[%s]!\n", xNodeInfo.pModel);
+						break;	
 					}
+
 					strcpy(pNode->pIP, pMsg->pIP);
 
 					FTM_LIST_append(&pDiscovery->xNodeList, pNode);
 					TRACE("NODE[%s] found.\n", pNode->xInfo.pDID);
 					for(i = 0 ; i < pMsg->ulCount ; i++)
 					{
+						ulCount = 0;
+
 						xRet = FTOM_discoveryEPCount(pNode, pMsg->pTypes[i], &ulCount);
+						TRACE("Discovery EP Count : %lu\n", ulCount);
 						if (xRet == FTM_RET_OK)
 						{
 							for(j = 0 ; j < ulCount ; j++)
@@ -274,13 +296,13 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 								}
 								else
 								{
-									ERROR("EP discovery is failed[%08x].\n", xRet);
+									ERROR2(xRet, "EP discovery is failed.\n");
 								}
 							}
 						}
 						else
 						{
-							ERROR("EP count	discovery is failed[%08x].\n", xRet);
+							ERROR2(xRet, "EP count	discovery is failed.\n");
 						}
 					}	
 				}
@@ -332,14 +354,14 @@ FTM_RET	FTOM_DISCOVERY_call
 	xRet = FTOM_MSG_createDiscovery(pNetwork, usPort, ulRetryCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Discovery message creation failed[%08x].\n", xRet);
+		ERROR2(xRet, "Discovery message creation failed.\n");
 		return	xRet;	
 	}
 
 	xRet = FTOM_MSGQ_push(pDiscovery->pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Discovery message push failed[%08x].\n", xRet);
+		ERROR2(xRet, "Discovery message push failed.\n");
 		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_ )&pMsg);
 		return	xRet;	
 	}
@@ -462,7 +484,7 @@ FTM_RET	FTOM_DISCOVERY_infoCB
 	pInfo = (FTOM_DISCOVERY_INFO_PTR)FTM_MEM_malloc(sizeof(FTOM_DISCOVERY_INFO) + sizeof(FTM_EP_TYPE) * pMsg->ulCount);
 	if (pInfo == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -474,7 +496,7 @@ FTM_RET	FTOM_DISCOVERY_infoCB
 	xRet = FTM_LIST_append(&pDiscovery->xInfoList, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("List append failed!\n");
+		ERROR2(xRet, "List append failed!\n");
 		FTM_MEM_free(pInfo);
 		return	xRet;	
 	}
@@ -482,7 +504,7 @@ FTM_RET	FTOM_DISCOVERY_infoCB
 	xRet = FTOM_MSG_createDiscoveryInfo(pMsg->pName, pMsg->pDID, pMsg->pIP, pMsg->pTypes, pMsg->ulCount, &pNewMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Discovery info message creation failed[%08x].\n", xRet);
+		ERROR2(xRet, "Discovery info message creation failed.\n");
 		return	xRet;	
 	}
 
@@ -490,7 +512,7 @@ FTM_RET	FTOM_DISCOVERY_infoCB
 	if (xRet != FTM_RET_OK)
 	{
 		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pNewMsg);
-		ERROR("Message push failed[%08x]\n", xRet);
+		ERROR2(xRet, "Message push failed\n");
 		return	xRet;	
 	}
 

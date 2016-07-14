@@ -4,6 +4,9 @@
 #include "ftm_mem.h"
 #include "ftm_list.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTM_TRACE_MODULE_OBJECT
+
 FTM_LIST_PTR	pActionList = NULL;
 
 static FTM_BOOL	FTM_ACTION_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);

@@ -13,6 +13,7 @@ FTOM_SRCS=ftom_main.c \
 		ftom_server.c\
 		ftom_service.c\
 		ftom_snmpc.c\
+		ftom_snmptrap.c\
 		ftom_snmptrapd.c\
 		ftom_node_snmp_client.c\
 		ftom_node_fins_client.c\

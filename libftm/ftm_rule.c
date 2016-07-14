@@ -3,6 +3,9 @@
 #include "ftm_trace.h"
 #include "ftm_mem.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTM_TRACE_MODULE_OBJECT
+
 FTM_LIST_PTR	pRuleList = NULL;
 
 static FTM_BOOL	FTM_RULE_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);

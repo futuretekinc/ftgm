@@ -115,7 +115,7 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 		return	xRet;	
 	}
 
-	TRACE("NODE(%08x)[%s] has %d EPs\n", pNode, pNode->xCommon.xInfo.pDID, ulEPCount);
+	TRACE("NODE[%s] has %d EPs\n", pNode->xCommon.xInfo.pDID, ulEPCount);
 	if (ulEPCount != 0)
 	{
 		FTM_ULONG	i;

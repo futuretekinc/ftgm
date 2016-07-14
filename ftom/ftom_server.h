@@ -38,17 +38,17 @@ typedef	struct
 
 typedef	struct FTOM_SERVER_STRUCT
 {
-	FTOM_SERVER_CONFIG		xConfig;
-	pthread_t 				xPThread;
-	pthread_t 				xProcessSM;
-	pthread_t 				xProcessPipe;
-	sem_t					xLock;
-	FTM_BOOL				bStop;	
-	FTM_LIST				xSessionList;
-	FTM_INT					hSocket;
-	FTOM_SERVICE_ID			xServiceID;
-	FTOM_SERVICE_CALLBACK	fServiceCB;
-	FTM_ULONG				ulReqID;
+	FTOM_SERVER_CONFIG	xConfig;
+	pthread_t 			xPThread;
+	pthread_t 			xProcessSM;
+	pthread_t 			xProcessPipe;
+	sem_t				xLock;
+	FTM_BOOL			bStop;	
+	FTM_LIST			xSessionList;
+	FTM_INT				hSocket;
+	FTOM_SERVICE_ID		xServiceID;
+	FTOM_SERVICE_CB		fServiceCB;
+	FTM_ULONG			ulReqID;
 
 	struct
 	{
@@ -72,12 +72,12 @@ FTM_RET	FTOM_SERVER_destroy
 
 FTM_RET	FTOM_SERVER_init
 (
-	FTOM_SERVER_PTR 	pServer
+	FTOM_SERVER_PTR pServer
 );
 
 FTM_RET	FTOM_SERVER_final
 (
-	FTOM_SERVER_PTR 	pServer
+	FTOM_SERVER_PTR pServer
 );
 
 FTM_RET	FTOM_SERVER_start
@@ -105,7 +105,7 @@ FTM_RET FTOM_SERVER_loadConfig
 FTM_RET	FTOM_SERVER_loadConfigFromFile
 (
 	FTOM_SERVER_PTR	pServer, 
-	FTM_CHAR_PTR		pFileName
+	FTM_CHAR_PTR	pFileName
 );
 
 FTM_RET FTOM_SERVER_saveConfig
@@ -116,20 +116,20 @@ FTM_RET FTOM_SERVER_saveConfig
 
 FTM_RET	FTOM_SERVER_showConfig
 (
-	FTOM_SERVER_PTR 	pServer
+	FTOM_SERVER_PTR pServer
 );
 
 FTM_RET	FTOM_SERVER_sendMessage
 (
-	FTOM_SERVER_PTR 	pServer, 
-	FTOM_MSG_PTR 		pMsg
+	FTOM_SERVER_PTR pServer, 
+	FTOM_MSG_PTR 	pMsg
 );
 
 FTM_RET	FTOM_SERVER_setServiceCallback
 (
-	FTOM_SERVER_PTR 	pServer, 
-	FTOM_SERVICE_ID 	xID, 
-	FTOM_SERVICE_CALLBACK fServiceCB
+	FTOM_SERVER_PTR pServer, 
+	FTOM_SERVICE_ID xID, 
+	FTOM_SERVICE_CB	fServiceCB
 );
 
 #endif

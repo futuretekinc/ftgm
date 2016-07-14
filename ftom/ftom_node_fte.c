@@ -28,7 +28,7 @@ FTM_RET	FTOM_NODE_FTE_init
 		return	xRet;	
 	}
 
-	TRACE("NODE(%08x)[%s] has %d EPs\n", pNode, pNode->xCommon.xInfo.pDID, ulEPCount);
+	TRACE("NODE[%s] has %d EPs\n", pNode->xCommon.xInfo.pDID, ulEPCount);
 	if (ulEPCount != 0)
 	{
 		FTM_ULONG	i;
@@ -112,17 +112,6 @@ FTM_RET	FTOM_NODE_FTE_final
 	FTM_LOCK_destroy(&pNode->pLock);
 
 	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_NODE_FTE_getEPCount
-(
-	FTOM_NODE_SNMPC_PTR pNode, 
-	FTM_EP_TYPE			xType,
-	FTM_ULONG_PTR		pulCount
-)
-{
-	*pulCount = 0;
-	return	0;
 }
 
 FTM_RET	FTOM_NODE_FTE_getEPData
@@ -248,14 +237,14 @@ FTM_RET	FTOM_NODE_FTE_getEPDataAsync
 				&pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to create message[%08x]\n", xRet);
+		ERROR2(xRet, "Failed to create message.\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_SERVICE_sendMessage(FTOM_SERVICE_SNMP_CLIENT, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to send message[%08x]\n", xRet);
+		ERROR2(xRet, "Failed to send message.\n");
 		FTOM_MSG_destroy(&pMsg);	
 	}
 
@@ -313,7 +302,7 @@ FTOM_NODE_CLASS	xNodeClassFTE =
 	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_FTE_final,
 	.fPrestart	= (FTOM_NODE_PRESTART)FTOM_NODE_FTE_prestart,
 	.fPrestop	= (FTOM_NODE_PRESTOP)FTOM_NODE_FTE_prestop,
-	.fGetEPCount= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_FTE_getEPCount,
+	.fGetEPCount= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_SNMPC_getEPCount,
 	.fGetEPID	= (FTOM_NODE_GET_EP_ID)FTOM_NODE_SNMPC_getEPID,
 	.fGetEPName	= (FTOM_NODE_GET_EP_NAME)FTOM_NODE_SNMPC_getEPName,
 	.fGetEPState= (FTOM_NODE_GET_EP_STATE)FTOM_NODE_SNMPC_getEPState,

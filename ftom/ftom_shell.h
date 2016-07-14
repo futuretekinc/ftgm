@@ -60,7 +60,7 @@ FTM_RET	FTOM_SHELL_loadConfig
 FTM_RET	FTOM_SHELL_loadFromFile
 (
 	FTOM_SHELL_PTR	pShell, 
-	FTM_CHAR_PTR		pFileName
+	FTM_CHAR_PTR	pFileName
 );
 
 FTM_RET	FTOM_SHELL_showConfig
@@ -71,13 +71,13 @@ FTM_RET	FTOM_SHELL_showConfig
 FTM_RET	FTOM_SHELL_notify
 (
 	FTOM_SHELL_PTR 	pShell, 
-	FTOM_MSG_PTR 		pMsg
+	FTOM_MSG_PTR 	pMsg
 );
 
 FTM_RET	FTOM_SHELL_setServiceCallback
 (
 	FTOM_SHELL_PTR 	pShell, 
-	FTOM_SERVICE_ID 	xID, 
-	FTOM_SERVICE_CALLBACK fServiceCB
+	FTOM_SERVICE_ID	xID, 
+	FTOM_SERVICE_CB fServiceCB
 );
 #endif

@@ -108,7 +108,7 @@ FTM_RET	FTOM_SERVICE_register
 	}
 	else
 	{
-		ERROR("Service[%s] registration failed[%08x].\n", pService->pName, xRet);	
+		ERROR2(xRet, "Service[%s] registration failed.\n", pService->pName);	
 	}
 
 	return	xRet;

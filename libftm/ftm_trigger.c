@@ -5,6 +5,9 @@
 #include "ftm_list.h"
 #include "ftm_mem.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTM_TRACE_MODULE_OBJECT
+
 static	
 FTM_RET	FTM_TRIGGER_create1
 (

@@ -163,7 +163,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SERVER_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_SERVER_stop,
 		.fIsRun		=	(FTOM_SERVICE_IS_RUN)FTOM_SERVER_isRun,
-		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_SERVER_setServiceCallback,
+		.fSetCallback=	(FTOM_SERVICE_SET_CB)FTOM_SERVER_setServiceCallback,
 		.fCallback	=	FTOM_callback,
 		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_SERVER_loadConfig,
 		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_SERVER_saveConfig,
@@ -182,30 +182,12 @@ static 	FTOM_SERVICE	pServices[] =
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_SNMPC_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_SNMPC_stop,
 		.fIsRun		=	NULL,
-		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_SNMPC_setServiceCallback,
+		.fSetCallback=	(FTOM_SERVICE_SET_CB)FTOM_SNMPC_setServiceCallback,
 		.fCallback	=	FTOM_callback,
 		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_SNMPC_loadConfig,
 		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_SNMPC_saveConfig,
 		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_SNMPC_showConfig,
 		.fSendMessage=	(FTOM_SERVICE_SEND_MESSAGE)FTOM_SNMPC_sendMessage,
-		.pData		= 	NULL
-	},
-	{
-		.xType		=	FTOM_SERVICE_SNMPTRAPD,
-		.xID		=	FTOM_SERVICE_SNMPTRAPD,
-		.pName		=	"SNMP TrapD",
-		.fCreate	=	(FTOM_SERVICE_CREATE)FTOM_SNMPTRAPD_create,
-		.fDestroy	=	(FTOM_SERVICE_DESTROY)FTOM_SNMPTRAPD_destroy,
-		.fInit		=	(FTOM_SERVICE_INIT)FTOM_SNMPTRAPD_init,
-		.fFinal		=	(FTOM_SERVICE_FINAL)FTOM_SNMPTRAPD_final,
-		.fStart 	=	(FTOM_SERVICE_START)FTOM_SNMPTRAPD_start,
-		.fStop		=	(FTOM_SERVICE_STOP)FTOM_SNMPTRAPD_stop,
-		.fIsRun		=	NULL,
-		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_SNMPTRAPD_setServiceCallback,
-		.fCallback	=	FTOM_callback,
-		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_SNMPTRAPD_loadConfig,
-		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_SNMPTRAPD_saveConfig,
-		.fShowConfig=	(FTOM_SERVICE_SHOW_CONFIG)FTOM_SNMPTRAPD_showConfig,
 		.pData		= 	NULL
 	},
 	{
@@ -219,7 +201,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fStart 	=	(FTOM_SERVICE_START)FTOM_DMC_start,
 		.fStop		=	(FTOM_SERVICE_STOP)FTOM_DMC_stop,
 		.fIsRun		=	NULL,
-		.fSetCallback=	(FTOM_SERVICE_SET_CALLBACK)FTOM_DMC_setServiceCallback,
+		.fSetCallback=	(FTOM_SERVICE_SET_CB)FTOM_DMC_setServiceCallback,
 		.fCallback	=	FTOM_callback,
 		.fLoadConfig=	(FTOM_SERVICE_LOAD_CONFIG)FTOM_DMC_loadConfig,
 		.fSaveConfig=	(FTOM_SERVICE_SAVE_CONFIG)FTOM_DMC_saveConfig,
@@ -304,48 +286,48 @@ FTM_RET	FTOM_init
 	xRet = FTOM_LOGGER_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to initialize logger!\n");	
+		ERROR2(xRet,"Failed to initialize logger!\n");	
 	}
 
 	xRet = FTOM_MSGQ_create(&pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message queue creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"Message queue creation failed.\n");
 		goto error;
 	}
 
 	xRet = FTOM_NODE_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Node management creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"Node management creation failed.\n");
 		goto error;
 	}
 
 	xRet = FTOM_EP_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP management creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"EP management creation failed.\n");
 		goto error;
 	}
 
 	xRet = FTOM_TRIGGER_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger management creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"Trigger management creation failed.\n");
 		goto error;
 	}
 
 	xRet = FTOM_ACTION_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action management creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"Action management creation failed.\n");
 		goto error;
 	}
 
 	xRet = FTOM_RULE_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Rule management creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"Rule management creation failed.\n");
 		goto error;
 	}
 
@@ -400,7 +382,7 @@ FTM_RET	FTOM_final
 	xRet = FTOM_LOGGER_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to finalize logger!\n");	
+		ERROR2(xRet,"Failed to finalize logger!\n");	
 	}
 
 	TRACE("Finalize done.\n");
@@ -590,7 +572,7 @@ FTM_RET	FTOM_TASK_sync
 	xRet = FTOM_DMC_NODE_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Node count failed to get from DB[%08x]\n", xRet);
+		ERROR2(xRet,"Node count failed to get from DB\n");
 		return	xRet;	
 	}
 
@@ -611,7 +593,7 @@ FTM_RET	FTOM_TASK_sync
 					xRet = FTOM_DB_NODE_getInfo(pDIDs[i], &xInfo);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("Failed to get Node[%s] information!\n", pDIDs[i]);
+						ERROR2(xRet,"Failed to get Node[%s] information!\n", pDIDs[i]);
 						continue;
 					}
 
@@ -619,7 +601,7 @@ FTM_RET	FTOM_TASK_sync
 					xRet = FTOM_NODE_create(&xInfo, &pNode);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("Node creation failed[%08lx].\n", xRet);
+						ERROR2(xRet,"Node creation failed[%08lx].\n", xRet);
 						continue;	
 					}
 	
@@ -631,14 +613,14 @@ FTM_RET	FTOM_TASK_sync
 		}
 		else
 		{
-			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_DID) * ulCount);
+			ERROR2(xRet,"Not enough memory[size = %d]\n", sizeof(FTM_DID) * ulCount);
 		}
 	}
 
 	xRet = FTOM_DMC_EP_CLASS_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP Class count get failed[%08x].\n", xRet);
+		ERROR2(xRet,"EP Class count get failed.\n");
 		return	xRet;	
 	}
 
@@ -656,7 +638,7 @@ FTM_RET	FTOM_TASK_sync
 		xRet = FTOM_EP_CLASS_create(&xEPClassInfo, &pEPClass);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("FTOM_EP_TYPE_append(&xEPClassInfo) = %08lx\n", xRet);
+			ERROR2(xRet,"FTOM_EP_TYPE_append(&xEPClassInfo) = %08lx\n", xRet);
 			continue;	
 		}
 	}
@@ -664,7 +646,7 @@ FTM_RET	FTOM_TASK_sync
 	xRet = FTOM_DMC_EP_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP count get failed[%08x].\n", xRet);
+		ERROR2(xRet,"EP count get failed.\n");
 		return	xRet;	
 	}
 	TRACE("Load EP Object : %lu\n", ulCount);
@@ -687,7 +669,7 @@ FTM_RET	FTOM_TASK_sync
 					xRet = FTOM_EP_createFromDB(pEPIDs[i], &pEP);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("EP[%s] object creation failed[%08x]\n", pEPIDs[i], xRet);
+						ERROR2(xRet,"EP[%s] object creation failed\n", pEPIDs[i]);
 						continue;	
 					}
 			
@@ -703,14 +685,14 @@ FTM_RET	FTOM_TASK_sync
 		}
 		else
 		{
-			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_EPID) * ulCount);
+			ERROR2(xRet,"Not enough memory[size = %d]\n", sizeof(FTM_EPID) * ulCount);
 		}
 	}
 
 	xRet = FTOM_DMC_TRIGGER_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger count get failed[%08x].\n", xRet);
+		ERROR2(xRet,"Trigger count get failed.\n");
 		return	xRet;
 	}
 
@@ -731,7 +713,7 @@ FTM_RET	FTOM_TASK_sync
 					xRet = FTOM_TRIGGER_createFromDB(pIDs[i], &pTrigger);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("The new event can not registration!\n") ;
+						ERROR2(xRet,"The new event can not registration!\n") ;
 						continue;
 					}
 				}
@@ -741,14 +723,14 @@ FTM_RET	FTOM_TASK_sync
 		}
 		else
 		{
-			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_ID) * ulCount);	
+			ERROR2(xRet,"Not enough memory[size = %d]\n", sizeof(FTM_ID) * ulCount);	
 		}
 	}
 
 	xRet = FTOM_DMC_ACTION_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action count get failed[%08x].\n", xRet);
+		ERROR2(xRet,"Action count get failed.\n");
 		return	xRet;
 	}
 
@@ -769,7 +751,7 @@ FTM_RET	FTOM_TASK_sync
 					xRet = FTOM_ACTION_createFromDB(pIDs[i], &pAction);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("The new action event can not registration!\n") ;
+						ERROR2(xRet,"The new action event can not registration!\n") ;
 						continue;
 					}
 				}
@@ -779,14 +761,14 @@ FTM_RET	FTOM_TASK_sync
 		}
 		else
 		{
-			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_ID)*ulCount);	
+			ERROR2(xRet,"Not enough memory[size = %d]\n", sizeof(FTM_ID)*ulCount);	
 		}
 	}
 	
 	xRet = FTOM_DMC_RULE_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Rule count get failed[%08x].\n", xRet);
+		ERROR2(xRet,"Rule count get failed.\n");
 		return	xRet;
 	}
 
@@ -808,7 +790,7 @@ FTM_RET	FTOM_TASK_sync
 					xRet = FTOM_RULE_createFromDB(pIDs[i], &pRule);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("The new rule can not registration[%08x]!\n", xRet) ;
+						ERROR2(xRet,"The new rule can not registration!\n") ;
 						continue;
 					}
 				}
@@ -817,7 +799,7 @@ FTM_RET	FTOM_TASK_sync
 		}
 		else
 		{
-			ERROR("Not enough memory[size = %d]\n", sizeof(FTM_ID)*ulCount);	
+			ERROR2(xRet,"Not enough memory[size = %d]\n", sizeof(FTM_ID)*ulCount);	
 		}
 	}
 
@@ -845,10 +827,6 @@ FTM_RET	FTOM_TASK_start
 		{
 			FTOM_NODE_start(pNode);
 		}
-		else
-		{
-			ERROR("Node not found at %d\n", i);
-		}
 	}
 
 	xState = FTOM_STATE_PROCESSING;
@@ -870,7 +848,7 @@ FTM_RET	FTOM_TASK_processing
 	xRet = FTOM_MSG_createInitializeDone(&pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to initialize message!\n");
+		ERROR2(xRet,"Failed to initialize message!\n");
 		return	0;	
 	}
 
@@ -894,7 +872,7 @@ FTM_RET	FTOM_TASK_processing
 			}
 			else
 			{
-				ERROR("Message[%08x] not supported.\n", pMsg->xType);
+				ERROR2(xRet,"Message[%08x] not supported.\n", pMsg->xType);
 			}
 
 			FTOM_MSG_destroy(&pMsg);
@@ -1021,7 +999,7 @@ FTM_RET	FTOM_onEPCtrl
 	xRet = FTOM_EP_get(pMsg->pEPID, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] not found.\n", pMsg->pEPID);
+		ERROR2(xRet,"EP[%s] not found.\n", pMsg->pEPID);
 		return	xRet;
 	}
 
@@ -1030,7 +1008,7 @@ FTM_RET	FTOM_onEPCtrl
 	xRet = FTOM_EP_remoteSetData(pEP, &xData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] set failed.\n", pMsg->pEPID);
+		ERROR2(xRet,"EP[%s] set failed.\n", pMsg->pEPID);
 	}
 
 	return	xRet;
@@ -1053,13 +1031,13 @@ FTM_RET	FTOM_onReportGWStatus
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Service[SERVER] not found\n");
+		ERROR2(xRet,"Service[SERVER] not found\n");
 		return	xRet;	
 	}
 
 	if ((pService->fIsRun == NULL) || (pService->fSendMessage == NULL))
 	{
-		ERROR("Service[SERVER] not found\n");
+		ERROR2(xRet,"Service[SERVER] not found\n");
 		return	FTM_RET_OK;			
 	}
 
@@ -1093,7 +1071,7 @@ FTM_RET	FTOM_onSendEPStatus
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Service[SERVER] not found\n");
+		ERROR2(xRet,"Service[SERVER] not found\n");
 		return	xRet;	
 	}
 
@@ -1148,13 +1126,13 @@ FTM_RET	FTOM_onSendEPData
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Service[SERVER] not found\n");
+		ERROR2(xRet,"Service[SERVER] not found\n");
 		return	xRet;	
 	}
 
 	if ((pService->fIsRun == NULL) || (pService->fSendMessage == NULL))
 	{
-		ERROR("Service[SERVER] not found\n");
+		ERROR2(xRet,"Service[SERVER] not found\n");
 		return	FTM_RET_OK;			
 	}
 
@@ -1293,7 +1271,7 @@ FTM_RET	FTOM_setMessageCallback
 	TRACE("Set Message CB : %08x, %08x\n", xMsg, fMessageCB);
 	if (xMsg >= FTOM_MSG_TYPE_MAX)
 	{
-		ERROR("Message type[%08x] is invalid.\n", xMsg);
+		ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Message type[%08x] is invalid.\n", xMsg);
 		return	FTM_RET_INVALID_MESSAGE_TYPE;
 	}
 
@@ -1351,7 +1329,7 @@ FTM_RET	FTOM_DB_NODE_add
 	xRet = FTOM_DMC_NODE_add(pService->pData, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Failed to add Node[%s] to DB[%08x].\n", pInfo->pDID, xRet);	
+		WARN("Failed to add Node[%s] to DB.\n", pInfo->pDID);	
 	}
 
 	return	xRet;
@@ -1374,7 +1352,7 @@ FTM_RET	FTOM_DB_NODE_remove
 	xRet = FTOM_DMC_NODE_remove(pService->pData, pDID);
 	if (xRet != FTM_RET_OK)
 	{
-		INFO("Failed to remove Node[%s] from DB[%08x].\n", pDID, xRet);	
+		INFO("Failed to remove Node[%s] from DB.\n", pDID);	
 	}
 
 	return	xRet;
@@ -1397,7 +1375,7 @@ FTM_RET	FTOM_DB_NDOE_count
 	xRet = FTOM_DMC_NODE_count(pService->pData, pulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		INFO("Failed to get node count from DB[%08x].\n", xRet);
+		INFO("Failed to get node count from DB.\n");
 	}
 
 	return	xRet;
@@ -1422,7 +1400,7 @@ FTM_RET	FTOM_DB_NODE_getInfo
 	xRet = FTOM_DMC_NODE_get(pService->pData, pDID, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		INFO("Node[%s] is not found[%08x]!\n", pDID, xRet);
+		INFO("Node[%s] is not found!\n", pDID);
 	}
 
 	return	xRet;
@@ -1446,7 +1424,7 @@ FTM_RET	FTOM_DB_NODE_getInfoAt
 	xRet = FTOM_DMC_NODE_getAt(pService->pData, ulIndex, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		INFO("Node[%d] is not found[%08x]!\n", ulIndex, xRet);
+		INFO("Node[%d] is not found!\n", ulIndex);
 	}
 
 	return	xRet;
@@ -1471,7 +1449,7 @@ FTM_RET	FTOM_DB_NODE_set
 	xRet = FTOM_DMC_NODE_set(pService->pData, pDID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		INFO("Node[%s] is not found[%08x]!\n", pDID, xRet);
+		INFO("Node[%s] is not found!\n", pDID);
 	}
 
 	return	xRet;
@@ -1549,7 +1527,7 @@ FTM_RET	FTOM_DB_EP_getInfo
 	xRet = FTOM_DMC_EP_get(pService->pData, pEPID, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] failed to get info from DB[%08x].\n", pEPID, xRet);
+		ERROR2(xRet,"EP[%s] failed to get info from DB.\n", pEPID);
 	}
 
 	return	xRet;
@@ -1576,7 +1554,7 @@ FTM_RET	FTOM_DB_EP_setInfo
 	xRet = FTOM_DMC_EP_set(pService->pData, pEPID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] failed to set info to DB[%08x].\n", pEPID, xRet);
+		ERROR2(xRet,"EP[%s] failed to set info to DB.\n", pEPID);
 	}
 
 	return	xRet;
@@ -1658,7 +1636,7 @@ FTM_RET	FTOM_callback
 
 	default:
 		{
-			ERROR("Invalid service ID[%08x] received.\n");
+			ERROR2(FTM_RET_INVALID_TYPE,"Invalid service ID[%08x] received.\n", xID);
 		}
 	}
 
@@ -1681,7 +1659,7 @@ FTM_RET	FTOM_SYS_GW_reportStatus
 	xRet = FTOM_MSG_createReportGWStatus(pGatewayID, bStatus, ulTimeout, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Send EP data message creation failed[%08x].\n", xRet);
+		WARN("Send EP data message creation failed.\n");
 		return	xRet;	
 	}
 
@@ -1689,7 +1667,7 @@ FTM_RET	FTOM_SYS_GW_reportStatus
 	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message push error![%08x]\n", xRet);
+		ERROR2(xRet,"Message push error!\n");
 		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
@@ -1715,14 +1693,14 @@ FTM_RET	FTOM_DB_EP_addData
 	xRet = FTOM_MSG_createAddEPData(pEPID, pData, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Save EP data message creation failed[%08x].\n", xRet);
+		WARN("Save EP data message creation failed.\n");
 		return	xRet;	
 	}
 
 	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message push error![%08x]\n", xRet);
+		ERROR2(xRet,"Message push error!\n");
 		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
@@ -1743,7 +1721,7 @@ FTM_RET	FTOM_SYS_EP_publishStatus
 	xRet = FTOM_MSG_createSendEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Send EP data message creation failed[%08x].\n", xRet);
+		WARN("Send EP data message creation failed.\n");
 		return	xRet;	
 	}
 
@@ -1751,7 +1729,7 @@ FTM_RET	FTOM_SYS_EP_publishStatus
 	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message push error![%08x]\n", xRet);
+		ERROR2(xRet,"Message push error!\n");
 		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
@@ -1774,7 +1752,7 @@ FTM_RET	FTOM_SYS_EP_publishData
 	xRet = FTOM_MSG_createSendEPData(pEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Send EP data message creation failed[%08x].\n", xRet);
+		WARN("Send EP data message creation failed.\n");
 		return	xRet;	
 	}
 
@@ -1782,7 +1760,7 @@ FTM_RET	FTOM_SYS_EP_publishData
 	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message push error![%08x]\n", xRet);
+		ERROR2(xRet,"Message push error!\n");
 		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
@@ -1804,10 +1782,17 @@ FTM_RET	FTOM_DB_EP_getDataCount
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet,"Service DMC  not found!\n");
 		return	xRet;
 	}
 
-	return	FTOM_DMC_EP_DATA_count(pService->pData, pEPID, pulCount);
+	xRet = FTOM_DMC_EP_DATA_count(pService->pData, pEPID, pulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet,"Failed to EP[%s] data count from DMC!\n", pEPID);
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_DB_EP_removeData
@@ -1872,7 +1857,7 @@ FTM_RET	FTOM_DB_TRIGGER_add
 	xRet = FTOM_DMC_TRIGGER_add(pService->pData, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger[%s] failed to add to DB[%08x].\n", pInfo->pID, xRet);
+		ERROR2(xRet,"Trigger[%s] failed to add to DB.\n", pInfo->pID);
 	}
 
 	return	xRet;
@@ -1896,7 +1881,7 @@ FTM_RET	FTOM_DB_TRIGGER_remove
 	xRet = FTOM_DMC_TRIGGER_remove(pService->pData, pTriggerID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger[%s] failed to remove from DB[%08x].\n", pTriggerID, xRet);
+		ERROR2(xRet,"Trigger[%s] failed to remove from DB.\n", pTriggerID);
 	}
 
 	return	xRet;
@@ -1922,7 +1907,7 @@ FTM_RET	FTOM_DB_TRIGGER_getInfo
 	xRet = FTOM_DMC_TRIGGER_get(pService->pData, pTriggerID, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger[%s] failed to get information[%08x].\n", pTriggerID, xRet);	
+		ERROR2(xRet,"Trigger[%s] failed to get information.\n", pTriggerID);	
 	}
 
 	return	xRet;
@@ -1947,7 +1932,7 @@ FTM_RET	FTOM_DB_TRIgger_getInfoAt
 	xRet = FTOM_DMC_TRIGGER_getAt(pService->pData, ulIndex, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger[%d] failed to get information[%08x].\n", ulIndex, xRet);	
+		ERROR2(xRet,"Trigger[%d] failed to get information.\n", ulIndex);	
 	}
 
 	return	xRet;
@@ -1974,7 +1959,7 @@ FTM_RET	FTOM_DB_TRIGGER_setInfo
 	xRet = FTOM_DMC_TRIGGER_set(pService->pData, pTriggerID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger[%s] DB update failed.\n", pTriggerID);	
+		ERROR2(xRet,"Trigger[%s] DB update failed.\n", pTriggerID);	
 	}
 
 	return	xRet;
@@ -1998,7 +1983,7 @@ FTM_RET	FTOM_DB_ACTION_add
 	xRet = FTOM_DMC_ACTION_add(pService->pData, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action[%s] failed to add to DB[%08x].\n", pInfo->pID, xRet);	
+		ERROR2(xRet,"Action[%s] failed to add to DB.\n", pInfo->pID);	
 	}
 
 	return	xRet;
@@ -2022,7 +2007,7 @@ FTM_RET	FTOM_DB_ACTION_remove
 	xRet = FTOM_DMC_ACTION_remove(pService->pData, pActionID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action[%s] failed to remove from DB[%08x].\n", pActionID, xRet);
+		ERROR2(xRet,"Action[%s] failed to remove from DB.\n", pActionID);
 	}
 
 	return	xRet;	
@@ -2047,7 +2032,7 @@ FTM_RET	FTOM_DB_ACTION_getInfo
 	xRet = FTOM_DMC_ACTION_get(pService->pData, pActionID, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action[%s] info failed to get from DB.[%08x]\n", pActionID, pInfo);	
+		ERROR2(xRet,"Action[%s] info failed to get from DB.\n", pActionID);	
 	}
 
 	return	xRet;
@@ -2072,7 +2057,7 @@ FTM_RET	FTOM_DB_ACTION_getInfoAt
 	xRet = FTOM_DMC_ACTION_getAt(pService->pData, ulIndex, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action[%lu] info failed to get from DB.[%08x]", ulIndex, xRet);
+		ERROR2(xRet,"Action[%lu] info failed to get from DB.", ulIndex);
 	}
 
 	return	xRet;	
@@ -2099,7 +2084,7 @@ FTM_RET	FTOM_DB_ACTION_setInfo
 	xRet = FTOM_DMC_ACTION_set(pService->pData, pActionID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action[%s] DB update failed.\n", pActionID);	
+		ERROR2(xRet,"Action[%s] DB update failed.\n", pActionID);	
 	}
 
 	return	xRet;
@@ -2201,7 +2186,7 @@ FTM_RET	FTOM_DB_RULE_setInfo
 	xRet = FTOM_DMC_RULE_set(pService->pData, pRuleID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Rule[%s] DB update failed.\n", pRuleID);	
+		ERROR2(xRet,"Rule[%s] DB update failed.\n", pRuleID);	
 	}
 
 	return	xRet;
@@ -2228,7 +2213,7 @@ FTM_RET	FTOM_sendAlert
 	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message push error![%08x]\n", xRet);
+		ERROR2(xRet,"Message push error!\n");
 		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
@@ -2260,7 +2245,7 @@ FTM_RET	FTOM_receivedDiscovery
 	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message push error![%08x]\n", xRet);
+		ERROR2(xRet,"Message push error!\n");
 		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
@@ -2283,14 +2268,14 @@ FTM_RET	FTOM_discoveryStart
 	xRet = FTOM_MSG_createDiscovery(pNetwork, usPort, ulRetryCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Discovery message creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"Discovery message creation failed.\n");
 		return	xRet;	
 	}
 
 	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message push error![%08x]\n", xRet);
+		ERROR2(xRet,"Message push error!\n");
 		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
 		return	xRet;
 	}
@@ -2348,7 +2333,7 @@ FTM_RET	FTOM_discoveryEPCount
 	xRet = FTOM_NODE_getEPCount(pNode, xType, pulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SNMP client get EP count failed.\n");	
+		ERROR2(xRet,"SNMP client get EP count failed.\n");	
 	}
 
 	return	xRet;
@@ -2374,21 +2359,21 @@ FTM_RET	FTOM_discoveryEP
 	xRet = FTOM_NODE_getEPID(pNode, xType, ulIndex, pEPInfo->pEPID, FTM_EPID_LEN);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SNMP get EPID failed![%08x]\n", xRet);
+		ERROR2(xRet,"SNMP get EPID failed!\n");
 		return	xRet;	
 	}
 
 	xRet = FTOM_NODE_getEPName(pNode, xType, ulIndex, pEPInfo->pName, FTM_NAME_LEN);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SNMP get EP Name failed![%08x]\n", xRet);
+		ERROR2(xRet,"SNMP get EP Name failed!\n");
 		return	xRet;	
 	}
 
 	xRet = FTOM_NODE_getEPState(pNode, xType, ulIndex, &pEPInfo->bEnable);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SNMP get EP state failed![%08x]\n", xRet);
+		ERROR2(xRet,"SNMP get EP state failed!\n");
 		return	xRet;	
 	}
 
@@ -2397,7 +2382,7 @@ FTM_RET	FTOM_discoveryEP
 	{
 		if (xType != FTM_EP_TYPE_DI)
 		{
-			ERROR("SNMP get EP[%s] interval failed![%08x]\n", pEPInfo->pEPID, xRet);
+			ERROR2(xRet,"SNMP get EP[%s] interval failed!\n", pEPInfo->pEPID);
 			return	xRet;	
 		}
 	}
@@ -2469,10 +2454,23 @@ FTM_RET	FTOM_serverSync
 	xRet = FTOM_MSG_createServerSync(bAutoRegister, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message creation failed[%08x]!\n", xRet);
+		ERROR2(xRet,"Message creation failed!\n");
 		return	xRet;	
 	}
 
 	return	pService->fSendMessage(pService->pData, (FTOM_MSG_PTR)pMsg);
 
 }
+
+FTM_RET	FTOM_getDefaultUpdateInterval
+(
+	FTM_ULONG_PTR	pulUpdateInterval
+)
+{
+	ASSERT(pulUpdateInterval != NULL);
+
+	*pulUpdateInterval = FTOM_DEFAULT_UPDATE_INTERVAL;
+
+	return	FTM_RET_OK;
+}
+

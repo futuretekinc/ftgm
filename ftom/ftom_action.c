@@ -8,6 +8,8 @@
 #include "ftom_logger.h"
 #include "libconfig.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_ACTION
 
 static FTM_VOID_PTR FTOM_ACTION_process(FTM_VOID_PTR pData);
 static FTM_BOOL		FTOM_ACTION_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
@@ -39,14 +41,14 @@ FTM_RET	FTOM_ACTION_init
 	xRet = FTOM_MSGQ_create(&pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message Queue creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"Message Queue creation failed.\n");
 		return	xRet;	
 	}
 
 	xRet = FTM_LIST_create(&pActionList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Actor list creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"Actor list creation failed.\n");
 		FTOM_MSGQ_destroy(&pMsgQ);
 		return	xRet;	
 	}
@@ -105,7 +107,7 @@ FTM_RET	FTOM_ACTION_create
 	pAction = (FTOM_ACTION_PTR)FTM_MEM_malloc(sizeof(FTOM_ACTION));
 	if (pAction == NULL)
 	{
-		ERROR("Not enough memory\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -121,7 +123,7 @@ FTM_RET	FTOM_ACTION_create
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pAction);
-		ERROR("Action[%s] failed to add to list[%08x].\n", pAction->xInfo.pID, xRet);
+		ERROR2(xRet,"Action[%s] failed to add to list.\n", pAction->xInfo.pID);
 		return	xRet;	
 	}
 
@@ -154,7 +156,7 @@ FTM_RET	FTOM_ACTION_createFromDB
 	pAction = (FTOM_ACTION_PTR)FTM_MEM_malloc(sizeof(FTOM_ACTION));
 	if (pAction == NULL)
 	{
-		ERROR("Not enough memory\n");
+		ERROR2(xRet,"Not enough memory\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -205,7 +207,7 @@ FTM_RET	FTOM_ACTION_start
 		nRet = pthread_create(&xThread, NULL, FTOM_ACTION_process, NULL);
 		if (nRet < 0)
 		{
-			ERROR("Can't start Act Manager!\n");
+			ERROR2(FTM_RET_THREAD_CREATION_ERROR, "Can't start Act Manager[%d]!\n", nRet);
 			return	FTM_RET_ERROR;
 		}
 	
@@ -398,7 +400,7 @@ FTM_RET	FTOM_ACTION_activation
 	xRet = FTOM_MSG_ACTION_createActivation(pActionID, bActivation, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Action message creation failed[%08x].\n", xRet);
+		ERROR2(xRet,"Action message creation failed.\n");
 		return	xRet;
 	}
 

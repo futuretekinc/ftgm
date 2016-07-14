@@ -11,6 +11,9 @@
 #include "ftom_server.h"
 #include "ftom_dmc.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_DMC
+
 static FTM_VOID_PTR	FTOM_DMC_process
 (
 	FTM_VOID_PTR 	pData
@@ -218,9 +221,9 @@ FTM_VOID_PTR	FTOM_DMC_process
 
 FTM_RET	FTOM_DMC_setServiceCallback
 (
-	FTOM_DMC_PTR pDMC, 
+	FTOM_DMC_PTR 	pDMC, 
 	FTOM_SERVICE_ID xServiceID, 
-	FTOM_SERVICE_CALLBACK pServiceCB
+	FTOM_SERVICE_CB pServiceCB
 )
 {
 	ASSERT(pDMC != NULL);

@@ -8,11 +8,8 @@
 #include "ftom_action.h"
 #include "ftom_logger.h"
 
-#if 0
-#define	TRACE_CALL()	TRACE("%s[%d]\n", __func__, __LINE__)
-#else
-#define	TRACE_CALL()
-#endif
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_RULE
 
 static FTM_VOID_PTR FTOM_RULE_process(FTM_VOID_PTR pData);
 static 
@@ -139,7 +136,7 @@ FTM_RET	FTOM_RULE_create
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pRule);
-		ERROR("Rule[%s] failed to add to list[%08x].\n", pRule->xInfo.pID, xRet);
+		ERROR2(xRet, "Rule[%s] failed to add to list.\n", pRule->xInfo.pID);
 		return	xRet;	
 	}
 
@@ -189,7 +186,7 @@ FTM_RET	FTOM_RULE_createFromDB
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pRule);
-		ERROR("Rule[%s] failed to add to list[%08x].\n", pRule->xInfo.pID, xRet);
+		ERROR2(xRet, "Rule[%s] failed to add to list.\n", pRule->xInfo.pID);
 		return	xRet;	
 	}
 	else

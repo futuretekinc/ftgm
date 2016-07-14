@@ -6,6 +6,9 @@
 #include "ftm_mem.h"
 #include "ftm_snmp.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTM_TRACE_MODULE_OBJECT
+
 typedef struct
 {
 	FTM_NODE_TYPE	xType;

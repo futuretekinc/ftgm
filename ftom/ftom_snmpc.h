@@ -4,7 +4,7 @@
 #include "ftom.h"
 #include "ftom_node.h"
 #include "ftom_ep.h"
-#include "ftom_snmptrapd.h"
+#include "ftom_snmptrap.h"
 #include "ftom_msg.h"
 
 #define	FTOM_SNMPC_NAME_LENGTH		128
@@ -33,14 +33,16 @@ typedef	struct
 
 typedef	struct 
 {
-	FTOM_SNMPC_CONFIG		xConfig;
-	pthread_t				xPThread;
+	FTOM_SNMPC_CONFIG	xConfig;
+	pthread_t			xPThread;
 
-	FTM_BOOL				bStop;
-	FTOM_MSG_QUEUE			xMsgQ;
-	FTM_LOCK				xLock;
-	FTOM_SERVICE_ID			xServiceID;
-	FTOM_SERVICE_CALLBACK	fServiceCB;
+	FTM_BOOL			bStop;
+	FTOM_MSG_QUEUE		xMsgQ;
+	FTM_LOCK			xLock;
+	FTOM_SERVICE_ID		xServiceID;
+	FTOM_SERVICE_CB		fServiceCB;
+
+	FTOM_SNMPTRAP_PTR	pTrap;
 }	FTOM_SNMPC, _PTR_ FTOM_SNMPC_PTR;
 
 FTM_RET	FTOM_SNMPC_create
@@ -163,9 +165,9 @@ FTM_RET	FTOM_SNMPC_getEPInfo
 
 FTM_RET	FTOM_SNMPC_setServiceCallback
 (
-	FTOM_SNMPC_PTR 		pClient, 
-	FTOM_SERVICE_ID 	xID, 
-	FTOM_SERVICE_CALLBACK fServiceCB
+	FTOM_SNMPC_PTR 	pClient, 
+	FTOM_SERVICE_ID	xID, 
+	FTOM_SERVICE_CB	fServiceCB
 );
 
 FTM_RET	FTOM_SNMPC_sendMessage

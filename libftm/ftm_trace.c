@@ -16,10 +16,11 @@
 FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szmsg);
 FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
 
-extern char *program_invocation_short_name;
-static FTM_ULONG		_ulModules = 0x0;
-static FTM_TRACE_OUT	_xOut = FTM_TRACE_OUT_TERM;
-static FTM_TRACE_CFG	_xConfig = 
+extern 
+FTM_CHAR_PTR	program_invocation_short_name;
+
+static 
+FTM_TRACE_CFG	_xConfig = 
 {
 	.ulLevel = FTM_TRACE_LEVEL_ALL,
 	.xTrace = 
@@ -39,7 +40,17 @@ static FTM_TRACE_CFG	_xConfig =
 	},
 };
 
-static FTM_BOOL	bShowIndex = FTM_FALSE;
+static 
+FTM_BOOL	bShowIndex = FTM_FALSE;
+
+static
+FTM_TRACE_INFO	_xTraceInfos[FTM_TRACE_MAX_MODULES] =
+{
+	{	.bEnabled	=	FTM_FALSE,	.pName = "OBJECT",	.ulLevel = FTM_TRACE_LEVEL_ERROR, .xOut = FTM_TRACE_OUT_TERM	},
+	{	.bEnabled	=	FTM_FALSE,	.pName = "MEMORY", 	.ulLevel = FTM_TRACE_LEVEL_ERROR, .xOut = FTM_TRACE_OUT_TERM	},
+	{	.bEnabled	=	FTM_FALSE,	.pName = "LOGGER", 	.ulLevel = FTM_TRACE_LEVEL_ERROR, .xOut = FTM_TRACE_OUT_TERM	},
+	{	.bEnabled	=	FTM_FALSE,	.pName = "", 		.ulLevel = FTM_TRACE_LEVEL_ERROR, .xOut = FTM_TRACE_OUT_TERM	},
+};
 
 FTM_RET	FTM_TRACE_configLoad
 (
@@ -94,7 +105,7 @@ FTM_RET	FTM_TRACE_configSet(FTM_TRACE_CFG_PTR pConfig)
 		memcpy(&_xConfig, pConfig, sizeof(FTM_TRACE_CFG));	
 	}
 
-	FTM_TRACE_setLevel(_xConfig.ulLevel);
+	//FTM_TRACE_setLevel(_xConfig.ulLevel);
 
 	return	FTM_RET_OK;
 }
@@ -107,7 +118,7 @@ FTM_RET	FTM_TRACE_printConfig(FTM_TRACE_CFG_PTR pConfig)
 
 	memset(pOptions, 0, sizeof(pOptions));
 
-	fprintf(stdout, "%16s : %s\n", "Level", FTM_TRACE_levelString(pConfig->ulLevel));
+	fprintf(stdout, "%16s : %s\n", "Level", FTM_TRACE_LEVEL_print(pConfig->ulLevel, FTM_TRUE));
 	fprintf(stdout, " - %s -\n", "Trace");
 	fprintf(stdout, "%16s : %s\n", "Output",	(pConfig->xTrace.bToFile)?"File":"Terminal");
 	if (pConfig->xTrace.bToFile)
@@ -186,19 +197,19 @@ FTM_RET	FTM_TRACE_strToLevel
 	{
 		*pulLevel = FTM_TRACE_LEVEL_DEBUG;	
 	}
-	else if (strcasecmp(pString, "INFO") == 0)
+	else if (strcasecmp(pString, "info") == 0)
 	{
 		*pulLevel = FTM_TRACE_LEVEL_INFO;	
 	}
-	else if (strcasecmp(pString, "WARN") == 0)
+	else if (strcasecmp(pString, "warning") == 0)
 	{
 		*pulLevel = FTM_TRACE_LEVEL_WARN;	
 	}
-	else if (strcasecmp(pString, "ERROR") == 0)
+	else if (strcasecmp(pString, "error") == 0)
 	{
 		*pulLevel = FTM_TRACE_LEVEL_ERROR;	
 	}
-	else if (strcasecmp(pString, "FATAL") == 0)
+	else if (strcasecmp(pString, "critical") == 0)
 	{
 		*pulLevel = FTM_TRACE_LEVEL_FATAL;	
 	}
@@ -222,21 +233,38 @@ FTM_RET	FTM_TRACE_strToLevel
 
 FTM_RET FTM_TRACE_setLevel
 (
-	FTM_ULONG ulLevel
+	FTM_ULONG	ulModule,
+	FTM_ULONG 	ulLevel
 )
 {
-	_xConfig.ulLevel = ulLevel;
+	if (ulModule < FTM_TRACE_MAX_MODULES)
+	{
+		_xTraceInfos[ulModule].ulLevel = ulLevel;
+	}
+	else if (ulModule == FTM_TRACE_MAX_MODULES)
+	{
+		FTM_INT	i;
+		for(i = 0 ; i < FTM_TRACE_MAX_MODULES; i++)
+		{
+			_xTraceInfos[i].ulLevel = ulLevel;
+		}
+	}
 
 	return	FTM_RET_OK;
 }
 FTM_RET	FTM_TRACE_getLevel
 (
+	FTM_ULONG	ulModule,
 	FTM_ULONG_PTR pulLevel
 )
 {
-	*pulLevel = _xConfig.ulLevel;
+	if (ulModule < FTM_TRACE_MAX_MODULES)
+	{
+		*pulLevel = _xTraceInfos[ulModule].ulLevel;
+		return	FTM_RET_OK;
+	}
 
-	return	FTM_RET_OK;
+	return	FTM_RET_ERROR;
 }
 
 FTM_RET	FTM_TRACE_setModule
@@ -245,21 +273,126 @@ FTM_RET	FTM_TRACE_setModule
 	FTM_BOOL	bTraceOn
 )
 {
-	if (bTraceOn)
+	if (ulModule < FTM_TRACE_MAX_MODULES)
 	{
-		_ulModules |= ulModule;
-	}
-	else
-	{
-		_ulModules &= ~ulModule;
+		_xTraceInfos[ulModule].bEnabled = bTraceOn;
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRACE_setOut(FTM_TRACE_OUT xOut)
+FTM_RET	FTM_TRACE_getModule
+(
+	FTM_ULONG		ulModule,
+	FTM_BOOL_PTR	pbTraceOn
+)
 {
-	_xOut = xOut;
+	ASSERT(pbTraceOn != NULL);
+
+	if (ulModule < FTM_TRACE_MAX_MODULES)
+	{
+		*pbTraceOn = _xTraceInfos[ulModule].bEnabled;
+	}
+	else
+	{
+		*pbTraceOn = FTM_FALSE;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_TRACE_getInfo
+(
+	FTM_ULONG		ulModule,
+	FTM_TRACE_INFO_PTR	pInfo
+)
+{
+	ASSERT(pInfo != NULL);
+
+	if (ulModule >= FTM_TRACE_MAX_MODULES)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	memcpy(pInfo, &_xTraceInfos[ulModule], sizeof(FTM_TRACE_INFO));
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_TRACE_setInfo
+(
+	FTM_ULONG		ulModule,
+	FTM_TRACE_INFO_PTR	pInfo
+)
+{
+	ASSERT(pInfo != NULL);
+
+	if (ulModule >= FTM_TRACE_MAX_MODULES)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	memcpy(&_xTraceInfos[ulModule], pInfo, sizeof(FTM_TRACE_INFO));
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_TRACE_setInfo2
+(
+	FTM_ULONG		ulModule,
+	FTM_BOOL		bEnabled,
+	FTM_CHAR_PTR	pName,
+	FTM_ULONG		ulLevel,
+	FTM_TRACE_OUT	xOut
+)
+{
+	ASSERT(pName != NULL);
+
+	if (ulModule >= FTM_TRACE_MAX_MODULES)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	memset(&_xTraceInfos[ulModule], 0, sizeof(FTM_TRACE_INFO));
+
+	_xTraceInfos[ulModule].bEnabled = bEnabled;
+	_xTraceInfos[ulModule].ulLevel	= ulLevel;
+	_xTraceInfos[ulModule].xOut		= xOut;
+	strncpy(_xTraceInfos[ulModule].pName, pName, FTM_NAME_LEN);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_TRACE_getID
+(
+	FTM_CHAR_PTR	pName,
+	FTM_ULONG_PTR	pulID
+)
+{
+	FTM_INT	i;
+
+	for(i = 0 ; i < FTM_TRACE_MAX_MODULES; i++)
+	{
+		if (strcasecmp(pName, _xTraceInfos[i].pName) == 0)
+		{
+			*pulID = i;
+			return	FTM_RET_OK;
+		}
+	}
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
+}
+
+FTM_RET	FTM_TRACE_setOut
+(
+	FTM_ULONG		ulModule,
+	FTM_TRACE_OUT 	xOut
+)
+{
+	if (ulModule < FTM_TRACE_MAX_MODULES)
+	{
+		_xTraceInfos[ulModule].xOut = xOut;
+	}
 
 	return	FTM_RET_OK;
 }
@@ -272,55 +405,28 @@ FTM_RET	FTM_TRACE_out
 	FTM_INT			nLine,
 	FTM_INT			bTimeInfo,
 	FTM_INT			bFunctionInfo,
-	const char *	format, 
+	const char *	pFormat, 
 	...
 )
 {
 	static	FTM_INT	nOutputLine = 0;
     va_list 		argptr;
 	time_t			xTime;
-	FTM_BOOL		bFile = FTM_FALSE;
-	FTM_BOOL		bLine = FTM_FALSE;
-	FTM_CHAR_PTR	pPath;
-	FTM_CHAR_PTR	pPrefix;
 	FTM_INT			nLen = 0;
 	FTM_CHAR		szBuff[2048];
 	FTM_CHAR		szTime[32];
 
-	if (!(ulModule & _ulModules))
+	if (ulModule >= FTM_TRACE_MAX_MODULES)
 	{
 		return	FTM_RET_OK;	
 	}
 
-	if (ulLevel < _xConfig.ulLevel)
+	if ((ulLevel < _xTraceInfos[ulModule].ulLevel) || (!_xTraceInfos[ulModule].bEnabled))
 	{
-		return FTM_RET_OK;	
+		return	FTM_RET_OK;
 	}
 
-	switch(ulLevel)
-	{
-	case	FTM_TRACE_LEVEL_TRACE:
-		if (_xConfig.xTrace.bToFile)
-		{
-			bFile 	= FTM_TRUE;
-			pPath	= _xConfig.xTrace.pPath;
-			pPrefix = _xConfig.xTrace.pPrefix;
-		}
-		bLine	= _xConfig.xTrace.bLine;
-		break;
-
-	case	FTM_TRACE_LEVEL_ERROR:
-		if (_xConfig.xError.bToFile)
-		{
-			bFile = FTM_TRUE;
-			pPath	= _xConfig.xTrace.pPath;
-			pPrefix = _xConfig.xTrace.pPrefix;
-		}
-		bLine	= _xConfig.xError.bLine;
-		break;
-	}
-
-	va_start ( argptr, format );           
+	va_start ( argptr, pFormat );           
 	xTime = time(NULL);
 
 	strftime(szTime, sizeof(szTime), "%Y-%m-%d %H:%M:%S", localtime(&xTime));
@@ -337,29 +443,23 @@ FTM_RET	FTM_TRACE_out
 
 	if (ulLevel != FTM_TRACE_LEVEL_MESSAGE)
 	{
-		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s] - ", FTM_TRACE_levelString(ulLevel));
+		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%4s] - ", FTM_TRACE_LEVEL_print(ulLevel, FTM_FALSE));
 	}
 
-	if (bFunctionInfo || (bLine && (pFunction != NULL)))
+	if (bFunctionInfo || (_xConfig.xTrace.bLine && (pFunction != NULL)))
 	{
 		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%s[%04d] - ", pFunction, nLine);
 	}
-	nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, format, argptr);
+	nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, pFormat, argptr);
 	va_end(argptr);
 
 	szBuff[nLen] = '\0';
 
-	switch(_xOut)
+	switch(_xTraceInfos[ulModule].xOut)
 	{
-	case	FTM_TRACE_OUT_TERM:
-		{
-			FTM_TRACE_printToTerm(szBuff);
-		}
-		break;
-
 	case	FTM_TRACE_OUT_FILE:
 		{
-			FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
+			FTM_TRACE_printToFile(szBuff, _xConfig.xTrace.pPath, _xConfig.xTrace.pPrefix);
 		}
 		break;
 
@@ -371,15 +471,7 @@ FTM_RET	FTM_TRACE_out
 
 	default:
 		{
-			if (bFile)
-			{
-				FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
-		
-			}
-			else
-			{
-				FTM_TRACE_printToTerm(szBuff);
-			}
+			FTM_TRACE_printToTerm(szBuff);
 		}
 	}
 
@@ -388,56 +480,35 @@ FTM_RET	FTM_TRACE_out
 
 FTM_RET	FTM_TRACE_out2
 (
-	unsigned long	ulLevel,
-	const char *	pFunction,
-	int				nLine,
-	FTM_RET			xRet,
-	const char *	format, 
+	FTM_ULONG			ulModule,
+	FTM_ULONG			ulLevel,
+	const char *		pFunction,
+	FTM_INT				nLine,
+	FTM_RET				xRet,
+	const char *		pFormat, 
 	...
 )
 {
 	static	FTM_INT	nOutputLine = 0;
     va_list 		argptr;
 	time_t			xTime;
-	FTM_BOOL		bFile = FTM_FALSE;
-	FTM_BOOL		bLine = FTM_FALSE;
-	FTM_CHAR_PTR	pPath;
-	FTM_CHAR_PTR	pPrefix;
 	FTM_INT			nLen = 0;
 	FTM_CHAR		szBuff[2048];
 	FTM_CHAR		szTime[32];
 	FTM_BOOL		bTimeInfo = FTM_FALSE;
 	FTM_BOOL		bFunctionInfo = FTM_FALSE;
 
-	if (ulLevel < _xConfig.ulLevel)
+	if (ulModule >= FTM_TRACE_MAX_MODULES)
 	{
-		return FTM_RET_OK;	
+		return	FTM_RET_OK;	
 	}
 
-	switch(ulLevel)
+	if ((ulLevel < _xTraceInfos[ulModule].ulLevel) || (!_xTraceInfos[ulModule].bEnabled))
 	{
-	case	FTM_TRACE_LEVEL_TRACE:
-		if (_xConfig.xTrace.bToFile)
-		{
-			bFile 	= FTM_TRUE;
-			pPath	= _xConfig.xTrace.pPath;
-			pPrefix = _xConfig.xTrace.pPrefix;
-		}
-		bLine	= _xConfig.xTrace.bLine;
-		break;
-
-	case	FTM_TRACE_LEVEL_ERROR:
-		if (_xConfig.xError.bToFile)
-		{
-			bFile = FTM_TRUE;
-			pPath	= _xConfig.xTrace.pPath;
-			pPrefix = _xConfig.xTrace.pPrefix;
-		}
-		bLine	= _xConfig.xError.bLine;
-		break;
+		return	FTM_RET_OK;
 	}
 
-	va_start ( argptr, format );           
+	va_start ( argptr, pFormat );           
 	xTime = time(NULL);
 
 	strftime(szTime, sizeof(szTime), "%Y-%m-%d %H:%M:%S", localtime(&xTime));
@@ -454,29 +525,23 @@ FTM_RET	FTM_TRACE_out2
 
 	if (ulLevel != FTM_TRACE_LEVEL_MESSAGE)
 	{
-		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s] - ", FTM_TRACE_levelString(ulLevel));
+		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%4s] - ", FTM_TRACE_LEVEL_print(ulLevel, FTM_FALSE));
 	}
 
-	if (bFunctionInfo || (bLine && (pFunction != NULL)))
+	if (bFunctionInfo || (_xConfig.xTrace.bLine && (pFunction != NULL)))
 	{
 		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%s[%04d] - ", pFunction, nLine);
 	}
-	nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, format, argptr);
+	nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, pFormat, argptr);
 	va_end(argptr);
 
 	szBuff[nLen] = '\0';
 
-	switch(_xOut)
+	switch(_xTraceInfos[ulModule].xOut)
 	{
-	case	FTM_TRACE_OUT_TERM:
-		{
-			FTM_TRACE_printToTerm(szBuff);
-		}
-		break;
-
 	case	FTM_TRACE_OUT_FILE:
 		{
-			FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
+			FTM_TRACE_printToFile(szBuff, _xConfig.xTrace.pPath, _xConfig.xTrace.pPrefix);
 		}
 		break;
 
@@ -488,15 +553,7 @@ FTM_RET	FTM_TRACE_out2
 
 	default:
 		{
-			if (bFile)
-			{
-				FTM_TRACE_printToFile(szBuff, pPath, pPrefix);
-		
-			}
-			else
-			{
-				FTM_TRACE_printToTerm(szBuff);
-			}
+			FTM_TRACE_printToTerm(szBuff);
 		}
 	}
 
@@ -553,18 +610,23 @@ struct
 {
 	FTM_ULONG		ulLevel;
 	FTM_CHAR_PTR	pName;
+	FTM_CHAR_PTR	pFullName;
 } FTM_levelStrings[] =
 {
-	{ FTM_TRACE_LEVEL_ALL, 		"ALL" },
-	{ FTM_TRACE_LEVEL_TRACE, 	"TRACE"},
-	{ FTM_TRACE_LEVEL_DEBUG, 	"DEBUG"},
-	{ FTM_TRACE_LEVEL_INFO, 	"INFO"},
-	{ FTM_TRACE_LEVEL_WARN, 	"WARN"}, 
-	{ FTM_TRACE_LEVEL_ERROR, 	"ERROR"},
-	{ FTM_TRACE_LEVEL_FATAL, 	"FATAL"},
+	{ FTM_TRACE_LEVEL_ALL, 		"ALL",	"ALL" },
+	{ FTM_TRACE_LEVEL_TRACE, 	"TRCE",	"TRACE"},
+	{ FTM_TRACE_LEVEL_DEBUG, 	"DBUG",	"DEBUG"},
+	{ FTM_TRACE_LEVEL_INFO, 	"INFO",	"INFORMATION"},
+	{ FTM_TRACE_LEVEL_WARN, 	"WARN",	"WARNING"}, 
+	{ FTM_TRACE_LEVEL_ERROR, 	"EROR",	"ERROR"},
+	{ FTM_TRACE_LEVEL_FATAL, 	"FATL",	"FATAL"},
 };
 
-FTM_CHAR_PTR	FTM_TRACE_levelString(FTM_ULONG ulLevel)
+FTM_CHAR_PTR	FTM_TRACE_LEVEL_print
+(
+	FTM_ULONG ulLevel,
+	FTM_BOOL	bFull
+)
 {
 	FTM_ULONG	i;
 
@@ -572,8 +634,24 @@ FTM_CHAR_PTR	FTM_TRACE_levelString(FTM_ULONG ulLevel)
 	{
 		if (FTM_levelStrings[i].ulLevel == ulLevel)
 		{
-			return	FTM_levelStrings[i].pName;	
+			return	(bFull)?FTM_levelStrings[i].pFullName:FTM_levelStrings[i].pName;	
 		}
+	}
+
+	return	(bFull)?"UNKNOWN":"UNX";	
+}
+
+FTM_CHAR_PTR	FTM_TRACE_OUT_print
+(
+	FTM_TRACE_OUT xOut
+)
+{
+	switch(xOut)
+	{
+	case	FTM_TRACE_OUT_TERM:		return	"TERM";
+	case	FTM_TRACE_OUT_FILE:		return	"FILE";	
+	case	FTM_TRACE_OUT_SYSLOG:	return	"SYSLOG";
+	case	FTM_TRACE_OUT_USER:		return	"USER";
 	}
 
 	return	"UNKNOWN";

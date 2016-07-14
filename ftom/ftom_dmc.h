@@ -9,14 +9,14 @@
 
 typedef	struct
 {
-	FTDMC_SESSION			xSession;
-	FTDMC_CFG				xConfig;
-	pthread_t				xThread;
-	FTM_BOOL				bStop;
-	FTM_BOOL				bConnected;
+	FTDMC_SESSION		xSession;
+	FTDMC_CFG			xConfig;
+	pthread_t			xThread;
+	FTM_BOOL			bStop;
+	FTM_BOOL			bConnected;
 	FTOM_MSG_QUEUE		xMsgQ;
 	FTOM_SERVICE_ID		xServiceID;
-	FTOM_SERVICE_CALLBACK	fServiceCB;
+	FTOM_SERVICE_CB		fServiceCB;
 }	FTOM_DMC, _PTR_	FTOM_DMC_PTR;
 
 FTM_RET	FTOM_DMC_create
@@ -80,9 +80,9 @@ FTM_RET	FTOM_DMC_isConnected
 
 FTM_RET	FTOM_DMC_setServiceCallback
 (
-	FTOM_DMC_PTR 			pDMC, 
-	FTOM_SERVICE_ID 		xID, 
-	FTOM_SERVICE_CALLBACK pServiceCB
+	FTOM_DMC_PTR 	pDMC, 
+	FTOM_SERVICE_ID	xID, 
+	FTOM_SERVICE_CB pServiceCB
 );
 
 FTM_RET	FTOM_DMC_sendMessage

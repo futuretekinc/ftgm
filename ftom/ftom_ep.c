@@ -8,6 +8,9 @@
 #include "ftom_node_snmp_client.h"
 #include "ftom_logger.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_EP
+
 #define	FTOM_EP_CACHED_DATA_COUNT	100
 
 typedef	enum FTOM_EP_CMD_ENUM
@@ -111,21 +114,21 @@ FTM_RET	FTOM_EP_init
 
 	if (pEPList != NULL)
 	{
-		ERROR("It has already been initialized.\n");
+		ERROR2(FTM_RET_ALREADY_INITIALIZED, "It has already been initialized.\n");
 		return	FTM_RET_ALREADY_INITIALIZED;
 	}
 
 	xRet = FTM_LIST_create(&pEPList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't create a list.\n");
+		ERROR2(xRet,"Can't create a list.\n");
 		return	xRet;
 	}
 
 	xRet = FTM_LIST_create(&pClassList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't create a list.\n");
+		ERROR2(xRet,"Can't create a list.\n");
 		return	xRet;
 	}
 
@@ -192,7 +195,7 @@ FTM_RET	FTOM_EP_create
 	pEP = (FTOM_EP_PTR)FTM_MEM_malloc(sizeof(FTOM_EP));
 	if (pEP == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
@@ -204,7 +207,7 @@ FTM_RET	FTOM_EP_create
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("Lock init failed.\n");
+		ERROR2(xRet,"Lock init failed.\n");
 		return	xRet;	
 	}
 
@@ -212,7 +215,7 @@ FTM_RET	FTOM_EP_create
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("MsgQ	init failed.\n");
+		ERROR2(xRet,"MsgQ	init failed.\n");
 		return	xRet;
 	}
 
@@ -220,7 +223,7 @@ FTM_RET	FTOM_EP_create
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("Data list init failed.\n");
+		ERROR2(xRet,"Data list init failed.\n");
 		return	xRet;
 	}
 
@@ -228,7 +231,7 @@ FTM_RET	FTOM_EP_create
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("Trigger list init failed.\n");
+		ERROR2(xRet,"Trigger list init failed.\n");
 		return	xRet;
 	}
 
@@ -236,7 +239,7 @@ FTM_RET	FTOM_EP_create
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("EP[%s] failed to add to list[%08x].\n", pEP->xInfo.pEPID, xRet);
+		ERROR2(xRet, "EP[%s] failed to add to list.\n", pEP->xInfo.pEPID);
 
 		return	xRet;
 	}
@@ -269,7 +272,7 @@ FTM_RET	FTOM_EP_createFromDB
 	pEP = (FTOM_EP_PTR)FTM_MEM_malloc(sizeof(FTOM_EP));
 	if (pEP == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
@@ -282,7 +285,7 @@ FTM_RET	FTOM_EP_createFromDB
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("Lock init failed.\n");
+		ERROR2(xRet,"Lock init failed.\n");
 		return	xRet;
 	}
 
@@ -290,7 +293,7 @@ FTM_RET	FTOM_EP_createFromDB
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("MsgQ	init failed.\n");
+		ERROR2(xRet,"MsgQ	init failed.\n");
 		return	xRet;
 	}
 
@@ -298,7 +301,7 @@ FTM_RET	FTOM_EP_createFromDB
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("Data list init failed.\n");
+		ERROR2(xRet,"Data list init failed.\n");
 		return	xRet;
 	}
 
@@ -306,7 +309,7 @@ FTM_RET	FTOM_EP_createFromDB
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("Trigger list init failed.\n");
+		ERROR2(xRet,"Trigger list init failed.\n");
 		return	xRet;
 	}
 
@@ -314,7 +317,7 @@ FTM_RET	FTOM_EP_createFromDB
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
-		ERROR("EP[%s] failed to add to list[%08x].\n", pEP->xInfo.pEPID, xRet);
+		ERROR2(xRet,"EP[%s] failed to add to list.\n", pEP->xInfo.pEPID);
 	}
 	else
 	{
@@ -349,19 +352,19 @@ FTM_RET	FTOM_EP_destroy
 	xRet = FTM_LIST_final(&(*ppEP)->xTriggerList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger list finalize failed.\n");
+		ERROR2(xRet,"Trigger list finalize failed.\n");
 	}
 
 	xRet = FTM_LIST_final(&(*ppEP)->xDataList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Data list finalize failed.\n");
+		ERROR2(xRet,"Data list finalize failed.\n");
 	}
 
 	xRet = FTOM_MSGQ_final(&(*ppEP)->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("MsgQ finalize failed.\n");
+		ERROR2(xRet,"MsgQ finalize failed.\n");
 	}
 
 	FTM_LOCK_destroy(&(*ppEP)->pLock);
@@ -369,7 +372,7 @@ FTM_RET	FTOM_EP_destroy
 	xRet = FTM_MEM_free(*ppEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP failed to release memory!\n");
+		ERROR2(xRet,"EP failed to release memory!\n");
 	}
 
 	*ppEP = NULL;
@@ -568,7 +571,7 @@ FTM_RET	FTOM_EP_attach
 			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 2], 0, 16);
 
 			xRet = FTOM_NODE_SNMPC_getOIDForValue((FTOM_NODE_SNMPC_PTR)pNode, 
-						(pEP->xInfo.xType >> 24) & 0xFF, 
+						pEP->xInfo.xType, 
 						nIndex - 1,
 						&pEP->xOption.xSNMP.xOID);
 			if (xRet != FTM_RET_OK)
@@ -605,7 +608,7 @@ FTM_RET FTOM_EP_start
 
 	if (pEP->pNode == NULL)
 	{
-		ERROR("EP[%s] is not attached.\n", pEP->xInfo.pEPID);
+		ERROR2(FTM_RET_EP_IS_NOT_ATTACHED, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_EP_IS_NOT_ATTACHED;	
 	}
 
@@ -624,7 +627,7 @@ FTM_RET FTOM_EP_start
 	nRet = pthread_create(&pEP->xPThread, NULL, FTOM_EP_process, (FTM_VOID_PTR)pEP);
 	if (nRet != 0)
 	{
-		ERROR("Can't create thread.\n");	
+		ERROR2(FTM_RET_THREAD_CREATION_ERROR, "Can't create thread.\n");	
 		return	FTM_RET_THREAD_CREATION_ERROR;
 	}
 
@@ -650,14 +653,14 @@ FTM_RET	FTOM_EP_stop
 	xRet = FTOM_MSG_createQuit(&pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] : Can't create quit message!\n", pEP->xInfo.pEPID);
+		ERROR2(xRet,"EP[%s] : Can't create quit message!\n", pEP->xInfo.pEPID);
 	}
 	else
 	{
 		xRet = FTOM_MSGQ_push(&pEP->xMsgQ, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Message push failed[%08x].!\n", xRet);
+			ERROR2(xRet,"Message push failed.!\n");
 			FTOM_MSG_destroy(&pMsg);
 		}
 	}
@@ -699,7 +702,7 @@ FTM_VOID_PTR FTOM_EP_process
 		FTM_EP_DATA		xData;
 		FTOM_MSG_PTR	pBaseMsg = NULL;
 
-		if ((pEP->xInfo.ulUpdateInterval > 0) && FTM_TIMER_isExpired(&pEP->xUpdateTimer))
+		if (FTM_TIMER_isExpired(&pEP->xUpdateTimer))
 		{
 			if (FTOM_EP_isAsyncMode(pEP) != FTM_RET_TRUE)
 			{
@@ -720,7 +723,20 @@ FTM_VOID_PTR FTOM_EP_process
 				FTOM_EP_remoteGetDataAsync(pEP);
 			}
 
-			FTM_TIMER_addS(&pEP->xUpdateTimer, pEP->xInfo.ulUpdateInterval);
+			if (pEP->xInfo.ulUpdateInterval > 0)
+			{
+				FTM_TIMER_addS(&pEP->xUpdateTimer, pEP->xInfo.ulUpdateInterval);
+			}
+			else
+			{
+				FTM_ULONG	ulUpdateInterval = 1;
+
+				xRet = FTOM_getDefaultUpdateInterval(&ulUpdateInterval);
+				if (xRet == FTM_RET_OK)
+				{
+					FTM_TIMER_addS(&pEP->xUpdateTimer, ulUpdateInterval);
+				}
+			}
 		}
 
 		if (FTM_TIMER_isExpired(&pEP->xReportTimer))
@@ -828,7 +844,7 @@ FTM_RET	FTOM_EP_remoteSetData
 	xRet = FTOM_NODE_setEPData(pEP->pNode, pEP, pData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] data push error!\n", pEP->xInfo.pEPID);
+		ERROR2(xRet,"EP[%s] data push error!\n", pEP->xInfo.pEPID);
 	}
 
 	return	xRet;
@@ -848,7 +864,7 @@ FTM_RET	FTOM_EP_remoteGetData
 	xRet = FTOM_NODE_getEPData(pEP->pNode, pEP, pData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] data pull error!\n", pEP->xInfo.pEPID);
+		ERROR2(xRet,"EP[%s] data pull error!\n", pEP->xInfo.pEPID);
 	}
 
 	return	xRet;
@@ -904,11 +920,13 @@ FTM_RET	FTOM_EP_getDataList
 	FTM_ULONG	ulCachedDataCount;
 	FTM_ULONG	ulDataCount = 0;
 
-	xRet = FTOM_EP_getDataCount(pEP, &ulCachedDataCount);
+	xRet = FTM_LIST_count(&pEP->xDataList, &ulCachedDataCount);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet,"Failed to get EP[%s] data count.\n", pEP->xInfo.pEPID);
 		return	xRet;	
 	}
+
 	if (ulIndex + ulMaxCount <  ulCachedDataCount)
 	{
 		FTM_INT	i;
@@ -921,6 +939,10 @@ FTM_RET	FTOM_EP_getDataList
 			{
 				memcpy(&pDatas[ulDataCount++], pData, sizeof(FTM_EP_DATA));
 			}
+			else
+			{
+				ERROR2(xRet, "Failed to get EP data from cache! - Cached Data[%d]\n", ulIndex+i);	
+			}
 		}
 
 		*pulCount = ulDataCount;
@@ -928,9 +950,13 @@ FTM_RET	FTOM_EP_getDataList
 	else
 	{
 		xRet = FTOM_DB_EP_getDataList(pEP->xInfo.pEPID, ulIndex, pDatas, ulMaxCount, pulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to get EP data from DB!\n");	
+		}
 	}
 
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 FTM_RET	FTOM_EP_setData
@@ -950,13 +976,13 @@ FTM_RET	FTOM_EP_setData
 	xRet = FTM_EP_getDataType(&pEP->xInfo, &xDataType);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] data type is unknown.\n", pEP->xInfo.pEPID);
+		ERROR2(xRet,"EP[%s] data type is unknown.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_ERROR;
 	}
 
 	if (xDataType != pData->xValue.xType)
 	{
-		ERROR("EP[%s] data type missmatch[%08x:%08x]!\n", pEP->xInfo.pEPID, xDataType, pData->xValue.xType);
+		ERROR2(xRet,"EP[%s] data type missmatch[%08x:%08x]!\n", pEP->xInfo.pEPID, xDataType, pData->xValue.xType);
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
@@ -964,14 +990,14 @@ FTM_RET	FTOM_EP_setData
 	xRet = FTM_EP_DATA_create(pData, &pNewData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Data creation failed[%08x]!\n", pData->xValue.xType);
+		ERROR2(xRet,"Data creation failed[%08x]!\n", pData->xValue.xType);
 		return	xRet;	
 	}
 
 	xRet = FTOM_DB_EP_addData(pEP->xInfo.pEPID, pData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("DB store failed[%08x]!\n", xRet);	
+		ERROR2(xRet,"DB store failed!\n");	
 	}
 
 	xRet = FTM_LIST_count(&pEP->xDataList, &ulCount);
@@ -991,7 +1017,7 @@ FTM_RET	FTOM_EP_setData
 			xRet = FTM_LIST_remove(&pEP->xDataList, pTempData);	
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("Data remove failed.\n");	
+				ERROR2(xRet,"Data remove failed.\n");	
 				break;
 			}
 
@@ -1003,7 +1029,7 @@ FTM_RET	FTOM_EP_setData
 	xRet = FTM_LIST_insert(&pEP->xDataList, pNewData, 0);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Data append failed.\n");
+		ERROR2(xRet,"Data append failed.\n");
 		FTM_EP_DATA_destroy(pNewData);	
 	}
 
@@ -1027,7 +1053,7 @@ FTM_RET	FTOM_EP_removeData
 	xRet = FTM_LIST_count(&pEP->xDataList, &ulListCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP Data count unknown[%08x]\n", ulListCount);
+		ERROR2(xRet,"EP Data count unknown[%08x]\n", ulListCount);
 		return	xRet;
 	}
 
@@ -1058,7 +1084,7 @@ FTM_RET	FTOM_EP_removeData
 		xRet = FTOM_DB_EP_removeData(pEP->xInfo.pEPID, nIndex, ulCount, pulDeletedCount);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("EP[%s] data failed to remove from DB[%08x].\n", pEP->xInfo.pEPID, xRet);	
+			ERROR2(xRet,"EP[%s] data failed to remove from DB.\n", pEP->xInfo.pEPID);	
 		}
 	}
 	else
@@ -1066,7 +1092,7 @@ FTM_RET	FTOM_EP_removeData
 		xRet = FTOM_DB_EP_removeData(pEP->xInfo.pEPID, -1, ulCount, pulDeletedCount);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("EP[%s] data failed to remove from DB[%08x].\n", pEP->xInfo.pEPID, xRet);	
+			ERROR2(xRet,"EP[%s] data failed to remove from DB.\n", pEP->xInfo.pEPID);	
 		}
 
 		xRet = FTOM_DB_EP_getDataCount(pEP->xInfo.pEPID, &ulDataCount);
@@ -1111,7 +1137,7 @@ FTM_RET	FTOM_EP_removeDataWithTime
 	xRet = FTOM_DB_EP_removeDataWithTime(pEP->xInfo.pEPID, ulBegin, ulEnd, pulDeletedCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] data failed to remove from DB[%08x].\n", pEP->xInfo.pEPID, xRet);	
+		ERROR2(xRet,"EP[%s] data failed to remove from DB.\n", pEP->xInfo.pEPID);	
 	}
 	else
 	{
@@ -1163,7 +1189,7 @@ FTM_RET	FTOM_EP_remoteGetDataAsync
 	xRet = FTOM_NODE_getEPDataAsync(pEP->pNode, pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] data pull error!\n", pEP->xInfo.pEPID);
+		ERROR2(xRet,"EP[%s] data pull error!\n", pEP->xInfo.pEPID);
 	}
 
 	return	xRet;
@@ -1182,7 +1208,7 @@ FTM_RET	FTOM_EP_remoteSetDataAsync
 	xRet = FTOM_NODE_setEPDataAsync(pEP->pNode, pEP, pData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP[%s] data push error!\n", pEP->xInfo.pEPID);
+		ERROR2(xRet,"EP[%s] data push error!\n", pEP->xInfo.pEPID);
 	}
 
 	return	xRet;
@@ -1230,7 +1256,7 @@ FTM_RET	FTOM_EP_reportDataInTime
 	pDataList = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * nCount);
 	if (pDataList == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY,"Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 

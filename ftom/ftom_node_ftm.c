@@ -28,7 +28,7 @@ FTM_RET	FTOM_NODE_FTM_init
 		return	xRet;	
 	}
 
-	TRACE("NODE(%08x)[%s] has %d EPs\n", pNode, pNode->xCommon.xInfo.pDID, ulEPCount);
+	TRACE("NODE[%s] has %d EPs\n", pNode->xCommon.xInfo.pDID, ulEPCount);
 	if (ulEPCount != 0)
 	{
 		FTM_ULONG	i;
@@ -36,35 +36,22 @@ FTM_RET	FTOM_NODE_FTM_init
 		for(i = 0 ; i < ulEPCount ; i++)
 		{
 			FTOM_EP_PTR				pEP;
-			FTOM_EP_CLASS_PTR	pEPClassInfo;
-			FTM_CHAR				pOIDName[1024];
 
-			if (FTOM_NODE_getEPAt((FTOM_NODE_PTR)pNode, i, (FTOM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
+			xRet = FTOM_NODE_getEPAt((FTOM_NODE_PTR)pNode, i, (FTOM_EP_PTR _PTR_)&pEP);
+			if (xRet != FTM_RET_OK)
 			{
 				TRACE("EP[%d] information not found\n", i);
 				continue;
 			}
 
-			if (FTOM_EP_CLASS_get((pEP->xInfo.xType & FTM_EP_TYPE_MASK), &pEPClassInfo) != FTM_RET_OK)
-			{
-				TRACE("EP CLASS[%s] information not found\n", pEP->xInfo.pEPID);
-				continue;
-			}
-
-			snprintf(pOIDName, sizeof(pOIDName) - 1, "%s::%s", 
-				pNode->xCommon.xInfo.xOption.xSNMP.pMIB, 
-				pEPClassInfo->xInfo.pValue);
-			pEP->xOption.xSNMP.xOID.nLen = MAX_OID_LEN;
-			if (read_objid(pOIDName, pEP->xOption.xSNMP.xOID.pIDs, &pEP->xOption.xSNMP.xOID.nLen) == 0)
-			{
-				TRACE("Can't find MIB\n");
-				continue;
-			}
-
 			FTM_INT	nIndex;
 			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 3], 0, 16);
-			pEP->xOption.xSNMP.xOID.pIDs[pEP->xOption.xSNMP.xOID.nLen++] = nIndex & 0xFF;
-			FTM_LIST_append(&pNode->xCommon.xEPList, pEP);
+
+			xRet = FTOM_NODE_SNMPC_getOIDForValue(pNode, pEP->xInfo.xType, nIndex, &pEP->xOption.xSNMP.xOID);
+			if (xRet != FTM_RET_OK)
+			{
+				WARN("Failed to get OID for EP[%08x].\n", pEP->xInfo.pEPID);
+			}
 		}
 	}
 	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
@@ -112,17 +99,6 @@ FTM_RET	FTOM_NODE_FTM_final
 	FTM_LOCK_destroy(&pNode->pLock);
 
 	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_NODE_FTM_getEPCount
-(
-	FTOM_NODE_SNMPC_PTR pNode, 
-	FTM_EP_TYPE			xType,
-	FTM_ULONG_PTR		pulCount
-)
-{
-	*pulCount = 0;
-	return	0;
 }
 
 FTM_RET	FTOM_NODE_FTM_getEPData
@@ -245,14 +221,14 @@ FTM_RET	FTOM_NODE_FTM_getEPDataAsync
 				&pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to create message[%08x]\n", xRet);
+		ERROR2(xRet, "Failed to create message.\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_SERVICE_sendMessage(FTOM_SERVICE_SNMP_CLIENT, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to send message[%08x]\n", xRet);
+		ERROR2(xRet, "Failed to send message.\n");
 		FTOM_MSG_destroy(&pMsg);	
 	}
 
@@ -310,7 +286,7 @@ FTOM_NODE_CLASS	xNodeClassFTM =
 	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_FTM_final,
 	.fPrestart	= (FTOM_NODE_PRESTART)FTOM_NODE_FTM_prestart,
 	.fPrestop	= (FTOM_NODE_PRESTOP)FTOM_NODE_FTM_prestop,
-	.fGetEPCount= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_FTM_getEPCount,
+	.fGetEPCount= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_SNMPC_getEPCount,
 	.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_FTM_getEPData,
 	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_FTM_setEPData,
 	.fGetEPDataAsync	= (FTOM_NODE_GET_EP_DATA_ASYNC)FTOM_NODE_FTM_getEPDataAsync,

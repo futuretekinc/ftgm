@@ -4,10 +4,10 @@
 #include "ftm.h"
 #include "ftom_types.h"
 #include "ftom_config.h"
+#include "ftom_modules.h"
 #include "ftom_dmc.h"
 #include "ftom_server.h"
 #include "ftom_snmpc.h"
-#include "ftom_snmptrapd.h"
 #include "ftom_node.h"
 #include "ftom_msg.h"
 
@@ -380,6 +380,11 @@ FTM_RET	FTOM_NOTIFY_SNMPTrap
 FTM_RET	FTOM_serverSync
 (
 	FTM_BOOL			bAutoRegister
+);
+
+FTM_RET	FTOM_getDefaultUpdateInterval
+(
+	FTM_ULONG_PTR	pulUpdateInterval
 );
 
 #endif

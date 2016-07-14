@@ -7,37 +7,25 @@
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 
-FTM_ULONG		active_hosts = 0;
-
-static
-FTM_RET		FTOM_NODE_SNMPC_getOID
-(
-	FTOM_NODE_SNMPC_PTR pNode, 
-	FTM_ULONG 			ulType, 
-	FTM_CHAR_PTR		pFieldName,
-	FTM_ULONG 			ulIndex, 
-	FTM_SNMP_OID_PTR	pOID
-);
-
 FTOM_NODE_CLASS	xNodeClassGeneralSNMP = 
 {
-	.pModel = "general",
-	.xType		= FTOM_NODE_TYPE_SNMPC,
-	.fCreate	= (FTOM_NODE_CREATE)FTOM_NODE_SNMPC_create,
-	.fDestroy	= (FTOM_NODE_DESTROY)FTOM_NODE_SNMPC_destroy,
-	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_init,
-	.fFinal		= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_final,
-	.fPrestart	= (FTOM_NODE_PRESTART)FTOM_NODE_SNMPC_prestart,
-	.fPrestop	= (FTOM_NODE_PRESTOP)FTOM_NODE_SNMPC_prestop,
-	.fGetEPCount= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_SNMPC_getEPCount,
-	.fGetEPID	= (FTOM_NODE_GET_EP_ID)FTOM_NODE_SNMPC_getEPID,
-	.fGetEPName	= (FTOM_NODE_GET_EP_NAME)FTOM_NODE_SNMPC_getEPName,
-	.fGetEPState= (FTOM_NODE_GET_EP_STATE)FTOM_NODE_SNMPC_getEPState,
+	.pModel 		= "general",
+	.xType			= FTOM_NODE_TYPE_SNMPC,
+	.fCreate		= (FTOM_NODE_CREATE)FTOM_NODE_SNMPC_create,
+	.fDestroy		= (FTOM_NODE_DESTROY)FTOM_NODE_SNMPC_destroy,
+	.fInit			= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_init,
+	.fFinal			= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_final,
+	.fPrestart		= (FTOM_NODE_PRESTART)FTOM_NODE_SNMPC_prestart,
+	.fPrestop		= (FTOM_NODE_PRESTOP)FTOM_NODE_SNMPC_prestop,
+	.fGetEPCount	= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_SNMPC_getEPCount,
+	.fGetEPID		= (FTOM_NODE_GET_EP_ID)FTOM_NODE_SNMPC_getEPID,
+	.fGetEPName		= (FTOM_NODE_GET_EP_NAME)FTOM_NODE_SNMPC_getEPName,
+	.fGetEPState	= (FTOM_NODE_GET_EP_STATE)FTOM_NODE_SNMPC_getEPState,
 	.fGetEPUpdateInterval= (FTOM_NODE_GET_EP_UPDATE_INTERVAL)FTOM_NODE_SNMPC_getEPUpdateInterval,
-	.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_getEPData,
-	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_setEPData,
-	.fGetEPDataAsync	= (FTOM_NODE_GET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_getEPDataAsync,
-	.fSetEPDataAsync	= (FTOM_NODE_SET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_setEPDataAsync,
+	.fGetEPData		= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_getEPData,
+	.fSetEPData		= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_setEPData,
+	.fGetEPDataAsync= (FTOM_NODE_GET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_getEPDataAsync,
+	.fSetEPDataAsync= (FTOM_NODE_SET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_setEPDataAsync,
 };
 
 static 
@@ -90,14 +78,14 @@ FTM_RET	FTOM_NODE_SNMPC_create
 	xRet = FTOM_NODE_SNMPC_getClass(pInfo->pModel, &pClass);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Class[%s] not found!\n", pInfo->pModel);
+		ERROR2(xRet,"Class[%s] not found!\n", pInfo->pModel);
 		return	xRet;
 	}
 
 	pNode = (FTOM_NODE_SNMPC_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_SNMPC));
 	if (pNode == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(xRet,"Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
@@ -152,7 +140,7 @@ FTM_RET	FTOM_NODE_SNMPC_init
 		return	xRet;	
 	}
 
-	TRACE("NODE(%08x)[%s] has %d EPs\n", pNode, pNode->xCommon.xInfo.pDID, ulEPCount);
+	TRACE("Node[%s] has %d EPs\n", pNode, pNode->xCommon.xInfo.pDID, ulEPCount);
 	if (ulEPCount != 0)
 	{
 		FTM_ULONG	i;
@@ -245,8 +233,26 @@ FTM_RET	FTOM_NODE_SNMPC_getEPCount
 	FTM_ULONG_PTR		pulCount
 )
 {
-	*pulCount = 0;
-	return	0;
+	ASSERT(pNode != NULL);
+	ASSERT(pulCount != NULL);
+	FTOM_SERVICE_PTR 	pService;
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTOM_SNMPC_getEPCount(pService->pData, pNode->xCommon.xInfo.xOption.xSNMP.pURL, xType, pulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get SNMP client count.\n");	
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_NODE_SNMPC_getEPData
@@ -345,7 +351,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPDataAsync
 	xRet = FTOM_EP_getDataType(pEP, &xDataType);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to get EP data type.\n");
+		ERROR2(xRet, "Failed to get EP data type.\n");
 		return	xRet;
 	}
 	
@@ -361,14 +367,14 @@ FTM_RET	FTOM_NODE_SNMPC_getEPDataAsync
 				&pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to create message[%08x]\n", xRet);
+		ERROR2(xRet ,"Failed to create message\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_SERVICE_sendMessage(FTOM_SERVICE_SNMP_CLIENT, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to send message[%08x]\n", xRet);
+		ERROR2(xRet, "Failed to send message\n");
 		FTOM_MSG_destroy(&pMsg);	
 	}
 
@@ -408,21 +414,6 @@ FTM_RET	FTOM_NODE_SNMPC_setEPDataAsync
 
 	return	xRet;
 }
-static FTM_CHAR_PTR	pOIDNamePrefix[] =
-{
-	"temp",
-	"humi",
-	"vlt",
-	"curr",
-	"di",
-	"do",
-	"gas",
-	"pwr",
-	"cnt",
-	"prs",
-	"dsc",
-	"dev"
-};
 
 FTM_RET		FTOM_NODE_SNMPC_getOIDForID
 (
@@ -512,6 +503,32 @@ FTM_RET		FTOM_NODE_SNMPC_getOIDForValue
 	return	FTOM_NODE_SNMPC_getOID(pNode, ulType, "Value", ulIndex, pOID);
 }
 
+typedef struct	
+{
+	FTM_EP_TYPE		xType;
+	FTM_CHAR_PTR	pName;
+}	FTOM_NODE_SNMPC_OID_PREFIX, _PTR_ FTOM_NODE_SNMPC_OID_PREFIX_PTR;
+
+static
+FTOM_NODE_SNMPC_OID_PREFIX	pOIDPrefixes[] =
+{	
+	{	FTM_EP_TYPE_TEMPERATURE,"temp"},
+	{	FTM_EP_TYPE_HUMIDITY, 	"humi"},
+	{	FTM_EP_TYPE_VOLTAGE,	"vlt"},
+	{	FTM_EP_TYPE_CURRENT, 	"curr"},
+	{	FTM_EP_TYPE_DI,			"di"},
+	{	FTM_EP_TYPE_DO, 		"do"},
+	{	FTM_EP_TYPE_GAS, 		"gas"},
+	{	FTM_EP_TYPE_POWER, 		"pwr"},
+	{	FTM_EP_TYPE_AI, 		"ai"},
+	{	FTM_EP_TYPE_COUNT, 		"cnt"},
+	{	FTM_EP_TYPE_PRESSURE, 	"prs"},
+	{	FTM_EP_TYPE_DISCRETE, 	"dsc"},
+	{	FTM_EP_TYPE_DEVICE, 	"dev"},
+	{	FTM_EP_TYPE_MULTI, 		"multi"},
+	{	0, 						NULL	}
+};
+
 FTM_RET		FTOM_NODE_SNMPC_getOID
 (
 	FTOM_NODE_SNMPC_PTR pNode, 
@@ -526,15 +543,24 @@ FTM_RET		FTOM_NODE_SNMPC_getOID
 
 	FTM_RET		xRet;
 	FTM_CHAR	pBuff[1024];
+	FTOM_NODE_SNMPC_OID_PREFIX_PTR	pPrefix = pOIDPrefixes;
 
-	if ((ulType == 0) || (ulType > sizeof(pOIDNamePrefix) / sizeof(FTM_CHAR_PTR)))
+	while(pPrefix->xType != 0)
 	{
-		ERROR("Invalid type : %08x\n", ulType);
-		return	FTM_RET_INVALID_TYPE;
+		if (pPrefix->xType == ulType)
+		{
+			break;
+		}
 
+		pPrefix++;
+	}
+	
+	if (pPrefix->xType == 0)
+	{
+		return	FTM_RET_INVALID_TYPE;
 	}
 
-	sprintf(pBuff, "%s:%s%s.%lu", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pOIDNamePrefix[ulType - 1], pFieldName, ulIndex + 1);
+	sprintf(pBuff, "%s:%s%s.%lu", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pPrefix->pName, pFieldName, ulIndex + 1);
 
 	xRet = FTOM_SNMPC_getOID(pBuff, pOID);
 	if (xRet != FTM_RET_OK)
@@ -570,21 +596,21 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SNMP Client not supported!\n");
+		ERROR2(xRet, "SNMP Client not supported!\n");
 		return  xRet;   
 	}
 
-	xRet = FTOM_NODE_SNMPC_getOIDForID(pNode, ulEPType >> 24, ulIndex, &xOID);
+	xRet = FTOM_NODE_SNMPC_getOIDForID(pNode, ulEPType, ulIndex, &xOID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to get OID for ID.\n");
+		ERROR2(xRet, "Failed to get OID for ID.\n");
 		return	xRet;	
 	}
 
 	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_STRING);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to init value[%08x]!\n", xRet);
+		ERROR2(xRet, "Failed to init value!\n");
 		return	xRet;
 	}
 
@@ -633,21 +659,21 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SNMP Client not supported!\n");
+		ERROR2(xRet, "SNMP Client not supported!\n");
 		return  xRet;   
 	}
 
-	xRet = FTOM_NODE_SNMPC_getOIDForName(pNode, ulEPType >> 24, ulIndex, &xOID);
+	xRet = FTOM_NODE_SNMPC_getOIDForName(pNode, ulEPType, ulIndex, &xOID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to get OID for ID.\n");
+		ERROR2(xRet, "Failed to get OID for ID.\n");
 		return	xRet;	
 	}
 
 	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_STRING);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to init value[%08x]!\n", xRet);
+		ERROR2(xRet, "Failed to init value!\n");
 		return	xRet;
 	}
 
@@ -690,21 +716,21 @@ FTM_RET	FTOM_NODE_SNMPC_getEPState
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SNMP Client not supported!\n");
+		ERROR2(xRet, "SNMP Client not supported!\n");
 		return  xRet;   
 	}
 
-	xRet = FTOM_NODE_SNMPC_getOIDForState(pNode, ulEPType >> 24, ulIndex, &xOID);
+	xRet = FTOM_NODE_SNMPC_getOIDForState(pNode, ulEPType, ulIndex, &xOID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to get OID for ID.\n");
+		ERROR2(xRet, "Failed to get OID for ID.\n");
 		return	xRet;	
 	}
 
 	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_BOOL);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to init value[%08x]!\n", xRet);
+		ERROR2(xRet,"Failed to init value!\n");
 		return	xRet;
 	}
 
@@ -746,21 +772,21 @@ FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SNMP Client not supported!\n");
+		ERROR2(xRet,"SNMP Client not supported!\n");
 		return  xRet;   
 	}
 
-	xRet = FTOM_NODE_SNMPC_getOIDForUpdateInterval(pNode, ulEPType >> 24, ulIndex, &xOID);
+	xRet = FTOM_NODE_SNMPC_getOIDForUpdateInterval(pNode, ulEPType, ulIndex, &xOID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to get OID for ID.\n");
+		ERROR2(xRet,"Failed to get OID for ID.\n");
 		return	xRet;	
 	}
 
 	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_ULONG);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to init value[%08x]!\n", xRet);
+		ERROR2(xRet,"Failed to init value!\n");
 		return	xRet;
 	}
 

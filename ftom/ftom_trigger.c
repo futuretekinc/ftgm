@@ -10,6 +10,9 @@
 #include "libconfig.h"
 #include "ftom_logger.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_TRIGGER
+
 static 
 FTM_VOID_PTR FTOM_TRIGGER_process
 (
@@ -51,14 +54,14 @@ FTM_RET	FTOM_TRIGGER_init
 	xRet = FTM_MSGQ_create(&pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Message Queue creation failed[%08x].\n", xRet);
+		ERROR2(xRet, "Message Queue creation failed.\n");
 		return	xRet;	
 	}
 
 	xRet = FTM_LIST_create(&pTriggerList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger list creation failed[%08x].\n", xRet);
+		ERROR2(xRet, "Trigger list creation failed.\n");
 		FTM_MSGQ_destroy(pMsgQ);
 		return	xRet;	
 	}

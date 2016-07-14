@@ -5,6 +5,9 @@
 #include "ftm_list.h"
 #include "ftm_mem.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTM_TRACE_MODULE_MEMORY
+
 typedef struct
 {
 	FTM_CHAR_PTR	pFile;

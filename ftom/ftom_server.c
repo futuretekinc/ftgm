@@ -986,9 +986,9 @@ FTM_RET	FTOM_SERVER_sendMessage
 
 FTM_RET	FTOM_SERVER_setServiceCallback
 (
-	FTOM_SERVER_PTR 		pServer, 
-	FTOM_SERVICE_ID 		xServiceID, 
-	FTOM_SERVICE_CALLBACK 	fServiceCB
+	FTOM_SERVER_PTR	pServer, 
+	FTOM_SERVICE_ID	xServiceID, 
+	FTOM_SERVICE_CB	fServiceCB
 )
 {
 	ASSERT(pServer != NULL);
@@ -1062,12 +1062,12 @@ FTM_VOID_PTR FTOM_SERVER_process
 				if (pSession == NULL)
 				{
 					ERROR("System memory is not enough!\n");
-					TRACE("The session(%08x) was closed.\n", hClient);
+					TRACE("The session[%08x] was closed.\n", hClient);
 					close(hClient);
 				}
 				else
 				{
-					TRACE("The new session(%08x) has beed connected\n", hClient);
+					TRACE("The new session[%08x] has beed connected\n", hClient);
 
 					pSession->hSocket = hClient;
 					memcpy(&pSession->xPeer, &xClientAddr, sizeof(xClientAddr));
@@ -1380,7 +1380,7 @@ FTM_VOID_PTR	FTOM_SERVER_processPipe
 				xRet = FTOM_SERVER_serviceCall(pServer, pReq, nReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE);
 				if (xRet != FTM_RET_OK)
 				{
-					ERROR("PIPE Service call error[%08x:%08x]\n", pReq->xCmd, xRet);
+					ERROR2(xRet, "Failed to call PIPE Service[%08x]\n", pReq->xCmd);
 					pResp->xCmd = pReq->xCmd;
 					pResp->xRet = xRet;
 					pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
@@ -1441,7 +1441,7 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 	xRet = FTM_SMP_createServer(1234, &pSMP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SMP creation failed.[%08x]\n", xRet);
+		ERROR2(xRet, "SMP creation failed.\n");
 		return	0;	
 	}
 
@@ -1460,7 +1460,7 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 			xRet = FTOM_SERVER_serviceCall(pServer, pReq, ulReqLen, pResp, FTOM_DEFAULT_PACKET_SIZE);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("PIPE Service call error[%08x:%08x]\n", pReq->xCmd, xRet);
+				ERROR2(xRet, "Failed to call PIPE Service[%08x]\n", pReq->xCmd);
 				pResp->xCmd = pReq->xCmd;
 				pResp->xRet = xRet;
 				pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
@@ -2026,6 +2026,7 @@ FTM_RET	FTOM_SERVER_EP_destroy
 	FTOM_NODE_PTR	pNode;
 	FTOM_EP_PTR		pEP;
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
 	if (xRet != FTM_RET_OK)
 	{
@@ -2033,9 +2034,11 @@ FTM_RET	FTOM_SERVER_EP_destroy
 		goto finish;
 	}
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTOM_NODE_get(pEP->xInfo.pDID, &pNode);
 	if (xRet == FTM_RET_OK)
 	{
+	TRACE("%s[%d]\n", __func__, __LINE__);
 		xRet = FTOM_NODE_unlinkEP(pNode, pEP);	
 		if (xRet != FTM_RET_OK)
 		{
@@ -2043,8 +2046,10 @@ FTM_RET	FTOM_SERVER_EP_destroy
 		}
 	}
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	memcpy(&xInfo, &pEP->xInfo, sizeof(FTM_EP));
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTOM_DB_EP_remove(xInfo.pEPID);
 	if (xRet != FTM_RET_OK)
 	{
@@ -2052,6 +2057,7 @@ FTM_RET	FTOM_SERVER_EP_destroy
 		goto finish;
 	}
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	xRet = FTOM_EP_destroy(&pEP);
 	if (xRet != FTM_RET_OK)
 	{
@@ -2059,6 +2065,7 @@ FTM_RET	FTOM_SERVER_EP_destroy
 		goto finish;
 	}
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	FTOM_LOG_destroyEP(&xInfo);
 
 finish:
@@ -2369,7 +2376,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_del
 	}
 	else
 	{
-		TRACE("EP[%s] not found[%08x].\n", pReq->pEPID, xRet);	
+		ERROR2(xRet, "EP[%s] not found.\n", pReq->pEPID);	
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -2402,7 +2409,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_delWithTime
 	}
 	else
 	{
-		TRACE("EP[%s] not found[%08x].\n", pReq->pEPID, xRet);	
+		ERROR2(xRet, "EP[%s] not found.\n", pReq->pEPID);	
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -2435,7 +2442,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_info
 	}
 	else
 	{
-		TRACE("EP[%s] not found[%08x].\n", pReq->pEPID, xRet);	
+		ERROR2(xRet, "EP[%s] not found.\n", pReq->pEPID);	
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -2508,13 +2515,13 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 		xRet = FTOM_EP_getDataList(pEP, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
 		if (xRet != FTM_RET_OK)
 		{
-			TRACE("EP[%s] get data list error[%08x]!\n", pReq->pEPID, xRet);
+			ERROR2(xRet, "EP[%s] get data list error!\n", pReq->pEPID);
 			pResp->nCount = 0;
 		}
 	}
 	else
 	{
-		TRACE("EP[%s] is not found[%08x]!\n", pReq->pEPID, xRet);
+		ERROR2(xRet, "EP[%s] is not found!\n", pReq->pEPID);
 		pResp->nCount = 0;
 	}
 
@@ -2778,12 +2785,12 @@ FTM_RET	FTOM_SERVER_TRIGGER_set
 		xRet = FTOM_TRIGGER_setInfo( pTrigger, pReq->xFields, &pReq->xTrigger);
 		if (xRet != FTM_RET_OK)
 		{
-			TRACE("Trigger[%s] failed to set info[%08x].\n", pReq->pTriggerID, xRet);
+			ERROR2(xRet, "Trigger[%s] failed to set info.\n", pReq->pTriggerID);
 		}
 	}
 	else
 	{
-		TRACE("Trigger[%s] is not found[%08x].!\n", pReq->pTriggerID, xRet);	
+		ERROR2(xRet, "Trigger[%s] is not found.!\n", pReq->pTriggerID);	
 	}
 
 	pResp->xRet = xRet;
