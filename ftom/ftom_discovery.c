@@ -152,7 +152,7 @@ FTM_RET	FTOM_DISCOVERY_start
 	nRet = pthread_create(&pDiscovery->xThread, NULL, FTM_DISCOVERY_process, pDiscovery);
 	if (nRet != 0)
 	{
-		ERROR("Discovery thread creation failed[%d].\n", nRet);
+		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Discovery thread creation failed[%d].\n", nRet);
 		return	FTM_RET_CANT_CREATE_THREAD;
 	}
 
@@ -252,7 +252,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					xRet = FTOM_NODE_SNMPC_getClass(xNodeInfo.pModel, &pClass);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("Failed to get Node[%s] class!\n", xNodeInfo.pModel);
+						ERROR2(xRet, "Failed to get Node[%s] class!\n", xNodeInfo.pModel);
 						break;
 					}
 
@@ -262,7 +262,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					xRet = pClass->fCreate(&xNodeInfo, (FTOM_NODE_PTR _PTR_)&pNode);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("Failed to create Node[%s]!\n", xNodeInfo.pModel);
+						ERROR2(xRet, "Failed to create Node[%s]!\n", xNodeInfo.pModel);
 						break;	
 					}
 
@@ -311,7 +311,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 
 			default:
 				{
-					ERROR("Not supported msg[%08x]\n", pCommonMsg->xType);	
+					ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Not supported msg[%08x]\n", pCommonMsg->xType);	
 				}
 			}
 
@@ -538,13 +538,14 @@ FTM_RET	FTOM_DISCOVERY_requestInformation
 	nSockFD = socket(PF_INET,SOCK_DGRAM,0);
 	if(nSockFD == -1)
 	{
+		ERROR2(FTM_RET_COMM_SOCK_ERROR, "Failed to open socket.\n");
 		return	FTM_RET_ERROR;
 	}
 
 	nRet = setsockopt(nSockFD, SOL_SOCKET, SO_BROADCAST, &nBroadcast,sizeof(nBroadcast));
 	if (nRet == -1)
 	{
-		ERROR("setsocketopt error!\n");
+		ERROR2(FTM_RET_COMM_SOCK_ERROR, "Failed to set socket option.\n");
 		return	FTM_RET_ERROR;
 	}
 
@@ -556,8 +557,8 @@ FTM_RET	FTOM_DISCOVERY_requestInformation
 	nBytes = sendto(nSockFD, pMsg, strlen(pMsg) , 0, (struct sockaddr *)&xDestAddr, sizeof(xDestAddr));
 	if (nBytes == -1)
 	{
-		ERROR("Packet send failed.\n");
-		return	FTM_RET_ERROR;
+		ERROR2(FTM_RET_COMM_PACKET_SEND_FAILED, "Failed to send  packet.\n");
+		return	FTM_RET_COMM_PACKET_SEND_FAILED;
 	}
 
 	close(nSockFD);

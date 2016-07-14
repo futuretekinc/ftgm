@@ -295,14 +295,32 @@ FTM_RET FTDMS_SHELL_CMD_trace
 		}
 		break;
 
-	case	3:
+	case	4:
 		{
-			if (strcasecmp(pArgv[1], "level") == 0)
-			{
-				FTM_ULONG	ulLevel;
+			FTM_RET		xRet;
+			FTM_ULONG	ulModule = 0;
 
-				ulLevel = strtoul(pArgv[2], NULL, 10);
-				FTM_TRACE_setLevel(ulLevel);
+			xRet = FTM_TRACE_getID(pArgv[1], &ulModule);
+			if (xRet != FTM_RET_OK)
+			{
+				MESSAGE("Invalid module name[%s]!\n", pArgv[1]);
+			}
+			else
+			{
+				if (strcasecmp(pArgv[2], "level") == 0)
+				{
+					FTM_ULONG	ulLevel;
+	
+					xRet = FTM_TRACE_strToLevel(pArgv[3], &ulLevel);
+					if (xRet != FTM_RET_OK)
+					{
+						MESSAGE("Invalid level[%s]!\n", pArgv[3]);
+					}
+					else
+					{
+						FTM_TRACE_setLevel(ulModule, ulLevel);
+					}
+				}
 			}
 		}
 		break;

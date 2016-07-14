@@ -122,7 +122,7 @@ FTM_RET FTOM_CLIENT_NODE_create
 	xRet = FTM_NODE_isValid(pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Invalid node information!\n");
+		ERROR2(xRet, "Invalid node information!\n");
 		return	xRet;	
 	}
 #endif
@@ -1268,7 +1268,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 		pResp = (FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
 		if (pResp == NULL)
 		{
-			ERROR("Not enough memory[size = %d]!\n", nRespSize);
+			ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]!\n", nRespSize);
 			return	FTM_RET_NOT_ENOUGH_MEMORY;
 		}
 	
@@ -1289,7 +1289,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 					&ulRespLen);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Request error!\n");
+			ERROR2(xRet, "Request error!\n");
 			FTM_MEM_free(pResp);
 			return	FTM_RET_ERROR;	
 		}
@@ -1316,7 +1316,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 		}
 		else
 		{
-			ERROR("FTOM request error[%08x]!", pResp->xRet);
+			ERROR2(pResp->xRet, "FTOM request error!");
 			bStop = FTM_TRUE;
 		}
 	
@@ -2265,7 +2265,7 @@ FTM_RET	FTOM_CLIENT_LOG_getList
 		pResp = (FTOM_RESP_LOG_GET_LIST_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
 		if (pResp == NULL)
 		{
-			ERROR("Not enough memory[size = %d]!\n", nRespSize);
+			ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]!\n", nRespSize);
 			return	FTM_RET_NOT_ENOUGH_MEMORY;
 		}
 	
@@ -2285,7 +2285,7 @@ FTM_RET	FTOM_CLIENT_LOG_getList
 					&ulRespLen);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Request error!\n");
+			ERROR2(xRet, "Request error!\n");
 			FTM_MEM_free(pResp);
 			return	FTM_RET_ERROR;	
 		}
@@ -2312,7 +2312,7 @@ FTM_RET	FTOM_CLIENT_LOG_getList
 		}
 		else
 		{
-			ERROR("FTOM request error[%08x]!", pResp->xRet);
+			ERROR2(pResp->xRet, "FTOM request error!");
 			bStop = FTM_TRUE;
 		}
 	
@@ -2356,7 +2356,7 @@ FTM_RET	FTOM_CLIENT_LOG_del
 				&ulRespLen);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Request error!\n");
+		ERROR2(xRet, "Request error!\n");
 		return	FTM_RET_ERROR;	
 	}
 	

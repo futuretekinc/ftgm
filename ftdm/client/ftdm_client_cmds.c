@@ -1047,8 +1047,8 @@ FTM_RET	FTDMC_EP_DATA_cmd
 		FTM_CHAR_PTR	pEPID;
 		FTM_EP_DATA	xData;
 		FTM_INT		i, nDataGenCount;
-		time_t		_startTime;
-		time_t		_endTime;
+		FTM_ULONG	ulStartTime;
+		FTM_ULONG	ulEndTime;
 
 		if (nArgc != 3)
 		{
@@ -1056,8 +1056,8 @@ FTM_RET	FTDMC_EP_DATA_cmd
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		_startTime = mktime(&xClientConfig.xDiagnostic.xStartTM);
-		_endTime = mktime(&xClientConfig.xDiagnostic.xEndTM);
+		FTM_TIME_toSecs(&xClientConfig.xDiagnostic.xStartTM, &ulStartTime);
+		FTM_TIME_toSecs(&xClientConfig.xDiagnostic.xEndTM, &ulEndTime);
 
 		nDataGenCount = strtol(pArgv[2], NULL, 10);
 
@@ -1071,7 +1071,7 @@ FTM_RET	FTDMC_EP_DATA_cmd
 
 			if (FTM_LIST_getAt(&xClientConfig.xDiagnostic.xEPList, nIndex, (FTM_VOID_PTR _PTR_)&pEPID) == FTM_RET_OK)
 			{
-				xData.ulTime = _startTime + rand() % (_endTime - _startTime);
+				xData.ulTime = ulStartTime + rand() % (ulEndTime - ulStartTime);
 				FTM_VALUE_initINT(&xData.xValue, rand());
 
 				FTDMC_EP_DATA_append(&_xSession, pEPID, &xData);
@@ -1366,34 +1366,6 @@ FTM_RET	FTDMC_DEBUG_cmd
 	if (nArgc < 2)
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;
-	}
-
-	if (strcasecmp(pArgv[1], "mode") == 0)
-	{
-		if (nArgc == 2)
-		{
-			FTM_ULONG	ulLevel;
-
-			FTM_TRACE_getLevel(&ulLevel);
-			MESSAGE("DEBUG OUT MODE : %s\n", FTM_TRACE_levelString(ulLevel));
-		}
-		else if (nArgc == 3)
-		{
-			FTM_ULONG	ulLevel, ulNewLevel;
-
-			ulNewLevel = strtoul(pArgv[2], NULL, 10);
-		
-			FTM_TRACE_getLevel(&ulLevel);
-			FTM_TRACE_setLevel(ulLevel);
-
-			MESSAGE("DEBUG OUT MODE : %s to %s\n",
-				FTM_TRACE_levelString(ulLevel),
-				FTM_TRACE_levelString(ulNewLevel));
-		}
-		else
-		{
-			return	FTM_RET_INVALID_ARGUMENTS;
-		}
 	}
 	else
 	{

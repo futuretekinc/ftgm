@@ -789,7 +789,7 @@ FTM_RET	FTOM_SERVER_init
 
 	if (sem_init(&pServer->xPublisher.xLock, 0, 1) < 0)
 	{
-		ERROR("Failed to initialize semaphore!\n");
+		ERROR2(FTM_RET_FAILED_TO_INIT_SEM, "Failed to initialize semaphore!\n");
 		FTM_LIST_final(&pServer->xPublisher.xSubscriberList);
 		FTM_LIST_final(&pServer->xSessionList);
 		return	FTM_RET_FAILED_TO_INIT_SEM;
@@ -797,7 +797,7 @@ FTM_RET	FTOM_SERVER_init
 
 	if (sem_init(&pServer->xPublisher.xSlot, 0, pServer->xConfig.xPublisher.ulMaxSubscribe) < 0)
 	{
-		ERROR("Failed to initialize semaphore!\n");
+		ERROR2(FTM_RET_FAILED_TO_INIT_SEM, "Failed to initialize semaphore!\n");
 		sem_destroy(&pServer->xPublisher.xLock);
 		FTM_LIST_final(&pServer->xPublisher.xSubscriberList);
 		FTM_LIST_final(&pServer->xSessionList);
@@ -846,25 +846,25 @@ FTM_RET	FTOM_SERVER_start
 	nRet = pthread_create(&pServer->xPThread, NULL, FTOM_SERVER_process, (FTM_VOID_PTR)pServer);
 	if (nRet != 0)
 	{
-		ERROR("Can't create Net interface[%d]\n", nRet);
+		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create Net interface[%d]\n", nRet);
 	}
 
 	nRet = pthread_create(&pServer->xPublisher.xThread, NULL, FTOM_SERVER_publishProcess, (FTM_VOID_PTR)pServer);
 	if (nRet != 0)
 	{
-		ERROR("Can't create Net interface[%d]\n", nRet);
+		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create Net interface[%d]\n", nRet);
 	}
 
 	nRet = pthread_create(&pServer->xProcessPipe, NULL, FTOM_SERVER_processPipe, pServer);
 	if (nRet != 0)
 	{
-		ERROR("Can't create PIPE interface[%d]\n", nRet);
+		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create PIPE interface[%d]\n", nRet);
 	}
 
 	nRet = pthread_create(&pServer->xProcessSM, NULL, FTOM_SERVER_processSM, pServer);
 	if (nRet != 0)
 	{
-		ERROR("Can't create SM interface[%d]\n", nRet);
+		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create SM interface[%d]\n", nRet);
 	}
 
 	return	FTM_RET_OK;
@@ -1014,14 +1014,14 @@ FTM_VOID_PTR FTOM_SERVER_process
 	
 	if (sem_init(&pServer->xLock, 0,pServer->xConfig.ulMaxSession) < 0)
 	{
-		ERROR("Can't alloc semaphore!\n");
+		ERROR2(FTM_RET_CANT_CREATE_SEMAPHORE,"Can't alloc semaphore!\n");
 		return	0;	
 	}
 
 	pServer->hSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (pServer->hSocket == -1)
 	{
-		ERROR("Could not create socket\n");
+		ERROR2(FTM_RET_COMM_SOCK_ERROR, "Could not create socket\n");
 		return	0;
 	}
 
@@ -1033,7 +1033,7 @@ FTM_VOID_PTR FTOM_SERVER_process
 	nRet = bind( pServer->hSocket, (struct sockaddr *)&xServerAddr, sizeof(xServerAddr));
 	if (nRet < 0)
 	{
-		ERROR("bind failed.[%d]\n", nRet);
+		ERROR2(FTM_RET_COMM_SOCKET_BIND_FAILED, "bind failed.[%d]\n", nRet);
 		return	0;
 	}
 
@@ -1061,7 +1061,7 @@ FTM_VOID_PTR FTOM_SERVER_process
 				FTOM_SESSION_PTR pSession = (FTOM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTOM_SESSION));
 				if (pSession == NULL)
 				{
-					ERROR("System memory is not enough!\n");
+					ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "System memory is not enough!\n");
 					TRACE("The session[%08x] was closed.\n", hClient);
 					close(hClient);
 				}
@@ -1141,13 +1141,13 @@ FTM_VOID_PTR FTOM_SERVER_serviceHandler
 
 			if (ulSendLen < 0)
 			{
-				ERROR("send failed[%d]\n", -ulSendLen);	
+				ERROR2(FTM_RET_ERROR, "send failed[%d]\n", -ulSendLen);	
 				pSession->bStop = FTM_TRUE;
 			}
 		}
 		else if (ulReqLen < 0)
 		{
-			ERROR("recv failed.[%d]\n", -ulReqLen);
+			ERROR2(FTM_RET_ERROR, "recv failed.[%d]\n", -ulReqLen);
 		}
 	}
 
@@ -1176,20 +1176,20 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 	
 	if (sem_init(&pServer->xPublisher.xLock, 0, 1) < 0)
 	{
-		ERROR("Can't alloc semaphore!\n");
+		ERROR2(FTM_RET_ERROR, "Can't alloc semaphore!\n");
 		return	0;	
 	}
 
 	if (sem_init(&pServer->xPublisher.xSlot, 0, pServer->xConfig.xPublisher.ulMaxSubscribe) < 0)
 	{
-		ERROR("Can't alloc semaphore!\n");
+		ERROR2(FTM_RET_ERROR, "Can't alloc semaphore!\n");
 		return	0;	
 	}
 
 	pServer->xPublisher.hSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (pServer->xPublisher.hSocket == -1)
 	{
-		ERROR("Could not create socket\n");
+		ERROR2(FTM_RET_ERROR, "Could not create socket\n");
 		return	0;
 	}
 
@@ -1201,7 +1201,7 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 	nRet = bind( pServer->xPublisher.hSocket, (struct sockaddr *)&xLocalAddr, sizeof(xLocalAddr));
 	if (nRet < 0)
 	{
-		ERROR("bind failed.[%d]\n", nRet);
+		ERROR2(FTM_RET_COMM_SOCKET_BIND_FAILED, "bind failed.[%d]\n", nRet);
 		return	0;
 	}
 
@@ -1267,14 +1267,14 @@ FTM_RET	FTOM_SERVER_addSubscribeSession
 	nRet =sem_timedwait(&pServer->xPublisher.xSlot, &xTimeout);
 	if (nRet != 0)
 	{
-		ERROR("Session is full!\n");
+		ERROR2(FTM_RET_COMM_SESSION_IS_FULL, "Session is full!\n");
 		return	FTM_RET_COMM_SESSION_IS_FULL;
 	}
 
 	pSession = (FTOM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTOM_SESSION));
 	if (pSession == NULL)
 	{
-		ERROR("Not enough memory!n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!n");
 		sem_post(&pServer->xPublisher.xSlot);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
@@ -1341,14 +1341,14 @@ FTM_VOID_PTR	FTOM_SERVER_processPipe
 	pReq	= (FTOM_REQ_PARAMS_PTR)FTM_MEM_malloc(FTOM_DEFAULT_PACKET_SIZE);
 	if (pReq == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	0;	
 	}
 
 	pResp 	= (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(FTOM_DEFAULT_PACKET_SIZE);
 	if (pResp == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		FTM_MEM_free(pReq);
 		return	0;	
 	}
@@ -1426,14 +1426,14 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 	pReq	= (FTOM_REQ_PARAMS_PTR)FTM_MEM_malloc(FTOM_DEFAULT_PACKET_SIZE);
 	if (pReq == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	0;	
 	}
 
 	pResp 	= (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(FTOM_DEFAULT_PACKET_SIZE);
 	if (pResp == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		FTM_MEM_free(pReq);
 		return	0;	
 	}
@@ -1513,8 +1513,8 @@ FTM_RET	FTOM_SERVER_serviceCall
 		pSet++;
 	}
 
-	ERROR("FUNCTION NOT SUPPORTED\n");
-	ERROR("CMD : %08lx\n", pReq->xCmd);
+	ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "FUNCTION NOT SUPPORTED\n");
+	ERROR2(FTM_RET_INVALID_COMMAND,  "CMD : %08lx\n", pReq->xCmd);
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 

@@ -287,7 +287,7 @@ FTM_RET	FTOM_SHELL_CMD_node
 			xRet = FTOM_NODE_get(pArgv[1], &pNode);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("Can't found Node[%s]!\n", pArgv[1]);
+				ERROR2(xRet, "Can't found Node[%s]!\n", pArgv[1]);
 				break;
 			}
 
@@ -327,7 +327,7 @@ FTM_RET	FTOM_SHELL_CMD_ep
 			xRet = FTOM_EP_get(pArgv[1], &pEP);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("Can't found EP[%s]!\n", pArgv[1]);
+				ERROR2(xRet, "Can't found EP[%s]!\n", pArgv[1]);
 				break;
 			}
 
@@ -367,7 +367,7 @@ FTM_RET	FTOM_SHELL_CMD_trigger
 			xRet = FTOM_TRIGGER_get(pArgv[1], &pTrigger);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("Can't found Trigger[%s]!\n", pArgv[1]);
+				ERROR2(xRet, "Can't found Trigger[%s]!\n", pArgv[1]);
 				break;
 			}
 
@@ -407,7 +407,7 @@ FTM_RET	FTOM_SHELL_CMD_action
 			xRet = FTOM_ACTION_get(pArgv[1], &pAction);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("Can't found Action[%s]!\n", pArgv[1]);
+				ERROR2(xRet, "Can't found Action[%s]!\n", pArgv[1]);
 				break;
 			}
 
@@ -447,7 +447,7 @@ FTM_RET	FTOM_SHELL_CMD_rule
 			xRet = FTOM_RULE_get(pArgv[1], &pRule);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("Can't found Rule[%s]!\n", pArgv[1]);
+				ERROR2(xRet, "Can't found Rule[%s]!\n", pArgv[1]);
 				break;
 			}
 
@@ -703,7 +703,6 @@ FTM_RET	FTOM_SHELL_CMD_trace
 			}
 			else
 			{
-				FTM_TRACE_INFO	xInfo;
 				FTM_ULONG		ulIndex;
 
 				xRet = FTM_TRACE_getID(pArgv[1], &ulIndex);

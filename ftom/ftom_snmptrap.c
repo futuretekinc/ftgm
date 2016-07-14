@@ -97,7 +97,7 @@ FTM_RET	FTOM_SNMPTRAP_create
 	pSNMPTRAP = (FTOM_SNMPTRAP_PTR)FTM_MEM_malloc(sizeof(FTOM_SNMPTRAP));
 	if (pSNMPTRAP == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", sizeof(FTOM_SNMPTRAP));
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -207,13 +207,13 @@ FTM_RET FTOM_SNMPTRAP_start
 	pSNMPTRAP->pTransport = netsnmp_transport_open_server(pSNMPTRAP->xConfig.pName, pPort); 
 	if (pSNMPTRAP->pTransport == NULL) 
 	{
-		ERROR("Couldn't open %d -- errno %d(\"%s\")\n", 
+		ERROR2(FTM_RET_ERROR, "Couldn't open %d -- errno %d(\"%s\")\n", 
 				pSNMPTRAP->xConfig.usPort,
 				errno, strerror(errno));
 		FTOM_SNMPTRAP_closeSessions(pSNMPTRAP, pSessionList);
 		SOCK_CLEANUP;
 
-		return	0;
+		return	FTM_RET_ERROR;
 	} 
 	else 
 	{
@@ -227,10 +227,10 @@ FTM_RET FTOM_SNMPTRAP_start
 			FTOM_SNMPTRAP_closeSessions(pSNMPTRAP, pSessionList);
 			netsnmp_transport_free(pSNMPTRAP->pTransport);
 			pSNMPTRAP->pTransport = NULL;
-			ERROR("couldn't open snmp - %s", strerror(errno));
+			ERROR2(FTM_RET_ERROR, "couldn't open snmp - %s", strerror(errno));
 			SOCK_CLEANUP;
 
-			return	0;
+			return	FTM_RET_ERROR;
 		} 
 		else 
 		{
@@ -585,7 +585,7 @@ FTM_RET	FTOM_SNMPTRAP_addTrapOID
 	pTrap = (FTOM_SNMPTRAP_TRAP_INFO_PTR)FTM_MEM_malloc(sizeof(FTOM_SNMPTRAP_TRAP_INFO));
 	if (pTrap == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", sizeof(FTOM_SNMPTRAP_TRAP_INFO));
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
@@ -598,7 +598,7 @@ FTM_RET	FTOM_SNMPTRAP_addTrapOID
 	xRet = FTM_LIST_append(&pSNMPTRAP->xTrapCBList, pTrap);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("List append failed.!\n");
+		ERROR2(xRet, "Failed to append trap to list!\n");
 		FTM_MEM_free(pTrap);	
 	}
 
@@ -763,7 +763,7 @@ FTOM_SNMPTRAP_inputCB
 								pBuff = FTM_MEM_malloc(vars->val_len + 1);
 								if (pBuff == NULL)
 								{
-									ERROR("Not enough memory\n");	
+									ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", vars->val_len+1);
 									break;
 								}
 
@@ -810,7 +810,7 @@ FTOM_SNMPTRAP_inputCB
 						FTM_CHAR_PTR	pErrMsg = NULL;
 
 						snmp_error(pSession, NULL, NULL, &pErrMsg);
-						ERROR("Couldn't respond to inform pdu - %s\n", pErrMsg);
+						ERROR2(FTM_RET_ERROR, "Couldn't respond to inform pdu - %s\n", pErrMsg);
 						SNMP_FREE(pErrMsg);
 
 						snmp_free_pdu(reply);
@@ -822,13 +822,13 @@ FTOM_SNMPTRAP_inputCB
 
 	case NETSNMP_CALLBACK_OP_TIMED_OUT:
 		{
-			ERROR("Timeout: This shouldn't happen!\n");
+			ERROR2(FTM_RET_TIMEOUT, "Timeout: This shouldn't happen!\n");
 		}
         break;
 
     case NETSNMP_CALLBACK_OP_SEND_FAILED:
 		{
-			ERROR("Send Failed: This shouldn't happen either!\n");
+			ERROR2(FTM_RET_ERROR, "Send Failed: This shouldn't happen either!\n");
 		}
         break;
 
@@ -841,7 +841,7 @@ FTOM_SNMPTRAP_inputCB
 
     default:
 		{
-        	ERROR("Unknown operation (%d): This shouldn't happen!\n", nOP);
+        	ERROR2(FTM_RET_ERROR, "Unknown operation (%d): This shouldn't happen!\n", nOP);
 		}
         break;
     }
@@ -875,7 +875,7 @@ netsnmp_session * FTOM_SNMPTRAP_addSession
 	{
 		FTM_CHAR_PTR	pErrMsg = NULL;
 		snmp_error(&xSession, NULL, NULL, &pErrMsg);
-		ERROR("%s\n", pErrMsg);
+		ERROR2(FTM_RET_ERROR, "%s\n", pErrMsg);
 		SNMP_FREE(pErrMsg);
 	}
 	return pRet;
@@ -923,7 +923,7 @@ FTM_RET	FTOM_SNMPTRAP_receiveTrap
 	pRoot = cJSON_Parse(pMsg);
 	if (pRoot == NULL)
 	{
-		ERROR("Invalid trap message[%s]\n", pMsg);
+		ERROR2(FTM_RET_INVALID_ARGUMENTS,  "Invalid trap message[%s]\n", pMsg);
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
@@ -997,7 +997,7 @@ FTM_RET	FTOM_SNMPTRAP_receiveTrap
 			if (xRet != FTM_RET_OK)
 			{
 				xRet = FTM_RET_OBJECT_NOT_FOUND;
-				ERROR("Can't found EP[%s]\n", pEPID);	
+				ERROR2(xRet, "Can't found EP[%s]\n", pEPID);	
 				break;
 			}
 
@@ -1010,7 +1010,7 @@ FTM_RET	FTOM_SNMPTRAP_receiveTrap
 			if (pItem == NULL)
 			{
 				xRet = FTM_RET_INVALID_DATA;
-				ERROR("TRAP : Value is not exist.\n");
+				ERROR2(xRet, "TRAP : Value is not exist.\n");
 				break;
 			}
 			
@@ -1056,7 +1056,7 @@ FTM_RET	FTOM_SNMPTRAP_receiveTrap
 	
 			default:
 				{
-					ERROR("Invalid value type[%d].\n", pItem->type);
+					ERROR2(FTM_RET_INVALID_TYPE, "Invalid value type[%d].\n", pItem->type);
 				}
 				break;
 			}
@@ -1070,7 +1070,7 @@ FTM_RET	FTOM_SNMPTRAP_receiveTrap
 				}
 				else
 				{
-					ERROR("Invalid value type[%d].\n", pItem->type);
+					ERROR2(FTM_RET_INVALID_TYPE, "Invalid value type[%d].\n", pItem->type);
 				}
 			}
 
@@ -1116,7 +1116,7 @@ FTM_RET	FTOM_SNMPTRAP_receiveTrap
 			}
 			else
 			{
-				ERROR("Notify failed.\n");	
+				ERROR2(xRet, "Failed to get EP[%s].\n", pEPID);	
 			}
 		}
 		break;
@@ -1157,7 +1157,7 @@ FTM_RET	FTOM_SNMPTRAP_alert
 	pRoot = cJSON_Parse(pMsg);
 	if (pRoot == NULL)
 	{
-		ERROR("Invalid trap message[%s]\n", pMsg);
+		ERROR2(FTM_RET_INVALID_ARGUMENTS, "Invalid trap message[%s]\n", pMsg);
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
@@ -1208,7 +1208,7 @@ FTM_RET	FTOM_SNMPTRAP_alert
 	if(pItem == NULL)
 	{
 		xRet = FTM_RET_INVALID_DATA;
-		ERROR("TRAP : Value is not exist.\n");
+		ERROR2(xRet, "TRAP : Value is not exist.\n");
 		goto error;
 	}
 	
@@ -1253,7 +1253,7 @@ FTM_RET	FTOM_SNMPTRAP_alert
 	
 	default:
 		{
-			ERROR("Invalid value type[%d].\n", pItem->type);
+			ERROR2(FTM_RET_INVALID_TYPE, "Invalid value type[%d].\n", pItem->type);
 		}
 		break;
 	}
@@ -1284,7 +1284,7 @@ FTM_RET	FTOM_SNMPTRAP_alert
 	xRet = FTOM_SNMPTRAP_sendAlert(pSNMPTRAP, pEPID, &xData);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Notify failed.\n");	
+		ERROR2(xRet, "Failed to send alert.\n");	
 	}
 
 error:
@@ -1320,15 +1320,15 @@ FTM_RET	FTOM_SNMPTRAP_discovery
 	pRoot = cJSON_Parse(pMsg);
 	if (pRoot == NULL)
 	{
-		ERROR("Invalid trap message[%s]\n", pMsg);
+		ERROR2(FTM_RET_INVALID_ARGUMENTS, "Invalid trap message[%s]\n", pMsg);
 		return	FTM_RET_INVALID_ARGUMENTS;	
 	}
 
 	pItem = cJSON_GetObjectItem(pRoot, "id");
 	if ((pItem == NULL) || (pItem->type != cJSON_String))
 	{
-		ERROR("Invalid message format!\n");
 		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+		ERROR2(xRet, "Invalid message format!\n");
 		goto error;
 	}
 	memset(pName, 0, sizeof(pName));
@@ -1341,8 +1341,8 @@ FTM_RET	FTOM_SNMPTRAP_discovery
 	{ 
 		if (pItem->type != cJSON_String)
 		{
-			ERROR("Invalid message format!\n");
 			xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+			ERROR2(xRet, "Invalid message format!\n");
 			goto error;
 		}
 		strncpy(pDeviceIP, pItem->valuestring, sizeof(pDeviceIP) - 1);
@@ -1351,8 +1351,8 @@ FTM_RET	FTOM_SNMPTRAP_discovery
 	pItem = cJSON_GetObjectItem(pRoot, "mac");
 	if ((pItem == NULL) || (pItem->type != cJSON_String) || strlen(pItem->valuestring) != 17)
 	{
-		ERROR("Invalid message format!\n");
 		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+		ERROR2(xRet, "Invalid message format!\n");
 		goto error;
 	}
 
@@ -1369,8 +1369,8 @@ FTM_RET	FTOM_SNMPTRAP_discovery
 	pOIDs = cJSON_GetObjectItem(pRoot, "oids");
 	if ((pOIDs == NULL) || (pOIDs->type != cJSON_Array))
 	{
-		ERROR("Invalid message format!\n");
 		xRet = FTM_RET_SNMP_INVALID_MESSAGE_FORMAT;
+		ERROR2(xRet, "Invalid message format!\n");
 		goto error;
 	}
 

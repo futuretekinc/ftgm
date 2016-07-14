@@ -344,7 +344,7 @@ FTM_RET	FTDM_setDebugLevel
 )
 {
 	
-	FTM_TRACE_levelString(ulLevel);
+	FTM_TRACE_LEVEL_print(ulLevel, FTM_TRUE);
 
 	return	FTM_RET_OK;
 }
@@ -552,12 +552,12 @@ FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName)
 	MESSAGE("\t-v LEVEL\tSet message output mode.\n");
 	MESSAGE("PARAMETERS:\n");
 	MESSAGE("\t%8s %s\n", "LEVEL", "Output level");
-	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ALL, 	"all", 	"Output all message");
-	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_TRACE, "trace","Output trace message");
-	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_DEBUG, "debug","Output debug message");
-	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_INFO, 	"info", "Output information message");
-	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_WARN, 	"warn", "Output warning message");
-	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ERROR, "error","Output error message");
-	MESSAGE("\t%8s %lu:%8s - %s\n", "        ", FTM_TRACE_LEVEL_FATAL, "fatal","Output fatal message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ALL, 	"all", 	"Output all message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_TRACE, "trace","Output trace message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_DEBUG, "debug","Output debug message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_INFO, 	"info", "Output information message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_WARN, 	"warn", "Output warning message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ERROR, "error","Output error message");
+	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_FATAL, "fatal","Output fatal message");
 }
 

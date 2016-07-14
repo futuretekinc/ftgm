@@ -86,13 +86,13 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_preStart
 	pNode->xSockFD = socket(AF_INET, SOCK_DGRAM, 0);
 	if (pNode->xSockFD < 0)
 	{
-		ERROR("Can't open datagram socket!\n");
+		ERROR2(FTM_RET_ERROR, "Can't open datagram socket!\n");
 		return	FTM_RET_ERROR;
 	}
 	nRet = bind(pNode->xSockFD, (struct sockaddr *)&pNode->xLocal, sizeof(pNode->xLocal));
 	if (nRet < 0)
 	{
-		ERROR("Can't bind local address!\n");	
+		ERROR2(FTM_RET_ERROR, "Can't bind local address!\n");	
 		return	FTM_RET_ERROR;
 	}
 
@@ -138,13 +138,13 @@ FTM_VOID_PTR FTOM_NODE_FINSC_HHTW_process
 	xRet = FTM_TIMER_initS(&xReportTimer, pNode->xCommon.xInfo.ulReportInterval);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Report timer init failed!\n");	
+		ERROR2(xRet, "Report timer init failed!\n");	
 	}
 
 	nRet = pthread_create(&pData->xDataProcess, NULL, FTOM_NODE_FINSC_HHTW_dataProcess, pNode);
 	if (nRet < 0)
 	{
-		ERROR("HHTW data process not started!\n");	
+		ERROR2(FTM_RET_CANT_CREATE_THREAD, "HHTW data process not started!\n");	
 	}
 
 	while(!pNode->xCommon.bStop)
@@ -181,7 +181,7 @@ FTM_VOID_PTR FTOM_NODE_FINSC_HHTW_process
 		xRet = FTM_TIMER_addS(&xReportTimer, pNode->xCommon.xInfo.ulReportInterval);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Report timer update failed!\n");	
+			ERROR2(xRet, "Report timer update failed!\n");	
 		}
 	} 
 

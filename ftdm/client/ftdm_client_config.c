@@ -121,13 +121,11 @@ FTM_RET	FTDMC_CFG_load
 		xRet = FTM_CONFIG_ITEM_getItemString(&xEPTest, "start_time", pTimeString, sizeof(pTimeString) - 1);
 		if (xRet == FTM_RET_OK)
 		{
-			strptime(pTimeString, "%Y-%m-%d %H:%M:%S", &pConfig->xDiagnostic.xStartTM);
 		}
 	
 		xRet = FTM_CONFIG_ITEM_getItemString(&xEPTest, "end_time", pTimeString, sizeof(pTimeString) - 1);
 		if (xRet == FTM_RET_OK)
 		{
-			strptime(pTimeString, "%Y-%m-%d %H:%M:%S", &pConfig->xDiagnostic.xEndTM);
 		}
 	}
 	

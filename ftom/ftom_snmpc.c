@@ -8,7 +8,7 @@
 #include "ftom_node_snmp_client.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
-#include "ftom_snmptrapd.h"
+#include "ftom_snmptrap.h"
 
 #undef	__MODULE__
 #define	__MODULE__	FTOM_TRACE_MODULE_SNMPC
@@ -323,7 +323,7 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 					xRet = FTOM_SNMPC_set( pClient, pMsg->ulVersion, pMsg->pURL, pMsg->pCommunity, &pMsg->xOID, pMsg->ulTimeout, &pMsg->xValue);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR("Failed to snmp get!\n");	
+						ERROR2(xRet, "Failed to snmp get!\n");	
 						break;
 					}
 
@@ -948,15 +948,15 @@ FTM_RET	FTOM_SNMPC_get
 	pSession = snmp_open(&xSession);
 	if (pSession == NULL)
 	{
-		ERROR("SNMP open error - %s\n", snmp_errstring(snmp_errno));
 		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
+		ERROR2(xRet, "SNMP open error - %s\n", snmp_errstring(snmp_errno));
 	}
 
 	pReqPDU = snmp_pdu_create(SNMP_MSG_GET);	/* send the first GET */
 	if (pReqPDU == NULL)
 	{
-		ERROR("SNMP PDU creation error - %s\n", snmp_errstring(snmp_errno));
 		xRet = FTM_RET_SNMP_ERROR;
+		ERROR2(xRet, "SNMP PDU creation error - %s\n", snmp_errstring(snmp_errno));
 
 		goto finish;
 	}
@@ -967,8 +967,8 @@ FTM_RET	FTOM_SNMPC_get
 	nRet = snmp_synch_response(pSession, pReqPDU, &pRespPDU);
 	if ((nRet != STAT_SUCCESS) || (pRespPDU->errstat != SNMP_ERR_NOERROR))
 	{
-		ERROR("SNMP reponse error!\n");
 		xRet = FTM_RET_SNMP_ERROR;
+		ERROR2(xRet, "SNMP reponse error!\n");
 		goto finish;
 	}
 
@@ -1043,7 +1043,7 @@ FTM_RET	FTOM_SNMPC_get
 		default:
 			{
 
-				ERROR("Invalid data type[%d]!\n", pVariable->type);
+				ERROR2(FTM_RET_INVALID_TYPE, "Invalid data type[%d]!\n", pVariable->type);
 				FTOM_SNMPC_dumpPDU(pRespPDU);
 				xRet = FTM_RET_INVALID_TYPE;
 			}
@@ -1102,8 +1102,8 @@ FTM_RET	FTOM_SNMPC_set
 		pReqPDU = snmp_pdu_create(SNMP_MSG_SET);	/* send the first GET */
 		if (pReqPDU == NULL)
 		{
-			ERROR("SNMP PDU creation error - %s\n", snmp_errstring(snmp_errno));
-			xRet = FTM_RET_SNMP_ERROR;
+			xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+			ERROR2(xRet, "SNMP PDU creation error - %s\n", snmp_errstring(snmp_errno));
 		}
 		else
 		{
@@ -1136,8 +1136,8 @@ FTM_RET	FTOM_SNMPC_set
 	}
 	else
 	{
-		ERROR("SNMP open error - %s\n", snmp_errstring(snmp_errno));
 		xRet = FTM_RET_SNMP_CANT_OPEN_SESSION;
+		ERROR2(xRet, "Failed to open SNMP - %s\n", snmp_errstring(snmp_errno));
 	}
 
 	return	xRet;
@@ -1159,7 +1159,7 @@ FTM_RET	FTOM_SNMPC_dumpPDU
 		memset(pBuff, 0, sizeof(pBuff));
 		for(i = 0 ; i < vars->name_length ; i++)
 		{
-			ulLen += snprintf(&pBuff[ulLen], sizeof(pBuff) - ulLen, ".%d", vars->name[i]);
+			ulLen += snprintf(&pBuff[ulLen], sizeof(pBuff) - ulLen, ".%lu", vars->name[i]);
 		}
 		TRACE("%6s : %s\n", "NAME", pBuff);
 

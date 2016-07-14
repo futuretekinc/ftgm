@@ -21,8 +21,8 @@ typedef	struct
 	struct
 	{
 		FTM_LIST	xEPList;
-		struct tm	xStartTM;
-		struct tm	xEndTM;
+		FTM_TIME	xStartTM;
+		FTM_TIME	xEndTM;
 	}	xDiagnostic;
 
 }	FTDMC_CFG, _PTR_ FTDMC_CFG_PTR;
