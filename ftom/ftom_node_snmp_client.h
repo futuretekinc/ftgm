@@ -11,6 +11,7 @@
 typedef	struct  FTOM_NODE_SNMPC_STRUCT
 {
 	FTOM_NODE				xCommon;
+	FTM_CHAR				pIP[FTM_URL_LEN+1];
 	struct snmp_session 	*pSession;		/* SNMP session data */
 	FTM_LOCK_PTR			pLock;
 }	FTOM_NODE_SNMPC, _PTR_ FTOM_NODE_SNMPC_PTR;

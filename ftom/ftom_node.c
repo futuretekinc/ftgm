@@ -716,6 +716,11 @@ FTM_RET	FTOM_NODE_start
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
+	if ((pNode->pClass != NULL) && (pNode->pClass->fPrestart != NULL))
+	{
+		pNode->pClass->fPrestart(pNode);
+	}
+
 	if ((pNode->pClass != NULL) && (pNode->pClass->fStart != NULL))
 	{
 		return	pNode->pClass->fStart(pNode);
@@ -724,20 +729,12 @@ FTM_RET	FTOM_NODE_start
 	{
 		FTM_ULONG	ulCount = 0;
 
-		if ((pNode->pClass != NULL) && (pNode->pClass->fPrestart != NULL))
-		{
-			pNode->pClass->fPrestart(pNode);
-		}
-
-
-
 		if ((pNode->pClass != NULL) && (pNode->pClass->fProcess != NULL))
 		{
 			nRet = pthread_create(&pNode->xThread, NULL, pNode->pClass->fProcess, pNode);
 		}
 		else
 		{
-			TRACE("Run default process\n");
 			nRet = pthread_create(&pNode->xThread, NULL, FTOM_NODE_process, pNode);
 		}
 

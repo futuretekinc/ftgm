@@ -7,6 +7,9 @@
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_NODE
+
 FTOM_NODE_CLASS	xNodeClassGeneralSNMP = 
 {
 	.pModel 		= "general",
@@ -122,7 +125,6 @@ FTM_RET	FTOM_NODE_SNMPC_init
 )
 {
 	FTM_RET				xRet;
-	FTM_ULONG			ulEPCount;
 
 	ASSERT(pNode != NULL);
 
@@ -133,7 +135,10 @@ FTM_RET	FTOM_NODE_SNMPC_init
 		return	xRet;	
 	}
 
-	xRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, 0, &ulEPCount);
+	strncpy(pNode->pIP, pNode->xCommon.xInfo.xOption.xSNMP.pURL, FTM_URL_LEN);
+#if 0
+	FTM_ULONG			ulEPCount;
+	xRet = FTOM_NODE_SNMPC_getEPCount(pNode, 0, &ulEPCount);
 	if (xRet != FTM_RET_OK)
 	{
 		TRACE("Node[%s] get EP count failed.!\n", pNode->xCommon.xInfo.pDID);
@@ -179,6 +184,7 @@ FTM_RET	FTOM_NODE_SNMPC_init
 			FTM_LIST_append(&pNode->xCommon.xEPList, pEP);
 		}
 	}
+#endif
 	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
 
 	return	FTM_RET_OK;
@@ -245,7 +251,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPCount
 		return	xRet;	
 	}
 
-	xRet = FTOM_SNMPC_getEPCount(pService->pData, pNode->xCommon.xInfo.xOption.xSNMP.pURL, xType, pulCount);
+	xRet = FTOM_SNMPC_getEPCount(pService->pData, pNode->pIP, xType, pulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to get SNMP client count.\n");	
@@ -283,11 +289,12 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 	FTM_LOCK_set(pNode->pLock);
 	FTM_LOCK_set(pEP->pLock);
 
-	xValue.xType = xDataType;
+	FTM_VALUE_init(&xValue, xDataType);
+
 	xRet = FTOM_SNMPC_get( 
 				pService->pData,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&pEP->xOption.xSNMP.xOID,
 				pNode->xCommon.xInfo.ulTimeout,
@@ -296,6 +303,8 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 	{
 		xRet = FTM_EP_DATA_initVALUE(pData, &xValue);
 	}
+
+	FTM_VALUE_final(&xValue);
 
 	FTM_LOCK_reset(pEP->pLock);
 	FTM_LOCK_reset(pNode->pLock);
@@ -325,7 +334,7 @@ FTM_RET	FTOM_NODE_SNMPC_setEPData
 	xRet = FTOM_SNMPC_set(
 				pService->pData,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&pEP->xOption.xSNMP.xOID,
 				pNode->xCommon.xInfo.ulTimeout,
@@ -359,7 +368,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPDataAsync
 				pNode->xCommon.xInfo.pDID, 
 				pEP->xInfo.pEPID,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&pEP->xOption.xSNMP.xOID,
 				pNode->xCommon.xInfo.ulTimeout,
@@ -395,7 +404,7 @@ FTM_RET	FTOM_NODE_SNMPC_setEPDataAsync
 				pNode->xCommon.xInfo.pDID, 
 				pEP->xInfo.pEPID,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&pEP->xOption.xSNMP.xOID,
 				pNode->xCommon.xInfo.ulTimeout,
@@ -617,7 +626,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 	xRet = FTOM_SNMPC_get(
 				pService->pData, 
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&xOID,
 				pNode->xCommon.xInfo.ulTimeout,
@@ -680,7 +689,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 	xRet = FTOM_SNMPC_get(
 				pService->pData, 
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&xOID,
 				pNode->xCommon.xInfo.ulTimeout,
@@ -737,7 +746,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPState
 	xRet = FTOM_SNMPC_get(
 				pService->pData, 
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&xOID,
 				pNode->xCommon.xInfo.ulTimeout,
@@ -793,7 +802,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
 	xRet = FTOM_SNMPC_get(
 				pService->pData, 
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
-				pNode->xCommon.xInfo.xOption.xSNMP.pURL,
+				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&xOID,
 				pNode->xCommon.xInfo.ulTimeout,

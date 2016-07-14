@@ -2,6 +2,7 @@
 #include "ftom_message_queue.h"
 #include "ftm_list.h"
 #include "ftom_node_class.h"
+#include "ftom_node_snmp_client.h"
 
 #undef	__MODULE__
 #define	__MODULE__ FTOM_TRACE_MODULE_DISCOVERY
@@ -223,7 +224,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 				{
 					FTOM_MSG_DISCOVERY_INFO_PTR	pMsg = (FTOM_MSG_DISCOVERY_INFO_PTR)pCommonMsg;
 					FTOM_NODE_CLASS_PTR	pClass;
-					FTOM_NODE_PTR		pNode;
+					FTOM_NODE_SNMPC_PTR	pNode;
 					FTM_NODE			xNodeInfo;
 					FTM_ULONG			i, j, ulCount;
 
@@ -248,7 +249,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					}
 
 
-					xRet = FTOM_NODE_CLASS_get(xNodeInfo.pModel, xNodeInfo.xType, &pClass);
+					xRet = FTOM_NODE_SNMPC_getClass(xNodeInfo.pModel, &pClass);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR("Failed to get Node[%s] class!\n", xNodeInfo.pModel);
@@ -258,7 +259,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					strcpy(xNodeInfo.pDID, pMsg->pDID);
 					strcpy(xNodeInfo.xOption.xSNMP.pURL, pMsg->pIP);
 
-					xRet = pClass->fCreate(&xNodeInfo, &pNode);
+					xRet = pClass->fCreate(&xNodeInfo, (FTOM_NODE_PTR _PTR_)&pNode);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR("Failed to create Node[%s]!\n", xNodeInfo.pModel);
@@ -268,12 +269,12 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 					strcpy(pNode->pIP, pMsg->pIP);
 
 					FTM_LIST_append(&pDiscovery->xNodeList, pNode);
-					TRACE("NODE[%s] found.\n", pNode->xInfo.pDID);
+					TRACE("NODE[%s] found.\n", pNode->xCommon.xInfo.pDID);
 					for(i = 0 ; i < pMsg->ulCount ; i++)
 					{
 						ulCount = 0;
 
-						xRet = FTOM_discoveryEPCount(pNode, pMsg->pTypes[i], &ulCount);
+						xRet = FTOM_discoveryEPCount((FTOM_NODE_PTR)pNode, pMsg->pTypes[i], &ulCount);
 						TRACE("Discovery EP Count : %lu\n", ulCount);
 						if (xRet == FTM_RET_OK)
 						{
@@ -282,7 +283,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 								FTM_EP	xEPInfo;
 
 								FTM_EP_setDefault(&xEPInfo);
-								xRet = FTOM_discoveryEP(pNode, pMsg->pTypes[i], j, &xEPInfo);
+								xRet = FTOM_discoveryEP((FTOM_NODE_PTR)pNode, pMsg->pTypes[i], j, &xEPInfo);
 								if (xRet == FTM_RET_OK)
 								{
 									FTM_EP_PTR	pEP;

@@ -14,6 +14,11 @@
 #define	__MODULE__	FTOM_TRACE_MODULE_SNMPC
 
 FTM_VOID_PTR	FTOM_SNMPC_process(FTM_VOID_PTR pData);
+static
+FTM_RET	FTOM_SNMPC_dumpPDU
+(
+	netsnmp_pdu 	*pPDU
+) ;
 
 FTM_RET	FTOM_SNMPC_create
 (
@@ -1037,7 +1042,9 @@ FTM_RET	FTOM_SNMPC_get
 			break;
 		default:
 			{
+
 				ERROR("Invalid data type[%d]!\n", pVariable->type);
+				FTOM_SNMPC_dumpPDU(pRespPDU);
 				xRet = FTM_RET_INVALID_TYPE;
 			}
 		}
@@ -1135,3 +1142,46 @@ FTM_RET	FTOM_SNMPC_set
 
 	return	xRet;
 }
+
+FTM_RET	FTOM_SNMPC_dumpPDU
+(
+	netsnmp_pdu 	*pPDU
+) 
+{
+    netsnmp_variable_list *vars;
+
+	for(vars = pPDU->variables; vars ; vars = vars->next_variable)
+	{
+		int	i;
+		FTM_CHAR	pBuff[1024];
+		FTM_ULONG	ulLen = 0;
+
+		memset(pBuff, 0, sizeof(pBuff));
+		for(i = 0 ; i < vars->name_length ; i++)
+		{
+			ulLen += snprintf(&pBuff[ulLen], sizeof(pBuff) - ulLen, ".%d", vars->name[i]);
+		}
+		TRACE("%6s : %s\n", "NAME", pBuff);
+
+		switch(vars->type)
+		{
+		case	ASN_OBJECT_ID:
+			{
+				memset(pBuff, 0, sizeof(pBuff));
+				snprint_objid(pBuff, sizeof(pBuff) - 1, vars->val.objid, vars->val_len / sizeof(oid));
+			}
+			break;
+
+		case	ASN_OCTET_STR:
+			{
+				memcpy(pBuff, vars->val.string, vars->val_len);
+				pBuff[vars->val_len] = 0;
+			}
+			break;
+		}
+		TRACE("%6s : %s\n", "VALUE", pBuff);
+	}
+
+	return	FTM_RET_OK;
+}
+
