@@ -4,9 +4,9 @@
 #include <mosquitto.h>
 #include "ftm.h"
 #include "ftom_message_queue.h"
-#include "ftom_mqtt_client.h"
+#include "ftom_mqttc.h"
 #include "ftom_mqtt_client_tpgw.h"
-#include "ftom_mqtt_client_ft.h"
+#include "ftom_mqttc_ft.h"
 
 #undef	__MODULE__
 #define	__MODULE__	FTOM_TRACE_MODULE_MQTTC

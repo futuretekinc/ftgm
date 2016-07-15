@@ -57,7 +57,6 @@ typedef	struct FTOM_NODE_STRUCT
 		FTM_ULONG	ulInvalidFrame;
 	}	xStatistics;
 
-	//FTM_CHAR				pIP[32];
 	struct FTOM_NODE_CLASS_STRUCT _PTR_	pClass;
 }	FTOM_NODE, _PTR_ FTOM_NODE_PTR;
 

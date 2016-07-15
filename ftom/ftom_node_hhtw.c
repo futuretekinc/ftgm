@@ -5,7 +5,7 @@
 #include "ftom.h"
 #include "ftom_message_queue.h"
 #include "ftom_node_class.h"
-#include "ftom_node_fins_client.h"
+#include "ftom_node_finsc.h"
 
 #define	FTOM_NODE_FINSC_HHTW_REG_COUNT	14
 

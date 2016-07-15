@@ -14,13 +14,13 @@ FTOM_SRCS=ftom_main.c \
 		ftom_service.c\
 		ftom_snmpc.c\
 		ftom_snmptrap.c\
-		ftom_node_snmp_client.c\
-		ftom_node_fins_client.c\
-		ftom_node_fins_client_hhtw.c\
-		ftom_node_virtual.c\
-		ftom_node_virtual_fte_es7.c\
+		ftom_node_snmpc.c\
 		ftom_node_fte.c\
 		ftom_node_ftm.c\
+		ftom_node_finsc.c\
+		ftom_node_hhtw.c\
+		ftom_node_virtual.c\
+		ftom_node_fte_es7v.c\
 		ftom_discovery.c
 
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)
@@ -38,8 +38,6 @@ LIB_FTOM_SRCS= ftom_msg.c \
 			   ftom_trigger.c\
 			   ftom_action.c\
 			   ftom_rule.c\
-			   ftom_mqtt_client.c\
-			   ftom_mqtt_client_ft.c\
 			   ftom_utils.c\
 			   ftom_logger.c\
 			   ftom_session.c\
@@ -53,7 +51,7 @@ LIB_FTOMC_SRCS= ftom_client.c \
 LIB_FTOMC_OBJS=$(LIB_FTOMC_SRCS:.c=.o)
 
 LIB_HHTW=libhhtw
-LIB_HHTW_SRCS= ftom_node_fins_client_hhtw.c
+LIB_HHTW_SRCS= ftom_node_hhtw.c
 LIB_HHTW_OBJS=$(LIB_HHTW_SRCS:.c=.o)
 
 SUBDIR=client cmdline cgi

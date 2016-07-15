@@ -5,7 +5,6 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
 #include "ftom.h"
-#include "ftom_node_snmp_client.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 #include "ftom_snmptrap.h"

@@ -1,8 +1,7 @@
+#include "ftom.h"
 #include "ftom_discovery.h"
 #include "ftom_message_queue.h"
-#include "ftm_list.h"
-#include "ftom_node_class.h"
-#include "ftom_node_snmp_client.h"
+#include "ftom_node_snmpc.h"
 
 #undef	__MODULE__
 #define	__MODULE__ FTOM_TRACE_MODULE_DISCOVERY

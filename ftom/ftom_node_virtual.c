@@ -2,7 +2,7 @@
 #include "ftom.h"
 #include "ftom_node_class.h"
 #include "ftom_node_virtual.h"
-#include "ftom_node_virtual_fte_es7.h"
+#include "ftom_node_fte_es7v.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 

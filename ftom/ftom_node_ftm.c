@@ -1,7 +1,5 @@
 #include "ftom.h"
-#include "ftom_node_class.h"
-#include "ftom_node_snmp_client.h"
-#include "ftom_dmc.h"
+#include "ftom_node_snmpc.h"
 #include "ftom_ep.h"
 
 FTM_RET	FTOM_NODE_FTM_init

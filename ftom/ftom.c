@@ -12,7 +12,6 @@
 #include "ftom_server.h"
 #include "ftom_dmc.h"
 #include "ftom_shell.h"
-#include "ftom_mqtt_client.h"
 #include "ftom_msg.h"
 #include "ftom_message_queue.h"
 #include "ftom_trigger.h"
@@ -21,7 +20,6 @@
 #include "ftom_discovery.h"
 #include "ftom_utils.h"
 #include "ftom_logger.h"
-#include "ftom_node_snmp_client.h"
 
 FTM_VOID_PTR	FTOM_process
 (

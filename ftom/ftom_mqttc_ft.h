@@ -3,7 +3,7 @@
 
 #include "ftm.h"
 #include "ftom.h"
-#include "ftom_mqtt_client.h"
+#include "ftom_mqttc.h"
 
 FTM_VOID FTOM_MQTT_CLIENT_FT_connectCB
 (

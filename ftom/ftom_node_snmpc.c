@@ -1,7 +1,7 @@
 #include <string.h>
 #include "ftom.h"
 #include "ftom_node_class.h"
-#include "ftom_node_snmp_client.h"
+#include "ftom_node_snmpc.h"
 #include "ftom_node_fte.h"
 #include "ftom_node_ftm.h"
 #include "ftom_dmc.h"

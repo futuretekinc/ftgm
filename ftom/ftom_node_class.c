@@ -1,6 +1,6 @@
 #include "ftom_node_class.h"
-#include "ftom_node_snmp_client.h"
-#include "ftom_node_fins_client.h"
+#include "ftom_node_snmpc.h"
+#include "ftom_node_finsc.h"
 #include "ftom_node_virtual.h"
 
 FTM_RET	FTOM_NODE_CLASS_get

@@ -6,8 +6,8 @@
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 #include "ftom_node_class.h"
-#include "ftom_node_fins_client.h"
-#include "ftom_node_fins_client_hhtw.h"
+#include "ftom_node_finsc.h"
+#include "ftom_node_hhtw.h"
 
 static 
 FTOM_NODE_CLASS_PTR	pClasses[1] =
