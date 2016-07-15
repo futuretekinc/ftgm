@@ -5,15 +5,6 @@
 #include "ftm.h"
 #include "ftom_ep.h"
 
-typedef	enum
-{
-	FTOM_NODE_TYPE_SNMPC,
-	FTOM_NODE_TYPE_MBC,
-	FTOM_NODE_TYPE_FINSC,
-	FTOM_NODE_TYPE_LORAM,
-	FTOM_NODE_TYPE_VIRTUAL
-} FTOM_NODE_TYPE, _PTR_ FTOM_NODE_TYPE_PTR;
-
 typedef	FTM_ULONG		FTOM_NODE_STATE;
 
 struct FTM_NODE_CLASS_STRUCT ;
@@ -32,7 +23,7 @@ typedef	struct FTOM_NODE_STRUCT
 
 	FTM_BOOL		bStop;
 	pthread_t		xThread;
-	pthread_mutex_t	xMutexLock;
+	FTM_LOCK		xLock;
 	FTOM_NODE_STATE	xState;
 	FTOM_MSG_QUEUE	xMsgQ;
 
@@ -73,6 +64,7 @@ FTM_RET FTOM_NODE_final
 FTM_RET	FTOM_NODE_create
 (
 	FTM_NODE_PTR 		pInfo, 
+	FTM_BOOL			nNew,
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 

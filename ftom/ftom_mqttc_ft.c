@@ -70,7 +70,7 @@ FTM_VOID FTOM_MQTT_CLIENT_FT_messageCB
 	FTOM_MQTT_CLIENT_FT_topicParser(pTopic, pIDs, 10, &nIDs);
 	if ((nIDs != 5) || (strcmp(pClient->pDID, pIDs[3]) != 0))
 	{
-		ERROR("Invalid Topic[%s]\n", pMessage->topic);
+		ERROR2(FTM_RET_MQTT_INVALID_TOPIC, "Invalid Topic[%s]\n", pMessage->topic);
 		return;
 	}
 
@@ -81,7 +81,7 @@ FTM_VOID FTOM_MQTT_CLIENT_FT_messageCB
 		xRet = FTOM_MQTT_CLIENT_FT_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Invalid message.\n");
+			ERROR2(xRet, "Invalid message.\n");
 			return;
 		}
 
@@ -89,7 +89,7 @@ FTM_VOID FTOM_MQTT_CLIENT_FT_messageCB
 		if (xRet != FTM_RET_OK)
 		{
 			FTOM_MSG_destroy(&pMsg);
-			ERROR("Message send failed.\n");
+			ERROR2(xRet, "Message send failed.\n");
 			return;
 		}
 	}

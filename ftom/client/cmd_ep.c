@@ -114,7 +114,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 		xRet = FTOM_CLIENT_EP_create(pClient, &xInfo, &xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+			ERROR2(xRet, "Failed to create EP[%s]\n", pArgv[2]);
 		}
 
 	}
@@ -131,7 +131,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 		xRet = FTOM_CLIENT_EP_destroy(pClient, pEPID);	
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+			ERROR2(xRet, "Failed to destroy EP[%s]\n", pArgv[2]);
 		}
 	}
 	else if (strcmp(pArgv[1], "list") == 0)
@@ -244,7 +244,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 						}
 						else
 						{
-							ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+							ERROR2(xRet, "Failed to get EP[%s] info\n", pEPIDs[i]);
 						}
 					}
 	
@@ -470,7 +470,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 
 	if (nArgc < 2)
 	{
-		ERROR("Invalid arguments[nArgc = %d]\n", nArgc);	
+		ERROR2(FTM_RET_INVALID_ARGUMENTS, "Invalid arguments[nArgc = %d]\n", nArgc);	
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
@@ -481,7 +481,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 
 		if (nArgc != 6)
 		{
-			ERROR("Invalid arguments[nArgc = %d]\n", nArgc);	
+			ERROR2(FTM_RET_INVALID_ARGUMENTS, "Invalid arguments[nArgc = %d]\n", nArgc);	
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
@@ -535,7 +535,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 		}
 		else
 		{
-			ERROR("EndPoint data appending failed [ ERROR = %08lx ]\n", xRet);	
+			ERROR2(xRet, "EndPoint data appending failed.\n");	
 		}
 	}
 	else if (strcasecmp(pArgv[1], "del") == 0)
@@ -632,7 +632,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PT
 				}
 				else
 				{
-					ERROR("EndPoint data deleting failed [ ERROR = %08lx ]\n", xRet);	
+					ERROR2(xRet, "EndPoint data deleting failed.\n");	
 				}
 */
 			}

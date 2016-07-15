@@ -580,7 +580,7 @@ FTM_RET	FTOM_TASK_sync
 		pDIDs = (FTM_DID_PTR)FTM_MEM_malloc(sizeof(FTM_DID) * ulCount);
 		if (pDIDs != NULL)
 		{
-			xRet = FTOM_DB_NODE_getDIDList(pDIDs, 0, ulCount,  &ulCount);
+			xRet = FTOM_DMC_NODE_getDIDList(pService->pData, pDIDs, 0, ulCount,  &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i  < ulCount; i++)	
@@ -588,7 +588,7 @@ FTM_RET	FTOM_TASK_sync
 					FTM_NODE		xInfo;
 					FTOM_NODE_PTR	pNode;
 
-					xRet = FTOM_DB_NODE_getInfo(pDIDs[i], &xInfo);
+					xRet = FTOM_DMC_NODE_get(pService->pData, pDIDs[i], &xInfo);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet,"Failed to get Node[%s] information!\n", pDIDs[i]);
@@ -656,7 +656,7 @@ FTM_RET	FTOM_TASK_sync
 		pEPIDs = (FTM_EPID_PTR)FTM_MEM_malloc(sizeof(FTM_EPID) * ulCount);
 		if (pEPIDs != NULL)
 		{
-			xRet = FTOM_DB_EP_getEPIDList(pEPIDs, 0, ulCount,  &ulCount);
+			xRet = FTOM_DMC_EP_getEPIDList(pService->pData, pEPIDs, 0, ulCount,  &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i < ulCount ; i++)
@@ -665,7 +665,7 @@ FTM_RET	FTOM_TASK_sync
 					FTM_EP			xInfo;
 					FTOM_EP_PTR		pEP;
 			
-					xRet = FTOM_DB_EP_getInfo(pEPIDs[i], &xInfo);
+					xRet = FTOM_DMC_EP_get(pService->pData, pEPIDs[i], &xInfo);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet,"Failed to get EP[%s] information!\n", pEPIDs[i]);
@@ -709,7 +709,7 @@ FTM_RET	FTOM_TASK_sync
 		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
 		if (pIDs != NULL)
 		{
-			xRet = FTOM_DB_TRIGGER_getIDList(pIDs, 0, ulCount, &ulCount);
+			xRet = FTOM_DMC_TRIGGER_getIDList(pService->pData, pIDs, 0, ulCount, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i < ulCount ; i++)
@@ -717,7 +717,7 @@ FTM_RET	FTOM_TASK_sync
 					FTM_TRIGGER			xInfo;
 					FTOM_TRIGGER_PTR	pTrigger = NULL;
 
-					xRet = FTOM_DB_TRIGGER_getInfo(pIDs[i], &xInfo);
+					xRet = FTOM_DMC_TRIGGER_get(pService->pData, pIDs[i], &xInfo);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet,"Failed to get Trigger[%s] information!\n", pIDs[i]);
@@ -755,7 +755,7 @@ FTM_RET	FTOM_TASK_sync
 		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
 		if (pIDs != NULL)
 		{
-			xRet = FTOM_DB_ACTION_getIDList(pIDs, 0, ulCount, &ulCount);
+			xRet = FTOM_DMC_ACTION_getIDList(pService->pData, pIDs, 0, ulCount, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i < ulCount ; i++)
@@ -763,7 +763,7 @@ FTM_RET	FTOM_TASK_sync
 					FTM_ACTION		xInfo;
 					FTOM_ACTION_PTR pAction = NULL;
 
-					xRet = FTOM_DB_ACTION_getInfo(pIDs[i], &xInfo);
+					xRet = FTOM_DMC_ACTION_get(pService->pData, pIDs[i], &xInfo);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet,"Failed to get Action[%s] information!\n", pIDs[i]);
@@ -802,7 +802,7 @@ FTM_RET	FTOM_TASK_sync
 		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
 		if (pIDs != NULL)
 		{
-			xRet = FTOM_DB_RULE_getIDList(pIDs, 0, ulCount, &ulCount);
+			xRet = FTOM_DMC_RULE_getIDList(pService->pData, pIDs, 0, ulCount, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i < ulCount ; i++)
@@ -810,7 +810,7 @@ FTM_RET	FTOM_TASK_sync
 					FTM_RULE		xInfo;
 					FTOM_RULE_PTR	pRule = NULL;
 
-					xRet = FTOM_DB_RULE_getInfo(pIDs[i], &xInfo);
+					xRet = FTOM_DMC_RULE_get(pService->pData, pIDs[i], &xInfo);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet,"Failed to get Rule[%s] information!\n", pIDs[i]);
@@ -1340,341 +1340,8 @@ FTM_RET	FTOM_getDID
 }
 
 /******************************************************************
- * Node management interface
- ******************************************************************/
-FTM_RET	FTOM_DB_NODE_add
-(
-	FTM_NODE_PTR 	pInfo
-)
-{
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_NODE_add(pService->pData, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to add Node[%s] to DB.\n", pInfo->pDID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_NODE_remove
-(
-	FTM_CHAR_PTR	pDID
-)
-{
-	ASSERT(pDID != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_NODE_remove(pService->pData, pDID);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to remove Node[%s] from DB.\n", pDID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_NODE_count
-(
-	FTM_ULONG_PTR	pulCount
-)
-{
-	ASSERT(pulCount != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_NODE_count(pService->pData, pulCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get node count from DB.\n");
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET FTOM_DB_NODE_getDIDList
-(
-	FTM_DID_PTR		pDIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-)
-{
-	ASSERT(pDIDs != NULL);
-	ASSERT(pulCount != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_NODE_getDIDList(pService->pData, pDIDs, ulIndex, ulMaxCount, pulCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get node id list from DB.\n");			
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-	
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_NODE_getInfo
-(
-	FTM_CHAR_PTR	pDID,
-	FTM_NODE_PTR	pInfo
-)
-{
-	ASSERT(pDID != NULL);
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_NODE_get(pService->pData, pDID, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get Node[%s] info from DB!\n", pDID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_NODE_getInfoAt
-(
-	FTM_ULONG		ulIndex,
-	FTM_NODE_PTR	pInfo
-)
-{
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_NODE_getAt(pService->pData, ulIndex, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get Node at[%d]!\n", ulIndex);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_NODE_setInfo
-(
-	FTM_CHAR_PTR	pDID,
-	FTM_ULONG		xFields,
-	FTM_NODE_PTR	pInfo
-)
-{
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_NODE_set(pService->pData, pDID, xFields, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get Node[%s]!\n", pDID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-/******************************************************************
  * EP management interface
  ******************************************************************/
-
-FTM_RET	FTOM_DB_EP_add
-(
-	FTM_EP_PTR 	pInfo
-)
-{
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_EP_add(pService->pData, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to add EP[%s] to DB!\n", pInfo->pEPID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_EP_remove
-(
-	FTM_CHAR_PTR	pEPID
-)
-{
-	ASSERT(pEPID != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_EP_remove(pService->pData, pEPID);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to remove EP[%s] from DB!\n", pEPID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET FTOM_DB_EP_getEPIDList
-(
-	FTM_EPID_PTR	pEPIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-)
-{
-	ASSERT(pEPIDs != NULL);
-	ASSERT(pulCount != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_EP_getEPIDList(pService->pData, pEPIDs, ulIndex, ulMaxCount, pulCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get rule id list from DB.\n");			
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-	
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_EP_getInfo
-(
-	FTM_CHAR_PTR	pEPID,
-	FTM_EP_PTR		pInfo
-)
-{
-	ASSERT(pEPID != NULL);
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_EP_get(pService->pData, pEPID, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"EP[%s] failed to get info from DB.\n", pEPID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_EP_setInfo
-(
-	FTM_CHAR_PTR	pEPID,
-	FTM_EP_FIELD	xFields,
-	FTM_EP_PTR		pInfo
-)
-{
-	ASSERT(pEPID != NULL);
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_EP_set(pService->pData, pEPID, xFields, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"EP[%s] failed to set info to DB.\n", pEPID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
 
 FTM_RET	FTOM_DB_EP_getDataList
 (
@@ -1692,20 +1359,12 @@ FTM_RET	FTOM_DB_EP_getDataList
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_EP_DATA_get(pService->pData, pEPID, ulStart, pDataList, ulMaxCount, pulCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to EP[%s] data.\n", pEPID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
+		return	xRet;	
 	}
 
-	return	xRet;
+	return	FTOM_DMC_EP_DATA_get(pService->pData, pEPID, ulStart, pDataList, ulMaxCount, pulCount);
 }
 
 FTM_RET	FTOM_DB_EP_getDataInfo
@@ -1721,47 +1380,12 @@ FTM_RET	FTOM_DB_EP_getDataInfo
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_EP_DATA_info(pService->pData, pEPID, pulBeginTime, pulEndTime, pulCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to EP[%s] data info.\n", pEPID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
+		return	xRet;	
 	}
 
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_EP_setDataLimit
-(
-	FTM_CHAR_PTR		pEPID,
-	FTM_EP_LIMIT_PTR	pLimit
-)
-{
-	ASSERT(pEPID != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_EP_DATA_setLimit(pService->pData, pEPID, pLimit);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to set EP[%s] data limit.\n", pEPID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
+	return	FTOM_DMC_EP_DATA_info(pService->pData, pEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
 FTM_RET	FTOM_callback
@@ -1939,17 +1563,16 @@ FTM_RET	FTOM_DB_EP_getDataCount
 	FTOM_SERVICE_PTR pService;
 
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_EP_DATA_count(pService->pData, pEPID, pulCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Failed to EP[%s] data count from DMC!\n", pEPID);
-		}
+		ERROR2(xRet,"Service DMC  not found!\n");
+		return	xRet;
 	}
-	else
+
+	xRet = FTOM_DMC_EP_DATA_count(pService->pData, pEPID, pulCount);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Data management service not found!\n");
+		ERROR2(xRet,"Failed to EP[%s] data count from DMC!\n", pEPID);
 	}
 
 	return	xRet;
@@ -1969,20 +1592,12 @@ FTM_RET	FTOM_DB_EP_removeData
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_EP_DATA_remove(pService->pData, pEPID, ulIndex, ulCount, pulDeletedCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to remove EP[%s] data!\n", pEPID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
+		return	xRet;	
 	}
 
-	return	xRet;
+	return	FTOM_DMC_EP_DATA_remove(pService->pData, pEPID, ulIndex, ulCount, pulDeletedCount);
 }
 
 FTM_RET	FTOM_DB_EP_removeDataWithTime
@@ -1999,102 +1614,12 @@ FTM_RET	FTOM_DB_EP_removeDataWithTime
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_EP_DATA_removeWithTime(pService->pData, pEPID, ulBegin, ulEnd, pulDeletedCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to remove EP[%s] data with time.\n", pEPID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
+		return	xRet;	
 	}
 
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_TRIGGER_add
-(
-	FTM_TRIGGER_PTR		pInfo
-)
-{
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_TRIGGER_add(pService->pData, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Trigger[%s] failed to add to DB.\n", pInfo->pID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-	
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_TRIGGER_remove
-(
-	FTM_CHAR_PTR	pTriggerID
-)
-{
-	ASSERT(pTriggerID != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_TRIGGER_remove(pService->pData, pTriggerID);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Trigger[%s] failed to remove from DB.\n", pTriggerID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET FTOM_DB_TRIGGER_getIDList
-(
-	FTM_ID_PTR		pIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-)
-{
-	ASSERT(pIDs != NULL);
-	ASSERT(pulCount != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_TRIGGER_getIDList(pService->pData, pIDs, ulIndex, ulMaxCount, pulCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get trigger id list from DB.\n");			
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-	
-	return	xRet;
+	return	FTOM_DMC_EP_DATA_removeWithTime(pService->pData, pEPID, ulBegin, ulEnd, pulDeletedCount);
 }
 
 FTM_RET	FTOM_DB_TRIGGER_getInfo
@@ -2109,17 +1634,15 @@ FTM_RET	FTOM_DB_TRIGGER_getInfo
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_TRIGGER_get(pService->pData, pTriggerID, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Trigger[%s] failed to get information.\n", pTriggerID);	
-		}
+		return	xRet;	
 	}
-	else
+
+	xRet = FTOM_DMC_TRIGGER_get(pService->pData, pTriggerID, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Data management service not found!\n");
+		ERROR2(xRet,"Trigger[%s] failed to get information.\n", pTriggerID);	
 	}
 
 	return	xRet;
@@ -2136,17 +1659,15 @@ FTM_RET	FTOM_DB_TRIgger_getInfoAt
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_TRIGGER_getAt(pService->pData, ulIndex, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Trigger[%d] failed to get information.\n", ulIndex);	
-		}
+		return	xRet;	
 	}
-	else
+
+	xRet = FTOM_DMC_TRIGGER_getAt(pService->pData, ulIndex, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Data management service not found!\n");
+		ERROR2(xRet,"Trigger[%d] failed to get information.\n", ulIndex);	
 	}
 
 	return	xRet;
@@ -2165,101 +1686,17 @@ FTM_RET	FTOM_DB_TRIGGER_setInfo
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_TRIGGER_set(pService->pData, pTriggerID, xFields, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Trigger[%s] DB update failed.\n", pTriggerID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
+		return	xRet;	
 	}
 
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_ACTION_add
-(
-	FTM_ACTION_PTR	pInfo
-)
-{
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	xRet = FTOM_DMC_TRIGGER_set(pService->pData, pTriggerID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_ACTION_add(pService->pData, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Action[%s] failed to add to DB.\n", pInfo->pID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
+		ERROR2(xRet,"Trigger[%s] DB update failed.\n", pTriggerID);	
 	}
 
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_ACTION_remove
-(
-	FTM_CHAR_PTR	pActionID
-)
-{
-	ASSERT(pActionID != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_ACTION_remove(pService->pData, pActionID);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Action[%s] failed to remove from DB.\n", pActionID);
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;	
-}
-
-FTM_RET FTOM_DB_ACTION_getIDList
-(
-	FTM_ID_PTR		pIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-)
-{
-	ASSERT(pIDs != NULL);
-	ASSERT(pulCount != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_ACTION_getIDList(pService->pData, pIDs, ulIndex, ulMaxCount, pulCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get action id list from DB.\n");			
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-	
 	return	xRet;
 }
 
@@ -2274,17 +1711,15 @@ FTM_RET	FTOM_DB_ACTION_getInfo
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_ACTION_get(pService->pData, pActionID, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Action[%s] info failed to get from DB.\n", pActionID);	
-		}
+		return	xRet;	
 	}
-	else
+
+	xRet = FTOM_DMC_ACTION_get(pService->pData, pActionID, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Data management service not found!\n");
+		ERROR2(xRet,"Action[%s] info failed to get from DB.\n", pActionID);	
 	}
 
 	return	xRet;
@@ -2301,17 +1736,15 @@ FTM_RET	FTOM_DB_ACTION_getInfoAt
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_ACTION_getAt(pService->pData, ulIndex, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Action[%lu] info failed to get from DB.", ulIndex);
-		}
+		return	xRet;	
 	}
-	else
+	
+	xRet = FTOM_DMC_ACTION_getAt(pService->pData, ulIndex, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Data management service not found!\n");
+		ERROR2(xRet,"Action[%lu] info failed to get from DB.", ulIndex);
 	}
 
 	return	xRet;	
@@ -2330,101 +1763,17 @@ FTM_RET	FTOM_DB_ACTION_setInfo
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_ACTION_set(pService->pData, pActionID, xFields, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Action[%s] DB update failed.\n", pActionID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
+		return	xRet;	
 	}
 
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_RULE_add
-(
-	FTM_RULE_PTR	pInfo
-)
-{
-	ASSERT(pInfo != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	xRet = FTOM_DMC_ACTION_set(pService->pData, pActionID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_RULE_add(pService->pData, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Failed to add rule[%s].\n", pInfo->pID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
+		ERROR2(xRet,"Action[%s] DB update failed.\n", pActionID);	
 	}
 
-	return	xRet;
-}
-
-FTM_RET	FTOM_DB_RULE_remove
-(
-	FTM_CHAR_PTR	pRuleID
-)
-{
-	ASSERT(pRuleID != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_RULE_remove(pService->pData, pRuleID);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Failed to remove rule[%s].\n", pRuleID);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-
-	return	xRet;
-}
-
-FTM_RET FTOM_DB_RULE_getIDList
-(
-	FTM_ID_PTR		pIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-)
-{
-	ASSERT(pIDs != NULL);
-	ASSERT(pulCount != NULL);
-	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
-
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_DMC_RULE_getIDList(pService->pData, pIDs, ulIndex, ulMaxCount, pulCount);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get rule id list from DB.\n");			
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
-	}
-	
 	return	xRet;
 }
 
@@ -2459,20 +1808,12 @@ FTM_RET	FTOM_DB_RULE_getInfoAt
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_RULE_getAt(pService->pData, ulIndex, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Failed to get rule at[%d].\n", ulIndex);	
-		}
-	}
-	else
-	{
-		ERROR2(xRet, "Data management service not found!\n");
+		return	xRet;	
 	}
 
-	return	xRet;	
+	return	FTOM_DMC_RULE_getAt(pService->pData, ulIndex, pInfo);
 }
 
 FTM_RET	FTOM_DB_RULE_setInfo
@@ -2488,17 +1829,15 @@ FTM_RET	FTOM_DB_RULE_setInfo
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_RULE_set(pService->pData, pRuleID, xFields, pInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet,"Rule[%s] DB update failed.\n", pRuleID);	
-		}
+		return	xRet;	
 	}
-	else
+
+	xRet = FTOM_DMC_RULE_set(pService->pData, pRuleID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Data management service not found!\n");
+		ERROR2(xRet,"Rule[%s] DB update failed.\n", pRuleID);	
 	}
 
 	return	xRet;
@@ -2736,23 +2075,10 @@ FTM_RET	FTOM_sendMessage
 	xRet = FTOM_SERVICE_get(xService, &pService);
 	if ((xRet != FTM_RET_OK) || (pService->fSendMessage == NULL))
 	{
-		ERROR2(xRet, "Send message not supported on service[%d]\n", xService);
-		xRet = FTOM_MSGQ_push(pMsgQ, pMsg);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to send message to main!\n");	
-		}
-	}
-	else
-	{
-		xRet = pService->fSendMessage(pService->pData, pMsg);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to send message to service[%d].\n", xService);
-		}
+		return	FTOM_MSGQ_push(pMsgQ, pMsg);
 	}
 
-	return	xRet;
+	return	pService->fSendMessage(pService->pData, pMsg);
 }
 
 FTM_RET	FTOM_serverSync
@@ -2773,9 +2099,7 @@ FTM_RET	FTOM_serverSync
 
 	if (pService->fSendMessage == NULL)
 	{
-		xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
-		ERROR2(xRet, "Not supported send message on server.\n");
-		return	xRet;
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 	}
 
 	xRet = FTOM_MSG_createServerSync(bAutoRegister, &pMsg);
@@ -2785,13 +2109,7 @@ FTM_RET	FTOM_serverSync
 		return	xRet;	
 	}
 
-	xRet = pService->fSendMessage(pService->pData, (FTOM_MSG_PTR)pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to send message to server.\n");
-	}
-
-	return	xRet;
+	return	pService->fSendMessage(pService->pData, (FTOM_MSG_PTR)pMsg);
 
 }
 

@@ -437,7 +437,7 @@ FTM_RET	FTOM_CGI_getEPDataInfo
 	xRet = FTOM_CLIENT_EP_DATA_info(pClient, pEPID, &ulBegin, &ulEnd, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP Data info get failed[%08x]\n", xRet);
+		ERROR2(xRet, "EP Data info get failed[%08x]\n", xRet);
 		goto finish;
 	}
 
@@ -492,7 +492,7 @@ FTM_RET	FTOM_CGI_getEPData
 	xRet = FTOM_CLIENT_EP_DATA_getList(pClient, pEPID, 0, pData, ulCount, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP Data list get failed[%08x]\n", xRet);
+		ERROR2(xRet, "EP Data list get failed[%08x]\n", xRet);
 		goto finish;
 	}
 
@@ -727,7 +727,7 @@ FTM_RET	FTOM_CGI_delEPData
 
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("EP Data delete failed[%08x]\n", xRet);
+		ERROR2(xRet, "EP Data delete failed[%08x]\n", xRet);
 	}
 	else
 	{

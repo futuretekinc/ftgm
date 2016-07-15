@@ -64,6 +64,12 @@ FTM_RET FTDM_EP_DATA_info
 	FTM_ULONG_PTR		pulCount
 );
 
+FTM_RET FTDM_EP_DATA_setLimit
+(	
+	FTDM_EP_PTR			pEP,
+	FTM_EP_LIMIT_PTR	pLimit
+);
+
 FTM_RET	FTDM_EP_DATA_get
 (
 	FTDM_EP_PTR			pEP,

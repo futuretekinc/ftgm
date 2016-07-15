@@ -41,6 +41,8 @@ LIB_FTOM_SRCS= ftom_msg.c \
 			   ftom_utils.c\
 			   ftom_logger.c\
 			   ftom_session.c\
+			   ftom_mqttc.c\
+			   ftom_mqttc_ft.c\
 			   ftom_shell.c
 LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)
 

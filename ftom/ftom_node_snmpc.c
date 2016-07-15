@@ -13,22 +13,30 @@
 FTOM_NODE_CLASS	xNodeClassGeneralSNMP = 
 {
 	.pModel 		= "general",
-	.xType			= FTOM_NODE_TYPE_SNMPC,
+	.xType			= FTM_NODE_TYPE_SNMP,
 	.fCreate		= (FTOM_NODE_CREATE)FTOM_NODE_SNMPC_create,
 	.fDestroy		= (FTOM_NODE_DESTROY)FTOM_NODE_SNMPC_destroy,
 	.fInit			= (FTOM_NODE_INIT)FTOM_NODE_SNMPC_init,
 	.fFinal			= (FTOM_NODE_FINAL)FTOM_NODE_SNMPC_final,
 	.fPrestart		= (FTOM_NODE_PRESTART)FTOM_NODE_SNMPC_prestart,
 	.fPrestop		= (FTOM_NODE_PRESTOP)FTOM_NODE_SNMPC_prestop,
+
 	.fGetEPCount	= (FTOM_NODE_GET_EP_COUNT)FTOM_NODE_SNMPC_getEPCount,
 	.fGetEPID		= (FTOM_NODE_GET_EP_ID)FTOM_NODE_SNMPC_getEPID,
 	.fGetEPName		= (FTOM_NODE_GET_EP_NAME)FTOM_NODE_SNMPC_getEPName,
 	.fGetEPState	= (FTOM_NODE_GET_EP_STATE)FTOM_NODE_SNMPC_getEPState,
-	.fGetEPUpdateInterval= (FTOM_NODE_GET_EP_UPDATE_INTERVAL)FTOM_NODE_SNMPC_getEPUpdateInterval,
+	.fGetEPInterval	= (FTOM_NODE_GET_EP_INTERVAL)FTOM_NODE_SNMPC_getEPUpdateInterval,
 	.fGetEPData		= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_SNMPC_getEPData,
-	.fSetEPData		= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_setEPData,
 	.fGetEPDataAsync= (FTOM_NODE_GET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_getEPDataAsync,
+
+	.fSet			= (FTOM_NODE_SET)FTOM_NODE_SNMPC_set,
+	.fSetEPData		= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_SNMPC_setEPData,
 	.fSetEPDataAsync= (FTOM_NODE_SET_EP_DATA_ASYNC)FTOM_NODE_SNMPC_setEPDataAsync,
+
+	.fAttachEP		= (FTOM_NODE_ATTACH_EP)FTOM_NODE_SNMPC_attachEP,
+	.fDetachEP		= (FTOM_NODE_DETACH_EP)FTOM_NODE_SNMPC_detachEP,
+
+	.fPrintOpts		= (FTOM_NODE_PRINT_OPTS)FTOM_NODE_SNMPC_printOpts
 };
 
 static 
@@ -131,7 +139,7 @@ FTM_RET	FTOM_NODE_SNMPC_init
 	xRet = FTM_LOCK_create(&pNode->pLock);
 	if (xRet != FTM_RET_OK)
 	{
-		TRACE("Lock init failed!\n");
+		ERROR2(xRet, "Failed to create lock!\n");
 		return	xRet;	
 	}
 
@@ -246,16 +254,17 @@ FTM_RET	FTOM_NODE_SNMPC_getEPCount
 	FTM_RET	xRet;
 
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet != FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
-		return	xRet;	
+		xRet = FTOM_SNMPC_getEPCount(pService->pData, pNode->pIP, xType, pulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to get SNMP client count.\n");	
+		}
 	}
-
-	xRet = FTOM_SNMPC_getEPCount(pService->pData, pNode->pIP, xType, pulCount);
-	if (xRet != FTM_RET_OK)
+	else
 	{
-		ERROR2(xRet, "Failed to get SNMP client count.\n");	
-		return	xRet;
+		ERROR2(xRet, "SNNP Client not supported!\n");
 	}
 
 	return	FTM_RET_OK;
@@ -272,18 +281,25 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 	FTM_VALUE_TYPE		xDataType;
 	FTM_VALUE			xValue;
 	FTOM_SERVICE_PTR 	pService;
-	
+ 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "SNNP Client not supported!\n");
 		return	xRet;	
 	}
 
 	xRet = FTOM_EP_getDataType(pEP, &xDataType);
 	if (xRet != FTM_RET_OK)
 	{
-		TRACE("Failed to get EP data type!\n");
+		ERROR2(xRet, "Failed to get EP data type!\n");
 		return	xRet;
+	}
+
+	if (pEP->pOpts == NULL)
+	{
+		ERROR2(FTM_RET_EP_IS_NOT_ATTACHED, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);	
+		return	FTM_RET_EP_IS_NOT_ATTACHED;	
 	}
 
 	FTM_LOCK_set(pNode->pLock);
@@ -296,7 +312,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
-				&pEP->xOption.xSNMP.xOID,
+				&((FTOM_NODE_SNMPC_EP_OPTS_PTR)pEP->pOpts)->xOID,
 				pNode->xCommon.xInfo.ulTimeout,
 				&xValue);
 	if (xRet == FTM_RET_OK)
@@ -325,7 +341,14 @@ FTM_RET	FTOM_NODE_SNMPC_setEPData
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "SNNP Client not supported!\n");
 		return	xRet;	
+	}
+
+	if (pEP->pOpts == NULL)
+	{
+		ERROR2(FTM_RET_EP_IS_NOT_ATTACHED, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);	
+		return	FTM_RET_EP_IS_NOT_ATTACHED;	
 	}
 
 	FTM_LOCK_set(pNode->pLock);
@@ -336,7 +359,7 @@ FTM_RET	FTOM_NODE_SNMPC_setEPData
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
-				&pEP->xOption.xSNMP.xOID,
+				&((FTOM_NODE_SNMPC_EP_OPTS_PTR)pEP->pOpts)->xOID,
 				pNode->xCommon.xInfo.ulTimeout,
 				&pData->xValue);
 			
@@ -364,13 +387,19 @@ FTM_RET	FTOM_NODE_SNMPC_getEPDataAsync
 		return	xRet;
 	}
 	
+	if (pEP->pOpts == NULL)
+	{
+		ERROR2(FTM_RET_EP_IS_NOT_ATTACHED, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);	
+		return	FTM_RET_EP_IS_NOT_ATTACHED;	
+	}
+
 	xRet = FTOM_MSG_SNMPC_createGetEPData(
 				pNode->xCommon.xInfo.pDID, 
 				pEP->xInfo.pEPID,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
-				&pEP->xOption.xSNMP.xOID,
+				&((FTOM_NODE_SNMPC_EP_OPTS_PTR)pEP->pOpts)->xOID,
 				pNode->xCommon.xInfo.ulTimeout,
 				xDataType,
 				&pMsg);
@@ -400,13 +429,19 @@ FTM_RET	FTOM_NODE_SNMPC_setEPDataAsync
 	FTM_RET	xRet;
 	FTOM_MSG_PTR		pMsg = NULL;
 	
+	if (pEP->pOpts == NULL)
+	{
+		ERROR2(FTM_RET_EP_IS_NOT_ATTACHED, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);	
+		return	FTM_RET_EP_IS_NOT_ATTACHED;	
+	}
+
 	xRet = FTOM_MSG_SNMPC_createSetEPData(
 				pNode->xCommon.xInfo.pDID, 
 				pEP->xInfo.pEPID,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
-				&pEP->xOption.xSNMP.xOID,
+				&((FTOM_NODE_SNMPC_EP_OPTS_PTR)pEP->pOpts)->xOID,
 				pNode->xCommon.xInfo.ulTimeout,
 				&pData->xValue,
 				&pMsg);
@@ -418,6 +453,7 @@ FTM_RET	FTOM_NODE_SNMPC_setEPDataAsync
 	xRet = FTOM_SERVICE_sendMessage(FTOM_SERVICE_SNMP_CLIENT, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to send message\n");
 		FTOM_MSG_destroy(&pMsg);	
 	}
 
@@ -566,7 +602,9 @@ FTM_RET		FTOM_NODE_SNMPC_getOID
 	
 	if (pPrefix->xType == 0)
 	{
-		return	FTM_RET_INVALID_TYPE;
+		xRet = FTM_RET_INVALID_TYPE; 
+		ERROR2(xRet, "Invalid EP type!\n");
+		return	xRet;
 	}
 
 	sprintf(pBuff, "%s:%s%s.%lu", pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pPrefix->pName, pFieldName, ulIndex + 1);
@@ -574,7 +612,7 @@ FTM_RET		FTOM_NODE_SNMPC_getOID
 	xRet = FTOM_SNMPC_getOID(pBuff, pOID);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Failed to get OID[%s]\n", pBuff);	
+		ERROR2(xRet, "Failed to get OID[%s]\n", pBuff);	
 	}
 
 	return	xRet;
@@ -599,7 +637,9 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 
 	if (ulMaxLen < 2)
 	{
-		return	FTM_RET_BUFFER_TOO_SMALL;
+		xRet = FTM_RET_BUFFER_TOO_SMALL;
+		ERROR2(xRet, "Buffer too small[%d].\n", ulMaxLen);
+		return	xRet;
 	}
 
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
@@ -662,7 +702,9 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 
 	if (ulMaxLen < 2)
 	{
-		return	FTM_RET_BUFFER_TOO_SMALL;
+		xRet = FTM_RET_BUFFER_TOO_SMALL;
+		ERROR2(xRet, "Buffer too small[%d].\n", ulMaxLen);
+		return	xRet;
 	}
 
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
@@ -818,3 +860,141 @@ FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
 
 }
 
+FTM_RET	FTOM_NODE_SNMPC_set
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_NODE_FIELD			xFields,
+	FTM_NODE_PTR			pInfo
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pInfo != NULL);
+
+	if (xFields & FTM_NODE_FIELD_FLAGS)
+	{
+		pNode->xCommon.xInfo.xFlags = pInfo->xFlags;
+	}
+
+	if (xFields & FTM_NODE_FIELD_NAME)
+	{
+		strcpy(pNode->xCommon.xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_NODE_FIELD_LOCATION)
+	{
+		strcpy(pNode->xCommon.xInfo.pLocation, pInfo->pLocation);
+	}
+
+	if (xFields & FTM_NODE_FIELD_INTERVAL)
+	{
+		pNode->xCommon.xInfo.ulReportInterval = pInfo->ulReportInterval;
+	}
+
+	if (xFields & FTM_NODE_FIELD_TIMEOUT)
+	{
+		pNode->xCommon.xInfo.ulTimeout = pInfo->ulTimeout;
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_VERSION)
+	{
+		pNode->xCommon.xInfo.xOption.xSNMP.ulVersion = pInfo->xOption.xSNMP.ulVersion ;
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_URL)
+	{
+		strcpy(pNode->xCommon.xInfo.xOption.xSNMP.pURL, pInfo->xOption.xSNMP.pURL);
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_COMMUNITY)
+	{
+		strcpy(pNode->xCommon.xInfo.xOption.xSNMP.pCommunity, pInfo->xOption.xSNMP.pCommunity);
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_MIB)
+	{
+		strcpy(pNode->xCommon.xInfo.xOption.xSNMP.pMIB, pInfo->xOption.xSNMP.pMIB);
+	}
+
+	if (xFields & FTM_NODE_FIELD_SNMP_MAX_RETRY)
+	{
+		pNode->xCommon.xInfo.xOption.xSNMP.ulMaxRetryCount = pInfo->xOption.xSNMP.ulMaxRetryCount;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_SNMPC_attachEP
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTOM_EP_PTR				pEP
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+	FTM_RET	xRet;
+	FTM_INT	nIndex;
+	FTOM_NODE_SNMPC_EP_OPTS	xOpts;
+
+	nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 2], 0, 16);
+
+	xRet = FTOM_NODE_SNMPC_getOIDForValue(pNode, pEP->xInfo.xType, nIndex - 1, &xOpts.xOID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get OID for EP[%s] of node[%s]\n", pEP->xInfo.pEPID, pNode->xCommon.xInfo.pDID);
+		return	xRet;
+	}
+
+	pEP->pOpts = (FTM_VOID_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_SNMPC_EP_OPTS));
+	if (pEP->pOpts == NULL)
+	{
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+		ERROR2(xRet, "Not enough memory[size = %d]\n", sizeof(FTOM_NODE_SNMPC_EP_OPTS));
+		return	xRet;	
+	}
+
+	memcpy(pEP->pOpts, &xOpts, sizeof(FTOM_NODE_SNMPC_EP_OPTS));
+	pEP->pNode = (FTOM_NODE_PTR)pNode;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_SNMPC_detachEP
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTOM_EP_PTR				pEP
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pEP != NULL);
+	
+	if ((FTM_VOID_PTR)pEP->pNode != (FTM_VOID_PTR)pNode)
+	{
+		return	FTM_RET_OWNER_MISMATCH;
+	}
+
+	if (pEP->pOpts != NULL)
+	{
+		FTM_MEM_free(pEP->pOpts);	
+		pEP->pOpts = NULL;	
+	}
+
+	pEP->pNode = NULL;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_SNMPC_printOpts
+(
+	FTOM_NODE_SNMPC_PTR	pNode
+)
+{
+	ASSERT(pNode != NULL);
+
+	MESSAGE("%16s   %10s - %s\n", "", "Version", 	FTM_SNMP_versionString(pNode->xCommon.xInfo.xOption.xSNMP.ulVersion));	
+	MESSAGE("%16s   %10s - %s\n", "", "URL", 		pNode->xCommon.xInfo.xOption.xSNMP.pURL);
+	MESSAGE("%16s   %10s - %s\n", "", "Community", 	pNode->xCommon.xInfo.xOption.xSNMP.pCommunity);
+	MESSAGE("%16s   %10s - %s\n", "", "MIB", 		pNode->xCommon.xInfo.xOption.xSNMP.pMIB);
+	MESSAGE("%16s   %10s - %lu\n","", "Retry", 		pNode->xCommon.xInfo.xOption.xSNMP.ulMaxRetryCount);
+
+	return	FTM_RET_OK;
+}

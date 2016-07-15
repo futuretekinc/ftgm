@@ -212,14 +212,14 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_masterProcess
 	pClient->hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (pClient->hSock == -1)
 	{
-		ERROR("Faile to create socket.\n");	
+		ERROR2(FTM_RET_ERROR, "Faile to create socket.\n");	
 		goto finish;
 	}
 
 	struct timeval tv = { .tv_sec = 0, .tv_usec = 2000000};
 	if (setsockopt(pClient->hSock, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) 
 	{
-   	 	ERROR("Failed to set socket timeout!\n");
+   	 	ERROR2(FTM_RET_ERROR, "Failed to set socket timeout!\n");
 	}
 		
 	pClient->bStop = FTM_FALSE;
@@ -312,7 +312,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
 	pClient->xSubscriber.hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (pClient->xSubscriber.hSock == -1)
 	{
-		ERROR("Failed to create subscribe socket.\n");	
+		ERROR2(FTM_RET_ERROR, "Failed to create subscribe socket.\n");	
 		return	0;	
 	}
 
@@ -322,7 +322,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_subscribeProcess
 	struct timeval tv = { .tv_sec = 0, .tv_usec = 100000};
 	if (setsockopt(pClient->xSubscriber.hSock, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) 
 	{
-   	 	ERROR("Failed to set socket timeout!\n");
+   	 	ERROR2(FTM_RET_ERROR, "Failed to set socket timeout!\n");
 	}
 
 	pClient->bStop = FTM_FALSE;

@@ -270,9 +270,9 @@ FTM_RET	FTOM_DMC_NODE_add
 	FTM_RET	xRet;
 
 	xRet = FTDMC_NODE_append(&pDMC->xSession, pInfo);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
 	{
-
+		ERROR2(xRet, "Failed to add node to DB!\n");
 	}
 
 	return	xRet;
@@ -573,6 +573,18 @@ FTM_RET FTOM_DMC_EP_DATA_info
 	ASSERT(pDMC != NULL);
 
 	return	FTDMC_EP_DATA_info(&pDMC->xSession, pEPID, pulBeginTime, pulEndTime, pulCount);
+}
+
+FTM_RET FTOM_DMC_EP_DATA_setLimit
+(
+	FTOM_DMC_PTR		pDMC,
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_LIMIT_PTR	pLimit
+)
+{
+	ASSERT(pDMC != NULL);
+
+	return	FTDMC_EP_DATA_setLimit(&pDMC->xSession, pEPID, pLimit);
 }
 
 FTM_RET	FTOM_DMC_EP_CLASS_count

@@ -33,13 +33,13 @@ typedef	struct
 
 FTM_RET	FTOM_NODE_MBC_getClass
 (
-	FTM_CHAR_PTR	pModel,
+	FTM_CHAR_PTR		pModel,
 	FTOM_NODE_CLASS_PTR	_PTR_ ppClass
 );
 
 FTM_RET	FTOM_NODE_MBC_create
 (
-	FTM_NODE_PTR 	pInfo, 
+	FTM_NODE_PTR 		pInfo, 
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 
@@ -48,5 +48,16 @@ FTM_RET	FTOM_NODE_MBC_destroy
 	FTOM_NODE_MBC_PTR _PTR_ pNode
 );
 
+FTM_RET	FTOM_NODE_MBC_set
+(
+	FTOM_NODE_MBC_PTR	pNode,
+	FTM_NODE_FIELD		xFields,
+	FTM_NODE_PTR		pInfo
+);
+
+FTM_RET	FTOM_NODE_MBC_printOpts
+(
+	FTOM_NODE_MBC_PTR	pNode
+)
 #endif
 

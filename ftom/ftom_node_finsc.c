@@ -51,15 +51,16 @@ FTM_RET	FTOM_NODE_FINSC_create
 	xRet = FTOM_NODE_FINSC_getClass(pInfo->pModel, &pClass);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Class[%s] not found!\n", pInfo->pModel);
+		ERROR2(xRet, "Class[%s] not found!\n", pInfo->pModel);
 		return	xRet;
 	}
 
 	pNode = (FTOM_NODE_FINSC_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_FINSC));
 	if (pNode == NULL)
 	{
-		ERROR("Not enough memory!\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		ERROR2(xRet, "Not enough memory!\n");
+		return	xRet;
 	}
 
 	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
@@ -84,6 +85,68 @@ FTM_RET	FTOM_NODE_FINSC_destroy
 	FTM_MEM_free(*ppNode);
 
 	*ppNode = NULL;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_FINSC_set
+(
+	FTOM_NODE_FINSC_PTR		pNode,
+	FTM_NODE_FIELD			xFields,
+	FTM_NODE_PTR			pInfo
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pInfo != NULL);
+
+	if (xFields & FTM_NODE_FIELD_FLAGS)
+	{
+		pNode->xCommon.xInfo.xFlags = pInfo->xFlags;
+	}
+
+	if (xFields & FTM_NODE_FIELD_NAME)
+	{
+		strcpy(pNode->xCommon.xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_NODE_FIELD_LOCATION)
+	{
+		strcpy(pNode->xCommon.xInfo.pLocation, pInfo->pLocation);
+	}
+
+	if (xFields & FTM_NODE_FIELD_INTERVAL)
+	{
+		pNode->xCommon.xInfo.ulReportInterval = pInfo->ulReportInterval;
+	}
+
+	if (xFields & FTM_NODE_FIELD_TIMEOUT)
+	{
+		pNode->xCommon.xInfo.ulTimeout = pInfo->ulTimeout;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_FINSC_printOpts
+(
+	FTOM_NODE_FINSC_PTR	pNode
+)
+{
+	ASSERT(pNode != NULL);
+
+	MESSAGE("%16s   %10s - %lu\n", "", "Version", 	pNode->xCommon.xInfo.xOption.xFINS.ulVersion);	
+	MESSAGE("%16s   %10s - %s\n", "", "DestIP", 	pNode->xCommon.xInfo.xOption.xFINS.pDIP);
+	MESSAGE("%16s   %10s - %lu\n","", "DestPort",	pNode->xCommon.xInfo.xOption.xFINS.ulDP);
+	MESSAGE("%16s   %10s - %lu\n","", "SrcPort", 	pNode->xCommon.xInfo.xOption.xFINS.ulSP);
+	MESSAGE("%16s   %10s - %02x:%02x:%02x\n","", "DestAddr",	
+			(FTM_UINT8)((pNode->xCommon.xInfo.xOption.xFINS.ulDA >> 16) & 0xFF),
+			(FTM_UINT8)((pNode->xCommon.xInfo.xOption.xFINS.ulDA >>  8) & 0xFF),
+			(FTM_UINT8)((pNode->xCommon.xInfo.xOption.xFINS.ulDA >>  0) & 0xFF));
+	MESSAGE("%16s   %10s - %02x:%02x:%02x\n","", "SrcAddr", 
+			(FTM_UINT8)((pNode->xCommon.xInfo.xOption.xFINS.ulSA >> 16) & 0xFF),
+			(FTM_UINT8)((pNode->xCommon.xInfo.xOption.xFINS.ulSA >>  8) & 0xFF),
+			(FTM_UINT8)((pNode->xCommon.xInfo.xOption.xFINS.ulSA >>  0) & 0xFF));
+	MESSAGE("%16s   %10s - %lu\n","", "ServerID", 	pNode->xCommon.xInfo.xOption.xFINS.ulServerID);
 
 	return	FTM_RET_OK;
 }

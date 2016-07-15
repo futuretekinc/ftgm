@@ -95,6 +95,7 @@ FTM_RET	FTOM_ACTION_final
 FTM_RET	FTOM_ACTION_create
 (
 	FTM_ACTION_PTR 		pInfo,
+	FTM_BOOL			bNew,
 	FTOM_ACTION_PTR _PTR_ ppAction
 )
 {
@@ -127,48 +128,16 @@ FTM_RET	FTOM_ACTION_create
 		return	xRet;	
 	}
 
+	if (bNew)
+	{
+		xRet = FTOM_DB_ACTION_add(&pAction->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to add action[%s] to DB.\n", pAction->xInfo.pID);
+		}
+	}
+
 	FTOM_LOG_createAction(&pAction->xInfo);
-
-	*ppAction = pAction;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_ACTION_createFromDB
-(
-	FTM_CHAR_PTR	pID,
-	FTOM_ACTION_PTR _PTR_ ppAction
-)
-{
-	ASSERT(pID != NULL);
-	ASSERT(ppAction != NULL);
-	
-	FTM_RET	xRet;
-	FTM_ACTION		xInfo;
-	FTOM_ACTION_PTR	pAction;
-
-	xRet = FTOM_DB_ACTION_getInfo(pID, &xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
-
-	pAction = (FTOM_ACTION_PTR)FTM_MEM_malloc(sizeof(FTOM_ACTION));
-	if (pAction == NULL)
-	{
-		ERROR2(xRet,"Not enough memory\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	memset(pAction, 0, sizeof(FTOM_ACTION));
-	memcpy(&pAction->xInfo, &xInfo, sizeof(FTM_ACTION));
-
-	if (strlen(pAction->xInfo.pID) == 0)
-	{
-		FTM_makeID(pAction->xInfo.pID, 16);
-	}
-
-	FTM_LIST_append(pActionList, pAction);
 
 	*ppAction = pAction;
 
@@ -180,7 +149,22 @@ FTM_RET	FTOM_ACTION_destroy
 	FTOM_ACTION_PTR _PTR_ ppAction
 )
 {
-	FTM_LIST_remove(pActionList, *ppAction);
+	ASSERT(ppAction != NULL);
+	ASSERT((*ppAction) != NULL);
+
+	FTM_RET	xRet;
+	
+	xRet = FTOM_DB_ACTION_remove((*ppAction)->xInfo.pID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to remove action[%s] from DB!\n", (*ppAction)->xInfo.pID);
+	}
+
+	xRet = FTM_LIST_remove(pActionList, *ppAction);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to remove action[%s] from list!\n", (*ppAction)->xInfo.pID);	
+	}
 
 	FTM_MEM_free(*ppAction);
 	
@@ -355,7 +339,7 @@ FTM_RET	FTOM_ACTION_setInfo
 	xRet = FTOM_DB_ACTION_setInfo(pAction->xInfo.pID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
+		ERROR2(xRet, "Failed to set action[%s] on DB.\n", pAction->xInfo.pID);	
 	}
 
 	switch(pAction->xInfo.xType)

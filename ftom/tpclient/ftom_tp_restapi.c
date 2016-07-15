@@ -430,14 +430,14 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getModel
 	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gatewayModels/%lu", ulModel);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 	if ((bDataDump) && (xRet == FTM_RET_OK))
@@ -465,30 +465,30 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		goto finish;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 		goto finish;
 	}
 
 	pRoot = cJSON_Parse(pClient->pResp);
 	if (pRoot == NULL)
 	{
-		ERROR("Invalid json format!\n");
 		xRet = FTM_RET_COMM_INVALID_VALUE;
+		ERROR2(xRet, "Invalid json format!\n");
 		goto finish;	
 	}
 
 	pItem = cJSON_GetObjectItem(pRoot, "id") ;
 	if ((pItem == NULL) || (pItem->type != cJSON_String))
 	{
-		ERROR("Can't found id!\n");
 		xRet = FTM_RET_COMM_INVALID_VALUE;	
+		ERROR2(xRet, "Can't found id!\n");
 		goto finish;
 	}
 	strncpy(pGateway->pID, pItem->valuestring, FTM_DID_LEN);
@@ -524,8 +524,8 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 
 		if (pDevices->type != cJSON_Array)
 		{
-			ERROR("Devices information is not array!\n");
 			xRet = FTM_RET_COMM_INVALID_VALUE;	
+			ERROR2(xRet, "Devices information is not array!\n");
 			goto finish;	
 		}
 
@@ -541,7 +541,8 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 			FTM_CHAR_PTR	pDeviceID = FTM_MEM_malloc(ulLen+1);
 			if (pDeviceID == NULL)
 			{
-				ERROR("Not enough memory!\n");	
+				xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+				ERROR2(xRet, "Not enough memory!\n");	
 				break;
 			}
 
@@ -558,8 +559,8 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 
 		if (pSensors->type != cJSON_Array)
 		{
-			ERROR("Sensor information is not array!\n");
 			xRet = FTM_RET_COMM_INVALID_VALUE;	
+			ERROR2(xRet, "Sensor information is not array!\n");
 			goto finish;	
 		}
 
@@ -575,7 +576,8 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 			FTM_CHAR_PTR	pSensorID = FTM_MEM_malloc(ulLen+1);
 			if (pSensorID == NULL)
 			{
-				ERROR("Not enough memory!\n");	
+				xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+				ERROR2(xRet, "Not enough memory!\n");	
 				break;
 			}
 
@@ -609,7 +611,7 @@ FTM_RET	FTOM_TP_RESTAPI_GW_setStatus
 	xRet = FTOM_TP_RESTAPI_setPutURL(pClient, "/gateways/%s/status", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
@@ -621,14 +623,14 @@ FTM_RET	FTOM_TP_RESTAPI_GW_setStatus
 	xRet = FTOM_TP_RESTAPI_putBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client post data setting.\n");
+		ERROR2(xRet, "An error has occurred in the client post data setting.\n");
 		goto finish;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 finish:
@@ -667,21 +669,21 @@ FTM_RET	FTOM_TP_RESTAPI_DEVICE_create
 	xRet = FTOM_TP_RESTAPI_setPostURL(pClient, "/gateways/%s/devices", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		goto finish;
 	}
 
 	xRet = FTOM_TP_RESTAPI_postBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client post data setting.\n");
+		ERROR2(xRet, "An error has occurred in the client post data setting.\n");
 		goto finish;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 finish:
@@ -706,14 +708,14 @@ FTM_RET	FTOM_TP_RESTAPI_DEVICE_delete
 	xRet = FTOM_TP_RESTAPI_setDeleteURL(pClient, "/gateways/%s/devices/%s", pClient->xConfig.pGatewayID, pDeviceID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 	return	xRet;
@@ -793,21 +795,21 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_create
 	xRet = FTOM_TP_RESTAPI_setPostURL(pClient, "/gateways/%s/sensors", pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_TP_RESTAPI_postBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client post data setting.\n");
+		ERROR2(xRet, "An error has occurred in the client post data setting.\n");
 		goto finish;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 finish:
@@ -832,14 +834,14 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_delete
 	xRet = FTOM_TP_RESTAPI_setDeleteURL(pClient, "/gateways/%s/sensors/%s", pClient->xConfig.pGatewayID, pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 	return	xRet;
@@ -863,14 +865,14 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getStatus
 				pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 	return	xRet;
@@ -896,7 +898,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_setStatus
 				pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
@@ -908,14 +910,14 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_setStatus
 	xRet = FTOM_TP_RESTAPI_putBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client post data setting.\n");
+		ERROR2(xRet, "An error has occurred in the client post data setting.\n");
 		goto finish;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 finish:
@@ -945,14 +947,14 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getValue
 				pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 	return	xRet;
@@ -979,7 +981,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_setValues
 				pSensorID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
@@ -997,14 +999,14 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_setValues
 	xRet = FTOM_TP_RESTAPI_putBody(pClient, pRoot);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client put data setting.\n");
+		ERROR2(xRet, "An error has occurred in the client put data setting.\n");
 		goto finish;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 finish:
@@ -1033,14 +1035,14 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s/sensors", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error has occurred in the client settings of the URL.\n");
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
 		return	xRet;
 	}
 
 	xRet = FTOM_TP_RESTAPI_perform(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("An error occurred while performing the client.\n");
+		ERROR2(xRet, "An error occurred while performing the client.\n");
 	}
 
 	pRoot = cJSON_Parse(pClient->pResp);
@@ -1516,6 +1518,7 @@ size_t FTOM_TP_RESTAPI_CB_response
 	ASSERT(pContents != NULL);
 	ASSERT(pUser != NULL);
 
+	FTM_RET	xRet;
 	FTOM_TP_RESTAPI_PTR	pClient = (FTOM_TP_RESTAPI_PTR)pUser;
 	FTM_INT				nRealSize = nSize * nMemB;
 	FTM_CHAR_PTR		pMem = NULL;
@@ -1528,7 +1531,8 @@ size_t FTOM_TP_RESTAPI_CB_response
 	pMem = (FTM_VOID_PTR)FTM_MEM_malloc(pClient->ulRespLen + nRealSize + 1);
 	if (pMem == NULL)
 	{
-		ERROR("Not enough memory!\n");
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		ERROR2(xRet, "Not enough memory!\n");
 		return	0;	
 	}
 

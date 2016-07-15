@@ -53,8 +53,9 @@ FTM_RET	FTOM_NODE_MBC_create
 	pNode = (FTOM_NODE_MBC_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_MBC));
 	if (pNode == NULL)
 	{
-		ERROR("Not enough memory!\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		ERROR2(xRet, "Not enough memory!\n");
+		return	xRet;
 	}
 
 	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));
@@ -80,3 +81,70 @@ FTM_RET	FTOM_NODE_MBC_destroy
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_NODE_MBC_set
+(
+	FTOM_NODE_MBC_PTR		pNode,
+	FTM_NODE_FIELD			xFields,
+	FTM_NODE_PTR			pInfo
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pInfo != NULL);
+
+	if (xFields & FTM_NODE_FIELD_FLAGS)
+	{
+		pNode->xInfo.xFlags = pInfo->xFlags;
+	}
+
+	if (xFields & FTM_NODE_FIELD_NAME)
+	{
+		strcpy(pNode->xInfo.pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_NODE_FIELD_LOCATION)
+	{
+		strcpy(pNode->xInfo.pLocation, pInfo->pLocation);
+	}
+
+	if (xFields & FTM_NODE_FIELD_INTERVAL)
+	{
+		pNode->xInfo.ulReportInterval = pInfo->ulReportInterval;
+	}
+
+	if (xFields & FTM_NODE_FIELD_TIMEOUT)
+	{
+		pNode->xInfo.ulTimeout = pInfo->ulTimeout;
+	}
+
+	if (xFields & FTM_NODE_FIELD_MQTT_VERSION)
+	{
+		pNode->xInfo.xOption.xMQTT.ulVersion = pInfo->xOption.xMQTT.ulVersion;
+	}
+
+	if (xFields & FTM_NODE_FIELD_MQTT_URL)
+	{
+		strcpy(pNode->xInfo.xOption.xMQTT.pURL, pInfo->xOption.xMQTT.pURL);
+	}
+
+	if (xFields & FTM_NODE_FIELD_MQTT_TOPIC)
+	{
+		strcpy(pNode->xInfo.xOption.xMQTT.pTopic, pInfo->xOption.xMQTT.pTopic);
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_MBC_printOpts
+(
+	FTOM_NODE_MBC_PTR	pNode
+)
+{
+	ASSERT(pNode != NULL);
+
+	MESSAGE("%16s   %10s - %d\n", "", "Version", 	pNode->xCommon.xInfo.xOption.xMB.ulVersion);	
+	MESSAGE("%16s   %10s - %s\n", "", "URL", 		pNode->xCommon.xInfo.xOption.xMB.pURL);
+	MESSAGE("%16s   %10s - %lu\n","", "Port", 		pNode->xCommon.xInfo.xOption.xMB.ulPort);
+	MESSAGE("%16s   %10s - %lu\n","", "SlaveID", 	pNode->xCommon.xInfo.xOption.xMB.ulSlaveID);
+
+	return	FTM_RET_OK;
+}

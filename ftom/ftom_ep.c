@@ -161,23 +161,14 @@ FTM_RET	FTOM_EP_final
 
 	FTM_LIST_destroy(pEPList);
 	pEPList = NULL;
-/*
-	FTM_EP_CLASS_PTR	pClass;
 
-	FTM_LIST_iteratorStart(pClassList);
-	while(FTM_LIST_iteratorNext(pClassList, (FTM_VOID_PTR _PTR_)&pClass) == FTM_RET_OK)
-	{
-		FTOM_EP_CLASS_destroy(&pClass);
-	}
-
-	FTM_LIST_final(pClassList);
-*/
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_EP_create
 (
 	FTM_EP_PTR 	pInfo,
+	FTM_BOOL	bNew,
 	FTOM_EP_PTR _PTR_ ppEP
 )
 {
@@ -203,126 +194,72 @@ FTM_RET	FTOM_EP_create
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
 
 	pEP->bStop = FTM_TRUE;
+
 	xRet = FTM_LOCK_create(&pEP->pLock);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pEP);
 		ERROR2(xRet,"Lock init failed.\n");
-		return	xRet;	
+		goto error1;
 	}
 
 	xRet = FTOM_MSGQ_init(&pEP->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pEP);
 		ERROR2(xRet,"MsgQ	init failed.\n");
-		return	xRet;
+		goto error2;
 	}
 
 	xRet = FTM_LIST_init(&pEP->xDataList);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pEP);
 		ERROR2(xRet,"Data list init failed.\n");
-		return	xRet;
+		goto error3;
 	}
 
 	xRet = FTM_LIST_init(&pEP->xTriggerList);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pEP);
 		ERROR2(xRet,"Trigger list init failed.\n");
-		return	xRet;
+		goto error4;
 	}
 
 	xRet = FTM_LIST_append(pEPList, pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pEP);
 		ERROR2(xRet, "EP[%s] failed to add to list.\n", pEP->xInfo.pEPID);
-
-		return	xRet;
+		goto error5;
 	}
-	
-	FTOM_LOG_createEP(&pEP->xInfo);
+
+	if (bNew)
+	{
+		xRet = FTOM_DB_EP_add(&pEP->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to add EP[%s] to DB!\n", pEP->xInfo.pEPID);
+		}
+	}
+
+	FTOM_LOG_createEP(pEP->xInfo.pEPID);
 
 	*ppEP = pEP;
 
-	return	xRet;
-}
+	return	FTM_RET_OK;
 
-FTM_RET	FTOM_EP_createFromDB
-(
-	FTM_CHAR_PTR	pEPID,
-	FTOM_EP_PTR _PTR_ ppEP
-)
-{
-	ASSERT(ppEP != NULL);
+error5:
+	FTM_LIST_final(&pEP->xTriggerList);
 
-	FTM_RET		xRet;
-	FTM_EP		xInfo;
-	FTOM_EP_PTR	pEP;
+error4:
+	FTM_LIST_final(&pEP->xDataList);
 
-	xRet = FTOM_DB_EP_getInfo(pEPID, &xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
+error3:
+	FTOM_MSGQ_final(&pEP->xMsgQ);
 
-	pEP = (FTOM_EP_PTR)FTM_MEM_malloc(sizeof(FTOM_EP));
-	if (pEP == NULL)
-	{
-		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
+error2:
+	FTM_LOCK_destroy(&pEP->pLock);
 
-	memset(pEP, 0, sizeof(FTOM_EP));
-	memcpy(&pEP->xInfo, &xInfo, sizeof(FTM_EP));
+error1:
 
-	pEP->bStop = FTM_TRUE;
-
-	xRet = FTM_LOCK_create(&pEP->pLock);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pEP);
-		ERROR2(xRet,"Lock init failed.\n");
-		return	xRet;
-	}
-
-	xRet = FTOM_MSGQ_init(&pEP->xMsgQ);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pEP);
-		ERROR2(xRet,"MsgQ	init failed.\n");
-		return	xRet;
-	}
-
-	xRet = FTM_LIST_init(&pEP->xDataList);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pEP);
-		ERROR2(xRet,"Data list init failed.\n");
-		return	xRet;
-	}
-
-	xRet = FTM_LIST_init(&pEP->xTriggerList);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pEP);
-		ERROR2(xRet,"Trigger list init failed.\n");
-		return	xRet;
-	}
-
-	xRet = FTM_LIST_append(pEPList, pEP);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pEP);
-		ERROR2(xRet,"EP[%s] failed to add to list.\n", pEP->xInfo.pEPID);
-	}
-	else
-	{
-		*ppEP = pEP;
-	}
+	FTM_MEM_free(pEP);	
 
 	return	xRet;
 }
@@ -339,9 +276,19 @@ FTM_RET	FTOM_EP_destroy
 
 	FTOM_EP_stop(*ppEP, TRUE);
 
-	FTOM_LOG_destroyEP(&(*ppEP)->xInfo);
+	FTOM_LOG_destroyEP((*ppEP)->xInfo.pEPID);
+	
+	xRet = FTOM_DB_EP_remove((*ppEP)->xInfo.pEPID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to remove EP[%s] from DB.\n", (*ppEP)->xInfo.pEPID);
+	}
 
-	FTM_LIST_remove(pEPList, *ppEP);
+	xRet = FTM_LIST_remove(pEPList, *ppEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to remove EP[%s] from list.\n", (*ppEP)->xInfo.pEPID);
+	}
 
 	FTM_LIST_iteratorStart(&(*ppEP)->xDataList);
 	while(FTM_LIST_iteratorNext(&(*ppEP)->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
@@ -367,7 +314,11 @@ FTM_RET	FTOM_EP_destroy
 		ERROR2(xRet,"MsgQ finalize failed.\n");
 	}
 
-	FTM_LOCK_destroy(&(*ppEP)->pLock);
+	xRet = FTM_LOCK_destroy(&(*ppEP)->pLock);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to destroy lock of EP[%s].\n", (*ppEP)->xInfo.pEPID);	
+	}
 
 	xRet = FTM_MEM_free(*ppEP);
 	if (xRet != FTM_RET_OK)
@@ -454,11 +405,11 @@ FTM_RET	FTOM_EP_setInfo
 	ASSERT(pInfo != NULL);
 
 	FTM_RET	xRet;
-
+	
 	xRet = FTOM_DB_EP_setInfo(pEP->xInfo.pEPID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
+		ERROR2(xRet,"EP[%s] failed to set info to DB.\n", pEP->xInfo.pEPID);
 	}
 
 	if (xFields & FTM_EP_FIELD_FLAGS)
@@ -546,53 +497,6 @@ FTM_RET	FTOM_EP_setInfo
 			FTOM_EP_stop(pEP, FTM_FALSE);	
 		}
 	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EP_attach
-(
-	FTOM_EP_PTR 	pEP, 
-	FTOM_NODE_PTR 	pNode
-)
-{
-	ASSERT(pEP != NULL);
-	ASSERT(pNode != NULL);
-
-	pEP->pNode = pNode;
-
-	switch (pNode->xInfo.xType)
-	{
-	case	FTM_NODE_TYPE_SNMP:
-		{
-			FTM_RET	xRet;
-			FTM_INT	nIndex;
-
-			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 2], 0, 16);
-
-			xRet = FTOM_NODE_SNMPC_getOIDForValue((FTOM_NODE_SNMPC_PTR)pNode, 
-						pEP->xInfo.xType, 
-						nIndex - 1,
-						&pEP->xOption.xSNMP.xOID);
-			if (xRet != FTM_RET_OK)
-			{
-				pEP->xInfo.bEnable = FTM_FALSE;	
-			}
-		}
-		break;
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_EP_detach
-(
-	FTOM_EP_PTR pEP
-)
-{
-	ASSERT(pEP != NULL);
-
-	pEP->pNode = NULL;
 
 	return	FTM_RET_OK;
 }
@@ -1175,6 +1079,30 @@ FTM_RET	FTOM_EP_getDataInfo
 	ASSERT(pulCount != NULL);
 
 	return	FTOM_DB_EP_getDataInfo(pEP->xInfo.pEPID, pulBegin, pulEnd, pulCount);
+}
+
+FTM_RET	FTOM_EP_setDataLimit
+(
+	FTOM_EP_PTR			pEP,
+	FTM_EP_LIMIT_PTR	pLimit
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pLimit != NULL);
+	
+	FTM_RET	xRet;
+
+	xRet = FTOM_DB_EP_setDataLimit(pEP->xInfo.pEPID, pLimit);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set EP data limit!\n");
+	}
+	else
+	{
+		memcpy(&pEP->xInfo.xLimit, pLimit, sizeof(FTM_EP_LIMIT));	
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_EP_remoteGetDataAsync

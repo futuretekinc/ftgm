@@ -8,6 +8,11 @@
 #include "ftom_node.h"
 #include "ftom_node_class.h"
 
+typedef struct	
+{
+	FTM_SNMP_OID	xOID;
+}	FTOM_NODE_SNMPC_EP_OPTS, _PTR_ FTOM_NODE_SNMPC_EP_OPTS_PTR;
+
 typedef	struct  FTOM_NODE_SNMPC_STRUCT
 {
 	FTOM_NODE				xCommon;
@@ -221,5 +226,28 @@ FTM_RET	FTOM_NODE_SNMPC_getEPInterval
 	FTM_ULONG_PTR			pulInterval
 );
 
+FTM_RET	FTOM_NODE_SNMPC_set
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTM_NODE_FIELD			xFields,
+	FTM_NODE_PTR			pInfo
+);
+
+FTM_RET	FTOM_NODE_SNMPC_attachEP
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTOM_EP_PTR				pEP
+);
+
+FTM_RET	FTOM_NODE_SNMPC_detachEP
+(
+	FTOM_NODE_SNMPC_PTR		pNode,
+	FTOM_EP_PTR				pEP
+);
+
+FTM_RET	FTOM_NODE_SNMPC_printOpts
+(
+	FTOM_NODE_SNMPC_PTR	pNode
+);
 #endif
 

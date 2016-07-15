@@ -4,7 +4,7 @@
 #include "ftm.h"
 #include "ftom.h"
 #include <pthread.h>
-#include "ftom_mqtt_client.h"
+#include "ftom_mqttc.h"
 #include "ftom_tp_restapi.h"
 #include "ftom_client.h"
 
@@ -26,13 +26,13 @@ typedef	struct
 
 	struct
 	{
-		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];
+		FTM_CHAR	pHost[FTM_URL_LEN+1];
 		FTM_USHORT	usPort;
 	}	xFTOMC;
 
 	struct
 	{
-		FTM_CHAR	pHost[FTOM_CLIENT_SERVER_IP_LEN];
+		FTM_CHAR	pHost[FTM_URL_LEN+1];
 		FTM_USHORT	usPort;
 	}	xSubscriber;
 
@@ -72,7 +72,7 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 	FTOM_TP_RESTAPI			xRESTApi;
 
 	FTOM_SERVICE_ID			xServiceID;
-	FTOM_SERVICE_CALLBACK	fServiceCB;
+	FTOM_SERVICE_CB			fServiceCB;
 
 	FTOM_CLIENT_PTR			pFTOMC;
 }	FTOM_TP_CLIENT, _PTR_ FTOM_TP_CLIENT_PTR;

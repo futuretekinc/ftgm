@@ -198,6 +198,18 @@ FTM_VOID	FTM_TRACE_packetDump
 			}\
 		}
 
+#define	WARN2(code, format, ...)\
+		{\
+			if (format != NULL)\
+			{\
+				FTM_TRACE_out2(__MODULE__, FTM_TRACE_LEVEL_WARN, __func__, __LINE__, code, format, ## __VA_ARGS__);\
+			}\
+			else\
+			{\
+				FTM_TRACE_out2(__MODULE__, FTM_TRACE_LEVEL_WARN, __func__, __LINE__, code, "", 0);\
+			}\
+		}
+
 #define	TRACE_ENTRY()	TRACE("ENTRY - %s\n", __func__)
 #define	TRACE_EXIT()	TRACE("EXIT - %s\n", __func__)
 

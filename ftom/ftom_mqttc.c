@@ -377,7 +377,7 @@ FTM_RET	FTOM_MQTT_CLIENT_notify
 
 	default:
 		{
-			ERROR("Not supported message[%08x]!\n", pMsg->xType);	
+			ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Not supported message[%08x]!\n", pMsg->xType);	
 		}
 	}
 	return	FTM_RET_OK;
@@ -596,7 +596,7 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 
 			default:
 				{
-					ERROR("Not supported msg[%08x]\n", pMsg->xType);	
+					ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Not supported msg[%08x]\n", pMsg->xType);	
 				}
 			}
 			FTOM_MSG_destroy(&pMsg);

@@ -73,7 +73,7 @@ int main(int nArgc, char *pArgv[])
 	xRet = FTOM_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't create object manager!\n");
+		ERROR2(xRet, "Can't create object manager!\n");
 		return	-1;	
 	}
 

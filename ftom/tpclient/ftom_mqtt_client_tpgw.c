@@ -1,6 +1,6 @@
 #include <string.h>
 #include "ftom.h"
-#include "ftom_mqtt_client.h"
+#include "ftom_mqttc.h"
 
 FTM_RET	FTOM_MQTT_CLIENT_TPGW_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
 FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser(FTM_CHAR_PTR pMessage, FTOM_MSG_PTR _PTR_	pMsg);
@@ -134,7 +134,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 	FTOM_MQTT_CLIENT_TPGW_topicParser(pTopic, pIDs, 10, &nIDs);
 	if ((nIDs != 5) || (strcmp(pClient->xConfig.pGatewayID, pIDs[3]) != 0))
 	{
-		ERROR("Invalid Topic[%s]\n", pMessage->topic);
+		ERROR2(FTM_RET_MQTT_INVALID_TOPIC, "Invalid Topic[%s]\n", pMessage->topic);
 		return;
 	}
 
@@ -145,7 +145,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 		xRet = FTOM_MQTT_CLIENT_TPGW_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Invalid message[%s].\n", pMessage->payload);
+			ERROR2(FTM_RET_MQTT_INVALID_MESSAGE, "Invalid message[%s].\n", pMessage->payload);
 			return;
 		}
 
@@ -153,7 +153,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 		if (xRet != FTM_RET_OK)
 		{
 			FTOM_MSG_destroy(&pMsg);
-			ERROR("Message queue push failed.\n");
+			ERROR2(xRet, "Message queue push failed.\n");
 			return;
 		}
 	}
@@ -224,15 +224,16 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 	pRoot = cJSON_Parse((FTM_CHAR_PTR)pMessage);
 	if (pRoot== NULL)
 	{
-		ERROR("Message is not json format.[%s]\n", pMessage);
-		return	FTM_RET_MQTT_INVALID_MESSAGE;
+		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+		ERROR2(xRet, "Message is not json format.[%s]\n", pMessage);
+		return	xRet;
 	}
 
 	pItem = cJSON_GetObjectItem(pRoot, "id");
 	if ((pItem == NULL) || (pItem->type != cJSON_String))
 	{
-		ERROR("Message ID is not exist or invalid type!\n");
 		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+		ERROR2(xRet, "Message ID is not exist or invalid type!\n");
 		goto error;
 	}
 	memset(pReqID, 0, sizeof(pReqID));
@@ -241,8 +242,8 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 	pItem = cJSON_GetObjectItem(pRoot, "method");
 	if ((pItem == NULL) || (pItem->type != cJSON_String))
 	{
-		ERROR("Message method is not exist or invalid!\n");
 		xRet = FTM_RET_MQTT_INVALID_MESSAGE;
+		ERROR2(xRet, "Message method is not exist or invalid!\n");
 		goto error;
 	}	
 

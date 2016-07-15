@@ -96,7 +96,6 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 )
 {
 	FTM_RET				xRet;
-	FTM_ULONG			ulEPCount;
 	FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR	pES7;
 
 	ASSERT(pNode != NULL);
@@ -108,6 +107,8 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 		return	xRet;	
 	}
 
+#if 0
+	FTM_ULONG			ulEPCount;
 	xRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, 0, &ulEPCount);
 	if (xRet != FTM_RET_OK)
 	{
@@ -154,6 +155,7 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 			FTM_LIST_append(&pNode->xCommon.xEPList, pEP);
 		}
 	}
+#endif
 	pES7 = (FTOM_NODE_VIRTUAL_FTE_ES7_DATA_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_VIRTUAL_FTE_ES7_DATA));
 	if (pES7 == NULL)
 	{
@@ -300,7 +302,7 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_setEPData
 FTOM_NODE_CLASS	xVirtualFTE_ES7 = 
 {
 	.pModel = "fte-es7",
-	.xType		= FTOM_NODE_TYPE_VIRTUAL,
+	.xType		= FTM_NODE_TYPE_VIRTUAL,
 	.fCreate	= (FTOM_NODE_CREATE)FTOM_NODE_VIRTUAL_create,
 	.fDestroy	= (FTOM_NODE_DESTROY)FTOM_NODE_VIRTUAL_destroy,
 	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_VIRTUAL_FTE_ES7_init,

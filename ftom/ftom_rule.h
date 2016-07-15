@@ -25,6 +25,7 @@ FTM_RET	FTOM_RULE_final
 FTM_RET	FTOM_RULE_create
 (
 	FTM_RULE_PTR	pInfo,
+	FTM_BOOL		bNew,
 	FTOM_RULE_PTR _PTR_ ppRule
 );
 

@@ -54,15 +54,16 @@ FTM_RET	FTOM_NODE_VIRTUAL_create
 	xRet = FTOM_NODE_VIRTUAL_getClass(pInfo->pModel, &pClass);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Class[%s] not found!\n", pInfo->pModel);
+		ERROR2(xRet, "Class[%s] not found!\n", pInfo->pModel);
 		return	xRet;
 	}
 
 	pNode = (FTOM_NODE_VIRTUAL_PTR)FTM_MEM_malloc(sizeof(FTOM_NODE_VIRTUAL));
 	if (pNode == NULL)
 	{
-		ERROR("Not enough memory!\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		ERROR2(xRet, "Not enough memory!\n");
+		return	xRet;
 	}
 
 	memcpy(&pNode->xCommon.xInfo, pInfo, sizeof(FTM_NODE));

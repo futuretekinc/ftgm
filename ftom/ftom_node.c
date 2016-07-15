@@ -28,21 +28,6 @@ FTM_INT	FTOM_NODE_comparator
 );
 
 static 
-FTM_RET	FTOM_NODE_lock
-(
-	FTOM_NODE_PTR pNode
-);
-
-static 
-FTM_RET	FTOM_NODE_unlock
-(
-	FTOM_NODE_PTR pNode
-);
-
-#define	FTOM_NODE_LOCK(x)	{ FTOM_NODE_lock((x)); }
-#define	FTOM_NODE_UNLOCK(x)	{ FTOM_NODE_unlock((x)); }
-
-static 
 FTM_VOID_PTR FTOM_NODE_process
 (
 	FTM_VOID_PTR pData
@@ -106,6 +91,7 @@ FTM_RET FTOM_NODE_final
 FTM_RET	FTOM_NODE_create
 (
 	FTM_NODE_PTR 	pInfo, 
+	FTM_BOOL		bNew,
 	FTOM_NODE_PTR _PTR_ ppNode
 )
 {
@@ -133,6 +119,7 @@ FTM_RET	FTOM_NODE_create
 
 		if (i == 10)
 		{
+			ERROR2(FTM_RET_ALREADY_EXIST_OBJECT, "Failed to create node[%s]!\n", pInfo->pDID);
 			return	FTM_RET_ALREADY_EXIST_OBJECT;	
 		}
 	}
@@ -141,45 +128,59 @@ FTM_RET	FTOM_NODE_create
 		xRet = FTOM_NODE_get(pInfo->pDID, &pNode);
 		if (xRet == FTM_RET_OK)
 		{
-			return	FTM_RET_ALREADY_EXIST_OBJECT;	
+			xRet = FTM_RET_ALREADY_EXIST_OBJECT;	
+			ERROR2(xRet, "Failed to create node.\n");
+			return	xRet;
 		}
 	}
 
 	xRet = FTOM_NODE_CLASS_get(pInfo->pModel, pInfo->xType, &pClass);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Node[%s] not found!\n", pInfo->pModel);
+		ERROR2(xRet, "Failed to get class information for node[%s]!\n", pInfo->pModel);
 		return	xRet;	
 	}
 
 	ASSERT(pClass->fCreate != NULL);
+	ASSERT(pClass->fDestroy != NULL);
 
 	xRet = pClass->fCreate(pInfo, &pNode);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Node[%s] creation failed!\n", pInfo->pModel);
+		ERROR2(xRet, "Failed to create Node[%s]!\n", pInfo->pModel);
 		return	xRet;	
 	}
 
 	xRet = FTM_LIST_init(&pNode->xEPList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "List initialize failed.\n");
-		FTM_MEM_free(pNode);
-
-		return	xRet;	
+		ERROR2(xRet, "Failed to initialize list.\n");
+		goto error1;
 	}
 	
 	xRet = FTOM_MSGQ_init(&pNode->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Message queue initialize failed.\n");
-		FTM_MEM_free(pNode);
-		return	xRet;	
+		ERROR2(xRet, "Failed to initialize message queue.\n");
+		goto error2;
 	}
 
-	pthread_mutex_init(&pNode->xMutexLock, NULL);
-	
+	xRet= FTM_LOCK_init(&pNode->xLock);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to initialize lock!\n");
+		goto error3;
+	}
+
+	if (bNew)
+	{
+		xRet = FTOM_DB_NODE_add(&pNode->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to add node[%s] to DB.\n", pNode->xInfo.pDID);
+		}
+	}
+
 	pNode->bStop = FTM_TRUE;
 	pNode->xState = FTOM_NODE_STATE_INITIALIZED;
 
@@ -195,6 +196,18 @@ FTM_RET	FTOM_NODE_create
 	*ppNode = pNode;
 
 	return	FTM_RET_OK;
+
+
+error3:
+	FTOM_MSGQ_final(&pNode->xMsgQ);
+
+error2:
+	FTM_LIST_final(&pNode->xEPList);
+
+error1:
+	pClass->fDestroy(&pNode);
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_NODE_destroy
@@ -207,12 +220,18 @@ FTM_RET	FTOM_NODE_destroy
 	FTM_RET			xRet;
 	FTOM_EP_PTR		pEP;
 	FTM_ULONG		ulCount;
-
+	
 	FTOM_NODE_stop((*ppNode));
 
 	if ((*ppNode)->pClass->fFinal!= NULL)
 	{
 		(*ppNode)->pClass->fFinal(*ppNode);
+	}
+
+	xRet = FTOM_DB_NODE_remove((*ppNode)->xInfo.pDID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to remove Node[%s] from DB.\n", (*ppNode)->xInfo.pDID);
 	}
 
 	while((FTM_LIST_count(&(*ppNode)->xEPList, &ulCount) == FTM_RET_OK) && (ulCount != 0))
@@ -225,15 +244,31 @@ FTM_RET	FTOM_NODE_destroy
 		}
 	}
 
-	FTM_LIST_final(&(*ppNode)->xEPList);
+	xRet = FTM_LIST_final(&(*ppNode)->xEPList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize EP list of node[%s]!\n", (*ppNode)->xInfo.pDID);	
+	}
 
-	pthread_mutex_destroy(&(*ppNode)->xMutexLock);
+	xRet = FTM_LOCK_final(&(*ppNode)->xLock);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize lock of node[%s]!\n", (*ppNode)->xInfo.pDID);	
+	}
 
-	FTM_LIST_remove(pNodeList, (*ppNode));
+	xRet = FTM_LIST_remove(pNodeList, (*ppNode));
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to remove node[%s] at list!\n", (*ppNode)->xInfo.pDID);
+	}
 
 	if ((*ppNode)->pClass->fDestroy != NULL)
 	{
-		(*ppNode)->pClass->fDestroy(ppNode);
+		xRet = (*ppNode)->pClass->fDestroy(ppNode);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to destroy node[%s]!\n", (*ppNode)->xInfo.pDID);	
+		}
 	}
 
 	*ppNode = NULL;
@@ -309,93 +344,41 @@ FTM_RET FTOM_NODE_set
 	xRet = FTM_LIST_get(pNodeList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Node[%s] not found.\n", pDID);
-		return	FTM_RET_OBJECT_NOT_FOUND;
+		xRet = FTM_RET_OBJECT_NOT_FOUND;
+		ERROR2(xRet, "Failed to get node[%s].\n", pDID);
+		goto error;
 	}
 
-	xRet = FTOM_DB_NODE_set(pDID, xFields, pInfo);
+	if (pNode->pClass == NULL)
+	{
+		xRet = FTM_RET_NO_CLASS_INFO;
+		ERROR2(xRet, "No class information for node[%s]\n", pDID);
+		goto error;
+	}
+
+	if (pNode->pClass->fSet == NULL)
+	{
+		xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+		ERROR2(xRet, "Failed to set node[%s] information!\n", pDID);
+		goto error;
+	}
+
+	xRet = pNode->pClass->fSet(pNode, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Node[%s] failed to set.\n", pDID);
-		return	xRet;	
+		ERROR2(xRet, "Failed to set node[%s] information!\n", pDID);
+		goto error;	
 	}
 
-	if (xFields & FTM_NODE_FIELD_FLAGS)
+	xRet = FTOM_DB_NODE_setInfo(pDID, xFields, pInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		pNode->xInfo.xFlags = pInfo->xFlags;
+		ERROR2(xRet, "Failed to set node[%s].\n", pDID);
 	}
 
-	if (xFields & FTM_NODE_FIELD_NAME)
-	{
-		strcpy(pNode->xInfo.pName, pInfo->pName);
-	}
+	return	FTM_RET_OK;
 
-	if (xFields & FTM_NODE_FIELD_LOCATION)
-	{
-		strcpy(pNode->xInfo.pLocation, pInfo->pLocation);
-	}
-
-	if (xFields & FTM_NODE_FIELD_INTERVAL)
-	{
-		pNode->xInfo.ulReportInterval = pInfo->ulReportInterval;
-	}
-
-	if (xFields & FTM_NODE_FIELD_TIMEOUT)
-	{
-		pNode->xInfo.ulTimeout = pInfo->ulTimeout;
-	}
-
-	if (xFields & FTM_NODE_FIELD_SNMP_VERSION)
-	{
-		pNode->xInfo.xOption.xSNMP.ulVersion = pInfo->xOption.xSNMP.ulVersion ;
-	}
-
-	if (xFields & FTM_NODE_FIELD_SNMP_URL)
-	{
-		strcpy(pNode->xInfo.xOption.xSNMP.pURL, pInfo->xOption.xSNMP.pURL);
-	}
-
-	if (xFields & FTM_NODE_FIELD_SNMP_COMMUNITY)
-	{
-		strcpy(pNode->xInfo.xOption.xSNMP.pCommunity, pInfo->xOption.xSNMP.pCommunity);
-	}
-
-	if (xFields & FTM_NODE_FIELD_SNMP_MIB)
-	{
-		strcpy(pNode->xInfo.xOption.xSNMP.pMIB, pInfo->xOption.xSNMP.pMIB);
-	}
-
-	if (xFields & FTM_NODE_FIELD_SNMP_MAX_RETRY)
-	{
-		pNode->xInfo.xOption.xSNMP.ulMaxRetryCount = pInfo->xOption.xSNMP.ulMaxRetryCount;
-	}
-
-	if (xFields & FTM_NODE_FIELD_MQTT_VERSION)
-	{
-		pNode->xInfo.xOption.xMQTT.ulVersion = pInfo->xOption.xMQTT.ulVersion;
-	}
-
-	if (xFields & FTM_NODE_FIELD_MQTT_URL)
-	{
-		strcpy(pNode->xInfo.xOption.xMQTT.pURL, pInfo->xOption.xMQTT.pURL);
-	}
-
-	if (xFields & FTM_NODE_FIELD_MQTT_TOPIC)
-	{
-		strcpy(pNode->xInfo.xOption.xMQTT.pTopic, pInfo->xOption.xMQTT.pTopic);
-	}
-
-	if (xFields & FTM_NODE_FIELD_LORA_VERION)
-	{
-		pNode->xInfo.xOption.xLoRa.ulVersion = pInfo->xOption.xLoRa.ulVersion;
-	}
-
-	if (xFields & FTM_NODE_FIELD_LORA_DEVICE)
-	{
-		strcpy(pNode->xInfo.xOption.xLoRa.pDevice, pInfo->xOption.xLoRa.pDevice);
-	}
-
-
+error:
 	return	xRet;
 }
 
@@ -408,12 +391,32 @@ FTM_RET	FTOM_NODE_linkEP
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	FTOM_NODE_LOCK(pNode);
+	FTM_RET	xRet;
+
+	if (pNode->pClass == NULL)
+	{
+		ERROR2(FTM_RET_NO_CLASS_INFO, "No class information for node[%s]\n", pNode->xInfo.pDID);
+		return	FTM_RET_NO_CLASS_INFO;
+	}
+
+	if (pNode->pClass->fAttachEP == NULL)
+	{
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Failed to set node[%s] information!\n", pNode->xInfo.pDID);
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+	}
+
+	xRet = pNode->pClass->fAttachEP(pNode, pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to attach EP[%s] to Node[%s].\n", pEP->xInfo.pEPID, pNode->xInfo.pDID);
+		return	xRet;	
+	}
+
+	FTM_LOCK_set(&pNode->xLock);
 
 	FTM_LIST_append(&pNode->xEPList, pEP);
-	FTOM_EP_attach(pEP, pNode);
 
-	FTOM_NODE_UNLOCK(pNode);
+	FTM_LOCK_reset(&pNode->xLock);
 
 	return	FTM_RET_OK;
 }
@@ -427,13 +430,34 @@ FTM_RET	FTOM_NODE_unlinkEP
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	FTOM_NODE_LOCK(pNode);
+	FTM_RET	xRet;
 
 	FTOM_EP_stop(pEP, FTM_TRUE);
-	FTOM_EP_detach(pEP);
+
+	if (pNode->pClass == NULL)
+	{
+		ERROR2(FTM_RET_NO_CLASS_INFO, "No class information for node[%s]\n", pNode->xInfo.pDID);
+		return	FTM_RET_NO_CLASS_INFO;
+	}
+
+	if (pNode->pClass->fAttachEP == NULL)
+	{
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Failed to set node[%s] information!\n", pNode->xInfo.pDID);
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+	}
+
+	xRet = pNode->pClass->fDetachEP(pNode, pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to detach EP[%s] to Node[%s].\n", pEP->xInfo.pEPID, pNode->xInfo.pDID);
+		return	xRet;	
+	}
+
+	FTM_LOCK_set(&pNode->xLock);
+
 	FTM_LIST_remove(&pNode->xEPList, pEP);
 	
-	FTOM_NODE_UNLOCK(pNode);
+	FTM_LOCK_reset(&pNode->xLock);
 
 	return	FTM_RET_OK;
 }
@@ -450,16 +474,19 @@ FTM_RET	FTOM_NODE_getEPID
 	ASSERT(pNode != NULL);
 	ASSERT(pEPID != NULL);
 
-	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
+	FTM_RET	xRet;
 
-	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPID != NULL))
+	if ((pNode->pClass == NULL) || (pNode->pClass->fGetEPID == NULL))
 	{
-		FTOM_NODE_LOCK(pNode);
-	
-		xRet = pNode->pClass->fGetEPID(pNode, xEPType, ulIndex, pEPID, ulMaxLen);	
-
-		FTOM_NODE_UNLOCK(pNode);
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Not supported function getEPID!\n");
+		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
+
+	FTM_LOCK_set(&pNode->xLock);
+	
+	xRet = pNode->pClass->fGetEPID(pNode, xEPType, ulIndex, pEPID, ulMaxLen);	
+
+	FTM_LOCK_reset(&pNode->xLock);
 	
 	return	xRet;
 }
@@ -476,16 +503,19 @@ FTM_RET	FTOM_NODE_getEPName
 	ASSERT(pNode != NULL);
 	ASSERT(pName != NULL);
 
-	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
+	FTM_RET	xRet;
 
-	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPName != NULL))
+	if ((pNode->pClass == NULL) || (pNode->pClass->fGetEPName == NULL))
 	{
-		FTOM_NODE_LOCK(pNode);
-	
-		xRet = pNode->pClass->fGetEPName(pNode, xEPType, ulIndex, pName, ulMaxLen);	
-
-		FTOM_NODE_UNLOCK(pNode);
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Not supported function getEPName!\n");
+		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
+
+	FTM_LOCK_set(&pNode->xLock);
+
+	xRet = pNode->pClass->fGetEPName(pNode, xEPType, ulIndex, pName, ulMaxLen);	
+
+	FTM_LOCK_reset(&pNode->xLock);
 	
 	return	xRet;
 }
@@ -501,16 +531,19 @@ FTM_RET	FTOM_NODE_getEPState
 	ASSERT(pNode != NULL);
 	ASSERT(pbEnable != NULL);
 
-	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
+	FTM_RET	xRet;
 
-	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPState != NULL))
+	if ((pNode->pClass == NULL) || (pNode->pClass->fGetEPState == NULL))
 	{
-		FTOM_NODE_LOCK(pNode);
-	
-		xRet = pNode->pClass->fGetEPState(pNode, xEPType, ulIndex, pbEnable);	
-	
-		FTOM_NODE_UNLOCK(pNode);
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Not supported function getEPState!\n");
+		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
+
+	FTM_LOCK_set(&pNode->xLock);
+
+	xRet = pNode->pClass->fGetEPState(pNode, xEPType, ulIndex, pbEnable);	
+
+	FTM_LOCK_reset(&pNode->xLock);
 	
 	return	xRet;
 }
@@ -526,17 +559,20 @@ FTM_RET	FTOM_NODE_getEPUpdateInterval
 	ASSERT(pNode != NULL);
 	ASSERT(pulUpdateInterval != NULL);
 
-	FTM_RET	xRet = FTM_RET_OBJECT_NOT_FOUND;
+	FTM_RET	xRet;
 
 	
-	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPUpdateInterval != NULL))
+	if ((pNode->pClass == NULL) || (pNode->pClass->fGetEPInterval == NULL))
 	{
-		FTOM_NODE_LOCK(pNode);
-
-		xRet = pNode->pClass->fGetEPUpdateInterval(pNode, xEPType, ulIndex, pulUpdateInterval);	
-
-		FTOM_NODE_UNLOCK(pNode);
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Not supported function getEPInterval!\n");
+		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
+
+	FTM_LOCK_set(&pNode->xLock);
+
+	xRet = pNode->pClass->fGetEPInterval(pNode, xEPType, ulIndex, pulUpdateInterval);	
+
+	FTM_LOCK_reset(&pNode->xLock);
 
 	
 	return	xRet;
@@ -552,22 +588,25 @@ FTM_RET FTOM_NODE_getEPData
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	FTM_RET	xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;	
+	FTM_RET	xRet;
 
 
-	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPData != NULL))
+	if ((pNode->pClass == NULL) || (pNode->pClass->fGetEPData == NULL))
 	{
-		FTOM_NODE_LOCK(pNode);
-
-		pNode->xStatistics.ulGetCount++;
-		xRet = pNode->pClass->fGetEPData(pNode, pEP, pData);
-		if (xRet != FTM_RET_OK)
-		{
-			pNode->xStatistics.ulGetError++;
-		}
-
-		FTOM_NODE_UNLOCK(pNode);
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Not supported function getEPID!\n");
+		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
+
+	FTM_LOCK_set(&pNode->xLock);
+
+	pNode->xStatistics.ulGetCount++;
+	xRet = pNode->pClass->fGetEPData(pNode, pEP, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		pNode->xStatistics.ulGetError++;
+	}
+
+	FTM_LOCK_reset(&pNode->xLock);
 
 	return	xRet;
 }
@@ -584,21 +623,22 @@ FTM_RET	FTOM_NODE_setEPData
 
 	FTM_RET	xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;	
 
-	TRACE("pNode = %08x\n", pNode);
-	TRACE("pNode->pClass = %08x\n", pNode->pClass);
-	if ((pNode->pClass != NULL) && (pNode->pClass->fSetEPData != NULL))
+	if ((pNode->pClass == NULL) || (pNode->pClass->fSetEPData == NULL))
 	{
-		FTOM_NODE_LOCK(pNode);
-
-		pNode->xStatistics.ulGetCount++;
-		xRet = pNode->pClass->fSetEPData(pNode, pEP, pData);
-		if (xRet != FTM_RET_OK)
-		{
-			pNode->xStatistics.ulSetError++;
-		}
-
-		FTOM_NODE_UNLOCK(pNode);
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Not supported function getEPID!\n");
+		return	FTM_RET_OBJECT_NOT_FOUND;
 	}
+
+	FTM_LOCK_set(&pNode->xLock);
+
+	pNode->xStatistics.ulGetCount++;
+	xRet = pNode->pClass->fSetEPData(pNode, pEP, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		pNode->xStatistics.ulSetError++;
+	}
+
+	FTM_LOCK_reset(&pNode->xLock);
 
 	return	xRet;
 }
@@ -648,8 +688,15 @@ FTM_RET	FTOM_NODE_getEPDataAsync
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPDataAsync == NULL))
+	if (pNode->pClass == NULL)
 	{
+		ERROR2(FTM_RET_NOT_SUPPORTED_NODE_CLASS, "Not supported node class!\n");
+		return	FTM_RET_NOT_SUPPORTED_NODE_CLASS;
+	}
+	
+	if (pNode->pClass->fGetEPDataAsync == NULL)
+	{
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Asynchronous data get function not supported!\n");
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
@@ -666,8 +713,15 @@ FTM_RET	FTOM_NODE_setEPDataAsync
 	ASSERT(pNode != NULL);
 	ASSERT(pEP != NULL);
 
-	if ((pNode->pClass != NULL) && (pNode->pClass->fSetEPDataAsync == NULL))
+	if (pNode->pClass == NULL)
 	{
+		ERROR2(FTM_RET_NOT_SUPPORTED_NODE_CLASS, "Not supported node class!\n");
+		return	FTM_RET_NOT_SUPPORTED_NODE_CLASS;
+	}
+	
+	if (pNode->pClass->fSetEPDataAsync == NULL)
+	{
+		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Asynchronous data set function not supported!\n");
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
@@ -712,8 +766,9 @@ FTM_RET	FTOM_NODE_start
 
 	if (!pNode->bStop)
 	{
-		ERROR("Node is already started.\n");
-		return	FTM_RET_ALREADY_STARTED;
+		xRet = FTM_RET_ALREADY_STARTED;
+		ERROR2(xRet, "Node is already started.\n");
+		return	xRet;
 	}
 
 	if ((pNode->pClass != NULL) && (pNode->pClass->fPrestart != NULL))
@@ -731,17 +786,23 @@ FTM_RET	FTOM_NODE_start
 
 		if ((pNode->pClass != NULL) && (pNode->pClass->fProcess != NULL))
 		{
-			nRet = pthread_create(&pNode->xThread, NULL, pNode->pClass->fProcess, pNode);
+		
+			xRet = pNode->pClass->fProcess(pNode);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to run process!\n");
+				return	xRet;
+			}
 		}
 		else
 		{
 			nRet = pthread_create(&pNode->xThread, NULL, FTOM_NODE_process, pNode);
-		}
-
-		if (nRet != 0)
-		{
-			ERROR("Node start failed.[%d]\n", nRet);
-			return	FTM_RET_THREAD_CREATION_ERROR;
+			if (nRet != 0)
+			{
+				xRet = FTM_RET_THREAD_CREATION_ERROR;
+				ERROR2(xRet, "Node start failed.[%d]\n", nRet);
+				return	xRet;
+			}
 		}
 
 		xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
@@ -824,7 +885,7 @@ FTM_RET FTOM_NODE_stop
 		}
 		else
 		{
-			ERROR("NODE[%s] : Can't create quit message!\n", pNode->xInfo.pDID);
+			ERROR2(xRet, "NODE[%s] : Can't create quit message!\n", pNode->xInfo.pDID);
 			pthread_cancel(pNode->xThread);
 		}
 	
@@ -896,31 +957,6 @@ FTM_VOID_PTR FTOM_NODE_process
 
 	pNode->xState= FTOM_NODE_STATE_STOP;
 	TRACE("Node[%s] stopped.\n", pNode->xInfo.pDID);
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_NODE_lock
-(
-	FTOM_NODE_PTR pNode
-)
-{
-	ASSERT(pNode != NULL);
-
-	pthread_mutex_lock(&pNode->xMutexLock);
-
-	return	FTM_RET_OK;
-}
-
-
-FTM_RET	FTOM_NODE_unlock
-(
-	FTOM_NODE_PTR pNode
-)
-{
-	ASSERT(pNode != NULL);
-
-	pthread_mutex_unlock(&pNode->xMutexLock);
 
 	return	FTM_RET_OK;
 }
@@ -1023,44 +1059,10 @@ FTM_RET	FTOM_NODE_print
 	MESSAGE("%16s : %s\n", "Model",		pNode->xInfo.pModel);
 	MESSAGE("%16s : %s\n", "Name",		pNode->xInfo.pName);
 	MESSAGE("%16s : %s\n", "Type", 		FTM_NODE_typeString(pNode->xInfo.xType));
-	switch(pNode->xInfo.xType)
+
+	if ((pNode->pClass != NULL) && (pNode->pClass->fPrintOpts != NULL))
 	{
-	case	FTM_NODE_TYPE_SNMP:	
-		{
-			MESSAGE("%16s   %10s - %s\n", "", "Version", 	FTM_SNMP_versionString(pNode->xInfo.xOption.xSNMP.ulVersion));	
-			MESSAGE("%16s   %10s - %s\n", "", "URL", 		pNode->xInfo.xOption.xSNMP.pURL);
-			MESSAGE("%16s   %10s - %s\n", "", "Community", 	pNode->xInfo.xOption.xSNMP.pCommunity);
-			MESSAGE("%16s   %10s - %s\n", "", "MIB", 		pNode->xInfo.xOption.xSNMP.pMIB);
-			MESSAGE("%16s   %10s - %lu\n","", "Retry", 		pNode->xInfo.xOption.xSNMP.ulMaxRetryCount);
-		}
-		break;
-#if 0
-	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
-		{
-			MESSAGE("%16s   %10s - %d\n", "", "Version", 	pNode->xInfo.xOption.xMB.ulVersion);	
-			MESSAGE("%16s   %10s - %s\n", "", "URL", 		pNode->xInfo.xOption.xMB.pURL);
-			MESSAGE("%16s   %10s - %lu\n","", "Port", 		pNode->xInfo.xOption.xMB.ulPort);
-			MESSAGE("%16s   %10s - %lu\n","", "SlaveID", 	pNode->xInfo.xOption.xMB.ulSlaveID);
-		}
-		break;
-#endif
-	case	FTM_NODE_TYPE_FINS:
-		{
-			MESSAGE("%16s   %10s - %lu\n", "", "Version", 	pNode->xInfo.xOption.xFINS.ulVersion);	
-			MESSAGE("%16s   %10s - %s\n", "", "DestIP", 	pNode->xInfo.xOption.xFINS.pDIP);
-			MESSAGE("%16s   %10s - %lu\n","", "DestPort",	pNode->xInfo.xOption.xFINS.ulDP);
-			MESSAGE("%16s   %10s - %lu\n","", "SrcPort", 	pNode->xInfo.xOption.xFINS.ulSP);
-			MESSAGE("%16s   %10s - %02x:%02x:%02x\n","", "DestAddr",	
-					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >> 16) & 0xFF),
-					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >>  8) & 0xFF),
-					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >>  0) & 0xFF));
-			MESSAGE("%16s   %10s - %02x:%02x:%02x\n","", "SrcAddr", 
-					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >> 16) & 0xFF),
-					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >>  8) & 0xFF),
-					(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >>  0) & 0xFF));
-			MESSAGE("%16s   %10s - %lu\n","", "ServerID", 	pNode->xInfo.xOption.xFINS.ulServerID);
-		}
-		break;
+		pNode->pClass->fPrintOpts(pNode);	
 	}
 
 	MESSAGE("%16s : %s\n", "State", 	FTOM_NODE_stateToStr(pNode->xState));

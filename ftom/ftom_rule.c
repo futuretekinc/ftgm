@@ -106,6 +106,7 @@ FTM_RET	FTOM_RULE_final
 FTM_RET	FTOM_RULE_create
 (
 	FTM_RULE_PTR 	pInfo,
+	FTM_BOOL		bNew,
 	FTOM_RULE_PTR _PTR_ ppRule
 )
 {
@@ -118,8 +119,9 @@ FTM_RET	FTOM_RULE_create
 	pRule = (FTOM_RULE_PTR)FTM_MEM_malloc(sizeof(FTOM_RULE));
 	if (pRule == NULL)
 	{
-		ERROR("Not enough memory\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+		ERROR2(xRet, "Not enough memory\n");
+		return	xRet;
 	}
 
 	memset(pRule, 0, sizeof(FTOM_RULE));
@@ -135,64 +137,25 @@ FTM_RET	FTOM_RULE_create
 	xRet = FTM_LIST_append(pRuleList, pRule);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pRule);
 		ERROR2(xRet, "Rule[%s] failed to add to list.\n", pRule->xInfo.pID);
-		return	xRet;	
+		goto error;
+	}
+
+	if (bNew)
+	{
+		xRet = FTOM_DB_RULE_add(&pRule->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to add rule[%s] to DB!\n", pRule->xInfo.pID);
+		}
 	}
 
 	*ppRule = pRule;
 
-	return	xRet;
-}
+	return	FTM_RET_OK;
 
-FTM_RET	FTOM_RULE_createFromDB
-(
-	FTM_CHAR_PTR	pID,
-	FTOM_RULE_PTR _PTR_ ppRule
-)
-{
-	ASSERT(pID != NULL);
-	ASSERT(ppRule != NULL);
-
-	FTM_RET			xRet;
-	FTM_RULE		xInfo;
-	FTOM_RULE_PTR	pRule;
-
-	xRet = FTOM_DB_RULE_getInfo(pID, &xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		TRACE("Rule[%s] not found.\n", pID);
-		return	xRet;
-	}
-
-	pRule = (FTOM_RULE_PTR)FTM_MEM_malloc(sizeof(FTOM_RULE));
-	if (pRule == NULL)
-	{
-		ERROR("Not enough memory\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	memset(pRule, 0, sizeof(FTOM_RULE));
-	memcpy(&pRule->xInfo, &xInfo, sizeof(FTM_RULE));
-	
-	if (strlen(pRule->xInfo.pID) == 0)
-	{
-		FTM_makeID(pRule->xInfo.pID, 16);
-	}
-
-	FTM_LOCK_init(&pRule->xLock);
-
-	xRet = FTM_LIST_append(pRuleList, pRule);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pRule);
-		ERROR2(xRet, "Rule[%s] failed to add to list.\n", pRule->xInfo.pID);
-		return	xRet;	
-	}
-	else
-	{
-		*ppRule = pRule;
-	}
+error:
+	FTM_MEM_free(pRule);
 
 	return	xRet;
 }
@@ -204,6 +167,12 @@ FTM_RET	FTOM_RULE_destroy
 {
 	ASSERT(ppRule != NULL);
 	FTM_RET		xRet;
+	
+	xRet = FTOM_DB_RULE_remove((*ppRule)->xInfo.pID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to remove rule[%s] from DB!\n", (*ppRule)->xInfo.pID);
+	}
 
 	xRet = FTM_LIST_remove(pRuleList, *ppRule);
 	if (xRet == FTM_RET_OK)
@@ -462,8 +431,7 @@ FTM_RET	FTOM_RULE_setInfo
 	xRet = FTOM_DB_RULE_setInfo(pRule->xInfo.pID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Rule[%s] DB update failed.\n", pRule->xInfo.pID);	
-		return	xRet;
+		ERROR2(xRet, "Failed to set Rule[%s] to DB.\n", pRule->xInfo.pID);	
 	}
 
 	if (xFields & FTM_RULE_FIELD_NAME)

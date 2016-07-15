@@ -87,83 +87,23 @@ FTM_RET	FTOM_getDID
 	FTM_ULONG 		ulBuffLen
 );
 
-FTM_RET	FTOM_DB_NODE_add
-(
-	FTM_NODE_PTR	pInfo
-);
-
-FTM_RET	FTOM_DB_NODE_remove
-(
-	FTM_CHAR_PTR	pDID
-);
-
 FTM_RET	FTOM_DB_NODE_count
 (
 	FTM_ULONG_PTR	pulCount
 );
 
-FTM_RET FTOM_DB_NODE_getDIDList
-(
-	FTM_DID_PTR		pIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-);
-
+#if 0
 FTM_RET	FTOM_DB_NODE_getInfo
 (
 	FTM_CHAR_PTR	pDID,
 	FTM_NODE_PTR	pInfo
 );
+#endif
 
-FTM_RET	FTOM_DB_NODE_getInfoAt
+FTM_RET	FTOM_DB_NODE_getAt
 (
 	FTM_ULONG		ulIndex,
 	FTM_NODE_PTR	pInfo
-);
-
-FTM_RET	FTOM_DB_NODE_setInfo
-(
-	FTM_CHAR_PTR	pDID,
-	FTM_NODE_FIELD	xFields,
-	FTM_NODE_PTR 	pInfo
-);
-
-FTM_RET	FTOM_DB_EP_add
-(
-	FTM_EP_PTR pInfo
-);
-
-FTM_RET	FTOM_DB_EP_remove
-(
-	FTM_CHAR_PTR	pEPID
-);
-
-FTM_RET FTOM_DB_EP_getEPIDList
-(
-	FTM_EPID_PTR	pEPIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-);
-
-FTM_RET	FTOM_DB_EP_getInfo
-(
-	FTM_CHAR_PTR	pEPID,
-	FTM_EP_PTR		pInfo
-);
-
-FTM_RET	FTOM_DB_EP_getInfo
-(
-	FTM_CHAR_PTR	pEPID,
-	FTM_EP_PTR		pInfo
-);
-
-FTM_RET	FTOM_DB_EP_setInfo
-(
-	FTM_CHAR_PTR	pEPID,
-	FTM_EP_FIELD	xFields,
-	FTM_EP_PTR		pInfo
 );
 
 FTM_RET	FTOM_DB_EP_getDataList
@@ -219,24 +159,6 @@ FTM_RET	FTOM_DB_EP_removeDataWithTime
 	FTM_ULONG_PTR	pulDeletedCount
 );
 
-FTM_RET	FTOM_DB_TRIGGER_add
-(
-	FTM_TRIGGER_PTR	pInfo
-);
-
-FTM_RET	FTOM_DB_TRIGGER_remove
-(
-	FTM_CHAR_PTR	pTriggerID
-);
-
-FTM_RET FTOM_DB_TRIGGER_getIDList
-(
-	FTM_ID_PTR		pIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-);
-
 FTM_RET	FTOM_DB_TRIGGER_getInfo
 (
 	FTM_CHAR_PTR	pTriggerID,
@@ -256,24 +178,6 @@ FTM_RET	FTOM_DB_TRIGGER_setInfo
 	FTM_TRIGGER_PTR		pInfo
 );
 
-FTM_RET	FTOM_DB_ACTION_add
-(
-	FTM_ACTION_PTR	pInfo
-);
-
-FTM_RET	FTOM_DB_ACTION_remove
-(
-	FTM_CHAR_PTR	pActionID
-);
-
-FTM_RET FTOM_DB_ACTION_getIDList
-(
-	FTM_ID_PTR		pIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-);
-
 FTM_RET	FTOM_DB_ACTION_getInfo
 (
 	FTM_CHAR_PTR	pActionID,
@@ -291,24 +195,6 @@ FTM_RET	FTOM_DB_ACTION_setInfo
 	FTM_CHAR_PTR	pActionID,
 	FTM_ACTION_FIELD	xField,
 	FTM_ACTION_PTR		pInfo
-);
-
-FTM_RET	FTOM_DB_RULE_add
-(
-	FTM_RULE_PTR	pInfo
-);
-
-FTM_RET	FTOM_DB_RULE_remove
-(
-	FTM_CHAR_PTR	pRuleID
-);
-
-FTM_RET FTOM_DB_RULE_getIDList
-(
-	FTM_ID_PTR		pIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
 );
 
 FTM_RET	FTOM_DB_RULE_getInfo

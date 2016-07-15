@@ -14,8 +14,9 @@ FTM_RET	FTOM_MSGQ_create(FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
 	pMsgQ = (FTOM_MSG_QUEUE_PTR)FTM_MEM_malloc(sizeof(FTOM_MSG_QUEUE));
 	if (pMsgQ == NULL)
 	{
-		ERROR("Not enough memory!\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+		ERROR2(xRet, "Not enough memory!\n");
+		return	xRet;
 	}
 
 	memset(pMsgQ, 0, sizeof(FTOM_MSG_QUEUE));

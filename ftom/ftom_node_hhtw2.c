@@ -49,8 +49,9 @@ FTM_RET	FTOM_NODE_MBC_HHTW_prestart
 	pNode->pMB = modbus_new_tcp(pNode->xCommon.xInfo.xOption.xMB.pURL, pNode->xCommon.xInfo.xOption.xMB.ulPort);
 	if (pNode->pMB == NULL)
 	{
-		ERROR("Can't creation MB object!\n");
-		return	FTM_RET_MODBUS_ERROR;
+		xRet = FTM_RET_MODBUS_ERROR;
+		ERROR2(xRet, "Can't creation MB object!\n");
+		return	xRet;
 	}
 
 	struct timeval timeout;
@@ -65,8 +66,9 @@ FTM_RET	FTOM_NODE_MBC_HHTW_prestart
 	nRet = modbus_connect(pNode->pMB);
 	if (nRet < 0)
 	{
-		ERROR("Node[%s] failed connection to %s:%d!\n", pNode->xCommon.xInfo.pDID, pNode->xCommon.xInfo.xOption.xMB.pURL, pNode->xCommon.xInfo.xOption.xMB.ulPort);
-		return	FTM_RET_NOT_CONNECTED;
+		xRet = FTM_RET_NOT_CONNECTED;
+		ERROR2(xRet, "Node[%s] failed connection to %s:%d!\n", pNode->xCommon.xInfo.pDID, pNode->xCommon.xInfo.xOption.xMB.pURL, pNode->xCommon.xInfo.xOption.xMB.ulPort);
+		return	xRet;
 	}
 
 	TRACE("Node[%s] connected : pMB = %08x!\n",pNode->xCommon.xInfo.pDID, pNode->pMB);
@@ -130,16 +132,16 @@ FTM_RET	FTOM_NODE_MBC_HHTW_get
 	nRet = modbus_read_registers(pNode->pMB, usRegID, 1, &usValue);
 	if (nRet < 0)
 	{
-		ERROR("MODBUS read input registers failed[%d]!\n", nRet);
 		xRet = FTM_RET_OBJECT_NOT_FOUND;
+		ERROR2(xRet, "MODBUS read input registers failed[%d]!\n", nRet);
 		goto finish;
 	}
 
 	xRet = FTOM_EP_getDataType(pEP, &xDataType);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Invalid data type\n");
 		xRet = FTM_RET_INVALID_TYPE;
+		ERROR2(xRet, "Invalid data type\n");
 		goto finish;
 	}
 
@@ -186,6 +188,10 @@ FTOM_NODE_CLASS	xNodeModbusClientHHTW =
 	.fPrestart	= (FTOM_NODE_PRESTART)FTOM_NODE_MBC_HHTW_prestart,
 	.fPoststop	= (FTOM_NODE_POSTSTOP)FTOM_NODE_MBC_HHTW_poststop,
 	.fGetEPData	= (FTOM_NODE_GET_EP_DATA)FTOM_NODE_MBC_HHTW_get,
-	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_MBC_HHTW_set
+
+	.fSet		= (FTOM_NODE_SET)FTOM_NODE_MBC_set,
+	.fSetEPData	= (FTOM_NODE_SET_EP_DATA)FTOM_NODE_MBC_HHTW_set,
+
+	.fPrintOpts	= (FTOM_NODE_PRINT_OPTS)FTOM_NODE_MBC_printOpts
 };
 

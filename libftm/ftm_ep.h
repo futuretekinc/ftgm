@@ -58,7 +58,6 @@ typedef	enum
 typedef	struct FTM_EP_DATA_STRUCT
 {
 	FTM_ULONG			ulTime;
-	//FTM_EP_DATA_TYPE	xType;
 	FTM_EP_DATA_STATE	xState;
 	FTM_VALUE			xValue;
 }	FTM_EP_DATA, _PTR_ FTM_EP_DATA_PTR;
@@ -372,7 +371,12 @@ typedef	struct
 	FTM_CHAR_PTR		pFileName;
 }	FTM_DB_INFO, _PTR_ FTM_DB_INFO_PTR;
 
-FTM_RET	FTM_EP_DATA_snprint(FTM_CHAR_PTR pBuff, FTM_ULONG ulMaxLen, FTM_EP_DATA_PTR pData);
+FTM_RET	FTM_EP_DATA_snprint
+(
+	FTM_CHAR_PTR 	pBuff, 
+	FTM_ULONG 		ulMaxLen, 
+	FTM_EP_DATA_PTR pData
+);
 
 #endif
 

@@ -45,12 +45,12 @@ FTM_RET	FTOM_LOG_destroyNode
 
 FTM_RET	FTOM_LOG_createEP
 (
-	FTM_EP_PTR		pEPInfo
+	FTM_CHAR_PTR	pEPID
 );
 
 FTM_RET	FTOM_LOG_destroyEP
 (
-	FTM_EP_PTR		pEPInfo
+	FTM_CHAR_PTR	pEPID
 );
 
 FTM_RET	FTOM_LOG_createTrigger

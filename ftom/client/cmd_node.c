@@ -73,8 +73,9 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 				(strlen(pArgv[4]) > FTM_URL_LEN) ||
 				(strlen(pArgv[2]) > FTM_DID_LEN))
 			{
-				ERROR("Invalid DID length[< %d]\n", FTM_DID_LEN);
-				return	FTM_RET_INVALID_ARGUMENTS;
+				xRet = FTM_RET_INVALID_ARGUMENTS;
+				ERROR2(xRet, "Invalid DID length[< %d]\n", FTM_DID_LEN);
+				return	xRet;
 			}
 
 			for(i = 0 ; i < strlen(pArgv[5]) ; i++)
@@ -96,7 +97,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 			xRet = FTOM_CLIENT_NODE_create(pClient, &xNodeInfo, pDID, FTM_ID_LEN);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR("%s : ERROR - %lx\n", pArgv[0], xRet);
+				ERROR2(xRet, "Failed to create node[%s]\n", pArgv[2]);
 			}
 			else
 			{
@@ -105,8 +106,9 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 		}
 		else
 		{
-			ERROR("Invalid type or arguments [ Type = %08lx ]\n", xNodeInfo.xType);
-			return	FTM_RET_INVALID_ARGUMENTS;
+			xRet = FTM_RET_INVALID_ARGUMENTS;
+			ERROR2(xRet, "Invalid type or arguments [ Type = %08lx ]\n", xNodeInfo.xType);
+			return	xRet;
 		}
 	}
 	else if (strcasecmp(pArgv[1], "del") == 0)
@@ -127,7 +129,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 		xRet = FTOM_CLIENT_NODE_destroy(pClient, pDID);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+			ERROR2(xRet, "Failed to destroy node[%s]\n", pArgv[2]);
 		}
 		else
 		{
@@ -153,7 +155,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 		xRet = FTOM_CLIENT_NODE_get(pClient, pDID, &xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+			ERROR2(xRet, "Failed to get node[%s] info\n", pDID);
 		}
 		else
 		{
@@ -196,7 +198,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 		xRet = FTOM_CLIENT_NODE_count(pClient, &ulNodeCount);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("%s : ERROR - %lu\n", pArgv[0], xRet);
+			ERROR2(xRet, "Failed to get node count.\n");
 		}
 
 		MESSAGE("NODE COUNT : %lu\n", ulNodeCount);

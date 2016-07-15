@@ -267,10 +267,10 @@ FTM_RET	FTOM_LOG_destroyNode
 
 FTM_RET	FTOM_LOG_createEP
 (
-	FTM_EP_PTR		pEPInfo
+	FTM_CHAR_PTR	pEPID
 )
 {
-	ASSERT(pEPInfo != NULL);
+	ASSERT(pEPID != NULL);
 
 	FTM_RET		xRet;
 	FTM_LOG_PTR	pLog;
@@ -283,7 +283,7 @@ FTM_RET	FTOM_LOG_createEP
 
 	pLog->xType = FTM_LOG_TYPE_CREATE_EP;
 	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pEPInfo->pEPID, FTM_EPID_LEN);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pEPID, FTM_EPID_LEN);
 
 	xRet = FTOM_LOGGER_add(pLog);
 	if (xRet != FTM_RET_OK)
@@ -296,10 +296,10 @@ FTM_RET	FTOM_LOG_createEP
 
 FTM_RET	FTOM_LOG_destroyEP
 (
-	FTM_EP_PTR	pEPInfo
+	FTM_CHAR_PTR	pEPID
 )
 {
-	ASSERT(pEPInfo != NULL);
+	ASSERT(pEPID != NULL);
 
 	FTM_RET		xRet;
 	FTM_LOG_PTR	pLog;
@@ -312,7 +312,7 @@ FTM_RET	FTOM_LOG_destroyEP
 
 	pLog->xType = FTM_LOG_TYPE_DESTROY_EP;
 	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pEPInfo->pEPID, FTM_DID_LEN);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pEPID, FTM_DID_LEN);
 
 	xRet = FTOM_LOGGER_add(pLog);
 	if (xRet != FTM_RET_OK)

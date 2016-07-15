@@ -243,7 +243,7 @@ FTM_RET	FTOM_SERVICE_loadConfigFromFile
 	xRet =FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("SERVER configuration file[%s] load failed\n", pFileName);
+		ERROR2(xRet, "SERVER configuration file[%s] load failed\n", pFileName);
 		return	xRet;	
 	}
 
@@ -316,7 +316,7 @@ FTM_RET	FTOM_SERVICE_saveConfigToFile
 	xRet =FTM_CONFIG_create(pFileName, &pConfig, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to create configuration file[%s].\n", pFileName);
+		ERROR2(xRet, "Failed to create configuration file[%s].\n", pFileName);
 		return	xRet;	
 	}
 

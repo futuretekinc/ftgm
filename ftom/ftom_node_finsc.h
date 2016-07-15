@@ -59,5 +59,17 @@ FTM_RET	FTOM_NODE_FINSC_stop
 	FTOM_NODE_FINSC_PTR pNode
 );
 
+FTM_RET	FTOM_NODE_FINSC_set
+(
+	FTOM_NODE_FINSC_PTR		pNode,
+	FTM_NODE_FIELD			xFields,
+	FTM_NODE_PTR			pInfo
+);
+
+FTM_RET	FTOM_NODE_FINSC_printOpts
+(
+	FTOM_NODE_FINSC_PTR	pNode
+);
+
 #endif
 

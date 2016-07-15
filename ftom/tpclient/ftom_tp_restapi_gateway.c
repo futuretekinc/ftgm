@@ -58,7 +58,7 @@ FTM_RET	FTOM_TP_GATEWAY_init
 	xRet = FTM_LIST_create(&pGateway->pDeviceList);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't creation device list!\n");
+		ERROR2(xRet, "Can't creation device list!\n");
 		return	xRet;	
 	}
 
@@ -67,7 +67,7 @@ FTM_RET	FTOM_TP_GATEWAY_init
 	{
 		FTM_LIST_destroy(pGateway->pDeviceList);
 		pGateway->pDeviceList = NULL;
-		ERROR("Can't creation sensor list!\n");
+		ERROR2(xRet, "Can't creation sensor list!\n");
 		return	xRet;	
 	}
 

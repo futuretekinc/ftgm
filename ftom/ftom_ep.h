@@ -36,17 +36,7 @@ typedef	struct FTOM_EP_STRUCT
 		FTM_ULONG		ulLastReportTime;	
 	}	xServer;
 
-	union
-	{
-		struct	
-		{
-			FTM_SNMP_OID	xOID;
-		}	xSNMP;
-		struct
-		{
-			FTM_ULONG	ulOffset;	
-		}	xFINS;
-	}	xOption;
+	FTM_VOID_PTR		pOpts;
 }	FTOM_EP, _PTR_ FTOM_EP_PTR;
 
 typedef	struct FTOM_EP_CLASS_STRUCT
@@ -67,29 +57,13 @@ FTM_RET	FTOM_EP_final
 FTM_RET	FTOM_EP_create
 (
 	FTM_EP_PTR 			pInfo,
-	FTOM_EP_PTR _PTR_ 	ppEP
-);
-
-FTM_RET	FTOM_EP_createFromDB
-(
-	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL			bNew,
 	FTOM_EP_PTR _PTR_ 	ppEP
 );
 
 FTM_RET	FTOM_EP_destroy
 (
 	FTOM_EP_PTR _PTR_ 	ppEP
-);
-
-FTM_RET	FTOM_EP_attach
-(
-	FTOM_EP_PTR 		pEP, 
-	struct FTOM_NODE_STRUCT _PTR_ 	pNode
-);
-
-FTM_RET	FTOM_EP_detach
-(
-	FTOM_EP_PTR 		pEP
 );
 
 FTM_RET	FTOM_EP_count
@@ -172,6 +146,12 @@ FTM_RET	FTOM_EP_getDataInfo
 	FTM_ULONG_PTR	pulBegin,
 	FTM_ULONG_PTR	pulEnd,
 	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_EP_setDataLimit
+(
+	FTOM_EP_PTR			pEP,
+	FTM_EP_LIMIT_PTR	pLimit
 );
 
 FTM_RET FTOM_EP_setFloat

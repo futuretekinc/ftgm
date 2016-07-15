@@ -108,6 +108,7 @@ FTM_RET	FTOM_TRIGGER_final
 FTM_RET	FTOM_TRIGGER_create
 (
 	FTM_TRIGGER_PTR	pInfo,
+	FTM_BOOL		bNew,
 	FTOM_TRIGGER_PTR _PTR_ ppTrigger
 )
 {
@@ -120,14 +121,8 @@ FTM_RET	FTOM_TRIGGER_create
 	pTrigger = (FTOM_TRIGGER_PTR)FTM_MEM_malloc(sizeof(FTOM_TRIGGER));
 	if (pTrigger == NULL)
 	{
-		ERROR("Not enough memory\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	xRet = FTM_LOCK_init(&pTrigger->xLock);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pTrigger);	
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+		ERROR2(xRet, "Not enough memory\n");
 		return	xRet;
 	}
 
@@ -137,60 +132,38 @@ FTM_RET	FTOM_TRIGGER_create
 		FTM_makeID(pTrigger->xInfo.pID, 16);
 	}
 
-	xRet = FTM_LIST_append(pTriggerList, pTrigger);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_MEM_free(pTrigger);
-		return	xRet;
-	}
-
-	*ppTrigger = pTrigger; 
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_TRIGGER_createFromDB
-(
-	FTM_CHAR_PTR	pID,
-	FTOM_TRIGGER_PTR _PTR_ ppTrigger
-)
-{
-	ASSERT(pID != NULL);
-	ASSERT(ppTrigger != NULL);
-
-	FTM_RET	xRet;
-	FTM_TRIGGER			xInfo;
-	FTOM_TRIGGER_PTR	pTrigger;
-
-	xRet = FTOM_DB_TRIGGER_getInfo(pID, &xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pTrigger = (FTOM_TRIGGER_PTR)FTM_MEM_malloc(sizeof(FTOM_TRIGGER));
-	if (pTrigger == NULL)
-	{
-		ERROR("Not enough memory\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
 	xRet = FTM_LOCK_init(&pTrigger->xLock);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pTrigger);	
-		return	xRet;
+		ERROR2(xRet, "Failed to initalize lock of trigger[%s].\n", pTrigger->xInfo.pID);
+		goto error1;
 	}
 
-	memcpy(&pTrigger->xInfo, &xInfo, sizeof(FTM_TRIGGER));
-	if (strlen(pTrigger->xInfo.pID) == 0)
+	xRet = FTM_LIST_append(pTriggerList, pTrigger);
+	if (xRet != FTM_RET_OK)
 	{
-		FTM_makeID(pTrigger->xInfo.pID, 16);
+		ERROR2(xRet, "Failed to add trigger[%s] to list.\n", pTrigger->xInfo.pID);
+		goto error2;
 	}
 
-	FTM_LIST_append(pTriggerList, pTrigger);
+	if (bNew)
+	{
+		xRet = FTOM_DB_TRIGGER_add(&pTrigger->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to add trigger[%s] to DB.\n", pTrigger->xInfo.pID);
+		}
+	}
 
 	*ppTrigger = pTrigger; 
+
+	return	FTM_RET_OK;
+
+error2:
+	FTM_LOCK_final(&pTrigger->xLock);
+
+error1:
+	FTM_MEM_free(pTrigger);
 
 	return	xRet;
 }
@@ -201,10 +174,25 @@ FTM_RET	FTOM_TRIGGER_destroy
 )
 {
 	ASSERT(ppTrigger != NULL);
+	FTM_RET	xRet;
+	
+	xRet = FTOM_DB_TRIGGER_remove((*ppTrigger)->xInfo.pID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to remove trigger[%s] from DB!\n", (*ppTrigger)->xInfo.pID);	
+	}
 
-	FTM_LIST_remove(pTriggerList, (*ppTrigger));
+	xRet = FTM_LIST_remove(pTriggerList, (*ppTrigger));
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to remove trigger[%s] from list!\n", (*ppTrigger)->xInfo.pID);	
+	}
 
-	FTM_LOCK_final(&(*ppTrigger)->xLock);
+	xRet = FTM_LOCK_final(&(*ppTrigger)->xLock);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize lock of trigger[%s]!\n", (*ppTrigger)->xInfo.pID);	
+	}
 
 	FTM_MEM_free(*ppTrigger);
 	*ppTrigger = NULL;
@@ -217,6 +205,7 @@ FTM_RET	FTOM_TRIGGER_start
 	FTOM_TRIGGER_PTR	pTrigger
 )
 {
+	FTM_RET	xRet;
 	FTM_INT	nRet;
 
 	if (pTrigger == NULL)
@@ -229,8 +218,9 @@ FTM_RET	FTOM_TRIGGER_start
 		nRet = pthread_create(&xTriggerThread, NULL, FTOM_TRIGGER_process, NULL);
 		if (nRet < 0)
 		{
-			ERROR("Can't start Trigger Manager!\n");
-			return	FTM_RET_ERROR;
+			xRet = FTM_RET_THREAD_CREATION_ERROR;
+			ERROR2(xRet, "Can't start Trigger Manager!\n");
+			return	xRet;
 		}
 	}
 
@@ -378,12 +368,10 @@ FTM_RET	FTOM_TRIGGER_setInfo
 
 	FTM_RET	xRet;
 
-	TRACE("Trigger[%s] set[%08x]\n", pTrigger->xInfo.pID, xFields);
 	xRet = FTOM_DB_TRIGGER_setInfo(pTrigger->xInfo.pID, xFields, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Trigger[%s] DB update failed.\n", pTrigger->xInfo.pID);	
-		return	xRet;
+		ERROR2(xRet, "Failed to set trigger[%s] on DB.\n", pTrigger->xInfo.pID);	
 	}
 
 	if (xFields & FTM_TRIGGER_FIELD_NAME)

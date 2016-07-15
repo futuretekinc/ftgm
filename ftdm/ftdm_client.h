@@ -195,7 +195,6 @@ FTM_RET	FTDMC_EP_DATA_removeWithTime
 	FTM_ULONG_PTR			pulCount
 );
 
-	FTM_RET						nRet;
 FTM_RET FTDMC_EP_DATA_info
 (
 	FTDMC_SESSION_PTR		pSession,
@@ -203,6 +202,13 @@ FTM_RET FTDMC_EP_DATA_info
 	FTM_ULONG_PTR			pulBeginTime,
 	FTM_ULONG_PTR			pulEndTime,
 	FTM_ULONG_PTR			pulCount
+);
+
+FTM_RET FTDMC_EP_DATA_setLimit
+(
+	FTDMC_SESSION_PTR		pSession,
+	FTM_CHAR_PTR			pEPID,
+	FTM_EP_LIMIT_PTR		pLimit
 );
 
 FTM_RET FTDMC_EP_DATA_getWithTime

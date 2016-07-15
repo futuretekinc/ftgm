@@ -25,6 +25,7 @@ FTM_RET	FTOM_ACTION_final
 FTM_RET	FTOM_ACTION_create
 (
 	FTM_ACTION_PTR	pInfo,
+	FTM_BOOL		bNew,
 	FTOM_ACTION_PTR _PTR_ ppActionM
 );
 

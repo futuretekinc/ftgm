@@ -69,6 +69,7 @@ CFLAGS= $(COMMON_CFLAGS) \
 
 LDFLAGS= -L/usr/local/lib \
 		$(COMMON_LDFLAGS)\
+		-L/usr/local/ssl/lib\
 		-L/usr/local/lib 
 
 endif

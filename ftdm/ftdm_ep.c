@@ -279,6 +279,181 @@ FTM_RET FTDM_EP_DATA_info
 	return	FTM_RET_OK;
 }
 
+FTM_RET FTDM_EP_DATA_setLimit
+(	
+	FTDM_EP_PTR			pEP,
+	FTM_EP_LIMIT_PTR	pLimit
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pLimit != NULL);
+	FTM_RET		xRet;
+
+
+	if (pEP->xInfo.xLimit.xType == pLimit->xType)
+	{
+		switch(pEP->xInfo.xLimit.xType)
+		{
+		case	FTM_EP_LIMIT_TYPE_COUNT:
+			{
+				if (pEP->xInfo.xLimit.xParams.ulCount == pLimit->xParams.ulCount )
+				{
+					return	FTM_RET_OK;
+				}
+			}
+			break;
+
+		case	FTM_EP_LIMIT_TYPE_TIME:
+			{
+				if ((pEP->xInfo.xLimit.xParams.xTime.ulStart == pLimit->xParams.xTime.ulStart)
+					&& (pEP->xInfo.xLimit.xParams.xTime.ulEnd == pLimit->xParams.xTime.ulEnd))
+				{
+					return	FTM_RET_OK;
+				}
+			}
+			break;
+
+		case	FTM_EP_LIMIT_TYPE_HOURS:
+			{
+				if (pEP->xInfo.xLimit.xParams.ulHours == pLimit->xParams.ulHours)
+				{
+					return	FTM_RET_OK;
+				}
+			}
+			break;
+
+		case	FTM_EP_LIMIT_TYPE_DAYS:
+			{
+				if (pEP->xInfo.xLimit.xParams.ulDays == pLimit->xParams.ulDays)
+				{
+					return	FTM_RET_OK;
+				}
+			}
+			break;
+
+		case	FTM_EP_LIMIT_TYPE_MONTHS:
+			{
+				if (pEP->xInfo.xLimit.xParams.ulMonths == pLimit->xParams.ulMonths)
+				{
+					return	FTM_RET_OK;
+				}
+			}
+			break;
+
+		}
+	}
+
+	memcpy(&pEP->xInfo.xLimit, pLimit, sizeof(FTM_EP_LIMIT));
+	switch(pEP->xInfo.xLimit.xType)
+	{
+	case	FTM_EP_LIMIT_TYPE_COUNT:
+		{
+			FTM_ULONG	ulCount = 0;
+
+			xRet = FTDM_DBIF_EP_DATA_count(pEP->xInfo.pEPID, &ulCount);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to get EP[%s] data count!\n", pEP->xInfo.pEPID);	
+				break;
+			}
+
+			if (pLimit->xParams.ulCount < ulCount)
+			{
+				xRet = FTDM_DBIF_EP_DATA_del(pEP->xInfo.pEPID, pLimit->xParams.ulCount, ulCount - pLimit->xParams.ulCount);
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR2(xRet, "Failed to remove EP[%s] data[%lu:%lu]!\n", pEP->xInfo.pEPID,
+							pLimit->xParams.ulCount, ulCount - pLimit->xParams.ulCount);
+				}
+			}
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_TIME:
+		{
+			xRet = FTDM_DBIF_EP_DATA_delWithTime(pEP->xInfo.pEPID, pLimit->xParams.xTime.ulStart, pLimit->xParams.xTime.ulEnd);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to remove EP[%s] data[%lu:%lu]!\n", pEP->xInfo.pEPID,
+						pLimit->xParams.xTime.ulStart, pLimit->xParams.xTime.ulEnd);
+			}
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_HOURS:
+		{
+			FTM_TIME	xTime;
+			FTM_TIME	xStartTime;
+			FTM_TIME	xEndTime;
+			FTM_ULONG	ulStartTime;
+			FTM_ULONG	ulEndTime;
+
+			xRet = FTDM_DBIF_EP_DATA_info(pEP->xInfo.pEPID, &ulStartTime, &ulEndTime);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to EP[%s] data times!\n", pEP->xInfo.pEPID);	
+				break;
+			}
+
+			FTM_TIME_setSeconds(&xStartTime, ulStartTime);
+			FTM_TIME_setSeconds(&xEndTime, ulEndTime);
+
+			xRet = FTM_TIME_getCurrent(&xTime);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to get current time!\n");
+				break;	
+			}
+
+			xRet = FTM_TIME_align(&xTime, FTM_TIME_ALIGN_1H, &xTime);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to align time!\n");	
+				break;
+			}
+
+			xRet = FTM_TIME_subHours(&xTime, pLimit->xParams.ulHours, &xTime);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to calculate time!\n");
+				break;
+			}
+
+			FTM_TIME_toSecs(&xEndTime, &ulStartTime);
+			FTM_TIME_toSecs(&xTime, &ulEndTime);
+
+			xRet = FTDM_DBIF_EP_DATA_delWithTime(pEP->xInfo.pEPID, ulStartTime, ulEndTime);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to remove EP[%s] data.\n", pEP->xInfo.pEPID);			
+			}
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_DAYS:
+		{
+			if (pEP->xInfo.xLimit.xParams.ulDays == pLimit->xParams.ulDays)
+			{
+				return	FTM_RET_OK;
+			}
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_MONTHS:
+		{
+			if (pEP->xInfo.xLimit.xParams.ulMonths == pLimit->xParams.ulMonths)
+			{
+				return	FTM_RET_OK;
+			}
+		}
+		break;
+
+	}
+
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTDM_EP_DATA_get
 (
 	FTDM_EP_PTR			pEP,

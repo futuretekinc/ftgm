@@ -51,6 +51,7 @@ FTM_RET FTOM_FINS_connect
 {
 	int 	hSock;
 	struct sockaddr_in 	xServer;
+	FTM_RET	xRet;
 
 	if ( pSession == NULL )
 	{
@@ -61,8 +62,9 @@ FTM_RET FTOM_FINS_connect
 	hSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (hSock == -1)
 	{
-		ERROR("Could not create socket.\n");	
-		return	FTM_RET_ERROR;
+		xRet = FTM_RET_COMM_SOCK_ERROR;
+		ERROR2(xRet, "Could not create socket.\n");	
+		return	xRet;
 	}
 
 	xServer.sin_addr.s_addr	= xIP;
@@ -71,7 +73,9 @@ FTM_RET FTOM_FINS_connect
 
 	if (connect(hSock, (struct sockaddr *)&xServer, sizeof(xServer)) < 0)
 	{
-		return	FTM_RET_ERROR;	
+		xRet = FTM_RET_COMM_ERROR;
+		ERROR2(xRet, "Could not create socket.\n");	
+		return	xRet;	
 	}
 	
 	pSession->hSock = hSock;
@@ -149,6 +153,7 @@ FTM_RET FTOM_FINS_request
 	if( send(pSession->hSock, pReq, nReqLen, 0) < 0)
 	{
 		xRet = FTM_RET_ERROR;	
+		ERROR2(xRet, "Failed to send!\n");
 	}
 	else
 	{

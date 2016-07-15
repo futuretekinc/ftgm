@@ -58,24 +58,24 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	xRet = FTM_MEM_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Memory initialization failed[%08x]\n", xRet);
+		ERROR2(xRet, "Memory initialization failed.\n");
 		goto finish;	
 	}
 
-	FTM_TRACE_setLevel(ulDebugLevel);
-	FTM_TRACE_setModule(0xFFFFFFFF, FTM_TRUE);
+	FTM_TRACE_setLevel(FTM_TRACE_MODULE_ALL, ulDebugLevel);
+	//FTM_TRACE_setModule(0xFFFFFFFF, FTM_TRUE);
 
 	xRet = FTOM_TP_CLIENT_create(&pTPClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't create a TPClient[%08x]\n", xRet);
+		ERROR2(xRet, "Can't create a TPClient.\n");
 		goto finish;
 	}
 
 	xRet = FTOM_TP_CLIENT_loadConfigFromFile(pTPClient, pConfigFileName);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("TPClient failed to load configuration from file[%08x].\n", xRet);	
+		ERROR2(xRet, "TPClient failed to load configuration from file.\n");	
 		goto error;
 	}
 
@@ -111,13 +111,13 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	xRet = FTOM_TP_CLIENT_destroy(&pTPClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Remove the TPClient failed[%08x]\n");
+		ERROR2(xRet, "Remove the TPClient failed\n");
 	}
 
 	xRet = FTM_MEM_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Memory finalization failed[%08x]\n", xRet);	
+		ERROR2(xRet, "Memory finalization failed.\n");	
 	}
 
 error:

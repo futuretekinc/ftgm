@@ -6,7 +6,7 @@
 #include "ftom_client_net.h"
 #include "ftom_tp_client.h"
 #include "ftom_message_queue.h"
-#include "ftom_mqtt_client.h"
+#include "ftom_mqttc.h"
 #include "ftom_mqtt_client_tpgw.h"
 
 static 
@@ -253,9 +253,9 @@ FTM_RET	FTOM_TP_CLIENT_setConfig
 
 	memcpy(&pClient->xConfig, pConfig, sizeof(FTOM_TP_CLIENT_CONFIG));
 
-	strncpy(xFTOMC.xServer.pHost,		pClient->xConfig.xFTOMC.pHost,		FTOM_CLIENT_SERVER_IP_LEN);
+	strncpy(xFTOMC.xServer.pHost,		pClient->xConfig.xFTOMC.pHost,		FTM_URL_LEN);
 	xFTOMC.xServer.usPort = pClient->xConfig.xFTOMC.usPort;
-	strncpy(xFTOMC.xPublishServer.pHost,pClient->xConfig.xSubscriber.pHost,	FTOM_CLIENT_SERVER_IP_LEN);
+	strncpy(xFTOMC.xPublishServer.pHost,pClient->xConfig.xSubscriber.pHost,	FTM_URL_LEN);
 	xFTOMC.xPublishServer.usPort = pClient->xConfig.xSubscriber.usPort;
 
 	xRet = FTOM_CLIENT_NET_setConfig((FTOM_CLIENT_NET_PTR)pClient->pFTOMC, &xFTOMC);
@@ -953,7 +953,8 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 				break;
 			case	FTOM_MSG_TYPE_TP_REQ_SET_REPORT_INTERVAL:
 				{
-					FTM_ULONG	ulCount = 0;
+					FTM_ULONG	ulNodeCount = 0;
+					FTM_ULONG	ulEPCount = 0;
 					FTOM_MSG_TP_REQ_SET_REPORT_INTERVAL_PTR pMsg = (FTOM_MSG_TP_REQ_SET_REPORT_INTERVAL_PTR)pBaseMsg;
 
 					if (pMsg->ulReportIntervalMS < 1000)
@@ -968,46 +969,47 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 							FTM_TIMER_initS(&pClient->xReportTimer, 0);
 						}
 	
-						xRet = FTOM_CLIENT_NODE_count(pClient->pFTOMC, &ulCount);
+						xRet = FTOM_CLIENT_NODE_count(pClient->pFTOMC, &ulNodeCount);
 						if (xRet == FTM_RET_OK)
 						{
 							FTM_INT	i;
 	
-							for(i = 0 ; i < ulCount ; i++)
+							for(i = 0 ; i < ulNodeCount ; i++)
 							{
 								FTM_NODE	xNode;
 				
 								xRet = FTOM_CLIENT_NODE_getAt(pClient->pFTOMC, i, &xNode);
 								if (xRet != FTM_RET_OK)
 								{
-									ERROR("Can't get EP info at %d\n", i);
+									ERROR2(xRet, "Can't get EP info at %d\n", i);
 									continue;	
 								}
 			
 								FTOM_CLIENT_NODE_setReportInterval(pClient->pFTOMC, xNode.pDID, pMsg->ulReportIntervalMS / 1000);
-							}
-						}
 	
-						xRet = FTOM_CLIENT_EP_count(pClient->pFTOMC, 0, &ulCount);
-						if (xRet == FTM_RET_OK)
-						{
-							FTM_INT	i;
-	
-							for(i = 0 ; i < ulCount ; i++)
-							{
-								FTM_EP	xEPInfo;
-				
-								xRet = FTOM_CLIENT_EP_getAt(pClient->pFTOMC, i, &xEPInfo);
-								if (xRet != FTM_RET_OK)
+								xRet = FTOM_CLIENT_EP_count(pClient->pFTOMC, 0, xNode.pDID, &ulEPCount);
+								if (xRet == FTM_RET_OK)
 								{
-									ERROR("Can't get EP info at %d\n", i);
-									continue;	
+									FTM_INT	j;
+			
+									for(j = 0 ; j < ulEPCount ; j++)
+									{
+										FTM_EP	xEPInfo;
+						
+										xRet = FTOM_CLIENT_EP_getAt(pClient->pFTOMC, j, &xEPInfo);
+										if (xRet != FTM_RET_OK)
+										{
+											ERROR2(xRet, "Can't get EP info at %d\n", j);
+											continue;	
+										}
+						
+										FTOM_CLIENT_EP_setReportInterval(pClient->pFTOMC, xEPInfo.pEPID, pMsg->ulReportIntervalMS / 1000);
+									}
 								}
-				
-								FTOM_CLIENT_EP_setReportInterval(pClient->pFTOMC, xEPInfo.pEPID, pMsg->ulReportIntervalMS / 1000);
+			
 							}
 						}
-	
+
 						FTOM_TP_CLIENT_respose(pClient, pMsg->pReqID, 0, "");
 					}
 				}
@@ -1055,7 +1057,7 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 
 			default:
 				{
-					ERROR("Not supported msg[%08x]\n", pBaseMsg->xType);	
+					ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Not supported msg[%08x]\n", pBaseMsg->xType);	
 				}
 			}
 			FTOM_MSG_destroy(&pBaseMsg);
@@ -1108,18 +1110,18 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 	xRet = FTOM_TP_GATEWAY_create(&pGateway);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Can't creation gateway instance[%08x]!\n", xRet);
+		ERROR2(xRet, "Can't creation gateway instance!\n");
 		return	xRet;	
 	}
 	xRet = FTOM_TP_RESTAPI_GW_getInfo(&pClient->xRESTApi, pGateway);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to get gateway information[%08x].\n", xRet);
+		ERROR2(xRet, "Failed to get gateway information.\n");
 		goto finish;
 	}
 	else
 	{   
-		FTM_INT     i;  
+		FTM_INT     i, j;  
 		FTM_ULONG   ulDeviceCount = 0;
 		FTM_ULONG   ulSensorCount = 0;
 
@@ -1176,7 +1178,7 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 				xRet = FTOM_CLIENT_NODE_getAt(pClient->pFTOMC, i, &xNode);
 				if (xRet != FTM_RET_OK)
 				{
-					ERROR("Can't get EP info at %d\n", i);
+					ERROR2(xRet, "Can't get EP info at %d\n", i);
 					continue;	
 				}
 
@@ -1185,30 +1187,30 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 				{
 					FTOM_TP_CLIENT_NODE_register(pClient, &xNode);	
 				}
-			}
 
-			xRet = FTOM_CLIENT_EP_count(pClient->pFTOMC, 0, &ulEPCount);
-			if (xRet != FTM_RET_OK)
-			{
-				goto finish;	
-			}
-
-			for(i = 0 ; i < ulEPCount ; i++)
-			{
-				FTM_EP	xEP;
-				FTM_BOOL	bRegistered = FTM_FALSE;
-
-				xRet = FTOM_CLIENT_EP_getAt(pClient->pFTOMC, i, &xEP);
+				xRet = FTOM_CLIENT_EP_count(pClient->pFTOMC, 0, xNode.pDID, &ulEPCount);
 				if (xRet != FTM_RET_OK)
 				{
-					ERROR("Can't get EP info at %d\n", i);
-					continue;	
+					goto finish;	
 				}
-			
-				xRet = FTOM_CLIENT_EP_getServerRegistered(pClient->pFTOMC, xEP.pEPID, &bRegistered);
-				if ((xRet == FTM_RET_OK) && (!bRegistered))
+	
+				for(j = 0 ; j < ulEPCount ;j++)
 				{
-					FTOM_TP_CLIENT_EP_register(pClient, &xEP);	
+					FTM_EP	xEP;
+					FTM_BOOL	bRegistered = FTM_FALSE;
+	
+					xRet = FTOM_CLIENT_EP_getAt(pClient->pFTOMC, j, &xEP);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Can't get EP info at %d\n", i);
+						continue;	
+					}
+				
+					xRet = FTOM_CLIENT_EP_getServerRegistered(pClient->pFTOMC, xEP.pEPID, &bRegistered);
+					if ((xRet == FTM_RET_OK) && (!bRegistered))
+					{
+						FTOM_TP_CLIENT_EP_register(pClient, &xEP);	
+					}
 				}
 			}
 		}
@@ -1363,14 +1365,14 @@ FTM_RET	FTOM_TP_CLIENT_notifyCB
 	xRet = FTOM_MSG_copy(pMsg, &pNewMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to copy message!\n");
+		ERROR2(xRet, "Failed to copy message!\n");
 		return	xRet;	
 	}
 
 	xRet = FTOM_MSGQ_push(&pClient->xMsgQ, pNewMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Failed to push message!\n");
+		ERROR2(xRet, "Failed to push message!\n");
 		FTOM_MSG_destroy(&pNewMsg);	
 	}
 
