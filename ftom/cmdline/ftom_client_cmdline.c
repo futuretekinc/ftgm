@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
 #include "ftm.h"
@@ -294,3 +297,72 @@ FTM_RET	FTOM_CLIENT_CL_getSMKey
 	return	FTM_RET_OK;
 
 }
+
+/*****************************************************************
+ * Internal Functions
+ *****************************************************************/
+FTM_RET FTOM_CLIENT_CL_requestNet
+(
+	FTOM_CLIENT_CL_PTR		pClient, 
+	FTOM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
+	FTOM_RESP_PARAMS_PTR	pResp,
+	FTM_ULONG				ulMaxRespLen,
+	FTM_ULONG_PTR			pulRespLen
+)
+{
+	FTM_RET	xRet;
+	FTM_INT	hSock;
+
+	hSock = socket(AF_INET, SOCK_DGRAM, 0);
+	if (hSock == -1)
+	{
+		xRet = FTM_RET_COMM_SOCK_ERROR;	
+		ERROR2(xRet, "Failed to create subscribe socket.\n");	
+		return	xRet;	
+	}
+
+	struct timeval tv = { .tv_sec = 5, .tv_usec = 0};
+	if (setsockopt(hSock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) 
+	{
+   	 	ERROR2(FTM_RET_ERROR, "Failed to set socket timeout!\n");
+	}
+
+	struct sockaddr_in 	xServer;
+		
+	xServer.sin_family 		= AF_INET;
+	xServer.sin_addr.s_addr	= inet_addr(pClient->xConfig.xPublishServer.pHost);
+	xServer.sin_port 		= htons(pClient->xConfig.xPublishServer.usPort);
+			
+	TRACE("Subscriber connect to host[%s:%d]\n", pClient->xConfig.xPublishServer.pHost, pClient->xConfig.xPublishServer.usPort);
+	if (connect(hSock, (struct sockaddr *)&xServer, sizeof(xServer)) != 0)
+	{
+		TRACE("Failed to subscriber connection!\n");
+		xRet = FTM_RET_COMM_CONNECTION_ERROR;
+		return	xRet;
+	}
+
+	FTM_INT	nLen;
+
+	nLen = send(hSock, pReq, ulReqLen, 0);
+	if (nLen != ulReqLen)
+	{
+		xRet = FTM_RET_COMM_SEND_ERROR;
+		ERROR2(xRet, "Failed to send request!\n");
+	}
+
+	nLen = recv(hSock, pResp, ulRespLen, 0);
+	if (nLen > 0)
+	{
+		xRet = FTM_RET_OK;
+	}
+	else if ((nLen == 0) || (errno != EAGAIN))
+	{
+		xRet = FTM_RET_COMM_RECV_ERROR;
+		ERROR2(xRet, "Failed to receive response!\n");
+	}
+
+
+	return	FTM_RET_OK;
+}
+
