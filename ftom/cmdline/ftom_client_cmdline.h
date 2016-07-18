@@ -9,7 +9,11 @@
 
 typedef	struct
 {
-	FTM_CHAR_PTR		pRead[1024];
+	struct
+	{
+		FTM_CHAR	pHost[FTM_URL_LEN+1];
+		FTM_USHORT	usPort;
+	}	xServer;
 	FTM_ULONG			ulDefaultDataCount;
 	FTM_ULONG			ulMaxDataCount;
 }	FTOM_CLIENT_CL_CONFIG, _PTR_ FTOM_CLIENT_CL_CONFIG_PTR;

@@ -22,6 +22,17 @@ FTM_RET	FTOM_CLIENT_CL_getSMKey
 	FTM_INT_PTR		pnShmID
 );
 
+static
+FTM_RET FTOM_CLIENT_CL_requestNet
+(
+	FTOM_CLIENT_CL_PTR		pClient, 
+	FTOM_REQ_PARAMS_PTR		pReq,
+	FTM_ULONG				ulReqLen,
+	FTOM_RESP_PARAMS_PTR	pResp,
+	FTM_ULONG				ulMaxRespLen,
+	FTM_ULONG_PTR			pulRespLen
+);
+
 FTM_RET	FTOM_CLIENT_CL_init
 (
 	FTOM_CLIENT_CL_PTR	pClient
@@ -31,6 +42,9 @@ FTM_RET	FTOM_CLIENT_CL_init
 	
 	memset(pClient, 0, sizeof(FTOM_CLIENT_CL));
 
+	strcpy(pClient->xConfig.xServer.pHost, "127.0.0.1");
+	pClient->xConfig.xServer.usPort = 8889;
+
 	pClient->xConfig.ulDefaultDataCount = FTOM_DATA_READ_COUNT_DEFAULT;
 	pClient->xConfig.ulMaxDataCount = FTOM_DATA_READ_COUNT_MAX;
 
@@ -39,7 +53,7 @@ FTM_RET	FTOM_CLIENT_CL_init
 	pClient->xCommon.fSetConfig = (FTOM_CLIENT_SET_CONFIG)FTOM_CLIENT_CL_setConfig;
 	pClient->xCommon.fLoadConfigFromFile = (FTOM_CLIENT_LOAD_CONFIG_FROM_FILE)FTOM_CLIENT_CL_loadConfigFromFile;
 	//pClient->xCommon.fSetNotifyCallback = (FTOM_CLIENT_SET_NOTIFY_CALLBACK)FTOM_CLIENT_CL_setNotifyCallback;
-	pClient->xCommon.fRequest = (FTOM_CLIENT_REQUEST)FTOM_CLIENT_CL_requestSM;	
+	pClient->xCommon.fRequest = (FTOM_CLIENT_REQUEST)FTOM_CLIENT_CL_requestNet;	
 
 	return	FTM_RET_OK;
 }
@@ -301,6 +315,7 @@ FTM_RET	FTOM_CLIENT_CL_getSMKey
 /*****************************************************************
  * Internal Functions
  *****************************************************************/
+ #if 1
 FTM_RET FTOM_CLIENT_CL_requestNet
 (
 	FTOM_CLIENT_CL_PTR		pClient, 
@@ -331,13 +346,13 @@ FTM_RET FTOM_CLIENT_CL_requestNet
 	struct sockaddr_in 	xServer;
 		
 	xServer.sin_family 		= AF_INET;
-	xServer.sin_addr.s_addr	= inet_addr(pClient->xConfig.xPublishServer.pHost);
-	xServer.sin_port 		= htons(pClient->xConfig.xPublishServer.usPort);
+	xServer.sin_addr.s_addr	= inet_addr(pClient->xConfig.xServer.pHost);
+	xServer.sin_port 		= htons(pClient->xConfig.xServer.usPort);
 			
-	TRACE("Subscriber connect to host[%s:%d]\n", pClient->xConfig.xPublishServer.pHost, pClient->xConfig.xPublishServer.usPort);
+	TRACE("connect to host[%s:%d]\n", pClient->xConfig.xServer.pHost, pClient->xConfig.xServer.usPort);
 	if (connect(hSock, (struct sockaddr *)&xServer, sizeof(xServer)) != 0)
 	{
-		TRACE("Failed to subscriber connection!\n");
+		TRACE("Failed to connection!\n");
 		xRet = FTM_RET_COMM_CONNECTION_ERROR;
 		return	xRet;
 	}
@@ -351,7 +366,7 @@ FTM_RET FTOM_CLIENT_CL_requestNet
 		ERROR2(xRet, "Failed to send request!\n");
 	}
 
-	nLen = recv(hSock, pResp, ulRespLen, 0);
+	nLen = recv(hSock, pResp, ulMaxRespLen, 0);
 	if (nLen > 0)
 	{
 		xRet = FTM_RET_OK;
@@ -365,4 +380,4 @@ FTM_RET FTOM_CLIENT_CL_requestNet
 
 	return	FTM_RET_OK;
 }
-
+#endif

@@ -183,6 +183,12 @@ FTM_RET	FTOM_DB_EP_getDataInfo
 	FTM_ULONG_PTR 	pulCount
 );
 
+FTM_RET	FTOM_DB_EP_setDataLimit
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_LIMIT_PTR	pLimit
+);
+
 FTM_RET	FTOM_DB_EP_getDataCount
 (
 	FTM_CHAR_PTR	pEPID,

@@ -21,6 +21,9 @@
 #include "ftom_session.h"
 #include "ftom_logger.h"
 
+#undef	__MODULE__
+#define __MODULE__	FTOM_TRACE_MODULE_SERVER
+
 #ifndef	FTOM_TRACE_IO
 //#define	FTOM_TRACE_IO		1
 #endif
@@ -28,13 +31,13 @@
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTOM_SERVER_CALLBACK)FUN }
 
 static 
-FTM_VOID_PTR FTOM_SERVER_process
+FTM_VOID_PTR FTOM_SERVER_processTCP
 (
 	FTM_VOID_PTR 	pData
 );
 
 static 
-FTM_VOID_PTR FTOM_SERVER_serviceHandler
+FTM_VOID_PTR FTOM_SERVER_processTCPSession
 (
 	FTM_VOID_PTR 	pData
 );
@@ -59,6 +62,12 @@ FTM_RET	FTOM_SERVER_removeSubscribeSession
 (
 	FTOM_SERVER_PTR			pServer,
 	FTOM_SESSION_PTR _PTR_ 	ppSession
+);
+
+static
+FTM_VOID_PTR FTOM_SERVER_processUDP
+(
+	FTM_VOID_PTR 	pData
 );
 
 static
@@ -779,13 +788,20 @@ FTM_RET	FTOM_SERVER_init
 
 	memset(&pServer->xConfig, 0, sizeof(FTOM_SERVER_CONFIG));
 
-	pServer->xConfig.usPort			= FTOM_DEFAULT_SERVER_PORT;
-	pServer->xConfig.ulMaxSession	= FTOM_DEFAULT_SERVER_SESSION_COUNT	;
+	pServer->xConfig.xTCP.bEnabled		= FTM_TRUE;
+	pServer->xConfig.xTCP.usPort		= FTOM_DEFAULT_SERVER_PORT;
+	pServer->xConfig.xTCP.ulMaxSession	= FTOM_DEFAULT_SERVER_SESSION_COUNT	;
 	FTM_LIST_init(&pServer->xSessionList);
 
+	pServer->xConfig.xUDP.bEnabled		= FTM_TRUE;
+	pServer->xConfig.xUDP.usPort		= FTOM_DEFAULT_SERVER_PORT;
+
+	pServer->xConfig.xPublisher.bEnabled		= FTM_FALSE;
 	pServer->xConfig.xPublisher.usPort			= 9000;
 	pServer->xConfig.xPublisher.ulMaxSubscribe	= FTOM_DEFAULT_SERVER_SESSION_COUNT	;
 	FTM_LIST_init(&pServer->xPublisher.xSubscriberList);
+
+	pServer->xConfig.xSM.bEnabled		= FTM_FALSE;
 
 	if (sem_init(&pServer->xPublisher.xLock, 0, 1) < 0)
 	{
@@ -842,29 +858,50 @@ FTM_RET	FTOM_SERVER_start
 	}
 
 	pServer->bStop = FTM_FALSE;
-	
-	nRet = pthread_create(&pServer->xPThread, NULL, FTOM_SERVER_process, (FTM_VOID_PTR)pServer);
-	if (nRet != 0)
+
+	if (pServer->xConfig.xTCP.bEnabled)
 	{
-		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create Net interface[%d]\n", nRet);
+		nRet = pthread_create(&pServer->xProcessTCP, NULL, FTOM_SERVER_processTCP, (FTM_VOID_PTR)pServer);
+		if (nRet != 0)
+		{
+			ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create Net interface[%d]\n", nRet);
+		}
 	}
 
-	nRet = pthread_create(&pServer->xPublisher.xThread, NULL, FTOM_SERVER_publishProcess, (FTM_VOID_PTR)pServer);
-	if (nRet != 0)
+	if (pServer->xConfig.xUDP.bEnabled)
 	{
-		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create Net interface[%d]\n", nRet);
+		nRet = pthread_create(&pServer->xProcessUDP, NULL, FTOM_SERVER_processUDP, pServer);
+		if (nRet != 0)
+		{
+			ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create UDP interface[%d]\n", nRet);
+		}
 	}
 
-	nRet = pthread_create(&pServer->xProcessPipe, NULL, FTOM_SERVER_processPipe, pServer);
-	if (nRet != 0)
+	if (pServer->xConfig.xPublisher.bEnabled)
 	{
-		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create PIPE interface[%d]\n", nRet);
+		nRet = pthread_create(&pServer->xPublisher.xThread, NULL, FTOM_SERVER_publishProcess, (FTM_VOID_PTR)pServer);
+		if (nRet != 0)
+		{
+			ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create Net interface[%d]\n", nRet);
+		}
 	}
 
-	nRet = pthread_create(&pServer->xProcessSM, NULL, FTOM_SERVER_processSM, pServer);
-	if (nRet != 0)
+	if (pServer->xConfig.xPipe.bEnabled)
 	{
-		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create SM interface[%d]\n", nRet);
+		nRet = pthread_create(&pServer->xProcessPipe, NULL, FTOM_SERVER_processPipe, pServer);
+		if (nRet != 0)
+		{
+			ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create PIPE interface[%d]\n", nRet);
+		}
+	}
+
+	if (pServer->xConfig.xSM.bEnabled)
+	{
+		nRet = pthread_create(&pServer->xProcessSM, NULL, FTOM_SERVER_processSM, pServer);
+		if (nRet != 0)
+		{
+			ERROR2(FTM_RET_CANT_CREATE_THREAD, "Can't create SM interface[%d]\n", nRet);
+		}
 	}
 
 	return	FTM_RET_OK;
@@ -904,7 +941,8 @@ FTM_RET	FTOM_SERVER_stop
 
 	pServer->bStop = FTM_TRUE;
 	shutdown(pServer->hSocket, SHUT_RD);
-	pthread_join(pServer->xPThread, NULL);
+	pthread_join(pServer->xProcessTCP, NULL);
+	pthread_join(pServer->xProcessUDP, NULL);
 	pthread_join(pServer->xProcessPipe, NULL);
 	pthread_join(pServer->xProcessSM, NULL);
 
@@ -1000,7 +1038,7 @@ FTM_RET	FTOM_SERVER_setServiceCallback
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_SERVER_process
+FTM_VOID_PTR FTOM_SERVER_processTCP
 (
 	FTM_VOID_PTR pData
 )
@@ -1012,7 +1050,7 @@ FTM_VOID_PTR FTOM_SERVER_process
 	struct sockaddr_in	xServerAddr, xClientAddr;
 
 	
-	if (sem_init(&pServer->xLock, 0,pServer->xConfig.ulMaxSession) < 0)
+	if (sem_init(&pServer->xLock, 0,pServer->xConfig.xTCP.ulMaxSession) < 0)
 	{
 		ERROR2(FTM_RET_CANT_CREATE_SEMAPHORE,"Can't alloc semaphore!\n");
 		return	0;	
@@ -1027,7 +1065,7 @@ FTM_VOID_PTR FTOM_SERVER_process
 
 	xServerAddr.sin_family 		= AF_INET;
 	xServerAddr.sin_addr.s_addr = INADDR_ANY;
-	xServerAddr.sin_port 		= htons( pServer->xConfig.usPort );
+	xServerAddr.sin_port 		= htons( pServer->xConfig.xTCP.usPort );
 
 	TRACE("Server[ %s:%d ]\n", inet_ntoa(xServerAddr.sin_addr), ntohs(xServerAddr.sin_port));
 	nRet = bind( pServer->hSocket, (struct sockaddr *)&xServerAddr, sizeof(xServerAddr));
@@ -1072,7 +1110,7 @@ FTM_VOID_PTR FTOM_SERVER_process
 					pSession->hSocket = hClient;
 					memcpy(&pSession->xPeer, &xClientAddr, sizeof(xClientAddr));
 					pSession->pData = (FTM_VOID_PTR)pServer;
-					if (pthread_create(&pSession->xPThread, NULL, FTOM_SERVER_serviceHandler, pSession) == 0)
+					if (pthread_create(&pSession->xPThread, NULL, FTOM_SERVER_processTCPSession, pSession) == 0)
 					{
 						FTM_LIST_append(&pServer->xSessionList, pSession);	
 					}
@@ -1088,7 +1126,140 @@ FTM_VOID_PTR FTOM_SERVER_process
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_SERVER_serviceHandler
+FTM_VOID_PTR FTOM_SERVER_processUDP
+(
+	FTM_VOID_PTR pData
+)
+{
+	ASSERT(pData != NULL);
+
+	FTM_RET					xRet;
+	FTM_INT					nRet;
+	FTOM_SERVER_PTR 		pServer = (FTOM_SERVER_PTR)pData;
+	struct sockaddr_in		xServerAddr;
+	FTM_BOOL				bStop = FTM_FALSE;
+	FTOM_REQ_PARAMS_PTR		pReq 	= NULL;
+	FTOM_RESP_PARAMS_PTR	pResp 	= NULL;
+	FTM_ULONG				ulBuffLen = 4096;
+
+	pReq = (FTM_VOID_PTR)FTM_MEM_malloc(ulBuffLen);
+	if (pReq == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]\n", ulBuffLen);
+		goto finish;
+	}
+
+	pResp = (FTM_VOID_PTR)FTM_MEM_malloc(ulBuffLen);
+	if (pResp == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]\n", ulBuffLen);
+		goto finish;
+	}
+
+	pServer->hSocketUDP = socket(AF_INET, SOCK_DGRAM, 0);
+	if (pServer->hSocketUDP == -1)
+	{
+		ERROR2(FTM_RET_COMM_SOCK_ERROR, "Could not create socket\n");
+		goto finish;
+	}
+
+  	struct timeval tv = { .tv_sec = 0, .tv_usec = 100000};
+	if (setsockopt(pServer->hSocketUDP, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0)
+	{
+		ERROR2(FTM_RET_ERROR, "Failed to set socket timeout!\n");
+		goto finish;
+	}
+
+	xServerAddr.sin_family 		= AF_INET;
+	xServerAddr.sin_addr.s_addr = INADDR_ANY;
+	xServerAddr.sin_port 		= htons( pServer->xConfig.xUDP.usPort );
+
+	while(!pServer->bStop)
+	{
+		nRet = bind( pServer->hSocketUDP, (struct sockaddr *)&xServerAddr, sizeof(xServerAddr));
+		if (nRet < 0)
+		{
+			xRet = FTM_RET_COMM_ERRNO | errno;
+			ERROR2(xRet, "Failed to bind socket.[%s:%d]\n", inet_ntoa(xServerAddr.sin_addr), ntohs(xServerAddr.sin_port));
+			goto finish;
+		}
+
+		bStop = FTM_FALSE;
+		TRACE("UDP Server[%s:%d] started\n", inet_ntoa(xServerAddr.sin_addr), ntohs(xServerAddr.sin_port));
+
+		while(!bStop)
+		{
+			struct sockaddr_in	xClientAddr;
+	   		FTM_INT	nClientLen = sizeof(xClientAddr);
+			FTM_INT	nReqLen, nSendLen;
+	
+			nReqLen =recvfrom(pServer->hSocketUDP, pReq, ulBuffLen, 0, (struct sockaddr*)&xClientAddr, (socklen_t *)&nClientLen);
+			if (nReqLen > 0)
+			{
+				xRet = FTOM_SERVER_serviceCall(pServer, pReq, nReqLen, pResp, ulBuffLen);
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR2(xRet, "Failed to call service!\n");
+					pResp->xCmd = pReq->xCmd;
+					pResp->xRet = FTM_RET_INTERNAL_ERROR;
+					pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
+				}
+	
+				nSendLen = sendto(pServer->hSocketUDP, pResp, pResp->ulLen, 0, (struct sockaddr*)&xClientAddr, sizeof(xClientAddr));
+				if (nSendLen == 0)
+				{
+					bStop = FTM_TRUE;
+				}
+				else if (nSendLen < 0)
+				{
+					bStop = FTM_TRUE;
+					xRet = FTM_RET_COMM_ERRNO | errno;
+					ERROR2(xRet , "Failed to send packat!\n");
+				}
+			}
+			else if (nReqLen == 0)
+			{
+				bStop = FTM_TRUE;
+				xRet = FTM_RET_OK;
+				TRACE("Socket closed!\n");
+			}
+			else if (nReqLen < -1)
+			{
+				bStop = FTM_TRUE;
+				xRet = FTM_RET_COMM_ERRNO | errno;
+				ERROR2(xRet , "Failed to receive packet[%d]!\n", nReqLen);
+			}
+
+			if (pServer->bStop)
+			{
+				bStop = FTM_TRUE;	
+			}
+		}
+
+
+		close(pServer->hSocketUDP);
+		pServer->hSocketUDP = 0;
+	}
+
+	TRACE("UDP Server[%s:%d] stopped!\n", inet_ntoa(xServerAddr.sin_addr), ntohs(xServerAddr.sin_port));
+
+finish:
+	if (pReq != NULL)
+	{
+		FTM_MEM_free(pReq);	
+		pReq = NULL;
+	}
+
+	if (pResp != NULL)
+	{
+		FTM_MEM_free(pResp);	
+		pResp = NULL;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR FTOM_SERVER_processTCPSession
 (
 	FTM_VOID_PTR pData
 )
@@ -1568,7 +1739,7 @@ finish:
 	else if (pNode != NULL)
 	{
 		FTOM_NODE_stop(pNode);
-		FTOM_NODE_destroy(&pNode);
+		FTOM_NODE_destroy(&pNode, FTM_TRUE);
 	}
 
 	pResp->xCmd = pReq->xCmd;
@@ -1634,7 +1805,7 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 			goto finish;
 		}
 
-		xRet = FTOM_EP_destroy(&pEP);
+		xRet = FTOM_EP_destroy(&pEP, FTM_TRUE);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to destroy EP[%s].\n", xEPInfo.pEPID);
@@ -1648,7 +1819,7 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 
 	memcpy(&xInfo, &pNode->xInfo, sizeof(FTM_NODE));
 
-	xRet = FTOM_NODE_destroy(&pNode);
+	xRet = FTOM_NODE_destroy(&pNode, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to destroy Node[%s].\n", xInfo.pDID);
@@ -2020,7 +2191,7 @@ FTM_RET	FTOM_SERVER_EP_destroy
 		ERROR2(xRet, "Failed to delete log of EP[%s].\n", pEP->xInfo.pEPID);	
 	}
 
-	xRet = FTOM_EP_destroy(&pEP);
+	xRet = FTOM_EP_destroy(&pEP, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to remove EP[%s].\n", pEP->xInfo.pEPID);
@@ -3421,8 +3592,8 @@ FTM_RET FTOM_SERVER_loadConfig
 		goto finish;
 	}
 
-	FTM_CONFIG_ITEM_getItemULONG(&xServer, "max_session", &pServer->xConfig.ulMaxSession);
-	FTM_CONFIG_ITEM_getItemUSHORT(&xServer, "port", 		&pServer->xConfig.usPort);
+	FTM_CONFIG_ITEM_getItemULONG(&xServer, "max_session", &pServer->xConfig.xTCP.ulMaxSession);
+	FTM_CONFIG_ITEM_getItemUSHORT(&xServer, "port", 		&pServer->xConfig.xTCP.usPort);
 	FTM_CONFIG_ITEM_getItemString(&xServer, "sm_key_file", pServer->xConfig.xSM.pKeyFile, FTM_FILE_NAME_LEN);
 
 finish:
@@ -3478,8 +3649,8 @@ FTM_RET FTOM_SERVER_saveConfig
 		}
 	}
 
-	FTM_CONFIG_ITEM_setItemULONG(&xServer, 	"max_session", 	pServer->xConfig.ulMaxSession);
-	FTM_CONFIG_ITEM_setItemUSHORT(&xServer, "port", 		pServer->xConfig.usPort);
+	FTM_CONFIG_ITEM_setItemULONG(&xServer, 	"max_session", 	pServer->xConfig.xTCP.ulMaxSession);
+	FTM_CONFIG_ITEM_setItemUSHORT(&xServer, "port", 		pServer->xConfig.xTCP.usPort);
 	FTM_CONFIG_ITEM_setItemString(&xServer, "sm_key_file", 	pServer->xConfig.xSM.pKeyFile);
 
 finish:
@@ -3494,8 +3665,8 @@ FTM_RET FTOM_SERVER_showConfig
 	ASSERT(pServer != NULL);
 
 	MESSAGE("\n[ SERVER CONFIGURATION ]\n");
-	MESSAGE("%16s : %d\n", "Port", pServer->xConfig.usPort);
-	MESSAGE("%16s : %lu\n", "Max Session", pServer->xConfig.ulMaxSession);
+	MESSAGE("%16s : %d\n", "Port", pServer->xConfig.xTCP.usPort);
+	MESSAGE("%16s : %lu\n", "Max Session", pServer->xConfig.xTCP.ulMaxSession);
 	MESSAGE("%16s : %s",	"SMKey File", pServer->xConfig.xSM.pKeyFile);
 
 	return	FTM_RET_OK;

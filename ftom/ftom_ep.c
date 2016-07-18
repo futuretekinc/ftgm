@@ -156,7 +156,7 @@ FTM_RET	FTOM_EP_final
 	FTM_LIST_iteratorStart(pEPList);
 	while(FTM_LIST_iteratorNext(pEPList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
 	{
-		FTOM_EP_destroy(&pEP);	
+		FTOM_EP_destroy(&pEP, FTM_FALSE);	
 	}
 
 	FTM_LIST_destroy(pEPList);
@@ -266,7 +266,8 @@ error1:
 
 FTM_RET	FTOM_EP_destroy
 (
-	FTOM_EP_PTR _PTR_ ppEP
+	FTOM_EP_PTR _PTR_ ppEP,
+	FTM_BOOL		bStorage
 )
 {
 	ASSERT(ppEP != NULL);
@@ -274,14 +275,24 @@ FTM_RET	FTOM_EP_destroy
 	FTM_RET			xRet;
 	FTM_EP_DATA_PTR	pData;
 
-	FTOM_EP_stop(*ppEP, TRUE);
+	if ((*ppEP)->pNode != NULL)
+	{
+		FTOM_NODE_unlinkEP((*ppEP)->pNode, *ppEP);
+	}
+	else
+	{
+		FTOM_EP_stop(*ppEP, TRUE);
+	}
 
 	FTOM_LOG_destroyEP((*ppEP)->xInfo.pEPID);
-	
-	xRet = FTOM_DB_EP_remove((*ppEP)->xInfo.pEPID);
-	if (xRet != FTM_RET_OK)
+
+	if (bStorage)
 	{
-		ERROR2(xRet, "Failed to remove EP[%s] from DB.\n", (*ppEP)->xInfo.pEPID);
+		xRet = FTOM_DB_EP_remove((*ppEP)->xInfo.pEPID);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to remove EP[%s] from DB.\n", (*ppEP)->xInfo.pEPID);
+		}
 	}
 
 	xRet = FTM_LIST_remove(pEPList, *ppEP);

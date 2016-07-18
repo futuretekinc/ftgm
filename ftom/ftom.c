@@ -377,7 +377,7 @@ FTM_RET	FTOM_final
 	FTOM_EP_final();
 	FTOM_NODE_final();
 
-	xRet = FTOM_LOGGER_init();
+	xRet = FTOM_LOGGER_final();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Failed to finalize logger!\n");	
@@ -934,7 +934,6 @@ FTM_RET	FTOM_TASK_stop
 
 		if (FTOM_EP_getAt(i, &pEP) == FTM_RET_OK)
 		{
-			TRACE("Reqiest stop EP[%s].\n", pEP->xInfo.pEPID);
 			FTOM_EP_stop(pEP, FTM_TRUE);	
 		}
 	}

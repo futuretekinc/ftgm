@@ -22,16 +22,34 @@ typedef struct
 
 typedef	struct
 {
-	FTM_USHORT		usPort;
-	FTM_ULONG		ulMaxSession;
+	struct
+	{	
+		FTM_BOOL	bEnabled;
+		FTM_USHORT	usPort;
+		FTM_ULONG	ulMaxSession;
+	}	xTCP;
+
+	struct
+	{
+		FTM_BOOL	bEnabled;
+		FTM_USHORT	usPort;
+	}	xUDP;
+		
 	struct	
 	{
+		FTM_BOOL	bEnabled;
 		FTM_USHORT	usPort;
 		FTM_ULONG	ulMaxSubscribe;
 	}	xPublisher;
 
 	struct
 	{
+		FTM_BOOL	bEnabled;
+	}	xPipe;
+
+	struct
+	{
+		FTM_BOOL	bEnabled;
 		FTM_CHAR	pKeyFile[FTM_FILE_NAME_LEN + 1];
 	}	xSM;
 }	FTOM_SERVER_CONFIG, _PTR_ FTOM_SERVER_CONFIG_PTR;
@@ -39,13 +57,15 @@ typedef	struct
 typedef	struct FTOM_SERVER_STRUCT
 {
 	FTOM_SERVER_CONFIG	xConfig;
-	pthread_t 			xPThread;
+	pthread_t 			xProcessTCP;
+	pthread_t 			xProcessUDP;
 	pthread_t 			xProcessSM;
 	pthread_t 			xProcessPipe;
 	sem_t				xLock;
 	FTM_BOOL			bStop;	
 	FTM_LIST			xSessionList;
 	FTM_INT				hSocket;
+	FTM_INT				hSocketUDP;
 	FTOM_SERVICE_ID		xServiceID;
 	FTOM_SERVICE_CB		fServiceCB;
 	FTM_ULONG			ulReqID;

@@ -3,6 +3,9 @@
 #include "ftom_logger.h"
 #include "ftom_server.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_LOGGER
+
 typedef	struct	FTOM_LOGGER_STRUCT 
 {
 	FTM_LOGGER	xCommon;
@@ -53,7 +56,11 @@ FTM_RET	FTOM_LOGGER_final
 	}
 
 	xRet = FTM_LOGGER_final(&pLogger->xCommon);
-	if (xRet == FTM_RET_OK)
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to Logger final!\n");
+	}
+	else
 	{
 		FTM_MEM_free(pLogger);
 		pLogger = NULL;
@@ -80,6 +87,10 @@ FTM_RET	FTOM_LOGGER_add
 		{
 			ERROR2(xRet, NULL);
 			return	xRet;
+		}
+		else
+		{
+			FTM_MEM_free(pLog);
 		}
 	}
 	else

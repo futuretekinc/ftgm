@@ -64,7 +64,7 @@ FTM_RET FTOM_NODE_final
 FTM_RET	FTOM_NODE_create
 (
 	FTM_NODE_PTR 		pInfo, 
-	FTM_BOOL			nNew,
+	FTM_BOOL			bNew,
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 
@@ -76,7 +76,8 @@ FTM_RET	FTOM_NODE_createFromDB
 
 FTM_RET	FTOM_NODE_destroy
 (
-	FTOM_NODE_PTR _PTR_ ppNode
+	FTOM_NODE_PTR _PTR_ ppNode,
+	FTM_BOOL			bStorage
 );
 
 FTM_RET	FTOM_NODE_count

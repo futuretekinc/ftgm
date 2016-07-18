@@ -63,7 +63,8 @@ FTM_RET	FTOM_EP_create
 
 FTM_RET	FTOM_EP_destroy
 (
-	FTOM_EP_PTR _PTR_ 	ppEP
+	FTOM_EP_PTR _PTR_ 	ppEP,
+	FTM_BOOL			bStorage
 );
 
 FTM_RET	FTOM_EP_count

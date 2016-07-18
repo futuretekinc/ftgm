@@ -69,7 +69,7 @@ FTM_RET FTOM_NODE_final
 )
 {
 	FTOM_NODE_PTR	pNode = NULL;
-	
+
 	if (pNodeList == NULL)
 	{
 		return	FTM_RET_NOT_INITIALIZED;
@@ -78,7 +78,7 @@ FTM_RET FTOM_NODE_final
 	while(FTM_LIST_iteratorNext(pNodeList, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
 	{
 		FTM_LIST_remove(pNodeList, pNode);
-		FTOM_NODE_destroy(&pNode);	
+		FTOM_NODE_destroy(&pNode, FTM_FALSE);	
 	}
 
 	FTM_LIST_destroy(pNodeList);
@@ -192,6 +192,7 @@ FTM_RET	FTOM_NODE_create
 	pNode->xState = FTOM_NODE_STATE_CREATED;
 
 	FTM_LIST_append(pNodeList, pNode);
+	TRACE("Append Node : %08x, %08x\n", pNodeList, pNode);
 
 	*ppNode = pNode;
 
@@ -212,7 +213,8 @@ error1:
 
 FTM_RET	FTOM_NODE_destroy
 (
-	FTOM_NODE_PTR _PTR_	ppNode
+	FTOM_NODE_PTR _PTR_	ppNode,
+	FTM_BOOL			bStorage
 )
 {
 	ASSERT(ppNode != NULL);
@@ -228,10 +230,13 @@ FTM_RET	FTOM_NODE_destroy
 		(*ppNode)->pClass->fFinal(*ppNode);
 	}
 
-	xRet = FTOM_DB_NODE_remove((*ppNode)->xInfo.pDID);
-	if (xRet != FTM_RET_OK)
+	if (bStorage)
 	{
-		ERROR2(xRet, "Failed to remove Node[%s] from DB.\n", (*ppNode)->xInfo.pDID);
+		xRet = FTOM_DB_NODE_remove((*ppNode)->xInfo.pDID);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to remove Node[%s] from DB.\n", (*ppNode)->xInfo.pDID);
+		}
 	}
 
 	while((FTM_LIST_count(&(*ppNode)->xEPList, &ulCount) == FTM_RET_OK) && (ulCount != 0))
@@ -240,7 +245,7 @@ FTM_RET	FTOM_NODE_destroy
 		if (xRet == FTM_RET_OK)
 		{
 			FTOM_NODE_unlinkEP((*ppNode), pEP);
-			FTOM_EP_destroy(&pEP);
+			FTOM_EP_destroy(&pEP, bStorage);
 		}
 	}
 
@@ -256,11 +261,7 @@ FTM_RET	FTOM_NODE_destroy
 		ERROR2(xRet, "Failed to finalize lock of node[%s]!\n", (*ppNode)->xInfo.pDID);	
 	}
 
-	xRet = FTM_LIST_remove(pNodeList, (*ppNode));
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to remove node[%s] at list!\n", (*ppNode)->xInfo.pDID);
-	}
+	FTM_LIST_remove(pNodeList, (*ppNode));
 
 	if ((*ppNode)->pClass->fDestroy != NULL)
 	{
@@ -440,7 +441,7 @@ FTM_RET	FTOM_NODE_unlinkEP
 		return	FTM_RET_NO_CLASS_INFO;
 	}
 
-	if (pNode->pClass->fAttachEP == NULL)
+	if (pNode->pClass->fDetachEP == NULL)
 	{
 		ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Failed to set node[%s] information!\n", pNode->xInfo.pDID);
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;
