@@ -162,16 +162,20 @@ error:
 
 FTM_RET	FTOM_RULE_destroy
 (
-	FTOM_RULE_PTR _PTR_ ppRule
+	FTOM_RULE_PTR _PTR_ ppRule,
+	FTM_BOOL	bIncludeDB
 )
 {
 	ASSERT(ppRule != NULL);
 	FTM_RET		xRet;
-	
-	xRet = FTOM_DB_RULE_remove((*ppRule)->xInfo.pID);
-	if (xRet != FTM_RET_OK)
+
+	if (bIncludeDB)
 	{
-		ERROR2(xRet, "Failed to remove rule[%s] from DB!\n", (*ppRule)->xInfo.pID);
+		xRet = FTOM_DB_RULE_remove((*ppRule)->xInfo.pID);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to remove rule[%s] from DB!\n", (*ppRule)->xInfo.pID);
+		}
 	}
 
 	xRet = FTM_LIST_remove(pRuleList, *ppRule);

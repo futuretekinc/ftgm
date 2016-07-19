@@ -287,12 +287,141 @@ FTM_RET	FTOM_SHELL_CMD_node
 			xRet = FTOM_NODE_get(pArgv[1], &pNode);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR2(xRet, "Can't found Node[%s]!\n", pArgv[1]);
+				MESSAGE("Can't found Node[%s]!\n", pArgv[1]);
+
 				break;
 			}
 
 			FTOM_NODE_print(pNode);
+		}
+		break;
 
+	case	3:
+		{
+			FTOM_NODE_PTR	pNode;
+
+			xRet = FTOM_NODE_get(pArgv[2], &pNode);
+			if (xRet != FTM_RET_OK)
+			{
+				MESSAGE("Can't found Node[%s]!\n", pArgv[1]);
+
+				break;
+			}
+
+			if (strcasecmp(pArgv[1], "disable") == 0)
+			{
+				FTM_BOOL	bRun;
+
+				xRet = FTOM_NODE_isRun(pNode, &bRun);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Faield to get node[%s] status!\n", pNode->xInfo.pDID);
+					break;
+				}
+
+				if (!bRun)
+				{
+					MESSAGE("Node[%s] is already stopped!\n", pNode->xInfo.pDID);
+					break;
+				}
+
+				xRet = FTOM_NODE_stop(pNode);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Failed to start node[%s]!\n", pNode->xInfo.pDID);	
+				}
+				else
+				{
+					MESSAGE("Node[%s] started!\n", pNode->xInfo.pDID);	
+				}
+			}
+			else if (strcasecmp(pArgv[1], "stop") == 0)
+			{
+				FTM_BOOL	bRun;
+
+				xRet = FTOM_NODE_isRun(pNode, &bRun);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Faield to get node[%s] status!\n", pNode->xInfo.pDID);
+					break;
+				}
+
+				if (!bRun)
+				{
+					MESSAGE("Node[%s] is already stopped!\n", pNode->xInfo.pDID);
+					break;
+				}
+
+				xRet = FTOM_NODE_stop(pNode);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Failed to start node[%s]!\n", pNode->xInfo.pDID);	
+				}
+				else
+				{
+					MESSAGE("Node[%s] started!\n", pNode->xInfo.pDID);	
+				}
+			}
+			else if (strcasecmp(pArgv[1], "start") == 0)
+			{
+			
+				FTM_BOOL	bRun;
+
+				xRet = FTOM_NODE_isRun(pNode, &bRun);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Faield to get node[%s] status!\n", pNode->xInfo.pDID);
+					break;
+				}
+
+				if (bRun)
+				{
+					MESSAGE("Node[%s] is already started!\n", pNode->xInfo.pDID);
+					break;
+				}
+
+				xRet = FTOM_NODE_start(pNode);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Failed to stop node[%s]!\n", pNode->xInfo.pDID);	
+				}
+				else
+				{
+					MESSAGE("Node[%s] stopped!\n", pNode->xInfo.pDID);	
+				}
+			}
+			else if (strcasecmp(pArgv[1], "del") == 0)
+			{
+			
+				FTM_BOOL	bRun;
+
+				xRet = FTOM_NODE_isRun(pNode, &bRun);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Faield to get node[%s] status!\n", pNode->xInfo.pDID);
+					break;
+				}
+
+				if (bRun)
+				{
+					xRet = FTOM_NODE_stop(pNode);
+					if (xRet != FTM_RET_OK)
+					{
+						MESSAGE("Failed to stop Node[%s]!\n", pNode->xInfo.pDID);
+						break;
+					}
+				}
+
+				xRet = FTOM_NODE_destroy(&pNode, FTM_TRUE);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Failed to remove node[%s]!\n", pNode->xInfo.pDID);	
+				}
+				else
+				{
+					MESSAGE("Node have been removed.\n");	
+				}
+			}
 		}
 		break;
 	}
@@ -324,15 +453,134 @@ FTM_RET	FTOM_SHELL_CMD_ep
 		{
 			FTOM_EP_PTR	pEP;
 
-			xRet = FTOM_EP_get(pArgv[1], &pEP);
+			if (strcasecmp(pArgv[1], "class") == 0)
+			{
+				FTM_INT	i;
+				for(i = 0 ; ; i++)
+				{
+					FTOM_EP_CLASS_PTR pEPClass = NULL;
+
+					xRet = FTOM_EP_CLASS_getAt( i, &pEPClass);
+					if (xRet != FTM_RET_OK)
+					{
+						break;
+					}
+
+					FTOM_EP_CLASS_print(pEPClass);
+				}
+			}
+			else
+			{
+				xRet = FTOM_EP_get(pArgv[1], &pEP);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Can't found EP[%s]!\n", pArgv[1]);
+					break;
+				}
+
+				FTOM_EP_print(pEP);
+			}
+
+		}
+		break;
+
+	case	3:
+		{
+			FTOM_EP_PTR	pEP;
+
+			xRet = FTOM_EP_get(pArgv[2], &pEP);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR2(xRet, "Can't found EP[%s]!\n", pArgv[1]);
+				MESSAGE("Can't found EP[%s]!\n", pArgv[2]);
 				break;
 			}
 
-			FTOM_EP_print(pEP);
+			if (strcasecmp(pArgv[1], "stop") == 0)
+			{
+				FTM_BOOL	bRun;
 
+				xRet = FTOM_EP_isRun(pEP, &bRun);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Faield to get EP[%s] status!\n", pEP->xInfo.pEPID);
+					break;
+				}
+
+				if (!bRun)
+				{
+					MESSAGE("EP[%s] is already stopped!\n", pEP->xInfo.pEPID);
+					break;
+				}
+
+				xRet = FTOM_EP_stop(pEP, FTM_TRUE);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Failed to stop EP[%s]!\n", pEP->xInfo.pEPID);	
+				}
+				else
+				{
+					MESSAGE("EP[%s] stopped!\n", pEP->xInfo.pEPID);	
+				}
+			}
+			else if (strcasecmp(pArgv[1], "start") == 0)
+			{
+				FTM_BOOL	bRun;
+
+				xRet = FTOM_EP_isRun(pEP, &bRun);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Faield to get EP[%s] status!\n", pEP->xInfo.pEPID);
+					break;
+				}
+
+				if (bRun)
+				{
+					MESSAGE("EP[%s] is already started!\n", pEP->xInfo.pEPID);
+					break;
+				}
+
+				xRet = FTOM_EP_start(pEP);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Failed to start EP[%s]!\n", pEP->xInfo.pEPID);	
+				}
+				else
+				{
+					MESSAGE("EP[%s] started!\n", pEP->xInfo.pEPID);	
+				}
+			}
+			else if (strcasecmp(pArgv[1], "del") == 0)
+			{
+			
+				FTM_BOOL	bRun;
+
+				xRet = FTOM_EP_isRun(pEP, &bRun);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Faield to get EP[%s] status!\n", pEP->xInfo.pEPID);
+					break;
+				}
+
+				if (bRun)
+				{
+					xRet = FTOM_EP_stop(pEP, FTM_TRUE);
+					if (xRet != FTM_RET_OK)
+					{
+						MESSAGE("Failed to stop EP[%s]!\n", pEP->xInfo.pEPID);
+						break;
+					}
+				}
+
+				xRet = FTOM_EP_destroy(&pEP, FTM_TRUE);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Failed to remove EP[%s]!\n", pEP->xInfo.pEPID);	
+				}
+				else
+				{
+					MESSAGE("Node have been removed.\n");	
+				}
+			}
 		}
 		break;
 	}

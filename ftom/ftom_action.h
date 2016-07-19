@@ -37,7 +37,8 @@ FTM_RET	FTOM_ACTION_createFromDB
 
 FTM_RET	FTOM_ACTION_destroy
 (
-	FTOM_ACTION_PTR _PTR_ ppActionM
+	FTOM_ACTION_PTR _PTR_ ppActionM,
+	FTM_BOOL		bRemoveDB
 );
 
 FTM_RET	FTOM_ACTION_start

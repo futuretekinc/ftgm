@@ -47,8 +47,8 @@ FTM_EP			xDefaultEP =
 	.ulTimeout				= 5,
 	.ulUpdateInterval		= 10,
 	.ulReportInterval		= 60,
-	.xLimit.xType 			= FTM_EP_LIMIT_TYPE_COUNT,
-	.xLimit.xParams.ulCount = 100
+	.xLimit.xType 			= FTM_EP_LIMIT_TYPE_MONTHS,
+	.xLimit.xParams.ulMonths= 1
 };
 
 static 
@@ -1035,34 +1035,56 @@ FTM_RET	FTM_EP_print
 {
 	ASSERT(pEP != NULL);
 
-	MESSAGE("%16s : %s\n", 	"epid", pEP->pEPID);
-	MESSAGE("%16s : %s\n", 	"type", FTM_EP_typeString(pEP->xType));
-	MESSAGE("%16s : %s\n", 	"name", pEP->pName);
-	MESSAGE("%16s : %s\n", 	"unit", pEP->pUnit);
-	MESSAGE("%16s : ", 		"state");
-
+	MESSAGE("%16s : %s\n", 	"EPID", pEP->pEPID);
+	MESSAGE("%16s : %s\n", 	"Type", FTM_EP_typeString(pEP->xType));
+	MESSAGE("%16s : %s\n", 	"Name", pEP->pName);
+	MESSAGE("%16s : %s\n", 	"Unit", pEP->pUnit);
+	MESSAGE("%16s : ", 		"Enabled");
 	if (pEP->bEnable)
 	{
-		MESSAGE("%s\n", "enable");
+		MESSAGE("%s\n", "Yes");
 	}
 	else
 	{
-		MESSAGE("%s\n", "disable");
+		MESSAGE("%s\n", "No");
 	}
 
-	MESSAGE("%16s : %lu\n", 	"update interval", pEP->ulUpdateInterval);
-	MESSAGE("%16s : %lu\n", 	"report interval", pEP->ulReportInterval);
-	MESSAGE("%16s : %lu\n", 	"timeout", 	pEP->ulTimeout);
-	MESSAGE("%16s : %s\n", 	"did", 		pEP->pDID);
-	if (pEP->xLimit.xType == FTM_EP_LIMIT_TYPE_COUNT)
-	{
-		MESSAGE("%16s : %s(%lu)\n", 	"limit", 	"count", pEP->xLimit.xParams.ulCount);
-	}
-	else
-	{
-		MESSAGE("%16s : %s(%lu:%lu)\n", 	"limit", 	"time", 
-			pEP->xLimit.xParams.xTime.ulStart,pEP->xLimit.xParams.xTime.ulEnd);
-	}
+	MESSAGE("%16s : %lu\n", "Update interval", pEP->ulUpdateInterval);
+	MESSAGE("%16s : %lu\n", "Report interval", pEP->ulReportInterval);
+	MESSAGE("%16s : %lu\n", "Timeout", 	pEP->ulTimeout);
+	MESSAGE("%16s : %s\n", 	"DID", 		pEP->pDID);
 
+	switch(pEP->xLimit.xType)
+	{
+	case	FTM_EP_LIMIT_TYPE_TIME:
+		{
+			MESSAGE("%16s : %s(%lu ~ %lu)\n", "Limit","Time", pEP->xLimit.xParams.xTime.ulStart, pEP->xLimit.xParams.xTime.ulEnd);
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_MONTHS:
+		{
+			MESSAGE("%16s : %lu months\n",	"Limit", pEP->xLimit.xParams.ulMonths);
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_DAYS:
+		{
+			MESSAGE("%16s : %lu days\n",	"Limit", pEP->xLimit.xParams.ulCount);
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_HOURS:
+		{
+			MESSAGE("%16s : %lu hours\n",	"Limit", pEP->xLimit.xParams.ulCount);
+		}
+		break;
+
+	case	FTM_EP_LIMIT_TYPE_COUNT:
+		{
+			MESSAGE("%16s : %s(%lu)\n",	"Limit","Count", pEP->xLimit.xParams.ulCount);
+		}
+		break;
+	}
 	return	FTM_RET_OK;
 }

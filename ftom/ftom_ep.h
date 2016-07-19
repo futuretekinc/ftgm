@@ -64,7 +64,7 @@ FTM_RET	FTOM_EP_create
 FTM_RET	FTOM_EP_destroy
 (
 	FTOM_EP_PTR _PTR_ 	ppEP,
-	FTM_BOOL			bStorage
+	FTM_BOOL			bRemoveDB
 );
 
 FTM_RET	FTOM_EP_count
@@ -102,6 +102,12 @@ FTM_RET FTOM_EP_stop
 (
 	FTOM_EP_PTR 		pEP, 
 	FTM_BOOL 			bWaitForStop
+);
+
+FTM_RET FTOM_EP_isRun
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_BOOL_PTR		pbRun
 );
 
 FTM_RET	FTOM_EP_getDataType
@@ -196,6 +202,27 @@ FTM_RET	FTOM_EP_getReportInterval
 	FTM_ULONG_PTR	pulInterval
 );
 
+FTM_RET	FTOM_EP_print
+(
+	FTOM_EP_PTR		pEP
+);
+
+FTM_RET	FTOM_EP_printList
+(
+	FTM_VOID
+);
+
+FTM_RET	FTOM_EP_sendMessage
+(
+	FTOM_EP_PTR		pEP,
+	FTOM_MSG_PTR	pMsg
+);
+
+FTM_RET	FTOM_EP_isAsyncMode
+(
+	FTOM_EP_PTR		pEP
+);
+
 FTM_RET	FTOM_EP_CLASS_create
 (
 	FTM_EP_CLASS_PTR 	pInfo,
@@ -219,25 +246,9 @@ FTM_RET FTOM_EP_CLASS_getAt
 	FTOM_EP_CLASS_PTR _PTR_ ppEPClass
 );
 
-FTM_RET	FTOM_EP_print
+FTM_RET	FTOM_EP_CLASS_print
 (
-	FTOM_EP_PTR		pEP
-);
-
-FTM_RET	FTOM_EP_printList
-(
-	FTM_VOID
-);
-
-FTM_RET	FTOM_EP_sendMessage
-(
-	FTOM_EP_PTR		pEP,
-	FTOM_MSG_PTR	pMsg
-);
-
-FTM_RET	FTOM_EP_isAsyncMode
-(
-	FTOM_EP_PTR		pEP
+	FTOM_EP_CLASS_PTR	pClass
 );
 
 /******************************************

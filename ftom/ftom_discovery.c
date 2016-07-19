@@ -207,6 +207,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 				{
 					FTOM_MSG_DISCOVERY_PTR	pMsg = (FTOM_MSG_DISCOVERY_PTR)pCommonMsg;
 
+					TRACE("Discovery Start!\n");
 					if (!pDiscovery->bInProgress)
 					{
 						pDiscovery->bInProgress = FTM_TRUE;
@@ -317,7 +318,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 			FTOM_MSG_destroy(&pCommonMsg);
 		}
 
-		if (pDiscovery->bInProgress && FTM_TIMER_isExpired(&pDiscovery->xTimer))
+		if ((pDiscovery->bInProgress) && FTM_TIMER_isExpired(&pDiscovery->xTimer))
 		{
 			if (pDiscovery->ulLoopCount < pDiscovery->ulRetryCount)
 			{
@@ -333,6 +334,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 
 	}
 
+	TRACE("Discovery finished!\n");
 	return	0;
 }
 
@@ -379,7 +381,6 @@ FTM_RET	FTOM_DISCOVERY_isFinished
 	ASSERT(pDiscovery != NULL);
 	ASSERT(pbFinished != NULL);
 
-	TRACE("%s : bInProgress = %d\n", __func__, pDiscovery->bInProgress);
 	*pbFinished = (pDiscovery->bInProgress != FTM_TRUE);
 
 	return	FTM_RET_OK;

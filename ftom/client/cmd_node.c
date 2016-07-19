@@ -13,6 +13,37 @@
 #include "ftm_snmp.h"
 #include "ftom_client.h"
 
+FTM_RET	FTOM_CLIENT_CMD_NODE_showInfo
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pDID
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pDID != NULL);
+
+	FTM_RET		xRet;
+	FTM_NODE	xInfo;
+
+	xRet = FTOM_CLIENT_NODE_get(pClient, pDID, &xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		MESSAGE("Node[%s] not found.\n", pDID);
+	}
+	else
+	{
+		FTM_BOOL	bRun;
+
+		MESSAGE("Node Information\n");
+		FTM_NODE_print(&xInfo);
+
+		FTOM_CLIENT_NODE_isRun(pClient, pDID, &bRun);
+		MESSAGE("%16s : %s\n", "Status", (bRun)?"Run":"Stop");
+	}
+
+	return	xRet;
+}
+
 FTM_RET	FTOM_CLIENT_CMD_NODE
 (
 	FTM_SHELL_PTR	pShell,
@@ -40,7 +71,6 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 		return	FTM_RET_INVALID_ARGUMENTS;
 	}
 
-	TRACE("Cmd node\n");
 	if (strcasecmp(pArgv[1], "add") == 0)
 	{
 		if (nArgc < 4)
@@ -139,7 +169,6 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 	else if (strcasecmp(pArgv[1], "info") == 0)
 	{
 		FTM_INT			i;
-		FTM_NODE	xInfo;
 
 		if ((nArgc < 3) || (strlen(pArgv[2]) > FTM_DID_LEN))
 		{
@@ -152,43 +181,7 @@ FTM_RET	FTOM_CLIENT_CMD_NODE
 			pDID[i] = toupper(pArgv[2][i]);	
 		}
 
-		xRet = FTOM_CLIENT_NODE_get(pClient, pDID, &xInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to get node[%s] info\n", pDID);
-		}
-		else
-		{
-			MESSAGE("Node Information\n");
-			MESSAGE("%16s : %s\n", 	"DID", 		xInfo.pDID);
-			MESSAGE("%16s : %s\n",	"Type",		FTM_NODE_typeString(xInfo.xType));
-			MESSAGE("%16s : %s\n", 	"Location", xInfo.pLocation);
-			MESSAGE("%16s : %lu\n",	"Interval",	xInfo.ulReportInterval);
-			MESSAGE("%16s : %lu\n",	"Timeout",	xInfo.ulTimeout);
-			MESSAGE("Options\n");
-			switch(xInfo.xType)
-			{
-			case	FTM_NODE_TYPE_SNMP:
-				{
-					MESSAGE("%16s : %s\n",  "Version",	FTM_SNMP_versionString(xInfo.xOption.xSNMP.ulVersion));
-					MESSAGE("%16s : %s\n", 	"URL",		xInfo.xOption.xSNMP.pURL);
-					MESSAGE("%16s : %s\n", 	"Community",xInfo.xOption.xSNMP.pCommunity);
-					MESSAGE("%16s : %s\n", 	"MIB",		xInfo.xOption.xSNMP.pMIB);
-					MESSAGE("%16s : %lu\n", "Retry Count",xInfo.xOption.xSNMP.ulMaxRetryCount);
-				}
-				break;
-
-			case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
-				{
-				}
-				break;
-
-			case 	FTM_NODE_TYPE_MODBUS_OVER_SERIAL:
-				{
-				}
-				break;
-			}
-		}
+		FTOM_CLIENT_CMD_NODE_showInfo(pClient, pDID);
 	}
 	else if (strcasecmp(pArgv[1], "list") == 0)
 	{

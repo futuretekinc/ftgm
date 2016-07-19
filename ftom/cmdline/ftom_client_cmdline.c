@@ -43,7 +43,7 @@ FTM_RET	FTOM_CLIENT_CL_init
 	memset(pClient, 0, sizeof(FTOM_CLIENT_CL));
 
 	strcpy(pClient->xConfig.xServer.pHost, "127.0.0.1");
-	pClient->xConfig.xServer.usPort = 8889;
+	pClient->xConfig.xServer.usPort = 8888;
 
 	pClient->xConfig.ulDefaultDataCount = FTOM_DATA_READ_COUNT_DEFAULT;
 	pClient->xConfig.ulMaxDataCount = FTOM_DATA_READ_COUNT_MAX;

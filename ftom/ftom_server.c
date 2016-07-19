@@ -173,6 +173,16 @@ FTM_RET	FTOM_SERVER_NODE_stop
 );
 
 static 
+FTM_RET	FTOM_SERVER_NODE_isRun
+(
+	FTOM_SERVER_PTR					pServer,
+ 	FTOM_REQ_NODE_IS_RUN_PARAMS_PTR		pReq,
+	FTM_ULONG							ulReqLen,
+	FTOM_RESP_NODE_IS_RUN_PARAMS_PTR		pResp,
+	FTM_ULONG				ulRespLen
+);
+
+static 
 FTM_RET	FTOM_SERVER_NODE_registerAtServer
 (
 	FTOM_SERVER_PTR					pServer,
@@ -289,6 +299,16 @@ FTM_RET	FTOM_SERVER_EP_remoteSet
  	FTOM_REQ_EP_REMOTE_SET_PARAMS_PTR			pReq,
 	FTM_ULONG		ulReqLen,
 	FTOM_RESP_EP_REMOTE_SET_PARAMS_PTR			pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
+FTM_RET	FTOM_SERVER_EP_isRun
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_EP_IS_RUN_PARAMS_PTR			pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_IS_RUN_PARAMS_PTR			pResp,
 	FTM_ULONG		ulRespLen
 );
 
@@ -677,6 +697,7 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_NODE_SET_REPORT_INTERVAL, FTOM_SERVER_NODE_setReportInterval),
 	MK_CMD_SET(FTOM_CMD_NODE_RUN,				FTOM_SERVER_NODE_run),
 	MK_CMD_SET(FTOM_CMD_NODE_STOP,				FTOM_SERVER_NODE_stop),
+	MK_CMD_SET(FTOM_CMD_NODE_IS_RUN,			FTOM_SERVER_NODE_isRun),
 
 	MK_CMD_SET(FTOM_CMD_EP_CREATE,				FTOM_SERVER_EP_create),
 	MK_CMD_SET(FTOM_CMD_EP_DESTROY,				FTOM_SERVER_EP_destroy),
@@ -690,6 +711,7 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_SET_REGISTERED, 		FTOM_SERVER_EP_setRegistered),
 	MK_CMD_SET(FTOM_CMD_EP_GET_REGISTERED, 		FTOM_SERVER_EP_getRegistered),
 	MK_CMD_SET(FTOM_CMD_EP_SET_REPORT_INTERVAL, FTOM_SERVER_EP_setReportInterval),
+	MK_CMD_SET(FTOM_CMD_EP_IS_RUN, 				FTOM_SERVER_EP_isRun),
 
 	MK_CMD_SET(FTOM_CMD_EP_REG_NOTIFY_RECEIVER, FTOM_SERVER_EP_registrationNotifyReceiver),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_DEL,			FTOM_SERVER_EP_DATA_del),
@@ -1071,7 +1093,7 @@ FTM_VOID_PTR FTOM_SERVER_processTCP
 	nRet = bind( pServer->hSocket, (struct sockaddr *)&xServerAddr, sizeof(xServerAddr));
 	if (nRet < 0)
 	{
-		ERROR2(FTM_RET_COMM_SOCKET_BIND_FAILED, "bind failed.[%d]\n", nRet);
+		ERROR2(FTM_RET_COMM_SOCKET_BIND_FAILED, "Failed to bind socket.[%s:%d]\n", inet_ntoa(xServerAddr.sin_addr), ntohs(xServerAddr.sin_port));
 		return	0;
 	}
 
@@ -1372,7 +1394,7 @@ FTM_VOID_PTR FTOM_SERVER_publishProcess
 	nRet = bind( pServer->xPublisher.hSocket, (struct sockaddr *)&xLocalAddr, sizeof(xLocalAddr));
 	if (nRet < 0)
 	{
-		ERROR2(FTM_RET_COMM_SOCKET_BIND_FAILED, "bind failed.[%d]\n", nRet);
+		ERROR2(FTM_RET_COMM_SOCKET_BIND_FAILED, "Failed to bind socket.[%s:%d]\n", inet_ntoa(xLocalAddr.sin_addr), ntohs(xLocalAddr.sin_port));
 		return	0;
 	}
 
@@ -1921,20 +1943,23 @@ FTM_RET	FTOM_SERVER_NODE_set
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xCmd	= pReq->xCmd;
-	pResp->ulLen = sizeof(*pResp);
+	FTM_RET	xRet;
+	FTOM_NODE_PTR	pNode;
 
-	pResp->xRet = FTOM_NODE_set(pReq->pDID, pReq->xFields, &pReq->xInfo);
 
-	if (pResp->xRet == FTM_RET_OK)
+	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
+	if (xRet == FTM_RET_OK)
 	{
-		FTOM_NODE_PTR	pNode = NULL;
-		pResp->xRet = FTOM_NODE_get(pReq->pDID, &pNode);
-		if (pResp->xRet == FTM_RET_OK)
+		xRet = FTOM_NODE_setAttr(pNode, pReq->xFields, &pReq->xInfo);
+		if (xRet == FTM_RET_OK)
 		{
-			memcpy(&pResp->xInfo, &pNode->xInfo, sizeof(FTM_NODE));
+			xRet = FTOM_NODE_getAttr(pNode, &pResp->xInfo);
 		}
 	}
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = xRet;
 
 	return	pResp->xRet;
 }
@@ -1988,6 +2013,35 @@ FTM_RET	FTOM_SERVER_NODE_stop
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTOM_NODE_stop(pNode);
+	}
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = xRet;
+
+	return	pResp->xRet;
+}
+
+FTM_RET	FTOM_SERVER_NODE_isRun
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_NODE_IS_RUN_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_NODE_IS_RUN_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET			xRet;
+	FTOM_NODE_PTR	pNode;
+
+	xRet = FTOM_NODE_get(pReq->pDID, &pNode);
+	if (xRet == FTM_RET_OK)
+	{
+		FTOM_NODE_isRun(pNode, &pResp->bRun);
 	}
 
 	pResp->xCmd	= pReq->xCmd;
@@ -2357,6 +2411,35 @@ FTM_RET	FTOM_SERVER_EP_remoteSet
 	pResp->xRet = xRet;
 
 	return	xRet;
+}
+
+FTM_RET	FTOM_SERVER_EP_isRun
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_EP_IS_RUN_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_IS_RUN_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET		xRet;
+	FTOM_EP_PTR	pEP;
+
+	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		FTOM_EP_isRun(pEP, &pResp->bRun);
+	}
+
+	pResp->xCmd	= pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = xRet;
+
+	return	pResp->xRet;
 }
 
 FTM_RET	FTOM_SERVER_EP_registerAtServer
@@ -2781,7 +2864,7 @@ FTM_RET	FTOM_SERVER_TRIGGER_del
 
 	memcpy(&xInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
 
-	xRet = FTOM_TRIGGER_destroy(&pTrigger);
+	xRet = FTOM_TRIGGER_destroy(&pTrigger, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to remove trigger[%s].\n", pReq->pTriggerID);
@@ -2975,7 +3058,7 @@ FTM_RET	FTOM_SERVER_ACTION_del
 		goto finish;
 	}
 
-	xRet = FTOM_ACTION_destroy(&pAction);
+	xRet = FTOM_ACTION_destroy(&pAction, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to delete the action[%s].\n", pReq->pActionID);
@@ -3188,7 +3271,7 @@ FTM_RET	FTOM_SERVER_RULE_del
 
 	memcpy(&xInfo, &pRule->xInfo, sizeof(FTM_RULE));
 
-	xRet = FTOM_RULE_destroy(&pRule);
+	xRet = FTOM_RULE_destroy(&pRule, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to delete the rule[%s].\n", pReq->pRuleID);

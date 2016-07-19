@@ -21,6 +21,9 @@
 #include "ftom_utils.h"
 #include "ftom_logger.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_FTOM
+
 FTM_VOID_PTR	FTOM_process
 (
 	FTM_VOID_PTR pData
@@ -357,25 +360,47 @@ FTM_RET	FTOM_final
 {
 	FTM_RET	xRet;
 
-	FTOM_SERVICE_final();
+	xRet = FTOM_SERVICE_final();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize service!\n");
+	}
 
 	xRet = FTOM_RULE_final();
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Rule management destruction failed.\n");
+		ERROR2(xRet, "Failed to finalize rule.\n");
 	}
 
 	xRet = FTOM_MSGQ_destroy(&pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Message queue destruction failed.\n");
+		ERROR2(xRet, "Failed to destroy Message queue.\n");
 	}
 
-	FTOM_ACTION_final();
-	FTOM_TRIGGER_final();
+	xRet = FTOM_ACTION_final();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize action!\n");	
+	}
 
-	FTOM_EP_final();
-	FTOM_NODE_final();
+	xRet = FTOM_TRIGGER_final();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize trigger!\n");	
+	}
+
+	xRet = FTOM_EP_final();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize EP!\n");	
+	}
+
+	xRet = FTOM_NODE_final();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize Node!\n");	
+	}
 
 	xRet = FTOM_LOGGER_final();
 	if (xRet != FTM_RET_OK)
@@ -395,12 +420,22 @@ FTM_RET	FTOM_loadConfigFromFile
 {
 	ASSERT(pFileName != NULL);
 	FTM_RET	xRet;
+	FTM_CONFIG_PTR		pConfig;
 
-	xRet = FTOM_SERVICE_loadConfigFromFile(FTOM_SERVICE_ALL, pFileName);
+	xRet =FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "SERVER configuration file[%s] load failed\n", pFileName);
+		return	xRet;	
+	}
+
+	xRet = FTOM_SERVICE_loadConfig(FTOM_SERVICE_ALL, pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to load configuration from file[%s]\n", pFileName);
 	}
+
+	FTM_CONFIG_destroy(&pConfig);
 
 	TRACE("Configuraion loaded.\n");
 

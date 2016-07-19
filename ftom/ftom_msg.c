@@ -555,7 +555,10 @@ FTM_RET	FTOM_MSG_createServerSync
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MSG_destroy(FTOM_MSG_PTR _PTR_ ppMsg)
+FTM_RET	FTOM_MSG_destroy
+(
+	FTOM_MSG_PTR _PTR_ ppMsg
+)
 {
 	ASSERT(ppMsg != NULL);
 

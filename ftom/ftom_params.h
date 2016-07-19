@@ -154,6 +154,23 @@ typedef	struct
 	FTM_RET				xRet;
 }	FTOM_RESP_NODE_STOP_PARAMS, _PTR_ FTOM_RESP_NODE_STOP_PARAMS_PTR;
 
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pDID[FTM_ID_LEN+1];
+}	FTOM_REQ_NODE_IS_RUN_PARAMS, _PTR_ 	FTOM_REQ_NODE_IS_RUN_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+	FTM_BOOL			bRun;
+}	FTOM_RESP_NODE_IS_RUN_PARAMS, _PTR_	FTOM_RESP_NODE_IS_RUN_PARAMS_PTR;
+
 typedef struct	
 {
 	FTM_ULONG			ulReqID;
@@ -348,6 +365,23 @@ typedef	struct
 	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
 }	FTOM_RESP_EP_SET_PARAMS, _PTR_	FTOM_RESP_EP_SET_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pEPID[FTM_ID_LEN+1];
+}	FTOM_REQ_EP_IS_RUN_PARAMS, _PTR_ 	FTOM_REQ_EP_IS_RUN_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+	FTM_BOOL			bRun;
+}	FTOM_RESP_EP_IS_RUN_PARAMS, _PTR_	FTOM_RESP_EP_IS_RUN_PARAMS_PTR;
 
 typedef struct	
 {

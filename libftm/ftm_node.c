@@ -304,3 +304,43 @@ FTM_CHAR_PTR	FTM_NODE_flagString
 
 	return	"";
 }
+
+FTM_RET	FTM_NODE_print
+(
+	FTM_NODE_PTR	pNode
+)
+{
+	ASSERT(pNode != NULL);
+
+	MESSAGE("%16s : %s\n", 	"DID", 		pNode->pDID);
+	MESSAGE("%16s : %s\n", 	"Model",		pNode->pModel);
+	MESSAGE("%16s : %s\n", 	"Name",		pNode->pName);
+	MESSAGE("%16s : %s\n", 	"Type", 		FTM_NODE_typeString(pNode->xType));
+	MESSAGE("%16s : %lu\n", "Report Interval", 	pNode->ulReportInterval);
+	MESSAGE("%16s : %lu\n", "Timeout", 	pNode->ulTimeout);
+
+	switch(pNode->xType)
+	{
+	case    FTM_NODE_TYPE_SNMP:
+		{   
+			MESSAGE("%16s : %s\n",  "Version",  FTM_SNMP_versionString(pNode->xOption.xSNMP.ulVersion));
+			MESSAGE("%16s : %s\n",  "URL",      pNode->xOption.xSNMP.pURL);
+			MESSAGE("%16s : %s\n",  "Community",pNode->xOption.xSNMP.pCommunity);
+			MESSAGE("%16s : %s\n",  "MIB",      pNode->xOption.xSNMP.pMIB);
+			MESSAGE("%16s : %lu\n", "Retry Count",pNode->xOption.xSNMP.ulMaxRetryCount);
+		}
+		break;
+
+	case    FTM_NODE_TYPE_MODBUS_OVER_TCP:
+		{   
+		}
+		break;
+
+	case    FTM_NODE_TYPE_MODBUS_OVER_SERIAL:
+		{   
+		}
+		break;
+	}
+
+	return	FTM_RET_OK;
+}

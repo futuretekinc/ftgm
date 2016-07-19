@@ -146,18 +146,22 @@ FTM_RET	FTOM_ACTION_create
 
 FTM_RET	FTOM_ACTION_destroy
 (
-	FTOM_ACTION_PTR _PTR_ ppAction
+	FTOM_ACTION_PTR _PTR_ ppAction,
+	FTM_BOOL		bIncludeDB
 )
 {
 	ASSERT(ppAction != NULL);
 	ASSERT((*ppAction) != NULL);
 
 	FTM_RET	xRet;
-	
-	xRet = FTOM_DB_ACTION_remove((*ppAction)->xInfo.pID);
-	if (xRet != FTM_RET_OK)
+
+	if (bIncludeDB)
 	{
-		ERROR2(xRet, "Failed to remove action[%s] from DB!\n", (*ppAction)->xInfo.pID);
+		xRet = FTOM_DB_ACTION_remove((*ppAction)->xInfo.pID);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to remove action[%s] from DB!\n", (*ppAction)->xInfo.pID);
+		}
 	}
 
 	xRet = FTM_LIST_remove(pActionList, *ppAction);

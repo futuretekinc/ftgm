@@ -37,7 +37,8 @@ FTM_RET	FTOM_RULE_createFromDB
 
 FTM_RET	FTOM_RULE_destroy
 (
-	FTOM_RULE_PTR _PTR_ ppRule
+	FTOM_RULE_PTR _PTR_ ppRule,
+	FTM_BOOL		bRemoveDB
 );
 
 FTM_RET	FTOM_RULE_start

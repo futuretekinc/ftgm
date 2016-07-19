@@ -170,16 +170,20 @@ error1:
 
 FTM_RET	FTOM_TRIGGER_destroy
 (
-	FTOM_TRIGGER_PTR _PTR_ ppTrigger
+	FTOM_TRIGGER_PTR _PTR_ ppTrigger,
+	FTM_BOOL		bIncludeDB
 )
 {
 	ASSERT(ppTrigger != NULL);
 	FTM_RET	xRet;
-	
-	xRet = FTOM_DB_TRIGGER_remove((*ppTrigger)->xInfo.pID);
-	if (xRet != FTM_RET_OK)
+
+	if (bIncludeDB)
 	{
-		ERROR2(xRet, "Failed to remove trigger[%s] from DB!\n", (*ppTrigger)->xInfo.pID);	
+		xRet = FTOM_DB_TRIGGER_remove((*ppTrigger)->xInfo.pID);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to remove trigger[%s] from DB!\n", (*ppTrigger)->xInfo.pID);	
+		}
 	}
 
 	xRet = FTM_LIST_remove(pTriggerList, (*ppTrigger));

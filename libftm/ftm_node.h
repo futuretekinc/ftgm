@@ -172,5 +172,10 @@ FTM_CHAR_PTR	FTM_NODE_flagString
 (
 	FTM_NODE_FLAG 	xFlag
 );
+
+FTM_RET	FTM_NODE_print
+(
+	FTM_NODE_PTR	pNode
+);
 #endif
 

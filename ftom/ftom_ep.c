@@ -23,23 +23,30 @@ typedef	struct	FTOM_EP_MSG_STRUCT
 	FTOM_EP_CMD		xCmd;	
 } FTOM_EP_MSG, _PTR_ FTOM_EP_MSG_PTR;
 
-static FTM_VOID_PTR	FTOM_EP_process
+static 
+FTM_VOID_PTR	FTOM_EP_threadMain
 (
 	FTM_VOID_PTR 	pData
 );
 
 static
+FTM_RET	FTOM_EP_message
+(
+	FTOM_EP_PTR		pEP,
+	FTOM_MSG_PTR	pBaseMsg
+);
+static
 FTM_RET	FTOM_EP_setData
 (
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
+	FTOM_EP_PTR 	pEP, 
+	FTM_EP_DATA_PTR pData
 );
 
 static
 FTM_RET	FTOM_EP_getData
 (
-	FTOM_EP_PTR 		pEP, 
-	FTM_EP_DATA_PTR 	pData
+	FTOM_EP_PTR 	pEP, 
+	FTM_EP_DATA_PTR pData
 );
 
 static
@@ -267,7 +274,7 @@ error1:
 FTM_RET	FTOM_EP_destroy
 (
 	FTOM_EP_PTR _PTR_ ppEP,
-	FTM_BOOL		bStorage
+	FTM_BOOL		bIncludeDB
 )
 {
 	ASSERT(ppEP != NULL);
@@ -286,7 +293,7 @@ FTM_RET	FTOM_EP_destroy
 
 	FTOM_LOG_destroyEP((*ppEP)->xInfo.pEPID);
 
-	if (bStorage)
+	if (!bIncludeDB)
 	{
 		xRet = FTOM_DB_EP_remove((*ppEP)->xInfo.pEPID);
 		if (xRet != FTM_RET_OK)
@@ -518,13 +525,15 @@ FTM_RET FTOM_EP_start
 )
 {
 	ASSERT(pEP != NULL);
-	
+
+	FTM_RET	xRet;
 	FTM_INT	nRet;
 
 	if (pEP->pNode == NULL)
 	{
-		ERROR2(FTM_RET_EP_IS_NOT_ATTACHED, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);
-		return	FTM_RET_EP_IS_NOT_ATTACHED;	
+		xRet = FTM_RET_EP_IS_NOT_ATTACHED;	
+		ERROR2(xRet, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);
+		return	xRet;	
 	}
 
 	if (!pEP->xInfo.bEnable)
@@ -539,11 +548,12 @@ FTM_RET FTOM_EP_start
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
-	nRet = pthread_create(&pEP->xPThread, NULL, FTOM_EP_process, (FTM_VOID_PTR)pEP);
+	nRet = pthread_create(&pEP->xPThread, NULL, FTOM_EP_threadMain, (FTM_VOID_PTR)pEP);
 	if (nRet != 0)
 	{
-		ERROR2(FTM_RET_THREAD_CREATION_ERROR, "Can't create thread.\n");	
-		return	FTM_RET_THREAD_CREATION_ERROR;
+		xRet = FTM_RET_THREAD_CREATION_ERROR;
+		ERROR2(xRet, "Failed to create thread.\n");	
+		return	xRet;
 	}
 
 	return	FTM_RET_OK;
@@ -594,7 +604,21 @@ FTM_RET	FTOM_EP_stop
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_EP_process
+FTM_RET FTOM_EP_isRun
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_BOOL_PTR		pbRun
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pbRun != NULL);
+
+	*pbRun = !pEP->bStop;
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR FTOM_EP_threadMain
 (
 	FTM_VOID_PTR pData
 )
@@ -688,39 +712,20 @@ FTM_VOID_PTR FTOM_EP_process
 
 		FTM_TIMER_initMS(&xLoopTimer, ulRemainTime);
 
-		while (!pEP->bStop && (FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pBaseMsg) == FTM_RET_OK))
+		while (FTM_TRUE)
 		{
-			switch(pBaseMsg->xType)
+			if (pEP->bStop)
 			{
-			case	FTOM_MSG_TYPE_PUBLISH_EP_LAST_DATA:
-				{
-					FTOM_EP_reportLastData(pEP);
-				}
-				break;
-
-			case	FTOM_MSG_TYPE_EP_INSERT_DATA:
-				{
-					FTM_INT	i;
-					FTOM_MSG_EP_INSERT_DATA_PTR	pMsg = (FTOM_MSG_EP_INSERT_DATA_PTR)pBaseMsg;
-
-					for(i = 0 ; i < pMsg->ulCount ; i++)
-					{
-						FTOM_EP_setData(pEP, &pMsg->pData[i]);
-					}
-				}
-				break;
-
-			case	FTOM_MSG_TYPE_QUIT:
-				{
-					pEP->bStop = FTM_TRUE;
-				}
-				break;
-
-			default:
-				{	
-					WARN("Invalid message[%08x]\n", pBaseMsg->xType);
-				}
+				break;	
 			}
+			
+			xRet = FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pBaseMsg);
+			if (xRet != FTM_RET_OK)
+			{
+				break;	
+			}
+
+			FTOM_EP_message(pEP, pBaseMsg);
 			
 			FTOM_MSG_destroy(&pBaseMsg);
 
@@ -731,6 +736,55 @@ FTM_VOID_PTR FTOM_EP_process
 	TRACE("EP[%s] stopped.\n", pEP->xInfo.pEPID);
 
 	return	0;
+}
+
+FTM_RET	FTOM_EP_message
+(
+	FTOM_EP_PTR		pEP,
+	FTOM_MSG_PTR	pBaseMsg
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pBaseMsg != NULL);
+
+	FTM_RET	xRet;
+
+	switch(pBaseMsg->xType)
+	{
+	case	FTOM_MSG_TYPE_PUBLISH_EP_LAST_DATA:
+		{
+			xRet = FTOM_EP_reportLastData(pEP);
+		}
+		break;
+
+	case	FTOM_MSG_TYPE_EP_INSERT_DATA:
+		{
+			FTM_INT	i;
+			FTOM_MSG_EP_INSERT_DATA_PTR	pMsg = (FTOM_MSG_EP_INSERT_DATA_PTR)pBaseMsg;
+
+			for(i = 0 ; i < pMsg->ulCount ; i++)
+			{
+				xRet = FTOM_EP_setData(pEP, &pMsg->pData[i]);
+			}
+		}
+		break;
+
+	case	FTOM_MSG_TYPE_QUIT:
+		{
+			pEP->bStop = FTM_TRUE;
+
+			xRet = FTM_RET_OK;
+		}
+		break;
+
+	default:
+		{	
+			xRet = FTM_RET_INVALID_MESSAGE_TYPE;
+			ERROR2(xRet, "Invalid message[%08x]\n", pBaseMsg->xType);
+		}
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_EP_getDataType
@@ -1341,7 +1395,22 @@ FTM_RET	FTOM_EP_sendMessage
 	ASSERT(pEP != NULL);
 	ASSERT(pMsg != NULL);
 
-	return	FTOM_MSGQ_push(&pEP->xMsgQ, pMsg);
+	FTM_RET	xRet;
+
+	if (pEP->bStop)
+	{
+		xRet = FTOM_EP_message(pEP, pMsg);
+		if (xRet == FTM_RET_OK)
+		{
+			FTOM_MSG_destroy(&pMsg);
+		}
+	}
+	else
+	{
+		xRet = FTOM_MSGQ_push(&pEP->xMsgQ, pMsg);
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_EP_isAsyncMode
@@ -1413,6 +1482,97 @@ FTM_INT	FTOM_EP_CLASS_comparator
 	return	(pEPClassInfo1->xType - pEPClassInfo2->xType);
 }
 
+FTM_RET	FTOM_EP_print
+(
+	FTOM_EP_PTR	pEP
+)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET		xRet;
+	FTM_CHAR	pTimeString[64];
+	FTM_EP_DATA	xData;
+	FTM_ULONG	ulBegin, ulEnd, ulCount;
+
+	MESSAGE("\n# EP Information\n");
+	FTM_EP_print(&pEP->xInfo);
+	MESSAGE("%16s : %s\n", 	"State",(!pEP->bStop)?"RUN":"STOP");
+	xRet = FTOM_EP_getDataInfo(pEP, &ulBegin, &ulEnd, &ulCount);
+	if (xRet == FTM_RET_OK)
+	{
+		MESSAGE("%16s : %lu\n", "COUNT", ulCount);
+	}
+		
+	xRet = FTOM_EP_getData(pEP, &xData);
+	if (xRet == FTM_RET_OK)
+	{
+		ctime_r((time_t *)&xData.ulTime, pTimeString);
+		if (strlen(pTimeString) != 0)
+		{
+			pTimeString[strlen(pTimeString) - 1] = '\0';
+		}
+		MESSAGE("%16s : %s\n", 	"Time", pTimeString);
+		MESSAGE("%16s : %s\n", "VALUE", FTM_VALUE_print(&xData.xValue));	
+	}
+	else
+	{
+		MESSAGE("%16s : NOT EXISTS\n", "VALUE");
+	}
+	
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_EP_printList
+(
+	FTM_VOID
+)
+{
+	FTM_INT		i;
+	FTM_ULONG	ulCount;
+	FTOM_EP_PTR	pEP;
+	
+	MESSAGE("\n# EP Information\n");
+	MESSAGE("%16s %16s %16s %16s %8s %8s %8s %8s %8s %24s\n", "EPID", "TYPE", "NAME", "DID", "STATE", "VALUE", "UNIT", "UPDATE", "REPORT", "TIME");
+	FTOM_EP_count(0, NULL, &ulCount);
+	for(i = 0; i < ulCount ; i++)
+	{
+		if (FTOM_EP_getAt(i, &pEP) == FTM_RET_OK)
+		{
+			FTM_CHAR	pTimeString[64];
+			FTM_EP_DATA	xData;
+		
+			FTOM_EP_getData(pEP, &xData);
+
+			ctime_r((time_t *)&xData.ulTime, pTimeString);
+			if (strlen(pTimeString) != 0)
+			{
+				pTimeString[strlen(pTimeString) - 1] = '\0';
+			}
+			
+			MESSAGE("%16s ", pEP->xInfo.pEPID);
+			MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
+			MESSAGE("%16s ", pEP->xInfo.pName);
+			if (pEP->pNode != NULL)
+			{
+				MESSAGE("%16s ", pEP->pNode->xInfo.pDID);
+			}
+			else
+			{
+				MESSAGE("%16s ", "");
+			}
+	
+			MESSAGE("%8s ", (!pEP->bStop)?"RUN":"STOP");
+			MESSAGE("%8s ", FTM_VALUE_print(&xData.xValue));
+			MESSAGE("%8s ", pEP->xInfo.pUnit);
+			MESSAGE("%8lu ", pEP->xInfo.ulUpdateInterval);
+			MESSAGE("%8lu ", pEP->xInfo.ulReportInterval);
+			MESSAGE("%24s\n", pTimeString);
+		}
+	}
+	
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_EP_CLASS_create
 (
 	FTM_EP_CLASS_PTR 	pInfo,
@@ -1482,83 +1642,20 @@ FTM_RET FTOM_EP_CLASS_getAt
 	return	FTM_LIST_getAt(pClassList, ulIndex, (FTM_VOID_PTR _PTR_)ppEPClass);
 }
 
-FTM_RET	FTOM_EP_print
+FTM_RET	FTOM_EP_CLASS_print
 (
-	FTOM_EP_PTR	pEP
+	FTOM_EP_CLASS_PTR	pClass
 )
 {
-	FTM_CHAR	pTimeString[64];
-	FTM_EP_DATA	xData;
-	
-	FTOM_EP_getData(pEP, &xData);
-	ctime_r((time_t *)&xData.ulTime, pTimeString);
-	if (strlen(pTimeString) != 0)
-	{
-		pTimeString[strlen(pTimeString) - 1] = '\0';
-	}
+	ASSERT(pClass != NULL);
 
-	MESSAGE("\n# EP Information\n");
-	MESSAGE("%16s : %s\n", 	"EPID", pEP->xInfo.pEPID);
-	MESSAGE("%16s : %s\n", 	"Type", FTM_EP_typeString(pEP->xInfo.xType));
-	MESSAGE("%16s : %s\n", 	"Name", pEP->xInfo.pName);
-	MESSAGE("%16s : %s\n", 	"State",(!pEP->bStop)?"RUN":"STOP");
-	MESSAGE("%16s : %s\n", 	"Value",FTM_VALUE_print(&xData.xValue));
-	MESSAGE("%16s : %s\n", 	"Unit",	pEP->xInfo.pUnit);
-	MESSAGE("%16s : %s\n", 	"DID", 	pEP->pNode->xInfo.pDID);
-	MESSAGE("%16s : %s\n", 	"Time", pTimeString);
-	MESSAGE("%16s : %lu\n", "Update Interval", pEP->xInfo.ulUpdateInterval);
-	MESSAGE("%16s : %lu\n", "Report Interval", pEP->xInfo.ulReportInterval);
-	
-	return	FTM_RET_OK;
-}
+	MESSAGE("%8s : %s\n", "Type", 	FTM_EP_typeString(pClass->xInfo.xType));
+	MESSAGE("%8s : %s\n", "ID",		pClass->xInfo.pID);
+	MESSAGE("%8s : %s\n", "Name",	pClass->xInfo.pName);
+	MESSAGE("%8s : %s\n", "SN",		pClass->xInfo.pSN);
+	MESSAGE("%8s : %s\n", "State",	pClass->xInfo.pState);
+	MESSAGE("%8s : %s\n", "Value",	pClass->xInfo.pValue);
+	MESSAGE("%8s : %s\n", "Time", 	pClass->xInfo.pTime);
 
-FTM_RET	FTOM_EP_printList
-(
-	FTM_VOID
-)
-{
-	FTM_INT		i;
-	FTM_ULONG	ulCount;
-	FTOM_EP_PTR	pEP;
-	
-	MESSAGE("\n# EP Information\n");
-	MESSAGE("%16s %16s %16s %16s %8s %8s %8s %8s %8s %24s\n", "EPID", "TYPE", "NAME", "DID", "STATE", "VALUE", "UNIT", "UPDATE", "REPORT", "TIME");
-	FTOM_EP_count(0, NULL, &ulCount);
-	for(i = 0; i < ulCount ; i++)
-	{
-		if (FTOM_EP_getAt(i, &pEP) == FTM_RET_OK)
-		{
-			FTM_CHAR	pTimeString[64];
-			FTM_EP_DATA	xData;
-		
-			FTOM_EP_getData(pEP, &xData);
-
-			ctime_r((time_t *)&xData.ulTime, pTimeString);
-			if (strlen(pTimeString) != 0)
-			{
-				pTimeString[strlen(pTimeString) - 1] = '\0';
-			}
-			
-			MESSAGE("%16s ", pEP->xInfo.pEPID);
-			MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
-			MESSAGE("%16s ", pEP->xInfo.pName);
-			if (pEP->pNode != NULL)
-			{
-				MESSAGE("%16s ", pEP->pNode->xInfo.pDID);
-			}
-			else
-			{
-				MESSAGE("%16s ", "");
-			}
-	
-			MESSAGE("%8s ", (!pEP->bStop)?"RUN":"STOP");
-			MESSAGE("%8s ", FTM_VALUE_print(&xData.xValue));
-			MESSAGE("%8s ", pEP->xInfo.pUnit);
-			MESSAGE("%8lu ", pEP->xInfo.ulUpdateInterval);
-			MESSAGE("%8lu ", pEP->xInfo.ulReportInterval);
-			MESSAGE("%24s\n", pTimeString);
-		}
-	}
-	
 	return	FTM_RET_OK;
 }

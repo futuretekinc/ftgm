@@ -432,6 +432,47 @@ FTM_RET FTOM_CLIENT_NODE_stop
 	return	xResp.xRet;
 }
 
+FTM_RET FTOM_CLIENT_NODE_isRun
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pDID,
+	FTM_BOOL_PTR		pbRun
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pDID != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_NODE_IS_RUN_PARAMS	xReq;
+	FTOM_RESP_NODE_IS_RUN_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_NODE_IS_RUN;
+	xReq.ulLen	=	sizeof(xReq);
+	strncpy(xReq.pDID, pDID, FTM_ID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		*pbRun = xResp.bRun;
+	}
+
+	return	xResp.xRet;
+}
+
 FTM_RET	FTOm_CLIENT_NODE_registerAtServer
 (
 	FTOM_CLIENT_PTR	pClient,
@@ -890,6 +931,47 @@ FTM_RET FTOM_CLIENT_EP_set
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_ERROR;	
+	}
+
+	return	xResp.xRet;
+}
+
+FTM_RET FTOM_CLIENT_EP_isRun
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pEPID,
+	FTM_BOOL_PTR		pbRun
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pEPID != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_EP_IS_RUN_PARAMS	xReq;
+	FTOM_RESP_EP_IS_RUN_PARAMS	xResp;
+	FTM_ULONG					ulRespLen;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd	=	FTOM_CMD_EP_IS_RUN;
+	xReq.ulLen	=	sizeof(xReq);
+	strncpy(xReq.pEPID, pEPID, FTM_ID_LEN);
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		*pbRun = xResp.bRun;
 	}
 
 	return	xResp.xRet;

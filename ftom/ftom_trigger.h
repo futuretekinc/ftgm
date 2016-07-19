@@ -54,7 +54,8 @@ FTM_RET	FTOM_TRIGGER_create
 
 FTM_RET	FTOM_TRIGGER_destroy
 (
-	FTOM_TRIGGER_PTR _PTR_	ppTrigger	
+	FTOM_TRIGGER_PTR _PTR_	ppTrigger,
+	FTM_BOOL		bRemoveDB
 );
 
 FTM_RET	FTOM_TRIGGER_count

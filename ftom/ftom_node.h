@@ -77,7 +77,7 @@ FTM_RET	FTOM_NODE_createFromDB
 FTM_RET	FTOM_NODE_destroy
 (
 	FTOM_NODE_PTR _PTR_ ppNode,
-	FTM_BOOL			bStorage
+	FTM_BOOL			bRemoveDB
 );
 
 FTM_RET	FTOM_NODE_count
@@ -97,9 +97,15 @@ FTM_RET FTOM_NODE_getAt
 	FTOM_NODE_PTR _PTR_ ppNode
 );
 
-FTM_RET FTOM_NODE_set
+FTM_RET FTOM_NODE_getAttr
 (
-	FTM_CHAR_PTR 	pDID, 
+	FTOM_NODE_PTR	pNode,
+	FTM_NODE_PTR 	pInfo
+);
+
+FTM_RET FTOM_NODE_setAttr
+(
+	FTOM_NODE_PTR	pNode,
 	FTM_NODE_FIELD	xFields,
 	FTM_NODE_PTR 	pInfo
 );
@@ -218,6 +224,12 @@ FTM_RET	FTOM_NODE_start
 FTM_RET	FTOM_NODE_stop
 (
 	FTOM_NODE_PTR 	pNode
+);
+
+FTM_RET	FTOM_NODE_isRun
+(
+	FTOM_NODE_PTR	pNode,
+	FTM_BOOL_PTR	pbRun
 );
 
 FTM_CHAR_PTR	FTOM_NODE_stateToStr
