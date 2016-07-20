@@ -16,6 +16,9 @@
 #define		FTOM_CLIENT_MAX_ARGS	16
 
 
+FTM_RET	FTOM_CLIENT_CMD_client(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_CLIENT_CMD_trace(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_CLIENT_CMD_EP(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_EP(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
@@ -24,19 +27,28 @@ FTM_RET	FTOM_CLIENT_CMD_discovery(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_
 FTM_RET	FTOM_CLIENT_CMD_quit(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 
 
-FTM_CHAR_PTR 		_strPrompt = "FTNMC > ";
 FTM_SHELL_CMD	_cmds[] = 
 {
+	{	
+		.pString	= "client",
+		.function	= FTOM_CLIENT_CMD_client,
+		.pShortHelp	= "Client configuration.",
+		.pHelp		= "<cmd>\n"\
+					  "\tClient configuration."\
+					  "COMMANDS:\n"\
+					  "\tserver\n"\
+					  "\t    - Server information.\n"
+	},
 	{	
 		.pString	= "node",
 		.function	= FTOM_CLIENT_CMD_NODE,
 		.pShortHelp = "Node management command set.",
-		.pHelp		= "<COMMAND>\n"\
+		.pHelp		= "<cmd>\n"\
 					  "\tNode management command set.\n"\
-					  "COMMAND:\n"\
-					  "\tadd    <DID> SNMP <URL> <COMMUNITY>\n"\
-					  "\tdel    <DID>\n"\
-					  "\tinfo   <DID>\n"\
+					  "COMMANDS:\n"\
+					  "\tadd <DID> SNMP <URL> <COMMUNITY>\n"\
+					  "\tdel <DID>\n"\
+					  "\tinfo <DID>\n"\
 					  "\tlist\n"\
 					  "PARAMETERS:\n"\
 					  "\tDID    Node Identifier Number.\n"\
@@ -54,7 +66,7 @@ FTM_SHELL_CMD	_cmds[] =
 		.pString	= "ep",
 		.function   = FTOM_CLIENT_CMD_EP,
 		.pShortHelp = "EndPoint management command set.",
-		.pHelp      = "<COMMAND> ...\n"\
+		.pHelp      = "<cmd> ...\n"\
 					  "\tEndPoint management.\n"\
 					  "COMMANDS:\n"\
 					  "\tadd    <EPID> <DID> [-n <Name>] [-u <Unit>] [-i <Interval>] [-t <timeout>]\n"\
@@ -108,8 +120,15 @@ FTM_SHELL_CMD	_cmds[] =
 		.pString	= "discovery",
 		.function	= FTOM_CLIENT_CMD_discovery,
 		.pShortHelp = "Search for node and EP.",
-		.pHelp 		= "\n"\
-					  "\tSearch for node and EP."
+		.pHelp 		= "<cmd>\n"\
+					  "\tSearch for node and EP.\n"\
+					  "COMMANDS:\n"\
+					  "\tstart [<COUNT>]\n"\
+					  "\t    - Start discovery.\n"\
+					  "\tstop\n"\
+					  "\t    - Stop discovery.\n"\
+					  "PARAMETERS:\n"\
+					  "\tCOUNT   The retry count of message for discovery.\n"
 	},
 	{	
 		.pString	= "quit",
@@ -117,6 +136,18 @@ FTM_SHELL_CMD	_cmds[] =
 		.pShortHelp = "Quit program.",
 		.pHelp 		= "\n"\
 					  "\tQuit program."
+	},
+	{	
+		.pString	= "trace",
+		.function	= FTOM_CLIENT_CMD_trace,
+		.pShortHelp = "Trace configuration.",
+		.pHelp 		= "<cmd>\n"\
+					  "\tTrace configuration.\n"\
+					  "COMMANDS:\n"\
+					  "\tlevel [<LEVEL>]\n"\
+					  "PARAMETERS:\n"\
+					  "\tLEVEL   Trace level\n"\
+					  "\t        (all, trace, debug, information, warning, error, fatal)\n"
 	}
 };
 

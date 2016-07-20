@@ -26,16 +26,16 @@ typedef	FTM_RET	(*FTOM_CLIENT_STOP)
 	struct FTOM_CLIENT_STRUCT _PTR_	pClient
 );
 
+typedef FTM_RET	(*FTOM_CLIENT_LOAD_CONFIG)
+(
+	struct FTOM_CLIENT_STRUCT _PTR_	pClient,
+	FTM_CONFIG_PTR					pConfig
+);
+
 typedef FTM_RET	(*FTOM_CLIENT_SET_CONFIG)
 (
 	struct FTOM_CLIENT_STRUCT _PTR_	pClient,
 	FTOM_CLIENT_CONFIG_PTR			pConfig
-);
-
-typedef	FTM_RET	(*FTOM_CLIENT_LOAD_CONFIG_FROM_FILE)
-(
-	struct FTOM_CLIENT_STRUCT _PTR_	pClient,
-	FTM_CHAR_PTR					pFileName
 );
 
 typedef	FTM_RET	(*FTOM_CLIENT_SET_NOTIFY_CB)
@@ -59,8 +59,8 @@ typedef	struct	FTOM_CLIENT_STRUCT
 {
 	FTOM_CLIENT_START					fStart;
 	FTOM_CLIENT_STOP					fStop;
+	FTOM_CLIENT_LOAD_CONFIG				fLoadConfig;
 	FTOM_CLIENT_SET_CONFIG				fSetConfig;
-	FTOM_CLIENT_LOAD_CONFIG_FROM_FILE	fLoadConfigFromFile;
 	FTOM_CLIENT_SET_NOTIFY_CB			fSetNotifyCB;
 	FTOM_CLIENT_REQUEST					fRequest;	
 
@@ -86,16 +86,16 @@ FTM_RET	FTOM_CLIENT_ReadConfig
 );
 #endif
 
+FTM_RET	FTOM_CLIENT_loadConfig
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CONFIG_PTR		pConfig
+);
+
 FTM_RET	FTOM_CLIENT_setConfig
 (
 	FTOM_CLIENT_PTR		pClient,
 	FTM_VOID_PTR		pConfig
-);
-
-FTM_RET	FTOM_CLIENT_loadConfigFromFile
-(
-	FTOM_CLIENT_PTR	pClient,
-	FTM_CHAR_PTR		pFileName
 );
 
 FTM_RET	FTOM_CLIENT_setNotifyCB

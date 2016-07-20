@@ -39,6 +39,23 @@ FTM_RET	FTOM_CLIENT_stop
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 
+FTM_RET	FTOM_CLIENT_loadConfig
+(
+	FTOM_CLIENT_PTR			pClient,
+	FTM_CONFIG_PTR			pConfig
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfig != NULL);
+
+	if (pClient->fLoadConfig != NULL)
+	{
+		pClient->fLoadConfig(pClient, pConfig);
+	}
+
+	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+}
+
 FTM_RET	FTOM_CLIENT_setConfig
 (
 	FTOM_CLIENT_PTR			pClient,
@@ -55,24 +72,6 @@ FTM_RET	FTOM_CLIENT_setConfig
 
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
-
-FTM_RET	FTOM_CLIENT_loadConfigFromFile
-(
-	FTOM_CLIENT_PTR	pClient,
-	FTM_CHAR_PTR 	pFileName
-)
-{
-	ASSERT(pClient != NULL);
-	ASSERT(pFileName != NULL);
-
-	if (pClient->fLoadConfigFromFile != NULL)
-	{
-		return	pClient->fLoadConfigFromFile(pClient, pFileName);
-	}
-
-	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
-}
-
 
 FTM_RET	FTOM_CLIENT_setNotifyCB
 (

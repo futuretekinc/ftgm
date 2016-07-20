@@ -4,17 +4,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include "ftm.h"
+#include "ftom.h"
 #include "ftom_params.h"
 #include "ftom_client.h"
-
-typedef struct 
-{
-	FTOM_REQ_PARAMS_PTR		pReq;
-	FTM_ULONG				ulReqLen;
-	FTOM_RESP_PARAMS_PTR	pResp;
-	FTM_ULONG				ulRespLen;
-	sem_t					xDone;
-}	FTOM_CLIENT_NET_TRANS, _PTR_ FTOM_CLIENT_NET_TRANS_PTR;
 
 typedef	struct
 {
@@ -23,12 +15,6 @@ typedef	struct
 		FTM_CHAR	pHost[FTM_URL_LEN+1];
 		FTM_USHORT	usPort;
 	}	xServer;
-
-	struct
-	{
-		FTM_CHAR	pHost[FTM_URL_LEN+1];
-		FTM_USHORT	usPort;
-	}	xPublishServer;
 }	FTOM_CLIENT_NET_CONFIG, _PTR_ FTOM_CLIENT_NET_CONFIG_PTR;
 
 typedef	struct
@@ -40,21 +26,16 @@ typedef	struct
 	pthread_t			xThread;
 	FTM_MSG_QUEUE_PTR	pMsgQ;
 
+	struct sockaddr_in	xServerAddr;
+
 	FTM_BOOL			bInit;
 	FTM_BOOL			bStop;
 	FTM_BOOL			bConnected;
 	FTM_INT				hSock;
 	FTM_ULONG			ulTimeout;
 	FTM_ULONG			ulReqID;
-	FTM_BOOL			bRequested;
-	sem_t				xReqLock;
 
-	struct	
-	{
-		pthread_t		xThread;
-		FTM_BOOL		bConnected;
-		FTM_INT			hSock;
-	}	xSubscriber;
+	FTM_LIST			xTransList;
 }	FTOM_CLIENT_NET, _PTR_ FTOM_CLIENT_NET_PTR;
 
 FTM_RET	FTOM_CLIENT_NET_init
@@ -112,10 +93,10 @@ FTM_RET	FTOM_CLIENT_NET_setConfig
 );
 
 
-FTM_RET	FTOM_CLIENT_NET_loadConfigFromFile
+FTM_RET	FTOM_CLIENT_NET_loadConfig
 (
 	FTOM_CLIENT_NET_PTR	pClient,
-	FTM_CHAR_PTR		pFileName
+	FTM_CONFIG_PTR		pConfig
 );
 
 FTM_RET	FTOM_CLIENT_NET_connect

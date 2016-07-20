@@ -710,7 +710,7 @@ FTM_RET	FTOM_TASK_sync
 					xRet = FTOM_EP_create(&xInfo, FTM_FALSE, &pEP);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR2(xRet,"EP[%s] object creation failed\n", pEPIDs[i]);
+						ERROR2(xRet,"Failed to create EP[%s]!\n", pEPIDs[i]);
 						continue;	
 					}
 			

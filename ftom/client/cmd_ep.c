@@ -75,7 +75,7 @@ FTM_RET	FTOM_CLIENT_CMD_EPList
 					MESSAGE("%16s ", xInfo.pEPID);
 					MESSAGE("%16s ", FTM_EP_typeString(xInfo.xType));
 					MESSAGE("%16s ", xInfo.pName);
-					MESSAGE("%16s ", "");
+					MESSAGE("%16s ", xInfo.pDID);
 					MESSAGE("%8s ", "Unknown");
 
 					MESSAGE("%8s ", FTM_VALUE_print(&xData.xValue));

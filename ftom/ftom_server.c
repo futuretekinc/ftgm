@@ -1226,7 +1226,9 @@ FTM_VOID_PTR FTOM_SERVER_processUDP
 					pResp->xRet = FTM_RET_INTERNAL_ERROR;
 					pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
 				}
-	
+
+				pResp->ulReqID = pReq->ulReqID;
+
 				nSendLen = sendto(pServer->hSocketUDP, pResp, pResp->ulLen, 0, (struct sockaddr*)&xClientAddr, sizeof(xClientAddr));
 				if (nSendLen == 0)
 				{
@@ -1580,6 +1582,7 @@ FTM_VOID_PTR	FTOM_SERVER_processPipe
 					pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
 				}
 
+				pResp->ulReqID = pReq->ulReqID;
 				write(nWriteFD, pResp, pResp->ulLen);
 				//usleep(1);
 #if 0
@@ -1660,6 +1663,7 @@ FTM_VOID_PTR	FTOM_SERVER_processSM
 				pResp->ulLen = sizeof(FTOM_RESP_PARAMS);
 			}
 
+			pResp->ulReqID = pReq->ulReqID;
 			xRet = FTM_SMP_sendResp(pSMP, pResp, pResp->ulLen, 100000);
 		}
 	}

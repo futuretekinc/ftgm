@@ -68,10 +68,10 @@ FTM_RET	FTOM_CLIENT_CL_setConfig
 );
 
 
-FTM_RET	FTOM_CLIENT_CL_loadConfigFromFile
+FTM_RET	FTOM_CLIENT_CL_loadConfig
 (
 	FTOM_CLIENT_CL_PTR	pClient,
-	FTM_CHAR_PTR		pFileName
+	FTM_CONFIG_PTR		pConfig
 );
 
 FTM_RET FTOM_CLIENT_CL_request

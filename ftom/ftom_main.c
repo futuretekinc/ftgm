@@ -43,7 +43,7 @@ int main(int nArgc, char *pArgv[])
 
 		case	'v':
 			{
-				ulDebugLevel = strtoul(optarg, 0, 10);
+				FTM_TRACE_strToLevel(optarg, &ulDebugLevel);
 			}
 			break;
 

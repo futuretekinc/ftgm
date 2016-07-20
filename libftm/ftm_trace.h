@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "ftm_types.h"
+#include "ftm_config.h"
 
 typedef enum	FTM_TRACE_OUT_ENUM
 {
@@ -22,13 +23,13 @@ typedef enum	FTM_TRACE_OUT_ENUM
 #define	FTM_TRACE_MODULE_LOG		2
 #define	FTM_TRACE_MODULE_ALL		FTM_TRACE_MAX_MODULES
 
-#define	FTM_TRACE_LEVEL_ALL			0
-#define	FTM_TRACE_LEVEL_TRACE		1
-#define	FTM_TRACE_LEVEL_DEBUG		2
-#define	FTM_TRACE_LEVEL_INFO		3
-#define	FTM_TRACE_LEVEL_WARN		4
-#define	FTM_TRACE_LEVEL_ERROR		5
-#define	FTM_TRACE_LEVEL_FATAL		6
+#define	FTM_TRACE_LEVEL_ALL			1
+#define	FTM_TRACE_LEVEL_TRACE		2
+#define	FTM_TRACE_LEVEL_DEBUG		3
+#define	FTM_TRACE_LEVEL_INFO		4
+#define	FTM_TRACE_LEVEL_WARN		5
+#define	FTM_TRACE_LEVEL_ERROR		6
+#define	FTM_TRACE_LEVEL_FATAL		7
 #define	FTM_TRACE_LEVEL_MESSAGE		31
 
 
@@ -42,28 +43,38 @@ typedef struct FTM_TRACE_INFO_STRUCT
 
 typedef	struct
 {
-	FTM_ULONG				ulLevel;
+	FTM_BOOL			bShowIndex;
+	FTM_BOOL			bTimeInfo;
+	FTM_BOOL			bLine;
+	FTM_ULONG			ulLevel;
 	struct
 	{
-		FTM_BOOL		bToFile;
 		FTM_CHAR		pPath[FTM_PATH_LEN + 1];
 		FTM_CHAR		pPrefix[FTM_FILENAME_LEN + 1];
-		FTM_BOOL		bLine;
-	}	xTrace;
+	}	xFile;
 
-	struct
-	{
-		FTM_BOOL		bToFile;
-		FTM_CHAR		pPath[FTM_PATH_LEN + 1];
-		FTM_CHAR		pPrefix[FTM_FILENAME_LEN + 1];
-		FTM_BOOL		bLine;
-	}	xError;
+	FTM_TRACE_INFO		pTraceInfos[FTM_TRACE_MAX_MODULES];
 }	FTM_TRACE_CFG, _PTR_ FTM_TRACE_CFG_PTR;
 
-FTM_RET	FTM_TRACE_configSet(FTM_TRACE_CFG_PTR pCfg);
-FTM_RET	FTM_TRACE_configLoad(FTM_TRACE_CFG_PTR pCfg, FTM_CHAR_PTR pFileName);
+FTM_RET	FTM_TRACE_configSet
+(
+	FTM_TRACE_CFG_PTR pConfig
+);
 
-FTM_RET	FTM_TRACE_printConfig(FTM_TRACE_CFG_PTR pCfg);
+FTM_RET	FTM_TRACE_loadConfig
+(
+	FTM_CONFIG_PTR	pConfig
+);
+
+FTM_RET	FTM_TRACE_loadConfigFromFile
+(
+	FTM_CHAR_PTR pFileName
+);
+
+FTM_RET	FTM_TRACE_printConfig
+(
+	FTM_TRACE_CFG_PTR pCfg
+);
 
 FTM_RET	FTM_TRACE_strToLevel
 (
