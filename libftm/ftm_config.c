@@ -24,13 +24,15 @@ FTM_RET	FTM_CONFIG_create
 	pConfig = (FTM_CONFIG_PTR)FTM_MEM_malloc(sizeof(FTM_CONFIG));
 	if (pConfig == NULL)
 	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;		
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;		
+		ERROR2(xRet, "Configuration init failed!\n");
+		return	xRet;
 	}
 
 	xRet = FTM_CONFIG_init(pConfig, pFileName, bNew);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR("Configuration init failed!\n");
+		ERROR2(xRet, "Configuration init failed!\n");
 		return	xRet;
 	}
 

@@ -34,7 +34,7 @@ FTM_INT main(int nArgc , char *pArgv[])
 	FTM_INT			i;
 	FTM_RET			xRet;
 	FTM_BOOL		bShowUsage = FTM_FALSE;
-	FTM_ULONG		ulDebugLevel;
+	FTM_ULONG		ulDebugLevel = 0;
 	FTM_CHAR		pPrompt[32];
 	FTM_CONFIG_PTR  pConfig;
 
@@ -79,9 +79,15 @@ FTM_INT main(int nArgc , char *pArgv[])
 	{
 		FTM_TRACE_loadConfig(pConfig);
 	}
+	else
+	{
+		MESSAGE("Failed to create config!\n");	
+	}
 
-	FTM_TRACE_setLevel(FTM_TRACE_MODULE_ALL, 0);
-	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT, FTM_TRUE, "CLIENT", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	if (ulDebugLevel != 0)
+	{
+		FTM_TRACE_setLevel(FTM_TRACE_MODULE_ALL, ulDebugLevel);
+	}
 
 	xRet = FTOM_CLIENT_NET_create((FTOM_CLIENT_NET_PTR _PTR_)&pClient);
 	if (xRet != FTM_RET_OK)

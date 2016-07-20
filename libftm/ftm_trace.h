@@ -46,7 +46,6 @@ typedef	struct
 	FTM_BOOL			bShowIndex;
 	FTM_BOOL			bTimeInfo;
 	FTM_BOOL			bLine;
-	FTM_ULONG			ulLevel;
 	struct
 	{
 		FTM_CHAR		pPath[FTM_PATH_LEN + 1];

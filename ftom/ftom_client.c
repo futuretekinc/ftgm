@@ -50,7 +50,7 @@ FTM_RET	FTOM_CLIENT_loadConfig
 
 	if (pClient->fLoadConfig != NULL)
 	{
-		pClient->fLoadConfig(pClient, pConfig);
+		return	pClient->fLoadConfig(pClient, pConfig);
 	}
 
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
@@ -67,7 +67,7 @@ FTM_RET	FTOM_CLIENT_setConfig
 
 	if (pClient->fSetConfig != NULL)
 	{
-		pClient->fSetConfig(pClient, pConfig);
+		return	pClient->fSetConfig(pClient, pConfig);
 	}
 
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;

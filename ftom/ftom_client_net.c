@@ -308,8 +308,8 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadMain
 		goto finish;
 	}
 
-	xTimeVal.tv_sec = pClient->ulTimeout / 1000;
-	xTimeVal.tv_usec= pClient->ulTimeout % 1000 * 1000;
+	xTimeVal.tv_sec = 1;
+	xTimeVal.tv_usec= 0;
 
 	if (setsockopt(pClient->hSock, SOL_SOCKET, SO_RCVTIMEO,&xTimeVal, sizeof(xTimeVal)) < 0) 
 	{
@@ -350,7 +350,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadMain
 			}
 		}
 
-		while(pClient->bConnected)
+		while((!pClient->bStop) && (pClient->bConnected))
 		{
 			struct	sockaddr_in	xRecvAddr;
 			socklen_t	xAddrLen = sizeof(xRecvAddr);
@@ -426,6 +426,11 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadMain
 	}
 
 finish:
+
+	if (pRecvPkt != NULL)
+	{
+		FTM_MEM_free(pRecvPkt);
+	}
 	TRACE("Client stopped.\n");
 
 	return	0;

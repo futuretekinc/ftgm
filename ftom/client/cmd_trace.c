@@ -18,11 +18,7 @@ FTM_RET	FTOM_CLIENT_CMD_trace
 
 	if (nArgc == 1)
 	{
-		FTM_ULONG	ulLevel;
-
-		MESSAGE("\n# Trace configuration\n");
-		FTM_TRACE_getLevel(FTOM_TRACE_MODULE_CLIENT, &ulLevel);
-		MESSAGE("%16s : %s\n", "Level", FTM_TRACE_LEVEL_print(ulLevel, FTM_TRUE));
+		FTM_TRACE_printConfig(NULL);
 	}
 	else if (nArgc == 3)
 	{
