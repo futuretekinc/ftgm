@@ -927,6 +927,8 @@ FTM_RET	FTDMC_EP_DATA_cmd
 		{
 		case	'I':
 			{
+				FTM_BOOL	bRemain;
+
 				switch(nArgc)
 				{
 				case	6:
@@ -954,8 +956,7 @@ FTM_RET	FTDMC_EP_DATA_cmd
 					return	FTM_RET_NOT_ENOUGH_MEMORY;		
 				}
 
-				xRet = FTDMC_EP_DATA_get(&_xSession, pEPID, nStartIndex,
-						pEPData, nMaxCount, &ulCount);
+				xRet = FTDMC_EP_DATA_get(&_xSession, pEPID, nStartIndex, pEPData, nMaxCount, &ulCount, &bRemain);
 				TRACE("FTDMC_EP_DATA_get(hClient, %s, %d, %d, pEPData, %d, %lu) = %08lx\n",
 						pEPID, nBeginTime, nEndTime, nMaxCount, ulCount, xRet);
 				if (xRet == FTM_RET_OK)

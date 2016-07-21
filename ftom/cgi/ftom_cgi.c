@@ -375,6 +375,37 @@ FTM_RET	FTOM_CGI_getULONG
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_CGI_getSTRING
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pName,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen,
+	FTM_BOOL	bAllowEmpty
+)
+{
+	ASSERT(pReq != NULL);
+	ASSERT(pName != NULL);
+	ASSERT(pBuff != NULL);
+
+	FTM_CHAR_PTR	pValue;
+
+	pValue = pReq->getstr(pReq, pName, false);
+	if(pValue == NULL)
+	{
+		if(!bAllowEmpty)
+		{
+			return	FTM_RET_OBJECT_NOT_FOUND;	
+		}
+	}
+	else
+	{
+		strncpy(pBuff, pValue, ulBuffLen);
+	}
+	
+	return	FTM_RET_OK;
+}
+
 FTM_RET FTOM_CGI_getNodeType
 (
 	qentry_t *pReq, 
@@ -1186,7 +1217,23 @@ FTM_RET FTOM_CGI_getBeginTime
 	}
 	else
 	{
-		*pulTime = strtoul(pValue, 0, 10);
+		if (strlen(pValue) == 14)
+		{
+			FTM_RET		xRet;
+			FTM_TIME	xTime;
+
+			xRet = FTM_TIME_setString(&xTime, pValue);
+			if (xRet != FTM_RET_OK)
+			{
+				return	xRet;	
+			}
+			
+			FTM_TIME_toSecs(&xTime, pulTime);	
+		}
+		else
+		{
+			*pulTime = strtoul(pValue, 0, 10);
+		}
 	}
 	
 	return	FTM_RET_OK;
@@ -1214,7 +1261,23 @@ FTM_RET FTOM_CGI_getEndTime
 	}
 	else
 	{
-		*pulTime = strtoul(pValue, 0, 10);
+		if (strlen(pValue) == 14)
+		{
+			FTM_RET		xRet;
+			FTM_TIME	xTime;
+
+			xRet = FTM_TIME_setString(&xTime, pValue);
+			if (xRet != FTM_RET_OK)
+			{
+				return	xRet;	
+			}
+			
+			FTM_TIME_toSecs(&xTime, pulTime);	
+		}
+		else
+		{
+			*pulTime = strtoul(pValue, 0, 10);
+		}
 	}
 	
 	return	FTM_RET_OK;

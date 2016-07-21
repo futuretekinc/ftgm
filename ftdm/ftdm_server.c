@@ -18,6 +18,9 @@
 #include "ftdm_rule.h"
 #include "ftdm_sqlite.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTDM_TRACE_MODULE_SERVER
+
 typedef struct
 {
 	FTDM_CMD				xCmd;
@@ -57,6 +60,7 @@ static FTDMS_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_EP_DATA_DEL,			FTDMS_EP_DATA_del),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_DEL_WITH_TIME,	FTDMS_EP_DATA_delWithTime),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_GET,			FTDMS_EP_DATA_get),
+	MK_CMD_SET(FTDM_CMD_EP_DATA_GET_WITH_TIME,	FTDMS_EP_DATA_getWithTime),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_COUNT,			FTDMS_EP_DATA_count),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_COUNT_WITH_TIME,FTDMS_EP_DATA_countWithTime),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_SET_LIMIT,		FTDMS_EP_DATA_setLimit),
@@ -276,7 +280,7 @@ FTM_VOID_PTR FTDMS_process(FTM_VOID_PTR pData)
 		shutdown(pSession->hSocket, SHUT_RD);
 		pthread_join(pSession->xThread, 0);
 
-		FTM_MEM_free(pSession);
+		FTDMS_destroySession(pServer, &pSession);
 	}
 
 error:
@@ -307,7 +311,7 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 	{
 		int	nLen;
 
-		nLen = recv(pSession->hSocket, pReq, sizeof(pSession->pReqBuff), 0);
+		nLen = recv(pSession->hSocket, pReq, pSession->ulReqBufferLen, 0);
 		if (nLen == 0)
 		{
 			TRACE("The connection is terminated.\n");
@@ -321,6 +325,7 @@ FTM_VOID_PTR FTDMS_service(FTM_VOID_PTR pData)
 
 		FTM_TIME_getCurrent(&pSession->xLastTime);
 
+		pResp->nLen = pSession->ulRespBufferLen;
 		if (FTM_RET_OK != FTDMS_serviceCall(pSession->pServer, pReq, pResp))
 		{
 			pResp->xCmd = pReq->xCmd;
@@ -393,12 +398,32 @@ FTM_RET	FTDMS_createSession
 	ASSERT(ppSession != NULL);
 	
 	FTM_RET	xRet;
+
 	FTDM_SESSION_PTR pSession = (FTDM_SESSION_PTR)FTM_MEM_malloc(sizeof(FTDM_SESSION));
 	if (pSession == NULL)
 	{
-		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		ERROR2(xRet, "Not enough memory!\n");
+		goto error;
 
+	}
+
+	pSession->ulReqBufferLen = pServer->xConfig.ulBufferLen;
+	pSession->pReqBuff = (FTM_BYTE_PTR)FTM_MEM_malloc(pServer->xConfig.ulBufferLen);
+	if (pSession->pReqBuff == NULL)
+	{
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		ERROR2(xRet, "Not enough memory!\n");
+		goto error;
+	}
+
+	pSession->ulRespBufferLen = pServer->xConfig.ulBufferLen;
+	pSession->pRespBuff = (FTM_BYTE_PTR)FTM_MEM_malloc(pServer->xConfig.ulBufferLen);
+	if (pSession->pRespBuff == NULL)
+	{
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		ERROR2(xRet, "Not enough memory!\n");
+		goto error;
 	}
 
 	pSession->pServer = pServer;
@@ -425,8 +450,27 @@ FTM_RET	FTDMS_createSession
 	FTM_TIME_getCurrent(&pSession->xStartTime);
 
 	*ppSession = pSession;
-
+	
 	return	FTM_RET_OK;
+
+error:
+
+	if (pSession != NULL)
+	{
+		if (pSession->pReqBuff != NULL)
+		{
+			FTM_MEM_free(pSession->pReqBuff);
+			pSession->pReqBuff = NULL;
+		}
+
+		if (pSession->pRespBuff != NULL)
+		{
+			FTM_MEM_free(pSession->pRespBuff);
+			pSession->pRespBuff = NULL;
+		}
+	}
+
+	return	xRet;
 }
 
 FTM_RET	FTDMS_destroySession
@@ -448,6 +492,20 @@ FTM_RET	FTDMS_destroySession
 	sem_destroy(&(*ppSession)->xSemaphore);
 
 	FTM_LIST_remove(&pServer->xSessionList, (FTM_VOID_PTR)*ppSession);	
+
+	if ((*ppSession)->pReqBuff != NULL)
+	{
+		FTM_MEM_free((*ppSession)->pReqBuff);
+		(*ppSession)->pReqBuff = NULL;
+	}
+
+	if ((*ppSession)->pRespBuff != NULL)
+	{
+		FTM_MEM_free((*ppSession)->pRespBuff);
+		(*ppSession)->pRespBuff = NULL;
+	}
+
+	FTM_MEM_free(*ppSession);
 
 	*ppSession = NULL;
 
@@ -633,8 +691,17 @@ FTM_RET	FTDMS_NODE_getDIDList
 	FTDM_RESP_NODE_GET_DID_LIST_PARAMS_PTR	pResp
 )
 {
+	FTM_ULONG	ulMaxCount;
+
+	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_DID);
+
+	if (pReq->ulCount < ulMaxCount)
+	{
+		ulMaxCount = pReq->ulCount;
+	}
+
 	pResp->xCmd	= pReq->xCmd;
-	pResp->xRet = FTDM_NODEM_getDIDList(pServer->pDM->pNodeM, pResp->pDIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	pResp->xRet = FTDM_NODEM_getDIDList(pServer->pDM->pNodeM, pResp->pDIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		pResp->nLen = sizeof(*pResp) + sizeof(FTM_DID) * pResp->ulCount;
@@ -890,8 +957,16 @@ FTM_RET	FTDMS_EP_getEPIDList
 	FTDM_RESP_EP_GET_EPID_LIST_PARAMS_PTR	pResp
 )
 {
+	FTM_ULONG	ulMaxCount;
+
+	ulMaxCount = (pResp->nLen -  sizeof(*pResp)) / sizeof(FTM_EPID);
+	if (ulMaxCount > pReq->ulCount)
+	{
+		ulMaxCount = pReq->ulCount;	
+	}
+	
 	pResp->xCmd	= pReq->xCmd;
-	pResp->xRet = FTDM_EPM_getEPIDList(pServer->pDM->pEPM, pResp->pEPIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	pResp->xRet = FTDM_EPM_getEPIDList(pServer->pDM->pEPM, pResp->pEPIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		pResp->nLen = sizeof(*pResp) + sizeof(FTM_EPID) * pResp->ulCount;
@@ -1052,11 +1127,30 @@ FTM_RET	FTDMS_EP_DATA_get
 {
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
+	FTM_ULONG	ulMaxCount;
+
+	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_EP_DATA);
+	if (ulMaxCount > pReq->nCount)
+	{
+		ulMaxCount = pReq->nCount;
+	}
 
 	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_EP_DATA_get( pEP, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
+		FTM_ULONG	ulDataCount = 0;
+		xRet = FTDM_EP_DATA_count(pEP, &ulDataCount);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTDM_EP_DATA_get( pEP, pReq->nStartIndex, pResp->pData, ulMaxCount, &pResp->nCount);
+			if (xRet == FTM_RET_OK)
+			{
+				if (pReq->nStartIndex + pResp->nCount < ulDataCount)
+				{
+					pResp->bRemain = FTM_TRUE;	
+				}
+			}
+		}
 	}
 	pResp->xCmd = pReq->xCmd;
 	pResp->xRet = xRet;
@@ -1081,21 +1175,34 @@ FTM_RET	FTDMS_EP_DATA_getWithTime
 {
 	FTM_RET	xRet;
 	FTDM_EP_PTR	pEP;
+	FTM_ULONG	ulMaxCount;
 
+	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_EP_DATA);
+	if (ulMaxCount > pReq->nCount)
+	{
+		ulMaxCount = pReq->nCount;
+	}
+
+	pResp->nCount = 0;
 	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_EP_DATA_getWithTime(
-					pEP, 
-					pReq->nBeginTime, 
-					pReq->nEndTime, 
-					pResp->pData, 
-					pReq->nCount, 
-					&pResp->nCount);
+		FTM_ULONG	ulDataCount = 0;
+		xRet = FTDM_EP_DATA_countWithTime(pEP,pReq->nBeginTime, pReq->nEndTime, &ulDataCount);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTDM_EP_DATA_getWithTime(pEP, pReq->nBeginTime, pReq->nEndTime, pReq->bAscending, pResp->pData, ulMaxCount, &pResp->nCount);
+			if (xRet == FTM_RET_OK)
+			{
+				if (ulDataCount > ulMaxCount)
+				{
+					pResp->bRemain = FTM_TRUE;	
+				}
+			}
+		}
 	}
 
 	pResp->xCmd = pReq->xCmd;
-	pResp->nCount = pReq->nCount;
 	pResp->xRet = xRet;
 
 	if (pResp->xRet == FTM_RET_OK)
@@ -1319,8 +1426,16 @@ FTM_RET	FTDMS_TRIGGER_getIDList
 	FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR	pResp
 )
 {
+	FTM_ULONG	ulMaxCount;
+
+	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_ID);
+	if (ulMaxCount > pReq->ulCount)
+	{
+		ulMaxCount = pReq->ulCount;
+	}
+
 	pResp->xCmd	= pReq->xCmd;
-	pResp->xRet = FTDM_TRIGGER_getIDList(pResp->pIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	pResp->xRet = FTDM_TRIGGER_getIDList(pResp->pIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;
@@ -1425,8 +1540,16 @@ FTM_RET	FTDMS_ACTION_getIDList
 	FTDM_RESP_ACTION_GET_ID_LIST_PARAMS_PTR	pResp
 )
 {
+	FTM_ULONG	ulMaxCount;
+
+	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_ID);
+	if (ulMaxCount > pReq->ulCount)
+	{
+		ulMaxCount = pReq->ulCount;
+	}
+
 	pResp->xCmd	= pReq->xCmd;
-	pResp->xRet = FTDM_ACTION_getIDList(pResp->pIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	pResp->xRet = FTDM_ACTION_getIDList(pResp->pIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;
@@ -1530,8 +1653,16 @@ FTM_RET	FTDMS_RULE_getIDList
 	FTDM_RESP_RULE_GET_ID_LIST_PARAMS_PTR	pResp
 )
 {
+	FTM_ULONG	ulMaxCount;
+
+	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_EP_DATA);
+	if (ulMaxCount > pReq->ulCount)
+	{
+		ulMaxCount = pReq->ulCount;
+	}
+
 	pResp->xCmd	= pReq->xCmd;
-	pResp->xRet = FTDM_RULE_getIDList(pResp->pIDs, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	pResp->xRet = FTDM_RULE_getIDList(pResp->pIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;
@@ -1594,8 +1725,16 @@ FTM_RET	FTDMS_LOG_get
 	FTDM_RESP_LOG_GET_PARAMS_PTR	pResp
 )
 {
+	FTM_ULONG	ulMaxCount;
+
+	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_LOG);
+	if (ulMaxCount > pReq->ulCount)
+	{
+		ulMaxCount = pReq->ulCount;
+	}
+
 	pResp->xCmd	= pReq->xCmd;
-	pResp->xRet = FTDM_LOGGER_get(pServer->pDM->pLogger, pReq->ulIndex, pResp->pLogs, pReq->ulCount, &pResp->ulCount);
+	pResp->xRet = FTDM_LOGGER_get(pServer->pDM->pLogger, pReq->ulIndex, pResp->pLogs, ulMaxCount, &pResp->ulCount);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		pResp->nLen = sizeof(*pResp) + sizeof(FTM_LOG) * pResp->ulCount;

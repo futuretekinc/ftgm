@@ -135,6 +135,10 @@ FTM_RET	FTOM_ACTION_create
 		{
 			ERROR2(xRet, "Failed to add action[%s] to DB.\n", pAction->xInfo.pID);
 		}
+		else
+		{
+			FTOM_LOG_createAction(&pAction->xInfo);	
+		}
 	}
 
 	FTOM_LOG_createAction(&pAction->xInfo);
@@ -161,6 +165,10 @@ FTM_RET	FTOM_ACTION_destroy
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to remove action[%s] from DB!\n", (*ppAction)->xInfo.pID);
+		}
+		else
+		{
+			FTOM_LOG_destroyAction(&(*ppAction)->xInfo);	
 		}
 	}
 

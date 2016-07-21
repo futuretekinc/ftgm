@@ -9,6 +9,9 @@
 #include "ftom_mqttc.h"
 #include "ftom_mqtt_client_tpgw.h"
 
+#undef	__MODULE__
+#define __MODULE__ FTOM_TRACE_MODULE_CLIENT
+
 static 
 FTM_VOID_PTR FTOM_TP_CLIENT_process
 (
@@ -63,7 +66,7 @@ FTOM_TP_CLIENT_CONFIG	xTPClientDefaultConfig =
 	.pGatewayID	= "0123456789abcdef",
 	.pAPIKey = "",
 	.pCertFile = "",
-	.pUserID="",
+	.pUserID= "",
 	.pPasswd="",
 	.ulReportInterval = FTOM_TP_CLIENT_DEFAULT_REPORT_INTERVAL,
 
@@ -255,8 +258,6 @@ FTM_RET	FTOM_TP_CLIENT_setConfig
 
 	strncpy(xFTOMC.xServer.pHost,		pClient->xConfig.xFTOMC.pHost,		FTM_URL_LEN);
 	xFTOMC.xServer.usPort = pClient->xConfig.xFTOMC.usPort;
-	strncpy(xFTOMC.xPublishServer.pHost,pClient->xConfig.xSubscriber.pHost,	FTM_URL_LEN);
-	xFTOMC.xPublishServer.usPort = pClient->xConfig.xSubscriber.usPort;
 
 	xRet = FTOM_CLIENT_NET_setConfig((FTOM_CLIENT_NET_PTR)pClient->pFTOMC, &xFTOMC);
 	if (xRet != FTM_RET_OK)
@@ -266,7 +267,14 @@ FTM_RET	FTOM_TP_CLIENT_setConfig
 	}
 
 	strncpy(xRESTApiConfig.pGatewayID, 	pClient->xConfig.pGatewayID,		FTM_GWID_LEN);
-	strncpy(xRESTApiConfig.pUserID, 	pClient->xConfig.pUserID,			FTM_USER_ID_LEN);
+	if (strlen(pClient->xConfig.pUserID) != 0)
+	{
+		strncpy(xRESTApiConfig.pUserID, 	pClient->xConfig.pUserID,			FTM_USER_ID_LEN);
+	}
+	else
+	{
+		strncpy(xRESTApiConfig.pUserID, 	pClient->xConfig.pGatewayID,			FTM_USER_ID_LEN);
+	}
 	strncpy(xRESTApiConfig.pPasswd,		pClient->xConfig.pAPIKey, 			FTM_PASSWD_LEN);
 	strncpy(xRESTApiConfig.pBaseURL,	pClient->xConfig.xRESTApi.pBaseURL,	FTM_URL_LEN);
 	xRESTApiConfig.bSecure = pClient->xConfig.xRESTApi.bSecure;
@@ -279,7 +287,14 @@ FTM_RET	FTOM_TP_CLIENT_setConfig
 	}
 
 	strncpy(xMQTTConfig.pGatewayID,	pClient->xConfig.pGatewayID,	FTM_GWID_LEN);
-	strncpy(xMQTTConfig.pUserID, 	pClient->xConfig.pUserID,		FTM_USER_ID_LEN);
+	if (strlen(pClient->xConfig.pUserID) != 0)
+	{
+		strncpy(xMQTTConfig.pUserID, 	pClient->xConfig.pUserID,		FTM_USER_ID_LEN);
+	}
+	else
+	{
+		strncpy(xMQTTConfig.pUserID, 	pClient->xConfig.pGatewayID,		FTM_USER_ID_LEN);
+	}
 	strncpy(xMQTTConfig.pPasswd, 	pClient->xConfig.pAPIKey, 		FTM_PASSWD_LEN);
 	strncpy(xMQTTConfig.pCertFile, 	pClient->xConfig.pCertFile, 	FTM_FILE_NAME_LEN);
 	strncpy(xMQTTConfig.pHost, 		pClient->xConfig.xMQTT.pHost, 	FTM_HOST_LEN);
@@ -325,7 +340,7 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 		FTM_CONFIG_ITEM	xMQTTConfig;
 		FTM_CONFIG_ITEM	xRESTApiConfig;
 
-		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "gatewayid", xTPConfig.pGatewayID, FTM_GWID_LEN);
+		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "id", xTPConfig.pGatewayID, FTM_GWID_LEN);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Can not find the gateway id for the TPClient!\n");
@@ -483,6 +498,10 @@ FTM_RET	FTOM_TP_CLIENT_loadConfigFromFile
 	}
 
 	xRet = FTOM_TP_CLIENT_loadConfig(pClient, pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration!\n");	
+	}
 
 	FTM_CONFIG_destroy(&pConfig);
 

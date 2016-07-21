@@ -6,6 +6,9 @@
 #include "ftdm_ep.h"
 #include "ftdm_sqlite.h"
 
+#undef	__MODULE__
+#define	__MODULE__ FTDM_TRACE_MODULE_EP
+
 static FTM_RET FTDM_EP_DATA_infoInternal
 (
 	FTM_CHAR_PTR	pEPID,
@@ -480,6 +483,7 @@ FTM_RET	FTDM_EP_DATA_getWithTime
 	FTDM_EP_PTR			pEP,
 	FTM_ULONG 			nBeginTime, 
 	FTM_ULONG 			nEndTime, 
+	FTM_BOOL			bAscending,
 	FTM_EP_DATA_PTR 	pEPData,
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pCount 
@@ -492,6 +496,7 @@ FTM_RET	FTDM_EP_DATA_getWithTime
 				pEP->xInfo.pEPID, 
 				nBeginTime, 
 				nEndTime, 
+				bAscending,
 				pEPData, 
 				nMaxCount, 
 				pCount);

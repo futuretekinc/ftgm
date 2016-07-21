@@ -518,7 +518,8 @@ FTM_RET FTOM_DMC_EP_DATA_get
 	FTM_ULONG		ulStartIndex,
 	FTM_EP_DATA_PTR	pData,
 	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR 	pulCount
+	FTM_ULONG_PTR 	pulCount,
+	FTM_BOOL_PTR	pbRemain
 )
 {
 	ASSERT(pDMC != NULL);
@@ -526,7 +527,28 @@ FTM_RET FTOM_DMC_EP_DATA_get
 	ASSERT(pData != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_get(&pDMC->xSession, pEPID, ulStartIndex, pData, ulMaxCount, pulCount);
+	return	FTDMC_EP_DATA_get(&pDMC->xSession, pEPID, ulStartIndex, pData, ulMaxCount, pulCount, pbRemain);
+}
+
+FTM_RET FTOM_DMC_EP_DATA_getWithTime
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_BOOL		bAscending,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR 	pulCount,
+	FTM_BOOL_PTR	pbRemain
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pEPID != NULL);
+	ASSERT(pData != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTDMC_EP_DATA_getWithTime(&pDMC->xSession, pEPID, ulBegin, ulEnd, bAscending, pData, ulMaxCount, pulCount, pbRemain);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_del

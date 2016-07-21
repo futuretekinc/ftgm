@@ -153,6 +153,10 @@ FTM_RET	FTOM_TRIGGER_create
 		{
 			ERROR2(xRet, "Failed to add trigger[%s] to DB.\n", pTrigger->xInfo.pID);
 		}
+		else
+		{
+			FTOM_LOG_createTrigger(&pTrigger->xInfo);
+		}
 	}
 
 	*ppTrigger = pTrigger; 
@@ -183,6 +187,10 @@ FTM_RET	FTOM_TRIGGER_destroy
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to remove trigger[%s] from DB!\n", (*ppTrigger)->xInfo.pID);	
+		}
+		else
+		{
+			FTOM_LOG_destroyTrigger(&(*ppTrigger)->xInfo);
 		}
 	}
 

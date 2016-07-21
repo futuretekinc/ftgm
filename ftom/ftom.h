@@ -172,7 +172,20 @@ FTM_RET	FTOM_DB_EP_getDataList
 	FTM_ULONG 		ulStart, 
 	FTM_EP_DATA_PTR pDataList, 
 	FTM_ULONG 		ulMaxCount, 
-	FTM_ULONG_PTR 	pulCount
+	FTM_ULONG_PTR 	pulCount,
+	FTM_BOOL_PTR	pbRemain
+);
+
+FTM_RET	FTOM_DB_EP_getDataListWithTime
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG 		ulBegin, 
+	FTM_ULONG 		ulEnd, 
+	FTM_BOOL		bAscending,
+	FTM_EP_DATA_PTR pDataList, 
+	FTM_ULONG 		ulMaxCount, 
+	FTM_ULONG_PTR 	pulCount,
+	FTM_BOOL_PTR	pbRemain
 );
 
 FTM_RET	FTOM_DB_EP_getDataInfo

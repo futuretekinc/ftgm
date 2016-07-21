@@ -148,6 +148,10 @@ FTM_RET	FTOM_RULE_create
 		{
 			ERROR2(xRet, "Failed to add rule[%s] to DB!\n", pRule->xInfo.pID);
 		}
+		else
+		{
+			FTOM_LOG_createRule(&pRule->xInfo);
+		}
 	}
 
 	*ppRule = pRule;
@@ -175,6 +179,10 @@ FTM_RET	FTOM_RULE_destroy
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to remove rule[%s] from DB!\n", (*ppRule)->xInfo.pID);
+		}
+		else
+		{
+			FTOM_LOG_destroyRule(&(*ppRule)->xInfo);
 		}
 	}
 

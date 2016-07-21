@@ -1250,8 +1250,22 @@ FTM_RET	FTOM_onAlert
 )
 {
 	ASSERT(pMsg != NULL);
+	FTM_RET		xRet;
+	FTOM_EP_PTR	pEP;
 
-	TRACE("MSG : ON ALERT\n");
+	xRet = FTOM_EP_get(pMsg->pEPID, &pEP);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get EP[%s].\n",	pMsg->pEPID);
+		return	xRet;
+	}
+
+	xRet = FTOM_EP_setData(pEP, &pMsg->xData);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set EP[%s] data.\n", pMsg->pEPID);	
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -1265,7 +1279,6 @@ FTM_RET	FTOM_onDiscovery
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
 	
-	TRACE("MSG : ON DISCOVERY\n");
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
 	if (xRet != FTM_RET_OK)
 	{
@@ -1716,7 +1729,8 @@ FTM_RET	FTOM_DB_EP_getDataList
 	FTM_ULONG 		ulStart, 
 	FTM_EP_DATA_PTR pDataList, 
 	FTM_ULONG 		ulMaxCount, 
-	FTM_ULONG_PTR 	pulCount
+	FTM_ULONG_PTR 	pulCount,
+	FTM_BOOL_PTR	pbRemain
 )
 {
 	ASSERT(pEPID != NULL);
@@ -1728,7 +1742,42 @@ FTM_RET	FTOM_DB_EP_getDataList
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_EP_DATA_get(pService->pData, pEPID, ulStart, pDataList, ulMaxCount, pulCount);
+		xRet = FTOM_DMC_EP_DATA_get(pService->pData, pEPID, ulStart, pDataList, ulMaxCount, pulCount, pbRemain);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to EP[%s] data.\n", pEPID);	
+		}
+	}
+	else
+	{
+		ERROR2(xRet, "Data management service not found!\n");
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_DB_EP_getDataListWithTime
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG 		ulBegin, 
+	FTM_ULONG 		ulEnd, 
+	FTM_BOOL		bAscending,
+	FTM_EP_DATA_PTR pDataList, 
+	FTM_ULONG 		ulMaxCount, 
+	FTM_ULONG_PTR 	pulCount,
+	FTM_BOOL_PTR	pbRemain
+)
+{
+	ASSERT(pEPID != NULL);
+	ASSERT(pDataList != NULL);
+	ASSERT(pulCount != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_DMC_EP_DATA_getWithTime(pService->pData, pEPID, ulBegin, ulEnd, bAscending, pDataList, ulMaxCount, pulCount, pbRemain);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to EP[%s] data.\n", pEPID);	

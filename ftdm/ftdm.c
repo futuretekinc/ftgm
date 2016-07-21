@@ -386,7 +386,7 @@ int main(int nArgc, char *pArgv[])
 {
 	FTM_RET		xRet;
 	FTM_INT		nOpt;
-	FTM_ULONG	ulTraceLevel = FTM_TRACE_LEVEL_ERROR;
+	FTM_ULONG	ulTraceLevel = FTM_TRACE_LEVEL_TRACE;
 	FTM_BOOL	bDaemon = FTM_FALSE;
 	FTM_BOOL	bShowUsage = FTM_FALSE;
 	FTM_BOOL	bLoadObjectFromFile = FTM_FALSE;
@@ -460,17 +460,16 @@ int main(int nArgc, char *pArgv[])
 	}
 
 
+
 	/* apply configuration */
 		
-	FTM_TRACE_setModule(0xFFFFFFFF, 1);
-
 	FTDM_init(&xFTDM);
 	FTDM_loadConfigFromFile(&xFTDM, pConfigFileName);
 
-	if (ulTraceLevel >= 0)
-	{
-		FTDM_setDebugLevel(ulTraceLevel);	
-	}
+	FTM_TRACE_setLevel(FTM_TRACE_MODULE_ALL, ulTraceLevel);
+	FTM_TRACE_setInfo2(FTDM_TRACE_MODULE_SERVER,	FTM_FALSE, "SERVER",	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2(FTDM_TRACE_MODULE_EP,		FTM_FALSE, "EP", 	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2(FTDM_TRACE_MODULE_DBIF,		FTM_FALSE, "DBIF", 	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
 	xRet = FTDM_DBIF_open();
 	if (xRet != FTM_RET_OK)

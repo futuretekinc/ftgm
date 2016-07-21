@@ -2,6 +2,10 @@
 #include "ftom.h"
 #include "ftom_mqttc.h"
 
+#undef	__MODULE__
+#define __MODULE__ FTOM_TRACE_MODULE_CLIENT
+
+
 FTM_RET	FTOM_MQTT_CLIENT_TPGW_topicParser(FTM_CHAR_PTR	pTopic, FTM_CHAR_PTR	pArgv[], FTM_INT nMaxArgc, FTM_INT_PTR	pnArgc);
 FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser(FTM_CHAR_PTR pMessage, FTOM_MSG_PTR _PTR_	pMsg);
 

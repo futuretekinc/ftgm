@@ -422,6 +422,7 @@ FTM_RET	FTDM_DBIF_getWithTime
 	FTM_CHAR_PTR	pTableName,
 	FTM_ULONG		xBeginTime,
 	FTM_ULONG		xEndTime,
+	FTM_BOOL		bAscending,
 	FTM_ULONG		nMaxCount,
 	FTM_INT 		(*fCB)(void *pData, int nArgc, char **pArgv, char **pColName),
 	FTM_VOID_PTR	pData
@@ -465,7 +466,14 @@ FTM_RET	FTDM_DBIF_getWithTime
 		nSQLLen += sprintf(&pSQL[nSQLLen], " (TIME <= %lu)", xEndTime);
 	}
 
-	nSQLLen += sprintf(&pSQL[nSQLLen], " ORDER BY TIME DESC LIMIT %lu", nMaxCount);
+	if (bAscending)
+	{
+		nSQLLen += sprintf(&pSQL[nSQLLen], " ORDER BY TIME LIMIT %lu", nMaxCount);
+	}
+	else
+	{
+		nSQLLen += sprintf(&pSQL[nSQLLen], " ORDER BY TIME DESC LIMIT %lu", nMaxCount);
+	}
 
 	xRet = sqlite3_exec(_pSQLiteDB, pSQL, fCB, pData, &pErrMsg);
 	if (xRet != SQLITE_OK)
@@ -1903,6 +1911,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG		xBeginTime,
 	FTM_ULONG		xEndTime,
+	FTM_BOOL		bAscending,
 	FTM_EP_DATA_PTR	pEPData,
 	FTM_ULONG		nMaxCount,
 	FTM_ULONG_PTR	pulCount
@@ -1917,7 +1926,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 	xParams.nMaxCount	= nMaxCount;
 	xParams.nCount		= 0;
 
-	xRet = FTDM_DBIF_getWithTime(pTableName, xBeginTime, xEndTime, nMaxCount, _FTDM_DBIF_EP_DATA_getCB, &xParams);
+	xRet = FTDM_DBIF_getWithTime(pTableName, xBeginTime, xEndTime, bAscending, nMaxCount, _FTDM_DBIF_EP_DATA_getCB, &xParams);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -3731,7 +3740,7 @@ FTM_RET	FTDM_DBIF_LOG_getWithTime
 	xParams.nMaxCount= nMaxCount;
 	xParams.nCount = 0;
 
-	xRet = 	FTDM_DBIF_getWithTime(pTableName, xBeginTime,xEndTime,nMaxCount, _FTDM_DBIF_LOG_getCB, &xParams);
+	xRet = 	FTDM_DBIF_getWithTime(pTableName, xBeginTime,xEndTime, FTM_FALSE, nMaxCount, _FTDM_DBIF_LOG_getCB, &xParams);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	

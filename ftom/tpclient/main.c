@@ -5,6 +5,10 @@
 #include "ftom_tp_client.h"
 #include "ftom_tp_restapi.h"
 
+
+#undef	__MODULE__
+#define __MODULE__ FTOM_TRACE_MODULE_CLIENT
+
 extern	FTM_SHELL_CMD	FTOM_shellCmds[];
 extern	FTM_ULONG		FTOM_shellCmdCount;
 static
@@ -62,9 +66,6 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		goto finish;	
 	}
 
-	FTM_TRACE_setLevel(FTM_TRACE_MODULE_ALL, ulDebugLevel);
-	//FTM_TRACE_setModule(0xFFFFFFFF, FTM_TRUE);
-
 	xRet = FTOM_TP_CLIENT_create(&pTPClient);
 	if (xRet != FTM_RET_OK)
 	{
@@ -72,12 +73,17 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		goto finish;
 	}
 
+	FTM_TRACE_setLevel(FTM_TRACE_MAX_MODULES, ulDebugLevel);
+	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT, FTM_TRUE, "Client", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_MQTTC, FTM_TRUE, "MQTTC", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+
 	xRet = FTOM_TP_CLIENT_loadConfigFromFile(pTPClient, pConfigFileName);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "TPClient failed to load configuration from file.\n");	
 		goto error;
 	}
+
 
 	FTOM_TP_CLIENT_showConfig(pTPClient);
 
@@ -114,12 +120,6 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		ERROR2(xRet, "Remove the TPClient failed\n");
 	}
 
-	xRet = FTM_MEM_final();
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Memory finalization failed.\n");	
-	}
-
 error:
 	if (pTPClient != NULL)
 	{
@@ -127,6 +127,13 @@ error:
 	}
 
 finish:
+
+	xRet = FTM_MEM_final();
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Memory finalization failed.\n");	
+	}
+
   	return 0;
 }
 

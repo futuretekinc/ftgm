@@ -6,8 +6,12 @@
 #include <semaphore.h>
 #include <errno.h>
 #include "ftm.h"
+#include "ftom.h"
 #include "ftom_client.h"
 #include "ftom_params.h"
+
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_CLIENT
 
 FTM_RET	FTOM_CLIENT_start
 (
@@ -1331,14 +1335,20 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 	FTM_ULONG								ulRespLen;
 	FTM_ULONG								ulRespCount = 0;
 	FTM_BOOL								bStop = FTM_FALSE;
+	static	FTM_ULONG						ulLimitCount  = 0;
+
+	if (ulLimitCount == 0)
+	{
+		ulLimitCount = (FTOM_DEFAULT_PACKET_SIZE - sizeof(FTOM_RESP_EP_DATA_GET_LIST_WITH_TIME_PARAMS)) / sizeof(FTM_EP_DATA) / 10 * 10; 
+	}
 
 	while(!bStop)
 	{
 		FTM_ULONG	ulReqCount;
 
-		if (ulMaxCount > 100) 
+		if (ulMaxCount > ulLimitCount) 
 		{
-			ulReqCount = 100;	
+			ulReqCount = ulLimitCount;	
 		}
 		else
 		{
@@ -1390,7 +1400,139 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getList
 			nStartIndex += pResp->nCount;
 			ulMaxCount -= pResp->nCount;
 
-			if ((pResp->nCount != ulReqCount) || (ulMaxCount == 0))
+			if ((pResp->nCount == 0) || (!pResp->bRemain) || (ulMaxCount == 0))
+			{
+				bStop = FTM_TRUE;	
+			}
+		}
+		else
+		{
+			ERROR2(pResp->xRet, "FTOM request error!");
+			bStop = FTM_TRUE;
+		}
+	
+		FTM_MEM_free(pResp);
+	}
+
+	*pnCount = ulRespCount;
+
+	return	xRet;
+}
+
+/*****************************************************************
+ *
+ *****************************************************************/
+FTM_RET	FTOM_CLIENT_EP_DATA_getListWithTime
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pnCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pData != NULL);
+	ASSERT(pnCount != NULL);
+
+	FTM_RET				xRet;
+	FTOM_REQ_EP_DATA_GET_LIST_WITH_TIME_PARAMS		xReq;
+	FTM_ULONG			nRespSize = 0;
+	FTOM_RESP_EP_DATA_GET_LIST_WITH_TIME_PARAMS_PTR	pResp = NULL;
+	FTM_ULONG			ulRespLen;
+	FTM_ULONG			ulRespCount = 0;
+	FTM_BOOL			bStop = FTM_FALSE;
+	FTM_BOOL			bAscending = FTM_TRUE;
+	static	FTM_ULONG	ulLimitCount  = 0;
+
+	if (ulLimitCount == 0)
+	{
+		ulLimitCount = (FTOM_DEFAULT_PACKET_SIZE - sizeof(FTOM_RESP_EP_DATA_GET_LIST_WITH_TIME_PARAMS)) / sizeof(FTM_EP_DATA) / 10 * 10; 
+	}
+
+	if (ulBegin > ulEnd)
+	{
+		FTM_ULONG	ulTemp;
+
+		bAscending = FTM_FALSE;	
+		ulTemp 	= ulBegin;
+		ulBegin	= ulEnd;
+		ulEnd 	= ulTemp;
+	}
+
+	while(!bStop)
+	{
+		FTM_ULONG	ulReqCount;
+
+		if (ulMaxCount > ulLimitCount) 
+		{
+			ulReqCount = ulLimitCount;	
+		}
+		else
+		{
+			ulReqCount = ulMaxCount;	
+		}
+
+		nRespSize = sizeof(FTOM_RESP_EP_DATA_GET_LIST_WITH_TIME_PARAMS) + sizeof(FTM_EP_DATA) * ulReqCount;
+		pResp = (FTOM_RESP_EP_DATA_GET_LIST_WITH_TIME_PARAMS_PTR)FTM_MEM_malloc(nRespSize);
+		if (pResp == NULL)
+		{
+			ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]!\n", nRespSize);
+			return	FTM_RET_NOT_ENOUGH_MEMORY;
+		}
+	
+		memset(&xReq, 0, sizeof(xReq));
+
+		xReq.xCmd		=	FTOM_CMD_EP_DATA_GET_LIST_WITH_TIME;
+		xReq.ulLen		=	sizeof(xReq);
+		strncpy(xReq.pEPID,	pEPID, FTM_EPID_LEN);
+		xReq.ulBegin	=	ulBegin;
+		xReq.ulEnd		=	ulEnd;
+		xReq.bAscending	=	bAscending;
+		xReq.nCount		=	ulReqCount;
+
+		xRet = pClient->fRequest(
+					pClient, 
+					(FTM_VOID_PTR)&xReq, 
+					sizeof(xReq), 
+					(FTM_VOID_PTR)pResp, 
+					nRespSize,
+					&ulRespLen);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Request error!\n");
+			FTM_MEM_free(pResp);
+			return	FTM_RET_ERROR;	
+		}
+	
+		xRet = pResp->xRet;
+
+		if (pResp->xRet == FTM_RET_OK)
+		{
+			FTM_INT	i;
+	
+			for( i = 0 ; i < pResp->nCount && i < ulReqCount ; i++)
+			{
+				memcpy(&pData[ulRespCount + i], &pResp->pData[i], sizeof(FTM_EP_DATA));
+			}
+
+			if (pResp->nCount != 0)
+			{
+				ulRespCount += pResp->nCount;
+				if (bAscending)
+				{
+					ulBegin	= pResp->pData[pResp->nCount - 1].ulTime + 1 ;
+				}
+				else
+				{
+					ulEnd	= pResp->pData[pResp->nCount - 1].ulTime - 1 ;
+				}
+				ulMaxCount  -= pResp->nCount;
+			}
+
+			if ((pResp->nCount == 0) || (!pResp->bRemain) || (ulMaxCount == 0))
 			{
 				bStop = FTM_TRUE;	
 			}

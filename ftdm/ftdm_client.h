@@ -183,7 +183,8 @@ FTM_RET FTDMC_EP_DATA_get
 	FTM_ULONG				nStartIndex,
 	FTM_EP_DATA_PTR			pData,
 	FTM_ULONG				ulMaxCount,
-	FTM_ULONG_PTR			pnCount
+	FTM_ULONG_PTR			pnCount,
+	FTM_BOOL_PTR			pbRemain
 );
 
 FTM_RET	FTDMC_EP_DATA_removeWithTime
@@ -217,9 +218,11 @@ FTM_RET FTDMC_EP_DATA_getWithTime
 	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG				ulBeginTime,
 	FTM_ULONG				ulEndTime,
+	FTM_BOOL				bAscending,
 	FTM_EP_DATA_PTR			pData,
 	FTM_ULONG				ulMaxCount,
-	FTM_ULONG_PTR			pnCount
+	FTM_ULONG_PTR			pnCount,
+	FTM_BOOL_PTR			pbRemain
 );
 
 FTM_RET	FTDMC_EP_DATA_count

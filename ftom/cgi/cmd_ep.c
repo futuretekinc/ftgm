@@ -463,20 +463,36 @@ FTM_RET	FTOM_CGI_getEPData
 	FTM_RET			xRet;
 	FTM_EP_DATA_PTR	pData;
 	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	FTM_ULONG		ulIndex = 0;
+	FTM_ULONG		ulBeginTime = 0;
+	FTM_ULONG		ulEndTime = 0;
 	FTM_ULONG		ulCount = 20;
+	FTM_BOOL		bIndexMode = FTM_TRUE;
 	cJSON _PTR_		pRoot;
 
 	pRoot = cJSON_CreateObject();
-
-	xRet = FTOM_CGI_getCount(pReq, &ulCount, FTM_TRUE);
-	xRet |= FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
+	
+	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
 	{
 		xRet = FTM_RET_INVALID_ARGUMENTS;
 		goto finish;	
 	}
 
-	if (ulCount > 100)
+	xRet = FTOM_CGI_getIndex(pReq, &ulIndex, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		xRet = FTOM_CGI_getBeginTime(pReq, &ulBeginTime, FTM_FALSE);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTOM_CGI_getEndTime(pReq, &ulEndTime, FTM_TRUE);
+			bIndexMode = FTM_FALSE;
+		}
+	}
+
+	FTOM_CGI_getCount(pReq, &ulCount, FTM_TRUE);
+
+	if (ulCount > 1000)
 	{
 		xRet = FTM_RET_INVALID_ARGUMENTS;
 		goto finish;
@@ -489,11 +505,23 @@ FTM_RET	FTOM_CGI_getEPData
 		goto finish;
 	}
 
-	xRet = FTOM_CLIENT_EP_DATA_getList(pClient, pEPID, 0, pData, ulCount, &ulCount);
-	if (xRet != FTM_RET_OK)
+	if (bIndexMode)
 	{
-		ERROR2(xRet, "EP Data list get failed[%08x]\n", xRet);
-		goto finish;
+		xRet = FTOM_CLIENT_EP_DATA_getList(pClient, pEPID, ulIndex, pData, ulCount, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "EP Data list get failed[%08x]\n", xRet);
+			goto finish;
+		}
+	}
+	else
+	{
+		xRet = FTOM_CLIENT_EP_DATA_getListWithTime(pClient, pEPID, ulBeginTime, ulEndTime, pData, ulCount, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "EP Data list get failed[%08x]\n", xRet);
+			goto finish;
+		}
 	}
 
 	cJSON _PTR_ pDataList;

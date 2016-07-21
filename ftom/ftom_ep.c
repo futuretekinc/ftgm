@@ -35,19 +35,6 @@ FTM_RET	FTOM_EP_message
 	FTOM_EP_PTR		pEP,
 	FTOM_MSG_PTR	pBaseMsg
 );
-static
-FTM_RET	FTOM_EP_setData
-(
-	FTOM_EP_PTR 	pEP, 
-	FTM_EP_DATA_PTR pData
-);
-
-static
-FTM_RET	FTOM_EP_getData
-(
-	FTOM_EP_PTR 	pEP, 
-	FTM_EP_DATA_PTR pData
-);
 
 static
 FTM_RET	FTOM_EP_reportStatus
@@ -244,9 +231,10 @@ FTM_RET	FTOM_EP_create
 		{
 			ERROR2(xRet, "Failed to add EP[%s] to DB!\n", pEP->xInfo.pEPID);
 		}
+		
+		FTOM_LOG_createEP(pEP->xInfo.pEPID);
 	}
 
-	FTOM_LOG_createEP(pEP->xInfo.pEPID);
 
 	*ppEP = pEP;
 
@@ -291,7 +279,6 @@ FTM_RET	FTOM_EP_destroy
 		FTOM_EP_stop(*ppEP, TRUE);
 	}
 
-	FTOM_LOG_destroyEP((*ppEP)->xInfo.pEPID);
 
 	if (!bIncludeDB)
 	{
@@ -300,6 +287,7 @@ FTM_RET	FTOM_EP_destroy
 		{
 			ERROR2(xRet, "Failed to remove EP[%s] from DB.\n", (*ppEP)->xInfo.pEPID);
 		}
+		FTOM_LOG_destroyEP((*ppEP)->xInfo.pEPID);
 	}
 
 	xRet = FTM_LIST_remove(pEPList, *ppEP);
@@ -878,7 +866,8 @@ FTM_RET	FTOM_EP_getDataList
 	FTM_ULONG		ulIndex,
 	FTM_EP_DATA_PTR	pDatas,
 	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
+	FTM_ULONG_PTR	pulCount,
+	FTM_BOOL_PTR	pbRemain
 )
 {
 	ASSERT(pEP != NULL);
@@ -915,14 +904,44 @@ FTM_RET	FTOM_EP_getDataList
 		}
 
 		*pulCount = ulDataCount;
+		*pbRemain = FTM_FALSE;
 	}
 	else
 	{
-		xRet = FTOM_DB_EP_getDataList(pEP->xInfo.pEPID, ulIndex, pDatas, ulMaxCount, pulCount);
+		MESSAGE("%lu, %lu -> ", ulIndex, ulMaxCount);
+		xRet = FTOM_DB_EP_getDataList(pEP->xInfo.pEPID, ulIndex, pDatas, ulMaxCount, pulCount, pbRemain);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to get EP data from DB!\n");	
 		}
+		MESSAGE("%lu, %d\n", *pulCount, *pbRemain);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_EP_getDataListWithTime
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_BOOL		bAscending,
+	FTM_EP_DATA_PTR	pDatas,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount,
+	FTM_BOOL_PTR	pbRemain
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pDatas != NULL);
+	ASSERT(pulCount != NULL);
+
+	FTM_RET	xRet;
+
+	xRet = FTOM_DB_EP_getDataListWithTime(pEP->xInfo.pEPID, ulBegin, ulEnd, bAscending, pDatas, ulMaxCount, pulCount, pbRemain);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get EP data from DB!\n");	
 	}
 
 	return	xRet;
@@ -1005,7 +1024,7 @@ FTM_RET	FTOM_EP_setData
 	return	xRet;
 }
 
-FTM_RET	FTOM_EP_removeData
+FTM_RET	FTOM_EP_removeDataList
 (
 	FTOM_EP_PTR		pEP,
 	FTM_INT			nIndex,
@@ -1090,7 +1109,7 @@ FTM_RET	FTOM_EP_removeData
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_EP_removeDataWithTime
+FTM_RET	FTOM_EP_removeDataListWithTime
 (
 	FTOM_EP_PTR		pEP,
 	FTM_ULONG		ulBegin,

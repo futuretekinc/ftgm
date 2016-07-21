@@ -21,7 +21,6 @@ FTM_RET	FTOM_CLIENT_CMD_trace(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR 
 FTM_RET	FTOM_CLIENT_CMD_EP(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_EP(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-FTM_RET	FTOM_CLIENT_CMD_EP_DATA(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_debug(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_discovery(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_quit(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
@@ -73,6 +72,18 @@ FTM_SHELL_CMD	_cmds[] =
 					  "\tdel    <EPID>\n"\
 					  "\tlist\n"\
 					  "\t<EPID> [[name <name>] | [unit <unit>] | [interval <interval>]]\n"\
+					  "\t<EPID> data -i <index> <count>\n"\
+					  "\t<EPID> data -t <Begin Time> <End Time>\n"\
+					  "\t<EPID> add <Time> <Value>\n"\
+					  "\t<EPID> del -i <Index> <Count>\n"\
+					  "\t<EPID> del -t <Begin Time> [End Time | Count]\n"\
+					  "\t<EPID> count -i <Index>\n"\
+					  "\t<EPID> count -t <Begin Time> <End Time>\n"\
+					  "\t<EPID> get -i <Index> <Count>\n"\
+					  "\t<EPID> get -t <Begin Time> <End Time> <Count>\n"\
+					  "OPTIONS:\n"\
+					  "\t-i     Index mode\n"\
+					  "\t-t     Time mode\n"\
 					  "PARAMETERS:\n"\
 					  "\tEPID   EndPoint ID. 8Digit Hexa Number\n"\
 					  "\t       (Ex. : 010A0003)\n"\
@@ -80,34 +91,12 @@ FTM_SHELL_CMD	_cmds[] =
 					  "\tname	EndPoint name.\n"\
 					  "\tunit   Unit of measurement, a definite magnitude of a physical quantity.\n"\
 					  "\tinterval Measurement interval.\n"\
-					  "\ttimeout The response latency.\n"
-
-	},
-	{	
-		.pString	= "data",
-		.function	= FTOM_CLIENT_CMD_EP_DATA,
-		.pShortHelp	= "EndPoint management command set.",
-		.pHelp		= "<COMMAND> ...\n"\
-					  "\tEndPoint data management.\n"\
-					  "COMMANDS:\n"\
-					  "\tadd    EPID <Time> <Value>\n"\
-					  "\tdel    -i EPID <Index> <Count>\n"\
-					  "\tdel    -t EPID <Begin Time> [End Time | Count]\n"\
-					  "\tcount  -i EPID <Index>\n"\
-					  "\tcount  -t EPID <Begin Time> <End Time>\n"\
-					  "\tget    -i EPID <Index> <Count>\n"\
-					  "\tget    -t EPID <Begin Time> <End Time> <Count>\n"\
-					  "OPTIONS:\n"\
-					  "\t-i     Index mode\n"\
-					  "\t-t     Time mode\n"\
-					  "PARAMETERS:\n"\
-					  "\tEPID   EndPoint ID. 8Digit Hexa Number\n"\
-					  "\t       (Ex. : 010A0003)\n"\
-					  "\tTime   Format => YYYY-MM-DD HH:MM:SS\n"\
+					  "\ttimeout The response latency.\n"\
+					  "\ttime   Format => YYYY-MM-DD HH:MM:SS\n"\
 					  "\t       (Ex. : 2015-01-05 13:11:15)\n"\
-					  "\tIndex  Decimal Number\n"\
-					  "\tCount  Element count"
-		
+					  "\tindex  Decimal Number\n"\
+					  "\tcount  Element count"
+
 	},
 	{	
 		.pString	= "debug",

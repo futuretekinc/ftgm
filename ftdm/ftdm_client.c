@@ -1036,7 +1036,8 @@ FTM_RET	FTDMC_EP_DATA_get
 	FTM_ULONG			nStartIndex,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pnCount
+	FTM_ULONG_PTR		pnCount,
+	FTM_BOOL_PTR		pbRemain
 )
 {
 	FTM_RET								xRet;
@@ -1086,6 +1087,7 @@ FTM_RET	FTDMC_EP_DATA_get
 			memcpy(&pData[i], &pResp->pData[i], sizeof(FTM_EP_DATA));
 		}
 
+		*pbRemain = pResp->bRemain;
 		*pnCount = pResp->nCount;
 	}
 
@@ -1103,9 +1105,11 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG			nBeginTime,
 	FTM_ULONG			nEndTime,
+	FTM_BOOL			bAscending,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pnCount
+	FTM_ULONG_PTR		pnCount,
+	FTM_BOOL_PTR		pbRemain
 )
 {
 	FTM_RET										xRet;
@@ -1130,6 +1134,7 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
 	xReq.nBeginTime=	nBeginTime;
 	xReq.nEndTime	=	nEndTime;
+	xReq.bAscending =	bAscending;
 	xReq.nCount		=	nMaxCount;
 
 	xRet = FTDMC_request(
@@ -1155,6 +1160,7 @@ FTM_RET	FTDMC_EP_DATA_getWithTime
 			memcpy(&pData[i], &pResp->pData[i], sizeof(FTM_EP_DATA));
 		}
 
+		*pbRemain = pResp->bRemain;
 		*pnCount = pResp->nCount;
 	}
 

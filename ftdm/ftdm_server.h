@@ -29,8 +29,10 @@ typedef	struct
 	FTM_BOOL			bStop;
 	sem_t				xSemaphore;
 	struct sockaddr_in	xPeer;
-	FTM_BYTE			pReqBuff[FTDM_PACKET_LEN];
-	FTM_BYTE			pRespBuff[FTDM_PACKET_LEN];
+	FTM_BYTE_PTR		pReqBuff;
+	FTM_ULONG			ulReqBufferLen;
+	FTM_BYTE_PTR		pRespBuff;
+	FTM_ULONG			ulRespBufferLen;
 	FTM_TIME			xStartTime;
 	FTM_TIME			xLastTime;
 }	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;

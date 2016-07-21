@@ -1,5 +1,9 @@
 #include <string.h>
+#include "ftom.h"
 #include "ftom_tp_restapi_gateway.h"
+
+#undef	__MODULE__
+#define __MODULE__ FTOM_TRACE_MODULE_CLIENT
 
 
 FTM_RET	FTOM_TP_GATEWAY_create

@@ -6,11 +6,13 @@
 
 #define	FTDM_SERVER_DEFAULT_PORT		8888
 #define	FTDM_SERVER_DEFAULT_MAX_SESSION	10
+#define	FTDM_SERVER_DEFAULT_BUFFER_LEN	4096
 
 typedef	struct
 {
 	FTM_USHORT				usPort;
 	FTM_ULONG				ulMaxSession;
+	FTM_ULONG				ulBufferLen;
 }	FTDM_CFG_SERVER, _PTR_ FTDM_CFG_SERVER_PTR;
 
 typedef	struct

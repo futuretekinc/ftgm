@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE
+#include <ctype.h>
 #include <time.h>
 #include <string.h>
 #include "ftm_time.h"
@@ -36,6 +38,60 @@ FTM_RET	FTM_TIME_set
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTM_TIME_setString
+(
+	FTM_TIME_PTR	pTime,
+	FTM_CHAR_PTR	pString
+)
+{
+	ASSERT(pTime != NULL);
+	ASSERT(pString != NULL);
+	FTM_INT		i;
+	struct tm	xTM;
+	FTM_CHAR	pFormattedString[64];
+	FTM_ULONG	ulLen = 0;
+
+	if (strlen(pString) != 14)
+	{
+		return	FTM_RET_INVALID_FORMAT;	
+	}
+
+	for(i = 0 ; i < 14 ; i++)
+	{
+		if (isdigit(pString[i]) == 0)
+		{
+			return	FTM_RET_INVALID_FORMAT;	
+		}
+	}
+
+	memcpy(&pFormattedString[ulLen], &pString[0], 4);
+	ulLen += 4;
+	pFormattedString[ulLen++] = '-';
+	memcpy(&pFormattedString[ulLen], &pString[4], 2);
+	ulLen += 2;
+	pFormattedString[ulLen++] = '-';
+	memcpy(&pFormattedString[ulLen], &pString[6], 2);
+	ulLen += 2;
+	pFormattedString[ulLen++] = ' ';
+	memcpy(&pFormattedString[ulLen], &pString[8], 2);
+	ulLen += 2;
+	pFormattedString[ulLen++] = ':';
+	memcpy(&pFormattedString[ulLen], &pString[10], 2);
+	ulLen += 2;
+	pFormattedString[ulLen++] = ':';
+	memcpy(&pFormattedString[ulLen], &pString[12], 2);
+	ulLen += 2;
+	pFormattedString[ulLen] = '\0';
+
+	strptime(pFormattedString, "%Y-%m-%d %H:%M:%S", &xTM);
+
+	pTime->xTimeval.tv_sec = mktime(&xTM);
+	pTime->xTimeval.tv_usec =0;
+
+	return	FTM_RET_OK;
+}
+
 
 FTM_RET	FTM_TIME_setSeconds
 (
@@ -441,6 +497,28 @@ FTM_RET	FTM_TIME_align
 }
 
 FTM_CHAR_PTR	FTM_TIME_toString
+(
+	FTM_TIME_PTR	pTime,
+	FTM_CHAR_PTR	pFormat
+)
+{
+	ASSERT(pTime != NULL);
+
+	static	FTM_CHAR	pString[64];
+
+	if (pFormat != NULL)
+	{
+		strftime(pString, sizeof(pString) - 1, pFormat, localtime(&pTime->xTimeval.tv_sec));
+	}
+	else
+	{
+		strftime(pString, sizeof(pString) - 1, "%Y-%m-%d %H:%M:%S", localtime(&pTime->xTimeval.tv_sec));
+	}
+
+	return	pString;
+}
+
+FTM_CHAR_PTR	FTM_TIME_printf
 (
 	FTM_TIME_PTR	pTime,
 	FTM_CHAR_PTR	pFormat

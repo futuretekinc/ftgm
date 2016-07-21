@@ -25,8 +25,8 @@ FTOM_SHELL_CMD_quit	ftom_tp_client_shell_cmds.c	/^FTM_RET	FTOM_SHELL_CMD_quit$/;
 FTOM_SHELL_CMD_server	ftom_tp_client_shell_cmds.c	/^FTM_RET	FTOM_SHELL_CMD_server$/;"	f
 FTOM_SHELL_CMD_task	ftom_tp_client_shell_cmds.c	/^FTM_RET	FTOM_SHELL_CMD_task$/;"	f
 FTOM_TP_CLIENT	ftom_tp_client.h	/^}	FTOM_TP_CLIENT, _PTR_ FTOM_TP_CLIENT_PTR;$/;"	t	typeref:struct:FTOM_TP_CLIENT_STRUCT
-FTOM_TP_CLIENT_CONFIG	ftom_tp_client.h	/^}	FTOM_TP_CLIENT_CONFIG, _PTR_ FTOM_TP_CLIENT_CONFIG_PTR;$/;"	t	typeref:struct:__anon5
-FTOM_TP_CLIENT_CONFIG_PTR	ftom_tp_client.h	/^}	FTOM_TP_CLIENT_CONFIG, _PTR_ FTOM_TP_CLIENT_CONFIG_PTR;$/;"	t	typeref:struct:__anon5
+FTOM_TP_CLIENT_CONFIG	ftom_tp_client.h	/^}	FTOM_TP_CLIENT_CONFIG, _PTR_ FTOM_TP_CLIENT_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
+FTOM_TP_CLIENT_CONFIG_PTR	ftom_tp_client.h	/^}	FTOM_TP_CLIENT_CONFIG, _PTR_ FTOM_TP_CLIENT_CONFIG_PTR;$/;"	t	typeref:struct:__anon2
 FTOM_TP_CLIENT_DEFAULT_BROKER	ftom_tp_client.h	11;"	d
 FTOM_TP_CLIENT_DEFAULT_CB_SET	ftom_tp_client.h	16;"	d
 FTOM_TP_CLIENT_DEFAULT_PORT	ftom_tp_client.h	12;"	d
@@ -62,29 +62,30 @@ FTOM_TP_CLIENT_start	ftom_tp_client.c	/^FTM_RET	FTOM_TP_CLIENT_start$/;"	f
 FTOM_TP_CLIENT_stop	ftom_tp_client.c	/^FTM_RET	FTOM_TP_CLIENT_stop$/;"	f
 FTOM_TP_CLIENT_usage	main.c	/^FTM_VOID	FTOM_TP_CLIENT_usage$/;"	f
 FTOM_TP_CLIENT_waitingForFinished	ftom_tp_client.c	/^FTM_RET	FTOM_TP_CLIENT_waitingForFinished$/;"	f
-FTOM_TP_GATEWAY	ftom_tp_restapi_gateway.h	/^}	FTOM_TP_GATEWAY, _PTR_ FTOM_TP_GATEWAY_PTR;$/;"	t	typeref:struct:__anon2
-FTOM_TP_GATEWAY_PTR	ftom_tp_restapi_gateway.h	/^}	FTOM_TP_GATEWAY, _PTR_ FTOM_TP_GATEWAY_PTR;$/;"	t	typeref:struct:__anon2
+FTOM_TP_GATEWAY	ftom_tp_restapi_gateway.h	/^}	FTOM_TP_GATEWAY, _PTR_ FTOM_TP_GATEWAY_PTR;$/;"	t	typeref:struct:__anon10
+FTOM_TP_GATEWAY_PTR	ftom_tp_restapi_gateway.h	/^}	FTOM_TP_GATEWAY, _PTR_ FTOM_TP_GATEWAY_PTR;$/;"	t	typeref:struct:__anon10
 FTOM_TP_GATEWAY_create	ftom_tp_restapi_gateway.c	/^FTM_RET	FTOM_TP_GATEWAY_create$/;"	f
 FTOM_TP_GATEWAY_destroy	ftom_tp_restapi_gateway.c	/^FTM_RET	FTOM_TP_GATEWAY_destroy$/;"	f
 FTOM_TP_GATEWAY_final	ftom_tp_restapi_gateway.c	/^FTM_RET	FTOM_TP_GATEWAY_final$/;"	f
 FTOM_TP_GATEWAY_init	ftom_tp_restapi_gateway.c	/^FTM_RET	FTOM_TP_GATEWAY_init$/;"	f
-FTOM_TP_RESTAPI	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;$/;"	t	typeref:struct:__anon4
+FTOM_TP_RESTAPI	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;$/;"	t	typeref:struct:__anon8
 FTOM_TP_RESTAPI_CB_readString	ftom_tp_restapi.c	/^size_t FTOM_TP_RESTAPI_CB_readString$/;"	f
 FTOM_TP_RESTAPI_CB_response	ftom_tp_restapi.c	/^size_t FTOM_TP_RESTAPI_CB_response$/;"	f
+FTOM_TP_RESTAPI_CONFIG	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI_CONFIG, _PTR_ FTOM_TP_RESTAPI_CONFIG_PTR;$/;"	t	typeref:struct:__anon7
+FTOM_TP_RESTAPI_CONFIG_PTR	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI_CONFIG, _PTR_ FTOM_TP_RESTAPI_CONFIG_PTR;$/;"	t	typeref:struct:__anon7
 FTOM_TP_RESTAPI_DEVICE_create	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_DEVICE_create$/;"	f
 FTOM_TP_RESTAPI_DEVICE_delete	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_DEVICE_delete$/;"	f
 FTOM_TP_RESTAPI_EP_create	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_EP_create$/;"	f
 FTOM_TP_RESTAPI_EP_getList	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_EP_getList$/;"	f
 FTOM_TP_RESTAPI_GW_getInfo	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_GW_getInfo$/;"	f
 FTOM_TP_RESTAPI_GW_getModel	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_GW_getModel$/;"	f
-FTOM_TP_RESTAPI_GW_setID	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_GW_setID$/;"	f
 FTOM_TP_RESTAPI_GW_setStatus	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_GW_setStatus$/;"	f
 FTOM_TP_RESTAPI_NODE_create	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_NODE_create$/;"	f
 FTOM_TP_RESTAPI_NODE_delete	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_NODE_delete$/;"	f
 FTOM_TP_RESTAPI_NODE_getList	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_NODE_getList$/;"	f
-FTOM_TP_RESTAPI_PTR	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;$/;"	t	typeref:struct:__anon4
-FTOM_TP_RESTAPI_SENSOR	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI_SENSOR, _PTR_ FTOM_TP_RESTAPI_SENSOR_PTR;$/;"	t	typeref:struct:__anon3
-FTOM_TP_RESTAPI_SENSOR_PTR	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI_SENSOR, _PTR_ FTOM_TP_RESTAPI_SENSOR_PTR;$/;"	t	typeref:struct:__anon3
+FTOM_TP_RESTAPI_PTR	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;$/;"	t	typeref:struct:__anon8
+FTOM_TP_RESTAPI_SENSOR	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI_SENSOR, _PTR_ FTOM_TP_RESTAPI_SENSOR_PTR;$/;"	t	typeref:struct:__anon9
+FTOM_TP_RESTAPI_SENSOR_PTR	ftom_tp_restapi.h	/^}	FTOM_TP_RESTAPI_SENSOR, _PTR_ FTOM_TP_RESTAPI_SENSOR_PTR;$/;"	t	typeref:struct:__anon9
 FTOM_TP_RESTAPI_SENSOR_TYPE_INFO	ftom_tp_restapi.c	/^} FTOM_TP_RESTAPI_SENSOR_TYPE_INFO, _PTR_ FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_PTR; $/;"	t	typeref:struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
 FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_PTR	ftom_tp_restapi.c	/^} FTOM_TP_RESTAPI_SENSOR_TYPE_INFO, _PTR_ FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_PTR; $/;"	t	typeref:struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
 FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	ftom_tp_restapi.c	/^typedef struct FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT$/;"	s	file:
@@ -102,8 +103,11 @@ FTOM_TP_RESTAPI_init	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_init$/;"	f
 FTOM_TP_RESTAPI_perform	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_perform$/;"	f
 FTOM_TP_RESTAPI_postBody	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_postBody$/;"	f
 FTOM_TP_RESTAPI_putBody	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_putBody$/;"	f
+FTOM_TP_RESTAPI_setBaseURL	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setBaseURL$/;"	f
+FTOM_TP_RESTAPI_setConfig	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setConfig$/;"	f
 FTOM_TP_RESTAPI_setDataDump	ftom_tp_restapi.c	/^ FTM_RET	FTOM_TP_RESTAPI_setDataDump$/;"	f
 FTOM_TP_RESTAPI_setDeleteURL	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setDeleteURL$/;"	f
+FTOM_TP_RESTAPI_setGatewayID	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setGatewayID$/;"	f
 FTOM_TP_RESTAPI_setGetURL	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setGetURL$/;"	f
 FTOM_TP_RESTAPI_setPasswd	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setPasswd$/;"	f
 FTOM_TP_RESTAPI_setPostURL	ftom_tp_restapi.c	/^FTM_RET	FTOM_TP_RESTAPI_setPostURL$/;"	f
@@ -119,72 +123,93 @@ TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
 _FTOM_TP_CLIENT_H_	ftom_tp_client.h	2;"	d
 __FTOM_TP_GATEWAY_H__	ftom_tp_restapi_gateway.h	2;"	d
 __FTOM_TP_RESTAPI_H__	ftom_tp_restapi.h	2;"	d
+__MODULE__	ftom_mqtt_client_tpgw.c	5;"	d	file:
+__MODULE__	ftom_mqtt_client_tpgw.c	6;"	d	file:
+__MODULE__	ftom_tp_client.c	12;"	d	file:
+__MODULE__	ftom_tp_client.c	13;"	d	file:
+__MODULE__	ftom_tp_client_shell_cmds.c	5;"	d	file:
+__MODULE__	ftom_tp_client_shell_cmds.c	6;"	d	file:
+__MODULE__	ftom_tp_restapi.c	7;"	d	file:
+__MODULE__	ftom_tp_restapi.c	8;"	d	file:
+__MODULE__	ftom_tp_restapi_gateway.c	5;"	d	file:
+__MODULE__	ftom_tp_restapi_gateway.c	6;"	d	file:
+__MODULE__	main.c	10;"	d	file:
+__MODULE__	main.c	9;"	d	file:
 bConnected	ftom_tp_client.h	/^	FTM_BOOL				bConnected;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
 bDataDump	ftom_tp_restapi.c	/^FTM_BOOL	bDataDump = FTM_FALSE;$/;"	v	file:
 bGlobalInit	ftom_tp_restapi.c	/^FTM_BOOL	bGlobalInit = FTM_FALSE;$/;"	v	file:
-bSecure	ftom_tp_client.h	/^		FTM_BOOL	bSecure;$/;"	m	struct:__anon5::__anon6
-bSecure	ftom_tp_client.h	/^		FTM_BOOL	bSecure;$/;"	m	struct:__anon5::__anon7
+bSecure	ftom_tp_client.h	/^		FTM_BOOL	bSecure;$/;"	m	struct:__anon2::__anon5
+bSecure	ftom_tp_client.h	/^		FTM_BOOL	bSecure;$/;"	m	struct:__anon2::__anon6
+bSecure	ftom_tp_restapi.h	/^	FTM_BOOL			bSecure;$/;"	m	struct:__anon7
 bStop	ftom_tp_client.h	/^	FTM_BOOL				bStop;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
 bVerbose	ftom_tp_restapi.c	/^FTM_BOOL	bVerbose = FTM_FALSE;$/;"	v	file:
-fServiceCB	ftom_tp_client.h	/^	FTOM_SERVICE_CALLBACK	fServiceCB;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
+fServiceCB	ftom_tp_client.h	/^	FTOM_SERVICE_CB			fServiceCB;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
 main	main.c	/^int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])$/;"	f
-pAPIKey	ftom_tp_client.h	/^	FTM_CHAR	pAPIKey[FTM_PASSWD_LEN+1];$/;"	m	struct:__anon5
-pBase	ftom_tp_restapi.h	/^	FTM_CHAR			pBase[1024];$/;"	m	struct:__anon4
-pCURL	ftom_tp_restapi.h	/^	CURL 				_PTR_ pCURL;$/;"	m	struct:__anon4
+pAPIKey	ftom_tp_client.h	/^	FTM_CHAR	pAPIKey[FTM_PASSWD_LEN+1];$/;"	m	struct:__anon2
+pBaseURL	ftom_tp_client.h	/^		FTM_CHAR	pBaseURL[FTM_URL_LEN+1];$/;"	m	struct:__anon2::__anon6
+pBaseURL	ftom_tp_restapi.h	/^	FTM_CHAR			pBaseURL[FTM_URL_LEN+1];$/;"	m	struct:__anon7
+pCURL	ftom_tp_restapi.h	/^	CURL 				_PTR_ pCURL;$/;"	m	struct:__anon8
 pCategory	ftom_tp_restapi.c	/^	FTM_CHAR_PTR	pCategory;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
-pCertFile	ftom_tp_client.h	/^	FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];$/;"	m	struct:__anon5
-pData	ftom_tp_restapi.h	/^	FTM_CHAR_PTR		pData;$/;"	m	struct:__anon4
-pDeviceID	ftom_tp_restapi.h	/^	FTM_CHAR		pDeviceID[FTM_DID_LEN+1];$/;"	m	struct:__anon3
-pDeviceList	ftom_tp_restapi_gateway.h	/^	FTM_LIST_PTR	pDeviceList;$/;"	m	struct:__anon2
+pCertFile	ftom_tp_client.h	/^	FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];$/;"	m	struct:__anon2
+pData	ftom_tp_restapi.h	/^	FTM_CHAR_PTR		pData;$/;"	m	struct:__anon8
+pDeviceID	ftom_tp_restapi.h	/^	FTM_CHAR		pDeviceID[FTM_DID_LEN+1];$/;"	m	struct:__anon9
+pDeviceList	ftom_tp_restapi_gateway.h	/^	FTM_LIST_PTR	pDeviceList;$/;"	m	struct:__anon10
 pDriver	ftom_tp_restapi.c	/^	FTM_CHAR_PTR	pDriver;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
 pFTOMC	ftom_tp_client.h	/^	FTOM_CLIENT_PTR			pFTOMC;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
-pGatewayID	ftom_tp_client.h	/^	FTM_CHAR	pGatewayID[FTM_GWID_LEN+1];$/;"	m	struct:__anon5
-pGatewayID	ftom_tp_restapi.h	/^	FTM_CHAR			pGatewayID[FTM_DID_LEN+1];$/;"	m	struct:__anon4
-pHTTPHeader	ftom_tp_restapi.h	/^	struct curl_slist	_PTR_ pHTTPHeader;$/;"	m	struct:__anon4	typeref:struct:__anon4::_PTR_
-pHost	ftom_tp_client.h	/^		FTM_CHAR	pHost[FTM_HOST_LEN+1];$/;"	m	struct:__anon5::__anon6
-pHost	ftom_tp_client.h	/^		FTM_CHAR	pHost[FTM_HOST_LEN+1];$/;"	m	struct:__anon5::__anon7
-pID	ftom_tp_restapi.h	/^	FTM_CHAR		pID[FTM_EPID_LEN+1];$/;"	m	struct:__anon3
-pID	ftom_tp_restapi_gateway.h	/^	FTM_CHAR		pID[FTM_DID_LEN+1];$/;"	m	struct:__anon2
+pGatewayID	ftom_tp_client.h	/^	FTM_CHAR	pGatewayID[FTM_GWID_LEN+1];$/;"	m	struct:__anon2
+pGatewayID	ftom_tp_restapi.h	/^	FTM_CHAR			pGatewayID[FTM_DID_LEN+1];$/;"	m	struct:__anon7
+pHTTPHeader	ftom_tp_restapi.h	/^	struct curl_slist	_PTR_ pHTTPHeader;$/;"	m	struct:__anon8	typeref:struct:__anon8::_PTR_
+pHost	ftom_tp_client.h	/^		FTM_CHAR	pHost[FTM_HOST_LEN+1];$/;"	m	struct:__anon2::__anon5
+pHost	ftom_tp_client.h	/^		FTM_CHAR	pHost[FTM_URL_LEN+1];$/;"	m	struct:__anon2::__anon3
+pHost	ftom_tp_client.h	/^		FTM_CHAR	pHost[FTM_URL_LEN+1];$/;"	m	struct:__anon2::__anon4
+pID	ftom_tp_restapi.h	/^	FTM_CHAR		pID[FTM_EPID_LEN+1];$/;"	m	struct:__anon9
+pID	ftom_tp_restapi_gateway.h	/^	FTM_CHAR		pID[FTM_DID_LEN+1];$/;"	m	struct:__anon10
 pModel	ftom_tp_restapi.c	/^	FTM_CHAR_PTR	pModel;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
 pName	ftom_tp_restapi.c	/^	FTM_CHAR_PTR	pName;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
-pName	ftom_tp_restapi.h	/^	FTM_CHAR		pName[FTM_NAME_LEN+1];$/;"	m	struct:__anon3
-pName	ftom_tp_restapi_gateway.h	/^	FTM_CHAR		pName[FTM_NAME_LEN+1];$/;"	m	struct:__anon2
-pOwnerID	ftom_tp_restapi.h	/^	FTM_CHAR		pOwnerID[FTM_DID_LEN+1];$/;"	m	struct:__anon3
-pPasswd	ftom_tp_client.h	/^	FTM_CHAR	pPasswd[FTM_PASSWD_LEN+1];$/;"	m	struct:__anon5
-pPasswd	ftom_tp_restapi.h	/^	FTM_CHAR			pPasswd[FTM_PASSWD_LEN+1];$/;"	m	struct:__anon4
-pResp	ftom_tp_restapi.h	/^	FTM_CHAR_PTR		pResp;$/;"	m	struct:__anon4
-pSensorList	ftom_tp_restapi_gateway.h	/^	FTM_LIST_PTR	pSensorList;$/;"	m	struct:__anon2
+pName	ftom_tp_restapi.h	/^	FTM_CHAR		pName[FTM_NAME_LEN+1];$/;"	m	struct:__anon9
+pName	ftom_tp_restapi_gateway.h	/^	FTM_CHAR		pName[FTM_NAME_LEN+1];$/;"	m	struct:__anon10
+pOwnerID	ftom_tp_restapi.h	/^	FTM_CHAR		pOwnerID[FTM_DID_LEN+1];$/;"	m	struct:__anon9
+pPasswd	ftom_tp_client.h	/^	FTM_CHAR	pPasswd[FTM_PASSWD_LEN+1];$/;"	m	struct:__anon2
+pPasswd	ftom_tp_restapi.h	/^	FTM_CHAR			pPasswd[FTM_PASSWD_LEN+1];$/;"	m	struct:__anon7
+pRESTAPIDefaultBase	ftom_tp_restapi.c	/^FTM_CHAR	pRESTAPIDefaultBase[] = "https:\/\/api.thingplus.net\/v1";$/;"	v	file:
+pResp	ftom_tp_restapi.h	/^	FTM_CHAR_PTR		pResp;$/;"	m	struct:__anon8
+pSensorList	ftom_tp_restapi_gateway.h	/^	FTM_LIST_PTR	pSensorList;$/;"	m	struct:__anon10
 pSensorTypeInfo	ftom_tp_restapi.c	/^FTOM_TP_RESTAPI_SENSOR_TYPE_INFO pSensorTypeInfo[] = $/;"	v	file:
 pString	ftom_mqtt_client_tpgw.c	/^	FTM_CHAR_PTR	pString;$/;"	m	struct:__anon1	file:
-pURL	ftom_tp_restapi.h	/^	FTM_CHAR			pURL[1024];$/;"	m	struct:__anon4
-pUserID	ftom_tp_client.h	/^	FTM_CHAR	pUserID[FTM_USER_ID_LEN+1];$/;"	m	struct:__anon5
-pUserID	ftom_tp_restapi.h	/^	FTM_CHAR			pUserID[FTM_USER_ID_LEN+1];$/;"	m	struct:__anon4
-ulAddress	ftom_tp_restapi.h	/^	FTM_ULONG		ulAddress;$/;"	m	struct:__anon3
+pURL	ftom_tp_restapi.h	/^	FTM_CHAR			pURL[1024];$/;"	m	struct:__anon8
+pUserID	ftom_tp_client.h	/^	FTM_CHAR	pUserID[FTM_USER_ID_LEN+1];$/;"	m	struct:__anon2
+pUserID	ftom_tp_restapi.h	/^	FTM_CHAR			pUserID[FTM_USER_ID_LEN+1];$/;"	m	struct:__anon7
+ulAddress	ftom_tp_restapi.h	/^	FTM_ULONG		ulAddress;$/;"	m	struct:__anon9
 ulGetheringTime	ftom_tp_client_shell_cmds.c	/^FTM_ULONG	ulGetheringTime = 3;$/;"	v
-ulReportInterval	ftom_tp_client.h	/^	FTM_ULONG	ulReportInterval;$/;"	m	struct:__anon5
-ulReportInterval	ftom_tp_restapi_gateway.h	/^	FTM_ULONG		ulReportInterval;$/;"	m	struct:__anon2
-ulRespLen	ftom_tp_restapi.h	/^	FTM_ULONG			ulRespLen;$/;"	m	struct:__anon4
-ulRetryInterval	ftom_tp_client.h	/^		FTM_ULONG	ulRetryInterval;$/;"	m	struct:__anon5::__anon6
-ulSequence	ftom_tp_restapi.h	/^	FTM_ULONG		ulSequence;$/;"	m	struct:__anon3
-ullCTime	ftom_tp_restapi.h	/^	FTM_UINT64		ullCTime;$/;"	m	struct:__anon3
-ullCTime	ftom_tp_restapi_gateway.h	/^	FTM_UINT64		ullCTime;$/;"	m	struct:__anon2
-ullMTime	ftom_tp_restapi.h	/^	FTM_UINT64		ullMTime;$/;"	m	struct:__anon3
-ullMTime	ftom_tp_restapi_gateway.h	/^	FTM_UINT64		ullMTime;$/;"	m	struct:__anon2
-usPort	ftom_tp_client.h	/^		FTM_UINT16	usPort;$/;"	m	struct:__anon5::__anon6
+ulReportInterval	ftom_tp_client.h	/^	FTM_ULONG	ulReportInterval;$/;"	m	struct:__anon2
+ulReportInterval	ftom_tp_restapi_gateway.h	/^	FTM_ULONG		ulReportInterval;$/;"	m	struct:__anon10
+ulRespLen	ftom_tp_restapi.h	/^	FTM_ULONG			ulRespLen;$/;"	m	struct:__anon8
+ulRetryInterval	ftom_tp_client.h	/^		FTM_ULONG	ulRetryInterval;$/;"	m	struct:__anon2::__anon5
+ulSequence	ftom_tp_restapi.h	/^	FTM_ULONG		ulSequence;$/;"	m	struct:__anon9
+ullCTime	ftom_tp_restapi.h	/^	FTM_UINT64		ullCTime;$/;"	m	struct:__anon9
+ullCTime	ftom_tp_restapi_gateway.h	/^	FTM_UINT64		ullCTime;$/;"	m	struct:__anon10
+ullMTime	ftom_tp_restapi.h	/^	FTM_UINT64		ullMTime;$/;"	m	struct:__anon9
+ullMTime	ftom_tp_restapi_gateway.h	/^	FTM_UINT64		ullMTime;$/;"	m	struct:__anon10
+usPort	ftom_tp_client.h	/^		FTM_UINT16	usPort;$/;"	m	struct:__anon2::__anon5
+usPort	ftom_tp_client.h	/^		FTM_USHORT	usPort;$/;"	m	struct:__anon2::__anon3
+usPort	ftom_tp_client.h	/^		FTM_USHORT	usPort;$/;"	m	struct:__anon2::__anon4
 xConfig	ftom_tp_client.h	/^	FTOM_TP_CLIENT_CONFIG	xConfig;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
+xConfig	ftom_tp_restapi.h	/^	FTOM_TP_RESTAPI_CONFIG	xConfig;$/;"	m	struct:__anon8
+xFTOMC	ftom_tp_client.h	/^	}	xFTOMC;$/;"	m	struct:__anon2	typeref:struct:__anon2::__anon3
 xLinkManager	ftom_tp_client.h	/^	pthread_t				xLinkManager;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
 xMQTT	ftom_tp_client.h	/^	FTOM_MQTT_CLIENT		xMQTT;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
-xMQTT	ftom_tp_client.h	/^	}	xMQTT;$/;"	m	struct:__anon5	typeref:struct:__anon5::__anon6
+xMQTT	ftom_tp_client.h	/^	}	xMQTT;$/;"	m	struct:__anon2	typeref:struct:__anon2::__anon5
 xMQTTCBSet	ftom_tp_client.c	/^FTOM_MQTT_CLIENT_CBSET	xMQTTCBSet =$/;"	v	file:
 xMain	ftom_tp_client.h	/^	pthread_t				xMain;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
 xMethod	ftom_mqtt_client_tpgw.c	/^	FTM_ULONG		xMethod;$/;"	m	struct:__anon1	file:
 xMsgQ	ftom_tp_client.h	/^	FTOM_MSG_QUEUE			xMsgQ;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
 xRESTApi	ftom_tp_client.h	/^	FTOM_TP_RESTAPI			xRESTApi;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
-xRESTApi	ftom_tp_client.h	/^	}	xRESTApi;$/;"	m	struct:__anon5	typeref:struct:__anon5::__anon7
+xRESTApi	ftom_tp_client.h	/^	}	xRESTApi;$/;"	m	struct:__anon2	typeref:struct:__anon2::__anon6
 xReportTimer	ftom_tp_client.h	/^	FTM_TIMER				xReportTimer;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
 xReqMethod	ftom_mqtt_client_tpgw.c	/^} static xReqMethod[] =$/;"	v	file:
 xRetryTimer	ftom_tp_client.h	/^	FTM_TIMER				xRetryTimer;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
 xServiceID	ftom_tp_client.h	/^	FTOM_SERVICE_ID			xServiceID;$/;"	m	struct:FTOM_TP_CLIENT_STRUCT
+xSubscriber	ftom_tp_client.h	/^	}	xSubscriber;$/;"	m	struct:__anon2	typeref:struct:__anon2::__anon4
 xTPClientDefaultConfig	ftom_tp_client.c	/^FTOM_TP_CLIENT_CONFIG	xTPClientDefaultConfig = $/;"	v	file:
 xType	ftom_tp_restapi.c	/^	FTM_EP_TYPE		xType;$/;"	m	struct:FTOM_TP_RESTAPI_SENSOR_TYPE_INFO_STRUCT	file:
-xType	ftom_tp_restapi.h	/^	FTM_EP_TYPE		xType;$/;"	m	struct:__anon3
+xType	ftom_tp_restapi.h	/^	FTM_EP_TYPE		xType;$/;"	m	struct:__anon9

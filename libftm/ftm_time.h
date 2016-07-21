@@ -30,6 +30,12 @@ FTM_RET	FTM_TIME_set
 	FTM_ULONG 		ulMilliSeconds
 );
 
+FTM_RET	FTM_TIME_setString
+(
+	FTM_TIME_PTR	pTime,
+	FTM_CHAR_PTR	pString
+);
+
 FTM_RET	FTM_TIME_setSeconds
 (
 	FTM_TIME_PTR 	pTime, 
@@ -152,6 +158,12 @@ FTM_BOOL		FTM_TIME_isZero
 );
 
 FTM_CHAR_PTR	FTM_TIME_toString
+(
+	FTM_TIME_PTR	pTime,
+	FTM_CHAR_PTR	pFormat
+);
+
+FTM_CHAR_PTR	FTM_TIME_printf
 (
 	FTM_TIME_PTR	pTime,
 	FTM_CHAR_PTR	pFormat

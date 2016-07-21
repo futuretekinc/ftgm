@@ -196,7 +196,8 @@ FTM_RET FTOM_DMC_EP_DATA_get
 	FTM_ULONG		ulStartIndex,
 	FTM_EP_DATA_PTR	pData,
 	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR 	pulCount
+	FTM_ULONG_PTR 	pulCount,
+	FTM_BOOL_PTR	pbRemain
 );
 
 FTM_RET	FTOM_DMC_EP_DATA_add
@@ -435,6 +436,19 @@ FTM_RET	FTOM_DMC_LOG_get
 	FTM_ULONG		ulCount,
 	FTM_LOG_PTR		pLogs,
 	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET FTOM_DMC_EP_DATA_getWithTime
+(
+	FTOM_DMC_PTR	pDMC,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_BOOL		bAscending,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR 	pulCount,
+	FTM_BOOL_PTR	pbRemain
 );
 
 FTM_RET	FTOM_DMC_LOG_getAt

@@ -244,6 +244,7 @@ FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 	FTM_CHAR_PTR	pEPID,
 	FTM_ULONG		xBeginTime,
 	FTM_ULONG		xEndTime,
+	FTM_BOOL		bAscending,
 	FTM_EP_DATA_PTR	pEPData,
 	FTM_ULONG		nMaxCount,
 	FTM_ULONG_PTR	pCount

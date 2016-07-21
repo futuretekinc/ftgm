@@ -4,6 +4,9 @@
 #include "ftom.h"
 #include "ftom_tp_restapi.h"
 
+#undef	__MODULE__
+#define __MODULE__ FTOM_TRACE_MODULE_CLIENT
+
 static
 size_t FTOM_TP_RESTAPI_CB_readString
 (

@@ -93,6 +93,15 @@ FTM_RET	FTOM_CGI_getULONG
 	FTM_BOOL	bAllowEmpty
 );
 
+FTM_RET	FTOM_CGI_getSTRING
+(
+	qentry_t *pReq, 
+	FTM_CHAR_PTR	pName,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen,
+	FTM_BOOL	bAllowEmpty
+);
+
 FTM_RET FTOM_CGI_getNodeType
 (
 	qentry_t *pReq, 

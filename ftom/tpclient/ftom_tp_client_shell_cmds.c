@@ -2,6 +2,9 @@
 #include "ftm_shell.h"
 #include "ftom_tp_client.h"
 
+#undef	__MODULE__
+#define __MODULE__ FTOM_TRACE_MODULE_CLIENT
+
 FTM_ULONG	ulGetheringTime = 3;
 
 FTM_RET	FTOM_SHELL_CMD_config

@@ -443,6 +443,7 @@ typedef	struct
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				xRet;
+	FTM_BOOL			bRemain;
 	FTM_ULONG			nCount; 
 	FTM_EP_DATA 		pData[];
 }	FTDM_RESP_EP_DATA_GET_PARAMS, _PTR_ FTDM_RESP_EP_DATA_GET_PARAMS_PTR;
@@ -454,6 +455,7 @@ typedef	struct
 	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
 	FTM_ULONG 			nBeginTime; 
 	FTM_ULONG 			nEndTime; 
+	FTM_BOOL			bAscending;
 	FTM_ULONG			nCount; 
 }	FTDM_REQ_EP_DATA_GET_WITH_TIME_PARAMS, _PTR_	FTDM_REQ_EP_DATA_GET_WITH_TIME_PARAMS_PTR;
 
@@ -462,6 +464,7 @@ typedef	struct
 	FTDM_CMD			xCmd;
 	FTM_ULONG			nLen;
 	FTM_RET				xRet;
+	FTM_BOOL			bRemain;
 	FTM_ULONG			nCount; 
 	FTM_EP_DATA 		pData[];
 }	FTDM_RESP_EP_DATA_GET_WITH_TIME_PARAMS, _PTR_ FTDM_RESP_EP_DATA_GET_WITH_TIME_PARAMS_PTR;

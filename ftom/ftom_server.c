@@ -433,6 +433,16 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 );
 
 static 
+FTM_RET	FTOM_SERVER_EP_DATA_getListWithTime
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_EP_DATA_GET_LIST_WITH_TIME_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_GET_LIST_WITH_TIME_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
 FTM_RET	FTOM_SERVER_TRIGGER_add
 (
 	FTOM_SERVER_PTR	pServer,
@@ -721,6 +731,7 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_DATA_GET_LIST,		FTOM_SERVER_EP_DATA_getList),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_COUNT,			FTOM_SERVER_EP_DATA_count),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_TYPE,			FTOM_SERVER_EP_DATA_type),
+	MK_CMD_SET(FTOM_CMD_EP_DATA_GET_LIST_WITH_TIME,		FTOM_SERVER_EP_DATA_getListWithTime),
 
 	MK_CMD_SET(FTOM_CMD_TRIG_ADD,				FTOM_SERVER_TRIGGER_add),
 	MK_CMD_SET(FTOM_CMD_TRIG_DEL,				FTOM_SERVER_TRIGGER_del),
@@ -1004,6 +1015,7 @@ FTM_RET	FTOM_SERVER_sendMessage
 	
 	FTOM_SESSION_PTR	pSession = NULL;
 
+	TRACE("%s[%d]\n", __func__, __LINE__);
 	FTM_LIST_iteratorStart(&pServer->xPublisher.xSubscriberList);
 	while(FTM_LIST_iteratorNext(&pServer->xPublisher.xSubscriberList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
 	{
@@ -1759,7 +1771,6 @@ FTM_RET	FTOM_SERVER_NODE_create
 finish:
 	if (xRet == FTM_RET_OK)
 	{
-		FTOM_LOG_createNode(&pNode->xInfo);	
 		strcpy(pResp->pDID, pNode->xInfo.pDID);
 	}
 	else if (pNode != NULL)
@@ -1840,7 +1851,6 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 	
 		ulCount--;
 		TRACE("Remain EP Count : %lu\n", ulCount);
-		FTOM_LOG_destroyEP(xEPInfo.pEPID);
 	}
 
 	memcpy(&xInfo, &pNode->xInfo, sizeof(FTM_NODE));
@@ -1852,7 +1862,6 @@ FTM_RET	FTOM_SERVER_NODE_destroy
 		goto finish;
 	}
 
-	FTOM_LOG_destroyNode(&xInfo);
 
 finish:
 	pResp->xCmd = pReq->xCmd;
@@ -2199,8 +2208,6 @@ FTM_RET	FTOM_SERVER_EP_create
 		WARN("Failed to start EP[%s]!\n", pEP->xInfo.pEPID);
 	}
 
-	FTOM_LOG_createEP(pEP->xInfo.pEPID);
-
 finish:
 	pResp->xCmd 	= pReq->xCmd;
 	pResp->ulLen 	= sizeof(*pResp);
@@ -2241,12 +2248,6 @@ FTM_RET	FTOM_SERVER_EP_destroy
 		{
 			goto finish;	
 		}
-	}
-
-	xRet = FTOM_LOG_destroyEP(pEP->xInfo.pEPID);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to delete log of EP[%s].\n", pEP->xInfo.pEPID);	
 	}
 
 	xRet = FTOM_EP_destroy(&pEP, FTM_TRUE);
@@ -2589,7 +2590,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_del
 	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_EP_removeData( pEP, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);	
+		xRet = FTOM_EP_removeDataList( pEP, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);	
 	}
 	else
 	{
@@ -2622,7 +2623,7 @@ FTM_RET	FTOM_SERVER_EP_DATA_delWithTime
 	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_EP_removeDataWithTime( pEP, pReq->ulBegin, pReq->ulEnd, &pResp->ulCount);
+		xRet = FTOM_EP_removeDataListWithTime( pEP, pReq->ulBegin, pReq->ulEnd, &pResp->ulCount);
 	}
 	else
 	{
@@ -2729,7 +2730,48 @@ FTM_RET	FTOM_SERVER_EP_DATA_getList
 	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_EP_getDataList(pEP, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount);
+		xRet = FTOM_EP_getDataList(pEP, pReq->nStartIndex, pResp->pData, pReq->nCount, &pResp->nCount, &pResp->bRemain);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "EP[%s] get data list error!\n", pReq->pEPID);
+			pResp->nCount = 0;
+		}
+	}
+	else
+	{
+		ERROR2(xRet, "EP[%s] is not found!\n", pReq->pEPID);
+		pResp->nCount = 0;
+	}
+
+	pResp->ulLen = sizeof(*pResp) + sizeof(FTM_EP_DATA) * pResp->nCount;
+	pResp->xCmd = pReq->xCmd;
+	pResp->xRet = xRet;
+
+	return	pResp->xRet;
+}
+
+FTM_RET	FTOM_SERVER_EP_DATA_getListWithTime
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_EP_DATA_GET_LIST_WITH_TIME_PARAMS_PTR	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_GET_LIST_WITH_TIME_PARAMS_PTR	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET		xRet;
+	FTOM_EP_PTR	pEP;
+
+	pResp->nCount = 0;
+
+	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_EP_getDataListWithTime(pEP, pReq->ulBegin, pReq->ulEnd, pReq->bAscending, pResp->pData, pReq->nCount, &pResp->nCount, &pResp->bRemain);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "EP[%s] get data list error!\n", pReq->pEPID);
@@ -2831,7 +2873,6 @@ FTM_RET	FTOM_SERVER_TRIGGER_add
 	}
 
 	strcpy(pResp->pTriggerID, pTrigger->xInfo.pID);
-	FTOM_LOG_createTrigger(&pTrigger->xInfo);
 
 finish:
 	pResp->xCmd = pReq->xCmd;
@@ -2856,7 +2897,6 @@ FTM_RET	FTOM_SERVER_TRIGGER_del
 	ASSERT(pResp != NULL);
 	
 	FTM_RET	xRet;
-	FTM_TRIGGER			xInfo;
 	FTOM_TRIGGER_PTR	pTrigger;
 
 	xRet = FTOM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
@@ -2866,16 +2906,12 @@ FTM_RET	FTOM_SERVER_TRIGGER_del
 		goto finish;
 	}
 
-	memcpy(&xInfo, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
-
 	xRet = FTOM_TRIGGER_destroy(&pTrigger, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to remove trigger[%s].\n", pReq->pTriggerID);
 		goto finish;
 	}
-
-	FTOM_LOG_destroyTrigger(&xInfo);
 
 finish:
 	pResp->xRet = xRet;
@@ -3027,7 +3063,6 @@ FTM_RET	FTOM_SERVER_ACTION_add
 	}
 
 	strcpy(pResp->pActionID, pAction->xInfo.pID);
-	FTOM_LOG_createAction(&pAction->xInfo);
 
 finish:
 	pResp->xCmd = pReq->xCmd;
@@ -3052,7 +3087,6 @@ FTM_RET	FTOM_SERVER_ACTION_del
 	ASSERT(pResp != NULL);
 	
 	FTM_RET	xRet;
-	FTM_ACTION		xInfo;
 	FTOM_ACTION_PTR	pAction;
 
 	xRet = FTOM_ACTION_get(pReq->pActionID, &pAction);
@@ -3068,8 +3102,6 @@ FTM_RET	FTOM_SERVER_ACTION_del
 		ERROR2(xRet, "Failed to delete the action[%s].\n", pReq->pActionID);
 		goto finish;
 	}
-
-	FTOM_LOG_destroyAction(&xInfo);
 
 finish:
 	pResp->xRet = xRet;
@@ -3232,13 +3264,6 @@ FTM_RET	FTOM_SERVER_RULE_add
 
 	strcpy(pResp->pRuleID, pRule->xInfo.pID);	
 
-	xRet = FTOM_LOG_createRule(&pRule->xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to create rule[%s] log!\n", pRule->xInfo.pID);	
-		xRet = FTM_RET_OK;
-	}
-
 finish:
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
@@ -3263,7 +3288,6 @@ FTM_RET	FTOM_SERVER_RULE_del
 	ASSERT(pResp != NULL);
 
 	FTM_RET			xRet;
-	FTM_RULE		xInfo;
 	FTOM_RULE_PTR	pRule;
 
 	xRet = FTOM_RULE_get(pReq->pRuleID, &pRule);
@@ -3273,16 +3297,12 @@ FTM_RET	FTOM_SERVER_RULE_del
 		goto finish;
 	}
 
-	memcpy(&xInfo, &pRule->xInfo, sizeof(FTM_RULE));
-
 	xRet = FTOM_RULE_destroy(&pRule, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to delete the rule[%s].\n", pReq->pRuleID);
 		goto finish;
 	}
-
-	FTOM_LOG_destroyRule(&xInfo);
 
 finish:
 	pResp->xCmd = pReq->xCmd;

@@ -553,9 +553,33 @@ typedef	struct
 	FTOM_CMD			xCmd;
 	FTM_ULONG			ulLen;
 	FTM_RET				xRet;
+	FTM_BOOL			bRemain;
 	FTM_ULONG			nCount; 
 	FTM_EP_DATA 		pData[];
 }	FTOM_RESP_EP_DATA_GET_LIST_PARAMS, _PTR_ FTOM_RESP_EP_DATA_GET_LIST_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pEPID[FTM_EPID_LEN+1];
+	FTM_ULONG			ulBegin;
+	FTM_ULONG			ulEnd;
+	FTM_BOOL			bAscending;
+	FTM_ULONG			nCount; 
+}	FTOM_REQ_EP_DATA_GET_LIST_WITH_TIME_PARAMS, _PTR_	FTOM_REQ_EP_DATA_GET_LIST_WITH_TIME_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+	FTM_BOOL			bRemain;
+	FTM_ULONG			nCount; 
+	FTM_EP_DATA 		pData[];
+}	FTOM_RESP_EP_DATA_GET_LIST_WITH_TIME_PARAMS, _PTR_ FTOM_RESP_EP_DATA_GET_LIST_WITH_TIME_PARAMS_PTR;
 
 typedef	struct
 {

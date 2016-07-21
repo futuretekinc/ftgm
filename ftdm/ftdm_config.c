@@ -21,6 +21,11 @@ FTM_RET FTDM_CFG_init(FTDM_CFG_PTR pConfig)
 
 	FTM_LIST_init(&pConfig->xEP.xTypeList);
 	FTM_LIST_setSeeker(&pConfig->xEP.xTypeList, FTDM_CFG_EP_CLASS_seeker);
+
+	pConfig->xServer.usPort 		= FTDM_SERVER_DEFAULT_PORT;
+	pConfig->xServer.ulMaxSession 	= FTDM_SERVER_DEFAULT_MAX_SESSION;
+	pConfig->xServer.ulBufferLen 	= FTDM_SERVER_DEFAULT_BUFFER_LEN;
+
 	return	FTM_RET_OK;
 }
 
@@ -48,13 +53,17 @@ FTM_RET FTDM_CFG_final(FTDM_CFG_PTR pConfig)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
+FTM_RET	FTDM_CFG_readFromFile
+(
+	FTDM_CFG_PTR pConfig, 
+	FTM_CHAR_PTR pFileName
+)
 {
 	FTM_RET			xRet;
 	FTM_CONFIG_PTR	pRoot;
 	FTM_CONFIG_ITEM	xServer;
 	FTM_CONFIG_ITEM	xDB;
-	FTM_CONFIG_ITEM	xDebug;
+//	FTM_CONFIG_ITEM	xDebug;
 	FTM_CONFIG_ITEM	xEPSection;
 
 	ASSERT(pConfig != NULL);
@@ -83,6 +92,7 @@ FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 	{
 		FTM_USHORT	usPort;
 		FTM_ULONG	ulSession;
+		FTM_ULONG	ulBufferLen;
 
 		xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xServer, "port", &usPort);
 		if (xRet == FTM_RET_OK)
@@ -95,6 +105,13 @@ FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 		{
 			pConfig->xServer.ulMaxSession = ulSession;
 		}
+
+		xRet = FTM_CONFIG_ITEM_getItemULONG(&xServer, "buffer_len", &ulBufferLen);
+		if (xRet == FTM_RET_OK)
+		{
+			pConfig->xServer.ulBufferLen = ulBufferLen;
+		}
+
 	}
 
 	xRet = FTM_CONFIG_getItem(pRoot, "ep", &xEPSection);
@@ -133,18 +150,6 @@ FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName)
 					}
 				}
 			}
-		}
-	}
-
-	xRet = FTM_CONFIG_getItem(pRoot, "debug", &xDebug);
-	if (xRet == FTM_RET_OK)
-	{
-		FTM_ULONG	ulLevel;
-
-		xRet = FTM_CONFIG_ITEM_getItemULONG(&xServer, "level", &ulLevel);
-		if (xRet == FTM_RET_OK)
-		{
-			pConfig->xPrint.ulLevel = ulLevel;
 		}
 	}
 

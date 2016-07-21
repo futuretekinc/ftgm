@@ -64,25 +64,6 @@ FTM_RET	FTOM_SNMPTRAP_discovery
 	FTM_CHAR_PTR 		pMsg
 );
 
-static 
-FTM_RET	FTOM_SNMPTRAP_sendAlert
-(
-	FTOM_SNMPTRAP_PTR 	pSNMPTRAP, 
-	FTM_CHAR_PTR		pEPID,
-	FTM_EP_DATA_PTR 	pData
-);
-
-static 
-FTM_RET	FTOM_SNMPTRAP_receivedDiscovery
-(
-	FTOM_SNMPTRAP_PTR	pSNMPTRAP,
-	FTM_CHAR_PTR		pName,
-	FTM_CHAR_PTR		pDID,
-	FTM_CHAR_PTR		pIP,
-	FTM_EP_TYPE_PTR		pTypes,
-	FTM_ULONG			ulCount
-);
-
 FTM_RET	FTOM_SNMPTRAP_create
 (
 	FTOM_SNMPTRAP_PTR _PTR_ ppSNMPTRAP
@@ -1100,7 +1081,6 @@ FTM_RET	FTOM_SNMPTRAP_receiveTrap
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR2(xRet, "Can't creation message!\n");	
-					FTOM_MSG_destroy(&pMsg);
 				}
 				else
 				{
@@ -1108,7 +1088,6 @@ FTM_RET	FTOM_SNMPTRAP_receiveTrap
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet, "Can't send message!\n");	
-
 						FTOM_MSG_destroy(&pMsg);
 					}
 				}
@@ -1280,7 +1259,7 @@ FTM_RET	FTOM_SNMPTRAP_alert
 		}
 	}
 					
-	xRet = FTOM_SNMPTRAP_sendAlert(pSNMPTRAP, pEPID, &xData);
+	xRet = FTOM_sendAlert(pEPID, &xData);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to send alert.\n");	
@@ -1401,7 +1380,7 @@ FTM_RET	FTOM_SNMPTRAP_discovery
 		pEPTypes[ulEPTypes++] = (ulType << 16);
 	}	
 	
-	FTOM_SNMPTRAP_receivedDiscovery(pSNMPTRAP, pName, pDID, pDeviceIP, pEPTypes, ulEPTypes);
+	FTOM_receivedDiscovery(pName, pDID, pDeviceIP, pEPTypes, ulEPTypes);
 
 error:
 
@@ -1409,36 +1388,6 @@ error:
 
 	return	xRet;
 
-}
-
-FTM_RET	FTOM_SNMPTRAP_sendAlert
-(
-	FTOM_SNMPTRAP_PTR 	pSNMPTRAP, 
-	FTM_CHAR_PTR		pEPID,
-	FTM_EP_DATA_PTR 	pData
-)
-{
-	ASSERT(pSNMPTRAP != NULL);
-	ASSERT(pData != NULL);
-
-	return	FTOM_sendAlert(pEPID, pData);
-}
-
-FTM_RET	FTOM_SNMPTRAP_receivedDiscovery
-(
-	FTOM_SNMPTRAP_PTR	pSNMPTRAP,
-	FTM_CHAR_PTR	pName,
-	FTM_CHAR_PTR	pDID,
-	FTM_CHAR_PTR	pIP,
-	FTM_EP_TYPE_PTR	pTypes,
-	FTM_ULONG		ulCount
-)
-{
-	ASSERT(pSNMPTRAP != NULL);
-	ASSERT(pDID != NULL);
-	ASSERT(pTypes != NULL);
-
-	return	FTOM_receivedDiscovery(pName, pDID, pIP, pTypes, ulCount);
 }
 
 #if 0

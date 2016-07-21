@@ -84,6 +84,7 @@ FTM_RET	FTDM_EP_DATA_getWithTime
 	FTDM_EP_PTR			pEP,
 	FTM_ULONG 			nBeginTime, 
 	FTM_ULONG 			nEndTime, 
+	FTM_BOOL			bAscending,
 	FTM_EP_DATA_PTR 	pData,
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pnCount 

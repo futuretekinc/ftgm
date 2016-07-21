@@ -74,6 +74,15 @@ FTM_RET	FTOM_EP_count
 	FTM_ULONG_PTR		pulCount
 );
 
+FTM_RET FTOM_EP_getIDList
+(
+	FTM_EP_TYPE		xType,
+	FTM_CHAR_PTR	pDID,
+	FTM_CHAR		pEPID[][FTM_EPID_LEN+1],
+	FTM_ULONG 		ulMaxCount, 
+	FTM_ULONG_PTR 	pulCount
+);
+
 FTM_RET	FTOM_EP_get
 (
 	FTM_CHAR_PTR		pEPID,
@@ -110,41 +119,25 @@ FTM_RET FTOM_EP_isRun
 	FTM_BOOL_PTR		pbRun
 );
 
+/**************************************************
+ * Data management operations
+ **************************************************/
 FTM_RET	FTOM_EP_getDataType
 (
 	FTOM_EP_PTR 		pEP, 
 	FTM_VALUE_TYPE_PTR	pType
 );
 
-FTM_RET	FTOM_EP_getDataCount
+FTM_RET	FTOM_EP_setData
 (
 	FTOM_EP_PTR			pEP,
-	FTM_ULONG_PTR		pulCount
+	FTM_EP_DATA_PTR		pData
 );
 
-FTM_RET	FTOM_EP_getDataList
+FTM_RET	FTOM_EP_getData
 (
-	FTOM_EP_PTR		pEP,
-	FTM_ULONG		ulIndex,
-	FTM_EP_DATA_PTR	pDatas,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-);
-
-FTM_RET	FTOM_EP_removeData
-(
-	FTOM_EP_PTR 		pEP, 
-	FTM_INT				nIndex,
-	FTM_ULONG			ulCount,
-	FTM_ULONG_PTR		pulDeletedCount
-);
-
-FTM_RET	FTOM_EP_removeDataWithTime
-(
-	FTOM_EP_PTR 		pEP, 
-	FTM_ULONG			ulBegin,
-	FTM_ULONG			ulEnd,
-	FTM_ULONG_PTR		pulDeletedCount
+	FTOM_EP_PTR			pEP,
+	FTM_EP_DATA_PTR		pData
 );
 
 FTM_RET	FTOM_EP_getDataInfo
@@ -161,6 +154,50 @@ FTM_RET	FTOM_EP_setDataLimit
 	FTM_EP_LIMIT_PTR	pLimit
 );
 
+FTM_RET	FTOM_EP_getDataCount
+(
+	FTOM_EP_PTR			pEP,
+	FTM_ULONG_PTR		pulCount
+);
+
+FTM_RET	FTOM_EP_getDataList
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG		ulIndex,
+	FTM_EP_DATA_PTR	pDatas,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount,
+	FTM_BOOL_PTR	pbRemain
+);
+
+FTM_RET	FTOM_EP_getDataListWithTime
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_BOOL		bAscending,
+	FTM_EP_DATA_PTR	pDatas,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount,
+	FTM_BOOL_PTR	pbRemain
+);
+
+FTM_RET	FTOM_EP_removeDataList
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_INT				nIndex,
+	FTM_ULONG			ulCount,
+	FTM_ULONG_PTR		pulDeletedCount
+);
+
+FTM_RET	FTOM_EP_removeDataListWithTime
+(
+	FTOM_EP_PTR 		pEP, 
+	FTM_ULONG			ulBegin,
+	FTM_ULONG			ulEnd,
+	FTM_ULONG_PTR		pulDeletedCount
+);
+
 FTM_RET FTOM_EP_setFloat
 (
 	FTOM_EP_PTR 	pEP, 
@@ -168,6 +205,9 @@ FTM_RET FTOM_EP_setFloat
 	FTM_DOUBLE 		fValue
 );
 
+/********************************************
+ * Trigger management operations
+ ********************************************/
 FTM_RET	FTOM_EP_getTriggerCount
 (
 	FTOM_EP_PTR 	pEP, 
@@ -179,15 +219,6 @@ FTM_RET	FTOM_EP_getTriggerAt
 	FTOM_EP_PTR 	pEP, 
 	FTM_ULONG 		ulIndex, 
 	FTM_CHAR_PTR	pTriggerID
-);
-
-FTM_RET FTOM_EP_getIDList
-(
-	FTM_EP_TYPE		xType,
-	FTM_CHAR_PTR	pDID,
-	FTM_CHAR		pEPID[][FTM_EPID_LEN+1],
-	FTM_ULONG 		ulMaxCount, 
-	FTM_ULONG_PTR 	pulCount
 );
 
 FTM_RET	FTOM_EP_setReportInterval
