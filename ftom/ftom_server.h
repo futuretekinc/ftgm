@@ -57,27 +57,36 @@ typedef	struct
 typedef	struct FTOM_SERVER_STRUCT
 {
 	FTOM_SERVER_CONFIG	xConfig;
-	pthread_t 			xProcessTCP;
-	pthread_t 			xProcessUDP;
-	pthread_t 			xProcessSM;
-	pthread_t 			xProcessPipe;
-	sem_t				xLock;
+
 	FTM_BOOL			bStop;	
-	FTM_LIST			xSessionList;
-	FTM_INT				hSocket;
-	FTM_INT				hSocketUDP;
 	FTOM_SERVICE_ID		xServiceID;
 	FTOM_SERVICE_CB		fServiceCB;
 	FTM_ULONG			ulReqID;
 
 	struct
 	{
-		pthread_t	xThread;
-		sem_t		xSlot;
-		sem_t		xLock;
-		FTM_LIST	xSubscriberList;
-		FTM_INT		hSocket;
-	}	xPublisher;
+		pthread_t 		xThread;
+		sem_t			xLock;
+		FTM_INT			hSocket;
+		FTM_LIST		xSessionList;
+	}	xTCP;
+
+	struct
+	{
+		pthread_t 		xThread;
+		FTM_INT			hSocket;
+		FTM_LIST		xClientList;
+	}	xUDP;
+
+	struct
+	{
+		pthread_t 		xThread;
+	}	xPIPE;
+
+	struct
+	{
+		pthread_t 		xThread;
+	}	xSM;
 }	FTOM_SERVER, _PTR_ FTOM_SERVER_PTR;
 
 FTM_RET	FTOM_SERVER_create

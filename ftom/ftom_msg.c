@@ -809,6 +809,52 @@ FTM_RET	FTOM_MSG_SNMPC_createSetEPData
 
 	return	FTM_RET_OK;
 }
+/********************************************************************************
+ * Network management
+ ********************************************************************************/
+FTM_RET	FTOM_MSG_createNetConnected
+(
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+)
+{
+	FTOM_MSG_NET_STAT_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_NET_STAT);
+
+	pMsg = (FTOM_MSG_NET_STAT_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_NET_STAT;
+	pMsg->bConnected = FTM_TRUE;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MSG_createNetDisconnected
+(
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+)
+{
+	FTOM_MSG_NET_STAT_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_NET_STAT);
+
+	pMsg = (FTOM_MSG_NET_STAT_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_NET_STAT;
+	pMsg->bConnected = FTM_FALSE;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
 
 /********************************************************************************
  * Requested from the thing+

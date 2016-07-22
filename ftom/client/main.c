@@ -19,6 +19,14 @@ extern FTM_SHELL_CMD	_cmds[];
 extern FTM_ULONG		ulCmds;
 
 extern	char *		program_invocation_short_name;
+
+static 
+FTM_RET	FTOM_CLIENT_subscriber
+(
+	FTOM_MSG_PTR	pMsg,
+	FTM_VOID_PTR	pData
+);
+
 static
 FTM_VOID	FTOM_CLIENT_usage
 (
@@ -84,10 +92,7 @@ FTM_INT main(int nArgc , char *pArgv[])
 		MESSAGE("Failed to create config!\n");	
 	}
 
-	if (ulDebugLevel != 0)
-	{
-		FTM_TRACE_setLevel(FTM_TRACE_MODULE_ALL, ulDebugLevel);
-	}
+	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_CLIENT,	FTM_TRUE, "CLIENT",	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
 	xRet = FTOM_CLIENT_NET_create((FTOM_CLIENT_NET_PTR _PTR_)&pClient);
 	if (xRet != FTM_RET_OK)
@@ -118,7 +123,8 @@ FTM_INT main(int nArgc , char *pArgv[])
 	}
 
 	FTOM_CLIENT_start(pClient);
-
+	FTOM_CLIENT_setNotifyCB(pClient, FTOM_CLIENT_subscriber, pClient);
+	 
 	FTM_SHELL_run(&xShell);
 	FTM_SHELL_final(&xShell);
 
@@ -128,6 +134,57 @@ finish:
 	FTM_MEM_final();
 
 	return	0;
+}
+
+FTM_RET	FTOM_CLIENT_subscriber
+(
+	FTOM_MSG_PTR	pBaseMsg,
+	FTM_VOID_PTR	pData
+)
+{
+	ASSERT(pBaseMsg != NULL);
+	ASSERT(pData != NULL);
+
+	switch(pBaseMsg->xType)
+	{
+	case	FTOM_MSG_TYPE_SEND_EP_STATUS:
+		{
+			FTOM_MSG_SEND_EP_STATUS_PTR pMsg = 	(FTOM_MSG_SEND_EP_STATUS_PTR)pBaseMsg;
+			TRACE("EP[%s] status is %s\n", pMsg->pEPID, pMsg->bStatus?"run":"stop");
+		}
+		break;
+
+	case	FTOM_MSG_TYPE_SEND_EP_DATA:
+		{
+			FTM_ULONG	i;
+			FTM_CHAR	pBuff[4096];
+			FTM_ULONG	ulLen = 0;
+			FTOM_MSG_SEND_EP_DATA_PTR pMsg = 	(FTOM_MSG_SEND_EP_DATA_PTR)pBaseMsg;
+
+
+			for(i = 0 ; i < pMsg->ulCount ; i++)
+			{
+				if (i == 0)
+				{
+					ulLen += sprintf(&pBuff[ulLen], "%s", FTM_EP_DATA_print(&pMsg->pData[i]));
+				}
+				else
+				{
+					ulLen += sprintf(&pBuff[ulLen], ", %s", FTM_EP_DATA_print(&pMsg->pData[i]));
+				}
+			}
+
+			TRACE("EP[%s] : %s\n", pMsg->pEPID, pBuff);
+		}
+		break;
+
+	default:
+		{
+			TRACE("Not supported messae[%08x] : Len = %lu\n", pBaseMsg->xType, pBaseMsg->ulLen);
+		}
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_VOID	FTOM_CLIENT_usage

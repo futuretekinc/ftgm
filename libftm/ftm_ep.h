@@ -378,5 +378,9 @@ FTM_RET	FTM_EP_DATA_snprint
 	FTM_EP_DATA_PTR pData
 );
 
+FTM_CHAR_PTR	FTM_EP_DATA_print
+(
+	FTM_EP_DATA_PTR pData
+);
 #endif
 

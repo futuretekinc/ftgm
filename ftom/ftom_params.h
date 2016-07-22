@@ -20,6 +20,23 @@ typedef	struct
 	FTM_RET				xRet;
 }	FTOM_RESP_PARAMS, _PTR_ FTOM_RESP_PARAMS_PTR;
 
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pHost[FTM_URL_LEN+1];
+	FTM_USHORT			usPort;
+}	FTOM_REQ_REGISTER_SUBSCRIBE_PARAMS, _PTR_ FTOM_REQ_REGISTER_SUBSCRIBE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTOM_RESP_REGISTER_SUBSCRIBE_PARAMS, _PTR_ FTOM_RESP_REGISTER_SUBSCRIBE_PARAMS_PTR;
+
 typedef	struct 
 {
 	FTM_ULONG			ulReqID;
@@ -652,6 +669,23 @@ typedef	struct
 	FTM_RET				xRet;
 	FTM_VALUE_TYPE		xType;
 }	FTOM_RESP_EP_DATA_TYPE_PARAMS, _PTR_ FTOM_RESP_EP_DATA_TYPE_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_CHAR			pIP[FTM_URL_LEN+1];
+	FTM_USHORT			usPort;
+}	FTOM_REQ_SET_NOTIFY_PARAMS, _PTR_ FTOM_REQ_SET_NOTIFY_PARAMS_PTR;
+
+typedef	struct
+{
+	FTM_ULONG			ulReqID;
+	FTOM_CMD			xCmd;
+	FTM_ULONG			ulLen;
+	FTM_RET				xRet;
+}	FTOM_RESP_SET_NOTIFY_PARAMS, _PTR_ FTOM_RESP_SET_NOTIFY_PARAMS_PTR;
 
 typedef	struct
 {

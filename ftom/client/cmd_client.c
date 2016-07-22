@@ -15,7 +15,6 @@ FTM_RET	FTOM_CLIENT_CMD_client
 {
 	ASSERT(pData != NULL);
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
-	FTM_RET	xRet;
 
 	if (nArgc == 1)
 	{

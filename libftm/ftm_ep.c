@@ -934,6 +934,16 @@ FTM_RET	FTM_EP_DATA_snprint
 	return	FTM_VALUE_snprint(pBuff, ulMaxLen, &pData->xValue);
 }
 
+FTM_CHAR_PTR	FTM_EP_DATA_print
+(
+	FTM_EP_DATA_PTR pData
+)
+{
+	ASSERT(pData != NULL);
+
+	return	FTM_VALUE_print(&pData->xValue);
+}
+
 static
 FTM_EP_TYPE_STRING	_typeString[] =
 {

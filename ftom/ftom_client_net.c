@@ -29,6 +29,12 @@ FTM_VOID_PTR FTOM_CLIENT_NET_threadMain
 	FTM_VOID_PTR pData
 );
 
+static 
+FTM_VOID_PTR FTOM_CLIENT_NET_threadNet
+(
+	FTM_VOID_PTR pData
+);
+
 static
 FTM_RET	FTOM_CLIENT_NET_TRANS_create
 (
@@ -68,6 +74,12 @@ FTM_INT FTOM_CLIENT_NET_TRANS_seeker
 	const FTM_VOID_PTR pIndicator
 );
 
+static
+FTM_RET	FTOM_CLIENT_NET_requestSubscriberRegistration
+(
+	FTOM_CLIENT_NET_PTR			pClient
+);
+
 FTM_RET	FTOM_CLIENT_NET_init
 (
 	FTOM_CLIENT_NET_PTR	pClient
@@ -83,7 +95,7 @@ FTM_RET	FTOM_CLIENT_NET_init
 	pClient->xCommon.fStop 				= (FTOM_CLIENT_STOP)FTOM_CLIENT_NET_stop;
 	pClient->xCommon.fLoadConfig		= (FTOM_CLIENT_LOAD_CONFIG)FTOM_CLIENT_NET_loadConfig;
 	pClient->xCommon.fSetConfig 		= (FTOM_CLIENT_SET_CONFIG)FTOM_CLIENT_NET_setConfig;
-	pClient->xCommon.fSetNotifyCB 		= NULL;
+	pClient->xCommon.fSetNotifyCB 		= (FTOM_CLIENT_SET_NOTIFY_CB)FTOM_CLIENT_NET_setNotifyCB;
 	pClient->xCommon.fRequest 			= (FTOM_CLIENT_REQUEST)FTOM_CLIENT_NET_request;	
 
 	strcpy(pClient->xConfig.xServer.pHost, FTOM_DEFAULT_SERVER_IP);
@@ -103,7 +115,7 @@ FTM_RET	FTOM_CLIENT_NET_init
 
 	FTM_LIST_setSeeker(&pClient->xTransList , FTOM_CLIENT_NET_TRANS_seeker);
 
-	xRet = FTM_MSGQ_create(&pClient->pMsgQ);
+	xRet = FTOM_MSGQ_create(&pClient->pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
 		MESSAGE("Can't create message queue.[%08lx]\n", xRet);	
@@ -141,7 +153,7 @@ FTM_RET	FTOM_CLIENT_NET_final
 		MESSAGE("Failed to finalize transaction list\n");
 	}
 
-	xRet = FTM_MSGQ_destroy(pClient->pMsgQ);
+	xRet = FTOM_MSGQ_destroy(&pClient->pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
 		MESSAGE("Failed to finaizlie message queue.\n");
@@ -259,9 +271,19 @@ FTM_RET	FTOM_CLIENT_NET_start
 		return	FTM_RET_ALREADY_RUNNING;
 	}
 
-	if (pthread_create(&pClient->xThread, NULL, FTOM_CLIENT_NET_threadMain, pClient) < 0)
+
+	pClient->bStop = FTM_FALSE;
+
+	if (pthread_create(&pClient->xThreadNet, NULL, FTOM_CLIENT_NET_threadNet, pClient) < 0)
 	{
-		return	FTM_RET_ERROR;	
+		pClient->bStop = FTM_TRUE;
+		return	FTM_RET_THREAD_CREATION_ERROR;
+	}
+
+	if (pthread_create(&pClient->xThreadMain, NULL, FTOM_CLIENT_NET_threadMain, pClient) < 0)
+	{
+		pClient->bStop = FTM_TRUE;
+		return	FTM_RET_THREAD_CREATION_ERROR;
 	}
 
 	return	FTM_RET_OK;
@@ -275,12 +297,77 @@ FTM_RET	FTOM_CLIENT_NET_stop
 	ASSERT(pClient != NULL);
 
 	pClient->bStop = FTM_TRUE;
-	pthread_join(pClient->xThread, NULL);
+	pthread_join(pClient->xThreadMain, NULL);
 
 	return	FTM_RET_OK;
 }
 
 FTM_VOID_PTR	FTOM_CLIENT_NET_threadMain
+(
+	FTM_VOID_PTR pData
+)
+{
+	FTOM_CLIENT_NET_PTR	pClient = (FTOM_CLIENT_NET_PTR)pData;
+	FTM_RET		xRet;
+	FTM_TIMER	xLoopTimer;
+	FTM_ULONG	ulLoopInterval;
+
+	FTM_TIMER_initS(&xLoopTimer, 1);
+
+	while(!pClient->bStop)
+	{
+		FTOM_MSG_PTR	pBaseMsg;
+
+		FTM_TIMER_remainMS(&xLoopTimer, &ulLoopInterval);
+
+		while (!pClient->bStop && (FTOM_MSGQ_timedPop(pClient->pMsgQ, ulLoopInterval, &pBaseMsg) == FTM_RET_OK))
+		{
+			switch(pBaseMsg->xType)
+			{
+			case	FTOM_MSG_TYPE_NET_STAT:
+				{
+					FTOM_MSG_NET_STAT_PTR	pMsg = (FTOM_MSG_NET_STAT_PTR)pBaseMsg;
+					if (pMsg->bConnected)
+					{
+						TRACE("Server connected!\n");
+						xRet = FTOM_CLIENT_NET_requestSubscriberRegistration(pClient);
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Failed to request subscriber registration!\n");	
+						}
+					}
+
+				}
+				break;
+
+			default:	
+				{
+					if (pClient->xCommon.fNotifyCB != NULL)
+					{
+						xRet = pClient->xCommon.fNotifyCB(pBaseMsg, pClient->xCommon.pNotifyData);	
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Failed to notify message processing!\n");	
+						}
+					}
+					else
+					{
+						ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Invalid Message Type[%08x]\n", pBaseMsg->xType);
+					}
+				}
+			}
+			FTOM_MSG_destroy(&pBaseMsg);
+		}
+
+		FTM_TIMER_addMS(&xLoopTimer, 1);
+	}
+
+	pthread_join(pClient->xThreadNet, NULL);
+
+	return	0;
+}
+
+FTM_VOID_PTR	FTOM_CLIENT_NET_threadNet
 (
 	FTM_VOID_PTR pData
 )
@@ -316,26 +403,24 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadMain
    	 	ERROR2(FTM_RET_ERROR, "Failed to set socket timeout!\n");
 	}
 
-	pClient->xServerAddr.sin_family		=AF_INET;
-	pClient->xServerAddr.sin_addr.s_addr= inet_addr(pClient->xConfig.xServer.pHost);
-	pClient->xServerAddr.sin_port 		= htons(pClient->xConfig.xServer.usPort);
+	pClient->xRemoteAddr.sin_family		= AF_INET;
+	pClient->xRemoteAddr.sin_addr.s_addr= inet_addr(pClient->xConfig.xServer.pHost);
+	pClient->xRemoteAddr.sin_port 		= htons(pClient->xConfig.xServer.usPort);
+
+	pClient->xLocalAddr.sin_family		= AF_INET;
+	pClient->xLocalAddr.sin_addr.s_addr	= inet_addr("127.0.0.1");
+	pClient->xLocalAddr.sin_port 		= 0;
 
 	TRACE("Client started.\n");
 
-	pClient->bStop = FTM_FALSE;
 	while(!pClient->bStop)
 	{
 		if (!pClient->bConnected)
 		{
 			FTM_INT	nRet;
-			struct sockaddr_in		xClientAddr;
-			socklen_t				xClientAddrLen = sizeof(struct sockaddr_in);
+			socklen_t		xLocalAddrLen = sizeof(struct sockaddr_in);
 
-			xClientAddr.sin_family 		= AF_INET;
-			xClientAddr.sin_addr.s_addr	= INADDR_ANY;
-			xClientAddr.sin_port 		= 0;
-
-			nRet = bind(pClient->hSock, (struct sockaddr *)&xClientAddr, xClientAddrLen);
+			nRet = bind(pClient->hSock, (struct sockaddr *)&pClient->xLocalAddr, xLocalAddrLen);
 			if (nRet < 0)
 			{
 				xRet = FTM_RET_COMM_ERRNO | errno;
@@ -344,9 +429,27 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadMain
 			}
 			else
 			{
-				getsockname(pClient->hSock, (struct sockaddr *)&xClientAddr, &xClientAddrLen);
-				TRACE("Client bind success.[%s:%d]\n", inet_ntoa(xClientAddr.sin_addr), ntohs(xClientAddr.sin_port));
+				FTOM_MSG_PTR	pNewMsg;
+
+				getsockname(pClient->hSock, (struct sockaddr *)&pClient->xLocalAddr, &xLocalAddrLen);
+				TRACE("Client bind success.[%s:%d]\n", inet_ntoa(pClient->xLocalAddr.sin_addr), ntohs(pClient->xLocalAddr.sin_port));
 				pClient->bConnected = FTM_TRUE;	
+				
+				xRet = FTOM_MSG_createNetConnected(&pNewMsg);
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR2(xRet, "Failed to create message!\n");	
+				}
+				else
+				{
+					xRet = FTOM_CLIENT_NET_sendMessage(pClient, pNewMsg);	
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed to send message!\n");
+						FTOM_MSG_destroy(&pNewMsg);
+					}
+				}
+
 			}
 		}
 
@@ -359,7 +462,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadMain
 			nRecvLen  = recvfrom(pClient->hSock, pRecvPkt, ulRecvBuffLen, 0, (struct sockaddr *)&xRecvAddr, (socklen_t *)&xAddrLen);
 			if (nRecvLen > 0)
 			{
-				if ((pClient->xServerAddr.sin_addr.s_addr == xRecvAddr.sin_addr.s_addr) && (pClient->xServerAddr.sin_port  == xRecvAddr.sin_port))
+				if (((xRecvAddr.sin_addr.s_addr == 0x0100007F) || (pClient->xRemoteAddr.sin_addr.s_addr == xRecvAddr.sin_addr.s_addr)) && (pClient->xRemoteAddr.sin_port  == xRecvAddr.sin_port))
 				{
 					FTOM_CLIENT_NET_TRANS_PTR	pTrans;
 
@@ -379,27 +482,35 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadMain
 
 						sem_post(&pTrans->xLock);
 					}
-					else
+					else 
 					{
-						FTOM_REQ_NOTIFY_PARAMS_PTR 	pReq = (FTOM_REQ_NOTIFY_PARAMS_PTR)pRecvPkt;
-						FTOM_RESP_NOTIFY_PARAMS		xResp;
-
-						if (pClient->xCommon.fNotifyCB != NULL)
+						switch(pRecvPkt->xCmd)
 						{
-							xRet = pClient->xCommon.fNotifyCB(&pReq->xMsg, pClient->xCommon.pNotifyData);	
-						}
-						else
-						{
-							WARN("Notify CB not assigned!\n");
-							xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
-						}
-			
-						xResp.ulReqID 	= pReq->ulReqID;
-						xResp.xCmd 		= pReq->xCmd;	
-						xResp.ulLen		= sizeof(FTOM_RESP_NOTIFY_PARAMS);
-						xResp.xRet 		= xRet;
+						case	FTOM_CMD_SERVER_NOTIFY:
+							{
+								FTOM_REQ_NOTIFY_PARAMS_PTR 	pReq = (FTOM_REQ_NOTIFY_PARAMS_PTR)pRecvPkt;
+								FTOM_MSG_PTR				pMsg;
 
-						send(pClient->hSock, &xResp, xResp.ulLen, 0);
+								xRet = FTOM_MSG_copy(&pReq->xMsg, &pMsg);
+								if (xRet == FTM_RET_OK)
+								{
+									xRet = FTOM_CLIENT_NET_sendMessage(pClient, pMsg);						
+									if (xRet != FTM_RET_OK)
+									{
+										ERROR2(xRet, "Failed to send message!\n");
+										FTOM_MSG_destroy(&pMsg);
+									}
+								}
+							}
+							break;
+
+						default:
+							{
+								xRet = FTM_RET_INVALID_MESSAGE_TYPE;
+
+								ERROR2(xRet, "Invalid message[%08x]\n", pRecvPkt->xCmd);
+							}
+						}
 					}
 				}
 				break;
@@ -408,11 +519,30 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadMain
 			{	
 				if (errno != EAGAIN)
 				{
+					FTOM_MSG_PTR	pNewMsg;
+
 					close(pClient->hSock);
 					pClient->bConnected = FTM_FALSE;
 		
+					xRet = FTOM_MSG_createNetDisconnected(&pNewMsg);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed to create message!\n");	
+					}
+					else
+					{
+						xRet = FTOM_CLIENT_NET_sendMessage(pClient, pNewMsg);	
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Failed to send message!\n");
+							FTOM_MSG_destroy(&pNewMsg);
+						}
+					}
+
 					xRet = FTM_RET_COMM_SOCKET_CLOSED;
 					ERROR2(xRet, "Failed to send packet[errno = %d]!\n", errno);
+
+
 					break;
 				}	
 				else
@@ -607,7 +737,7 @@ FTM_RET	FTOM_CLIENT_NET_TRANS_perform
 	FTM_RET		xRet;
 	FTM_INT		nSendLen;
 
-	nSendLen = sendto(pClient->hSock, pTrans->pReq, pTrans->ulReqLen, 0, (struct sockaddr *)&pClient->xServerAddr, sizeof(pClient->xServerAddr) );
+	nSendLen = sendto(pClient->hSock, pTrans->pReq, pTrans->ulReqLen, 0, (struct sockaddr *)&pClient->xRemoteAddr, sizeof(pClient->xRemoteAddr) );
 	if( nSendLen < 0)
 	{
 		xRet = FTM_RET_COMM_SEND_ERROR;
@@ -689,4 +819,54 @@ FTM_INT FTOM_CLIENT_NET_TRANS_seeker
 	return	((pTrans->pReq != NULL) && (pTrans->pReq->ulReqID == *pulReqID));
 }
 
+FTM_RET	FTOM_CLIENT_NET_requestSubscriberRegistration
+(
+	FTOM_CLIENT_NET_PTR			pClient
+)
+{
+	ASSERT(pClient != NULL);
 
+	if(pClient->bConnected)
+	{
+		FTOM_REQ_REGISTER_SUBSCRIBE_PARAMS	xParams;
+		
+		xParams.ulReqID = 0;
+		xParams.xCmd 	= FTOM_CMD_REGISTER_SUBSCRIBE;
+		xParams.ulLen 	= sizeof(FTOM_REQ_REGISTER_SUBSCRIBE_PARAMS);
+		strcpy(xParams.pHost, inet_ntoa(pClient->xLocalAddr.sin_addr));
+		xParams.usPort 	= ntohs(pClient->xLocalAddr.sin_port);
+
+		sendto(pClient->hSock, &xParams, sizeof(xParams), 0, (struct sockaddr *)&pClient->xRemoteAddr, sizeof(pClient->xRemoteAddr) );
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CLIENT_NET_setNotifyCB
+(
+	FTOM_CLIENT_NET_PTR			pClient,
+	FTOM_CLIENT_NOTIFY_CB		fNotifyCB,
+	FTM_VOID_PTR				pData
+)
+{
+	ASSERT(pClient != NULL);
+
+	pClient->xCommon.fNotifyCB 	= fNotifyCB;
+	pClient->xCommon.pNotifyData= pData;
+
+	FTOM_CLIENT_NET_requestSubscriberRegistration(pClient);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CLIENT_NET_sendMessage
+(
+	FTOM_CLIENT_NET_PTR		pClient,
+	FTOM_MSG_PTR			pMsg
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pMsg != NULL);
+
+	return	FTOM_MSGQ_push(pClient->pMsgQ, pMsg);
+}

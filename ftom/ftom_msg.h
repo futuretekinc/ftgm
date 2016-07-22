@@ -42,6 +42,9 @@ typedef	enum
 
 	FTOM_MSG_TYPE_SNMPC_GET_EP_DATA,
 	FTOM_MSG_TYPE_SNMPC_SET_EP_DATA,
+
+	FTOM_MSG_TYPE_NET_STAT,
+
 	FTOM_MSG_TYPE_MAX
 }	FTOM_MSG_TYPE, _PTR_ FTOM_MSG_TYPE_PTR;
 
@@ -500,6 +503,26 @@ FTM_RET	FTOM_MSG_SNMPC_createSetEPData
 	FTM_SNMP_OID_PTR	pOID,
 	FTM_ULONG			ulTimeout,
 	FTM_VALUE_PTR		pValue,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+);
+
+/************************************************
+ * Network management
+ ************************************************/
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_BOOL		bConnected;
+}	FTOM_MSG_NET_STAT, _PTR_ FTOM_MSG_NET_STAT_PTR;
+
+FTM_RET	FTOM_MSG_createNetConnected
+(
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+);
+
+FTM_RET	FTOM_MSG_createNetDisconnected
+(
 	FTOM_MSG_PTR _PTR_ 	ppMsg
 );
 
