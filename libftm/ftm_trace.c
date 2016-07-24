@@ -33,11 +33,29 @@ FTM_TRACE_CFG	_xConfig =
 
 	.pTraceInfos =
 	{
-		{	.bEnabled	=	FTM_FALSE,	.pName = "OBJECT",	.ulLevel = FTM_TRACE_LEVEL_ERROR, .xOut = FTM_TRACE_OUT_TERM	},
-		{	.bEnabled	=	FTM_FALSE,	.pName = "MEMORY", 	.ulLevel = FTM_TRACE_LEVEL_ERROR, .xOut = FTM_TRACE_OUT_TERM	},
-		{	.bEnabled	=	FTM_FALSE,	.pName = "LOGGER", 	.ulLevel = FTM_TRACE_LEVEL_ERROR, .xOut = FTM_TRACE_OUT_TERM	},
-		{	.bEnabled	=	FTM_FALSE,	.pName = "", 		.ulLevel = FTM_TRACE_LEVEL_ERROR, .xOut = FTM_TRACE_OUT_TERM	},
+		{	.xType	=	FTM_TRACE_MODULE_OBJECT,	.pName = "OBJECT",	.xLevel = FTM_TRACE_LEVEL_ERROR, 	.xOut = FTM_TRACE_OUT_TERM	},
+		{	.xType	=	FTM_TRACE_MODULE_MEMORY,	.pName = "MEMORY", 	.xLevel = FTM_TRACE_LEVEL_ERROR, 	.xOut = FTM_TRACE_OUT_TERM	},
+		{	.xType	=	FTM_TRACE_MODULE_LOG,		.pName = "LOG", 	.xLevel = FTM_TRACE_LEVEL_ERROR, 	.xOut = FTM_TRACE_OUT_TERM	},
+		{	.xType	=	FTM_TRACE_MODULE_UNKNOWN,	.pName = "", 		.xLevel = FTM_TRACE_LEVEL_DISABLE, 	.xOut = FTM_TRACE_OUT_TERM	},
 	},
+};
+
+static 
+struct 
+{
+	FTM_ULONG		ulLevel;
+	FTM_CHAR_PTR	pName;
+	FTM_CHAR_PTR	pFullName;
+} FTM_levelStrings[] =
+{
+	{ FTM_TRACE_LEVEL_DISABLE,	"OFF",	"OFF" },
+	{ FTM_TRACE_LEVEL_ALL, 		"ALL",	"ALL" },
+	{ FTM_TRACE_LEVEL_TRACE, 	"TRCE",	"TRACE"},
+	{ FTM_TRACE_LEVEL_DEBUG, 	"DBUG",	"DEBUG"},
+	{ FTM_TRACE_LEVEL_INFO, 	"INFO",	"INFORMATION"},
+	{ FTM_TRACE_LEVEL_WARN, 	"WARN",	"WARNING"}, 
+	{ FTM_TRACE_LEVEL_ERROR, 	"EROR",	"ERROR"},
+	{ FTM_TRACE_LEVEL_FATAL, 	"FATL",	"FATAL"},
 };
 
 FTM_RET	FTM_TRACE_loadConfig
@@ -66,6 +84,7 @@ FTM_RET	FTM_TRACE_loadConfig
 		FTM_CONFIG_ITEM_getItemString(&xSubSection, "prefix", _xConfig.xFile.pPrefix, sizeof(_xConfig.xFile.pPrefix) - 1);
 	}
 
+#if 0
 	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "modules", &xSubSection);
 	if (xRet == FTM_RET_OK)
 	{
@@ -131,7 +150,7 @@ FTM_RET	FTM_TRACE_loadConfig
 			}
 		}
 	}
-
+#endif
 	return	FTM_RET_OK;
 }
 
@@ -195,12 +214,12 @@ FTM_RET	FTM_TRACE_printConfig
 	MESSAGE("    %16s %16s %8s\n", "NAME", "LEVEL", "OUTPUT");
 	for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
 	{
-		if (pConfig->pTraceInfos[i].bEnabled)
+		if (pConfig->pTraceInfos[i].xType != FTM_TRACE_MODULE_UNKNOWN)
 		{
 			MESSAGE("%3d %16s %16s %8s\n", 
 				++nCount,
 				pConfig->pTraceInfos[i].pName, 
-				FTM_TRACE_LEVEL_print(pConfig->pTraceInfos[i].ulLevel, FTM_TRUE),
+				FTM_TRACE_LEVEL_print(pConfig->pTraceInfos[i].xLevel, FTM_TRUE),
 				FTM_TRACE_OUT_print(pConfig->pTraceInfos[i].xOut));
 		}
 	}
@@ -235,6 +254,27 @@ FTM_RET	FTM_TRACE_dumpPacket
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_TRACE_getType
+(
+	FTM_CHAR_PTR	pName,
+	FTM_TRACE_MODULE_TYPE_PTR	pType
+)
+{
+	FTM_INT	i;
+
+	for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
+	{
+		if ((_xConfig.pTraceInfos[i].pName[0] != 0)	&& (strcasecmp(_xConfig.pTraceInfos[i].pName, pName) == 0))
+		{
+			*pType = _xConfig.pTraceInfos[i].xType;	
+
+			return	FTM_RET_OK;
+		}
+	}
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
+}
+
 FTM_RET	FTM_TRACE_strToLevel
 (
 	FTM_CHAR_PTR	pString, 
@@ -247,6 +287,10 @@ FTM_RET	FTM_TRACE_strToLevel
 	if (strcasecmp(pString, "all") == 0)
 	{
 		*pulLevel = FTM_TRACE_LEVEL_ALL;	
+	}
+	else if ((strcasecmp(pString, "off") == 0) || strcasecmp(pString, "disable"))
+	{
+		*pulLevel = FTM_TRACE_LEVEL_DISABLE;	
 	}
 	else if (strcasecmp(pString, "trace") == 0)
 	{
@@ -292,165 +336,175 @@ FTM_RET	FTM_TRACE_strToLevel
 
 FTM_RET FTM_TRACE_setLevel
 (
-	FTM_ULONG	ulModule,
-	FTM_ULONG 	ulLevel
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_LEVEL			xLevel
 )
 {
-	if (ulModule < FTM_TRACE_MAX_MODULES)
+	FTM_RET			xRet;
+	FTM_TRACE_INFO	xInfo;
+
+	xRet = FTM_TRACE_getInfo(xType, &xInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		_xConfig.pTraceInfos[ulModule].ulLevel = ulLevel;
+		return	xRet;
 	}
-	else if (ulModule == FTM_TRACE_MAX_MODULES)
+
+	if (xInfo.xLevel != xLevel)
 	{
-		FTM_INT	i;
-		for(i = 0 ; i < FTM_TRACE_MAX_MODULES; i++)
-		{
-			_xConfig.pTraceInfos[i].ulLevel = ulLevel;
-		}
+		xInfo.xLevel = xLevel;
+
+		return	FTM_TRACE_setInfo(xType, &xInfo);
 	}
 
 	return	FTM_RET_OK;
 }
 FTM_RET	FTM_TRACE_getLevel
 (
-	FTM_ULONG	ulModule,
-	FTM_ULONG_PTR pulLevel
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_LEVEL_PTR		pLevel
 )
 {
-	if (ulModule < FTM_TRACE_MAX_MODULES)
+	FTM_RET	xRet;
+	FTM_TRACE_INFO	xInfo;
+
+	xRet = FTM_TRACE_getInfo(xType, &xInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		*pulLevel = _xConfig.pTraceInfos[ulModule].ulLevel;
-		return	FTM_RET_OK;
+		return	xRet;
 	}
 
-	return	FTM_RET_ERROR;
-}
-
-FTM_RET	FTM_TRACE_setModule
-(
-	FTM_ULONG	ulModule,
-	FTM_BOOL	bTraceOn
-)
-{
-	if (ulModule < FTM_TRACE_MAX_MODULES)
-	{
-		_xConfig.pTraceInfos[ulModule].bEnabled = bTraceOn;
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_TRACE_getModule
-(
-	FTM_ULONG		ulModule,
-	FTM_BOOL_PTR	pbTraceOn
-)
-{
-	ASSERT(pbTraceOn != NULL);
-
-	if (ulModule < FTM_TRACE_MAX_MODULES)
-	{
-		*pbTraceOn = _xConfig.pTraceInfos[ulModule].bEnabled;
-	}
-	else
-	{
-		*pbTraceOn = FTM_FALSE;	
-	}
+	*pLevel = xInfo.xLevel;
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_TRACE_getInfo
 (
-	FTM_ULONG		ulModule,
+	FTM_TRACE_MODULE_TYPE	xType,
 	FTM_TRACE_INFO_PTR	pInfo
 )
 {
 	ASSERT(pInfo != NULL);
+	
+	FTM_INT	i;
 
-	if (ulModule >= FTM_TRACE_MAX_MODULES)
+	for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
 	{
-		return	FTM_RET_ERROR;	
+		if (_xConfig.pTraceInfos[i].xType == xType)
+		{
+			memcpy(pInfo, &_xConfig.pTraceInfos[i], sizeof(FTM_TRACE_INFO));
+			return	FTM_RET_OK;	
+		}
 	}
 
-	memcpy(pInfo, &_xConfig.pTraceInfos[ulModule], sizeof(FTM_TRACE_INFO));
 
-	return	FTM_RET_OK;
+	return	FTM_RET_INVALID_TYPE;
 }
 
 FTM_RET	FTM_TRACE_setInfo
 (
-	FTM_ULONG		ulModule,
+	FTM_TRACE_MODULE_TYPE	xType,
 	FTM_TRACE_INFO_PTR	pInfo
 )
 {
 	ASSERT(pInfo != NULL);
 
-	if (ulModule >= FTM_TRACE_MAX_MODULES)
+	FTM_INT	i;
+
+	for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
 	{
-		return	FTM_RET_ERROR;	
+		if (_xConfig.pTraceInfos[i].xType == xType)
+		{
+			memcpy(&_xConfig.pTraceInfos[i], pInfo, sizeof(FTM_TRACE_INFO));
+			return	FTM_RET_OK;	
+		}
 	}
 
-	memcpy(&_xConfig.pTraceInfos[ulModule], pInfo, sizeof(FTM_TRACE_INFO));
 
-	return	FTM_RET_OK;
+	for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
+	{
+		if (_xConfig.pTraceInfos[i].xType == FTM_TRACE_MODULE_UNKNOWN)
+		{
+			memcpy(&_xConfig.pTraceInfos[i], pInfo, sizeof(FTM_TRACE_INFO));
+			return	FTM_RET_OK;	
+		}
+	}
+
+	return	FTM_RET_INVALID_TYPE;
 }
 
 FTM_RET	FTM_TRACE_setInfo2
 (
-	FTM_ULONG		ulModule,
-	FTM_BOOL		bEnabled,
-	FTM_CHAR_PTR	pName,
-	FTM_ULONG		ulLevel,
-	FTM_TRACE_OUT	xOut
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_CHAR_PTR			pName,
+	FTM_TRACE_LEVEL			xLevel,
+	FTM_TRACE_OUT			xOut
 )
 {
 	ASSERT(pName != NULL);
 
-	if (ulModule >= FTM_TRACE_MAX_MODULES)
+	FTM_TRACE_INFO	xInfo;
+
+	memset(&xInfo, 0, sizeof(FTM_TRACE_INFO));
+
+	xInfo.xType 	= xType;
+	strncpy(xInfo.pName, pName, FTM_NAME_LEN);
+	xInfo.xLevel	= xLevel;
+	xInfo.xOut		= xOut;
+
+	return	FTM_TRACE_setInfo(xType, &xInfo);
+}
+
+FTM_RET	FTM_TRACE_strToOut
+(
+	FTM_CHAR_PTR		pString,
+	FTM_TRACE_OUT_PTR	pxOut
+)
+{
+	if (strcasecmp(pString, "TERM") == 0)
 	{
-		return	FTM_RET_ERROR;	
+		*pxOut = FTM_TRACE_OUT_TERM;	
 	}
-
-	memset(&_xConfig.pTraceInfos[ulModule], 0, sizeof(FTM_TRACE_INFO));
-
-	_xConfig.pTraceInfos[ulModule].bEnabled = bEnabled;
-	_xConfig.pTraceInfos[ulModule].ulLevel	= ulLevel;
-	_xConfig.pTraceInfos[ulModule].xOut		= xOut;
-	strncpy(_xConfig.pTraceInfos[ulModule].pName, pName, FTM_NAME_LEN);
+	else if (strcasecmp(pString, "FILE") == 0)
+	{
+		*pxOut = FTM_TRACE_OUT_FILE;	
+	}
+	else if (strcasecmp(pString, "SYSLOG") == 0)
+	{
+		*pxOut = FTM_TRACE_OUT_SYSLOG;	
+	}
+	else if (strcasecmp(pString, "USER") == 0)
+	{
+		*pxOut = FTM_TRACE_OUT_USER;	
+	}
+	else
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRACE_getID
-(
-	FTM_CHAR_PTR	pName,
-	FTM_ULONG_PTR	pulID
-)
-{
-	FTM_INT	i;
-
-	for(i = 0 ; i < FTM_TRACE_MAX_MODULES; i++)
-	{
-		if (strcasecmp(pName, _xConfig.pTraceInfos[i].pName) == 0)
-		{
-			*pulID = i;
-			return	FTM_RET_OK;
-		}
-	}
-
-	return	FTM_RET_OBJECT_NOT_FOUND;
-}
-
 FTM_RET	FTM_TRACE_setOut
 (
-	FTM_ULONG		ulModule,
+	FTM_TRACE_MODULE_TYPE	xType,
 	FTM_TRACE_OUT 	xOut
 )
 {
-	if (ulModule < FTM_TRACE_MAX_MODULES)
+	FTM_RET			xRet;
+	FTM_TRACE_INFO	xInfo;
+
+	xRet = FTM_TRACE_getInfo(xType, &xInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		_xConfig.pTraceInfos[ulModule].xOut = xOut;
+		return	xRet;
+	}
+	
+	if (xInfo.xOut != xOut)
+	{
+		xInfo.xOut = xOut;
+
+		return	FTM_TRACE_setInfo(xType, &xInfo);
 	}
 
 	return	FTM_RET_OK;
@@ -458,8 +512,8 @@ FTM_RET	FTM_TRACE_setOut
 
 FTM_RET	FTM_TRACE_out
 (
-	FTM_ULONG		ulModule,
-	FTM_ULONG		ulLevel,
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_LEVEL	xLevel,
 	const char *	pFunction,
 	FTM_INT			nLine,
 	FTM_INT			bTimeInfo,
@@ -471,16 +525,19 @@ FTM_RET	FTM_TRACE_out
 	static	FTM_INT	nOutputLine = 0;
     va_list 		argptr;
 	time_t			xTime;
+	FTM_RET			xRet;
+	FTM_TRACE_INFO	xInfo;
 	FTM_INT			nLen = 0;
 	FTM_CHAR		szBuff[2048];
 	FTM_CHAR		szTime[32];
 
-	if (ulModule >= FTM_TRACE_MAX_MODULES)
+	xRet = FTM_TRACE_getInfo(xType, &xInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_OK;	
+		return	xRet;	
 	}
 
-	if ((ulLevel < _xConfig.pTraceInfos[ulModule].ulLevel) || (!_xConfig.pTraceInfos[ulModule].bEnabled))
+	if ((xInfo.xLevel == FTM_TRACE_LEVEL_DISABLE) || (xLevel > xInfo.xLevel))
 	{
 		return	FTM_RET_OK;
 	}
@@ -500,11 +557,6 @@ FTM_RET	FTM_TRACE_out
 		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s]", szTime);
 	}
 
-	if (ulLevel != FTM_TRACE_LEVEL_MESSAGE)
-	{
-		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%4s] - ", FTM_TRACE_LEVEL_print(ulLevel, FTM_FALSE));
-	}
-
 	if (bFunctionInfo || (_xConfig.bLine && (pFunction != NULL)))
 	{
 		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%s[%04d] - ", pFunction, nLine);
@@ -514,7 +566,7 @@ FTM_RET	FTM_TRACE_out
 
 	szBuff[nLen] = '\0';
 
-	switch(_xConfig.pTraceInfos[ulModule].xOut)
+	switch(xInfo.xOut)
 	{
 	case	FTM_TRACE_OUT_FILE:
 		{
@@ -539,8 +591,8 @@ FTM_RET	FTM_TRACE_out
 
 FTM_RET	FTM_TRACE_out2
 (
-	FTM_ULONG			ulModule,
-	FTM_ULONG			ulLevel,
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_LEVEL			xLevel,
 	const char *		pFunction,
 	FTM_INT				nLine,
 	FTM_RET				xRet,
@@ -555,13 +607,15 @@ FTM_RET	FTM_TRACE_out2
 	FTM_CHAR		szBuff[2048];
 	FTM_CHAR		szTime[32];
 	FTM_BOOL		bFunctionInfo = FTM_FALSE;
+	FTM_TRACE_INFO	xInfo;
 
-	if (ulModule >= FTM_TRACE_MAX_MODULES)
+	xRet = FTM_TRACE_getInfo(xType, &xInfo);
+	if (xRet != FTM_RET_OK)
 	{
-		return	FTM_RET_OK;	
+		return	xRet;	
 	}
 
-	if ((ulLevel < _xConfig.pTraceInfos[ulModule].ulLevel) || (!_xConfig.pTraceInfos[ulModule].bEnabled))
+	if ((xInfo.xLevel == FTM_TRACE_LEVEL_DISABLE) || (xLevel > xInfo.xLevel))
 	{
 		return	FTM_RET_OK;
 	}
@@ -581,11 +635,6 @@ FTM_RET	FTM_TRACE_out2
 		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s]", szTime);
 	}
 
-	if (ulLevel != FTM_TRACE_LEVEL_MESSAGE)
-	{
-		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%4s] - ", FTM_TRACE_LEVEL_print(ulLevel, FTM_FALSE));
-	}
-
 	if (bFunctionInfo || (_xConfig.bLine && (pFunction != NULL)))
 	{
 		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%s[%04d] - ", pFunction, nLine);
@@ -595,7 +644,7 @@ FTM_RET	FTM_TRACE_out2
 
 	szBuff[nLen] = '\0';
 
-	switch(_xConfig.pTraceInfos[ulModule].xOut)
+	switch(xInfo.xOut)
 	{
 	case	FTM_TRACE_OUT_FILE:
 		{
@@ -658,27 +707,131 @@ FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_P
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRACE_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_RET	FTM_TRACE_shellCmd
+(
+	struct FTM_SHELL_STRUCT _PTR_ pShell, 
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR 	pData
+)
 {
+	FTM_RET	xRet;
+	FTM_INT	i;
 
+	switch(nArgc)
+	{
+	case	1:
+		{
+			FTM_INT	nCount = 0;
+
+			fprintf(stdout, "# Trace Configuration\n");
+			fprintf(stdout, "     %16s %8s %8s\n", "NAME", "LEVEL", "OUTPUT");
+			for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
+			{
+				if (_xConfig.pTraceInfos[i].pName[0] != 0)
+				{
+					fprintf(stdout, "%4d %12s(%2lu) %8s %8s\n", 
+						++nCount, 
+						_xConfig.pTraceInfos[i].pName, 
+						_xConfig.pTraceInfos[i].xType, 
+						FTM_TRACE_LEVEL_print(_xConfig.pTraceInfos[i].xLevel, FTM_TRUE),
+						FTM_TRACE_OUT_print(_xConfig.pTraceInfos[i].xOut));
+				}
+			}
+
+			fprintf(stdout, "# Display Options\n");
+			fprintf(stdout, "%16s : %s\n", "Index", _xConfig.bShowIndex?"Enabled":"Disabled");
+			fprintf(stdout, "%16s : %s\n", "Time",  _xConfig.bTimeInfo?"Enabled":"Disabled");
+			fprintf(stdout, "%16s : %s\n", "Lene",  _xConfig.bLine?"Enabled":"Disabled");
+		}
+		break;
+
+	case	3:
+		{
+			
+			FTM_TRACE_INFO		xInfo;
+			FTM_TRACE_LEVEL		xOldLevel, xNewLevel;
+			FTM_TRACE_OUT		xOldOut, xNewOut;
+
+			xRet = FTM_TRACE_getInfoWithName(pArgv[1], &xInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				fprintf(stdout, "Can't found module[%s].\n"	, pArgv[1]);
+				break;
+			}
+
+			xRet = FTM_TRACE_strToLevel(pArgv[2], &xNewLevel);
+			if (xRet == FTM_RET_OK)
+			{
+				xOldLevel = xInfo.xLevel;
+				xInfo.xLevel = xNewLevel;
+
+				xRet = FTM_TRACE_setInfo(xInfo.xType, &xInfo);
+				if (xRet == FTM_RET_OK)
+				{
+					fprintf(stdout, "The module[%s] trace level was changed[%s -> %s].\n", 
+						pArgv[1], FTM_TRACE_LEVEL_print(xOldLevel, FTM_FALSE),FTM_TRACE_LEVEL_print(xNewLevel, FTM_FALSE));
+				}
+				else
+				{
+					fprintf(stdout, "Failed to change module[%s] trace level.\n", pArgv[1]);
+				}
+
+				break;
+			}
+			
+			xRet = FTM_TRACE_strToOut(pArgv[2], &xNewOut);
+			if (xRet == FTM_RET_OK)
+			{
+				xOldOut = xInfo.xOut;
+				xInfo.xOut = xNewOut;
+
+				xRet = FTM_TRACE_setInfo(xInfo.xType, &xInfo);
+				if (xRet == FTM_RET_OK)
+				{
+					fprintf(stdout, "The module[%s] output was changed[%s -> %s].\n", 
+						pArgv[1], FTM_TRACE_OUT_print(xOldOut),FTM_TRACE_OUT_print(xNewOut));
+				}
+				else
+				{
+					fprintf(stdout, "Failed to change module[%s] output.\n", pArgv[1]);
+				}
+
+
+				break;
+			}
+
+			fprintf(stdout, "Unknown trace command[%s]\n", pArgv[2]);
+			
+		}
+		break;
+	}
 	return	FTM_RET_OK;
 }
 
-struct 
+FTM_RET	FTM_TRACE_getInfoWithName
+(
+	FTM_CHAR_PTR	pName,
+	FTM_TRACE_INFO_PTR	pInfo
+)
 {
-	FTM_ULONG		ulLevel;
-	FTM_CHAR_PTR	pName;
-	FTM_CHAR_PTR	pFullName;
-} FTM_levelStrings[] =
-{
-	{ FTM_TRACE_LEVEL_ALL, 		"ALL",	"ALL" },
-	{ FTM_TRACE_LEVEL_TRACE, 	"TRCE",	"TRACE"},
-	{ FTM_TRACE_LEVEL_DEBUG, 	"DBUG",	"DEBUG"},
-	{ FTM_TRACE_LEVEL_INFO, 	"INFO",	"INFORMATION"},
-	{ FTM_TRACE_LEVEL_WARN, 	"WARN",	"WARNING"}, 
-	{ FTM_TRACE_LEVEL_ERROR, 	"EROR",	"ERROR"},
-	{ FTM_TRACE_LEVEL_FATAL, 	"FATL",	"FATAL"},
-};
+	FTM_INT	i;
+
+	for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
+	{
+		if (_xConfig.pTraceInfos[i].xType != FTM_TRACE_MODULE_UNKNOWN)
+		{
+			if (strcasecmp(_xConfig.pTraceInfos[i].pName, pName) == 0)
+			{
+				memcpy(pInfo, &_xConfig.pTraceInfos[i], sizeof(FTM_TRACE_INFO));	
+				return	FTM_RET_OK;
+			
+			}
+		}
+	}
+
+	return	FTM_RET_INVALID_ARGUMENTS;
+}
 
 FTM_CHAR_PTR	FTM_TRACE_LEVEL_print
 (

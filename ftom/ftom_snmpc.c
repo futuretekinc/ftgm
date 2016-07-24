@@ -290,7 +290,7 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 							}
 							else
 							{
-								xRet = FTOM_MSG_EP_createInsertData(&xData, 1, &pNewMsg);
+								xRet = FTOM_MSG_createEPData(pMsg->pEPID, &xData, 1, &pNewMsg);
 								if (xRet != FTM_RET_OK) 
 								{ 
 									ERROR2(xRet, "Failed to create message!\n");	

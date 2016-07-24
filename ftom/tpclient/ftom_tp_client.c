@@ -54,9 +54,9 @@ FTOM_MQTT_CLIENT_CBSET	xMQTTCBSet =
 	.fPublish 			= FTOM_MQTT_CLIENT_TPGW_publishCB,
 	.fMessage 			= FTOM_MQTT_CLIENT_TPGW_messageCB,
 	.fSubscribe 		= FTOM_MQTT_CLIENT_TPGW_subscribeCB,
-	.fReportGWStatus	= FTOM_MQTT_CLIENT_TPGW_reportGWStatus,
-	.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
-	.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
+	.fGWStatus			= FTOM_MQTT_CLIENT_TPGW_GWStatus,
+	.fEPStatus			= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
+	.fEPData			= FTOM_MQTT_CLIENT_TPGW_publishEPData,
 	.fTPResponse		= FTOM_MQTT_CLIENT_TPGW_response,
 };
 
@@ -73,7 +73,7 @@ FTOM_TP_CLIENT_CONFIG	xTPClientDefaultConfig =
 	.xFTOMC=
 	{
 		.pHost = "127.0.0.1",
-		.usPort = 8889
+		.usPort = 8888
 	},
 
 	.xSubscriber =
@@ -932,24 +932,24 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 				}
 				break;
 
-			case	FTOM_MSG_TYPE_REPORT_GW_STATUS:
+			case	FTOM_MSG_TYPE_GW_STATUS:
 				{
-					FTOM_MSG_REPORT_GW_STATUS_PTR	pMsg = (FTOM_MSG_REPORT_GW_STATUS_PTR)pBaseMsg;
+					FTOM_MSG_GW_STATUS_PTR	pMsg = (FTOM_MSG_GW_STATUS_PTR)pBaseMsg;
 
 					FTOM_TP_CLIENT_reportGWStatus(pClient, pMsg->pGatewayID, pMsg->bStatus, pMsg->ulTimeout);
 				}
 				break;
 
-			case	FTOM_MSG_TYPE_SEND_EP_STATUS:
+			case	FTOM_MSG_TYPE_EP_STATUS:
 				{
-					FTOM_MSG_SEND_EP_STATUS_PTR	pMsg = (FTOM_MSG_SEND_EP_STATUS_PTR)pBaseMsg;
+					FTOM_MSG_EP_STATUS_PTR	pMsg = (FTOM_MSG_EP_STATUS_PTR)pBaseMsg;
 
 					FTOM_TP_CLIENT_sendEPStatus(pClient, pMsg->pEPID, pMsg->bStatus, pMsg->ulTimeout);
 				}
 				break;
-			case	FTOM_MSG_TYPE_SEND_EP_DATA:
+			case	FTOM_MSG_TYPE_EP_DATA:
 				{
-					FTOM_MSG_SEND_EP_DATA_PTR	pMsg = (FTOM_MSG_SEND_EP_DATA_PTR)pBaseMsg;
+					FTOM_MSG_EP_DATA_PTR	pMsg = (FTOM_MSG_EP_DATA_PTR)pBaseMsg;
 
 					FTOM_TP_CLIENT_sendEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
 				}
@@ -1370,18 +1370,18 @@ FTM_RET	FTOM_TP_CLIENT_controlActuator
 
 FTM_RET	FTOM_TP_CLIENT_notifyCB
 (
-	FTOM_MSG_PTR	pMsg,
+	FTOM_MSG_PTR	pBaseMsg,
 	FTM_VOID_PTR	pData
 )
 {
-	ASSERT(pMsg != NULL);
+	ASSERT(pBaseMsg != NULL);
 	ASSERT(pData != NULL);
 
 	FTM_RET				xRet;
 	FTOM_TP_CLIENT_PTR	pClient = (FTOM_TP_CLIENT_PTR)pData;
 	FTOM_MSG_PTR		pNewMsg = NULL;
 
-	xRet = FTOM_MSG_copy(pMsg, &pNewMsg);
+	xRet = FTOM_MSG_copy(pBaseMsg, &pNewMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to copy message!\n");

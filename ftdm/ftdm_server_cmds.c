@@ -297,10 +297,10 @@ FTM_RET FTDMS_SHELL_CMD_trace
 
 	case	4:
 		{
-			FTM_RET		xRet;
-			FTM_ULONG	ulModule = 0;
+			FTM_RET					xRet;
+			FTM_TRACE_MODULE_TYPE	xType;
 
-			xRet = FTM_TRACE_getID(pArgv[1], &ulModule);
+			xRet = FTM_TRACE_getType(pArgv[1], &xType);
 			if (xRet != FTM_RET_OK)
 			{
 				MESSAGE("Invalid module name[%s]!\n", pArgv[1]);
@@ -318,7 +318,7 @@ FTM_RET FTDMS_SHELL_CMD_trace
 					}
 					else
 					{
-						FTM_TRACE_setLevel(ulModule, ulLevel);
+						FTM_TRACE_setLevel(xType, ulLevel);
 					}
 				}
 			}

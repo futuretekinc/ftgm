@@ -67,9 +67,9 @@ FTM_RET	FTOM_onQuit
 );
 
 static 
-FTM_RET	FTOM_onReportGWStatus
+FTM_RET	FTOM_onGWStatus
 (
-	FTOM_MSG_REPORT_GW_STATUS_PTR pMsg,
+	FTOM_MSG_GW_STATUS_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
 
@@ -88,23 +88,16 @@ FTM_RET	FTOM_onEPCtrl
 );
 
 static 
-FTM_RET FTOM_onAddEPData
+FTM_RET	FTOM_onEPStatus
 (
-	FTOM_MSG_ADD_EP_DATA_PTR	pMsg,
+	FTOM_MSG_EP_STATUS_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
 
 static 
-FTM_RET	FTOM_onSendEPStatus
+FTM_RET	FTOM_onEPData
 (
-	FTOM_MSG_SEND_EP_STATUS_PTR pMsg,
-	FTM_VOID_PTR		pData
-);
-
-static 
-FTM_RET	FTOM_onSendEPData
-(
-	FTOM_MSG_SEND_EP_DATA_PTR pMsg,
+	FTOM_MSG_EP_DATA_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
 
@@ -272,10 +265,9 @@ FTM_RET	FTOM_init
 	bStop = FTM_TRUE;
 
 	onMessage[FTOM_MSG_TYPE_QUIT] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onQuit;
-	onMessage[FTOM_MSG_TYPE_REPORT_GW_STATUS]=(FTOM_ON_MESSAGE_CALLBACK)FTOM_onReportGWStatus;
-	onMessage[FTOM_MSG_TYPE_ADD_EP_DATA] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onAddEPData;
-	onMessage[FTOM_MSG_TYPE_SEND_EP_STATUS] = (FTOM_ON_MESSAGE_CALLBACK)FTOM_onSendEPStatus;
-	onMessage[FTOM_MSG_TYPE_SEND_EP_DATA] 	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onSendEPData;
+	onMessage[FTOM_MSG_TYPE_GW_STATUS]		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onGWStatus;
+	onMessage[FTOM_MSG_TYPE_EP_STATUS] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPStatus;
+	onMessage[FTOM_MSG_TYPE_EP_DATA] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPData;
 	onMessage[FTOM_MSG_TYPE_TIME_SYNC] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onTimeSync;
 	onMessage[FTOM_MSG_TYPE_EP_CTRL] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPCtrl;
 	onMessage[FTOM_MSG_TYPE_RULE] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onRule;
@@ -1022,32 +1014,6 @@ FTM_RET	FTOM_onTimeSync
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_onAddEPData
-(
-	FTOM_MSG_ADD_EP_DATA_PTR	pMsg,
-	FTM_VOID_PTR		pData
-)
-{
-	ASSERT(pMsg != NULL);
-
-	FTM_RET		xRet;
-	FTM_CHAR	pBuff[64];
-	FTOM_SERVICE_PTR	pService;
-
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;
-	}
-
-	FTM_EP_DATA_snprint(pBuff, sizeof(pBuff), &pMsg->xData);
-
-	FTOM_TRIGGER_updateEP(pMsg->pEPID, &pMsg->xData);
-	FTOM_DMC_EP_DATA_add(pService->pData, pMsg->pEPID, &pMsg->xData);
-
-	return	FTM_RET_OK;
-}
-
 FTM_RET	FTOM_onEPCtrl
 (
 	FTOM_MSG_EP_CTRL_PTR	pMsg,
@@ -1080,9 +1046,9 @@ FTM_RET	FTOM_onEPCtrl
 /**********************************************************************
  * Gateway functions
  **********************************************************************/
-FTM_RET	FTOM_onReportGWStatus
+FTM_RET	FTOM_onGWStatus
 (
-	FTOM_MSG_REPORT_GW_STATUS_PTR pMsg,
+	FTOM_MSG_GW_STATUS_PTR pMsg,
 	FTM_VOID_PTR		pData
 )
 {
@@ -1120,9 +1086,9 @@ FTM_RET	FTOM_onReportGWStatus
 	return	pService->fSendMessage(pService->pData, pNewMsg);
 }
 
-FTM_RET	FTOM_onSendEPStatus
+FTM_RET	FTOM_onEPStatus
 (
-	FTOM_MSG_SEND_EP_STATUS_PTR pMsg,
+	FTOM_MSG_EP_STATUS_PTR pMsg,
 	FTM_VOID_PTR		pData
 )
 {
@@ -1175,9 +1141,9 @@ FTM_RET	FTOM_onSendEPStatus
 	return	xRet;
 }
 
-FTM_RET	FTOM_onSendEPData
+FTM_RET	FTOM_onEPData
 (
-	FTOM_MSG_SEND_EP_DATA_PTR pMsg,
+	FTOM_MSG_EP_DATA_PTR pMsg,
 	FTM_VOID_PTR		pData
 )
 {
@@ -1885,38 +1851,6 @@ FTM_RET	FTOM_callback
 	return	FTM_RET_OK;
 }
 
-/****************************************************************
- * Gateway management
- ****************************************************************/
-FTM_RET	FTOM_SYS_GW_reportStatus
-(
-	FTM_CHAR_PTR	pGatewayID,
-	FTM_BOOL		bStatus,
-	FTM_ULONG		ulTimeout
-)
-{
-	FTM_RET							xRet;
-	FTOM_MSG_REPORT_GW_STATUS_PTR	pMsg;
-
-	xRet = FTOM_MSG_createReportGWStatus(pGatewayID, bStatus, ulTimeout, &pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		WARN("Send EP data message creation failed.\n");
-		return	xRet;	
-	}
-
-
-	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet,"Message push error!\n");
-		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
-}
-
 /************************************************************
  *	Node management 
  ************************************************************/
@@ -1927,27 +1861,25 @@ FTM_RET	FTOM_DB_EP_addData
 	FTM_EP_DATA_PTR pData
 )
 {
+	ASSERT(pEPID != NULL);
 	ASSERT(pData != NULL);
 
-	FTM_RET						xRet;
-	FTOM_MSG_ADD_EP_DATA_PTR	pMsg;
+	FTM_RET			xRet;
+	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createAddEPData(pEPID, pData, &pMsg);
+	xRet = FTOM_MSG_createEPData(pEPID, pData, 1, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		WARN("Save EP data message creation failed.\n");
 		return	xRet;	
 	}
 
-	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
+	xRet = FTOM_SERVICE_sendMessage(FTOM_SERVICE_DMC, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet,"Message push error!\n");
-		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
-		return	xRet;
+		FTOM_MSG_destroy(&pMsg);	
 	}
-	
-	return	FTM_RET_OK;
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_SYS_EP_publishStatus
@@ -1957,10 +1889,10 @@ FTM_RET	FTOM_SYS_EP_publishStatus
 	FTM_ULONG		ulTimeout
 )
 {
-	FTM_RET						xRet;
-	FTOM_MSG_SEND_EP_STATUS_PTR	pMsg;
+	FTM_RET			xRet;
+	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createSendEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
+	xRet = FTOM_MSG_createEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		WARN("Send EP data message creation failed.\n");
@@ -1988,10 +1920,10 @@ FTM_RET	FTOM_SYS_EP_publishData
 {
 	ASSERT(pData != NULL);
 
-	FTM_RET						xRet;
-	FTOM_MSG_SEND_EP_DATA_PTR	pMsg;
+	FTM_RET			xRet;
+	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createSendEPData(pEPID, pData, ulCount, &pMsg);
+	xRet = FTOM_MSG_createEPData(pEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		WARN("Send EP data message creation failed.\n");

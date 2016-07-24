@@ -32,9 +32,6 @@ FTM_INT	main(FTM_INT	nArgc, FTM_CHAR_PTR pArgv[])
 
 	FTM_MEM_init();	
 
-	FTM_TRACE_setModule(FTOM_TRACE_MODULE_NODE, FTM_TRUE);
-	FTM_TRACE_setLevel(FTOM_TRACE_MODULE_NODE, FTM_TRACE_LEVEL_ALL);
-
 	while(pCmd->pName != NULL)
 	{
 		if (strcasecmp(pCmd->pName, pArgv[0]) == 0)

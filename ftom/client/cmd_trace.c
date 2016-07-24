@@ -12,30 +12,5 @@ FTM_RET	FTOM_CLIENT_CMD_trace
 	FTM_VOID_PTR 	pData
 )
 {
-	ASSERT(pData != NULL);
-
-	FTM_RET	xRet;
-
-	if (nArgc == 1)
-	{
-		FTM_TRACE_printConfig(NULL);
-	}
-	else if (nArgc == 3)
-	{
-		if(strcasecmp(pArgv[1], "level") == 0)
-		{
-			FTM_ULONG	ulLevel = 0;
-			xRet = FTM_TRACE_strToLevel(pArgv[2], &ulLevel);
-			if (xRet == FTM_RET_OK)
-			{
-				FTM_TRACE_setLevel(FTM_TRACE_MODULE_ALL, ulLevel);
-			}
-			else
-			{
-				MESSAGE("Failed to set trace level[%s]!\n", pArgv[2]);
-			}
-		}
-	}
-
-	return	FTM_RET_OK;
+	return	FTM_TRACE_shellCmd(pShell, nArgc, pArgv, pData);
 }

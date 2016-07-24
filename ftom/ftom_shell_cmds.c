@@ -902,72 +902,7 @@ FTM_RET	FTOM_SHELL_CMD_trace
 	FTM_VOID_PTR 	pData
 )
 {
-	FTM_RET	xRet;
-
-	switch(nArgc)
-	{
-	case	1:
-		{
-			FTM_INT	i;
-
-			MESSAGE("%16s %8s %8s %8s\n", "MODULE", "ENABLED", "LEVEL", "OUTMODE");
-			for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
-			{
-				FTM_TRACE_INFO	xInfo;
-
-				memset(&xInfo, 0, sizeof(xInfo));
-				xRet = FTM_TRACE_getInfo(i, &xInfo);
-				if (xRet == FTM_RET_OK)
-				{
-					if (xInfo.pName[0] != 0)
-					{
-						MESSAGE("%16s %8s %8s %8s\n", xInfo.pName, xInfo.bEnabled?"ON":"OFF", FTM_TRACE_LEVEL_print(xInfo.ulLevel, FTM_TRUE), FTM_TRACE_OUT_print(xInfo.xOut));	
-					}
-				}
-			}
-		}
-		break;
-
-	case	3:
-		{
-			FTM_BOOL	bEnabled = FTM_FALSE;
-
-			if (strcasecmp(pArgv[2], "on") == 0)
-			{
-				bEnabled = FTM_TRUE;
-			}
-			else if (strcasecmp(pArgv[2], "off") == 0)
-			{
-				bEnabled = FTM_FALSE;
-			}
-
-			if (strcasecmp(pArgv[1], "object") == 0)
-			{
-				FTM_TRACE_setModule(FTOM_TRACE_MODULE_NODE, bEnabled);	
-				FTM_TRACE_setModule(FTOM_TRACE_MODULE_EP, 	bEnabled);	
-				FTM_TRACE_setModule(FTOM_TRACE_MODULE_TRIGGER, bEnabled);	
-				FTM_TRACE_setModule(FTOM_TRACE_MODULE_ACTION, bEnabled);	
-				FTM_TRACE_setModule(FTOM_TRACE_MODULE_RULE,	bEnabled);	
-			}
-			else
-			{
-				FTM_ULONG		ulIndex;
-
-				xRet = FTM_TRACE_getID(pArgv[1], &ulIndex);
-				if (xRet == FTM_RET_OK)
-				{
-					FTM_TRACE_setModule(ulIndex, bEnabled);	
-				}
-				else
-				{
-					MESSAGE("%s module not found!\n", pArgv[1]);
-				}
-			}
-		}
-		break;
-	}
-
-	return	FTM_RET_OK;
+	return	FTM_TRACE_shellCmd(pShell, nArgc, pArgv, pData);
 }
 
 FTM_RET	FTOM_SHELL_CMD_server

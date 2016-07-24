@@ -18,27 +18,31 @@ typedef enum	FTM_TRACE_OUT_ENUM
 
 #define	FTM_TRACE_MAX_MODULES		256
 
-#define	FTM_TRACE_MODULE_OBJECT		0
-#define	FTM_TRACE_MODULE_MEMORY		1
-#define	FTM_TRACE_MODULE_LOG		2
+typedef	FTM_ULONG	FTM_TRACE_MODULE_TYPE, _PTR_ FTM_TRACE_MODULE_TYPE_PTR;
+typedef	FTM_ULONG	FTM_TRACE_LEVEL, _PTR_ FTM_TRACE_LEVEL_PTR;
+
+#define	FTM_TRACE_MODULE_UNKNOWN	0
+#define	FTM_TRACE_MODULE_OBJECT		1
+#define	FTM_TRACE_MODULE_MEMORY		2
+#define	FTM_TRACE_MODULE_LOG		3
 #define	FTM_TRACE_MODULE_ALL		FTM_TRACE_MAX_MODULES
 
-#define	FTM_TRACE_LEVEL_ALL			1
-#define	FTM_TRACE_LEVEL_TRACE		2
-#define	FTM_TRACE_LEVEL_DEBUG		3
+#define	FTM_TRACE_LEVEL_DISABLE		0
+#define	FTM_TRACE_LEVEL_FATAL		1
+#define	FTM_TRACE_LEVEL_ERROR		2
+#define	FTM_TRACE_LEVEL_WARN		3
 #define	FTM_TRACE_LEVEL_INFO		4
-#define	FTM_TRACE_LEVEL_WARN		5
-#define	FTM_TRACE_LEVEL_ERROR		6
-#define	FTM_TRACE_LEVEL_FATAL		7
-#define	FTM_TRACE_LEVEL_MESSAGE		31
+#define	FTM_TRACE_LEVEL_DEBUG		5
+#define	FTM_TRACE_LEVEL_TRACE		6
+#define	FTM_TRACE_LEVEL_ALL			15
 
 
 typedef struct FTM_TRACE_INFO_STRUCT
 {
-	FTM_BOOL			bEnabled;
-	FTM_CHAR			pName[FTM_NAME_LEN+1];
-	FTM_ULONG			ulLevel;
-	FTM_TRACE_OUT		xOut;
+	FTM_TRACE_MODULE_TYPE	xType;
+	FTM_CHAR				pName[FTM_NAME_LEN+1];
+	FTM_TRACE_LEVEL			xLevel;
+	FTM_TRACE_OUT			xOut;
 }	FTM_TRACE_INFO, _PTR_ FTM_TRACE_INFO_PTR;
 
 typedef	struct
@@ -75,55 +79,54 @@ FTM_RET	FTM_TRACE_printConfig
 	FTM_TRACE_CFG_PTR pCfg
 );
 
+FTM_RET	FTM_TRACE_getType
+(
+	FTM_CHAR_PTR	pString,
+	FTM_TRACE_MODULE_TYPE_PTR	pType
+);
+
 FTM_RET	FTM_TRACE_strToLevel
 (
 	FTM_CHAR_PTR	pString, 
-	FTM_ULONG_PTR pulLevel
+	FTM_TRACE_LEVEL_PTR	pLevel
 );
 
 FTM_RET	FTM_TRACE_setLevel
 (
-	FTM_ULONG		ulModule,
-	FTM_ULONG		ulLevel
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_LEVEL			xLevel
 );
 
 FTM_RET	FTM_TRACE_getLevel
 (
-	FTM_ULONG		ulModule,
-	FTM_ULONG_PTR	pulLevel
-);
-
-FTM_RET	FTM_TRACE_setModule
-(
-	FTM_ULONG	ulModule,
-	FTM_BOOL	bTraceOn
-);
-
-FTM_RET	FTM_TRACE_getModule
-(
-	FTM_ULONG		ulModule,
-	FTM_BOOL_PTR	pbEnabled
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_LEVEL_PTR		pLevel
 );
 
 FTM_RET	FTM_TRACE_getInfo
 (
-	FTM_ULONG		ulModule,
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_INFO_PTR		pInfo
+);
+
+FTM_RET	FTM_TRACE_getInfoWithName
+(
+	FTM_CHAR_PTR		pName,
 	FTM_TRACE_INFO_PTR	pInfo
 );
 
 FTM_RET	FTM_TRACE_setInfo
 (
-	FTM_ULONG		ulModule,
-	FTM_TRACE_INFO_PTR	pInfo
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_INFO_PTR		pInfo
 );
 
 FTM_RET	FTM_TRACE_setInfo2
 (
-	FTM_ULONG		ulModule,
-	FTM_BOOL		bEnabled,
-	FTM_CHAR_PTR	pName,
-	FTM_ULONG		ulLevel,
-	FTM_TRACE_OUT	xOut
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_CHAR_PTR			pName,
+	FTM_TRACE_LEVEL			xLevel,
+	FTM_TRACE_OUT			xOut
 );
 
 FTM_RET	FTM_TRACE_getID
@@ -138,12 +141,21 @@ FTM_RET	FTM_TRACE_setOut
 	FTM_TRACE_OUT 	xOut
 );
 
-FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR	szBuff);
+FTM_RET	FTM_TRACE_strToOut
+(
+	FTM_CHAR_PTR		pString,
+	FTM_TRACE_OUT_PTR	pxOut
+);
+
+FTM_RET	FTM_TRACE_printToTerm
+(
+	FTM_CHAR_PTR	szBuff
+);
 
 FTM_RET	FTM_TRACE_out
 (
-	FTM_ULONG		ulModule,
-	FTM_ULONG		ulLevel,
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_LEVEL	xLevel,
 	const char *	pFunction,
 	FTM_INT			nLine,
 	FTM_INT			bTimeInfo,
@@ -154,27 +166,35 @@ FTM_RET	FTM_TRACE_out
 
 FTM_RET	FTM_TRACE_out2
 (
-	FTM_ULONG		ulModule,
-	FTM_ULONG		ulLevel,
+	FTM_TRACE_MODULE_TYPE	xType,
+	FTM_TRACE_LEVEL	xLevel,
 	const char *	pFuncName,
 	FTM_INT			nLine,
 	FTM_RET			xRet,
 	const char *	pFormat,
 	...
 );
+
 FTM_CHAR_PTR	FTM_TRACE_LEVEL_print
 (
-	FTM_ULONG 	ulLevel,
-	FTM_BOOL	bFullName
+	FTM_TRACE_LEVEL	xLevel,
+	FTM_BOOL		bFullName
 );
 
-FTM_CHAR_PTR	FTM_TRACE_OUT_print(FTM_TRACE_OUT xOut);
+FTM_CHAR_PTR	FTM_TRACE_OUT_print
+(	
+	FTM_TRACE_OUT 	xOut
+);
 
-FTM_RET	FTM_TRACE_consoleCmd(FTM_INT nArgc, FTM_CHAR_PTR pArgv[]);
+struct FTM_SHELL_STRUCT;
 
-#define	__MODULE__	0xFFUL
-
-#define	ASSERT(x)	{ if (!(x)) FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, FTM_TRUE, "%s\n", #x); }
+FTM_RET	FTM_TRACE_shellCmd
+(
+	struct FTM_SHELL_STRUCT _PTR_ pShell, 
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[],
+	FTM_VOID_PTR 	pData
+);
 
 FTM_VOID	FTM_TRACE_packetDump
 (
@@ -182,6 +202,10 @@ FTM_VOID	FTM_TRACE_packetDump
 	FTM_BYTE_PTR	pPacket,
 	FTM_INT			nLen
 );
+
+#define	__MODULE__	0xFFUL
+
+#define	ASSERT(x)	{ if (!(x)) FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, FTM_TRUE, "%s\n", #x); }
 
 #define MESSAGE(format, ...) printf(format, ## __VA_ARGS__)
 

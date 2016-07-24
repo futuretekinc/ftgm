@@ -13,22 +13,22 @@
 
 static FTM_VOID_PTR FTOM_MQTT_CLIENT_process(FTM_VOID_PTR pData);
 
-static FTM_RET	FTOM_MQTT_CLIENT_onReportGWStatus
+static FTM_RET	FTOM_MQTT_CLIENT_onGWStatus
 (
 	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_REPORT_GW_STATUS_PTR	pMsg
+	FTOM_MSG_GW_STATUS_PTR	pMsg
 );
 
-static FTM_RET	FTOM_MQTT_CLIENT_onPublishEPStatus
+static FTM_RET	FTOM_MQTT_CLIENT_onEPStatus
 (
 	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_PUBLISH_EP_STATUS_PTR	pMsg
+	FTOM_MSG_EP_STATUS_PTR	pMsg
 );
 
-static FTM_RET	FTOM_MQTT_CLIENT_onPublishEPData
+static FTM_RET	FTOM_MQTT_CLIENT_onEPData
 (
 	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_PUBLISH_EP_DATA_PTR	pMsg
+	FTOM_MSG_EP_DATA_PTR	pMsg
 );
 
 static FTM_VOID_PTR FTOM_MQTT_CLIENT_connector
@@ -139,10 +139,10 @@ FTOM_MQTT_CLIENT_CBSET	xCBDefaultSet =
 	.fPublish 	= FTOM_MQTT_CLIENT_FT_publishCB,
 	.fMessage 	= FTOM_MQTT_CLIENT_FT_messageCB,
 	.fSubscribe = FTOM_MQTT_CLIENT_FT_subscribeCB,
-	.fReportGWStatus	= FTOM_MQTT_CLIENT_TPGW_reportGWStatus,
-	.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
-	.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
-	.fTPResponse		= FTOM_MQTT_CLIENT_TPGW_response,
+	.fGWStatus	= FTOM_MQTT_CLIENT_TPGW_GWStatus,
+	.fEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
+	.fEPData	= FTOM_MQTT_CLIENT_TPGW_publishEPData,
+	.fTPResponse= FTOM_MQTT_CLIENT_TPGW_response,
 };
 #endif
 static 	FTM_ULONG	ulClientInstance = 0;
@@ -368,13 +368,6 @@ FTM_RET	FTOM_MQTT_CLIENT_notify
 
 	switch(pMsg->xType)
 	{
-	case	FTOM_MSG_TYPE_SEND_EP_DATA:
-		{	
-			
-			//FTOM_MQTT_CLIENT_onSendEPData(pClient, (FTOM_MSG_SEND_EP_DATA_PTR)pMsg);
-		}
-		break;
-
 	default:
 		{
 			ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Not supported message[%08x]!\n", pMsg->xType);	
@@ -383,10 +376,10 @@ FTM_RET	FTOM_MQTT_CLIENT_notify
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MQTT_CLIENT_onReportGWStatus
+FTM_RET	FTOM_MQTT_CLIENT_onGWStatus
 (
 	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_REPORT_GW_STATUS_PTR	pMsg
+	FTOM_MSG_GW_STATUS_PTR	pMsg
 )
 {
 	ASSERT(pClient != NULL);
@@ -394,9 +387,9 @@ FTM_RET	FTOM_MQTT_CLIENT_onReportGWStatus
 
 	FTM_RET	xRet;
 
-	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fReportGWStatus != NULL))
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fGWStatus != NULL))
 	{
-		xRet = pClient->pCBSet->fReportGWStatus(pClient, pMsg->pGatewayID, pMsg->bStatus, pMsg->ulTimeout);
+		xRet = pClient->pCBSet->fGWStatus(pClient, pMsg->pGatewayID, pMsg->bStatus, pMsg->ulTimeout);
 	}
 	else
 	{
@@ -406,10 +399,10 @@ FTM_RET	FTOM_MQTT_CLIENT_onReportGWStatus
 	return	xRet;
 }
 
-FTM_RET	FTOM_MQTT_CLIENT_onPublishEPStatus
+FTM_RET	FTOM_MQTT_CLIENT_onEPStatus
 (
 	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_PUBLISH_EP_STATUS_PTR	pMsg
+	FTOM_MSG_EP_STATUS_PTR	pMsg
 )
 {
 	ASSERT(pClient != NULL);
@@ -417,9 +410,9 @@ FTM_RET	FTOM_MQTT_CLIENT_onPublishEPStatus
 
 	FTM_RET	xRet;
 
-	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fPublishEPStatus != NULL))
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fEPStatus != NULL))
 	{
-		xRet = pClient->pCBSet->fPublishEPStatus(pClient, pMsg->pEPID, pMsg->bStatus, pMsg->ulTimeout);
+		xRet = pClient->pCBSet->fEPStatus(pClient, pMsg->pEPID, pMsg->bStatus, pMsg->ulTimeout);
 	}
 	else
 	{
@@ -429,10 +422,10 @@ FTM_RET	FTOM_MQTT_CLIENT_onPublishEPStatus
 	return	xRet;
 }
 
-FTM_RET	FTOM_MQTT_CLIENT_onPublishEPData
+FTM_RET	FTOM_MQTT_CLIENT_onEPData
 (
 	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_PUBLISH_EP_DATA_PTR	pMsg
+	FTOM_MSG_EP_DATA_PTR	pMsg
 )
 {
 	ASSERT(pClient != NULL);
@@ -440,9 +433,9 @@ FTM_RET	FTOM_MQTT_CLIENT_onPublishEPData
 
 	FTM_RET	xRet;
 
-	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fPublishEPData != NULL))
+	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fEPData != NULL))
 	{
-		xRet = pClient->pCBSet->fPublishEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
+		xRet = pClient->pCBSet->fEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
 	}
 	else
 	{
@@ -570,21 +563,21 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 		{
 			switch(pMsg->xType)
 			{
-			case	FTOM_MSG_TYPE_REPORT_GW_STATUS:
+			case	FTOM_MSG_TYPE_GW_STATUS:
 				{
-					xRet = FTOM_MQTT_CLIENT_onReportGWStatus(pClient, (FTOM_MSG_REPORT_GW_STATUS_PTR)pMsg);	
+					xRet = FTOM_MQTT_CLIENT_onGWStatus(pClient, (FTOM_MSG_GW_STATUS_PTR)pMsg);	
 				}
 				break;
 
-			case	FTOM_MSG_TYPE_PUBLISH_EP_STATUS:
+			case	FTOM_MSG_TYPE_EP_STATUS:
 				{
-					xRet = FTOM_MQTT_CLIENT_onPublishEPStatus(pClient, (FTOM_MSG_PUBLISH_EP_STATUS_PTR)pMsg);	
+					xRet = FTOM_MQTT_CLIENT_onEPStatus(pClient, (FTOM_MSG_EP_STATUS_PTR)pMsg);	
 				}
 				break;
 
-			case	FTOM_MSG_TYPE_PUBLISH_EP_DATA:
+			case	FTOM_MSG_TYPE_EP_DATA:
 				{
-					xRet = FTOM_MQTT_CLIENT_onPublishEPData(pClient, (FTOM_MSG_PUBLISH_EP_DATA_PTR)pMsg);	
+					xRet = FTOM_MQTT_CLIENT_onEPData(pClient, (FTOM_MSG_EP_DATA_PTR)pMsg);	
 				}
 				break;
 
@@ -675,9 +668,9 @@ FTM_RET	FTOM_MQTT_CLIENT_reportGWStatus
 	ASSERT(pClient != NULL);
 
 	FTM_RET	xRet;
-	FTOM_MSG_REPORT_GW_STATUS_PTR	pMsg;
+	FTOM_MSG_GW_STATUS_PTR	pMsg;
 
-	xRet = FTOM_MSG_createReportGWStatus(pGatewayID, bStatus, ulTimeout, &pMsg);
+	xRet = FTOM_MSG_createGWStatus(pGatewayID, bStatus, ulTimeout, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -704,15 +697,15 @@ FTM_RET	FTOM_MQTT_CLIENT_publishEPStatus
 	ASSERT(pClient != NULL);
 
 	FTM_RET	xRet;
-	FTOM_MSG_PUBLISH_EP_STATUS_PTR	pMsg;
+	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createPublishEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
+	xRet = FTOM_MSG_createEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	xRet = FTOM_MQTT_CLIENT_pushMsg(pClient, (FTOM_MSG_PTR)pMsg);
+	xRet = FTOM_MQTT_CLIENT_pushMsg(pClient, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pMsg);	
@@ -734,15 +727,15 @@ FTM_RET	FTOM_MQTT_CLIENT_publishEPData
 	ASSERT(pData != NULL);
 
 	FTM_RET	xRet;
-	FTOM_MSG_PUBLISH_EP_DATA_PTR	pMsg;
+	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createPublishEPData(pEPID, pData, ulCount, &pMsg);
+	xRet = FTOM_MSG_createEPData(pEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	xRet = FTOM_MQTT_CLIENT_pushMsg(pClient, (FTOM_MSG_PTR)pMsg);
+	xRet = FTOM_MQTT_CLIENT_pushMsg(pClient, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pMsg);	

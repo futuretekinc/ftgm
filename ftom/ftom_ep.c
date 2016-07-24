@@ -50,18 +50,6 @@ FTM_RET	FTOM_EP_reportDataInTime
 	FTM_ULONG		ulEndTime
 );
 
-static
-FTM_RET	FTOM_EP_reportLastData
-(
-	FTOM_EP_PTR 	pEP
-);
-
-static 
-FTM_RET	FTOM_EP_reportLastData
-(
-	FTOM_EP_PTR 	pEP
-);
-
 static 
 FTM_INT	FTOM_EP_seeker
 (
@@ -739,16 +727,10 @@ FTM_RET	FTOM_EP_message
 
 	switch(pBaseMsg->xType)
 	{
-	case	FTOM_MSG_TYPE_PUBLISH_EP_LAST_DATA:
-		{
-			xRet = FTOM_EP_reportLastData(pEP);
-		}
-		break;
-
-	case	FTOM_MSG_TYPE_EP_INSERT_DATA:
+	case	FTOM_MSG_TYPE_EP_DATA:
 		{
 			FTM_INT	i;
-			FTOM_MSG_EP_INSERT_DATA_PTR	pMsg = (FTOM_MSG_EP_INSERT_DATA_PTR)pBaseMsg;
+			FTOM_MSG_EP_DATA_PTR	pMsg = (FTOM_MSG_EP_DATA_PTR)pBaseMsg;
 
 			for(i = 0 ; i < pMsg->ulCount ; i++)
 			{
@@ -1287,27 +1269,6 @@ FTM_RET	FTOM_EP_reportDataInTime
 
 	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pDataList, nDataCount);
 	FTM_MEM_free(pDataList);
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_EP_reportLastData
-(
-	FTOM_EP_PTR 	pEP
-)
-{
-	ASSERT(pEP != NULL);
-
-	FTM_RET			xRet;
-	FTM_EP_DATA_PTR	pData;
-
-	xRet = FTM_LIST_getFirst(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pData, 1);
 
 	return	xRet;
 }

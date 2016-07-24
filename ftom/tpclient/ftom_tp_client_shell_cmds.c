@@ -105,6 +105,13 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 					  "\tNode discovery.\n"
 	}
 #endif
+	{
+		.pString	= "trace",
+		.function	= FTM_TRACE_shellCmd,
+		.pShortHelp	= "Trace management.",
+		.pHelp		= "\n"\
+					  "\tTrace management.\n"
+	}
 };
 
 FTM_ULONG		FTOM_shellCmdCount = sizeof(FTOM_shellCmds) / sizeof(FTM_SHELL_CMD);

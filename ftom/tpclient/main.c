@@ -17,7 +17,7 @@ FTM_VOID	FTOM_TP_CLIENT_usage
 	FTM_VOID
 );
 
-int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
+FTM_INT	main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
 	FTM_RET				xRet;
 	FTM_INT				nOpt;
@@ -74,8 +74,8 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	}
 
 	FTM_TRACE_setLevel(FTM_TRACE_MAX_MODULES, ulDebugLevel);
-	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT, FTM_TRUE, "Client", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
-	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_MQTTC, FTM_TRUE, "MQTTC", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT,"CLIENT", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_MQTTC, "MQTTC", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
 	xRet = FTOM_TP_CLIENT_loadConfigFromFile(pTPClient, pConfigFileName);
 	if (xRet != FTM_RET_OK)
@@ -94,6 +94,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 			return	0;
 		}
 		FTOM_TP_CLIENT_start(pTPClient);
+
 		FTOM_TP_CLIENT_waitingForFinished(pTPClient);
 	}
 	else
@@ -106,6 +107,7 @@ int main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		}
 
 		FTOM_TP_CLIENT_start(pTPClient);
+
 		FTM_SHELL_init(&xShell,pTPClient);
 		FTM_SHELL_setPrompt(&xShell, "tpclient> ");
 		FTM_SHELL_addCmds(&xShell, FTOM_shellCmds, FTOM_shellCmdCount);

@@ -92,7 +92,7 @@ FTM_INT main(int nArgc , char *pArgv[])
 		MESSAGE("Failed to create config!\n");	
 	}
 
-	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_CLIENT,	FTM_TRUE, "CLIENT",	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_CLIENT,	"CLIENT",	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
 	xRet = FTOM_CLIENT_NET_create((FTOM_CLIENT_NET_PTR _PTR_)&pClient);
 	if (xRet != FTM_RET_OK)
@@ -147,19 +147,19 @@ FTM_RET	FTOM_CLIENT_subscriber
 
 	switch(pBaseMsg->xType)
 	{
-	case	FTOM_MSG_TYPE_SEND_EP_STATUS:
+	case	FTOM_MSG_TYPE_EP_STATUS:
 		{
-			FTOM_MSG_SEND_EP_STATUS_PTR pMsg = 	(FTOM_MSG_SEND_EP_STATUS_PTR)pBaseMsg;
+			FTOM_MSG_EP_STATUS_PTR pMsg = 	(FTOM_MSG_EP_STATUS_PTR)pBaseMsg;
 			TRACE("EP[%s] status is %s\n", pMsg->pEPID, pMsg->bStatus?"run":"stop");
 		}
 		break;
 
-	case	FTOM_MSG_TYPE_SEND_EP_DATA:
+	case	FTOM_MSG_TYPE_EP_DATA:
 		{
 			FTM_ULONG	i;
 			FTM_CHAR	pBuff[4096];
 			FTM_ULONG	ulLen = 0;
-			FTOM_MSG_SEND_EP_DATA_PTR pMsg = 	(FTOM_MSG_SEND_EP_DATA_PTR)pBaseMsg;
+			FTOM_MSG_EP_DATA_PTR pMsg = 	(FTOM_MSG_EP_DATA_PTR)pBaseMsg;
 
 
 			for(i = 0 ; i < pMsg->ulCount ; i++)

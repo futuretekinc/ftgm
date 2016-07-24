@@ -7,7 +7,7 @@
 
 #define		FTM_SHELL_MAX_ARGS	16
 
-typedef	struct
+typedef	struct FTM_SHELL_STRUCT
 {
 	FTM_CHAR		pPrompt[128];
 	FTM_LIST_PTR	pCmdList;

@@ -413,7 +413,7 @@ error:
 	return	xRet;
 }
 
-FTM_RET	FTOM_MQTT_CLIENT_TPGW_reportGWStatus
+FTM_RET	FTOM_MQTT_CLIENT_TPGW_GWStatus
 (
 	FTOM_MQTT_CLIENT_PTR pClient, 
 	FTM_CHAR_PTR		pGatewayID,

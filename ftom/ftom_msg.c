@@ -86,27 +86,27 @@ FTM_RET	FTOM_MSG_createConnectionStatus
 /*******************************************************************
  * Gateway management
  *******************************************************************/
-FTM_RET	FTOM_MSG_createReportGWStatus
+FTM_RET	FTOM_MSG_createGWStatus
 (
 	FTM_CHAR_PTR		pGatewayID,
 	FTM_BOOL			bStatus,
 	FTM_ULONG			ulTimeout,
-	FTOM_MSG_REPORT_GW_STATUS_PTR _PTR_ ppMsg
+	FTOM_MSG_GW_STATUS_PTR _PTR_ ppMsg
 )
 {
 	ASSERT(ppMsg != NULL);
 
-	FTOM_MSG_REPORT_GW_STATUS_PTR pMsg;
-	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_REPORT_GW_STATUS);
+	FTOM_MSG_GW_STATUS_PTR pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_GW_STATUS);
 
-	pMsg = (FTOM_MSG_REPORT_GW_STATUS_PTR)FTM_MEM_malloc(ulMsgLen);
+	pMsg = (FTOM_MSG_GW_STATUS_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	pMsg->xType 	= FTOM_MSG_TYPE_REPORT_GW_STATUS;
+	pMsg->xType 	= FTOM_MSG_TYPE_GW_STATUS;
 	pMsg->ulLen 	= ulMsgLen;
 	strncpy(pMsg->pGatewayID, pGatewayID, FTM_GWID_LEN);
 	pMsg->bStatus 	= bStatus;
@@ -117,156 +117,64 @@ FTM_RET	FTOM_MSG_createReportGWStatus
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MSG_createAddEPData
-(
-	FTM_CHAR_PTR		pEPID,
-	FTM_EP_DATA_PTR		pData,
-	FTOM_MSG_ADD_EP_DATA_PTR _PTR_ ppMsg
-)
-{
-	ASSERT(pData != NULL);
-	ASSERT(ppMsg != NULL);
-
-	FTOM_MSG_ADD_EP_DATA_PTR	pMsg;
-	FTM_ULONG		ulMsgLen = sizeof(FTOM_MSG_ADD_EP_DATA);
-
-	pMsg = (FTOM_MSG_ADD_EP_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
-	if (pMsg == NULL)
-	{
-		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	pMsg->xType = FTOM_MSG_TYPE_ADD_EP_DATA;
-	pMsg->ulLen = ulMsgLen;
-	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
-	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
-
-	*ppMsg = pMsg;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_MSG_createSendEPStatus
+FTM_RET	FTOM_MSG_createEPStatus
 (
 	FTM_CHAR_PTR		pEPID,
 	FTM_BOOL			bStatus,
 	FTM_ULONG			ulTimeout,
-	FTOM_MSG_SEND_EP_STATUS_PTR _PTR_ ppMsg
+	FTOM_MSG_PTR _PTR_ 	ppMsg
 )
 {
 	ASSERT(ppMsg != NULL);
 
-	FTOM_MSG_SEND_EP_STATUS_PTR pMsg;
-	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_SEND_EP_STATUS);
+	FTOM_MSG_EP_STATUS_PTR pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_EP_STATUS);
 
-	pMsg = (FTOM_MSG_SEND_EP_STATUS_PTR)FTM_MEM_malloc(ulMsgLen);
+	pMsg = (FTOM_MSG_EP_STATUS_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	pMsg->xType 	= FTOM_MSG_TYPE_SEND_EP_STATUS;
+	pMsg->xType 	= FTOM_MSG_TYPE_EP_STATUS;
 	pMsg->ulLen 	= ulMsgLen;
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->bStatus 	= bStatus;
 	pMsg->ulTimeout = ulTimeout;
 
-	*ppMsg = pMsg;
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MSG_createSendEPData
+FTM_RET	FTOM_MSG_createEPData
 (
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount,
-	FTOM_MSG_SEND_EP_DATA_PTR _PTR_ ppMsg
+	FTOM_MSG_PTR _PTR_ 	ppMsg
 )
 {
 	ASSERT(ppMsg != NULL);
 
-	FTOM_MSG_SEND_EP_DATA_PTR pMsg;
-	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_SEND_EP_DATA) + sizeof(FTM_EP_DATA) * ulCount;
+	FTOM_MSG_EP_DATA_PTR pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_EP_DATA) + sizeof(FTM_EP_DATA) * ulCount;
 
-	pMsg = (FTOM_MSG_SEND_EP_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
+	pMsg = (FTOM_MSG_EP_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
 	if (pMsg == NULL)
 	{
 		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	pMsg->xType 	= FTOM_MSG_TYPE_SEND_EP_DATA;
+	pMsg->xType 	= FTOM_MSG_TYPE_EP_DATA;
 	pMsg->ulLen = ulMsgLen;
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->ulCount	= ulCount;
 	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
 
-	*ppMsg = pMsg;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_MSG_createPublishEPStatus
-(
-	FTM_CHAR_PTR		pEPID,
-	FTM_BOOL			bStatus,
-	FTM_ULONG			ulTimeout,
-	FTOM_MSG_PUBLISH_EP_STATUS_PTR _PTR_ ppMsg
-)
-{
-	ASSERT(ppMsg != NULL);
-
-	FTOM_MSG_PUBLISH_EP_STATUS_PTR pMsg;
-	FTM_ULONG ulMsgLen = sizeof(FTOM_MSG_PUBLISH_EP_STATUS);
-
-	pMsg = (FTOM_MSG_PUBLISH_EP_STATUS_PTR)FTM_MEM_malloc(ulMsgLen);
-	if (pMsg == NULL)
-	{
-		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	pMsg->xType 	= FTOM_MSG_TYPE_PUBLISH_EP_STATUS;
-	pMsg->ulLen = ulMsgLen;
-	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
-	pMsg->bStatus = bStatus;
-	pMsg->ulTimeout = ulTimeout;
-
-	*ppMsg = pMsg;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_MSG_createPublishEPData
-(
-	FTM_CHAR_PTR		pEPID,
-	FTM_EP_DATA_PTR		pData,
-	FTM_ULONG			ulCount,
-	FTOM_MSG_PUBLISH_EP_DATA_PTR _PTR_ ppMsg
-)
-{
-	ASSERT(ppMsg != NULL);
-
-	FTOM_MSG_PUBLISH_EP_DATA_PTR pMsg;
-	FTM_ULONG ulMsgLen = sizeof(FTOM_MSG_PUBLISH_EP_DATA) + sizeof(FTM_EP_DATA) * ulCount ;
-
-	pMsg = (FTOM_MSG_PUBLISH_EP_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
-	if (pMsg == NULL)
-	{
-		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	pMsg->xType 	= FTOM_MSG_TYPE_PUBLISH_EP_DATA;
-	pMsg->ulLen = ulMsgLen;
-	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
-	pMsg->ulCount	= ulCount;
-	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
-
-	*ppMsg = pMsg;
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
 
 	return	FTM_RET_OK;
 }
@@ -591,37 +499,6 @@ FTM_RET	FTOM_MSG_copy
 	memcpy(pNewMsg, pSrcMsg, pSrcMsg->ulLen);
 
 	*ppNewMsg = pNewMsg;
-
-	return	FTM_RET_OK;
-}
-
-/********************************************************************************
- * EP
- ********************************************************************************/
-FTM_RET	FTOM_MSG_EP_createInsertData
-(
-	FTM_EP_DATA_PTR		pData,
-	FTM_ULONG			ulCount,
-	FTOM_MSG_PTR _PTR_ 	ppMsg
-)
-{
-	ASSERT(ppMsg != NULL);
-
-	FTOM_MSG_EP_INSERT_DATA_PTR	pMsg;
-	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_EP_INSERT_DATA) + sizeof(FTM_EP_DATA) * ulCount;
-
-	pMsg = (FTOM_MSG_EP_INSERT_DATA_PTR)FTM_MEM_malloc(ulMsgLen);
-	if (pMsg == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
-	}
-
-	pMsg->xType	= FTOM_MSG_TYPE_EP_INSERT_DATA;
-	pMsg->ulLen = ulMsgLen;
-	pMsg->ulCount = ulCount;
-	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
-
-	*ppMsg = (FTOM_MSG_PTR)pMsg;
 
 	return	FTM_RET_OK;
 }

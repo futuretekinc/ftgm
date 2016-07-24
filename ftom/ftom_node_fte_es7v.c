@@ -278,7 +278,7 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_setEPData
 
 			pES7->bDO = pData->xValue.xValue.nValue;
 
-			xRet = FTOM_MSG_EP_createInsertData(pData, 1, &pMsg);
+			xRet = FTOM_MSG_createEPData(pEP->xInfo.pEPID, pData, 1, &pMsg);
 			if (xRet == FTM_RET_OK)
 			{
 				xRet =FTOM_EP_sendMessage(pEP, pMsg);

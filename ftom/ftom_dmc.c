@@ -18,10 +18,10 @@ static FTM_VOID_PTR	FTOM_DMC_process
 	FTM_VOID_PTR 	pData
 );
 
-static FTM_RET	FTOM_DMC_onAddEPData
+static FTM_RET	FTOM_DMC_onEPData
 (
 	FTOM_DMC_PTR	pDMC,
-	FTOM_MSG_ADD_EP_DATA_PTR	pMsg
+	FTOM_MSG_EP_DATA_PTR	pMsg
 );
 
 FTM_RET	FTOM_DMC_create
@@ -191,9 +191,9 @@ FTM_VOID_PTR	FTOM_DMC_process
 			{
 				switch(pMsg->xType)
 				{
-				case	FTOM_MSG_TYPE_ADD_EP_DATA:
+				case	FTOM_MSG_TYPE_EP_DATA:
 					{
-						FTOM_DMC_onAddEPData(pDMC, (FTOM_MSG_ADD_EP_DATA_PTR)pMsg);
+						FTOM_DMC_onEPData(pDMC, (FTOM_MSG_EP_DATA_PTR)pMsg);
 					}
 					break;
 
@@ -246,16 +246,23 @@ FTM_RET	FTOM_DMC_sendMessage
 	return	FTOM_MSGQ_push(&pDMC->xMsgQ, pMsg);
 }
 
-FTM_RET	FTOM_DMC_onAddEPData
+FTM_RET	FTOM_DMC_onEPData
 (
 	FTOM_DMC_PTR	pDMC,
-	FTOM_MSG_ADD_EP_DATA_PTR	pMsg
+	FTOM_MSG_EP_DATA_PTR	pMsg
 )
 {
 	ASSERT(pDMC != NULL);
 	ASSERT(pMsg != NULL);
 	
-	return	FTDMC_EP_DATA_append(&pDMC->xSession, pMsg->pEPID, &pMsg->xData);
+	FTM_INT	i;
+
+	for(i = 0 ; i < pMsg->ulCount; i++)
+	{
+		FTDMC_EP_DATA_append(&pDMC->xSession, pMsg->pEPID, &pMsg->pData[i]);
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_DMC_NODE_add
