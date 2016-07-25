@@ -1,6 +1,7 @@
 #include <string.h>
 #include "ftom.h"
 #include "ftom_mqttc.h"
+#include "ftom_mqtt_client_tpgw.h"
 
 #undef	__MODULE__
 #define __MODULE__ FTOM_TRACE_MODULE_CLIENT
@@ -106,6 +107,41 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_publishCB
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_LIST_remove(pClient->pPublishList, pPublish);	
+
+		if (pPublish->pData != NULL)
+		{
+			FTOM_MQTT_TPGW_PUBLISH_INFO_PTR	pInfo = (FTOM_MQTT_TPGW_PUBLISH_INFO_PTR)pPublish->pData;
+			switch(pInfo->xType)
+			{
+			case	FTOM_MQTT_TPGW_PUBLISH_TYPE_EP_DATA:
+				{
+					if (pClient->fMessageCB != NULL)
+					{
+						FTOM_MSG_PTR	pMsg;
+
+						xRet = FTOM_MSG_createEPDataServerTime(pInfo->pEPID, pInfo->ulTime, &pMsg);
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Failed to create message.\n");
+						}
+
+						xRet = pClient->fMessageCB(pClient->pMessageCBObject, pMsg);
+						if (xRet != FTM_RET_OK)
+						{
+							FTOM_MSG_destroy(&pMsg);
+						}
+					}
+				}
+				break;
+
+			default:
+				{
+					TRACE("Unknown publish done!\n");
+				}
+				break;
+
+			}
+		}
 		FTOM_MQTT_PUBLISH_destroy(&pPublish);
 	}
 	else
@@ -149,7 +185,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_messageCB
 		xRet = FTOM_MQTT_CLIENT_TPGW_requestMessageParser((FTM_CHAR_PTR)pMessage->payload, &pMsg);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(FTM_RET_MQTT_INVALID_MESSAGE, "Invalid message[%s].\n", pMessage->payload);
+			ERROR2(FTM_RET_MQTT_INVALID_MESSAGE, "TPGW : Invalid message[%s].\n", pMessage->payload);
 			return;
 		}
 
@@ -395,8 +431,23 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 		break;
 
 	case	FTOM_MQTT_METHOD_REQ_POWER_OFF:
+		{
+			xRet = FTOM_MSG_TP_createReqPowerOff(pReqID, ppMsg);
+		}
+		break;
+
 	case	FTOM_MQTT_METHOD_REQ_REBOOT:
+		{
+			xRet = FTOM_MSG_TP_createReqReboot(pReqID, ppMsg);
+		}
+		break;
+
 	case	FTOM_MQTT_METHOD_REQ_RESTART:
+		{
+			xRet = FTOM_MSG_TP_createReqRestart(pReqID, ppMsg);
+		}
+		break;
+
 	case	FTOM_MQTT_METHOD_REQ_SW_UPDATE:
 	case	FTOM_MQTT_METHOD_REQ_SW_INFO:
 		{
@@ -468,9 +519,11 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 	ASSERT(pClient != NULL);
 	ASSERT(pData != NULL);
 
+	FTM_RET		xRet;
 	FTM_CHAR	pTopic[FTOM_MQTT_CLIENT_TOPIC_LENGTH+1];
 	FTM_CHAR	pBuff[FTOM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulLen = 0;
+	FTM_ULONG	ulTime = 0;
 	FTM_INT		i;
 
 	pBuff[sizeof(pBuff) - 1] = '\0';
@@ -490,11 +543,34 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 		}
 
 		ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, ",%s", FTM_VALUE_print(&pData[i].xValue));
+		if (ulTime < pData[i].ulTime)
+		{
+			ulTime = pData[i].ulTime;	
+		}
 	}
 
 	ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "]");
 
-	return	FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen, NULL, NULL);
+	FTOM_MQTT_TPGW_PUBLISH_INFO_PTR pInfo = FTM_MEM_malloc(sizeof(FTOM_MQTT_TPGW_PUBLISH_INFO));
+	if (pInfo != NULL)
+	{
+		pInfo->xType = FTOM_MQTT_TPGW_PUBLISH_TYPE_EP_DATA;
+		strncpy(pInfo->pEPID, pEPID, FTM_EPID_LEN);
+		pInfo->ulTime = ulTime;
+	}
+	else
+	{
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		ERROR2(xRet, "Not enough memory!\n");
+	}
+
+	xRet = FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen, pInfo, NULL);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to publish!\n");
+	}
+
+	return	xRet;
 }
 
 

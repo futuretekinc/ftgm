@@ -967,6 +967,10 @@ FTM_EP_TYPE_STRING	_typeString[] =
 		.xType = FTM_EP_TYPE_DI,
 		.pTypeString = "DIGITAL INPUT"
 	},
+	{
+		.xType = FTM_EP_TYPE_DI,
+		.pTypeString = "ONOFF"
+	},
 	{	
 		.xType = FTM_EP_TYPE_DO,
 		.pTypeString = "DIGITAL OUTPUT"
@@ -974,6 +978,10 @@ FTM_EP_TYPE_STRING	_typeString[] =
 	{	
 		.xType = FTM_EP_TYPE_GAS,
 		.pTypeString = "GAS"
+	},
+	{	
+		.xType = FTM_EP_TYPE_GAS,
+		.pTypeString = "CO2"
 	},
 	{	
 		.xType = FTM_EP_TYPE_POWER,

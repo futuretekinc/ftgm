@@ -170,7 +170,7 @@ FTM_BOOL	bGlobalInit = FTM_FALSE;
 static 
 FTM_BOOL	bVerbose = FTM_FALSE;
 static 
-FTM_BOOL	bDataDump = FTM_FALSE;
+FTM_BOOL	bDataDump = FTM_TRUE;
 
 FTM_RET	FTOM_TP_RESTAPI_create
 (
@@ -452,7 +452,7 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getModel
 
 FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 (
-	FTOM_TP_RESTAPI_PTR 	pClient,
+	FTOM_TP_RESTAPI_PTR pClient,
 	FTOM_TP_GATEWAY_PTR	pGateway
 )
 {
@@ -523,8 +523,6 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 	pDevices = cJSON_GetObjectItem(pRoot, "devices");
 	if (pDevices != NULL)
 	{
-		FTM_INT	i;
-
 		if (pDevices->type != cJSON_Array)
 		{
 			xRet = FTM_RET_COMM_INVALID_VALUE;	
@@ -532,34 +530,52 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 			goto finish;	
 		}
 
-		for(i = 0; ; i++)
+		FTM_ULONG	ulCount = cJSON_GetArraySize(pDevices);
+		if (ulCount != 0)
 		{
-			pItem = cJSON_GetArrayItem(pDevices, i);
-			if ((pItem == NULL) || (pItem->type != cJSON_String))
-			{
-				break;	
-			}
-		
-			FTM_ULONG		ulLen = strlen(pItem->valuestring);
-			FTM_CHAR_PTR	pDeviceID = FTM_MEM_malloc(ulLen+1);
-			if (pDeviceID == NULL)
+			FTM_INT				i;
+			FTOM_TP_DEVICE_PTR	pDevices;
+
+			pDevices = (FTOM_TP_DEVICE_PTR)FTM_MEM_malloc(sizeof(FTOM_TP_DEVICE) * ulCount);
+			if (pDevices == NULL)
 			{
 				xRet = FTM_RET_NOT_ENOUGH_MEMORY;
-				ERROR2(xRet, "Not enough memory!\n");	
-				break;
+				ERROR2(xRet, "Not enough memory!\n");
+				goto finish;
 			}
 
-			strcpy(pDeviceID, pItem->valuestring);
 
-			FTM_LIST_append(pGateway->pDeviceList, pDeviceID);
+			xRet = FTOM_TP_RESTAPI_DEVICE_getList(pClient, pDevices, ulCount, &ulCount);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to get sensor informations!\n");	
+				FTM_MEM_free(pDevices);
+			}
+
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				FTOM_TP_DEVICE_PTR	pDevice;
+
+				pDevice = (FTOM_TP_DEVICE_PTR)FTM_MEM_malloc(sizeof(FTOM_TP_DEVICE));
+				if (pDevice == NULL)
+				{
+					xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+					ERROR2(xRet, "Not enough memory!\n");
+					continue;
+				}
+
+				memcpy(pDevice, &pDevices[i], sizeof(FTOM_TP_DEVICE));
+
+				FTM_LIST_append(pGateway->pDeviceList, pDevice);
+			}
+
+			FTM_MEM_free(pDevices);
 		}
 	}
 
 	pSensors = cJSON_GetObjectItem(pRoot, "sensors");
 	if (pSensors != NULL)
 	{
-		FTM_INT	i;
-
 		if (pSensors->type != cJSON_Array)
 		{
 			xRet = FTM_RET_COMM_INVALID_VALUE;	
@@ -567,27 +583,48 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 			goto finish;	
 		}
 
-		for(i = 0; ; i++)
+		FTM_ULONG	ulCount = cJSON_GetArraySize(pSensors);
+		if (ulCount != 0)
 		{
-			pItem = cJSON_GetArrayItem(pSensors, i);
-			if ((pItem == NULL) || (pItem->type != cJSON_String))
+			FTM_INT				i;
+			FTOM_TP_SENSOR_PTR	pSensors;
+
+			pSensors = (FTOM_TP_SENSOR_PTR)FTM_MEM_malloc(sizeof(FTOM_TP_SENSOR) * ulCount);
+			if (pSensors == NULL)
 			{
-				break;	
-			}
-		
-			FTM_ULONG		ulLen = strlen(pItem->valuestring);
-			FTM_CHAR_PTR	pSensorID = FTM_MEM_malloc(ulLen+1);
-			if (pSensorID == NULL)
-			{
-				xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
-				ERROR2(xRet, "Not enough memory!\n");	
-				break;
+				xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+				ERROR2(xRet, "Not enough memory!\n");
+				goto finish;
 			}
 
-			strcpy(pSensorID, pItem->valuestring);
 
-			FTM_LIST_append(pGateway->pSensorList, pSensorID);
+			xRet = FTOM_TP_RESTAPI_SENSOR_getList(pClient, pSensors, ulCount, &ulCount);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to get sensor informations!\n");	
+				FTM_MEM_free(pSensors);
+			}
+
+			for(i = 0 ; i < ulCount ; i++)
+			{
+				FTOM_TP_SENSOR_PTR	pSensor;
+
+				pSensor = (FTOM_TP_SENSOR_PTR)FTM_MEM_malloc(sizeof(FTOM_TP_SENSOR));
+				if (pSensor == NULL)
+				{
+					xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+					ERROR2(xRet, "Not enough memory!\n");
+					continue;
+				}
+
+				memcpy(pSensor, &pSensors[i], sizeof(FTOM_TP_SENSOR));
+
+				FTM_LIST_append(pGateway->pSensorList, pSensor);
+			}
+
+			FTM_MEM_free(pSensors);
 		}
+			
 	}
 
 finish:
@@ -724,6 +761,106 @@ FTM_RET	FTOM_TP_RESTAPI_DEVICE_delete
 	return	xRet;
 }
 
+FTM_RET	FTOM_TP_RESTAPI_DEVICE_getList
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTOM_TP_DEVICE_PTR	pDevices,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_RET			xRet;
+	cJSON _PTR_ pRoot;
+	FTM_ULONG		i, ulCount = 0;
+
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s/devices", pClient->xConfig.pGatewayID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
+		return	xRet;
+	}
+
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "An error occurred while performing the client.\n");
+	}
+
+	pRoot = cJSON_Parse(pClient->pResp);
+	if ((pRoot == NULL) || (pRoot->type != cJSON_Array))
+	{
+		xRet = FTM_RET_COMM_INVALID_VALUE;	
+		ERROR2(xRet, "Invalid type!\n");
+		goto finish;
+	}
+
+	
+	for( i = 0 ; ulCount < ulMaxCount ; i++)
+	{
+		cJSON _PTR_ pDeviceInfo;
+		cJSON _PTR_ pItem;
+		FTOM_TP_DEVICE	xDevice;
+
+		pDeviceInfo = cJSON_GetArrayItem(pRoot, i);
+		if (pDeviceInfo == NULL)
+		{
+			break;	
+		}
+
+		memset(&xDevice, 0, sizeof(xDevice));
+
+		pItem = cJSON_GetObjectItem(pDeviceInfo, "id"); // get object's property by key
+		if ((pItem == NULL) || (pItem->type != cJSON_String))
+		{
+			continue;	
+		}
+		strncpy(xDevice.pID, pItem->valuestring, FTM_DID_LEN);
+
+		pItem = cJSON_GetObjectItem(pDeviceInfo, "name");
+		if ((pItem != NULL) || (pItem->type != cJSON_String))
+		{
+			strncpy(xDevice.pName, pItem->valuestring, FTM_NAME_LEN);	
+		}
+
+		pItem = cJSON_GetObjectItem(pDeviceInfo, "owner");
+		if ((pItem != NULL) || (pItem->type != cJSON_String))
+		{
+			strncpy(xDevice.pOwnerID, pItem->valuestring, FTM_DID_LEN);	
+		}
+
+		pItem = cJSON_GetObjectItem(pDeviceInfo, "model");
+		if ((pItem != NULL) || (pItem->type != cJSON_String))
+		{
+			strncpy(xDevice.pModel, pItem->valuestring, FTM_NAME_LEN);	
+		}
+
+		pItem = cJSON_GetObjectItem(pDeviceInfo, "ctime");
+		if ((pItem != NULL) || (pItem->type != cJSON_String))
+		{
+			xDevice.ullCTime = strtoull(pItem->valuestring, 0, 10);
+		}
+
+		pItem = cJSON_GetObjectItem(pDeviceInfo, "mtime");
+		if ((pItem != NULL) || (pItem->type != cJSON_Number))
+		{
+			xDevice.ullMTime = pItem->valueint;
+		}
+
+		memcpy(&pDevices[ulCount++], &xDevice, sizeof(xDevice));
+	}
+
+	*pulCount = ulCount;
+
+finish:
+	if (pRoot != NULL)
+	{
+		cJSON_Delete(pRoot);
+	}
+
+	return	xRet;
+}
 /*********************************************************
  * Sensor management 
  *********************************************************/
@@ -1024,7 +1161,7 @@ finish:
 FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 (
 	FTOM_TP_RESTAPI_PTR	pClient,
-	FTOM_TP_RESTAPI_SENSOR_PTR	pSensors,
+	FTOM_TP_SENSOR_PTR	pSensors,
 	FTM_ULONG			ulMaxCount,
 	FTM_ULONG_PTR		pulCount
 )
@@ -1052,6 +1189,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 	if ((pRoot == NULL) || (pRoot->type != cJSON_Array))
 	{
 		xRet = FTM_RET_COMM_INVALID_VALUE;	
+		ERROR2(xRet, "Invalid type!\n");
 		goto finish;
 	}
 
@@ -1060,7 +1198,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 	{
 		cJSON _PTR_ pSensorInfo;
 		cJSON _PTR_ pItem;
-		FTOM_TP_RESTAPI_SENSOR		xSensor;
+		FTOM_TP_SENSOR		xSensor;
 
 		pSensorInfo = cJSON_GetArrayItem(pRoot, i);
 		if (pSensorInfo == NULL)
@@ -1086,6 +1224,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 		xRet = FTM_EP_strToType((FTM_CHAR_PTR)pItem->valuestring, &xSensor.xType);
 		if (xRet != FTM_RET_OK)
 		{
+			ERROR2(xRet, "Failed to convert type[%s]!\n", pItem->valuestring);
 			continue;
 		}
 
@@ -1180,16 +1319,6 @@ FTM_RET	FTOM_TP_RESTAPI_NODE_delete
 	return	FTOM_TP_RESTAPI_DEVICE_delete(pClient, pDID);
 }
 
-FTM_RET	FTOM_TP_RESTAPI_NODE_getList
-(
-	FTOM_TP_RESTAPI_PTR	pClient,
-	FTM_NODE_PTR			pNodeInfos,
-	FTM_ULONG			ulMaxCount,
-	FTM_ULONG_PTR		pulCount
-)
-{
-	return	FTM_RET_OK;
-}
 
 /*********************************************************
  * End Point management 

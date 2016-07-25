@@ -47,6 +47,21 @@ FTM_VOID FTOM_MQTT_CLIENT_FT_publishCB
 	int					nResult
 )
 {
+	FTM_RET					xRet;
+	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
+	FTOM_MQTT_PUBLISH_PTR	pPublish;
+
+	xRet = FTM_LIST_get(pClient->pPublishList, &nResult, (FTM_VOID_PTR _PTR_)&pPublish);
+	if (xRet == FTM_RET_OK)
+	{
+		TRACE("Publish[%04d] success!\n", pPublish->nMessageID);
+		FTM_LIST_remove(pClient->pPublishList, pPublish);	
+		FTOM_MQTT_PUBLISH_destroy(&pPublish);
+	}
+	else
+	{
+		WARN("Publish[%08x] not found!\n", nResult);
+	}
 }
 
 FTM_VOID FTOM_MQTT_CLIENT_FT_messageCB

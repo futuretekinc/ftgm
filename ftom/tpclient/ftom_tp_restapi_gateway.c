@@ -95,12 +95,12 @@ FTM_RET	FTOM_TP_GATEWAY_final
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_CHAR_PTR	pDeviceID = NULL;
+		FTOM_TP_DEVICE_PTR	pDevice;
 
-		xRet =FTM_LIST_getAt(pGateway->pDeviceList, i, (FTM_VOID_PTR _PTR_)&pDeviceID);
+		xRet =FTM_LIST_getAt(pGateway->pDeviceList, i, (FTM_VOID_PTR _PTR_)&pDevice);
 		if (xRet == FTM_RET_OK)
 		{
-			FTM_MEM_free(pDeviceID);	
+			FTM_MEM_free(pDevice);	
 		}
 	
 	}
@@ -116,12 +116,12 @@ FTM_RET	FTOM_TP_GATEWAY_final
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_CHAR_PTR	pSensorID = NULL;
+		FTOM_TP_SENSOR_PTR	pSensor;
 
-		xRet =FTM_LIST_getAt(pGateway->pSensorList, i, (FTM_VOID_PTR _PTR_)&pSensorID);
+		xRet =FTM_LIST_getAt(pGateway->pSensorList, i, (FTM_VOID_PTR _PTR_)&pSensor);
 		if (xRet == FTM_RET_OK)
 		{
-			FTM_MEM_free(pSensorID);	
+			FTM_MEM_free(pSensor);	
 		}
 	
 	}

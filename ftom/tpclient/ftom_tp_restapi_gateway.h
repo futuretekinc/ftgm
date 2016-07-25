@@ -7,6 +7,29 @@
 
 typedef	struct
 {
+	FTM_CHAR		pID[FTM_EPID_LEN+1];
+	FTM_CHAR		pName[FTM_NAME_LEN+1];
+	FTM_CHAR		pOwnerID[FTM_DID_LEN+1];
+	FTM_CHAR		pDeviceID[FTM_DID_LEN+1];
+	FTM_EP_TYPE		xType;
+	FTM_ULONG		ulAddress;
+	FTM_ULONG		ulSequence;
+	FTM_UINT64		ullCTime;
+	FTM_UINT64		ullMTime;
+}	FTOM_TP_SENSOR, _PTR_ FTOM_TP_SENSOR_PTR;
+
+typedef	struct
+{
+	FTM_CHAR		pID[FTM_EPID_LEN+1];
+	FTM_CHAR		pName[FTM_NAME_LEN+1];
+	FTM_CHAR		pModel[FTM_NAME_LEN+1];
+	FTM_CHAR		pOwnerID[FTM_DID_LEN+1];
+	FTM_UINT64		ullCTime;
+	FTM_UINT64		ullMTime;
+}	FTOM_TP_DEVICE, _PTR_ FTOM_TP_DEVICE_PTR;
+
+typedef	struct
+{
 	FTM_CHAR		pID[FTM_DID_LEN+1];
 	FTM_CHAR		pName[FTM_NAME_LEN+1];
 	FTM_ULONG		ulReportInterval;

@@ -284,6 +284,7 @@ FTM_RET	FTOM_CLIENT_EP_getServerRegistered
 	FTM_CHAR_PTR	pEPID,
 	FTM_BOOL_PTR	pbRegistered
 );
+
 /*****************************************************
  *
  *****************************************************/
@@ -362,6 +363,13 @@ FTM_RET	FTOM_CLIENT_EP_DATA_type
 	FTOM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR	pEPID,
 	FTM_VALUE_TYPE_PTR	pType
+);
+
+FTM_RET	FTOM_CLIENT_EP_DATA_setServerTime
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulTime
 );
 
 /*****************************************************************

@@ -104,33 +104,6 @@ FTM_BOOL FTOM_MQTT_PUBLISH_LIST_seeker
 	const FTM_VOID_PTR pKey
 );
 
-#if 0
-static FTOM_MQTT_CLIENT_CALLBACK_SET	pCBSet[] =
-{
-	{
-		.fConnect 	= FTOM_MQTT_CLIENT_FT_connectCB,
-		.fDisconnect= FTOM_MQTT_CLIENT_FT_disconnectCB,
-		.fPublish 	= FTOM_MQTT_CLIENT_FT_publishCB,
-		.fMessage 	= FTOM_MQTT_CLIENT_FT_messageCB,
-		.fSubscribe = FTOM_MQTT_CLIENT_FT_subscribeCB,
-		.fReportGWStatus	= FTOM_MQTT_CLIENT_TPGW_reportGWStatus,
-		.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
-		.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
-		.fTPResponse		= FTOM_MQTT_CLIENT_TPGW_response,
-	},
-	{
-		.fConnect 	= FTOM_MQTT_CLIENT_TPGW_connectCB,
-		.fDisconnect= FTOM_MQTT_CLIENT_TPGW_disconnectCB,
-		.fPublish 	= FTOM_MQTT_CLIENT_TPGW_publishCB,
-		.fMessage 	= FTOM_MQTT_CLIENT_TPGW_messageCB,
-		.fSubscribe = FTOM_MQTT_CLIENT_TPGW_subscribeCB,
-		.fReportGWStatus	= FTOM_MQTT_CLIENT_TPGW_reportGWStatus,
-		.fPublishEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
-		.fPublishEPData		= FTOM_MQTT_CLIENT_TPGW_publishEPData,
-		.fTPResponse		= FTOM_MQTT_CLIENT_TPGW_response,
-	},
-};
-#else
 static 
 FTOM_MQTT_CLIENT_CBSET	xCBDefaultSet =
 {
@@ -144,7 +117,7 @@ FTOM_MQTT_CLIENT_CBSET	xCBDefaultSet =
 	.fEPData	= FTOM_MQTT_CLIENT_TPGW_publishEPData,
 	.fTPResponse= FTOM_MQTT_CLIENT_TPGW_response,
 };
-#endif
+
 static 	FTM_ULONG	ulClientInstance = 0;
 
 FTM_RET	FTOM_MQTT_CLIENT_create
@@ -1097,6 +1070,7 @@ FTM_VOID FTOM_MQTT_CLIENT_publishCB
 		xRet = FTM_LIST_get(pClient->pPublishList, &nMID, (FTM_VOID_PTR _PTR_)&pPublish);
 		if (xRet == FTM_RET_OK)
 		{
+			TRACE("Publish[%04d] success!\n", pPublish->nMessageID);
 			FTM_LIST_remove(pClient->pPublishList, pPublish);	
 			FTOM_MQTT_PUBLISH_destroy(&pPublish);
 		}
@@ -1234,6 +1208,11 @@ FTM_RET	FTOM_MQTT_PUBLISH_destroy
 )
 {
 	ASSERT(ppPublish != NULL);
+
+	if ((*ppPublish)->pData != NULL)
+	{
+		FTM_MEM_free((*ppPublish)->pData);
+	}
 
 	FTM_MEM_free(*ppPublish);
 

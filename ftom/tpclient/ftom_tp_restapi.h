@@ -27,18 +27,6 @@ typedef	struct
 	CURL 				_PTR_ pCURL;
 }	FTOM_TP_RESTAPI, _PTR_ FTOM_TP_RESTAPI_PTR;
 
-typedef	struct
-{
-	FTM_CHAR		pID[FTM_EPID_LEN+1];
-	FTM_CHAR		pName[FTM_NAME_LEN+1];
-	FTM_CHAR		pOwnerID[FTM_DID_LEN+1];
-	FTM_CHAR		pDeviceID[FTM_DID_LEN+1];
-	FTM_EP_TYPE		xType;
-	FTM_ULONG		ulAddress;
-	FTM_ULONG		ulSequence;
-	FTM_UINT64		ullCTime;
-	FTM_UINT64		ullMTime;
-}	FTOM_TP_RESTAPI_SENSOR, _PTR_ FTOM_TP_RESTAPI_SENSOR_PTR;
 
 FTM_RET	FTOM_TP_RESTAPI_create
 (
@@ -131,6 +119,15 @@ FTM_RET	FTOM_TP_RESTAPI_DEVICE_delete
 	FTOM_TP_RESTAPI_PTR	pClient,
 	FTM_CHAR_PTR		pDeviceID
 );
+
+FTM_RET	FTOM_TP_RESTAPI_DEVICE_getList
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTOM_TP_DEVICE_PTR	pDevices,
+	FTM_ULONG			ulMaxCount,
+	FTM_ULONG_PTR		pulCount
+);
+
 /********************************************************************
  * Sensor management
  ********************************************************************/
@@ -155,7 +152,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_delete
 FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 (
 	FTOM_TP_RESTAPI_PTR	pClient,
-	FTOM_TP_RESTAPI_SENSOR_PTR	pSensors,
+	FTOM_TP_SENSOR_PTR	pSensors,
 	FTM_ULONG			ulMaxCount,
 	FTM_ULONG_PTR		pulCount
 );

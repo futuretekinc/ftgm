@@ -3,6 +3,53 @@
 #include "ftom_ep.h"
 #include "ftom_msg.h"
 
+static
+FTM_CHAR_PTR	pMsgTypeString[] =
+{
+	"FTOM_MSG_TYPE_QUIT",
+	"FTOM_MSG_TYPE_INITIALIZE_DONE",
+
+	"FTOM_MSG_TYPE_CONNECTED",
+	"FTOM_MSG_TYPE_DISCONNECTED",
+	"FTOM_MSG_TYPE_CONNECTION_STATUS",
+
+	"FTOM_MSG_TYPE_GW_STATUS",
+
+	"FTOM_MSG_TYPE_EP_STATUS",
+	"FTOM_MSG_TYPE_EP_DATA",
+	"FTOM_MSG_TYPE_EP_CTRL",
+
+	"FTOM_MSG_TYPE_DISCOVERY",
+	"FTOM_MSG_TYPE_DISCOVERY_INFO",
+	"FTOM_MSG_TYPE_DISCOVERY_DONE",
+
+	"FTOM_MSG_TYPE_SERVER_SYNC",
+	"FTOM_MSG_TYPE_TIME_SYNC",
+
+	"FTOM_MSG_TYPE_ALERT",
+
+	"FTOM_MSG_TYPE_EVENT",
+
+	"FTOM_MSG_TYPE_ACTION",
+	"FTOM_MSG_TYPE_ACTION_ACTIVATION",
+
+	"FTOM_MSG_TYPE_RULE",
+	"FTOM_MSG_TYPE_RULE_ACTIVATION",
+
+	"FTOM_MSG_TYPE_TP_REQ_SET_REPORT_INTERVAL",
+	"FTOM_MSG_TYPE_TP_REQ_RESTART",
+	"FTOM_MSG_TYPE_TP_REQ_REBOOT",
+	"FTOM_MSG_TYPE_TP_REQ_POWER_OFF",
+	"FTOM_MSG_TYPE_TP_REQ_CONTROL_ACTUATOR",
+	"FTOM_MSG_TYPE_TP_RESPONSE",
+
+	"FTOM_MSG_TYPE_SNMPC_GET_EP_DATA",
+	"FTOM_MSG_TYPE_SNMPC_SET_EP_DATA",
+
+	"FTOM_MSG_TYPE_NET_STAT",
+	"FTOM_MSG_TYPE_MAX"
+};
+
 FTM_RET FTOM_MSG_createInitializeDone
 (
 	FTOM_MSG_PTR _PTR_ ppMsg
@@ -233,6 +280,35 @@ FTM_RET FTOM_MSG_createEPCtrl
 	pMsg->ulDuration= ulDuration;
 
 	*ppMsg = pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTOM_MSG_createEPDataServerTime
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_ULONG			ulTime,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_EP_DATA_SERVER_TIME_PTR	pMsg;
+	FTM_ULONG ulMsgLen = sizeof(FTOM_MSG_EP_DATA_SERVER_TIME);
+
+	pMsg = (FTOM_MSG_EP_DATA_SERVER_TIME_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_EP_DATA_SERVER_TIME;
+	pMsg->ulLen 	= ulMsgLen;
+	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
+	pMsg->ulTime 	= ulTime;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
 
 	return	FTM_RET_OK;
 }
@@ -503,6 +579,22 @@ FTM_RET	FTOM_MSG_copy
 	return	FTM_RET_OK;
 }
 
+FTM_CHAR_PTR	FTOM_MSG_printType
+(
+	FTOM_MSG_TYPE	xType
+)
+{
+	static FTM_CHAR	pBuff[32];
+
+	if (xType < FTOM_MSG_TYPE_MAX)
+	{
+		return	pMsgTypeString[xType];
+	}
+
+	sprintf(pBuff, "%08lx", (FTM_ULONG)xType);
+
+	return	pBuff;
+}
 /********************************************************************************
  * Event  
  ********************************************************************************/
@@ -797,6 +889,7 @@ FTM_RET FTOM_MSG_TP_createReqControlActuator
 
 	return	FTM_RET_OK;
 }
+
 FTM_RET	FTOM_MSG_TP_createResponse
 (
 	FTM_CHAR_PTR	pMsgID,
@@ -826,6 +919,90 @@ FTM_RET	FTOM_MSG_TP_createResponse
 	pMsg->nCode = nCode;
 	strcpy(pMsg->pMsgID, pMsgID);
 	strcpy(pMsg->pMessage, pMessage);
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MSG_TP_createReqRestart
+(
+	FTM_CHAR_PTR	pReqID,
+	FTOM_MSG_PTR _PTR_	ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+	ASSERT(pReqID != NULL);
+
+	FTOM_MSG_TP_REQ_RESTART_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_TP_REQ_RESTART) + strlen(pReqID) + 1;
+
+	pMsg = (FTOM_MSG_TP_REQ_RESTART_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_TP_REQ_RESTART;
+	pMsg->ulLen = ulMsgLen;
+	strcpy(pMsg->pReqID, pReqID);
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MSG_TP_createReqReboot
+(
+	FTM_CHAR_PTR	pReqID,
+	FTOM_MSG_PTR _PTR_	ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+	ASSERT(pReqID != NULL);
+
+	FTOM_MSG_TP_REQ_REBOOT_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_TP_REQ_REBOOT) + strlen(pReqID) + 1;
+
+	pMsg = (FTOM_MSG_TP_REQ_REBOOT_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_TP_REQ_REBOOT;
+	pMsg->ulLen = ulMsgLen;
+	strcpy(pMsg->pReqID, pReqID);
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MSG_TP_createReqPowerOff
+(
+	FTM_CHAR_PTR	pReqID,
+	FTOM_MSG_PTR _PTR_	ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+	ASSERT(pReqID != NULL);
+
+	FTOM_MSG_TP_REQ_POWER_OFF_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_TP_REQ_POWER_OFF) + strlen(pReqID) + 1;
+
+	pMsg = (FTOM_MSG_TP_REQ_POWER_OFF_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_TP_REQ_POWER_OFF;
+	pMsg->ulLen = ulMsgLen;
+	strcpy(pMsg->pReqID, pReqID);
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
 

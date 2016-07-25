@@ -929,6 +929,17 @@ FTM_RET	FTOM_EP_getDataListWithTime
 	return	xRet;
 }
 
+FTM_RET	FTOM_EP_setServerTime
+(
+	FTOM_EP_PTR		pEP,
+	FTM_ULONG		ulTime
+)
+{
+	ASSERT(pEP != NULL);
+
+	return	FTM_TIME_setSeconds(&pEP->xServerTime, ulTime);
+}
+
 FTM_RET	FTOM_EP_setData
 (
 	FTOM_EP_PTR 	pEP, 
@@ -1499,6 +1510,7 @@ FTM_RET	FTOM_EP_print
 		MESSAGE("%16s : NOT EXISTS\n", "VALUE");
 	}
 	
+	MESSAGE("%16s : %s\n", "Server Time", FTM_TIME_printf(&pEP->xServerTime, NULL));	
 	return	FTM_RET_OK;
 }
 

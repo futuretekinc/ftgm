@@ -22,6 +22,7 @@ typedef	enum
 	FTOM_MSG_TYPE_EP_STATUS,
 	FTOM_MSG_TYPE_EP_DATA,
 	FTOM_MSG_TYPE_EP_CTRL,
+	FTOM_MSG_TYPE_EP_DATA_SERVER_TIME,
 
 	FTOM_MSG_TYPE_DISCOVERY,
 	FTOM_MSG_TYPE_DISCOVERY_INFO,
@@ -42,6 +43,8 @@ typedef	enum
 
 	FTOM_MSG_TYPE_TP_REQ_SET_REPORT_INTERVAL,
 	FTOM_MSG_TYPE_TP_REQ_RESTART,
+	FTOM_MSG_TYPE_TP_REQ_REBOOT,
+	FTOM_MSG_TYPE_TP_REQ_POWER_OFF,
 	FTOM_MSG_TYPE_TP_REQ_CONTROL_ACTUATOR,
 	FTOM_MSG_TYPE_TP_RESPONSE,
 
@@ -71,6 +74,10 @@ FTM_RET	FTOM_MSG_copy
 	FTOM_MSG_PTR _PTR_ ppNewMsg
 );
 
+FTM_CHAR_PTR	FTOM_MSG_printType
+(
+	FTOM_MSG_TYPE	xType
+);
 /**************************************************************
  * System initialize done 
  **************************************************************/
@@ -176,6 +183,22 @@ FTM_RET FTOM_MSG_createEPCtrl
 	FTM_EP_CTRL			xCtrl,
 	FTM_ULONG			ulDuration,
 	FTOM_MSG_EP_CTRL_PTR _PTR_ ppMsg
+);
+
+typedef struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTOM_MSG_ID		xMsgID;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	FTM_ULONG		ulTime;	
+}	FTOM_MSG_EP_DATA_SERVER_TIME, _PTR_ FTOM_MSG_EP_DATA_SERVER_TIME_PTR;
+
+FTM_RET FTOM_MSG_createEPDataServerTime
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_ULONG			ulTime,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
 );
 
 typedef struct
@@ -471,6 +494,32 @@ FTM_RET	FTOM_MSG_createNetDisconnected
 /************************************************
  * Thing+ 
  ************************************************/
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_CHAR		pReqID[];
+}	FTOM_MSG_TP_REQ_REBOOT, _PTR_ FTOM_MSG_TP_REQ_REBOOT_PTR;
+
+FTM_RET	FTOM_MSG_TP_createReqReboot
+(
+	FTM_CHAR_PTR		pReqID,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+);
+
+typedef	struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTM_CHAR		pReqID[];
+}	FTOM_MSG_TP_REQ_POWER_OFF, _PTR_ FTOM_MSG_TP_REQ_POWER_OFF_PTR;
+
+FTM_RET	FTOM_MSG_TP_createReqPowerOff
+(
+	FTM_CHAR_PTR		pReqID,
+	FTOM_MSG_PTR _PTR_ 	ppMsg
+);
+
 typedef	struct
 {
 	FTOM_MSG_TYPE	xType;

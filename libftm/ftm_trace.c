@@ -24,7 +24,7 @@ FTM_TRACE_CFG	_xConfig =
 {
 	.bShowIndex = FTM_FALSE,
 	.bTimeInfo	= FTM_FALSE,
-	.bLine		= FTM_FALSE,
+	.bLine		= FTM_TRUE,
 	.xFile = 
 	{
 		.pPath = "./",
@@ -69,7 +69,7 @@ FTM_RET	FTM_TRACE_loadConfig
 	FTM_CONFIG_ITEM	xSection;
 	FTM_CONFIG_ITEM	xSubSection;
 
-	xRet = FTM_CONFIG_getItem(pConfig, "debug", &xSection);
+	xRet = FTM_CONFIG_getItem(pConfig, "trace", &xSection);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
@@ -84,7 +84,6 @@ FTM_RET	FTM_TRACE_loadConfig
 		FTM_CONFIG_ITEM_getItemString(&xSubSection, "prefix", _xConfig.xFile.pPrefix, sizeof(_xConfig.xFile.pPrefix) - 1);
 	}
 
-#if 0
 	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "modules", &xSubSection);
 	if (xRet == FTM_RET_OK)
 	{
@@ -102,55 +101,49 @@ FTM_RET	FTM_TRACE_loadConfig
 				xRet = FTM_CONFIG_LIST_getItemAt(&xSubSection, i, &xItem);
 				if (xRet == FTM_RET_OK)
 				{
-					FTM_ULONG	ulModuleID = 0;
+					FTM_CHAR	pBuffer[64];
 
-					xRet = FTM_CONFIG_ITEM_getItemULONG(&xItem, "id", &ulModuleID);
+					memset(pBuffer, 0, sizeof(pBuffer));
+					xRet = FTM_CONFIG_ITEM_getItemString(&xItem, "name", pBuffer, sizeof(pBuffer) - 1);
 					if (xRet == FTM_RET_OK)
 					{	
-						FTM_CHAR	pName[64];
-						FTM_CHAR	pBuffer[64];
-						FTM_BOOL	bEnabled = FTM_FALSE;
-						FTM_ULONG	ulLevel = FTM_TRACE_LEVEL_FATAL;
-						FTM_TRACE_OUT	xOut= FTM_TRACE_OUT_TERM;
+						FTM_TRACE_MODULE_TYPE	xType;
 
-						memset(pName, 0, sizeof(pName));
-						memset(pBuffer, 0, sizeof(pBuffer));
-						FTM_CONFIG_ITEM_getItemString(&xItem, "name", pName, sizeof(pName) - 1);
-						FTM_CONFIG_ITEM_getItemBOOL(&xItem, "enabled", &bEnabled);
+						xRet = FTM_TRACE_getType(pBuffer, &xType);
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Invalid module type[%s]\n", pBuffer);
+							continue;	
+						}
+
 						xRet = FTM_CONFIG_ITEM_getItemString(&xItem, "level", pBuffer, sizeof(pBuffer) - 1);
 						if (xRet == FTM_RET_OK)
 						{
-							FTM_TRACE_strToLevel(pBuffer, &ulLevel);
+							FTM_TRACE_LEVEL	xLevel;
+
+							xRet = FTM_TRACE_strToLevel(pBuffer, &xLevel);
+							if (xRet == FTM_RET_OK)
+							{
+								FTM_TRACE_setLevel(xType, xLevel);
+							}
 						}
 
 						xRet = FTM_CONFIG_ITEM_getItemString(&xItem, "out", pBuffer, sizeof(pBuffer) - 1);
 						if (xRet == FTM_RET_OK)
 						{
-							if(strcasecmp(pBuffer, "term") == 0)
+							FTM_TRACE_OUT	xOut;
+							xRet = FTM_TRACE_strToOut(pBuffer, &xOut);
+							if (xRet == FTM_RET_OK)
 							{
-								xOut = FTM_TRACE_OUT_TERM;	
-							}
-							else if(strcasecmp(pBuffer, "file") == 0)
-							{
-								xOut = FTM_TRACE_OUT_FILE;	
-							}
-							else if(strcasecmp(pBuffer, "syslog") == 0)
-							{
-								xOut = FTM_TRACE_OUT_SYSLOG;	
-							}
-							else if(strcasecmp(pBuffer, "user") == 0)
-							{
-								xOut = FTM_TRACE_OUT_USER;	
+								FTM_TRACE_setOut(xType, xOut);
 							}
 						}
-						
-						FTM_TRACE_setInfo2(ulModuleID, bEnabled, pName, ulLevel, xOut);
 					}
 				}
 			}
 		}
 	}
-#endif
+
 	return	FTM_RET_OK;
 }
 
@@ -288,7 +281,7 @@ FTM_RET	FTM_TRACE_strToLevel
 	{
 		*pulLevel = FTM_TRACE_LEVEL_ALL;	
 	}
-	else if ((strcasecmp(pString, "off") == 0) || strcasecmp(pString, "disable"))
+	else if ((strcasecmp(pString, "off") == 0) || strcasecmp(pString, "disable") == 0)
 	{
 		*pulLevel = FTM_TRACE_LEVEL_DISABLE;	
 	}
@@ -346,6 +339,7 @@ FTM_RET FTM_TRACE_setLevel
 	xRet = FTM_TRACE_getInfo(xType, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to get trace info!\n");
 		return	xRet;
 	}
 
@@ -725,6 +719,7 @@ FTM_RET	FTM_TRACE_shellCmd
 			FTM_INT	nCount = 0;
 
 			fprintf(stdout, "# Trace Configuration\n");
+			fprintf(stdout, "[ Modules ]\n");
 			fprintf(stdout, "     %16s %8s %8s\n", "NAME", "LEVEL", "OUTPUT");
 			for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
 			{
@@ -739,10 +734,10 @@ FTM_RET	FTM_TRACE_shellCmd
 				}
 			}
 
-			fprintf(stdout, "# Display Options\n");
+			fprintf(stdout, "\n[ Display Options ]\n");
 			fprintf(stdout, "%16s : %s\n", "Index", _xConfig.bShowIndex?"Enabled":"Disabled");
 			fprintf(stdout, "%16s : %s\n", "Time",  _xConfig.bTimeInfo?"Enabled":"Disabled");
-			fprintf(stdout, "%16s : %s\n", "Lene",  _xConfig.bLine?"Enabled":"Disabled");
+			fprintf(stdout, "%16s : %s\n", "Line",  _xConfig.bLine?"Enabled":"Disabled");
 		}
 		break;
 
@@ -756,7 +751,43 @@ FTM_RET	FTM_TRACE_shellCmd
 			xRet = FTM_TRACE_getInfoWithName(pArgv[1], &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
-				fprintf(stdout, "Can't found module[%s].\n"	, pArgv[1]);
+				if (strcasecmp(pArgv[1], "index")  == 0)
+				{
+					if (strcasecmp(pArgv[2], "enable") == 0)
+					{
+						_xConfig.bShowIndex = FTM_TRUE;
+					}
+					else if (strcasecmp(pArgv[2], "disable") == 0)
+					{
+						_xConfig.bShowIndex = FTM_FALSE;
+					}
+				}
+				else if (strcasecmp(pArgv[1], "time")  == 0)
+				{
+					if (strcasecmp(pArgv[2], "enable") == 0)
+					{
+						_xConfig.bTimeInfo = FTM_TRUE;
+					}
+					else if (strcasecmp(pArgv[2], "disable") == 0)
+					{
+						_xConfig.bTimeInfo = FTM_FALSE;
+					}
+				}
+				if (strcasecmp(pArgv[1], "line")  == 0)
+				{
+					if (strcasecmp(pArgv[2], "enable") == 0)
+					{
+						_xConfig.bLine = FTM_TRUE;
+					}
+					else if (strcasecmp(pArgv[2], "disable") == 0)
+					{
+						_xConfig.bLine = FTM_FALSE;
+					}
+				}
+				else
+				{
+					fprintf(stdout, "Can't found module[%s].\n"	, pArgv[1]);
+				}
 				break;
 			}
 

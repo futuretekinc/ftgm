@@ -76,12 +76,6 @@ FTOM_TP_CLIENT_CONFIG	xTPClientDefaultConfig =
 		.usPort = 8888
 	},
 
-	.xSubscriber =
-	{
-		.pHost = "127.0.0.1",
-		.usPort = 8890
-	},
-
 	.xMQTT = 
 	{
 		.pHost = FTOM_TP_CLIENT_DEFAULT_BROKER,
@@ -336,7 +330,6 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_CONFIG_ITEM xFTOMCConfig;
-		FTM_CONFIG_ITEM xSubscriberConfig;
 		FTM_CONFIG_ITEM	xMQTTConfig;
 		FTM_CONFIG_ITEM	xRESTApiConfig;
 
@@ -376,7 +369,7 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 			INFO("Can not find a report interval for the TPClient!\n");
 		}
 		
-		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "ftomc", &xFTOMCConfig);
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "server", &xFTOMCConfig);
 		if (xRet == FTM_RET_OK)
 		{
 			xRet = FTM_CONFIG_ITEM_getItemString(&xFTOMCConfig, "host", xTPConfig.xFTOMC.pHost, FTM_HOST_LEN);
@@ -386,22 +379,6 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 			}
 		
 			xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xFTOMCConfig, "port", &xTPConfig.xFTOMC.usPort);
-			if (xRet != FTM_RET_OK)
-			{
-				INFO("Can not find a port for the TPClient!\n");
-			}
-		}
-
-		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "subscriber", &xSubscriberConfig);
-		if (xRet == FTM_RET_OK)
-		{
-			xRet = FTM_CONFIG_ITEM_getItemString(&xSubscriberConfig, "host", xTPConfig.xSubscriber.pHost, FTM_HOST_LEN);
-			if (xRet != FTM_RET_OK)
-			{
-				ERROR2(xRet, "Can not find a host for the TPClient!\n");
-			}
-		
-			xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xSubscriberConfig, "port", &xTPConfig.xSubscriber.usPort);
 			if (xRet != FTM_RET_OK)
 			{
 				INFO("Can not find a port for the TPClient!\n");
@@ -475,6 +452,8 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 		ERROR2(xRet, "Failed to set TP Client configuration!\n");
 	}
 
+	FTM_TRACE_loadConfig(pConfig);
+
 	return	xRet;
 }
 
@@ -546,7 +525,6 @@ FTM_RET	FTOM_TP_CLIENT_saveConfig
 	FTM_RET				xRet;
 	FTM_CONFIG_ITEM		xSection;
 	FTM_CONFIG_ITEM		xFTOMCConfig;
-	FTM_CONFIG_ITEM		xSubscriberConfig;
 	FTM_CONFIG_ITEM		xMQTTConfig;
 	FTM_CONFIG_ITEM		xRESTApiConfig;
 
@@ -596,10 +574,10 @@ FTM_RET	FTOM_TP_CLIENT_saveConfig
 		INFO("Can not save a report interval for the TPClient!\n");
 	}
 
-	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "ftomc", &xFTOMCConfig);
+	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "server", &xFTOMCConfig);
 	if (xRet != FTM_RET_OK)
 	{
-		xRet = FTM_CONFIG_ITEM_createChildItem(&xSection, "ftomc", &xFTOMCConfig);
+		xRet = FTM_CONFIG_ITEM_createChildItem(&xSection, "server", &xFTOMCConfig);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to create FTOM client section!\n");
@@ -614,29 +592,6 @@ FTM_RET	FTOM_TP_CLIENT_saveConfig
 	}
 
 	xRet = FTM_CONFIG_ITEM_setItemUSHORT(&xFTOMCConfig, "port", pClient->xConfig.xFTOMC.usPort);
-	if (xRet != FTM_RET_OK)
-	{
-		INFO("Can not save a port for the TPClient!\n");
-	}
-
-	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "subscriber", &xSubscriberConfig);
-	if (xRet != FTM_RET_OK)
-	{
-		xRet = FTM_CONFIG_ITEM_createChildItem(&xSection, "subscriber", &xSubscriberConfig);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to create subscriber section!\n");
-			return	xRet;	
-		}
-	}
-
-	xRet = FTM_CONFIG_ITEM_setItemString(&xSubscriberConfig, "host", pClient->xConfig.xSubscriber.pHost);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Can not save a host for the TPClient!\n");
-	}
-
-	xRet = FTM_CONFIG_ITEM_setItemUSHORT(&xSubscriberConfig, "port", pClient->xConfig.xSubscriber.usPort);
 	if (xRet != FTM_RET_OK)
 	{
 		INFO("Can not save a port for the TPClient!\n");
@@ -718,21 +673,17 @@ FTM_RET	FTOM_TP_CLIENT_showConfig
 	MESSAGE("%16s : %s\n", "Password", pClient->xConfig.pPasswd);
 	MESSAGE("%16s : %lu\n","Report Interval", pClient->xConfig.ulReportInterval);
 
-	MESSAGE("\n# %s \n", "FTOMC");
+	MESSAGE("\n# %s \n", "Server");
 	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.xFTOMC.pHost);
 	MESSAGE("%16s : %d\n", "Port", pClient->xConfig.xFTOMC.usPort);
 
-	MESSAGE("\n# %s\n", "Subscriber");
-	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.xSubscriber.pHost);
-	MESSAGE("%16s : %d\n", "Port", pClient->xConfig.xSubscriber.usPort);
-
-	MESSAGE("\n# %s\n", "MQTT");
+	MESSAGE("\n# %s\n", "ThingPlus MQTT");
 	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.xMQTT.pHost);
 	MESSAGE("%16s : %d\n", "Port", pClient->xConfig.xMQTT.usPort);
 	MESSAGE("%16s : %s\n", "Secure Mode", (pClient->xConfig.xMQTT.bSecure)?"on":"off");
 	MESSAGE("%16s : %lu\n","Retry Interval", pClient->xConfig.xMQTT.ulRetryInterval);
 
-	MESSAGE("\n# %s\n", "RESTAPI");
+	MESSAGE("\n# %s\n", "ThingPlus RESTAPI");
 	MESSAGE("%16s : %s\n", "Base URL", pClient->xConfig.xRESTApi.pBaseURL);
 	MESSAGE("%16s : %s\n", "Secure Mode", (pClient->xConfig.xRESTApi.bSecure)?"on":"off");
 
@@ -847,15 +798,24 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 
 	FTOM_TP_RESTAPI_setVerbose(&pClient->xRESTApi, FTM_TRUE);
 
-	FTM_TIMER_initS(&pClient->xRetryTimer,	0);
-	FTM_TIMER_initS(&pClient->xReportTimer, 	0);
+	FTM_TIMER_initS(&pClient->xRetryTimer, 0);
+	FTM_TIMER_initS(&pClient->xReportTimer,	0);
 
 	sprintf(pTopic, "v/a/g/%s/res", pClient->xConfig.pGatewayID);
-	FTOM_MQTT_CLIENT_subscribe(&pClient->xMQTT, pTopic);
-	sprintf(pTopic, "v/a/g/%s/req", pClient->xConfig.pGatewayID);
-	FTOM_MQTT_CLIENT_subscribe(&pClient->xMQTT, pTopic);
+	xRet = FTOM_MQTT_CLIENT_subscribe(&pClient->xMQTT, pTopic);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to subscribe topic[%s]\n",	pTopic);
+	}
 
-	pClient->bConnected 	= FTM_FALSE;
+	sprintf(pTopic, "v/a/g/%s/req", pClient->xConfig.pGatewayID);
+	xRet = FTOM_MQTT_CLIENT_subscribe(&pClient->xMQTT, pTopic);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to subscribe topic[%s]\n",	pTopic);
+	}
+
+	pClient->bConnected	= FTM_FALSE;
 	pClient->bStop		= FTM_FALSE;
 
 	xRet = FTOM_CLIENT_start(pClient->pFTOMC);
@@ -967,6 +927,7 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 				{
 					FTOM_MSG_TP_REQ_RESTART_PTR pMsg = (FTOM_MSG_TP_REQ_RESTART_PTR)pBaseMsg;
 
+					TRACE("TPClient restarted!\n");
 					FTOM_TP_CLIENT_respose(pClient, pMsg->pReqID, 0, "");
 				}
 				break;
@@ -1074,6 +1035,18 @@ FTM_VOID_PTR FTOM_TP_CLIENT_process
 				}
 				break;
 
+			case	FTOM_MSG_TYPE_EP_DATA_SERVER_TIME:
+				{
+					FTOM_MSG_EP_DATA_SERVER_TIME_PTR pMsg = (FTOM_MSG_EP_DATA_SERVER_TIME_PTR)pBaseMsg;
+
+					xRet = FTOM_CLIENT_EP_DATA_setServerTime(pClient->pFTOMC, pMsg->pEPID, pMsg->ulTime);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed to set EP[%s] data server time!\n", pMsg->pEPID);
+					}
+				}
+				break;
+
 			default:
 				{
 					ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Not supported msg[%08x]\n", pBaseMsg->xType);	
@@ -1125,6 +1098,9 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 {
 	FTM_RET	xRet;
 	FTOM_TP_GATEWAY_PTR pGateway = NULL;
+	FTM_INT     i, j;  
+	FTM_ULONG   ulDeviceCount = 0;
+	FTM_ULONG   ulSensorCount = 0;
 
 	xRet = FTOM_TP_GATEWAY_create(&pGateway);
 	if (xRet != FTM_RET_OK)
@@ -1138,102 +1114,96 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 		ERROR2(xRet, "Failed to get gateway information.\n");
 		goto finish;
 	}
-	else
+
+	TRACE("%16s : %s\n",  "ID",   pGateway->pID);    
+	TRACE("%16s : %s\n",  "Name", pGateway->pName);    
+	TRACE("%16s : %lu\n", "Report Interval", pGateway->ulReportInterval);    
+	TRACE("%16s : %llu\n","Installed Time", pGateway->ullCTime);    
+	TRACE("%16s : %llu\n","Modified Time", pGateway->ullMTime);    
+	FTM_LIST_count(pGateway->pDeviceList, &ulDeviceCount);
+	TRACE("%16s : %lu\n", "Devices", ulDeviceCount);
+	for(i = 0 ; i < ulDeviceCount ; i++)
 	{   
-		FTM_INT     i, j;  
-		FTM_ULONG   ulDeviceCount = 0;
-		FTM_ULONG   ulSensorCount = 0;
+		FTM_CHAR_PTR	pDeviceID = NULL;
 
-		MESSAGE("%16s : %s\n",  "ID",   pGateway->pID);    
-		MESSAGE("%16s : %s\n",  "Name", pGateway->pName);    
-		MESSAGE("%16s : %lu\n", "Report Interval", pGateway->ulReportInterval);    
-		MESSAGE("%16s : %llu\n","Installed Time", pGateway->ullCTime);    
-		MESSAGE("%16s : %llu\n","Modified Time", pGateway->ullMTime);    
-		MESSAGE("%16s : ", "Devices");
-		FTM_LIST_count(pGateway->pDeviceList, &ulDeviceCount);
-		for(i = 0 ; i < ulDeviceCount ; i++)
+		xRet = FTM_LIST_getAt(pGateway->pDeviceList, i, (FTM_VOID_PTR _PTR_)&pDeviceID);
+		if (xRet == FTM_RET_OK)
 		{   
-			FTM_CHAR_PTR    pDeviceID = NULL;
-			xRet = FTM_LIST_getAt(pGateway->pDeviceList, i, (FTM_VOID_PTR _PTR_)&pDeviceID);
-			if (xRet == FTM_RET_OK)
-			{   
-				MESSAGE("%16s ", pDeviceID);
-				FTOM_CLIENT_NODE_setServerRegistered(pClient->pFTOMC, pDeviceID, FTM_TRUE);
-			}   
+			TRACE("%16s   %s\n", "", pDeviceID);
+			FTOM_CLIENT_NODE_setServerRegistered(pClient->pFTOMC, pDeviceID, FTM_TRUE);
 		}   
-		MESSAGE("\n");
+	}   
 
-		MESSAGE("%16s : ", "Sensors");
+	FTM_LIST_count(pGateway->pSensorList, &ulSensorCount);
+	TRACE("%16s : %lu\n", "Sensors", ulSensorCount);
 
-		FTM_LIST_count(pGateway->pSensorList, &ulSensorCount);
-		for(i = 0 ; i < ulSensorCount ; i++)
+	for(i = 0 ; i < ulSensorCount ; i++)
+	{   
+		FTOM_TP_SENSOR_PTR	pSensor;
+
+		xRet = FTM_LIST_getAt(pGateway->pSensorList, i, (FTM_VOID_PTR _PTR_)&pSensor);
+		if (xRet == FTM_RET_OK)
 		{   
-			FTM_CHAR_PTR    pSensorID = NULL;
-			xRet = FTM_LIST_getAt(pGateway->pSensorList, i, (FTM_VOID_PTR _PTR_)&pSensorID);
-			if (xRet == FTM_RET_OK)
-			{   
-				MESSAGE("%16s ", pSensorID);
-				FTOM_CLIENT_EP_setServerRegistered(pClient->pFTOMC, pSensorID, FTM_TRUE);
-			}   
+			TRACE("%16s   %s\n", "", pSensor->pID);
+			FTOM_CLIENT_EP_setServerRegistered(pClient->pFTOMC, pSensor->pID, FTM_TRUE);
 		}   
-		MESSAGE("\n");
+	}   
 
-		if (bAutoRegister)
+	if (bAutoRegister)
+	{
+		FTM_ULONG	ulNodeCount = 0;
+		FTM_ULONG	ulEPCount = 0;
+
+		xRet = FTOM_CLIENT_NODE_count(pClient->pFTOMC, &ulNodeCount);
+		if (xRet != FTM_RET_OK)
 		{
-			FTM_ULONG	ulNodeCount = 0;
-			FTM_ULONG	ulEPCount = 0;
+			goto finish;	
+		}
 
-			xRet = FTOM_CLIENT_NODE_count(pClient->pFTOMC, &ulNodeCount);
+		for(i = 0 ; i < ulNodeCount ; i++)
+		{
+			FTM_NODE	xNode;
+			FTM_BOOL	bRegistered = FTM_FALSE;
+
+			xRet = FTOM_CLIENT_NODE_getAt(pClient->pFTOMC, i, &xNode);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Can't get EP info at %d\n", i);
+				continue;	
+			}
+
+			xRet = FTOM_CLIENT_NODE_getServerRegistered(pClient->pFTOMC, xNode.pDID, &bRegistered);
+			if ((xRet == FTM_RET_OK) && (!bRegistered))
+			{
+				FTOM_TP_CLIENT_NODE_register(pClient, &xNode);	
+			}
+
+			xRet = FTOM_CLIENT_EP_count(pClient->pFTOMC, 0, xNode.pDID, &ulEPCount);
 			if (xRet != FTM_RET_OK)
 			{
 				goto finish;	
 			}
 
-			for(i = 0 ; i < ulNodeCount ; i++)
+			for(j = 0 ; j < ulEPCount ;j++)
 			{
-				FTM_NODE	xNode;
+				FTM_EP	xEP;
 				FTM_BOOL	bRegistered = FTM_FALSE;
 
-				xRet = FTOM_CLIENT_NODE_getAt(pClient->pFTOMC, i, &xNode);
+				xRet = FTOM_CLIENT_EP_getAt(pClient->pFTOMC, j, &xEP);
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR2(xRet, "Can't get EP info at %d\n", i);
 					continue;	
 				}
-
-				xRet = FTOM_CLIENT_NODE_getServerRegistered(pClient->pFTOMC, xNode.pDID, &bRegistered);
+			
+				xRet = FTOM_CLIENT_EP_getServerRegistered(pClient->pFTOMC, xEP.pEPID, &bRegistered);
 				if ((xRet == FTM_RET_OK) && (!bRegistered))
 				{
-					FTOM_TP_CLIENT_NODE_register(pClient, &xNode);	
-				}
-
-				xRet = FTOM_CLIENT_EP_count(pClient->pFTOMC, 0, xNode.pDID, &ulEPCount);
-				if (xRet != FTM_RET_OK)
-				{
-					goto finish;	
-				}
-	
-				for(j = 0 ; j < ulEPCount ;j++)
-				{
-					FTM_EP	xEP;
-					FTM_BOOL	bRegistered = FTM_FALSE;
-	
-					xRet = FTOM_CLIENT_EP_getAt(pClient->pFTOMC, j, &xEP);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR2(xRet, "Can't get EP info at %d\n", i);
-						continue;	
-					}
-				
-					xRet = FTOM_CLIENT_EP_getServerRegistered(pClient->pFTOMC, xEP.pEPID, &bRegistered);
-					if ((xRet == FTM_RET_OK) && (!bRegistered))
-					{
-						FTOM_TP_CLIENT_EP_register(pClient, &xEP);	
-					}
+					FTOM_TP_CLIENT_EP_register(pClient, &xEP);	
 				}
 			}
 		}
-	}   
+	}
 
 finish:
 
