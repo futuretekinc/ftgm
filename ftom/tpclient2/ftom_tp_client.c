@@ -13,13 +13,7 @@
 #define __MODULE__ FTOM_TRACE_MODULE_CLIENT
 
 static 
-FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
-(
-	FTM_VOID_PTR 		pData
-);
-
-static 
-FTM_VOID_PTR FTOM_TP_CLIENT_threadEvent
+FTM_VOID_PTR FTOM_TP_CLIENT_process
 (
 	FTM_VOID_PTR 		pData
 );
@@ -159,25 +153,11 @@ FTM_RET	FTOM_TP_CLIENT_init
 
 	pClient->bStop = FTM_TRUE;
 
-	xRet = FTOM_TP_GATEWAY_create(&pClient->pGateway);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to initialize gateway!\n");
-		goto error;	
-	}
-
-	xRet = FTM_LOCK_create(&pClient->pLock);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to initialize lock!\n");
-		goto error;	
-	}
-
 	xRet = FTOM_CLIENT_NET_create((FTOM_CLIENT_NET_PTR _PTR_)&pClient->pFTOMC);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to create client!\n");
-		goto error;	
+		return	0;	
 	}
 	
 	xRet =FTOM_CLIENT_setNotifyCB((FTOM_CLIENT_PTR)pClient->pFTOMC, FTOM_TP_CLIENT_notifyCB, pClient);
@@ -219,20 +199,7 @@ FTM_RET	FTOM_TP_CLIENT_init
 		ERROR2(xRet, "Failed to set MQTT client callback set!\n");
 	}
 
-	return	FTM_RET_OK;
-
 error:
-	
-	if (pClient->pGateway != NULL)
-	{
-		FTOM_TP_GATEWAY_destroy(&pClient->pGateway);	
-	}
-
-	if (pClient->pFTOMC != NULL)
-	{
-		FTOM_CLIENT_NET_destroy((FTOM_CLIENT_NET_PTR _PTR_)&pClient->pFTOMC);
-	}
-
 	return	xRet;
 }
 
@@ -249,20 +216,7 @@ FTM_RET	FTOM_TP_CLIENT_final
 	FTOM_MQTT_CLIENT_final(&pClient->xMQTT);
 	FTOM_MSGQ_final(&pClient->xMsgQ);
 
-	if (pClient->pLock != NULL)
-	{
-		FTM_LOCK_destroy(&pClient->pLock);	
-	}
-
-	if (pClient->pGateway != NULL)
-	{
-		FTOM_TP_GATEWAY_destroy(&pClient->pGateway);
-	}
-
-	if (pClient->pFTOMC != NULL)
-	{
-		FTOM_CLIENT_NET_destroy((FTOM_CLIENT_NET_PTR _PTR_)&pClient->pFTOMC);
-	}
+	FTOM_CLIENT_NET_destroy((FTOM_CLIENT_NET_PTR _PTR_)&pClient->pFTOMC);
 
 	return	FTM_RET_OK;
 }
@@ -754,36 +708,15 @@ FTM_RET	FTOM_TP_CLIENT_start
 )
 {
 	ASSERT(pClient != NULL);
-	FTM_RET	xRet;
-	FTM_INT	nRet;
-
-	if (pClient->xThreadMain != 0)
+	
+	if (pClient->xMain != 0)
 	{
-		xRet = FTM_RET_ALREADY_STARTED;	
-		goto finish;
+		return	FTM_RET_ALREADY_STARTED;	
 	}
 
-	nRet = pthread_create(&pClient->xThreadMain, NULL, FTOM_TP_CLIENT_threadMain, pClient);
-	if (nRet != 0)
-	{
-		xRet = FTM_RET_THREAD_CREATION_ERROR;
-		goto finish;
-	}
-
+	pthread_create(&pClient->xMain, NULL, FTOM_TP_CLIENT_process, pClient);
 
 	return	FTM_RET_OK;
-
-finish:
-
-	pClient->bStop = FTM_TRUE;
-
-	if (pClient->xThreadMain != 0)
-	{
-		pthread_cancel(pClient->xThreadMain);
-		pClient->xThreadMain = 0;
-	}
-
-	return	xRet;
 }
 
 FTM_RET	FTOM_TP_CLIENT_stop
@@ -795,8 +728,8 @@ FTM_RET	FTOM_TP_CLIENT_stop
 	
 	pClient->bStop = FTM_TRUE;
 
-	pthread_join(pClient->xThreadMain, NULL);
-	pClient->xThreadMain = 0;
+	pthread_join(pClient->xMain, NULL);
+	pClient->xMain = 0;
 
 	return	FTM_RET_OK;
 }
@@ -824,13 +757,12 @@ FTM_RET	FTOM_TP_CLIENT_waitingForFinished
 {
 	ASSERT(pClient != NULL);
 
-	pthread_join(pClient->xThreadMain, NULL);
-	pClient->xThreadMain = 0;
+	pthread_join(pClient->xMain, NULL);
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
+FTM_VOID_PTR FTOM_TP_CLIENT_process
 (
 	FTM_VOID_PTR pData
 )
@@ -838,9 +770,13 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 	ASSERT(pData != NULL);
 
 	FTM_RET					xRet;
-	FTM_INT					nRet;
 	FTOM_TP_CLIENT_PTR		pClient = (FTOM_TP_CLIENT_PTR)pData;
+	FTM_TIME				xBaseTime, xCurrentTime, xDiffTime;
+	FTM_BOOL				bConnected = FTM_FALSE;
 	FTM_CHAR				pTopic[FTM_MQTT_TOPIC_LEN + 1];
+
+	TRACE("TPClient[%s] started.\n", pClient->xConfig.pGatewayID);
+
 
 	xRet = FTOM_TP_RESTAPI_setUserID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
@@ -890,18 +826,47 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 
 	FTOM_MQTT_CLIENT_start(&pClient->xMQTT);
 
-	nRet = pthread_create(&pClient->xThreadEvent, NULL, FTOM_TP_CLIENT_threadEvent, pClient);
-	if (nRet != 0)
-	{
-		xRet = FTM_RET_THREAD_CREATION_ERROR;
-		goto finish;
-	}
-
+	FTM_TIME_getCurrent(&xBaseTime);
+	
 	while(!pClient->bStop)
 	{
 		FTOM_MSG_PTR	pBaseMsg;
 
-		xRet = FTOM_MSGQ_timedPop(&pClient->xMsgQ, 1000, &pBaseMsg);
+		FTOM_MQTT_CLIENT_isConnected(&pClient->xMQTT, &pClient->bConnected);
+
+		if(pClient->bConnected)
+		{
+			if (!bConnected)
+			{
+				FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
+				FTM_TIMER_initS(&pClient->xReportTimer, 	pClient->xConfig.ulReportInterval);
+				bConnected = pClient->bConnected;
+			}
+			else
+			{
+				if (FTM_TIMER_isExpired(&pClient->xReportTimer))
+				{
+					FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
+					FTM_TIMER_addS(&pClient->xReportTimer, pClient->xConfig.ulReportInterval);
+				}
+			}
+		}
+		else
+		{
+			if (bConnected)
+			{
+				bConnected = pClient->bConnected;
+			}
+		}
+
+		FTM_TIME_getCurrent(&xCurrentTime);
+		FTM_TIME_sub(&xCurrentTime, &xBaseTime, &xDiffTime);
+		FTM_TIME_addMS(&xBaseTime, FTOM_TPCLIENT_LOOP_INTERVAL, &xBaseTime);
+
+		FTM_UINT64	ullDiffTime = 0;
+		FTM_TIME_toMS(&xDiffTime, &ullDiffTime);
+
+		xRet = FTOM_MSGQ_timedPop(&pClient->xMsgQ, ullDiffTime, &pBaseMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			switch(pBaseMsg->xType)
@@ -1091,73 +1056,10 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 		}
 	}
 
-finish:
-	if (pClient->xThreadEvent != 0)
-	{
-		pthread_join(pClient->xThreadEvent, NULL);
-		pClient->xThreadEvent = 0;
-	}
-
 	FTOM_MQTT_CLIENT_stop(&pClient->xMQTT);
 	TRACE("TPClient[%s] stopped.\n", pClient->xConfig.pGatewayID);
 
 	FTOM_CLIENT_NET_stop((FTOM_CLIENT_NET_PTR)pClient->pFTOMC);
-
-	return 0;
-}
-
-FTM_VOID_PTR FTOM_TP_CLIENT_threadEvent
-(
-	FTM_VOID_PTR pData
-)
-{
-	ASSERT(pData != NULL);
-
-	FTOM_TP_CLIENT_PTR		pClient = (FTOM_TP_CLIENT_PTR)pData;
-	FTM_TIME				xBaseTime, xCurrentTime, xDiffTime;
-	FTM_BOOL				bConnected = FTM_FALSE;
-
-	FTM_TIMER_initS(&pClient->xRetryTimer, 0);
-	FTM_TIMER_initS(&pClient->xReportTimer,	0);
-
-	FTM_TIME_getCurrent(&xBaseTime);
-	
-	while(!pClient->bStop)
-	{
-		FTOM_MQTT_CLIENT_isConnected(&pClient->xMQTT, &pClient->bConnected);
-
-		if(pClient->bConnected)
-		{
-			if (!bConnected)
-			{
-				FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
-				FTM_TIMER_initS(&pClient->xReportTimer, 	pClient->xConfig.ulReportInterval);
-				bConnected = pClient->bConnected;
-			}
-			else
-			{
-				if (FTM_TIMER_isExpired(&pClient->xReportTimer))
-				{
-					FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
-					FTM_TIMER_addS(&pClient->xReportTimer, pClient->xConfig.ulReportInterval);
-				}
-			}
-		}
-		else
-		{
-			if (bConnected)
-			{
-				bConnected = pClient->bConnected;
-			}
-		}
-
-		FTM_TIME_getCurrent(&xCurrentTime);
-		FTM_TIME_sub(&xCurrentTime, &xBaseTime, &xDiffTime);
-		FTM_TIME_addMS(&xBaseTime, FTOM_TPCLIENT_LOOP_INTERVAL, &xBaseTime);
-
-		FTM_UINT64	ullDiffTime = 0;
-		FTM_TIME_toMS(&xDiffTime, &ullDiffTime);
-	}
 
 	return 0;
 }
@@ -1195,18 +1097,17 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 )
 {
 	FTM_RET	xRet;
+	FTOM_TP_GATEWAY_PTR pGateway = NULL;
 	FTM_INT     i, j;  
-	FTOM_TP_GATEWAY_PTR	pGateway = NULL;
 	FTM_ULONG   ulDeviceCount = 0;
 	FTM_ULONG   ulSensorCount = 0;
 
 	xRet = FTOM_TP_GATEWAY_create(&pGateway);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to create gateway information.\n");
-		goto finish;
+		ERROR2(xRet, "Can't creation gateway instance!\n");
+		return	xRet;	
 	}
-
 	xRet = FTOM_TP_RESTAPI_GW_getInfo(&pClient->xRESTApi, pGateway);
 	if (xRet != FTM_RET_OK)
 	{

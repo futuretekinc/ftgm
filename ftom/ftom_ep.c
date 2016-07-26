@@ -688,13 +688,8 @@ FTM_VOID_PTR FTOM_EP_threadMain
 
 		FTM_TIMER_initMS(&xLoopTimer, ulRemainTime);
 
-		while (FTM_TRUE)
+		while (!pEP->bSTop)
 		{
-			if (pEP->bStop)
-			{
-				break;	
-			}
-			
 			xRet = FTOM_MSGQ_timedPop(&pEP->xMsgQ, ulRemainTime, &pBaseMsg);
 			if (xRet != FTM_RET_OK)
 			{
