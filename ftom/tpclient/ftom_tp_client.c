@@ -379,7 +379,7 @@ FTM_RET	FTOM_TP_CLIENT_loadConfig
 		FTM_CONFIG_ITEM	xMQTTConfig;
 		FTM_CONFIG_ITEM	xRESTApiConfig;
 
-		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "id", xTPConfig.pGatewayID, FTM_GWID_LEN);
+		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "gatewayid", xTPConfig.pGatewayID, FTM_GWID_LEN);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Can not find the gateway id for the TPClient!\n");
@@ -756,11 +756,49 @@ FTM_RET	FTOM_TP_CLIENT_start
 	ASSERT(pClient != NULL);
 	FTM_RET	xRet;
 	FTM_INT	nRet;
+	FTM_CHAR				pTopic[FTM_MQTT_TOPIC_LEN + 1];
 
 	if (pClient->xThreadMain != 0)
 	{
 		xRet = FTM_RET_ALREADY_STARTED;	
 		goto finish;
+	}
+
+	xRet = FTOM_TP_RESTAPI_setUserID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set User ID!\n");
+	}
+
+	xRet = FTOM_TP_RESTAPI_setPasswd(&pClient->xRESTApi, pClient->xConfig.pAPIKey);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set password!\n");
+	}
+
+	xRet = FTOM_TP_RESTAPI_setGatewayID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set gateway id!\n");
+	}
+
+	FTOM_TP_RESTAPI_setVerbose(&pClient->xRESTApi, FTM_TRUE);
+
+	FTM_TIMER_initS(&pClient->xRetryTimer, 0);
+	FTM_TIMER_initS(&pClient->xReportTimer,	0);
+
+	sprintf(pTopic, "v/a/g/%s/res", pClient->xConfig.pGatewayID);
+	xRet = FTOM_MQTT_CLIENT_subscribe(&pClient->xMQTT, pTopic);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to subscribe topic[%s]\n",	pTopic);
+	}
+
+	sprintf(pTopic, "v/a/g/%s/req", pClient->xConfig.pGatewayID);
+	xRet = FTOM_MQTT_CLIENT_subscribe(&pClient->xMQTT, pTopic);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to subscribe topic[%s]\n",	pTopic);
 	}
 
 	nRet = pthread_create(&pClient->xThreadMain, NULL, FTOM_TP_CLIENT_threadMain, pClient);
@@ -840,44 +878,6 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 	FTM_RET					xRet;
 	FTM_INT					nRet;
 	FTOM_TP_CLIENT_PTR		pClient = (FTOM_TP_CLIENT_PTR)pData;
-	FTM_CHAR				pTopic[FTM_MQTT_TOPIC_LEN + 1];
-
-	xRet = FTOM_TP_RESTAPI_setUserID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to set User ID!\n");
-	}
-
-	xRet = FTOM_TP_RESTAPI_setPasswd(&pClient->xRESTApi, pClient->xConfig.pAPIKey);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to set password!\n");
-	}
-
-	xRet = FTOM_TP_RESTAPI_setGatewayID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to set gateway id!\n");
-	}
-
-	FTOM_TP_RESTAPI_setVerbose(&pClient->xRESTApi, FTM_TRUE);
-
-	FTM_TIMER_initS(&pClient->xRetryTimer, 0);
-	FTM_TIMER_initS(&pClient->xReportTimer,	0);
-
-	sprintf(pTopic, "v/a/g/%s/res", pClient->xConfig.pGatewayID);
-	xRet = FTOM_MQTT_CLIENT_subscribe(&pClient->xMQTT, pTopic);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to subscribe topic[%s]\n",	pTopic);
-	}
-
-	sprintf(pTopic, "v/a/g/%s/req", pClient->xConfig.pGatewayID);
-	xRet = FTOM_MQTT_CLIENT_subscribe(&pClient->xMQTT, pTopic);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to subscribe topic[%s]\n",	pTopic);
-	}
 
 	pClient->bConnected	= FTM_FALSE;
 	pClient->bStop		= FTM_FALSE;
@@ -927,6 +927,93 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 				}
 				break;
 
+			case	FTOM_MSG_TYPE_TP_REPORT:
+				{
+					FTM_ULONG	ulCount;
+					TRACE("ThingPlus Report!\n");
+					if (pClient->pGateway != NULL)
+					{
+						FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
+
+						xRet = FTM_LIST_count(pClient->pGateway->pSensorList, &ulCount);
+						TRACE("Sensor Count : %lu\n", ulCount);
+						if (xRet == FTM_RET_OK)
+						{
+							FTM_ULONG			i;
+							FTM_TIME			xTime;
+							FTM_ULONG			ulCurrentTime = 0;
+							FTM_EP				xEPInfo;
+							FTM_ULONG			ulStartTime, ulEndTime;
+							FTOM_TP_SENSOR_PTR	pSensor;
+
+							for(i = 0 ; i < ulCount ; i++)
+							{
+								xRet = FTM_LIST_getAt(pClient->pGateway->pSensorList, i, (FTM_VOID_PTR _PTR_)&pSensor);
+								if (xRet == FTM_RET_OK)
+								{
+									xRet = FTOM_CLIENT_EP_get(pClient->pFTOMC, pSensor->pID, &xEPInfo);
+									if (xRet == FTM_RET_OK)
+									{
+										FTM_BOOL	bRun = FTM_FALSE;
+
+										xRet = FTOM_CLIENT_EP_isRun(pClient->pFTOMC, pSensor->pID, &bRun);
+										if (xRet == FTM_RET_OK)
+										{
+											TRACE("Send EP Status!\n");
+											FTOM_TP_CLIENT_sendEPStatus(pClient, xEPInfo.pEPID, bRun, pClient->xConfig.ulReportInterval);
+										}
+									}
+
+
+									xRet = FTM_TIME_getCurrent(&xTime);
+									if (xRet == FTM_RET_OK)
+									{
+										FTM_TIME_toSecs(&xTime, &ulCurrentTime);
+									}
+
+									xRet = FTOM_CLIENT_EP_DATA_info(pClient->pFTOMC, pSensor->pID, &ulStartTime, &ulEndTime, &ulCount);
+									if (xRet == FTM_RET_OK)
+									{
+										FTM_EP_DATA_PTR	pData;
+
+										pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulCount);
+										if (pData != NULL)
+										{
+											xRet = FTOM_CLIENT_EP_DATA_getListWithTime(pClient->pFTOMC, pSensor->pID, pSensor->ullMTime / 1000, ulCurrentTime, pData, ulCount, &ulCount);
+											if (xRet == FTM_RET_OK)
+											{
+												TRACE("Send EP DAta : %lu\n", ulCount);
+												xRet = FTOM_TP_CLIENT_sendEPData(pClient, pSensor->pID, pData, ulCount);
+												if (xRet != FTM_RET_OK)
+												{
+													ERROR2(xRet, "Failed to send EP data!\n");	
+												}
+											}
+											else
+											{
+												ERROR2(xRet, "Failed to get ep data with time!\n");
+											}
+
+											FTM_MEM_free(pData);
+										}
+										else
+										{
+											xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+											ERROR2(xRet, "Not enough memory!\n");
+										}
+									}
+									else
+									{
+										ERROR2(xRet, "Failed to get EP data information!\n");	
+									}
+								}
+							}
+						}
+					}
+
+				}			
+				break;
+#if 0
 			case	FTOM_MSG_TYPE_GW_STATUS:
 				{
 					FTOM_MSG_GW_STATUS_PTR	pMsg = (FTOM_MSG_GW_STATUS_PTR)pBaseMsg;
@@ -949,7 +1036,7 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 					FTOM_TP_CLIENT_sendEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
 				}
 				break;
-
+#endif
 			case	FTOM_MSG_TYPE_SERVER_SYNC:
 				{
 					FTOM_MSG_SERVER_SYNC_PTR	pMsg = (FTOM_MSG_SERVER_SYNC_PTR)pBaseMsg;
@@ -1112,10 +1199,10 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadEvent
 )
 {
 	ASSERT(pData != NULL);
-
+	
+	FTM_RET	xRet;
 	FTOM_TP_CLIENT_PTR		pClient = (FTOM_TP_CLIENT_PTR)pData;
 	FTM_TIME				xBaseTime, xCurrentTime, xDiffTime;
-	FTM_BOOL				bConnected = FTM_FALSE;
 
 	FTM_TIMER_initS(&pClient->xRetryTimer, 0);
 	FTM_TIMER_initS(&pClient->xReportTimer,	0);
@@ -1124,39 +1211,63 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadEvent
 	
 	while(!pClient->bStop)
 	{
-		FTOM_MQTT_CLIENT_isConnected(&pClient->xMQTT, &pClient->bConnected);
+		FTM_BOOL	bConnected = pClient->bConnected;
 
-		if(pClient->bConnected)
+		xRet = FTOM_MQTT_CLIENT_isConnected(&pClient->xMQTT, &bConnected);
+		if (xRet == FTM_RET_OK)
 		{
-			if (!bConnected)
+			if(bConnected)
 			{
-				FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
-				FTM_TIMER_initS(&pClient->xReportTimer, 	pClient->xConfig.ulReportInterval);
-				bConnected = pClient->bConnected;
+				if (!pClient->bConnected) // disconnected ->  connected
+				{
+					pClient->bConnected = bConnected;
+					FTM_TIMER_initS(&pClient->xReportTimer, 0);
+					FTOM_TP_CLIENT_serverSync(pClient, FTM_FALSE);
+				}
 			}
 			else
 			{
-				if (FTM_TIMER_isExpired(&pClient->xReportTimer))
+				if (pClient->bConnected)	// connected -> disconnected
 				{
-					FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
-					FTM_TIMER_addS(&pClient->xReportTimer, pClient->xConfig.ulReportInterval);
+					pClient->bConnected = bConnected;
 				}
 			}
 		}
-		else
+
+		if (pClient->bConnected && FTM_TIMER_isExpired(&pClient->xReportTimer))
 		{
-			if (bConnected)
+			FTOM_MSG_PTR	pMsg;
+
+			xRet = FTOM_MSG_TP_createReport(&pMsg);
+			if (xRet != FTM_RET_OK)
 			{
-				bConnected = pClient->bConnected;
+				ERROR2(xRet, "Failed to create message!\n");	
 			}
+
+			xRet = FTOM_TP_CLIENT_sendMessage(pClient, pMsg);
+			if (xRet != FTM_RET_OK)
+			{
+				FTOM_MSG_destroy(&pMsg);
+			}
+
+			FTM_TIMER_addS(&pClient->xReportTimer, pClient->xConfig.ulReportInterval);
 		}
-
-		FTM_TIME_getCurrent(&xCurrentTime);
+	
+		xRet = FTM_TIME_getCurrent(&xCurrentTime);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to get current time!\n");	
+		}
 		FTM_TIME_sub(&xCurrentTime, &xBaseTime, &xDiffTime);
-		FTM_TIME_addMS(&xBaseTime, FTOM_TPCLIENT_LOOP_INTERVAL, &xBaseTime);
-
+	
 		FTM_UINT64	ullDiffTime = 0;
 		FTM_TIME_toMS(&xDiffTime, &ullDiffTime);
+
+		if (ullDiffTime < 1000)
+		{
+			usleep((1000 - ullDiffTime) * 1000);
+		}
+		FTM_TIME_addMS(&xBaseTime, 1000, &xBaseTime);
 	}
 
 	return 0;

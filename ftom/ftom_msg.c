@@ -42,6 +42,7 @@ FTM_CHAR_PTR	pMsgTypeString[] =
 	"FTOM_MSG_TYPE_TP_REQ_POWER_OFF",
 	"FTOM_MSG_TYPE_TP_REQ_CONTROL_ACTUATOR",
 	"FTOM_MSG_TYPE_TP_RESPONSE",
+	"FTOM_MSG_TYPE_TP_REPORT",
 
 	"FTOM_MSG_TYPE_SNMPC_GET_EP_DATA",
 	"FTOM_MSG_TYPE_SNMPC_SET_EP_DATA",
@@ -1009,3 +1010,27 @@ FTM_RET	FTOM_MSG_TP_createReqPowerOff
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_MSG_TP_createReport
+(
+	FTOM_MSG_PTR _PTR_	ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_TP_REPORT_PTR	pMsg;
+	FTM_ULONG	ulMsgLen = sizeof(FTOM_MSG_TP_REPORT);
+
+	pMsg = (FTOM_MSG_TP_REPORT_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pMsg->xType	= FTOM_MSG_TYPE_TP_REPORT;
+	pMsg->ulLen = ulMsgLen;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
