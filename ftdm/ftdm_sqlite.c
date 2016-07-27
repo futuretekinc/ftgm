@@ -240,6 +240,7 @@ FTM_RET	FTDM_DBIF_countWithTime
     char    *pErrMsg = NULL;
 	FTDM_DBIF_COUNT_PARAMS	xParams;
 
+
 	if (_pSQLiteDB == NULL)
 	{
 		ERROR2(FTM_RET_NOT_INITIALIZED, "DB not initialized.\n");
@@ -269,6 +270,8 @@ FTM_RET	FTDM_DBIF_countWithTime
 	{
     	nSQLLen += sprintf(&pSQL[nSQLLen], " (TIME <= %lu)", xEndTime);
 	}
+
+	memset(&xParams, 0, sizeof(xParams));
 
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, FTDM_DBIF_countCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)

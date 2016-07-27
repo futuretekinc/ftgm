@@ -3,7 +3,7 @@
 
 #include "ftom.h"
 #include <curl/curl.h>
-#include "ftom_tp_restapi_gateway.h"
+#include "ftom_tp_object.h"
 
 typedef	struct
 {
@@ -187,6 +187,13 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_setValues
 	FTM_ULONG			ulCount
 );
 
+
+FTM_RET	FTOM_TP_RESTAPI_SENSOR_getServerDataTime
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pSensorID,
+	FTM_ULONG_PTR		pulDataTime
+);
 
 /********************************************************************
  * Node management

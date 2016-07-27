@@ -1,5 +1,6 @@
 #include <string.h>
 #include "ftom.h"
+#include "ftom_tp_client.h"
 #include "ftom_mqttc.h"
 #include "ftom_mqtt_client_tpgw.h"
 
@@ -100,6 +101,7 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_publishCB
 
 	FTM_RET	xRet;
 	FTOM_MQTT_CLIENT_PTR	pClient = (FTOM_MQTT_CLIENT_PTR)pObj;
+	FTOM_TP_CLIENT_PTR		pParent = (FTOM_TP_CLIENT_PTR)pClient->pParent;
 	FTOM_MQTT_PUBLISH_PTR	pPublish;
 
 
@@ -115,20 +117,31 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_publishCB
 			{
 			case	FTOM_MQTT_TPGW_PUBLISH_TYPE_EP_DATA:
 				{
-					if (pClient->fMessageCB != NULL)
-					{
-						FTOM_MSG_PTR	pMsg;
+					FTM_ULONG	i, ulCount;
 
-						xRet = FTOM_MSG_createEPDataServerTime(pInfo->pEPID, pInfo->ulTime, &pMsg);
+					ASSERT (pParent->pGateway != NULL);
+
+					xRet = FTM_LIST_count(pParent->pGateway->pSensorList, &ulCount);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed to get sensor count!\n");
+						break;
+					}
+
+					for(i = 0 ; i < ulCount ; i++)
+					{
+						FTOM_TP_SENSOR_PTR	pSensor;
+
+						xRet = FTM_LIST_getAt(pParent->pGateway->pSensorList, i, (FTM_VOID_PTR _PTR_)&pSensor);
 						if (xRet != FTM_RET_OK)
 						{
-							ERROR2(xRet, "Failed to create message.\n");
+							continue;	
 						}
 
-						xRet = pClient->fMessageCB(pClient->pMessageCBObject, pMsg);
-						if (xRet != FTM_RET_OK)
+						if (strcasecmp(pSensor->pID, pInfo->pEPID) == 0)
 						{
-							FTOM_MSG_destroy(&pMsg);
+							pSensor->ulServerDataTime = (FTM_UINT64)pInfo->ulTime;
+							break;
 						}
 					}
 				}
@@ -523,52 +536,93 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 	FTM_CHAR	pTopic[FTOM_MQTT_CLIENT_TOPIC_LENGTH+1];
 	FTM_CHAR	pBuff[FTOM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulLen = 0;
-	FTM_ULONG	ulTime = 0;
+	FTM_ULONG	ulPublishedCount = 0;
+	FTM_ULONG	ulStartTime = 0xFFFFFFFF;
+	FTM_ULONG	ulEndTime = 0;
 	FTM_INT		i;
 
-	pBuff[sizeof(pBuff) - 1] = '\0';
-	
-	sprintf(pTopic, "v/a/g/%s/s/%s", pClient->xConfig.pGatewayID, pEPID);
-
-	ulLen = sprintf(pBuff, "[");
-	for(i = 0 ; i < ulCount ; i++)
+	do
 	{
-		if (i == 0)
+		FTM_ULONG	ulPartialCount = 0;
+		ulLen  = 0;
+		pBuff[sizeof(pBuff) - 1] = '\0';
+		
+		sprintf(pTopic, "v/a/g/%s/s/%s", pClient->xConfig.pGatewayID, pEPID);
+	
+		ulLen = sprintf(pBuff, "[");
+		for(i = ulPublishedCount ; i < ulCount ; i++)
 		{
-			ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "%llu", pData[i].ulTime*(FTM_UINT64)1000);
+			FTM_CHAR	pTemp[128];
+			FTM_ULONG	ulTempLen = 0;
+			if (i == 0)
+			{
+				ulTempLen += sprintf(pTemp, "%llu,%s", pData[i].ulTime*(FTM_UINT64)1000, FTM_VALUE_print(&pData[i].xValue));
+			}
+			else
+			{
+				ulTempLen += sprintf(pTemp, ",%llu,%s", pData[i].ulTime*(FTM_UINT64)1000, FTM_VALUE_print(&pData[i].xValue));
+			}
+	
+			if (ulStartTime > pData[i].ulTime)
+			{
+				ulStartTime = pData[i].ulTime;	
+			}
+
+			if (ulEndTime < pData[i].ulTime)
+			{
+				ulEndTime = pData[i].ulTime;	
+			}
+	
+			if (ulTempLen >= (FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen - 1))
+			{
+				break;	
+			}
+	
+			strcpy(&pBuff[ulLen], pTemp);
+			ulLen += ulTempLen;
+			ulPartialCount++;
+			ulPublishedCount++;
+		}
+	
+		ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "]");
+	
+		FTOM_MQTT_TPGW_PUBLISH_INFO_PTR pInfo = FTM_MEM_malloc(sizeof(FTOM_MQTT_TPGW_PUBLISH_INFO));
+		if (pInfo != NULL)
+		{
+			pInfo->xType = FTOM_MQTT_TPGW_PUBLISH_TYPE_EP_DATA;
+			strncpy(pInfo->pEPID, pEPID, FTM_EPID_LEN);
+
+			pInfo->ulTime = ulEndTime;
 		}
 		else
 		{
-			ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, ",%llu", pData[i].ulTime*(FTM_UINT64)1000);
+			xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+			ERROR2(xRet, "Not enough memory!\n");
+			break;
 		}
 
-		ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, ",%s", FTM_VALUE_print(&pData[i].xValue));
-		if (ulTime < pData[i].ulTime)
 		{
-			ulTime = pData[i].ulTime;	
+			FTM_CHAR	pStartTime[64];
+			FTM_CHAR	pEndTime[64];
+			FTM_TIME	xTime;
+
+			FTM_TIME_setSeconds(&xTime, ulStartTime);
+			sprintf(pStartTime, "%s", FTM_TIME_printf(&xTime, NULL));
+
+			FTM_TIME_setSeconds(&xTime, ulEndTime);
+			sprintf(pEndTime, "%s", FTM_TIME_printf(&xTime, NULL));
+
+			TRACE("Send EP[%s] DATA[ %lu, %s, %s ]\n", pInfo->pEPID, ulPartialCount, pStartTime, pEndTime);
+		}
+
+		xRet = FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen, pInfo, NULL);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to publish!\n");
+			break;
 		}
 	}
-
-	ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "]");
-
-	FTOM_MQTT_TPGW_PUBLISH_INFO_PTR pInfo = FTM_MEM_malloc(sizeof(FTOM_MQTT_TPGW_PUBLISH_INFO));
-	if (pInfo != NULL)
-	{
-		pInfo->xType = FTOM_MQTT_TPGW_PUBLISH_TYPE_EP_DATA;
-		strncpy(pInfo->pEPID, pEPID, FTM_EPID_LEN);
-		pInfo->ulTime = ulTime;
-	}
-	else
-	{
-		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
-		ERROR2(xRet, "Not enough memory!\n");
-	}
-
-	xRet = FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen, pInfo, NULL);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to publish!\n");
-	}
+	while(ulPublishedCount < ulCount);
 
 	return	xRet;
 }

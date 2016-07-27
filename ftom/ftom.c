@@ -1970,6 +1970,36 @@ FTM_RET	FTOM_DB_EP_getDataCount
 	return	xRet;
 }
 
+FTM_RET	FTOM_DB_EP_getDataCountWithTime
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pEPID != NULL);
+	ASSERT(pulCount != NULL);
+	FTM_RET	xRet;
+	FTOM_SERVICE_PTR pService;
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_DMC_EP_DATA_countWithTime(pService->pData, pEPID, ulStart, ulEnd, pulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet,"Failed to EP[%s] data count from DMC!\n", pEPID);
+		}
+	}
+	else
+	{
+		ERROR2(xRet, "Data management service not found!\n");
+	}
+
+	return	xRet;
+}
+
 FTM_RET	FTOM_DB_EP_removeData
 (
 	FTM_CHAR_PTR	pEPID,

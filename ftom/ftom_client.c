@@ -1688,6 +1688,51 @@ FTM_RET	FTOM_CLIENT_EP_DATA_count
 	return	xResp.xRet;
 }
 
+FTM_RET	FTOM_CLIENT_EP_DATA_countWithTime
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pCount
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pCount != NULL);
+
+	FTM_RET						xRet;
+	FTOM_REQ_EP_DATA_COUNT_WITH_TIME_PARAMS	xReq;
+	FTOM_RESP_EP_DATA_COUNT_WITH_TIME_PARAMS	xResp;
+	FTM_ULONG						ulRespLen;
+
+	memset(&xReq, 0, sizeof(xReq));
+
+	xReq.xCmd		=	FTOM_CMD_EP_DATA_COUNT_WITH_TIME;
+	xReq.ulLen		=	sizeof(xReq);
+	strncpy(xReq.pEPID, pEPID, FTM_EPID_LEN);
+	xReq.ulStart	=	ulStart;
+	xReq.ulEnd		=	ulEnd;
+
+	xRet = pClient->fRequest(
+				pClient, 
+				(FTM_VOID_PTR)&xReq, 
+				sizeof(xReq), 
+				(FTM_VOID_PTR)&xResp, 
+				sizeof(xResp),
+				&ulRespLen);
+	if (xRet != FTM_RET_OK)
+	{
+		return	FTM_RET_ERROR;	
+	}
+
+	if (xResp.xRet == FTM_RET_OK)
+	{
+		*pCount = xResp.ulCount;
+	}
+
+	return	xResp.xRet;
+}
+
 FTM_RET	FTOM_CLIENT_EP_DATA_type
 (
 	FTOM_CLIENT_PTR	pClient,

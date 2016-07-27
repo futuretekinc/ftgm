@@ -208,6 +208,14 @@ FTM_RET	FTOM_DB_EP_getDataCount
 	FTM_ULONG_PTR 	ulCount
 );
 
+FTM_RET	FTOM_DB_EP_getDataCountWithTime
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulCount
+);
+
 FTM_RET	FTOM_DB_EP_getDataInfo
 (
 	FTM_CHAR_PTR	pEPID,

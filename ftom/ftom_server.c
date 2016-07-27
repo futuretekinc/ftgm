@@ -396,6 +396,16 @@ FTM_RET	FTOM_SERVER_EP_DATA_count
 );
 
 static 
+FTM_RET	FTOM_SERVER_EP_DATA_countWithTime
+(
+	FTOM_SERVER_PTR	pServer,
+ 	FTOM_REQ_EP_DATA_COUNT_WITH_TIME_PARAMS_PTR		pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_COUNT_WITH_TIME_PARAMS_PTR		pResp,
+	FTM_ULONG		ulRespLen
+);
+
+static 
 FTM_RET	FTOM_SERVER_EP_DATA_type
 (
 	FTOM_SERVER_PTR	pServer,
@@ -751,6 +761,7 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_DATA_TYPE,			FTOM_SERVER_EP_DATA_type),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_GET_LIST_WITH_TIME,		FTOM_SERVER_EP_DATA_getListWithTime),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_SET_SERVER_TIME,		FTOM_SERVER_EP_DATA_setServerTime),
+	MK_CMD_SET(FTOM_CMD_EP_DATA_COUNT_WITH_TIME,FTOM_SERVER_EP_DATA_countWithTime),
 
 	MK_CMD_SET(FTOM_CMD_TRIG_ADD,				FTOM_SERVER_TRIGGER_add),
 	MK_CMD_SET(FTOM_CMD_TRIG_DEL,				FTOM_SERVER_TRIGGER_del),
@@ -2683,6 +2694,35 @@ FTM_RET	FTOM_SERVER_EP_DATA_count
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTOM_EP_getDataCount(pEP, &pResp->ulCount);
+	}
+
+	pResp->xCmd = pReq->xCmd;
+	pResp->ulLen = sizeof(*pResp);
+	pResp->xRet = xRet;
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_SERVER_EP_DATA_countWithTime
+(
+	FTOM_SERVER_PTR	pServer,
+	FTOM_REQ_EP_DATA_COUNT_WITH_TIME_PARAMS_PTR 	pReq,
+	FTM_ULONG		ulReqLen,
+	FTOM_RESP_EP_DATA_COUNT_WITH_TIME_PARAMS_PTR 	pResp,
+	FTM_ULONG		ulRespLen
+)
+{
+	ASSERT(pServer != NULL);
+	ASSERT(pReq != NULL);
+	ASSERT(pResp != NULL);
+
+	FTM_RET	xRet;
+	FTOM_EP_PTR	pEP;
+
+	xRet = FTOM_EP_get(pReq->pEPID, &pEP);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_EP_getDataCountWithTime(pEP, pReq->ulStart, pReq->ulEnd, &pResp->ulCount);
 	}
 
 	pResp->xCmd = pReq->xCmd;

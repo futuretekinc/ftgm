@@ -518,6 +518,21 @@ FTM_RET	FTOM_DMC_EP_DATA_count
 	return	FTDMC_EP_DATA_count(&pDMC->xSession, pEPID, pulCount);
 }
 
+FTM_RET	FTOM_DMC_EP_DATA_countWithTime
+(
+	FTOM_DMC_PTR 	pDMC, 
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR 	pulCount
+)
+{
+	ASSERT(pDMC != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTDMC_EP_DATA_countWithTime(&pDMC->xSession, pEPID, ulStart, ulEnd, pulCount);
+}
+
 FTM_RET FTOM_DMC_EP_DATA_get
 (
 	FTOM_DMC_PTR	pDMC,

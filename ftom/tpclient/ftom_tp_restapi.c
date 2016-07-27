@@ -503,9 +503,25 @@ FTM_RET	FTOM_TP_RESTAPI_GW_getInfo
 	}
 
 	pItem = cJSON_GetObjectItem(pRoot, "reportInterval") ;
-	if ((pItem != NULL) && (pItem->type == cJSON_Number))
+	if ((pItem != NULL) && (pItem->type == cJSON_String))
 	{
-		pGateway->ulReportInterval = pItem->valueint;
+		FTM_UINT64	ullValue;
+
+		ullValue = strtoull(pItem->valuestring, 0, 10);
+		pGateway->ulReportInterval = (FTM_ULONG)(ullValue / 1000);
+	}
+
+	pItem = cJSON_GetObjectItem(pRoot, "autoCreateDiscoverable") ;
+	if ((pItem != NULL) && (pItem->type == cJSON_String))
+	{
+		if (strcasecmp(pItem->valuestring, "y") == 0)
+		{
+			pGateway->bAutoCreateCoverable = FTM_TRUE;
+		}
+		else
+		{
+			pGateway->bAutoCreateCoverable = FTM_FALSE;
+		}
 	}
 
 	pItem = cJSON_GetObjectItem(pRoot, "ctime") ;
@@ -1069,6 +1085,65 @@ finish:
 	return	xRet;
 }
 
+FTM_RET	FTOM_TP_RESTAPI_SENSOR_getServerDataTime
+(
+	FTOM_TP_RESTAPI_PTR	pClient,
+	FTM_CHAR_PTR		pSensorID,
+	FTM_ULONG_PTR		pulDataTime
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pSensorID != NULL);
+
+	FTM_RET		xRet;
+	cJSON _PTR_ pRoot = NULL;
+	cJSON _PTR_ pSeries;
+	cJSON _PTR_ pItem;
+
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, 
+				"/gateways/%s/sensors/%s?embed=series", 
+				pClient->xConfig.pGatewayID, 
+				pSensorID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
+		goto finish;
+	}
+
+	xRet = FTOM_TP_RESTAPI_perform(pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "An error occurred while performing the client.\n");
+		goto finish;
+	}
+
+	pRoot = cJSON_Parse(pClient->pResp);
+
+	pSeries = cJSON_GetObjectItem(pRoot, "series"); // get object's property by key
+	if ((pSeries == NULL) || (pSeries->type != cJSON_Object))
+	{
+		xRet = FTM_RET_OBJECT_NOT_FOUND;
+		goto finish;	
+	}
+
+	pItem = cJSON_GetObjectItem(pSeries, "time");
+	if ((pItem == NULL) || (pItem ->type != cJSON_String))
+	{
+		xRet = FTM_RET_OBJECT_NOT_FOUND;
+		goto finish;	
+	}
+
+	*pulDataTime = (FTM_ULONG)(strtoull(pItem->valuestring, 0, 10) / 1000); 
+
+finish:
+	if (pRoot != NULL)
+	{
+		cJSON_Delete(pRoot);
+	}
+
+	return	xRet;
+}
+
 FTM_RET	FTOM_TP_RESTAPI_SENSOR_getValue
 (
 	FTOM_TP_RESTAPI_PTR	pClient,
@@ -1172,7 +1247,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 	cJSON _PTR_ pRoot;
 	FTM_ULONG		i, ulCount = 0;
 
-	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s/sensors", pClient->xConfig.pGatewayID);
+	xRet = FTOM_TP_RESTAPI_setGetURL(pClient, "/gateways/%s/sensors?embed=series", pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "An error has occurred in the client settings of the URL.\n");
@@ -1198,6 +1273,7 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 	{
 		cJSON _PTR_ pSensorInfo;
 		cJSON _PTR_ pItem;
+		cJSON _PTR_ pSeries;
 		FTOM_TP_SENSOR		xSensor;
 
 		pSensorInfo = cJSON_GetArrayItem(pRoot, i);
@@ -1229,45 +1305,55 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 		}
 
 		pItem = cJSON_GetObjectItem(pSensorInfo, "name");
-		if ((pItem != NULL) || (pItem->type != cJSON_String))
+		if ((pItem != NULL) || (pItem->type == cJSON_String))
 		{
 			strncpy(xSensor.pName, pItem->valuestring, FTM_NAME_LEN);	
 		}
 
 		pItem = cJSON_GetObjectItem(pSensorInfo, "owner");
-		if ((pItem != NULL) || (pItem->type != cJSON_String))
+		if ((pItem != NULL) || (pItem->type == cJSON_String))
 		{
 			strncpy(xSensor.pOwnerID, pItem->valuestring, FTM_DID_LEN);	
 		}
 
 		pItem = cJSON_GetObjectItem(pSensorInfo, "deviceId");
-		if ((pItem != NULL) || (pItem->type != cJSON_String))
+		if ((pItem != NULL) || (pItem->type == cJSON_String))
 		{
 			strncpy(xSensor.pDeviceID, pItem->valuestring, FTM_DID_LEN);	
 		}
 
 		pItem = cJSON_GetObjectItem(pSensorInfo, "address");
-		if ((pItem != NULL) || (pItem->type != cJSON_Number))
+		if ((pItem != NULL) || (pItem->type == cJSON_Number))
 		{
 			xSensor.ulAddress = pItem->valueint;
 		}
 
 		pItem = cJSON_GetObjectItem(pSensorInfo, "sequence");
-		if ((pItem != NULL) || (pItem->type != cJSON_Number))
+		if ((pItem != NULL) || (pItem->type == cJSON_Number))
 		{
 			xSensor.ulSequence = pItem->valueint;
 		}
 
 		pItem = cJSON_GetObjectItem(pSensorInfo, "ctime");
-		if ((pItem != NULL) || (pItem->type != cJSON_String))
+		if ((pItem != NULL) || (pItem->type == cJSON_String))
 		{
 			xSensor.ullCTime = strtoull(pItem->valuestring, 0, 10);
 		}
 
 		pItem = cJSON_GetObjectItem(pSensorInfo, "mtime");
-		if ((pItem != NULL) || (pItem->type != cJSON_Number))
+		if ((pItem != NULL) || (pItem->type == cJSON_String))
 		{
-			xSensor.ullMTime = pItem->valueint;
+			xSensor.ullMTime = strtoull(pItem->valuestring, 0, 10);
+		}
+
+		pSeries = cJSON_GetObjectItem(pSensorInfo, "series");
+		if ((pItem != NULL) || (pItem->type == cJSON_Object))
+		{
+			pItem = cJSON_GetObjectItem(pSeries, "time");
+			if ((pItem != NULL) || (pItem->type == cJSON_String))
+			{
+				xSensor.ulServerDataTime = (FTM_ULONG)(strtoull(pItem->valuestring, 0, 10) / 1000);
+			}
 		}
 
 		memcpy(&pSensors[ulCount++], &xSensor, sizeof(xSensor));

@@ -661,8 +661,8 @@ FTM_VOID_PTR FTOM_EP_threadMain
 			FTM_TIMER_getTime(&pEP->xReportTimer, &ulCurrentTime);
 			ulPrevTime = ulCurrentTime - pEP->xInfo.ulReportInterval;
 
-			FTOM_EP_reportStatus(pEP);
-			FTOM_EP_reportDataInTime(pEP, ulPrevTime, ulCurrentTime);
+			//FTOM_EP_reportStatus(pEP);
+			//FTOM_EP_reportDataInTime(pEP, ulPrevTime, ulCurrentTime);
 			FTM_TIMER_addS(&pEP->xReportTimer, pEP->xInfo.ulReportInterval);
 		}
 	
@@ -814,6 +814,20 @@ FTM_RET	FTOM_EP_getDataCount
 	ASSERT(pulCount != NULL);
 
 	return	FTOM_DB_EP_getDataCount(pEP->xInfo.pEPID, pulCount);
+}
+
+FTM_RET	FTOM_EP_getDataCountWithTime
+(
+	FTOM_EP_PTR			pEP,
+	FTM_ULONG			ulStart,
+	FTM_ULONG			ulEnd,
+	FTM_ULONG_PTR		pulCount
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pulCount != NULL);
+
+	return	FTOM_DB_EP_getDataCountWithTime(pEP->xInfo.pEPID, ulStart, ulEnd, pulCount);
 }
 
 FTM_RET	FTOM_EP_getData

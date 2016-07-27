@@ -7,7 +7,7 @@ include $(TOPDIR)/Makefile.in
 LIBTPCLIENT=libtpclient
 LIBTPCLIENT_SRCS=ftom_tp_client.c\
 				ftom_tp_restapi.c\
-				ftom_tp_restapi_gateway.c
+				ftom_tp_object.c
 LIBTPCLIENT_OBJS=$(LIBTPCLIENT_SRCS:.c=.o)
 
 CLIENT=tpclient

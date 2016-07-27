@@ -73,7 +73,7 @@ FTOM_TP_CLIENT_CONFIG	xTPClientDefaultConfig =
 	.pAPIKey = "",
 	.pCertFile = "",
 	.pUserID= "",
-	.pPasswd="",
+	.pPasswd= "",
 	.ulReportInterval = FTOM_TP_CLIENT_DEFAULT_REPORT_INTERVAL,
 
 	.xFTOMC=
@@ -166,7 +166,7 @@ FTM_RET	FTOM_TP_CLIENT_init
 		goto error;	
 	}
 
-	xRet = FTM_LOCK_create(&pClient->pLock);
+	xRet = FTM_LOCK_create(&pClient->pGatewayLock);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to initialize lock!\n");
@@ -199,6 +199,8 @@ FTM_RET	FTOM_TP_CLIENT_init
 		ERROR2(xRet, "MQTT Client initialize failed!\n");
 		goto error;
 	}
+
+	FTOM_MQTT_CLIENT_setParent(&pClient->xMQTT, pClient);
 
 	xRet = FTOM_MQTT_CLIENT_setMessageCB(&pClient->xMQTT, (FTOM_MQTT_CLIENT_MESSAGE_CB)FTOM_TP_CLIENT_sendMessage, pClient);
 	if (xRet != FTM_RET_OK)
@@ -249,9 +251,9 @@ FTM_RET	FTOM_TP_CLIENT_final
 	FTOM_MQTT_CLIENT_final(&pClient->xMQTT);
 	FTOM_MSGQ_final(&pClient->xMsgQ);
 
-	if (pClient->pLock != NULL)
+	if (pClient->pGatewayLock != NULL)
 	{
-		FTM_LOCK_destroy(&pClient->pLock);	
+		FTM_LOCK_destroy(&pClient->pGatewayLock);	
 	}
 
 	if (pClient->pGateway != NULL)
@@ -906,47 +908,58 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 		{
 			switch(pBaseMsg->xType)
 			{
-			case	FTOM_MSG_TYPE_CONNECTION_STATUS:
+			case	FTOM_MSG_TYPE_CONNECTED:
 				{
-					FTOM_MSG_CONNECTION_STATUS_PTR	pMsg = (FTOM_MSG_CONNECTION_STATUS_PTR)pBaseMsg;
+					xRet = FTOM_TP_CLIENT_serverSync(pClient, FTM_FALSE);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed to sync with sever!\n");	
+						break;
+					}
 
-					if (pMsg->bConnected)
-					{
-						FTOM_TP_CLIENT_serverSync(pClient, FTM_FALSE);
-					}
-					else
-					{
-					
-					}
+					pClient->bReportON = FTM_TRUE;
 				}
 				break;
 
-			case	FTOM_MSG_TYPE_INITIALIZE_DONE:
+
+			case	FTOM_MSG_TYPE_DISCONNECTED:
 				{
-					FTOM_TP_CLIENT_serverSync(pClient, FTM_FALSE);
+					pClient->bReportON = FTM_FALSE;
 				}
 				break;
 
 			case	FTOM_MSG_TYPE_TP_REPORT:
 				{
-					FTM_ULONG	ulCount;
-					TRACE("ThingPlus Report!\n");
+					FTM_ULONG	ulSensorCount;
+
+					FTM_LOCK_set(pClient->pGatewayLock);
+
 					if (pClient->pGateway != NULL)
 					{
+						FTM_TIME			xTime;
 						FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
 
-						xRet = FTM_LIST_count(pClient->pGateway->pSensorList, &ulCount);
-						TRACE("Sensor Count : %lu\n", ulCount);
+						FTM_TIME_getCurrent(&xTime);
+
+						xRet = FTM_LIST_count(pClient->pGateway->pSensorList, &ulSensorCount);
+						TRACE("Current Time : %s\n", FTM_TIME_printf(&xTime, NULL));
+						TRACE("Sensor Count : %lu\n", ulSensorCount);
 						if (xRet == FTM_RET_OK)
 						{
 							FTM_ULONG			i;
-							FTM_TIME			xTime;
 							FTM_ULONG			ulCurrentTime = 0;
 							FTM_EP				xEPInfo;
-							FTM_ULONG			ulStartTime, ulEndTime;
 							FTOM_TP_SENSOR_PTR	pSensor;
+							FTM_ULONG			ulDataCount, ulMaxDataCount = 100;
+							FTM_EP_DATA_PTR		pData;
 
-							for(i = 0 ; i < ulCount ; i++)
+							pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulMaxDataCount);
+							if (pData == NULL)
+							{
+								ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]\n", sizeof(FTM_EP_DATA) * ulMaxDataCount);	
+							}
+
+							for(i = 0 ; i < ulSensorCount ; i++)
 							{
 								xRet = FTM_LIST_getAt(pClient->pGateway->pSensorList, i, (FTM_VOID_PTR _PTR_)&pSensor);
 								if (xRet == FTM_RET_OK)
@@ -959,61 +972,51 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 										xRet = FTOM_CLIENT_EP_isRun(pClient->pFTOMC, pSensor->pID, &bRun);
 										if (xRet == FTM_RET_OK)
 										{
-											TRACE("Send EP Status!\n");
 											FTOM_TP_CLIENT_sendEPStatus(pClient, xEPInfo.pEPID, bRun, pClient->xConfig.ulReportInterval);
 										}
 									}
 
-
-									xRet = FTM_TIME_getCurrent(&xTime);
 									if (xRet == FTM_RET_OK)
 									{
 										FTM_TIME_toSecs(&xTime, &ulCurrentTime);
 									}
 
-									xRet = FTOM_CLIENT_EP_DATA_info(pClient->pFTOMC, pSensor->pID, &ulStartTime, &ulEndTime, &ulCount);
-									if (xRet == FTM_RET_OK)
+									if (pData != NULL)
 									{
-										FTM_EP_DATA_PTR	pData;
-
-										pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulCount);
-										if (pData != NULL)
+										xRet = FTOM_CLIENT_EP_DATA_getListWithTime(pClient->pFTOMC, pSensor->pID, pSensor->ulServerDataTime, ulCurrentTime, pData, ulMaxDataCount, &ulDataCount);
+										if (xRet == FTM_RET_OK)
 										{
-											xRet = FTOM_CLIENT_EP_DATA_getListWithTime(pClient->pFTOMC, pSensor->pID, pSensor->ullMTime / 1000, ulCurrentTime, pData, ulCount, &ulCount);
-											if (xRet == FTM_RET_OK)
+											if (ulDataCount > 0)
 											{
-												TRACE("Send EP DAta : %lu\n", ulCount);
-												xRet = FTOM_TP_CLIENT_sendEPData(pClient, pSensor->pID, pData, ulCount);
+												TRACE("Send EP Data : %lu\n", ulDataCount);
+												xRet = FTOM_TP_CLIENT_sendEPData(pClient, pSensor->pID, pData, ulDataCount);
 												if (xRet != FTM_RET_OK)
 												{
 													ERROR2(xRet, "Failed to send EP data!\n");	
 												}
 											}
-											else
-											{
-												ERROR2(xRet, "Failed to get ep data with time!\n");
-											}
-
-											FTM_MEM_free(pData);
 										}
 										else
 										{
-											xRet = FTM_RET_NOT_ENOUGH_MEMORY;
-											ERROR2(xRet, "Not enough memory!\n");
+											ERROR2(xRet, "Failed to get ep data with time!\n");
 										}
 									}
-									else
-									{
-										ERROR2(xRet, "Failed to get EP data information!\n");	
-									}
+
 								}
+							}
+
+							if (pData != NULL)
+							{
+								FTM_MEM_free(pData);
 							}
 						}
 					}
 
+					FTM_LOCK_reset(pClient->pGatewayLock);
+
 				}			
 				break;
-#if 0
+
 			case	FTOM_MSG_TYPE_GW_STATUS:
 				{
 					FTOM_MSG_GW_STATUS_PTR	pMsg = (FTOM_MSG_GW_STATUS_PTR)pBaseMsg;
@@ -1036,7 +1039,7 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 					FTOM_TP_CLIENT_sendEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
 				}
 				break;
-#endif
+
 			case	FTOM_MSG_TYPE_SERVER_SYNC:
 				{
 					FTOM_MSG_SERVER_SYNC_PTR	pMsg = (FTOM_MSG_SERVER_SYNC_PTR)pBaseMsg;
@@ -1049,10 +1052,16 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 				{
 					FTOM_MSG_TP_REQ_RESTART_PTR pMsg = (FTOM_MSG_TP_REQ_RESTART_PTR)pBaseMsg;
 
-					TRACE("TPClient restarted!\n");
 					FTOM_TP_CLIENT_respose(pClient, pMsg->pReqID, 0, "");
+
+					pClient->bReportON = FTM_FALSE;
+
+					FTOM_TP_CLIENT_serverSync(pClient, FTM_FALSE);
+
+					pClient->bReportON = FTM_TRUE;
 				}
 				break;
+
 			case	FTOM_MSG_TYPE_TP_REQ_SET_REPORT_INTERVAL:
 				{
 					FTM_ULONG	ulNodeCount = 0;
@@ -1216,25 +1225,53 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadEvent
 		xRet = FTOM_MQTT_CLIENT_isConnected(&pClient->xMQTT, &bConnected);
 		if (xRet == FTM_RET_OK)
 		{
-			if(bConnected)
+			if (bConnected != pClient->bConnected)
 			{
-				if (!pClient->bConnected) // disconnected ->  connected
+				if(bConnected)
 				{
-					pClient->bConnected = bConnected;
-					FTM_TIMER_initS(&pClient->xReportTimer, 0);
-					FTOM_TP_CLIENT_serverSync(pClient, FTM_FALSE);
+					FTOM_MSG_PTR	pMsg;
+	
+					xRet = FTOM_MSG_createConnected(&pMsg);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed to create message!\n");	
+					}
+					else
+					{
+						xRet = FTOM_TP_CLIENT_sendMessage(pClient, pMsg);
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Failed to send message!\n");	
+							FTOM_MSG_destroy(&pMsg);
+						}
+					}
+	
 				}
-			}
-			else
-			{
-				if (pClient->bConnected)	// connected -> disconnected
+				else
 				{
-					pClient->bConnected = bConnected;
+					FTOM_MSG_PTR	pMsg;
+	
+					xRet = FTOM_MSG_createDisconnected(&pMsg);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed to create message!\n");	
+					}
+					else
+					{
+						xRet = FTOM_TP_CLIENT_sendMessage(pClient, pMsg);
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Failed to send message!\n");	
+							FTOM_MSG_destroy(&pMsg);
+						}
+					}
 				}
+
+				pClient->bConnected = bConnected;
 			}
 		}
 
-		if (pClient->bConnected && FTM_TIMER_isExpired(&pClient->xReportTimer))
+		if (pClient->bReportON && FTM_TIMER_isExpired(&pClient->xReportTimer))
 		{
 			FTOM_MSG_PTR	pMsg;
 
@@ -1306,7 +1343,9 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 )
 {
 	FTM_RET	xRet;
-	FTM_INT     i, j;  
+	FTM_INT     i;  
+	FTM_TIME	xTime;
+	FTM_ULONG	ulCurrentTime;
 	FTOM_TP_GATEWAY_PTR	pGateway = NULL;
 	FTM_ULONG   ulDeviceCount = 0;
 	FTM_ULONG   ulSensorCount = 0;
@@ -1314,7 +1353,7 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 	xRet = FTOM_TP_GATEWAY_create(&pGateway);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to create gateway information.\n");
+		ERROR2(xRet, "Failed to initialize gateway information.\n");
 		goto finish;
 	}
 
@@ -1325,22 +1364,27 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 		goto finish;
 	}
 
+	FTM_TIME_getCurrent(&xTime);
+	FTM_TIME_toSecs(&xTime, &ulCurrentTime);
+
 	TRACE("%16s : %s\n",  "ID",   pGateway->pID);    
 	TRACE("%16s : %s\n",  "Name", pGateway->pName);    
 	TRACE("%16s : %lu\n", "Report Interval", pGateway->ulReportInterval);    
-	TRACE("%16s : %llu\n","Installed Time", pGateway->ullCTime);    
-	TRACE("%16s : %llu\n","Modified Time", pGateway->ullMTime);    
+	TRACE("%16s : %s\n","Current Time", FTM_TIME_printf(&xTime, NULL));    
+	FTM_TIME_setSeconds(&xTime, (FTM_ULONG)(pGateway->ullCTime / 1000));
+	TRACE("%16s : %s\n","Installed Time", FTM_TIME_printf(&xTime, NULL));    
+	FTM_TIME_setSeconds(&xTime, (FTM_ULONG)(pGateway->ullMTime / 1000));
+	TRACE("%16s : %s\n","Modified Time",FTM_TIME_printf(&xTime, NULL));   
 	FTM_LIST_count(pGateway->pDeviceList, &ulDeviceCount);
 	TRACE("%16s : %lu\n", "Devices", ulDeviceCount);
 	for(i = 0 ; i < ulDeviceCount ; i++)
 	{   
-		FTM_CHAR_PTR	pDeviceID = NULL;
+		FTOM_TP_DEVICE_PTR	pDevice;
 
-		xRet = FTM_LIST_getAt(pGateway->pDeviceList, i, (FTM_VOID_PTR _PTR_)&pDeviceID);
+		xRet = FTM_LIST_getAt(pGateway->pDeviceList, i, (FTM_VOID_PTR _PTR_)&pDevice);
 		if (xRet == FTM_RET_OK)
 		{   
-			TRACE("%16s   %s\n", "", pDeviceID);
-			FTOM_CLIENT_NODE_setServerRegistered(pClient->pFTOMC, pDeviceID, FTM_TRUE);
+			TRACE("%16s   %s\n", "", pDevice->pID);
 		}   
 	}   
 
@@ -1355,26 +1399,32 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 		if (xRet == FTM_RET_OK)
 		{   
 			TRACE("%16s   %s\n", "", pSensor->pID);
-			FTOM_CLIENT_EP_setServerRegistered(pClient->pFTOMC, pSensor->pID, FTM_TRUE);
 		}   
 	}   
 
-	if (bAutoRegister)
+	if (bAutoRegister || pGateway->bAutoCreateCoverable)
 	{
 		FTM_ULONG	ulNodeCount = 0;
 		FTM_ULONG	ulEPCount = 0;
+		FTM_ULONG	ulRegisteredDeviceCount = 0;
+		FTM_ULONG	ulRegisteredSensorCount = 0;
+
+		FTM_LIST_count(pGateway->pDeviceList, &ulRegisteredDeviceCount);
+		FTM_LIST_count(pGateway->pSensorList, &ulRegisteredSensorCount);
 
 		xRet = FTOM_CLIENT_NODE_count(pClient->pFTOMC, &ulNodeCount);
 		if (xRet != FTM_RET_OK)
 		{
+			ERROR2(xRet, "Fiailed to get Node count!\n");
 			goto finish;	
 		}
 
 		for(i = 0 ; i < ulNodeCount ; i++)
 		{
 			FTM_NODE	xNode;
-			FTM_BOOL	bRegistered = FTM_FALSE;
-
+			FTM_INT		j;
+			FTOM_TP_DEVICE_PTR	pDevice = NULL;
+			
 			xRet = FTOM_CLIENT_NODE_getAt(pClient->pFTOMC, i, &xNode);
 			if (xRet != FTM_RET_OK)
 			{
@@ -1382,22 +1432,40 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 				continue;	
 			}
 
-			xRet = FTOM_CLIENT_NODE_getServerRegistered(pClient->pFTOMC, xNode.pDID, &bRegistered);
-			if ((xRet == FTM_RET_OK) && (!bRegistered))
+			
+			for(j = 0 ; j < ulRegisteredDeviceCount ; j++)
 			{
-				FTOM_TP_CLIENT_NODE_register(pClient, &xNode);	
+				
+				xRet = FTM_LIST_getAt(pGateway->pDeviceList, j, (FTM_VOID_PTR _PTR_)&pDevice);
+				if (xRet == FTM_RET_OK)
+				{
+					if (strcmp(pDevice->pID, xNode.pDID) == 0)
+					{
+						break;	
+					}
+				}
+			}
+
+			if (j == ulRegisteredDeviceCount)
+			{
+				xRet = FTOM_TP_CLIENT_NODE_register(pClient, &xNode);	
+				if (xRet != FTM_RET_OK)
+				{
+					ERROR2(xRet, "Failed to register node!\n");
+				}
 			}
 
 			xRet = FTOM_CLIENT_EP_count(pClient->pFTOMC, 0, xNode.pDID, &ulEPCount);
 			if (xRet != FTM_RET_OK)
 			{
+				ERROR2(xRet, "Fiailed to get EP count!\n");
 				goto finish;	
 			}
 
 			for(j = 0 ; j < ulEPCount ;j++)
 			{
 				FTM_EP	xEP;
-				FTM_BOOL	bRegistered = FTM_FALSE;
+				FTM_INT	k;
 
 				xRet = FTOM_CLIENT_EP_getAt(pClient->pFTOMC, j, &xEP);
 				if (xRet != FTM_RET_OK)
@@ -1406,15 +1474,41 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 					continue;	
 				}
 			
-				xRet = FTOM_CLIENT_EP_getServerRegistered(pClient->pFTOMC, xEP.pEPID, &bRegistered);
-				if ((xRet == FTM_RET_OK) && (!bRegistered))
+				for(k = 0 ; k < ulRegisteredSensorCount ; k++)
 				{
-					FTOM_TP_CLIENT_EP_register(pClient, &xEP);	
+					
+					FTOM_TP_SENSOR_PTR	pSensor;
+	
+					xRet = FTM_LIST_getAt(pGateway->pSensorList, k, (FTM_VOID_PTR _PTR_)&pSensor);
+					if (xRet == FTM_RET_OK)
+					{
+						if (strcmp(pSensor->pID, xEP.pEPID) == 0)
+						{
+							break;	
+						}
+					}
+				}
+	
+				if (k == ulRegisteredSensorCount)
+				{
+					xRet =FTOM_TP_CLIENT_EP_register(pClient, &xEP);	
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed to register EP!\n");
+					}
 				}
 			}
 		}
 	}
 
+	FTM_LOCK_set(pClient->pGatewayLock);
+
+	FTOM_TP_GATEWAY_destroy(&pClient->pGateway);
+	pClient->pGateway = pGateway;
+
+	FTM_LOCK_reset(pClient->pGatewayLock);
+
+	return	FTM_RET_OK;
 finish:
 
 	if (pGateway != NULL)

@@ -19,18 +19,6 @@ static FTM_RET	FTOM_MQTT_CLIENT_onGWStatus
 	FTOM_MSG_GW_STATUS_PTR	pMsg
 );
 
-static FTM_RET	FTOM_MQTT_CLIENT_onEPStatus
-(
-	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_EP_STATUS_PTR	pMsg
-);
-
-static FTM_RET	FTOM_MQTT_CLIENT_onEPData
-(
-	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_EP_DATA_PTR	pMsg
-);
-
 static FTM_VOID_PTR FTOM_MQTT_CLIENT_connector
 (
 	FTM_VOID_PTR 		pData
@@ -372,52 +360,6 @@ FTM_RET	FTOM_MQTT_CLIENT_onGWStatus
 	return	xRet;
 }
 
-FTM_RET	FTOM_MQTT_CLIENT_onEPStatus
-(
-	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_EP_STATUS_PTR	pMsg
-)
-{
-	ASSERT(pClient != NULL);
-	ASSERT(pMsg != NULL);
-
-	FTM_RET	xRet;
-
-	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fEPStatus != NULL))
-	{
-		xRet = pClient->pCBSet->fEPStatus(pClient, pMsg->pEPID, pMsg->bStatus, pMsg->ulTimeout);
-	}
-	else
-	{
-		xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_MQTT_CLIENT_onEPData
-(
-	FTOM_MQTT_CLIENT_PTR	pClient,
-	FTOM_MSG_EP_DATA_PTR	pMsg
-)
-{
-	ASSERT(pClient != NULL);
-	ASSERT(pMsg != NULL);
-
-	FTM_RET	xRet;
-
-	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fEPData != NULL))
-	{
-		xRet = pClient->pCBSet->fEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
-	}
-	else
-	{
-		xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
-	}
-
-	return	xRet;
-}
-
 FTM_RET	FTOM_MQTT_CLIENT_onTPResponse
 (
 	FTOM_MQTT_CLIENT_PTR	pClient,
@@ -469,6 +411,19 @@ FTM_RET	FTOM_MQTT_CLIENT_stop
 	pClient->bStop = FTM_TRUE;
 
 	pthread_join(pClient->xMain, NULL);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_MQTT_CLIENT_setParent
+(
+	FTOM_MQTT_CLIENT_PTR	pClient,
+	FTM_VOID_PTR			pParent
+)
+{
+	ASSERT(pClient != NULL);
+	
+	pClient->pParent = pParent;
 
 	return	FTM_RET_OK;
 }
@@ -529,43 +484,61 @@ FTM_VOID_PTR FTOM_MQTT_CLIENT_process
 
 	while(!pClient->bStop)
 	{
-		FTOM_MSG_PTR	pMsg;
+		FTOM_MSG_PTR	pBaseMsg;
 
-		xRet = FTOM_MSGQ_timedPop(pClient->pMsgQ, 100, &pMsg);
+		xRet = FTOM_MSGQ_timedPop(pClient->pMsgQ, 100, &pBaseMsg);
 		if (xRet == FTM_RET_OK)
 		{
-			switch(pMsg->xType)
+			switch(pBaseMsg->xType)
 			{
 			case	FTOM_MSG_TYPE_GW_STATUS:
 				{
-					xRet = FTOM_MQTT_CLIENT_onGWStatus(pClient, (FTOM_MSG_GW_STATUS_PTR)pMsg);	
+					xRet = FTOM_MQTT_CLIENT_onGWStatus(pClient, (FTOM_MSG_GW_STATUS_PTR)pBaseMsg);	
 				}
 				break;
 
 			case	FTOM_MSG_TYPE_EP_STATUS:
 				{
-					xRet = FTOM_MQTT_CLIENT_onEPStatus(pClient, (FTOM_MSG_EP_STATUS_PTR)pMsg);	
+					if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fEPStatus != NULL))
+					{
+						FTOM_MSG_EP_STATUS_PTR	pMsg =(FTOM_MSG_EP_STATUS_PTR)pBaseMsg;
+
+						xRet = pClient->pCBSet->fEPStatus(pClient, pMsg->pEPID, pMsg->bStatus, pMsg->ulTimeout);
+					}
+					else
+					{
+						xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+					}
 				}
 				break;
 
 			case	FTOM_MSG_TYPE_EP_DATA:
 				{
-					xRet = FTOM_MQTT_CLIENT_onEPData(pClient, (FTOM_MSG_EP_DATA_PTR)pMsg);	
+					if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fEPData != NULL))
+					{
+						FTOM_MSG_EP_DATA_PTR	pMsg =(FTOM_MSG_EP_DATA_PTR)pBaseMsg;
+
+						xRet = pClient->pCBSet->fEPData(pClient, pMsg->pEPID, pMsg->pData, pMsg->ulCount);
+					}
+					else
+					{
+						xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;	
+					}
 				}
 				break;
 
 			case	FTOM_MSG_TYPE_TP_RESPONSE:
 				{
-					xRet = FTOM_MQTT_CLIENT_onTPResponse(pClient, (FTOM_MSG_TP_RESPONSE_PTR)pMsg);
+					xRet = FTOM_MQTT_CLIENT_onTPResponse(pClient, (FTOM_MSG_TP_RESPONSE_PTR)pBaseMsg);
 				}
 				break;
 
 			default:
 				{
-					ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Not supported msg[%08x]\n", pMsg->xType);	
+					ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Not supported msg[%08x]\n", pBaseMsg->xType);	
 				}
 			}
-			FTOM_MSG_destroy(&pMsg);
+			FTOM_MSG_destroy(&pBaseMsg);
 		}
 
 		if (pClient->ulNewSubscribe != 0)

@@ -1,6 +1,6 @@
 #include <string.h>
 #include "ftom.h"
-#include "ftom_tp_restapi_gateway.h"
+#include "ftom_tp_object.h"
 
 #undef	__MODULE__
 #define __MODULE__ FTOM_TRACE_MODULE_CLIENT
@@ -13,18 +13,25 @@ FTM_RET	FTOM_TP_GATEWAY_create
 {
 	ASSERT(ppGateway != NULL);
 	FTM_RET	xRet;
+	FTOM_TP_GATEWAY_PTR	pGateway;
 
-	*ppGateway = (FTOM_TP_GATEWAY_PTR)FTM_MEM_malloc(sizeof(FTOM_TP_GATEWAY));
-	if (*ppGateway == NULL)
+	pGateway = (FTOM_TP_GATEWAY_PTR)FTM_MEM_malloc(sizeof(FTOM_TP_GATEWAY));
+	if (pGateway == NULL)
 	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+		ERROR2(xRet, "Not enough memory!\n");
+		return	xRet;	
 	}
 
-	xRet = FTOM_TP_GATEWAY_init(*ppGateway);
+	xRet = FTOM_TP_GATEWAY_init(pGateway);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(*ppGateway);	
-		*ppGateway = NULL;
+		FTM_MEM_free(pGateway);	
+		ERROR2(xRet, "Failed to initialize gateway!\n");
+	}
+	else
+	{
+		*ppGateway = pGateway;
 	}
 
 	return	xRet;

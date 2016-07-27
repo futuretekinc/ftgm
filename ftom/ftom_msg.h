@@ -138,6 +138,30 @@ FTM_RET	FTOM_MSG_createConnectionStatus
 	FTOM_MSG_PTR _PTR_ ppMsg
 );
 
+typedef struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTOM_MSG_ID		xMsgID;
+}	FTOM_MSG_CONNECTED, _PTR_ FTOM_MSG_CONNECTED_PTR;
+
+FTM_RET	FTOM_MSG_createConnected
+(
+	FTOM_MSG_PTR _PTR_ ppMsg
+);
+
+typedef struct
+{
+	FTOM_MSG_TYPE	xType;
+	FTM_ULONG		ulLen;
+	FTOM_MSG_ID		xMsgID;
+}	FTOM_MSG_DISCONNECTED, _PTR_ FTOM_MSG_DISCONNECTED_PTR;
+
+FTM_RET	FTOM_MSG_createDisconnected
+(
+	FTOM_MSG_PTR _PTR_ ppMsg
+);
+
 /**************************************************************
  * Report gateway status
  **************************************************************/

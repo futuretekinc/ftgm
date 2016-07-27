@@ -18,6 +18,7 @@ FTM_CHAR_PTR	pMsgTypeString[] =
 	"FTOM_MSG_TYPE_EP_STATUS",
 	"FTOM_MSG_TYPE_EP_DATA",
 	"FTOM_MSG_TYPE_EP_CTRL",
+	"FTOM_MSG_TYPE_EP_DATA_SERVER_TIME",
 
 	"FTOM_MSG_TYPE_DISCOVERY",
 	"FTOM_MSG_TYPE_DISCOVERY_INFO",
@@ -130,6 +131,58 @@ FTM_RET	FTOM_MSG_createConnectionStatus
 
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTOM_MSG_createConnected
+(
+	FTOM_MSG_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_CONNECTED_PTR	pMsg;
+	FTM_ULONG		ulMsgLen = sizeof(FTOM_MSG_CONNECTED);
+
+	pMsg = (FTOM_MSG_CONNECTED_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_CONNECTED;
+	pMsg->ulLen 	= ulMsgLen;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
+
+FTM_RET	FTOM_MSG_createDisconnected
+(
+	FTOM_MSG_PTR _PTR_ ppMsg
+)
+{
+	ASSERT(ppMsg != NULL);
+
+	FTOM_MSG_DISCONNECTED_PTR	pMsg;
+	FTM_ULONG		ulMsgLen = sizeof(FTOM_MSG_DISCONNECTED);
+
+	pMsg = (FTOM_MSG_DISCONNECTED_PTR)FTM_MEM_malloc(ulMsgLen);
+	if (pMsg == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]!\n", ulMsgLen);
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pMsg->xType 	= FTOM_MSG_TYPE_DISCONNECTED;
+	pMsg->ulLen 	= ulMsgLen;
+
+	*ppMsg = (FTOM_MSG_PTR)pMsg;
+
+	return	FTM_RET_OK;
+}
+
 
 /*******************************************************************
  * Gateway management

@@ -16,6 +16,13 @@ typedef	struct
 	FTM_ULONG		ulSequence;
 	FTM_UINT64		ullCTime;
 	FTM_UINT64		ullMTime;
+	FTM_ULONG		ulServerDataTime;
+
+	struct
+	{
+		FTM_UINT64	ulStart;
+		FTM_UINT64	ulEnd;
+	}	xUnsyncDataTime;
 }	FTOM_TP_SENSOR, _PTR_ FTOM_TP_SENSOR_PTR;
 
 typedef	struct
@@ -35,6 +42,7 @@ typedef	struct
 	FTM_ULONG		ulReportInterval;
 	FTM_UINT64		ullCTime;
 	FTM_UINT64		ullMTime;
+	FTM_BOOL		bAutoCreateCoverable;
 
 	FTM_LIST_PTR	pDeviceList;
 	FTM_LIST_PTR	pSensorList;

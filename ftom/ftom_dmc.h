@@ -232,6 +232,15 @@ FTM_RET	FTOM_DMC_EP_DATA_count
 	FTM_ULONG_PTR 	pulCount
 );
 
+FTM_RET	FTOM_DMC_EP_DATA_countWithTime
+(
+	FTOM_DMC_PTR 	pDMC, 
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR 	pulCount
+);
+
 FTM_RET	FTOM_DMC_EP_DATA_info
 (
 	FTOM_DMC_PTR 	pDMC, 

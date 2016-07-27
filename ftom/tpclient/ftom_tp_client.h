@@ -56,13 +56,14 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 
 	FTM_BOOL				bStop;
 	FTM_BOOL				bConnected;
+	FTM_BOOL				bReportON;
 	pthread_t				xThreadMain;
 	pthread_t				xThreadEvent;
 	FTM_TIMER				xReportTimer;
 	FTM_TIMER				xRetryTimer;
 
 	FTOM_TP_GATEWAY_PTR		pGateway;
-	FTM_LOCK_PTR			pLock;
+	FTM_LOCK_PTR			pGatewayLock;
 
 	FTOM_MSG_QUEUE			xMsgQ;
 	FTOM_MQTT_CLIENT		xMQTT;
