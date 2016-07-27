@@ -1539,7 +1539,7 @@ FTM_RET	FTOM_CLIENT_EP_DATA_getListWithTime
 		}
 		else
 		{
-			ERROR2(pResp->xRet, "FTOM request error!");
+			ERROR2(pResp->xRet, "FTOM request error!\n");
 			bStop = FTM_TRUE;
 		}
 	

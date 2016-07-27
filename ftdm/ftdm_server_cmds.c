@@ -41,6 +41,7 @@ FTM_RET	FTDMS_SHELL_CMD_session
 	FTM_VOID_PTR	pData
 );
 
+#if 0
 static
 FTM_RET	FTDMS_SHELL_CMD_trace
 (
@@ -49,6 +50,7 @@ FTM_RET	FTDMS_SHELL_CMD_trace
 	FTM_CHAR_PTR	pArgv[], 
 	FTM_VOID_PTR	pData
 );
+#endif
 
 static
 FTM_RET	FTDMS_SHELL_CMD_node
@@ -139,7 +141,7 @@ FTM_SHELL_CMD	FTDMS_pCmdList[] =
 	},
 	{
 		.pString	= "trace",
-		.function	= FTDMS_SHELL_CMD_trace,
+		.function	= FTM_TRACE_shellCmd,
 		.pShortHelp	= "Trace configuration.",
 		.pHelp		= "\n"\
 					  "\tTrace configuration.\n"
@@ -264,6 +266,7 @@ FTM_RET	FTDMS_SHELL_CMD_session
 	return	FTM_RET_OK;
 }
 
+#if 0
 FTM_RET FTDMS_SHELL_CMD_trace
 (
 	FTM_SHELL_PTR	pShell,
@@ -328,6 +331,7 @@ FTM_RET FTDMS_SHELL_CMD_trace
 
 	return	FTM_RET_OK;
 }
+#endif
 
 FTM_RET FTDMS_SHELL_CMD_node
 (

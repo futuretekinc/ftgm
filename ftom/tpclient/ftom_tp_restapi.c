@@ -1347,10 +1347,10 @@ FTM_RET	FTOM_TP_RESTAPI_SENSOR_getList
 		}
 
 		pSeries = cJSON_GetObjectItem(pSensorInfo, "series");
-		if ((pItem != NULL) || (pItem->type == cJSON_Object))
+		if ((pSeries != NULL) && (pSeries->type == cJSON_Object))
 		{
 			pItem = cJSON_GetObjectItem(pSeries, "time");
-			if ((pItem != NULL) || (pItem->type == cJSON_String))
+			if ((pItem != NULL) && (pItem->type == cJSON_String))
 			{
 				xSensor.ulServerDataTime = (FTM_ULONG)(strtoull(pItem->valuestring, 0, 10) / 1000);
 			}

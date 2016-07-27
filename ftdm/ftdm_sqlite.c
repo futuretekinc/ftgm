@@ -276,13 +276,13 @@ FTM_RET	FTDM_DBIF_countWithTime
     xRet = sqlite3_exec(_pSQLiteDB, pSQL, FTDM_DBIF_countCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
-        ERROR2(xRet, "%s\n", pErrMsg);
         sqlite3_free(pErrMsg);
-
-    	return  FTM_RET_ERROR;
+		*pulCount = 0;
     }
-
-	*pulCount = xParams.ulCount;
+	else
+	{
+		*pulCount = xParams.ulCount;
+	}
 
 	return	FTM_RET_OK;
 }
@@ -1932,10 +1932,12 @@ FTM_RET	FTDM_DBIF_EP_DATA_getWithTime
 	xRet = FTDM_DBIF_getWithTime(pTableName, xBeginTime, xEndTime, bAscending, nMaxCount, _FTDM_DBIF_EP_DATA_getCB, &xParams);
 	if (xRet != FTM_RET_OK)
 	{
-		return	xRet;	
+		*pulCount = 0;
 	}
-
-	*pulCount = xParams.nCount;
+	else
+	{
+		*pulCount = xParams.nCount;
+	}
 
 	return	FTM_RET_OK;
 }

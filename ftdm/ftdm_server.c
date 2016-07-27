@@ -1191,13 +1191,20 @@ FTM_RET	FTDMS_EP_DATA_getWithTime
 		xRet = FTDM_EP_DATA_countWithTime(pEP,pReq->nBeginTime, pReq->nEndTime, &ulDataCount);
 		if (xRet == FTM_RET_OK)
 		{
-			xRet = FTDM_EP_DATA_getWithTime(pEP, pReq->nBeginTime, pReq->nEndTime, pReq->bAscending, pResp->pData, ulMaxCount, &pResp->nCount);
-			if (xRet == FTM_RET_OK)
+			if (ulDataCount != 0)
 			{
-				if (ulDataCount > ulMaxCount)
+				xRet = FTDM_EP_DATA_getWithTime(pEP, pReq->nBeginTime, pReq->nEndTime, pReq->bAscending, pResp->pData, ulMaxCount, &pResp->nCount);
+				if (xRet == FTM_RET_OK)
 				{
-					pResp->bRemain = FTM_TRUE;	
+					if (ulDataCount > ulMaxCount)
+					{
+						pResp->bRemain = FTM_TRUE;	
+					}
 				}
+			}
+			else
+			{
+				pResp->nCount  = 0;	
 			}
 		}
 	}
