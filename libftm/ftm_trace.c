@@ -13,6 +13,8 @@
 #include "ftm_trace.h"
 #include "ftm_config.h"
 
+#define	FTM_TRACE_LINE_LEN	2047
+
 FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szmsg);
 FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
 
@@ -22,9 +24,15 @@ FTM_CHAR_PTR	program_invocation_short_name;
 static 
 FTM_TRACE_CFG	_xConfig = 
 {
-	.bShowIndex = FTM_FALSE,
-	.bTimeInfo	= FTM_FALSE,
-	.bLine		= FTM_TRUE,
+	.xDisplayOpts = 
+	{
+		.bModule= FTM_FALSE,
+		.bIndex = FTM_FALSE,
+		.bTime	= FTM_FALSE,
+		.bDebug	= FTM_FALSE,
+		.bLevel	= FTM_FALSE,
+		.ulLine	= 0
+	},
 	.xFile = 
 	{
 		.pPath = "./",
@@ -75,7 +83,12 @@ FTM_RET	FTM_TRACE_loadConfig
 		return	xRet;
 	}
 
-	FTM_CONFIG_ITEM_getItemBOOL(&xSection, "line", &_xConfig.bLine);
+	FTM_CONFIG_ITEM_getItemBOOL(&xSection, "module",&_xConfig.xDisplayOpts.bModule);
+	FTM_CONFIG_ITEM_getItemBOOL(&xSection, "index", &_xConfig.xDisplayOpts.bIndex);
+	FTM_CONFIG_ITEM_getItemBOOL(&xSection, "time", 	&_xConfig.xDisplayOpts.bTime);
+	FTM_CONFIG_ITEM_getItemBOOL(&xSection, "debug", &_xConfig.xDisplayOpts.bDebug);
+	FTM_CONFIG_ITEM_getItemBOOL(&xSection,"level",  &_xConfig.xDisplayOpts.bLevel);
+	FTM_CONFIG_ITEM_getItemULONG(&xSection,"line", 	&_xConfig.xDisplayOpts.ulLine);
 		
 	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "file", &xSubSection);
 	if (xRet == FTM_RET_OK)
@@ -200,9 +213,10 @@ FTM_RET	FTM_TRACE_printConfig
 	}
 
 	MESSAGE("# Trace Configuration!\n");
-	MESSAGE("%16s : %s\n", "Index", pConfig->bShowIndex?"true":"false");
-	MESSAGE("%16s : %s\n", "Time", pConfig->bTimeInfo?"true":"false");
-	MESSAGE("%16s : %s\n", "Line", pConfig->bLine?"true":"false");
+	MESSAGE("%16s : %s\n", "Index", 		pConfig->xDisplayOpts.bIndex?"true":"false");
+	MESSAGE("%16s : %s\n", "Time", 			pConfig->xDisplayOpts.bTime?"true":"false");
+	MESSAGE("%16s : %s\n", "Function", 		pConfig->xDisplayOpts.bDebug?"true":"false");
+	MESSAGE("%16s : %lu\n","Line Length", 	pConfig->xDisplayOpts.ulLine);
 
 	MESSAGE("    %16s %16s %8s\n", "NAME", "LEVEL", "OUTPUT");
 	for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
@@ -507,12 +521,11 @@ FTM_RET	FTM_TRACE_setOut
 FTM_RET	FTM_TRACE_out
 (
 	FTM_TRACE_MODULE_TYPE	xType,
-	FTM_TRACE_LEVEL	xLevel,
-	const char *	pFunction,
-	FTM_INT			nLine,
-	FTM_INT			bTimeInfo,
-	FTM_INT			bFunctionInfo,
-	const char *	pFormat, 
+	FTM_TRACE_LEVEL			xLevel,
+	const char *			pFunction,
+	FTM_INT					nLine,
+	FTM_RET					xResult,
+	const char *			pFormat, 
 	...
 )
 {
@@ -520,87 +533,10 @@ FTM_RET	FTM_TRACE_out
     va_list 		argptr;
 	time_t			xTime;
 	FTM_RET			xRet;
-	FTM_TRACE_INFO	xInfo;
 	FTM_INT			nLen = 0;
-	FTM_CHAR		szBuff[2048];
+	FTM_CHAR		szBuff[FTM_TRACE_LINE_LEN + 1];
 	FTM_CHAR		szTime[32];
-
-	xRet = FTM_TRACE_getInfo(xType, &xInfo);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	if ((xInfo.xLevel == FTM_TRACE_LEVEL_DISABLE) || (xLevel > xInfo.xLevel))
-	{
-		return	FTM_RET_OK;
-	}
-
-	va_start ( argptr, pFormat );           
-	xTime = time(NULL);
-
-	strftime(szTime, sizeof(szTime), "%Y-%m-%d %H:%M:%S", localtime(&xTime));
-
-	if (_xConfig.bShowIndex)
-	{
-		nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%4d : ", ++nOutputLine);
-	}
-
-	if (bTimeInfo)
-	{
-		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s]", szTime);
-	}
-
-	if (bFunctionInfo || (_xConfig.bLine && (pFunction != NULL)))
-	{
-		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%s[%04d] - ", pFunction, nLine);
-	}
-	nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, pFormat, argptr);
-	va_end(argptr);
-
-	szBuff[nLen] = '\0';
-
-	switch(xInfo.xOut)
-	{
-	case	FTM_TRACE_OUT_FILE:
-		{
-			FTM_TRACE_printToFile(szBuff, _xConfig.xFile.pPath, _xConfig.xFile.pPrefix);
-		}
-		break;
-
-	case	FTM_TRACE_OUT_SYSLOG:
-		{
-			syslog(LOG_INFO, "%s", szBuff);
-		}
-		break;
-
-	default:
-		{
-			FTM_TRACE_printToTerm(szBuff);
-		}
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTM_TRACE_out2
-(
-	FTM_TRACE_MODULE_TYPE	xType,
-	FTM_TRACE_LEVEL			xLevel,
-	const char *		pFunction,
-	FTM_INT				nLine,
-	FTM_RET				xRet,
-	const char *		pFormat, 
-	...
-)
-{
-	static	FTM_INT	nOutputLine = 0;
-    va_list 		argptr;
-	time_t			xTime;
-	FTM_INT			nLen = 0;
-	FTM_CHAR		szBuff[2048];
-	FTM_CHAR		szTime[32];
-	FTM_BOOL		bFunctionInfo = FTM_FALSE;
+	FTM_BOOL		bDebugInfo = FTM_FALSE;
 	FTM_TRACE_INFO	xInfo;
 
 	xRet = FTM_TRACE_getInfo(xType, &xInfo);
@@ -619,24 +555,47 @@ FTM_RET	FTM_TRACE_out2
 
 	strftime(szTime, sizeof(szTime), "%Y-%m-%d %H:%M:%S", localtime(&xTime));
 
-	if (_xConfig.bShowIndex)
+	if (_xConfig.xDisplayOpts.bIndex)
 	{
-		nLen  = snprintf( szBuff, sizeof(szBuff) - 1, "%4d : ", ++nOutputLine);
+		nLen  = snprintf( szBuff, FTM_TRACE_LINE_LEN, "%4d : ", ++nOutputLine);
 	}
 
-	if (_xConfig.bTimeInfo)
+	if (_xConfig.xDisplayOpts.bTime)
 	{
-		nLen  += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "[%s]", szTime);
+		nLen  += snprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, "[%s] ", szTime);
 	}
 
-	if (bFunctionInfo || (_xConfig.bLine && (pFunction != NULL)))
+	if (bDebugInfo || (_xConfig.xDisplayOpts.bDebug && (pFunction != NULL)))
 	{
-		nLen += snprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, "%s[%04d] - ", pFunction, nLine);
+		nLen += snprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, "%s[%04d] - ", pFunction, nLine);
 	}
-	nLen += vsnprintf( &szBuff[nLen], sizeof(szBuff) - nLen - 1, pFormat, argptr);
+
+	if (_xConfig.xDisplayOpts.bModule)
+	{
+		nLen  += snprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, "[%8s] ", xInfo.pName);
+	}
+
+	if (_xConfig.xDisplayOpts.bLevel)
+	{
+		nLen  += snprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, "[%s] ", FTM_TRACE_LEVEL_print(xLevel, FTM_FALSE));
+	}
+
+	nLen += vsnprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, pFormat, argptr);
 	va_end(argptr);
 
-	szBuff[nLen] = '\0';
+	if ((_xConfig.xDisplayOpts.ulLine == 0) || (_xConfig.xDisplayOpts.ulLine >= nLen))
+	{
+		szBuff[nLen] = '\0';
+	}
+	else
+	{
+		szBuff[_xConfig.xDisplayOpts.ulLine - 5] = ' ';
+		szBuff[_xConfig.xDisplayOpts.ulLine - 4] = '.';
+		szBuff[_xConfig.xDisplayOpts.ulLine - 3] = '.';
+		szBuff[_xConfig.xDisplayOpts.ulLine - 2] = '.';
+		szBuff[_xConfig.xDisplayOpts.ulLine - 1] = '\n';
+		szBuff[_xConfig.xDisplayOpts.ulLine    ] = '\0';
+	}
 
 	switch(xInfo.xOut)
 	{
@@ -735,9 +694,10 @@ FTM_RET	FTM_TRACE_shellCmd
 			}
 
 			fprintf(stdout, "\n[ Display Options ]\n");
-			fprintf(stdout, "%16s : %s\n", "Index", _xConfig.bShowIndex?"Enabled":"Disabled");
-			fprintf(stdout, "%16s : %s\n", "Time",  _xConfig.bTimeInfo?"Enabled":"Disabled");
-			fprintf(stdout, "%16s : %s\n", "Line",  _xConfig.bLine?"Enabled":"Disabled");
+			fprintf(stdout, "%16s : %s\n", "Index", _xConfig.xDisplayOpts.bIndex?"Enabled":"Disabled");
+			fprintf(stdout, "%16s : %s\n", "Time",  _xConfig.xDisplayOpts.bTime?"Enabled":"Disabled");
+			fprintf(stdout, "%16s : %s\n", "Debug", _xConfig.xDisplayOpts.bDebug?"Enabled":"Disabled");
+			fprintf(stdout, "%16s : %lu\n","Line Length", _xConfig.xDisplayOpts.ulLine);
 		}
 		break;
 
@@ -751,38 +711,56 @@ FTM_RET	FTM_TRACE_shellCmd
 			xRet = FTM_TRACE_getInfoWithName(pArgv[1], &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
+				FTM_BOOL	bEnable = FTM_FALSE;
+
+				if ((strcasecmp(pArgv[2], "enable") == 0) ||
+				    (strcasecmp(pArgv[2], "on") == 0))
+				{
+					bEnable = FTM_TRUE;	
+				}
+				else if ((strcasecmp(pArgv[2], "disable") == 0) ||
+						 (strcasecmp(pArgv[2], "off") == 0))
+				{
+					bEnable = FTM_FALSE;	
+				}
+				else
+				{
+					fprintf(stdout, "Invalid arguments[%s].\n"	, pArgv[2]);
+					break;
+				}
+
 				if (strcasecmp(pArgv[1], "index")  == 0)
 				{
-					if (strcasecmp(pArgv[2], "enable") == 0)
-					{
-						_xConfig.bShowIndex = FTM_TRUE;
-					}
-					else if (strcasecmp(pArgv[2], "disable") == 0)
-					{
-						_xConfig.bShowIndex = FTM_FALSE;
-					}
+					_xConfig.xDisplayOpts.bModule = bEnable;
+				}
+				else if (strcasecmp(pArgv[1], "index")  == 0)
+				{
+					_xConfig.xDisplayOpts.bIndex = bEnable;
 				}
 				else if (strcasecmp(pArgv[1], "time")  == 0)
 				{
-					if (strcasecmp(pArgv[2], "enable") == 0)
-					{
-						_xConfig.bTimeInfo = FTM_TRUE;
-					}
-					else if (strcasecmp(pArgv[2], "disable") == 0)
-					{
-						_xConfig.bTimeInfo = FTM_FALSE;
-					}
+					_xConfig.xDisplayOpts.bTime = bEnable;
 				}
-				if (strcasecmp(pArgv[1], "line")  == 0)
+				else if (strcasecmp(pArgv[1], "debug")  == 0)
 				{
-					if (strcasecmp(pArgv[2], "enable") == 0)
+					_xConfig.xDisplayOpts.bDebug= bEnable;
+				}
+				else if (strcasecmp(pArgv[1], "level")  == 0)
+				{
+					_xConfig.xDisplayOpts.bLevel = bEnable;
+				}
+				else if (strcasecmp(pArgv[1], "line")  == 0)
+				{
+					FTM_ULONG	ulLine;
+
+					ulLine = strtoul(pArgv[2], 0, 10);
+					if (ulLine < 16 || FTM_TRACE_LINE_LEN < ulLine)
 					{
-						_xConfig.bLine = FTM_TRUE;
+						fprintf(stdout, "Trace line length is between 16 to %d.\n", FTM_TRACE_LINE_LEN);
+						break;
 					}
-					else if (strcasecmp(pArgv[2], "disable") == 0)
-					{
-						_xConfig.bLine = FTM_FALSE;
-					}
+
+					_xConfig.xDisplayOpts.ulLine = ulLine;
 				}
 				else
 				{
@@ -827,8 +805,6 @@ FTM_RET	FTM_TRACE_shellCmd
 				{
 					fprintf(stdout, "Failed to change module[%s] output.\n", pArgv[1]);
 				}
-
-
 				break;
 			}
 

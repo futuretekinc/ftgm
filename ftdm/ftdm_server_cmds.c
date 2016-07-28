@@ -260,7 +260,7 @@ FTM_RET	FTDMS_SHELL_CMD_session
 				((xSession.xPeer.sin_addr.s_addr >> 16) & 0xFF),
 				((xSession.xPeer.sin_addr.s_addr >> 24) & 0xFF));
 
-		MESSAGE("%2d : %16s %5d %s\n", i+1, pIPAddr, ntohs(xSession.xPeer.sin_port), FTM_TIME_toString(&xSession.xStartTime, NULL));
+		MESSAGE("%2d : %16s %5d %s\n", i+1, pIPAddr, ntohs(xSession.xPeer.sin_port), FTM_TIME_printf(&xSession.xStartTime, NULL));
 	}
 
 	return	FTM_RET_OK;

@@ -496,7 +496,7 @@ FTM_RET	FTM_TIME_align
 	return	FTM_RET_OK;
 }
 
-FTM_CHAR_PTR	FTM_TIME_toString
+FTM_CHAR_PTR	FTM_TIME_printf
 (
 	FTM_TIME_PTR	pTime,
 	FTM_CHAR_PTR	pFormat
@@ -518,23 +518,21 @@ FTM_CHAR_PTR	FTM_TIME_toString
 	return	pString;
 }
 
-FTM_CHAR_PTR	FTM_TIME_printf
+FTM_CHAR_PTR	FTM_TIME_printf2
 (
-	FTM_TIME_PTR	pTime,
+	FTM_ULONG		ulTime,
 	FTM_CHAR_PTR	pFormat
 )
 {
-	ASSERT(pTime != NULL);
-
 	static	FTM_CHAR	pString[64];
 
 	if (pFormat != NULL)
 	{
-		strftime(pString, sizeof(pString) - 1, pFormat, localtime(&pTime->xTimeval.tv_sec));
+		strftime(pString, sizeof(pString) - 1, pFormat, localtime((const time_t *)&ulTime));
 	}
 	else
 	{
-		strftime(pString, sizeof(pString) - 1, "%Y-%m-%d %H:%M:%S", localtime(&pTime->xTimeval.tv_sec));
+		strftime(pString, sizeof(pString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&ulTime));
 	}
 
 	return	pString;

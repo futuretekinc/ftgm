@@ -154,13 +154,7 @@ FTM_RET	FTM_TIME_toSecs
 
 FTM_BOOL		FTM_TIME_isZero
 (
-	FTM_TIME_PTR pTime
-);
-
-FTM_CHAR_PTR	FTM_TIME_toString
-(
-	FTM_TIME_PTR	pTime,
-	FTM_CHAR_PTR	pFormat
+	FTM_TIME_PTR 	pTime
 );
 
 FTM_CHAR_PTR	FTM_TIME_printf
@@ -169,4 +163,9 @@ FTM_CHAR_PTR	FTM_TIME_printf
 	FTM_CHAR_PTR	pFormat
 );
 
+FTM_CHAR_PTR	FTM_TIME_printf2
+(
+	FTM_ULONG		ulTime,
+	FTM_CHAR_PTR	pFormat
+);
 #endif

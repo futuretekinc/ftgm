@@ -36,6 +36,7 @@ FTM_RET	FTOM_EP_message
 	FTOM_MSG_PTR	pBaseMsg
 );
 
+#if 0
 static
 FTM_RET	FTOM_EP_reportStatus
 (
@@ -49,6 +50,7 @@ FTM_RET	FTOM_EP_reportDataInTime
 	FTM_ULONG		ulStartTime,
 	FTM_ULONG		ulEndTime
 );
+#endif
 
 static 
 FTM_INT	FTOM_EP_seeker
@@ -656,13 +658,15 @@ FTM_VOID_PTR FTOM_EP_threadMain
 
 		if (FTM_TIMER_isExpired(&pEP->xReportTimer))
 		{
+#if 0
 			FTM_ULONG	ulPrevTime, ulCurrentTime;
 
 			FTM_TIMER_getTime(&pEP->xReportTimer, &ulCurrentTime);
 			ulPrevTime = ulCurrentTime - pEP->xInfo.ulReportInterval;
 
-			//FTOM_EP_reportStatus(pEP);
-			//FTOM_EP_reportDataInTime(pEP, ulPrevTime, ulCurrentTime);
+			FTOM_EP_reportStatus(pEP);
+			FTOM_EP_reportDataInTime(pEP, ulPrevTime, ulCurrentTime);
+#endif
 			FTM_TIMER_addS(&pEP->xReportTimer, pEP->xInfo.ulReportInterval);
 		}
 	
@@ -1228,6 +1232,7 @@ FTM_RET	FTOM_EP_remoteSetDataAsync
 	return	xRet;
 }
 
+#if 0
 FTM_RET	FTOM_EP_reportStatus
 (
 	FTOM_EP_PTR 	pEP
@@ -1292,6 +1297,7 @@ FTM_RET	FTOM_EP_reportDataInTime
 
 	return	xRet;
 }
+#endif
 
 FTM_RET	FTOM_EP_getEventCount
 (

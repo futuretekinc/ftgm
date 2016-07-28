@@ -68,4 +68,9 @@ FTM_RET	FTOM_TP_GATEWAY_final
 	FTOM_TP_GATEWAY_PTR pGateway
 );
 
+FTM_RET	FTOM_TP_GATEWAY_print
+(
+	FTOM_TP_GATEWAY_PTR	pGateway
+);
+
 #endif

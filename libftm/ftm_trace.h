@@ -47,9 +47,15 @@ typedef struct FTM_TRACE_INFO_STRUCT
 
 typedef	struct
 {
-	FTM_BOOL			bShowIndex;
-	FTM_BOOL			bTimeInfo;
-	FTM_BOOL			bLine;
+	struct
+	{
+		FTM_BOOL			bModule;
+		FTM_BOOL			bIndex;
+		FTM_BOOL			bTime;
+		FTM_BOOL			bDebug;
+		FTM_BOOL			bLevel;
+		FTM_ULONG			ulLine;
+	}	xDisplayOpts;
 	struct
 	{
 		FTM_CHAR		pPath[FTM_PATH_LEN + 1];
@@ -156,18 +162,6 @@ FTM_RET	FTM_TRACE_out
 (
 	FTM_TRACE_MODULE_TYPE	xType,
 	FTM_TRACE_LEVEL	xLevel,
-	const char *	pFunction,
-	FTM_INT			nLine,
-	FTM_INT			bTimeInfo,
-	FTM_INT			bFunctionInfo,
-	const char *	pFormat,
-	...
-);
-
-FTM_RET	FTM_TRACE_out2
-(
-	FTM_TRACE_MODULE_TYPE	xType,
-	FTM_TRACE_LEVEL	xLevel,
 	const char *	pFuncName,
 	FTM_INT			nLine,
 	FTM_RET			xRet,
@@ -205,30 +199,30 @@ FTM_VOID	FTM_TRACE_packetDump
 
 #define	__MODULE__	0xFFUL
 
-#define	ASSERT(x)	{ if (!(x)) FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, FTM_TRUE, "%s\n", #x); }
+#define	ASSERT(x)	{ if (!(x)) FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_RET_ASSERT, "%s\n", #x); }
 
 #define MESSAGE(format, ...) printf(format, ## __VA_ARGS__)
 
 #ifdef	TRACE_OFF
 #define	TRACE(format, ...) 
 #else
-#define	TRACE(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_TRACE, __func__, __LINE__, FTM_TRUE, FTM_FALSE, format, ## __VA_ARGS__)
+#define	TRACE(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_TRACE, 	__func__, __LINE__, FTM_RET_OK, format, ## __VA_ARGS__)
 #endif
 
-#define	INFO(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_INFO, __func__, __LINE__, FTM_TRUE, FTM_FALSE, format, ## __VA_ARGS__)
-#define	WARN(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_WARN, __func__, __LINE__, FTM_TRUE, FTM_TRUE, format, ## __VA_ARGS__)
-#define	ERROR(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_ERROR, __func__, __LINE__, FTM_TRUE, FTM_TRUE, format, ## __VA_ARGS__)
-#define	FATAL(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_TRUE, FTM_FALSE, format, ## __VA_ARGS__)
+#define	INFO(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_INFO, 	__func__, __LINE__, FTM_RET_OK, format, ## __VA_ARGS__)
+#define	WARN(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_WARN, 	__func__, __LINE__, FTM_RET_OK, format, ## __VA_ARGS__)
+#define	ERROR(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_ERROR, 	__func__, __LINE__, FTM_RET_OK, format, ## __VA_ARGS__)
+#define	FATAL(format, ...) 	FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_FATAL, 	__func__, __LINE__, FTM_RET_OK, format, ## __VA_ARGS__)
 
 #define	ERROR2(code, format, ...)\
 		{\
 			if (format != NULL)\
 			{\
-				FTM_TRACE_out2(__MODULE__, FTM_TRACE_LEVEL_ERROR, __func__, __LINE__, code, format, ## __VA_ARGS__);\
+				FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_ERROR, __func__, __LINE__, code, format, ## __VA_ARGS__);\
 			}\
 			else\
 			{\
-				FTM_TRACE_out2(__MODULE__, FTM_TRACE_LEVEL_ERROR, __func__, __LINE__, code, "", 0);\
+				FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_ERROR, __func__, __LINE__, code, "", 0);\
 			}\
 		}
 
@@ -236,11 +230,11 @@ FTM_VOID	FTM_TRACE_packetDump
 		{\
 			if (format != NULL)\
 			{\
-				FTM_TRACE_out2(__MODULE__, FTM_TRACE_LEVEL_WARN, __func__, __LINE__, code, format, ## __VA_ARGS__);\
+				FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_WARN, __func__, __LINE__, code, format, ## __VA_ARGS__);\
 			}\
 			else\
 			{\
-				FTM_TRACE_out2(__MODULE__, FTM_TRACE_LEVEL_WARN, __func__, __LINE__, code, "", 0);\
+				FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_WARN, __func__, __LINE__, code, "", 0);\
 			}\
 		}
 

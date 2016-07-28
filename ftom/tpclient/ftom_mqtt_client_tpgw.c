@@ -140,7 +140,10 @@ FTM_VOID FTOM_MQTT_CLIENT_TPGW_publishCB
 
 						if (strcasecmp(pSensor->pID, pInfo->pEPID) == 0)
 						{
-							pSensor->ulServerDataTime = (FTM_UINT64)pInfo->ulTime;
+							if (pSensor->ulServerDataTime < pInfo->ulTime)
+							{
+								pSensor->ulServerDataTime = (FTM_UINT64)pInfo->ulTime;
+							}
 							break;
 						}
 					}
