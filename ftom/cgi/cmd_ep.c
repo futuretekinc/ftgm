@@ -685,6 +685,64 @@ finish:
 	return	FTOM_CGI_finish(pReq, pRoot, xRet);
 }
 
+FTM_RET	FTOM_CGI_setEPData
+(
+	FTOM_CLIENT_PTR pClient, 
+	qentry_t _PTR_ pReq
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pReq != NULL);
+
+	FTM_RET			xRet;
+	FTM_VALUE_TYPE	xType;
+	FTM_VALUE		xValue;
+	FTM_EP_DATA		xData;
+	FTM_CHAR		pEPID[FTM_EPID_LEN+1];
+	cJSON _PTR_		pRoot;
+
+	pRoot = cJSON_CreateObject();
+	
+	xRet = FTOM_CGI_getEPID(pReq, pEPID, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		xRet = FTM_RET_INVALID_ARGUMENTS;
+		goto finish;	
+	}
+
+	xRet = FTOM_CLIENT_EP_DATA_type(pClient, pEPID, &xType); 
+	if (xRet != FTM_RET_OK)
+	{
+		xRet = FTM_RET_INVALID_ARGUMENTS;
+		goto finish;	
+	}
+
+	xRet = FTOM_CGI_getValue(pReq, xType, &xValue, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		xRet = FTM_RET_INVALID_ARGUMENTS;
+		goto finish;	
+	}
+
+	xRet = FTM_EP_DATA_initVALUE(&xData, &xValue);
+	if (xRet != FTM_RET_OK)
+	{
+		xRet = FTM_RET_INVALID_ARGUMENTS;
+		goto finish;	
+	}
+
+	xRet = FTOM_CLIENT_EP_remoteSet(pClient, pEPID, &xData);
+	if (xRet != FTM_RET_OK)
+	{
+		xRet = FTM_RET_INVALID_ARGUMENTS;
+		goto finish;	
+	}
+
+finish:
+
+	return	FTOM_CGI_finish(pReq, pRoot, xRet);
+}
+
 FTM_RET	FTOM_CGI_delEPData
 (
 	FTOM_CLIENT_PTR pClient, 

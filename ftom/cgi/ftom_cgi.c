@@ -38,6 +38,7 @@ FTOM_CGI_COMMAND	pDataCmds[] =
 	{	"info",		FTOM_CGI_getEPDataInfo	},
 	{	"del",		FTOM_CGI_delEPData		},
 	{	"get",		FTOM_CGI_getEPData		},
+	{	"set",		FTOM_CGI_setEPData		},
 	{	"last",		FTOM_CGI_getEPDataLast	},
 	{	NULL,		NULL					}
 };

@@ -269,8 +269,7 @@ FTM_RET	FTOM_EP_destroy
 		FTOM_EP_stop(*ppEP, TRUE);
 	}
 
-
-	if (!bIncludeDB)
+	if (bIncludeDB)
 	{
 		xRet = FTOM_DB_EP_remove((*ppEP)->xInfo.pEPID);
 		if (xRet != FTM_RET_OK)

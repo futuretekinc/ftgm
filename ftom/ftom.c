@@ -2734,13 +2734,16 @@ FTM_RET	FTOM_discoveryEP
 		return	xRet;	
 	}
 
-	xRet = FTOM_NODE_getEPUpdateInterval(pNode, xType, ulIndex, &pEPInfo->ulUpdateInterval);
-	if (xRet != FTM_RET_OK)
+	if (xType != FTM_EP_TYPE_DO)
 	{
-		if (xType != FTM_EP_TYPE_DI)
+		xRet = FTOM_NODE_getEPUpdateInterval(pNode, xType, ulIndex, &pEPInfo->ulUpdateInterval);
+		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet,"SNMP get EP[%s] interval failed!\n", pEPInfo->pEPID);
-			return	xRet;	
+			if (xType != FTM_EP_TYPE_DI)
+			{
+				ERROR2(xRet,"SNMP get EP[%s] interval failed!\n", pEPInfo->pEPID);
+				return	xRet;	
+			}
 		}
 	}
 
