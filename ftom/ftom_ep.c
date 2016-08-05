@@ -732,7 +732,10 @@ FTM_RET	FTOM_EP_message
 
 			for(i = 0 ; i < pMsg->ulCount ; i++)
 			{
-				xRet = FTOM_EP_setData(pEP, &pMsg->pData[i]);
+				if (pMsg->pData[i].xState == FTM_EP_DATA_STATE_VALID)
+				{
+					xRet = FTOM_EP_setData(pEP, &pMsg->pData[i]);
+				}
 			}
 		}
 		break;
@@ -1533,46 +1536,61 @@ FTM_RET	FTOM_EP_printList
 	FTM_VOID
 )
 {
+	FTM_RET		xRet;
 	FTM_INT		i;
 	FTM_ULONG	ulCount;
 	FTOM_EP_PTR	pEP;
+	FTM_EP_DATA	xData;
 	
 	MESSAGE("\n# EP Information\n");
 	MESSAGE("%16s %16s %16s %16s %8s %8s %8s %8s %8s %24s\n", "EPID", "TYPE", "NAME", "DID", "STATE", "VALUE", "UNIT", "UPDATE", "REPORT", "TIME");
 	FTOM_EP_count(0, NULL, &ulCount);
 	for(i = 0; i < ulCount ; i++)
 	{
-		if (FTOM_EP_getAt(i, &pEP) == FTM_RET_OK)
+		xRet = FTOM_EP_getAt(i, &pEP);
+		if (xRet != FTM_RET_OK)
 		{
-			FTM_CHAR	pTimeString[64];
-			FTM_EP_DATA	xData;
+			continue;
+		}
 		
-			FTOM_EP_getData(pEP, &xData);
+		xRet = FTOM_EP_getData(pEP, &xData);
+		if (xRet != FTM_RET_OK)
+		{
+			xData.ulTime = 0;
+			xData.xState = FTM_EP_DATA_STATE_INVALID;
+		}
 
-			ctime_r((time_t *)&xData.ulTime, pTimeString);
-			if (strlen(pTimeString) != 0)
-			{
-				pTimeString[strlen(pTimeString) - 1] = '\0';
-			}
-			
-			MESSAGE("%16s ", pEP->xInfo.pEPID);
-			MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
-			MESSAGE("%16s ", pEP->xInfo.pName);
-			if (pEP->pNode != NULL)
-			{
-				MESSAGE("%16s ", pEP->pNode->xInfo.pDID);
-			}
-			else
-			{
-				MESSAGE("%16s ", "");
-			}
-	
-			MESSAGE("%8s ", (!pEP->bStop)?"RUN":"STOP");
+		MESSAGE("%16s ", pEP->xInfo.pEPID);
+		MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
+		MESSAGE("%16s ", pEP->xInfo.pName);
+		if (pEP->pNode != NULL)
+		{
+			MESSAGE("%16s ", pEP->pNode->xInfo.pDID);
+		}
+		else
+		{
+			MESSAGE("%16s ", "");
+		}
+
+		MESSAGE("%8s ", (!pEP->bStop)?"RUN":"STOP");
+		if (xData.xState == FTM_EP_DATA_STATE_INVALID)
+		{
+			MESSAGE("%8s ", "N/A");
+		}
+		else
+		{
 			MESSAGE("%8s ", FTM_VALUE_print(&xData.xValue));
-			MESSAGE("%8s ", pEP->xInfo.pUnit);
-			MESSAGE("%8lu ", pEP->xInfo.ulUpdateInterval);
-			MESSAGE("%8lu ", pEP->xInfo.ulReportInterval);
-			MESSAGE("%24s\n", pTimeString);
+		}
+		MESSAGE("%8s ", pEP->xInfo.pUnit);
+		MESSAGE("%8lu ", pEP->xInfo.ulUpdateInterval);
+		MESSAGE("%8lu ", pEP->xInfo.ulReportInterval);
+		if (xData.xState == FTM_EP_DATA_STATE_INVALID)
+		{
+			MESSAGE("%24s\n", "N/A");
+		}
+		else
+		{
+			MESSAGE("%24s\n", FTM_TIME_printf2(xData.ulTime, NULL));
 		}
 	}
 	

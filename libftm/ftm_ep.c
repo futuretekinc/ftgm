@@ -931,7 +931,14 @@ FTM_RET	FTM_EP_DATA_snprint
 	ASSERT(pBuff != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTM_VALUE_snprint(pBuff, ulMaxLen, &pData->xValue);
+	if (pData->xState == FTM_EP_DATA_STATE_VALID)
+	{
+		return	FTM_VALUE_snprint(pBuff, ulMaxLen, &pData->xValue);
+	}
+	
+	snprintf(pBuff, ulMaxLen, "N/A");
+
+	return	FTM_RET_OK;
 }
 
 FTM_CHAR_PTR	FTM_EP_DATA_print

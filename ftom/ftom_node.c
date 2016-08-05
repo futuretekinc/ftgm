@@ -34,20 +34,6 @@ FTM_VOID_PTR FTOM_NODE_threadMain
 );
 
 static
-FTM_RET	FTOM_NODE_message
-(
-	FTOM_NODE_PTR	pNode,
-	FTOM_MSG_PTR	pMsg
-);
-
-static
-FTM_RET	FTOM_NODE_message
-(
-	FTOM_NODE_PTR	pNode,
-	FTOM_MSG_PTR	pBaseMsg
-);
-
-static
 FTM_LIST_PTR	pNodeList = NULL;
 
 /********************************************************************************
@@ -198,14 +184,7 @@ FTM_RET	FTOM_NODE_create
 	}
 
 	pNode->bStop = FTM_TRUE;
-	pNode->xState = FTOM_NODE_STATE_INITIALIZED;
-
-	if ((pNode->pClass != NULL) & (pNode->pClass->fInit != NULL))
-	{
-		pNode->pClass->fInit(pNode);
-	}
-
-	pNode->xState = FTOM_NODE_STATE_CREATED;
+	pNode->bConnected = FTM_FALSE;
 
 	FTM_LIST_append(pNodeList, pNode);
 	TRACE("Append Node : %08x, %08x\n", pNodeList, pNode);
@@ -665,7 +644,7 @@ FTM_RET	FTOM_NODE_getEPCount
 
 	if (ulCount == 0)
 	{
-		if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPCount != NULL))
+		if ((pNode->bConnected == FTM_TRUE) && (pNode->pClass != NULL) && (pNode->pClass->fGetEPCount != NULL))
 		{
 			xRet = pNode->pClass->fGetEPCount(pNode, xType, &ulCount);	
 		}
@@ -922,34 +901,57 @@ FTM_VOID_PTR FTOM_NODE_threadMain
 	FTM_VOID_PTR pData
 )
 {
+	FTM_RET			xRet;
 	FTOM_NODE_PTR pNode = (FTOM_NODE_PTR)pData;
-	FTOM_MSG_PTR	pMsg;
+	FTOM_MSG_PTR	pBaseMsg;
 	FTM_TIMER		xLoopTimer;
 
 	TRACE("Node[%s] started.\n", pNode->xInfo.pDID);
 
 	FTM_TIMER_initS(&xLoopTimer, 0);
-	FTM_TIMER_initS(&pNode->xReportTimer, 0);
 
-	pNode->xState= FTOM_NODE_STATE_RUN;
 	pNode->bStop = FTM_FALSE;
 
 	while(!pNode->bStop)
 	{
 		FTM_ULONG		ulRemainTime = 0;
 
-		if (FTM_TIMER_isExpired(&pNode->xReportTimer))
+		if (!pNode->bConnected)
 		{
-			FTM_TIMER_addS(&pNode->xReportTimer, pNode->xInfo.ulReportInterval);
+			if ((pNode->pClass != NULL) & (pNode->pClass->fInit != NULL))
+			{
+				xRet = pNode->pClass->fInit(pNode);
+				if (xRet == FTM_RET_OK)
+				{
+					pNode->bConnected = FTM_TRUE;	
+				}
+			}
+			else
+			{
+				pNode->bConnected = FTM_TRUE;	
+			}
 		}
 
 		FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
-		while (!pNode->bStop && (FTOM_MSGQ_timedPop(&pNode->xMsgQ, ulRemainTime, &pMsg) == FTM_RET_OK))
+		while (!pNode->bStop && (FTOM_MSGQ_timedPop(&pNode->xMsgQ, ulRemainTime, &pBaseMsg) == FTM_RET_OK))
 		{
-			TRACE("Message received[%08x]\n", pMsg->xType);
-			FTOM_NODE_message(pNode, pMsg);
+			switch(pBaseMsg->xType)
+			{
+			case	FTOM_MSG_TYPE_QUIT:
+				{	
+					pNode->bStop = FTM_TRUE;
+				}
+				break;
+		
+			default:
+				{
+					FTM_RET	xRet = FTM_RET_INVALID_MESSAGE_TYPE;
+		
+					ERROR2(xRet, "Invalid message type[%08x]\n", pBaseMsg->xType);
+				}
+			}
 
-			FTOM_MSG_destroy(&pMsg);
+			FTOM_MSG_destroy(&pBaseMsg);
 
 			FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
 		}
@@ -957,41 +959,11 @@ FTM_VOID_PTR FTOM_NODE_threadMain
 		FTM_TIMER_addS(&xLoopTimer, FTOM_NODE_LOOP_INTERVAL);
 	} 
 
-	pNode->xState= FTOM_NODE_STATE_STOP;
+	pNode->bConnected = FTM_FALSE;
+
 	TRACE("Node[%s] stopped.\n", pNode->xInfo.pDID);
 
 	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_NODE_message
-(
-	FTOM_NODE_PTR	pNode,
-	FTOM_MSG_PTR	pBaseMsg
-)
-{
-	ASSERT(pNode != NULL);
-	ASSERT(pBaseMsg != NULL);
-	FTM_RET	xRet;
-
-	switch(pBaseMsg->xType)
-	{
-	case	FTOM_MSG_TYPE_QUIT:
-		{	
-			pNode->bStop = FTM_TRUE;
-			
-			xRet = FTM_RET_OK;
-		}
-		break;
-
-	default:
-		{
-			xRet = FTM_RET_INVALID_MESSAGE_TYPE;
-
-			ERROR2(xRet, "Invalid message type[%08x]\n", pBaseMsg->xType);
-		}
-	}
-
-	return	xRet;
 }
 
 FTM_RET	FTOM_NODE_setReportInterval
@@ -1025,22 +997,6 @@ FTM_RET	FTOM_NODE_getReportInterval
 	*pulInterval = pNode->xInfo.ulReportInterval;
 
 	return	FTM_RET_OK;
-}
-
-FTM_CHAR_PTR	FTOM_NODE_stateToStr
-(
-	FTOM_NODE_STATE xState
-)
-{
-	switch(xState)
-	{
-	case	FTOM_NODE_STATE_CREATED:		return	"CREATED";
-	case	FTOM_NODE_STATE_INITIALIZED: 	return	"INITIALIZED";
-	case	FTOM_NODE_STATE_RUN:			return	"RUN";
-	case	FTOM_NODE_STATE_FINALIZED:		return	"FINALIZED";
-	}
-
-	return	"UNKNOWN";
 }
 
 FTM_INT	FTOM_NODE_seeker
@@ -1098,7 +1054,7 @@ FTM_RET	FTOM_NODE_print
 		pNode->pClass->fPrintOpts(pNode);	
 	}
 
-	MESSAGE("%16s : %s\n", "State", 	FTOM_NODE_stateToStr(pNode->xState));
+	MESSAGE("%16s : %s\n", "State", 	(pNode->bStop)?"Stop":"Run");
 	MESSAGE("%16s : %lu\n", "Report Interval", 	pNode->xInfo.ulReportInterval);
 	MESSAGE("%16s : %lu\n", "Timeout", 	pNode->xInfo.ulTimeout);
 	FTOM_NODE_getEPCount(pNode, 0, &ulEPCount);
@@ -1140,14 +1096,14 @@ FTM_RET	FTOM_NODE_printList
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_ULONG	ulEPCount;
+		FTM_ULONG	ulEPCount = 0;
 
 		FTOM_NODE_getAt(i, &pNode);
 		MESSAGE("%16s ", pNode->xInfo.pDID);
 		MESSAGE("%16s ", pNode->xInfo.pModel);
 		MESSAGE("%16s ", pNode->xInfo.pName);
 		MESSAGE("%16s ", FTM_NODE_typeString(pNode->xInfo.xType));
-		MESSAGE("%16s ", FTOM_NODE_stateToStr(pNode->xState));
+		MESSAGE("%16s ", (pNode->bStop)?"Stop": "Run");
 		MESSAGE("%8lu ", pNode->xInfo.ulReportInterval);
 		MESSAGE("%8lu ", pNode->xInfo.ulTimeout);
 

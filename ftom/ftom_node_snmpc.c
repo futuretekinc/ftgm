@@ -136,16 +136,9 @@ FTM_RET	FTOM_NODE_SNMPC_init
 
 	ASSERT(pNode != NULL);
 
-	xRet = FTM_LOCK_create(&pNode->pLock);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to create lock!\n");
-		return	xRet;	
-	}
-
 	strncpy(pNode->pIP, pNode->xCommon.xInfo.xOption.xSNMP.pURL, FTM_URL_LEN);
 #if 0
-	FTM_ULONG			ulEPCount;
+	FTM_ULONG			ulEPCount = 0;
 	xRet = FTOM_NODE_SNMPC_getEPCount(pNode, 0, &ulEPCount);
 	if (xRet != FTM_RET_OK)
 	{
@@ -163,6 +156,7 @@ FTM_RET	FTOM_NODE_SNMPC_init
 			FTOM_EP_PTR				pEP;
 			FTOM_EP_CLASS_PTR	pEPClassInfo;
 			FTM_CHAR				pOIDName[1024];
+			FTOM_NODE_SNMPC_EP_OPTS_PTR	pOpts;
 
 			if (FTOM_NODE_getEPAt((FTOM_NODE_PTR)pNode, i, (FTOM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
 			{
@@ -179,8 +173,10 @@ FTM_RET	FTOM_NODE_SNMPC_init
 			snprintf(pOIDName, sizeof(pOIDName) - 1, "%s::%s", 
 				pNode->xCommon.xInfo.xOption.xSNMP.pMIB, 
 				pEPClassInfo->xInfo.pValue);
-			pEP->xOption.xSNMP.xOID.nLen = MAX_OID_LEN;
-			if (read_objid(pOIDName, pEP->xOption.xSNMP.xOID.pIDs, &pEP->xOption.xSNMP.xOID.nLen) == 0)
+			pOpts  = (FTOM_NODE_SNMPC_EP_OPTS_PTR)pEP->pOpts;
+
+			pOpts->xOID.nLen = MAX_OID_LEN;
+			if (read_objid(pOIDName, pOpts->xOID.pIDs, &pOpts->xOID.nLen) == 0)
 			{
 				TRACE("Can't find MIB\n");
 				continue;
@@ -188,12 +184,11 @@ FTM_RET	FTOM_NODE_SNMPC_init
 
 			FTM_INT	nIndex;
 			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 3], 0, 16);
-			pEP->xOption.xSNMP.xOID.pIDs[pEP->xOption.xSNMP.xOID.nLen++] = nIndex & 0xFF;
+			pOpts->xOID.pIDs[pOpts->xOID.nLen++] = nIndex & 0xFF;
 			FTM_LIST_append(&pNode->xCommon.xEPList, pEP);
 		}
 	}
 #endif
-	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
 
 	return	FTM_RET_OK;
 }
@@ -205,9 +200,9 @@ FTM_RET	FTOM_NODE_SNMPC_prestart
 {
 	ASSERT(pNode != NULL);
 
-	FTM_LOCK_set(pNode->pLock);
+	FTM_LOCK_set(&pNode->xCommon.xLock);
 
-	FTM_LOCK_reset(pNode->pLock);
+	FTM_LOCK_reset(&pNode->xCommon.xLock);
 
 	return	FTM_RET_OK;
 }
@@ -219,9 +214,9 @@ FTM_RET	FTOM_NODE_SNMPC_prestop
 {
 	ASSERT(pNode != NULL);
 
-	FTM_LOCK_set(pNode->pLock);
+	FTM_LOCK_set(&pNode->xCommon.xLock);
 	snmp_timeout();
-	FTM_LOCK_reset(pNode->pLock);
+	FTM_LOCK_reset(&pNode->xCommon.xLock);
 
 	return	FTM_RET_OK;
 }
@@ -234,8 +229,6 @@ FTM_RET	FTOM_NODE_SNMPC_final
 	ASSERT(pNode != NULL);
 
 	FTM_LIST_final(&pNode->xCommon.xEPList);
-
-	FTM_LOCK_destroy(&pNode->pLock);
 
 	return	FTM_RET_OK;
 }
@@ -267,7 +260,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPCount
 		ERROR2(xRet, "SNNP Client not supported!\n");
 	}
 
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
 FTM_RET	FTOM_NODE_SNMPC_getEPData
@@ -280,6 +273,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 	FTM_RET	xRet;
 	FTM_VALUE_TYPE		xDataType;
 	FTM_VALUE			xValue;
+	FTM_BOOL			bValid = FTM_TRUE;
 	FTOM_SERVICE_PTR 	pService;
  	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
@@ -302,7 +296,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 		return	FTM_RET_EP_IS_NOT_ATTACHED;	
 	}
 
-	FTM_LOCK_set(pNode->pLock);
+	FTM_LOCK_set(&pNode->xCommon.xLock);
 	FTM_LOCK_set(pEP->pLock);
 
 	FTM_VALUE_init(&xValue, xDataType);
@@ -314,7 +308,8 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&((FTOM_NODE_SNMPC_EP_OPTS_PTR)pEP->pOpts)->xOID,
 				pNode->xCommon.xInfo.ulTimeout,
-				&xValue);
+				&xValue,
+				&bValid);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_EP_DATA_initVALUE(pData, &xValue);
@@ -323,7 +318,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 	FTM_VALUE_final(&xValue);
 
 	FTM_LOCK_reset(pEP->pLock);
-	FTM_LOCK_reset(pNode->pLock);
+	FTM_LOCK_reset(&pNode->xCommon.xLock);
 
 	return	xRet;
 }
@@ -351,7 +346,7 @@ FTM_RET	FTOM_NODE_SNMPC_setEPData
 		return	FTM_RET_EP_IS_NOT_ATTACHED;	
 	}
 
-	FTM_LOCK_set(pNode->pLock);
+	FTM_LOCK_set(&pNode->xCommon.xLock);
 	FTM_LOCK_set(pEP->pLock);
 
 	xRet = FTOM_SNMPC_set(
@@ -365,7 +360,7 @@ FTM_RET	FTOM_NODE_SNMPC_setEPData
 			
 
 	FTM_LOCK_reset(pEP->pLock);
-	FTM_LOCK_reset(pNode->pLock);
+	FTM_LOCK_reset(&pNode->xCommon.xLock);
 
 	return	xRet;
 }
@@ -634,6 +629,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 	FTM_SNMP_OID	xOID;
 	FTOM_SERVICE_PTR pService;
 	FTM_VALUE		xValue;
+	FTM_BOOL		bValid = FTM_TRUE;
 
 	if (ulMaxLen < 2)
 	{
@@ -670,7 +666,8 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&xOID,
 				pNode->xCommon.xInfo.ulTimeout,
-				&xValue);
+				&xValue,
+				&bValid);
 	if (xRet == FTM_RET_OK)
 	{
 		memset(pEPID, 0, ulMaxLen);
@@ -699,6 +696,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 	FTM_SNMP_OID	xOID;
 	FTOM_SERVICE_PTR pService;
 	FTM_VALUE		xValue;
+	FTM_BOOL		bValid = FTM_TRUE;
 
 	if (ulMaxLen < 2)
 	{
@@ -735,7 +733,8 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&xOID,
 				pNode->xCommon.xInfo.ulTimeout,
-				&xValue);
+				&xValue,
+				&bValid);
 	if (xRet == FTM_RET_OK)
 	{
 		memset(pName, 0, ulMaxLen);
@@ -763,6 +762,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPState
 	FTM_SNMP_OID	xOID;
 	FTOM_SERVICE_PTR pService;
 	FTM_VALUE		xValue;
+	FTM_BOOL		bValid = FTM_TRUE;
 
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
@@ -792,7 +792,8 @@ FTM_RET	FTOM_NODE_SNMPC_getEPState
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&xOID,
 				pNode->xCommon.xInfo.ulTimeout,
-				&xValue);
+				&xValue,
+				&bValid);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_VALUE_getBOOL(&xValue, pbEnable);
@@ -819,6 +820,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
 	FTM_SNMP_OID	xOID;
 	FTOM_SERVICE_PTR pService;
 	FTM_VALUE		xValue;
+	FTM_BOOL		bValid = FTM_TRUE;
 
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
@@ -848,7 +850,8 @@ FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
 				&xOID,
 				pNode->xCommon.xInfo.ulTimeout,
-				&xValue);
+				&xValue,
+				&bValid);
 	if (xRet == FTM_RET_OK)
 	{
 		xRet = FTM_VALUE_getULONG(&xValue, pulInterval);

@@ -9,25 +9,16 @@ typedef	FTM_ULONG		FTOM_NODE_STATE;
 
 struct FTM_NODE_CLASS_STRUCT ;
 
-#define	FTOM_NODE_STATE_CREATED					0x00000001
-#define	FTOM_NODE_STATE_INITIALIZED				0x00000002
-#define	FTOM_NODE_STATE_RUN						0x00000003
-#define	FTOM_NODE_STATE_STOP					0x00000004
-#define	FTOM_NODE_STATE_FINALIZED				0x00000005
-
-
 typedef	struct FTOM_NODE_STRUCT
 {
 	FTM_NODE		xInfo;
 	FTM_LIST		xEPList;
 
 	FTM_BOOL		bStop;
+	FTM_BOOL		bConnected;
 	pthread_t		xThread;
 	FTM_LOCK		xLock;
-	FTOM_NODE_STATE	xState;
 	FTOM_MSG_QUEUE	xMsgQ;
-
-	FTM_TIMER		xReportTimer;
 
 	struct
 	{
@@ -230,11 +221,6 @@ FTM_RET	FTOM_NODE_isRun
 (
 	FTOM_NODE_PTR	pNode,
 	FTM_BOOL_PTR	pbRun
-);
-
-FTM_CHAR_PTR	FTOM_NODE_stateToStr
-(
-	FTOM_NODE_STATE xState
 );
 
 FTM_RET	FTOM_NODE_print

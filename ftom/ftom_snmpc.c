@@ -266,11 +266,12 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 				{
 					FTOM_EP_PTR	pEP;
 					FTM_VALUE	xValue;
+					FTM_BOOL	bValid = FTM_TRUE;
 					FTOM_MSG_SNMPC_GET_EP_DATA_PTR	pMsg = (FTOM_MSG_SNMPC_GET_EP_DATA_PTR)pBaseMsg;
 
 					FTM_VALUE_init(&xValue, pMsg->xDataType);
 
-					xRet = FTOM_SNMPC_get( pClient, pMsg->ulVersion, pMsg->pURL, pMsg->pCommunity, &pMsg->xOID, pMsg->ulTimeout, &xValue);
+					xRet = FTOM_SNMPC_get( pClient, pMsg->ulVersion, pMsg->pURL, pMsg->pCommunity, &pMsg->xOID, pMsg->ulTimeout, &xValue, &bValid);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet, "Failed to snmp get[%s:%s:%s:%s]!\n", pMsg->pDID, pMsg->pEPID, pMsg->pURL, FTM_SNMP_OID_print(&pMsg->xOID));
@@ -290,6 +291,11 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 							}
 							else
 							{
+								if (!bValid)
+								{ 
+									xData.xState = FTM_EP_DATA_STATE_INVALID;
+								}
+
 								xRet = FTOM_MSG_createEPData(pMsg->pEPID, &xData, 1, &pNewMsg);
 								if (xRet != FTM_RET_OK) 
 								{ 
@@ -861,10 +867,11 @@ FTM_RET	FTOM_SNMPC_getULONG
 {
 	FTM_RET		xRet;
 	FTM_VALUE	xValue;
+	FTM_BOOL	bValid = FTM_TRUE;
 
 	FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_ULONG);
 
-	xRet = FTOM_SNMPC_get( pClient, FTM_SNMP_VERSION_2, pIP, "public", pOID, 10, &xValue);
+	xRet = FTOM_SNMPC_get( pClient, FTM_SNMP_VERSION_2, pIP, "public", pOID, 10, &xValue, &bValid);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_VALUE_getULONG(&xValue, pulCount);
@@ -886,10 +893,11 @@ FTM_RET	FTOM_SNMPC_getString
 {
 	FTM_RET		xRet;
 	FTM_VALUE	xValue;
+	FTM_BOOL	bValid = FTM_TRUE;
 
 	FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_STRING);
 
-	xRet = FTOM_SNMPC_get( pClient, FTM_SNMP_VERSION_2, pIP, "public", pOID, 1, &xValue);
+	xRet = FTOM_SNMPC_get( pClient, FTM_SNMP_VERSION_2, pIP, "public", pOID, 1, &xValue, &bValid);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_VALUE_getSTRING(&xValue, pBuff, ulMaxLen);
@@ -922,7 +930,8 @@ FTM_RET	FTOM_SNMPC_get
 	FTM_CHAR_PTR		pCommunity,
 	FTM_SNMP_OID_PTR	pOID,
 	FTM_ULONG			ulTimeout,
-	FTM_VALUE_PTR		pValue
+	FTM_VALUE_PTR		pValue,
+	FTM_BOOL_PTR		pbValid
 )
 {
 	ASSERT(pURL != NULL);
@@ -1009,6 +1018,7 @@ FTM_RET	FTOM_SNMPC_get
 					{
 						WARN("Invalid value type[%d]!\n", pValue->xType);
 						xRet = FTM_RET_INVALID_TYPE;
+						*pbValid = FTM_FALSE;
 					}
 				}
 			}
@@ -1029,13 +1039,22 @@ FTM_RET	FTOM_SNMPC_get
 					pBuff[1023] = 0;
 				}
 
-				if (pValue->xType == FTM_VALUE_TYPE_UNKNOWN)
+				if (strcasecmp(pBuff, "N/A") != 0)
 				{
-					xRet = FTM_VALUE_initSTRING(pValue, pBuff);
+					if (pValue->xType == FTM_VALUE_TYPE_UNKNOWN)
+					{
+						xRet = FTM_VALUE_initSTRING(pValue, pBuff);
+					}
+					else
+					{
+						xRet = FTM_VALUE_setFromString(pValue, pBuff);
+					}
+
+					*pbValid = (xRet == FTM_RET_OK);
 				}
 				else
 				{
-					xRet = FTM_VALUE_setFromString(pValue, pBuff);
+					*pbValid = FTM_FALSE;
 				}
 			}
 			break;
@@ -1045,6 +1064,7 @@ FTM_RET	FTOM_SNMPC_get
 				ERROR2(FTM_RET_INVALID_TYPE, "Invalid data type[%d]!\n", pVariable->type);
 				FTOM_SNMPC_dumpPDU(pRespPDU);
 				xRet = FTM_RET_INVALID_TYPE;
+				*pbValid = FTM_FALSE;
 			}
 		}
 		

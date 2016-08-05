@@ -208,7 +208,8 @@ FTM_RET	FTOM_SNMPC_get
 	FTM_CHAR_PTR		pCommunity,
 	FTM_SNMP_OID_PTR	pOID,
 	FTM_ULONG			ulTimeout,
-	FTM_VALUE_PTR		pValue
+	FTM_VALUE_PTR		pValue,
+	FTM_BOOL_PTR		pbValid
 );
 
 FTM_RET	FTOM_SNMPC_set

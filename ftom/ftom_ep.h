@@ -10,6 +10,12 @@
 #include "ftom_message_queue.h"
 #include "ftm_snmp.h"
 
+typedef	struct FTOM_EP_STATISTICS_STRUCT
+{
+	FTM_ULONG	ulReqCount;
+	FTM_ULONG	ulRespCount;
+}	FTOM_EP_STATISTICS, _PTR_ FTOM_EP_STATISTICS_PTR;
+	
 typedef	struct FTOM_EP_STRUCT
 {
 	FTM_EP					xInfo;
