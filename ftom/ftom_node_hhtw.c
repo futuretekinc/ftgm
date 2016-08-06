@@ -48,8 +48,6 @@ FTM_RET	FTOM_NODE_FINSC_HHTW_init
 	pNode->xRemote.sin_addr.s_addr 	= inet_addr(pNode->xCommon.xInfo.xOption.xFINS.pDIP);
 	pNode->xRemote.sin_port 		= htons(pNode->xCommon.xInfo.xOption.xFINS.ulDP);
 
-	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
-
 	return	FTM_RET_OK;
 }
 
@@ -130,8 +128,6 @@ FTM_VOID_PTR FTOM_NODE_FINSC_HHTW_process
 	FTOM_MSG_PTR	pMsg;
 	FTM_TIMER		xReportTimer;
 	FTOM_NODE_FINSC_HHTW_DATA_PTR	pData = (FTOM_NODE_FINSC_HHTW_DATA_PTR)pNode->pData;
-
-	pNode->xCommon.xState = FTOM_NODE_STATE_RUN;
 
 	TRACE("Node[%s] start(FINS Client).\n", pNode->xCommon.xInfo.pDID);
 

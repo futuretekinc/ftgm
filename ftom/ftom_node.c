@@ -14,6 +14,18 @@
 #define	__MODULE__	FTOM_TRACE_MODULE_NODE
 
 static
+FTM_RET	FTOM_NODE_connect
+(
+	FTOM_NODE_PTR	pNode
+);
+
+static
+FTM_RET	FTOM_NODE_disconnect
+(
+	FTOM_NODE_PTR	pNode
+);
+
+static
 FTM_INT	FTOM_NODE_seeker
 (
 	const FTM_VOID_PTR pElement, 
@@ -34,60 +46,68 @@ FTM_VOID_PTR FTOM_NODE_threadMain
 );
 
 static
-FTM_LIST_PTR	pNodeList = NULL;
+FTOM_NODE_MODULE	xDefaultModule = 
+{
+	.pNodeList = NULL,
+	.ulConnectIntervalMin = FTOM_NODE_CONNECT_INTERVAL_MIN,
+	.ulConnectIntervalMax = FTOM_NODE_CONNECT_INTERVAL_MAX,
+};
 
 /********************************************************************************
- *	NODE Manager
+ *	Module 
  ********************************************************************************/
-FTM_RET	FTOM_NODE_init
+FTM_RET	FTOM_NODE_MODULE_init
 (
 	FTM_VOID
 )
 {
 	FTM_RET	xRet ;
 
-	if (pNodeList != NULL)
+	if (xDefaultModule.pNodeList != NULL)
 	{
 		return	FTM_RET_ALREADY_INITIALIZED;	
 	}
 
-	xRet = FTM_LIST_create(&pNodeList);
+	xRet = FTM_LIST_create(&xDefaultModule.pNodeList);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	FTM_LIST_setSeeker(pNodeList, FTOM_NODE_seeker);
-	FTM_LIST_setComparator(pNodeList, FTOM_NODE_comparator);
+	FTM_LIST_setSeeker(xDefaultModule.pNodeList, FTOM_NODE_seeker);
+	FTM_LIST_setComparator(xDefaultModule.pNodeList, FTOM_NODE_comparator);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTOM_NODE_final
+FTM_RET FTOM_NODE_MODULE_final
 (
 	FTM_VOID
 )
 {
 	FTOM_NODE_PTR	pNode = NULL;
 
-	if (pNodeList == NULL)
+	if (xDefaultModule.pNodeList == NULL)
 	{
 		return	FTM_RET_NOT_INITIALIZED;
 	}
-	FTM_LIST_iteratorStart(pNodeList);
-	while(FTM_LIST_iteratorNext(pNodeList, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
+	FTM_LIST_iteratorStart(xDefaultModule.pNodeList);
+	while(FTM_LIST_iteratorNext(xDefaultModule.pNodeList, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
 	{
-		FTM_LIST_remove(pNodeList, pNode);
+		FTM_LIST_remove(xDefaultModule.pNodeList, pNode);
 		FTOM_NODE_destroy(&pNode, FTM_FALSE);	
 	}
 
-	FTM_LIST_destroy(pNodeList);
+	FTM_LIST_destroy(xDefaultModule.pNodeList);
 
-	pNodeList = NULL;
+	xDefaultModule.pNodeList = NULL;
 
 	return	FTM_RET_OK;
 }
 
+/********************************************************************************
+ *	Node operation 
+ ********************************************************************************/
 FTM_RET	FTOM_NODE_create
 (
 	FTM_NODE_PTR 	pInfo, 
@@ -183,11 +203,12 @@ FTM_RET	FTOM_NODE_create
 		FTOM_LOG_createNode(&pNode->xInfo);
 	}
 
+	pNode->xState = FTOM_NODE_STATE_STOP;
 	pNode->bStop = FTM_TRUE;
 	pNode->bConnected = FTM_FALSE;
+	pNode->ulConnectInterval = xDefaultModule.ulConnectIntervalMin;
 
-	FTM_LIST_append(pNodeList, pNode);
-	TRACE("Append Node : %08x, %08x\n", pNodeList, pNode);
+	FTM_LIST_append(xDefaultModule.pNodeList, pNode);
 
 	*ppNode = pNode;
 
@@ -257,7 +278,7 @@ FTM_RET	FTOM_NODE_destroy
 		ERROR2(xRet, "Failed to finalize lock of node[%s]!\n", (*ppNode)->xInfo.pDID);	
 	}
 
-	FTM_LIST_remove(pNodeList, (*ppNode));
+	FTM_LIST_remove(xDefaultModule.pNodeList, (*ppNode));
 
 	if ((*ppNode)->pClass->fDestroy != NULL)
 	{
@@ -280,7 +301,7 @@ FTM_RET	FTOM_NODE_count
 {
 	ASSERT(pulCount != NULL);
 
-	return	FTM_LIST_count(pNodeList, pulCount);
+	return	FTM_LIST_count(xDefaultModule.pNodeList, pulCount);
 }
 
 
@@ -296,7 +317,7 @@ FTM_RET FTOM_NODE_get
 	FTM_RET			xRet;
 	FTOM_NODE_PTR	pNode;
 	
-	xRet = FTM_LIST_get(pNodeList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
+	xRet = FTM_LIST_get(xDefaultModule.pNodeList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
 	if (xRet == FTM_RET_OK)
 	{
 		*ppNode = pNode;
@@ -316,7 +337,7 @@ FTM_RET FTOM_NODE_getAt
 	FTM_RET			xRet;
 	FTOM_NODE_PTR	pNode;
 
-	xRet = FTM_LIST_getAt(pNodeList, ulIndex, (FTM_VOID_PTR _PTR_)&pNode);
+	xRet = FTM_LIST_getAt(xDefaultModule.pNodeList, ulIndex, (FTM_VOID_PTR _PTR_)&pNode);
 	if (xRet == FTM_RET_OK)
 	{
 		*ppNode = pNode;
@@ -382,6 +403,80 @@ FTM_RET FTOM_NODE_setAttr
 
 error:
 	return	xRet;
+}
+
+FTM_BOOL	FTOM_NODE_isConnected
+(
+	FTOM_NODE_PTR	pNode
+)
+{
+	return	(pNode != NULL) && pNode->bConnected;
+}
+
+FTM_RET	FTOM_NODE_connect
+(
+	FTOM_NODE_PTR	pNode
+)
+{
+	ASSERT(pNode != NULL);
+	FTM_RET		xRet;
+	FTM_ULONG	ulCount;
+
+	pNode->xState = FTOM_NODE_STATE_RUN;
+	pNode->bConnected = FTM_TRUE;
+	pNode->ulConnectInterval = xDefaultModule.ulConnectIntervalMin;
+
+	xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_INT	i;
+
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			FTOM_EP_PTR	pEP;
+
+			xRet = FTM_LIST_getAt(&pNode->xEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_EP_start(pEP);
+			}
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NODE_disconnect
+(
+	FTOM_NODE_PTR	pNode
+)
+{
+	ASSERT(pNode != NULL);
+	FTM_RET		xRet;
+	FTM_ULONG	ulCount;
+
+	xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_INT	i;
+
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			FTOM_EP_PTR	pEP;
+
+			xRet = FTM_LIST_getAt(&pNode->xEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
+			if (xRet == FTM_RET_OK)
+			{
+				FTOM_EP_stop(pEP, FTM_TRUE);
+			}
+		}
+	}
+
+	pNode->xState = FTOM_NODE_STATE_CONNECT;
+	pNode->bConnected = FTM_FALSE;
+	FTM_TIMER_initS(&pNode->xConnectTimer, 0);
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_NODE_linkEP
@@ -644,7 +739,11 @@ FTM_RET	FTOM_NODE_getEPCount
 
 	if (ulCount == 0)
 	{
-		if ((pNode->bConnected == FTM_TRUE) && (pNode->pClass != NULL) && (pNode->pClass->fGetEPCount != NULL))
+		FTM_BOOL	bConnected = FTM_FALSE;
+
+		bConnected = FTOM_NODE_isConnected(pNode);
+
+		if ((bConnected == FTM_TRUE) && (pNode->pClass != NULL) && (pNode->pClass->fGetEPCount != NULL))
 		{
 			xRet = pNode->pClass->fGetEPCount(pNode, xType, &ulCount);	
 		}
@@ -761,7 +860,6 @@ FTM_RET	FTOM_NODE_start
 	}
 	else
 	{
-		FTM_ULONG	ulCount = 0;
 
 		if ((pNode->pClass != NULL) && (pNode->pClass->fProcess != NULL))
 		{
@@ -782,28 +880,6 @@ FTM_RET	FTOM_NODE_start
 				ERROR2(xRet, "Node start failed.[%d]\n", nRet);
 				return	xRet;
 			}
-		}
-
-		xRet = FTM_LIST_count(&pNode->xEPList, &ulCount);
-		if (xRet == FTM_RET_OK)
-		{
-			FTM_INT	i;
-	
-			for(i = 0 ; i < ulCount ; i++)
-			{
-				FTOM_EP_PTR	pEP;
-	
-				xRet = FTM_LIST_getAt(&pNode->xEPList, i, (FTM_VOID_PTR _PTR_)&pEP);
-				if (xRet == FTM_RET_OK)
-				{
-					FTOM_EP_start(pEP);
-				}
-			}
-		}
-
-		if ((pNode->pClass != NULL) && (pNode->pClass->fPoststart != NULL))
-		{
-			pNode->pClass->fPoststart(pNode);
 		}
 	}
 
@@ -909,26 +985,44 @@ FTM_VOID_PTR FTOM_NODE_threadMain
 	TRACE("Node[%s] started.\n", pNode->xInfo.pDID);
 
 	FTM_TIMER_initS(&xLoopTimer, 0);
+	FTM_TIMER_initMS(&pNode->xConnectTimer, pNode->ulConnectInterval);
 
+	pNode->xState = FTOM_NODE_STATE_CONNECT;
 	pNode->bStop = FTM_FALSE;
 
 	while(!pNode->bStop)
 	{
 		FTM_ULONG		ulRemainTime = 0;
 
-		if (!pNode->bConnected)
+		if (!FTOM_NODE_isConnected(pNode))
 		{
-			if ((pNode->pClass != NULL) & (pNode->pClass->fInit != NULL))
+			if (FTM_TIMER_isExpired(&pNode->xConnectTimer) == FTM_TRUE)
 			{
-				xRet = pNode->pClass->fInit(pNode);
-				if (xRet == FTM_RET_OK)
+				if (pNode->ulConnectInterval < xDefaultModule.ulConnectIntervalMax)
 				{
-					pNode->bConnected = FTM_TRUE;	
+					pNode->ulConnectInterval *= 2;			
+					if (pNode->ulConnectInterval >  xDefaultModule.ulConnectIntervalMax)
+					{
+						pNode->ulConnectInterval =  xDefaultModule.ulConnectIntervalMax;
+					}
 				}
-			}
-			else
-			{
-				pNode->bConnected = FTM_TRUE;	
+
+				if ((pNode->pClass != NULL) & (pNode->pClass->fInit != NULL))
+				{
+					xRet = pNode->pClass->fInit(pNode);
+					if (xRet == FTM_RET_OK)
+					{
+						FTOM_NODE_connect(pNode);
+					}
+					else
+					{
+						FTM_TIMER_addMS(&pNode->xConnectTimer, pNode->ulConnectInterval);
+					}
+				}
+				else
+				{
+					FTOM_NODE_connect(pNode);
+				}
 			}
 		}
 
@@ -956,10 +1050,10 @@ FTM_VOID_PTR FTOM_NODE_threadMain
 			FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
 		}
 	
-		FTM_TIMER_addS(&xLoopTimer, FTOM_NODE_LOOP_INTERVAL);
+		FTM_TIMER_addMS(&xLoopTimer, FTOM_NODE_LOOP_INTERVAL);
 	} 
 
-	pNode->bConnected = FTM_FALSE;
+	FTOM_NODE_disconnect(pNode);
 
 	TRACE("Node[%s] stopped.\n", pNode->xInfo.pDID);
 
@@ -1054,8 +1148,8 @@ FTM_RET	FTOM_NODE_print
 		pNode->pClass->fPrintOpts(pNode);	
 	}
 
-	MESSAGE("%16s : %s\n", "State", 	(pNode->bStop)?"Stop":"Run");
-	MESSAGE("%16s : %lu\n", "Report Interval", 	pNode->xInfo.ulReportInterval);
+	MESSAGE("%16s : %s\n", "State", 	FTOM_NODE_printState(pNode));
+	MESSAGE("%16s : %lu\n", "Report Interval", pNode->xInfo.ulReportInterval);
 	MESSAGE("%16s : %lu\n", "Timeout", 	pNode->xInfo.ulTimeout);
 	FTOM_NODE_getEPCount(pNode, 0, &ulEPCount);
 	MESSAGE("%16s : %lu\n", "EPs",		ulEPCount);
@@ -1092,7 +1186,7 @@ FTM_RET	FTOM_NODE_printList
 	MESSAGE("\n# Node Information\n");
 	MESSAGE("%16s %16s %16s %16s %16s %8s %8s %s\n", "DID", "MODEL", "NAME", "TYPE", "STATE", "REPORT", "TIMEOUT", "EPs");
 
-	FTM_LIST_count(pNodeList, &ulCount);
+	FTM_LIST_count(xDefaultModule.pNodeList, &ulCount);
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
@@ -1103,7 +1197,7 @@ FTM_RET	FTOM_NODE_printList
 		MESSAGE("%16s ", pNode->xInfo.pModel);
 		MESSAGE("%16s ", pNode->xInfo.pName);
 		MESSAGE("%16s ", FTM_NODE_typeString(pNode->xInfo.xType));
-		MESSAGE("%16s ", (pNode->bStop)?"Stop": "Run");
+		MESSAGE("%16s ", FTOM_NODE_printState(pNode));
 		MESSAGE("%8lu ", pNode->xInfo.ulReportInterval);
 		MESSAGE("%8lu ", pNode->xInfo.ulTimeout);
 
@@ -1114,3 +1208,21 @@ FTM_RET	FTOM_NODE_printList
 	return	FTM_RET_OK;
 }
 
+
+FTM_CHAR_PTR	FTOM_NODE_printState
+(
+	FTOM_NODE_PTR	pNode
+)
+{
+	if (pNode != NULL)
+	{
+		switch(pNode->xState)
+		{
+		case	FTOM_NODE_STATE_STOP:	return	"Stop";
+		case	FTOM_NODE_STATE_CONNECT:return	"Connect";
+		case	FTOM_NODE_STATE_RUN:	return	"Run";
+		}
+	}
+
+	return	"Unknown";
+}

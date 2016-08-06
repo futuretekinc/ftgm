@@ -538,6 +538,29 @@ FTM_CHAR_PTR	FTM_TIME_printf2
 	return	pString;
 }
 
+FTM_CHAR_PTR	FTM_TIME_printfCurrent
+(
+	FTM_CHAR_PTR	pFormat
+)
+{
+	struct timeval	xTimeval;
+
+	static	FTM_CHAR	pString[64];
+
+	gettimeofday(&xTimeval, NULL);
+
+	if (pFormat != NULL)
+	{
+		strftime(pString, sizeof(pString) - 1, pFormat, localtime((const time_t *)&xTimeval.tv_sec));
+	}
+	else
+	{
+		strftime(pString, sizeof(pString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&xTimeval.tv_sec));
+	}
+
+	return	pString;
+}
+
 FTM_RET	FTM_TIME_toMS
 (
 	FTM_TIME_PTR	pTime,

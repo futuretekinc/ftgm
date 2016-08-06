@@ -8,16 +8,8 @@ FTM_RET	FTOM_NODE_FTE_init
 	FTOM_NODE_SNMPC_PTR pNode
 )
 {
-	FTM_RET				xRet;
-
 	ASSERT(pNode != NULL);
 
-	xRet = FTM_LOCK_create(&pNode->pLock);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to creat lock!\n");
-		return	xRet;	
-	}
 
 #if 0
 	xRet = FTOM_NODE_getEPCount((FTOM_NODE_PTR)pNode, 0, &ulEPCount);
@@ -68,7 +60,6 @@ FTM_RET	FTOM_NODE_FTE_init
 		}
 	}
 #endif
-	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
 
 	return	FTM_RET_OK;
 }
@@ -80,9 +71,9 @@ FTM_RET	FTOM_NODE_FTE_prestart
 {
 	ASSERT(pNode != NULL);
 
-	FTM_LOCK_set(pNode->pLock);
+	FTM_LOCK_set(&pNode->xCommon.xLock);
 
-	FTM_LOCK_reset(pNode->pLock);
+	FTM_LOCK_reset(&pNode->xCommon.xLock);
 
 	return	FTM_RET_OK;
 }
@@ -94,9 +85,9 @@ FTM_RET	FTOM_NODE_FTE_prestop
 {
 	ASSERT(pNode != NULL);
 
-	FTM_LOCK_set(pNode->pLock);
+	FTM_LOCK_set(&pNode->xCommon.xLock);
 	snmp_timeout();
-	FTM_LOCK_reset(pNode->pLock);
+	FTM_LOCK_reset(&pNode->xCommon.xLock);
 
 	return	FTM_RET_OK;
 }
@@ -109,8 +100,6 @@ FTM_RET	FTOM_NODE_FTE_final
 	ASSERT(pNode != NULL);
 
 	FTM_LIST_final(&pNode->xCommon.xEPList);
-
-	FTM_LOCK_destroy(&pNode->pLock);
 
 	return	FTM_RET_OK;
 }

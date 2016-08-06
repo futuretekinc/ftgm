@@ -7,6 +7,7 @@
 #include "ftm_timer.h"
 #include "ftom_node.h"
 #include "ftom_node_class.h"
+#include "ftom_snmpc.h"
 
 typedef struct	
 {
@@ -18,6 +19,7 @@ typedef	struct  FTOM_NODE_SNMPC_STRUCT
 	FTOM_NODE				xCommon;
 	FTM_CHAR				pIP[FTM_URL_LEN+1];
 	struct snmp_session 	*pSession;		/* SNMP session data */
+	FTOM_SNMPC_PTR			pSNMPC;
 }	FTOM_NODE_SNMPC, _PTR_ FTOM_NODE_SNMPC_PTR;
 
 FTM_RET	FTOM_NODE_SNMPC_getClass
@@ -55,6 +57,13 @@ FTM_RET	FTOM_NODE_SNMPC_prestart
 FTM_RET	FTOM_NODE_SNMPC_prestop
 (
 	FTOM_NODE_SNMPC_PTR pNode
+);
+
+FTM_RET	FTOM_NODE_SNMPC_getModel
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_CHAR_PTR		pModel,
+	FTM_ULONG			ulMaxLen
 );
 
 FTM_RET	FTOM_NODE_SNMPC_getEPCount

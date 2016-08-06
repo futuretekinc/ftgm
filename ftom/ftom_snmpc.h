@@ -65,6 +65,12 @@ FTM_RET	FTOM_SNMPC_final
 	FTOM_SNMPC_PTR pClient
 );
 
+FTM_RET	FTOM_SNMPC_setConfig
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTOM_SNMPC_CONFIG_PTR	pConfig
+);
+
 FTM_RET FTOM_SNMPC_loadConfig
 (
 	FTOM_SNMPC_PTR 	pClient, 

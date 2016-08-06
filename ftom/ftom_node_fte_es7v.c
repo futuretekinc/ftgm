@@ -165,7 +165,6 @@ FTM_RET	FTOM_NODE_VIRTUAL_FTE_ES7_init
 	pthread_create(&pES7->xThread, NULL, FTOM_NODE_VIRTUAL_FTE_ES7_process, pES7);
 
 	pNode->pData = pES7;
-	pNode->xCommon.xState = FTOM_NODE_STATE_INITIALIZED;
 
 	return	FTM_RET_OK;
 }

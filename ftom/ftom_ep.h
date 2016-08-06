@@ -167,6 +167,14 @@ FTM_RET	FTOM_EP_getDataCount
 	FTM_ULONG_PTR		pulCount
 );
 
+FTM_RET	FTOM_EP_getDataCountWithTime
+(
+	FTOM_EP_PTR			pEP,
+	FTM_ULONG			ulStart,
+	FTM_ULONG			ulEnd,
+	FTM_ULONG_PTR		pulCount
+);
+
 FTM_RET	FTOM_EP_getDataList
 (
 	FTOM_EP_PTR		pEP,

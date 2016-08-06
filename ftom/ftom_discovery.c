@@ -207,9 +207,9 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 				{
 					FTOM_MSG_DISCOVERY_PTR	pMsg = (FTOM_MSG_DISCOVERY_PTR)pCommonMsg;
 
-					TRACE("Discovery Start!\n");
 					if (!pDiscovery->bInProgress)
 					{
+						TRACE("Discovery Start!\n");
 						pDiscovery->bInProgress = FTM_TRUE;
 						FTM_TIMER_initS(&pDiscovery->xTimer, pDiscovery->ulTimeout);
 						strncpy(pDiscovery->pTargetIP, pMsg->pNetwork, sizeof(pDiscovery->pTargetIP) - 1);

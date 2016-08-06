@@ -24,6 +24,12 @@
 #undef	__MODULE__
 #define	__MODULE__	FTOM_TRACE_MODULE_FTOM
 
+typedef	struct	
+{
+	FTM_CHAR	pIP[64];
+	FTM_USHORT	usPort;
+}	FTOM_SUBNET, _PTR_ FTOM_SUBNET_PTR;
+	
 FTM_VOID_PTR	FTOM_process
 (
 	FTM_VOID_PTR pData
@@ -203,6 +209,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fSendMessage=	(FTOM_SERVICE_SEND_MESSAGE)FTOM_DMC_sendMessage,
 		.pData		= 	NULL
 	},
+#if 1
 	{
 		.xType		=	FTOM_SERVICE_DISCOVERY,
 		.xID		=	FTOM_SERVICE_DISCOVERY,
@@ -220,6 +227,7 @@ static 	FTOM_SERVICE	pServices[] =
 		.fSendMessage=	NULL,
 		.pData		= 	NULL
 	},
+#endif
 };
 
 extern char *program_invocation_short_name;
@@ -232,6 +240,8 @@ FTM_BOOL			bStop;
 
 FTOM_MSG_QUEUE_PTR	pMsgQ;
 FTM_SHELL			xShell;
+
+FTM_LIST			xSubnetList;
 
 FTOM_ON_MESSAGE_CALLBACK	onMessage[FTOM_MSG_TYPE_MAX];
 FTM_VOID_PTR				pOnMessageData[FTOM_MSG_TYPE_MAX];
@@ -276,6 +286,13 @@ FTM_RET	FTOM_init
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_INFO]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryInfo;
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_DONE]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryDone;
 
+	TRACE("%s[%d] : FTOM_onDiscoveryInfo= %08x\n", __func__, __LINE__,FTOM_onDiscoveryInfo);
+	xRet = FTM_LIST_init(&xSubnetList);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet,"Failed to initialize list!\n");	
+	}
+
 	xRet = FTOM_LOGGER_init();
 	if (xRet != FTM_RET_OK)
 	{
@@ -289,7 +306,7 @@ FTM_RET	FTOM_init
 		goto error;
 	}
 
-	xRet = FTOM_NODE_init();
+	xRet = FTOM_NODE_MODULE_init();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Node management creation failed.\n");
@@ -334,7 +351,7 @@ error:
 		FTOM_ACTION_final();
 		FTOM_TRIGGER_final();
 		FTOM_EP_final();
-		FTOM_NODE_final();
+		FTOM_NODE_MODULE_final();
 	
 		if (pMsgQ!= NULL)
 		{
@@ -388,7 +405,7 @@ FTM_RET	FTOM_final
 		ERROR2(xRet, "Failed to finalize EP!\n");	
 	}
 
-	xRet = FTOM_NODE_final();
+	xRet = FTOM_NODE_MODULE_final();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to finalize Node!\n");	
@@ -400,7 +417,85 @@ FTM_RET	FTOM_final
 		ERROR2(xRet,"Failed to finalize logger!\n");	
 	}
 
+	xRet =FTM_LIST_iteratorStart(&xSubnetList);
+	if (xRet == FTM_RET_OK)
+	{
+		FTOM_SUBNET_PTR	pSubnet;
+	
+		while(FTM_LIST_iteratorNext(&xSubnetList, (FTM_VOID_PTR _PTR_)&pSubnet) == FTM_RET_OK)
+		{
+			FTM_LIST_remove(&xSubnetList, pSubnet);	
+		}
+	}
+
+	FTM_LIST_final(&xSubnetList);
+
 	TRACE("Finalize done.\n");
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_loadConfig
+(
+	FTM_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pConfig != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_ITEM		xSection;	
+
+	xRet = FTM_CONFIG_getItem(pConfig, "network", &xSection);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_ULONG	ulCount;
+		xRet = FTM_CONFIG_LIST_getItemCount(&xSection, &ulCount);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_INT	i;
+
+			for(i = 0  ; i < ulCount ; i++)
+			{
+				FTM_CONFIG_ITEM	xItem;
+				FTM_CHAR		pNet[64];
+				FTM_USHORT		usPort;
+
+				xRet = FTM_CONFIG_LIST_getItemAt(&xSection, i, &xItem);
+				if (xRet != FTM_RET_OK)
+				{
+					continue;	
+				}
+				
+				memset(pNet, 0, sizeof(pNet));
+				xRet = FTM_CONFIG_ITEM_getItemString(&xItem, "net", pNet, sizeof(pNet) - 1);
+				if (xRet != FTM_RET_OK)
+				{
+					continue;	
+				}
+				
+				xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xItem, "port", &usPort);
+				if (xRet != FTM_RET_OK)
+				{
+					continue;	
+				}
+			
+
+				FTOM_SUBNET_PTR	pSubnet = (FTOM_SUBNET_PTR)FTM_MEM_malloc(sizeof(FTOM_SUBNET));
+				if (pSubnet != NULL)
+				{
+					strncpy(pSubnet->pIP, pNet, sizeof(pNet) - 1);
+					pSubnet->usPort = usPort;
+
+					xRet = FTM_LIST_append(&xSubnetList, pSubnet);
+					if (xRet != FTM_RET_OK)
+					{
+						FTM_MEM_free(pSubnet);	
+					}
+				}
+			}
+		}
+
+	}
 
 	return	FTM_RET_OK;
 }
@@ -419,6 +514,12 @@ FTM_RET	FTOM_loadConfigFromFile
 	{
 		ERROR2(xRet, "SERVER configuration file[%s] load failed\n", pFileName);
 		return	xRet;	
+	}
+
+	xRet = FTOM_loadConfig(pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration[%s]\n", pFileName);
 	}
 
 	xRet = FTOM_SERVICE_loadConfig(FTOM_SERVICE_ALL, pConfig);
@@ -869,6 +970,7 @@ FTM_RET	FTOM_TASK_start
 	FTM_VOID
 )
 {
+	FTM_RET		xRet;
 	FTM_ULONG	i, ulCount;
 	
 	FTOM_RULE_start(NULL);
@@ -1311,7 +1413,6 @@ FTM_RET	FTOM_setMessageCallback
 {
 	ASSERT(fMessageCB != NULL);
 
-	TRACE("Set Message CB : %08x, %08x\n", xMsg, fMessageCB);
 	if (xMsg >= FTOM_MSG_TYPE_MAX)
 	{
 		ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Message type[%08x] is invalid.\n", xMsg);
@@ -2596,6 +2697,7 @@ FTM_RET	FTOM_receivedDiscovery
 	xRet = FTOM_MSG_createDiscoveryInfo(pName, pDID, pIP, pTypes, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to create message!\n");
 		return	xRet;	
 	}
 

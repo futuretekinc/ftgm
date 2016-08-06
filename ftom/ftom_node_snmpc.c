@@ -132,65 +132,96 @@ FTM_RET	FTOM_NODE_SNMPC_init
 	FTOM_NODE_SNMPC_PTR pNode
 )
 {
-	FTM_RET				xRet;
-
 	ASSERT(pNode != NULL);
 
-	strncpy(pNode->pIP, pNode->xCommon.xInfo.xOption.xSNMP.pURL, FTM_URL_LEN);
-#if 0
-	FTM_ULONG			ulEPCount = 0;
-	xRet = FTOM_NODE_SNMPC_getEPCount(pNode, 0, &ulEPCount);
+	FTM_RET				xRet;
+	FTM_CHAR			pModel[FTM_NAME_LEN+1];
+	FTM_VALUE			xValue;
+	FTM_BOOL			bValid = FTM_TRUE;
+	FTM_SNMP_OID		xOID;
+ 	FTM_CHAR			pBuff[64];
+	FTOM_SERVICE_PTR 	pService;
+
+	if (strlen(pNode->pIP) == 0)
+	{
+		if (strlen(pNode->xCommon.xInfo.xOption.xSNMP.pURL) == 0)
+		{
+			return	FTM_RET_NOT_INITIALIZED;
+		}
+
+		strncpy(pNode->pIP, pNode->xCommon.xInfo.xOption.xSNMP.pURL, FTM_URL_LEN);
+	}
+
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		TRACE("Node[%s] get EP count failed.!\n", pNode->xCommon.xInfo.pDID);
+		ERROR2(xRet, "SNNP Client not supported!\n");
 		return	xRet;	
 	}
 
-	TRACE("Node[%s] has %d EPs\n", pNode, pNode->xCommon.xInfo.pDID, ulEPCount);
-	if (ulEPCount != 0)
+	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_STRING);
+	if (xRet != FTM_RET_OK)
 	{
-		FTM_ULONG	i;
-
-		for(i = 0 ; i < ulEPCount ; i++)
-		{
-			FTOM_EP_PTR				pEP;
-			FTOM_EP_CLASS_PTR	pEPClassInfo;
-			FTM_CHAR				pOIDName[1024];
-			FTOM_NODE_SNMPC_EP_OPTS_PTR	pOpts;
-
-			if (FTOM_NODE_getEPAt((FTOM_NODE_PTR)pNode, i, (FTOM_EP_PTR _PTR_)&pEP) != FTM_RET_OK)
-			{
-				TRACE("EP[%d] information not found\n", i);
-				continue;
-			}
-
-			if (FTOM_EP_CLASS_get((pEP->xInfo.xType & FTM_EP_TYPE_MASK), &pEPClassInfo) != FTM_RET_OK)
-			{
-				TRACE("EP CLASS[%s] information not found\n", pEP->xInfo.pEPID);
-				continue;
-			}
-
-			snprintf(pOIDName, sizeof(pOIDName) - 1, "%s::%s", 
-				pNode->xCommon.xInfo.xOption.xSNMP.pMIB, 
-				pEPClassInfo->xInfo.pValue);
-			pOpts  = (FTOM_NODE_SNMPC_EP_OPTS_PTR)pEP->pOpts;
-
-			pOpts->xOID.nLen = MAX_OID_LEN;
-			if (read_objid(pOIDName, pOpts->xOID.pIDs, &pOpts->xOID.nLen) == 0)
-			{
-				TRACE("Can't find MIB\n");
-				continue;
-			}
-
-			FTM_INT	nIndex;
-			nIndex = strtoul(&pEP->xInfo.pEPID[strlen(pEP->xInfo.pEPID) - 3], 0, 16);
-			pOpts->xOID.pIDs[pOpts->xOID.nLen++] = nIndex & 0xFF;
-			FTM_LIST_append(&pNode->xCommon.xEPList, pEP);
-		}
+		ERROR2(xRet, "Failed to initialize value!\n");
+		return	xRet;	
 	}
-#endif
 
-	return	FTM_RET_OK;
+	sprintf(pBuff, "%s:prodModel.0", pNode->xCommon.xInfo.xOption.xSNMP.pMIB);
+	xRet = FTOM_SNMPC_getOID(pBuff, &xOID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get OID[%s]\n", pBuff);	
+		goto finish;
+	}
+
+	xRet = FTOM_SNMPC_get( 
+				pService->pData,
+				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
+				pNode->pIP,
+				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
+				&xOID,
+				pNode->xCommon.xInfo.ulTimeout,
+				&xValue,
+				&bValid);
+	if (xRet != FTM_RET_OK)
+	{
+		goto finish;
+	}
+
+	xRet = FTM_VALUE_getSTRING(&xValue, pModel, FTM_NAME_LEN);	
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to read model from value!\n");
+		goto finish;	
+	}
+
+	if (strlen(pNode->xCommon.xInfo.pModel) == 0)
+	{
+		strncpy(pNode->xCommon.xInfo.pModel, pModel, FTM_NAME_LEN);
+	}
+
+	if (pNode->pSNMPC == NULL)
+	{
+		FTOM_SNMPC_PTR		pSNMPC = NULL;
+
+		xRet = FTOM_SNMPC_create(&pSNMPC);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to create SNMP Client!\n");
+			return	xRet;	
+		}
+
+		FTOM_SNMPC_setConfig(pSNMPC, &((FTOM_SNMPC_PTR)pService->pData)->xConfig);
+		sprintf(pSNMPC->xConfig.pName, "ftom:%s", pNode->xCommon.xInfo.pDID);
+
+		pNode->pSNMPC = pSNMPC;
+	}
+
+finish:
+
+	FTM_VALUE_final(&xValue);
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_NODE_SNMPC_prestart
@@ -227,11 +258,102 @@ FTM_RET	FTOM_NODE_SNMPC_final
 )
 {
 	ASSERT(pNode != NULL);
+	FTM_RET	xRet;
+
+	FTM_LOCK_set(&pNode->xCommon.xLock);
+
+	if (pNode->pSNMPC != NULL)
+	{
+		xRet = FTOM_SNMPC_destroy(&pNode->pSNMPC);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to destroy SNMPC!\n");	
+		}
+	}
 
 	FTM_LIST_final(&pNode->xCommon.xEPList);
 
+	FTM_LOCK_reset(&pNode->xCommon.xLock);
+
 	return	FTM_RET_OK;
 }
+
+FTM_RET	FTOM_NODE_SNMPC_getModel
+(
+	FTOM_NODE_SNMPC_PTR pNode, 
+	FTM_CHAR_PTR		pModel,
+	FTM_ULONG			ulMaxLen
+)
+{
+	FTM_RET	xRet;
+	FTM_VALUE			xValue;
+	FTM_BOOL			bValid = FTM_TRUE;
+	FTOM_SNMPC_PTR		pSNMPC = NULL;
+	FTM_SNMP_OID		xOID;
+ 	FTM_CHAR			pBuff[64];
+
+	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
+	{
+		return	FTM_RET_SNMP_TIMEOUT;
+	} 
+
+	if (pNode->pSNMPC == NULL)
+	{
+		FTOM_SERVICE_PTR 	pService;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "SNNP Client not supported!\n");
+			return	xRet;	
+		}
+
+		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+	}
+	else
+	{
+		pSNMPC = pNode->pSNMPC;	
+	}
+
+	xRet = FTM_VALUE_init(&xValue, FTM_VALUE_TYPE_STRING);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to initialize value!\n");
+		return	xRet;	
+	}
+
+	sprintf(pBuff, "%s:prodModel.0", pNode->xCommon.xInfo.xOption.xSNMP.pMIB);
+
+	xRet = FTOM_SNMPC_getOID(pBuff, &xOID);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get OID[%s]\n", pBuff);	
+		return	xRet;
+	}
+
+	xRet = FTOM_SNMPC_get( 
+				pSNMPC,
+				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
+				pNode->pIP,
+				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
+				&xOID,
+				pNode->xCommon.xInfo.ulTimeout,
+				&xValue,
+				&bValid);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTM_VALUE_getSTRING(&xValue, pModel, ulMaxLen);	
+	}
+
+	FTM_VALUE_final(&xValue);
+
+	return	xRet;
+}
+
+
+/***************************************************************
+ *
+ ***************************************************************/
 
 FTM_RET	FTOM_NODE_SNMPC_getEPCount
 (
@@ -242,22 +364,32 @@ FTM_RET	FTOM_NODE_SNMPC_getEPCount
 {
 	ASSERT(pNode != NULL);
 	ASSERT(pulCount != NULL);
-	FTOM_SERVICE_PTR 	pService;
+	FTOM_SNMPC_PTR		pSNMPC = NULL;
 
 	FTM_RET	xRet;
 
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet == FTM_RET_OK)
+	if (pNode->pSNMPC == NULL)
 	{
-		xRet = FTOM_SNMPC_getEPCount(pService->pData, pNode->pIP, xType, pulCount);
+		FTOM_SERVICE_PTR 	pService;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet, "Failed to get SNMP client count.\n");	
+			ERROR2(xRet, "SNNP Client not supported!\n");
+			return	xRet;	
 		}
+
+		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
 	}
 	else
 	{
-		ERROR2(xRet, "SNNP Client not supported!\n");
+		pSNMPC = pNode->pSNMPC;	
+	}
+
+	xRet = FTOM_SNMPC_getEPCount(pSNMPC, pNode->pIP, xType, pulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get SNMP client count.\n");	
 	}
 
 	return	xRet;
@@ -274,13 +406,29 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 	FTM_VALUE_TYPE		xDataType;
 	FTM_VALUE			xValue;
 	FTM_BOOL			bValid = FTM_TRUE;
-	FTOM_SERVICE_PTR 	pService;
+	FTOM_SNMPC_PTR		pSNMPC = NULL;
  	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet != FTM_RET_OK)
+	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		ERROR2(xRet, "SNNP Client not supported!\n");
-		return	xRet;	
+		return	FTM_RET_SNMP_TIMEOUT;
+	} 
+
+	if (pNode->pSNMPC == NULL)
+	{
+		FTOM_SERVICE_PTR 	pService;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "SNNP Client not supported!\n");
+			return	xRet;	
+		}
+
+		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+	}
+	else
+	{
+		pSNMPC = pNode->pSNMPC;	
 	}
 
 	xRet = FTOM_EP_getDataType(pEP, &xDataType);
@@ -302,7 +450,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 	FTM_VALUE_init(&xValue, xDataType);
 
 	xRet = FTOM_SNMPC_get( 
-				pService->pData,
+				pSNMPC,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
@@ -331,13 +479,29 @@ FTM_RET	FTOM_NODE_SNMPC_setEPData
 )
 {
 	FTM_RET	xRet;
-	FTOM_SERVICE_PTR pService;
+	FTOM_SNMPC_PTR		pSNMPC = NULL;
 	
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet != FTM_RET_OK)
+	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		ERROR2(xRet, "SNNP Client not supported!\n");
-		return	xRet;	
+		return	FTM_RET_SNMP_TIMEOUT;
+	} 
+
+	if (pNode->pSNMPC == NULL)
+	{
+		FTOM_SERVICE_PTR 	pService;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "SNNP Client not supported!\n");
+			return	xRet;	
+		}
+
+		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+	}
+	else
+	{
+		pSNMPC = pNode->pSNMPC;	
 	}
 
 	if (pEP->pOpts == NULL)
@@ -350,7 +514,7 @@ FTM_RET	FTOM_NODE_SNMPC_setEPData
 	FTM_LOCK_set(pEP->pLock);
 
 	xRet = FTOM_SNMPC_set(
-				pService->pData,
+				pSNMPC,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
@@ -374,6 +538,11 @@ FTM_RET	FTOM_NODE_SNMPC_getEPDataAsync
 	FTM_RET	xRet;
 	FTM_VALUE_TYPE		xDataType;
 	FTOM_MSG_PTR		pMsg = NULL;
+
+	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
+	{
+		return	FTM_RET_NOT_CONNECTED;
+	} 
 
 	xRet = FTOM_EP_getDataType(pEP, &xDataType);
 	if (xRet != FTM_RET_OK)
@@ -424,6 +593,11 @@ FTM_RET	FTOM_NODE_SNMPC_setEPDataAsync
 	FTM_RET	xRet;
 	FTOM_MSG_PTR		pMsg = NULL;
 	
+	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
+	{
+		return	FTM_RET_SNMP_TIMEOUT;
+	} 
+
 	if (pEP->pOpts == NULL)
 	{
 		ERROR2(FTM_RET_EP_IS_NOT_ATTACHED, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);	
@@ -627,9 +801,14 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 
 	FTM_RET			xRet;
 	FTM_SNMP_OID	xOID;
-	FTOM_SERVICE_PTR pService;
+	FTOM_SNMPC_PTR		pSNMPC = NULL;
 	FTM_VALUE		xValue;
 	FTM_BOOL		bValid = FTM_TRUE;
+
+	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
+	{
+		return	FTM_RET_SNMP_TIMEOUT;
+	} 
 
 	if (ulMaxLen < 2)
 	{
@@ -638,11 +817,22 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 		return	xRet;
 	}
 
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet != FTM_RET_OK)
+	if (pNode->pSNMPC == NULL)
 	{
-		ERROR2(xRet, "SNMP Client not supported!\n");
-		return  xRet;   
+		FTOM_SERVICE_PTR 	pService;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "SNNP Client not supported!\n");
+			return	xRet;	
+		}
+
+		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+	}
+	else
+	{
+		pSNMPC = pNode->pSNMPC;	
 	}
 
 	xRet = FTOM_NODE_SNMPC_getOIDForID(pNode, ulEPType, ulIndex, &xOID);
@@ -660,7 +850,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 	}
 
 	xRet = FTOM_SNMPC_get(
-				pService->pData, 
+				pSNMPC, 
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
@@ -694,9 +884,14 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 
 	FTM_RET			xRet;
 	FTM_SNMP_OID	xOID;
-	FTOM_SERVICE_PTR pService;
+	FTOM_SNMPC_PTR		pSNMPC = NULL;
 	FTM_VALUE		xValue;
 	FTM_BOOL		bValid = FTM_TRUE;
+
+	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
+	{
+		return	FTM_RET_SNMP_TIMEOUT;
+	} 
 
 	if (ulMaxLen < 2)
 	{
@@ -705,11 +900,22 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 		return	xRet;
 	}
 
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet != FTM_RET_OK)
+	if (pNode->pSNMPC == NULL)
 	{
-		ERROR2(xRet, "SNMP Client not supported!\n");
-		return  xRet;   
+		FTOM_SERVICE_PTR 	pService;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "SNNP Client not supported!\n");
+			return	xRet;	
+		}
+
+		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+	}
+	else
+	{
+		pSNMPC = pNode->pSNMPC;	
 	}
 
 	xRet = FTOM_NODE_SNMPC_getOIDForName(pNode, ulEPType, ulIndex, &xOID);
@@ -727,7 +933,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 	}
 
 	xRet = FTOM_SNMPC_get(
-				pService->pData, 
+				pSNMPC, 
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
@@ -760,15 +966,31 @@ FTM_RET	FTOM_NODE_SNMPC_getEPState
 
 	FTM_RET			xRet;
 	FTM_SNMP_OID	xOID;
-	FTOM_SERVICE_PTR pService;
 	FTM_VALUE		xValue;
 	FTM_BOOL		bValid = FTM_TRUE;
+	FTOM_SNMPC_PTR	pSNMPC;
 
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet != FTM_RET_OK)
+	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		ERROR2(xRet, "SNMP Client not supported!\n");
-		return  xRet;   
+		return	FTM_RET_SNMP_TIMEOUT;
+	} 
+
+	if (pNode->pSNMPC == NULL)
+	{
+		FTOM_SERVICE_PTR 	pService;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "SNNP Client not supported!\n");
+			return	xRet;	
+		}
+
+		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+	}
+	else
+	{
+		pSNMPC = pNode->pSNMPC;	
 	}
 
 	xRet = FTOM_NODE_SNMPC_getOIDForState(pNode, ulEPType, ulIndex, &xOID);
@@ -786,7 +1008,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPState
 	}
 
 	xRet = FTOM_SNMPC_get(
-				pService->pData, 
+				pSNMPC, 
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,
@@ -818,15 +1040,31 @@ FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
 
 	FTM_RET			xRet;
 	FTM_SNMP_OID	xOID;
-	FTOM_SERVICE_PTR pService;
 	FTM_VALUE		xValue;
 	FTM_BOOL		bValid = FTM_TRUE;
+	FTOM_SNMPC_PTR	pSNMPC;
 
-	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
-	if (xRet != FTM_RET_OK)
+	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		ERROR2(xRet,"SNMP Client not supported!\n");
-		return  xRet;   
+		return	FTM_RET_SNMP_TIMEOUT;
+	} 
+
+	if (pNode->pSNMPC == NULL)
+	{
+		FTOM_SERVICE_PTR 	pService;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "SNNP Client not supported!\n");
+			return	xRet;	
+		}
+
+		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+	}
+	else
+	{
+		pSNMPC = pNode->pSNMPC;	
 	}
 
 	xRet = FTOM_NODE_SNMPC_getOIDForUpdateInterval(pNode, ulEPType, ulIndex, &xOID);
@@ -844,7 +1082,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
 	}
 
 	xRet = FTOM_SNMPC_get(
-				pService->pData, 
+				pSNMPC, 
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion, 
 				pNode->pIP,
 				pNode->xCommon.xInfo.xOption.xSNMP.pCommunity,

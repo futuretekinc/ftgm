@@ -5,7 +5,19 @@
 #include "ftm.h"
 #include "ftom_ep.h"
 
-typedef	FTM_ULONG		FTOM_NODE_STATE;
+typedef	enum	
+{
+	FTOM_NODE_STATE_STOP ,
+	FTOM_NODE_STATE_CONNECT,
+	FTOM_NODE_STATE_RUN
+}	FTOM_NODE_STATE, _PTR_ FTOM_NODE_STATE_PTR;
+
+typedef	struct	FTOM_NODE_MODULE_STRUCT
+{
+	FTM_LIST_PTR	pNodeList;
+	FTM_ULONG		ulConnectIntervalMin;
+	FTM_ULONG		ulConnectIntervalMax;
+}	FTOM_NODE_MODULE, _PTR_ FTOM_NODE_MODULE_PTR;
 
 struct FTM_NODE_CLASS_STRUCT ;
 
@@ -14,11 +26,14 @@ typedef	struct FTOM_NODE_STRUCT
 	FTM_NODE		xInfo;
 	FTM_LIST		xEPList;
 
+	FTOM_NODE_STATE	xState;
 	FTM_BOOL		bStop;
 	FTM_BOOL		bConnected;
 	pthread_t		xThread;
 	FTM_LOCK		xLock;
 	FTOM_MSG_QUEUE	xMsgQ;
+	FTM_TIMER		xConnectTimer;
+	FTM_ULONG		ulConnectInterval;
 
 	struct
 	{
@@ -42,12 +57,12 @@ typedef	struct FTOM_NODE_STRUCT
 	struct FTOM_NODE_CLASS_STRUCT _PTR_	pClass;
 }	FTOM_NODE, _PTR_ FTOM_NODE_PTR;
 
-FTM_RET	FTOM_NODE_init
+FTM_RET	FTOM_NODE_MODULE_init
 (
 	FTM_VOID
 );
 
-FTM_RET FTOM_NODE_final
+FTM_RET FTOM_NODE_MODULE_final
 (
 	FTM_VOID
 );
@@ -99,6 +114,11 @@ FTM_RET FTOM_NODE_setAttr
 	FTOM_NODE_PTR	pNode,
 	FTM_NODE_FIELD	xFields,
 	FTM_NODE_PTR 	pInfo
+);
+
+FTM_BOOL	FTOM_NODE_isConnected
+(
+	FTOM_NODE_PTR	pNode
 );
 
 FTM_RET	FTOM_NODE_linkEP
@@ -231,6 +251,11 @@ FTM_RET	FTOM_NODE_print
 FTM_RET	FTOM_NODE_printList
 (
 	FTM_VOID
+);
+
+FTM_CHAR_PTR	FTOM_NODE_printState
+(
+	FTOM_NODE_PTR	pNode
 );
 
 #endif

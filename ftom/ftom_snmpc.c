@@ -70,9 +70,16 @@ FTM_RET	FTOM_SNMPC_init
 {
 	ASSERT(pClient != NULL);
 	FTM_RET	xRet;
+	
+	static FTM_BOOL	bInit = FTM_FALSE;
 
-	init_agent("ftom:snmpc");
-	init_snmp("ftom:snmpc");
+	if (!bInit)
+	{
+		init_agent("ftom:snmpc");
+		init_snmp("ftom:snmpc");
+
+		bInit = FTM_TRUE;
+	}
 
 	memset(pClient, 0, sizeof(FTOM_SNMPC));
 
@@ -247,6 +254,9 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 	FTOM_MSG_PTR	pBaseMsg;
 	FTM_TIMER		xLoopTimer;
 
+//	init_agent(pClient->xConfig.pName);
+//	init_snmp(pClient->xConfig.pName);
+
 	FTM_TIMER_initMS(&xLoopTimer, pClient->xConfig.ulLoopInterval);
 
 	pClient->bStop = FTM_FALSE;
@@ -407,6 +417,55 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 	TRACE("SNMP client stopped!\n");
 
 	return	0;
+}
+
+FTM_RET	FTOM_SNMPC_setConfig
+(
+	FTOM_SNMPC_PTR 	pClient, 
+	FTOM_SNMPC_CONFIG_PTR	pConfig
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfig != NULL);
+
+	FTM_RET		xRet;
+	FTM_ULONG	i, ulCount = 0;
+
+	strcpy(pClient->xConfig.pName, pConfig->pName);
+
+	FTM_LIST_count(&pClient->xConfig.xMIBList, &ulCount);
+	FTM_LIST_init(&pConfig->xMIBList);
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTM_CHAR_PTR	pMIBFileName;
+		FTM_CHAR_PTR	pBuff;
+
+		xRet = FTM_LIST_getAt(&pConfig->xMIBList, i, (FTM_VOID_PTR _PTR_)&pMIBFileName);
+		if (xRet != FTM_RET_OK)
+		{
+			continue;		
+		}
+
+		pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(strlen(pMIBFileName) + 1);
+		if (pBuff == NULL)
+		{
+			continue;	
+		}
+
+		strcpy(pBuff, pMIBFileName);
+
+		xRet = FTM_LIST_append(&pClient->xConfig.xMIBList, pBuff);
+		if (xRet != FTM_RET_OK)
+		{
+			FTM_MEM_free(pBuff);
+		}
+	}
+
+	pClient->xConfig.ulLoopInterval = pConfig->ulLoopInterval;
+	pClient->xConfig.ulMaxRetryCount = pConfig->ulMaxRetryCount;
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET FTOM_SNMPC_loadConfig
@@ -946,12 +1005,15 @@ FTM_RET	FTOM_SNMPC_get
 	netsnmp_pdu 	*pReqPDU = NULL;
 	netsnmp_pdu		*pRespPDU = NULL; 
 
+	FTM_LOCK_set(&pClient->xLock);
+
 	snmp_sess_init(&xSession);			/* initialize session */
 
 	xSession.version 		= ulVersion;
 	xSession.peername 		= pURL;
 	xSession.community 		= (FTM_UINT8_PTR)pCommunity;
 	xSession.community_len	= strlen(pCommunity);
+
 
 	pSession = snmp_open(&xSession);
 	if (pSession == NULL)
@@ -1081,6 +1143,8 @@ finish:
 	{
 		snmp_close(pSession);
 	}
+
+	FTM_LOCK_reset(&pClient->xLock);
 
 	return	xRet;
 }

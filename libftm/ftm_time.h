@@ -168,4 +168,10 @@ FTM_CHAR_PTR	FTM_TIME_printf2
 	FTM_ULONG		ulTime,
 	FTM_CHAR_PTR	pFormat
 );
+
+FTM_CHAR_PTR	FTM_TIME_printfCurrent
+(
+	FTM_CHAR_PTR	pFormat
+);
+
 #endif

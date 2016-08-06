@@ -31,7 +31,8 @@ FTM_RET	FTOM_SERVICE_init
 		{
 			pServices[i].xRet = pServices[i].fCreate(&pServices[i].pData);
 		}
-		else if (pServices[i].fInit != NULL)
+
+		if (pServices[i].fInit != NULL)
 		{
 			pServices[i].xRet = pServices[i].fInit(pServices[i].pData);
 		}
