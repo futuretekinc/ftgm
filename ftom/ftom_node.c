@@ -14,18 +14,6 @@
 #define	__MODULE__	FTOM_TRACE_MODULE_NODE
 
 static
-FTM_RET	FTOM_NODE_connect
-(
-	FTOM_NODE_PTR	pNode
-);
-
-static
-FTM_RET	FTOM_NODE_disconnect
-(
-	FTOM_NODE_PTR	pNode
-);
-
-static
 FTM_INT	FTOM_NODE_seeker
 (
 	const FTM_VOID_PTR pElement, 
@@ -739,13 +727,22 @@ FTM_RET	FTOM_NODE_getEPCount
 
 	if (ulCount == 0)
 	{
+#if 0
 		FTM_BOOL	bConnected = FTM_FALSE;
 
 		bConnected = FTOM_NODE_isConnected(pNode);
 
-		if ((bConnected == FTM_TRUE) && (pNode->pClass != NULL) && (pNode->pClass->fGetEPCount != NULL))
+		if (bConnected != FTM_TRUE)
 		{
-			xRet = pNode->pClass->fGetEPCount(pNode, xType, &ulCount);	
+			TRACE("Node[%s] is not connected!\n", pNode->xInfo.pDID);	
+		}
+		else
+#endif
+		{
+			if ((pNode->pClass != NULL) && (pNode->pClass->fGetEPCount != NULL))
+			{
+				xRet = pNode->pClass->fGetEPCount(pNode, xType, &ulCount);	
+			}
 		}
 	}
 

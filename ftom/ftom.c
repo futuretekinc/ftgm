@@ -2788,7 +2788,7 @@ FTM_RET	FTOM_discoveryEPCount
 	ASSERT(pNode != NULL);
 	ASSERT(pulCount != NULL);
 	FTM_RET	xRet;
-	
+
 	xRet = FTOM_NODE_getEPCount(pNode, xType, pulCount);
 	if (xRet != FTM_RET_OK)
 	{

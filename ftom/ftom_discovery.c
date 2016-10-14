@@ -266,6 +266,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 						break;	
 					}
 
+					FTOM_NODE_connect(pNode);
 					strcpy(pNode->pIP, pMsg->pIP);
 
 					FTM_LIST_append(&pDiscovery->xNodeList, pNode);

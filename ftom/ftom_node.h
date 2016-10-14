@@ -258,5 +258,15 @@ FTM_CHAR_PTR	FTOM_NODE_printState
 	FTOM_NODE_PTR	pNode
 );
 
+FTM_RET	FTOM_NODE_connect
+(
+	FTOM_NODE_PTR	pNode
+);
+
+FTM_RET	FTOM_NODE_disconnect
+(
+	FTOM_NODE_PTR	pNode
+);
+
 #endif
 
