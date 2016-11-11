@@ -1,6 +1,11 @@
 #include "ftom_service.h"
+#include "ftom_modules.h"
 #include "ftm_mem.h"
 #include "ftm_list.h"
+#include "ftom_snmpc.h"
+
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_SERVICE
 
 static FTM_BOOL FTOM_SERVICE_seeker(const FTM_VOID_PTR pElement, const FTM_VOID_PTR pIndicator);
 static FTM_LIST_PTR	pServiceList = NULL;
@@ -48,6 +53,11 @@ FTM_RET	FTOM_SERVICE_init
 	return	xRet;
 }
 
+FTM_RET	FTOM_SNMPC_destroy
+(
+	FTOM_SNMPC_PTR _PTR_ 	ppSNMPC
+);
+
 FTM_RET	FTOM_SERVICE_final
 (
 	FTM_VOID
@@ -58,8 +68,13 @@ FTM_RET	FTOM_SERVICE_final
 
 	if (pServiceList == NULL)
 	{
-		return	FTM_RET_NOT_INITIALIZED;
+		xRet = FTM_RET_NOT_INITIALIZED;
+		ERROR2(xRet, "Serivce list is empty.\n");
+		return	xRet;
 	}
+
+	FTM_ULONG	ulCount;
+	FTM_LIST_count(pServiceList, &ulCount);
 
 	FTM_LIST_iteratorStart(pServiceList);
 	while(FTM_LIST_iteratorNext(pServiceList, (FTM_VOID_PTR _PTR_)&pService) == FTM_RET_OK)
@@ -221,6 +236,7 @@ FTM_RET	FTOM_SERVICE_loadConfig
 			return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 		}
 
+		TRACE("SERVICE[%s] load configuration########################\n", pService->pName);
 		pService->xRet = pService->fLoadConfig(pService->pData, pConfig);
 		xRet = pService->xRet;
 

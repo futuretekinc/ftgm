@@ -36,6 +36,7 @@ typedef	struct
 	FTOM_SNMPC_CONFIG	xConfig;
 	pthread_t			xPThread;
 
+	FTM_BOOL			bInit;
 	FTM_BOOL			bStop;
 	FTOM_MSG_QUEUE		xMsgQ;
 	FTM_LOCK			xLock;

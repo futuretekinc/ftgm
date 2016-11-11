@@ -56,8 +56,10 @@ typedef	struct
 		FTM_BOOL			bLevel;
 		FTM_ULONG			ulLine;
 	}	xDisplayOpts;
+
 	struct
 	{
+		FTM_BOOL		bForce;
 		FTM_CHAR		pPath[FTM_PATH_LEN + 1];
 		FTM_CHAR		pPrefix[FTM_FILENAME_LEN + 1];
 	}	xFile;

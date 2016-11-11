@@ -508,6 +508,23 @@ FTM_RET FTOM_EP_start
 
 	if (pEP->pNode == NULL)
 	{
+		FTOM_NODE_PTR	pNode;
+
+
+		xRet = FTOM_NODE_get(pEP->xInfo.pDID, &pNode);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Node[%s] is not found!\n", pEP->xInfo.pDID);
+			return	xRet;
+		}
+
+		xRet = FTOM_NODE_linkEP(pNode, pEP);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "The EP[%s] can not attached to The Node[%s].\n", pEP->xInfo.pEPID, pEP->xInfo.pDID);
+			return	xRet;	
+		}
+
 		xRet = FTM_RET_EP_IS_NOT_ATTACHED;	
 		ERROR2(xRet, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);
 		return	xRet;	
@@ -516,7 +533,7 @@ FTM_RET FTOM_EP_start
 	if (!pEP->xInfo.bEnable)
 	{
 		INFO("EP[%s] is disabled.\n", pEP->xInfo.pEPID);
-		return	FTM_RET_OK;
+		return	FTM_RET_OBJECT_IS_DISABLED;
 	}
 
 	if (!pEP->bStop)
@@ -609,6 +626,9 @@ FTM_VOID_PTR FTOM_EP_threadMain
 
 	TRACE("EP[%s] started.\n", pEP->xInfo.pEPID);
 
+	TRACE("Update Interval : %lu ms\n",pEP->xInfo.ulUpdateInterval);
+	TRACE("Report Interval : %lu ms\n",pEP->xInfo.ulReportInterval);
+
 	pEP->bStop = FTM_FALSE;
 	FTM_TIMER_initS(&pEP->xUpdateTimer, 0);
 	FTM_TIMER_initS(&pEP->xReportTimer, 0);
@@ -620,7 +640,7 @@ FTM_VOID_PTR FTOM_EP_threadMain
 
 		if (FTM_TIMER_isExpired(&pEP->xUpdateTimer))
 		{
-			if (FTOM_EP_isAsyncMode(pEP) != FTM_RET_TRUE)
+			//if (FTOM_EP_isAsyncMode(pEP) != FTM_RET_TRUE)
 			{
 				xRet = FTOM_EP_remoteGetData(pEP, &xData);
 				if (xRet == FTM_RET_OK)
@@ -634,14 +654,15 @@ FTM_VOID_PTR FTOM_EP_threadMain
 					WARN("It failed to import data from EP[%s].\n", pEP->xInfo.pEPID);
 				}
 			}
+#if 0
 			else
 			{
 				FTOM_EP_remoteGetDataAsync(pEP);
 			}
-
+#endif
 			if (pEP->xInfo.ulUpdateInterval > 0)
 			{
-				FTM_TIMER_addS(&pEP->xUpdateTimer, pEP->xInfo.ulUpdateInterval);
+				FTM_TIMER_addMS(&pEP->xUpdateTimer, pEP->xInfo.ulUpdateInterval);
 			}
 			else
 			{
@@ -650,7 +671,7 @@ FTM_VOID_PTR FTOM_EP_threadMain
 				xRet = FTOM_getDefaultUpdateInterval(&ulUpdateInterval);
 				if (xRet == FTM_RET_OK)
 				{
-					FTM_TIMER_addS(&pEP->xUpdateTimer, ulUpdateInterval);
+					FTM_TIMER_addMS(&pEP->xUpdateTimer, ulUpdateInterval);
 				}
 			}
 		}
@@ -666,7 +687,7 @@ FTM_VOID_PTR FTOM_EP_threadMain
 			FTOM_EP_reportStatus(pEP);
 			FTOM_EP_reportDataInTime(pEP, ulPrevTime, ulCurrentTime);
 #endif
-			FTM_TIMER_addS(&pEP->xReportTimer, pEP->xInfo.ulReportInterval);
+			FTM_TIMER_addMS(&pEP->xReportTimer, pEP->xInfo.ulReportInterval);
 		}
 	
 		FTM_ULONG		ulRemainTime1 = 0;
@@ -684,9 +705,10 @@ FTM_VOID_PTR FTOM_EP_threadMain
 			ulRemainTime = ulRemainTime2;	
 		}
 
+
 		if (ulRemainTime == 0)
 		{
-			ulRemainTime = 1;	
+			ulRemainTime = 100;	
 		}
 
 		FTM_TIMER_initMS(&xLoopTimer, ulRemainTime);

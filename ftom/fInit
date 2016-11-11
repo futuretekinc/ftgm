@@ -1,0 +1,138 @@
+./ftom_server.c:3509:			xRet = FTOM_DISCOVERY_getNodeInfoCount(pService->pData, &pResp->ulNodeCount);
+./ftom_server.c:3512:				xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &pResp->ulEPCount);
+./ftom_server.c:3550:			xRet = FTOM_DISCOVERY_getNodeInfoAt(pService->pData, pReq->ulIndex + i, &pResp->pNodeList[i]);
+./ftom_server.c:3604:			xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, pReq->ulIndex + i, &pResp->pEPList[i]);
+./ftom_service.c:83:		TRACE("SERVICE : %s\n", pService->pName);
+./ftom_service.c:84:		if (pService->fDestroy != NULL)
+./ftom_service.c:86:			TRACE("pService->fDestroy : %08x\n", pService->fDestroy);
+./ftom_service.c:88:			TRACE("SERVICE Destroy called[pData = %08x]\n", pService->pData);
+./ftom_service.c:89:			if (pService->pData != NULL)
+./ftom_service.c:91:				pService->fDestroy(&pService->pData);
+./ftom_service.c:94:		else if (pService->fFinal != NULL)
+./ftom_service.c:97:			pService->fFinal(pService->pData);
+./ftom_service.c:121:	if (FTM_LIST_get(pServiceList, (FTM_VOID_PTR)&pService->xType, (FTM_VOID_PTR _PTR_)&pTempService) == FTM_RET_OK)
+./ftom_service.c:129:		TRACE("Service[%s] registeration is complete.\n", pService->pName);	
+./ftom_service.c:133:		ERROR2(xRet, "Service[%s] registration failed.\n", pService->pName);	
+./ftom_service.c:224:			if (pService->fLoadConfig != NULL)
+./ftom_service.c:226:				pService->xRet = pService->fLoadConfig(pService->pData, pConfig);
+./ftom_service.c:240:		if (pService->fLoadConfig == NULL)
+./ftom_service.c:245:		pService->xRet = pService->fLoadConfig(pService->pData, pConfig);
+./ftom_service.c:246:		xRet = pService->xRet;
+./ftom_service.c:295:			if (pService->fLoadConfig != NULL)
+./ftom_service.c:297:				pService->xRet = pService->fSaveConfig(pService->pData, pConfig);
+./ftom_service.c:311:		if (pService->fLoadConfig == NULL)
+./ftom_service.c:316:		pService->xRet = pService->fSaveConfig(pService->pData, pConfig);
+./ftom_service.c:318:		xRet = pService->xRet;
+./ftom_service.c:367:			if (pService->fShowConfig != NULL)
+./ftom_service.c:369:				pService->xRet = pService->fShowConfig(pService->pData);
+./ftom_service.c:383:		if (pService->fShowConfig == NULL)
+./ftom_service.c:388:		pService->xRet = pService->fShowConfig(pService->pData);
+./ftom_service.c:389:		xRet = pService->xRet;
+./ftom_service.c:411:			if (pService->fStart != NULL)
+./ftom_service.c:413:				pService->xRet = pService->fStart(pService->pData);
+./ftom_service.c:427:		if (pService->fStart == NULL)
+./ftom_service.c:432:		pService->xRet = pService->fStart(pService->pData);
+./ftom_service.c:433:		xRet = pService->xRet;
+./ftom_service.c:455:			if (pService->fStop != NULL)
+./ftom_service.c:457:				TRACE("Service[%s] stop request.\n", pService->pName);
+./ftom_service.c:458:				pService->xRet = pService->fStop(pService->pData);
+./ftom_service.c:459:				TRACE("Service[%s] stopped.\n", pService->pName);
+./ftom_service.c:473:		if (pService->fStop == NULL)
+./ftom_service.c:478:		pService->xRet = pService->fStop(pService->pData);
+./ftom_service.c:479:		xRet = pService->xRet;
+./ftom_service.c:502:			if (pService->fSendMessage != NULL)
+./ftom_service.c:509:					pService->xRet = pService->fSendMessage(pService->pData, pNewMsg);
+./ftom_service.c:530:		if (pService->fSendMessage == NULL)
+./ftom_service.c:535:		pService->xRet = pService->fSendMessage(pService->pData, pMsg);
+./ftom_service.c:536:		xRet = pService->xRet;
+./tpclient/ftom_tp_client_shell_cmds.c:347:			xRet = FTOM_TP_CLIENT_DISCOVERY_getEPInfoCount(pClient, pService->pData, &ulCount);
+./tpclient/ftom_tp_client_shell_cmds.c:358:					xRet = FTOM_TP_CLIENT_DISCOVERY_getEPInfoAt(pClient, pService->pData, i, &xEPInfo);
+./tpclient/ftom_tp_client_shell_cmds.c:388:				xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
+./tpclient/ftom_tp_client_shell_cmds.c:399:					xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
+./tpclient2/ftom_tp_client_shell_cmds.c:347:			xRet = FTOM_TP_CLIENT_DISCOVERY_getEPInfoCount(pClient, pService->pData, &ulCount);
+./tpclient2/ftom_tp_client_shell_cmds.c:358:					xRet = FTOM_TP_CLIENT_DISCOVERY_getEPInfoAt(pClient, pService->pData, i, &xEPInfo);
+./tpclient2/ftom_tp_client_shell_cmds.c:388:				xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
+./tpclient2/ftom_tp_client_shell_cmds.c:399:					xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
+./ftom_logger.c:85:		xRet = FTOM_DMC_LOG_add(pService->pData, pLog);
+./ftom_logger.c:123:		xRet = FTOM_DMC_LOG_del(pService->pData, ulIndex, ulCount, &ulRemovedCount);
+./ftom_logger.c:158:		xRet = FTOM_DMC_LOG_count(pService->pData, pulCount);
+./ftom_logger.c:188:		xRet = FTOM_DMC_LOG_get(pService->pData, ulIndex, ulCount, pLogs, pulCount);
+./ftom_logger.c:568:		xRet = FTOM_DMC_LOG_get(pService->pData, ulIndex, ulCount, pLog, pulCount);
+./ftom.c:701:	xRet = FTOM_DMC_isConnected(pService->pData, &bConnected);
+./ftom.c:711:	xRet = FTOM_DMC_NODE_count(pService->pData, &ulCount);
+./ftom.c:759:	xRet = FTOM_DMC_EP_CLASS_count(pService->pData, &ulCount);
+./ftom.c:771:		xRet = FTOM_DMC_EP_CLASS_getAt(pService->pData, i, &xEPClassInfo);
+./ftom.c:785:	xRet = FTOM_DMC_EP_count(pService->pData, &ulCount);
+./ftom.c:839:	xRet = FTOM_DMC_TRIGGER_count(pService->pData, &ulCount);
+./ftom.c:885:	xRet = FTOM_DMC_ACTION_count(pService->pData, &ulCount);
+./ftom.c:931:	xRet = FTOM_DMC_RULE_count(pService->pData, &ulCount);
+./ftom.c:1183:	if ((pService->fIsRun == NULL) || (pService->fSendMessage == NULL))
+./ftom.c:1189:	xRet = pService->fIsRun(pService->pData, &bRun);
+./ftom.c:1201:	return	pService->fSendMessage(pService->pData, pNewMsg);
+./ftom.c:1223:	if ((pService->fIsRun == NULL) || (pService->fSendMessage == NULL))
+./ftom.c:1229:	xRet = pService->fIsRun(pService->pData, &bRun);
+./ftom.c:1249:	xRet = pService->fSendMessage(pService->pData, pNewMsg);
+./ftom.c:1278:	if ((pService->fIsRun == NULL) || (pService->fSendMessage == NULL))
+./ftom.c:1284:	xRet = pService->fIsRun(pService->pData, &bRun);
+./ftom.c:1304:	xRet = pService->fSendMessage(pService->pData, pNewMsg);
+./ftom.c:1369:	FTOM_DISCOVERY_call(pService->pData, pMsg->pNetwork, pMsg->usPort, pMsg->ulRetryCount);
+./ftom.c:1484:		xRet = FTOM_DMC_NODE_add(pService->pData, pInfo);
+./ftom.c:1510:		xRet = FTOM_DMC_NODE_remove(pService->pData, pDID);
+./ftom.c:1536:		xRet = FTOM_DMC_NODE_count(pService->pData, pulCount);
+./ftom.c:1566:		xRet = FTOM_DMC_NODE_getDIDList(pService->pData, pDIDs, ulIndex, ulMaxCount, pulCount);
+./ftom.c:1594:		xRet = FTOM_DMC_NODE_get(pService->pData, pDID, pInfo);
+./ftom.c:1621:		xRet = FTOM_DMC_NODE_getAt(pService->pData, ulIndex, pInfo);
+./ftom.c:1649:		xRet = FTOM_DMC_NODE_set(pService->pData, pDID, xFields, pInfo);
+./ftom.c:1679:		xRet = FTOM_DMC_EP_add(pService->pData, pInfo);
+./ftom.c:1705:		xRet = FTOM_DMC_EP_remove(pService->pData, pEPID);
+./ftom.c:1735:		xRet = FTOM_DMC_EP_getEPIDList(pService->pData, pEPIDs, ulIndex, ulMaxCount, pulCount);
+./ftom.c:1763:		xRet = FTOM_DMC_EP_get(pService->pData, pEPID, pInfo);
+./ftom.c:1792:		xRet = FTOM_DMC_EP_set(pService->pData, pEPID, xFields, pInfo);
+./ftom.c:1825:		xRet = FTOM_DMC_EP_DATA_get(pService->pData, pEPID, ulStart, pDataList, ulMaxCount, pulCount, pbRemain);
+./ftom.c:1860:		xRet = FTOM_DMC_EP_DATA_getWithTime(pService->pData, pEPID, ulBegin, ulEnd, bAscending, pDataList, ulMaxCount, pulCount, pbRemain);
+./ftom.c:1889:		xRet = FTOM_DMC_EP_DATA_info(pService->pData, pEPID, pulBeginTime, pulEndTime, pulCount);
+./ftom.c:1916:		xRet = FTOM_DMC_EP_DATA_setLimit(pService->pData, pEPID, pLimit);
+./ftom.c:2073:		xRet = FTOM_DMC_EP_DATA_count(pService->pData, pEPID, pulCount);
+./ftom.c:2103:		xRet = FTOM_DMC_EP_DATA_countWithTime(pService->pData, pEPID, ulStart, ulEnd, pulCount);
+./ftom.c:2133:		xRet = FTOM_DMC_EP_DATA_remove(pService->pData, pEPID, ulIndex, ulCount, pulDeletedCount);
+./ftom.c:2163:		xRet = FTOM_DMC_EP_DATA_removeWithTime(pService->pData, pEPID, ulBegin, ulEnd, pulDeletedCount);
+./ftom.c:2189:		xRet = FTOM_DMC_TRIGGER_add(pService->pData, pInfo);
+./ftom.c:2215:		xRet = FTOM_DMC_TRIGGER_remove(pService->pData, pTriggerID);
+./ftom.c:2245:		xRet = FTOM_DMC_TRIGGER_getIDList(pService->pData, pIDs, ulIndex, ulMaxCount, pulCount);
+./ftom.c:2273:		xRet = FTOM_DMC_TRIGGER_get(pService->pData, pTriggerID, pInfo);
+./ftom.c:2300:		xRet = FTOM_DMC_TRIGGER_getAt(pService->pData, ulIndex, pInfo);
+./ftom.c:2329:		xRet = FTOM_DMC_TRIGGER_set(pService->pData, pTriggerID, xFields, pInfo);
+./ftom.c:2355:		xRet = FTOM_DMC_ACTION_add(pService->pData, pInfo);
+./ftom.c:2381:		xRet = FTOM_DMC_ACTION_remove(pService->pData, pActionID);
+./ftom.c:2411:		xRet = FTOM_DMC_ACTION_getIDList(pService->pData, pIDs, ulIndex, ulMaxCount, pulCount);
+./ftom.c:2438:		xRet = FTOM_DMC_ACTION_get(pService->pData, pActionID, pInfo);
+./ftom.c:2465:		xRet = FTOM_DMC_ACTION_getAt(pService->pData, ulIndex, pInfo);
+./ftom.c:2494:		xRet = FTOM_DMC_ACTION_set(pService->pData, pActionID, xFields, pInfo);
+./ftom.c:2520:		xRet = FTOM_DMC_RULE_add(pService->pData, pInfo);
+./ftom.c:2546:		xRet = FTOM_DMC_RULE_remove(pService->pData, pRuleID);
+./ftom.c:2576:		xRet = FTOM_DMC_RULE_getIDList(pService->pData, pIDs, ulIndex, ulMaxCount, pulCount);
+./ftom.c:2607:	return	FTOM_DMC_RULE_get(pService->pData, pRuleID, pInfo);
+./ftom.c:2623:		xRet = FTOM_DMC_RULE_getAt(pService->pData, ulIndex, pInfo);
+./ftom.c:2652:		xRet = FTOM_DMC_RULE_set(pService->pData, pRuleID, xFields, pInfo);
+./ftom.c:2773:	return	FTOM_DISCOVERY_isFinished(pService->pData, pbFinished);
+./ftom.c:2791:	return	FTOM_DISCOVERY_getNodeInfoCount(pService->pData, pulCount);
+./ftom.c:2900:	if ((xRet != FTM_RET_OK) || (pService->fSendMessage == NULL))
+./ftom.c:2911:		xRet = pService->fSendMessage(pService->pData, pMsg);
+./ftom.c:2937:	if (pService->fSendMessage == NULL)
+./ftom.c:2951:	xRet = pService->fSendMessage(pService->pData, (FTOM_MSG_PTR)pMsg);
+./ftom_shell_cmds.c:325:				xRet = FTOM_DISCOVERY_getNodeInfo(pService->pData, pArgv[2], &xNodeInfo);
+./ftom_shell_cmds.c:545:				xRet = FTOM_DISCOVERY_getEPInfo(pService->pData, pArgv[2], &xEPInfo);
+./ftom_shell_cmds.c:1109:			xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
+./ftom_shell_cmds.c:1120:					xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
+./ftom_shell_cmds.c:1150:				xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
+./ftom_shell_cmds.c:1161:					xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
+./ftom_node_snmpc.c:182:				pService->pData,
+./ftom_node_snmpc.c:218:		FTOM_SNMPC_setConfig(pSNMPC, &((FTOM_SNMPC_PTR)pService->pData)->xConfig);
+./ftom_node_snmpc.c:315:		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+./ftom_node_snmpc.c:386:		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+./ftom_node_snmpc.c:433:		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+./ftom_node_snmpc.c:512:		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+./ftom_node_snmpc.c:846:		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+./ftom_node_snmpc.c:929:		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+./ftom_node_snmpc.c:1004:		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+./ftom_node_snmpc.c:1078:		pSNMPC = (FTOM_SNMPC_PTR)pService->pData;

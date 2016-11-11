@@ -63,7 +63,6 @@ FTM_RET	FTDM_CFG_readFromFile
 	FTM_CONFIG_PTR	pRoot;
 	FTM_CONFIG_ITEM	xServer;
 	FTM_CONFIG_ITEM	xDB;
-//	FTM_CONFIG_ITEM	xDebug;
 	FTM_CONFIG_ITEM	xEPSection;
 
 	ASSERT(pConfig != NULL);
@@ -151,6 +150,12 @@ FTM_RET	FTDM_CFG_readFromFile
 				}
 			}
 		}
+	}
+
+	xRet = FTM_TRACE_loadConfig(pRoot);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration from file[%s]\n", pFileName);
 	}
 
 	FTM_CONFIG_destroy(&pRoot);

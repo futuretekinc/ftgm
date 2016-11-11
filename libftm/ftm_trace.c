@@ -16,7 +16,7 @@
 #define	FTM_TRACE_LINE_LEN	2047
 
 FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szmsg);
-FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
+FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR pMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix);
 
 extern 
 FTM_CHAR_PTR	program_invocation_short_name;
@@ -29,12 +29,13 @@ FTM_TRACE_CFG	_xConfig =
 		.bModule= FTM_FALSE,
 		.bIndex = FTM_FALSE,
 		.bTime	= FTM_FALSE,
-		.bDebug	= FTM_FALSE,
+		.bDebug	= FTM_TRUE,
 		.bLevel	= FTM_FALSE,
 		.ulLine	= 0
 	},
 	.xFile = 
 	{
+		.bForce= FTM_FALSE,
 		.pPath = "./",
 		.pPrefix = "ftm_trace"
 	},
@@ -93,6 +94,7 @@ FTM_RET	FTM_TRACE_loadConfig
 	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "file", &xSubSection);
 	if (xRet == FTM_RET_OK)
 	{
+		FTM_CONFIG_ITEM_getItemBOOL(&xSubSection,"force", 	&_xConfig.xFile.bForce);
 		FTM_CONFIG_ITEM_getItemString(&xSubSection, "path", _xConfig.xFile.pPath, sizeof(_xConfig.xFile.pPath) - 1);
 		FTM_CONFIG_ITEM_getItemString(&xSubSection, "prefix", _xConfig.xFile.pPrefix, sizeof(_xConfig.xFile.pPrefix) - 1);
 	}
@@ -217,6 +219,11 @@ FTM_RET	FTM_TRACE_printConfig
 	MESSAGE("%16s : %s\n", "Time", 			pConfig->xDisplayOpts.bTime?"true":"false");
 	MESSAGE("%16s : %s\n", "Function", 		pConfig->xDisplayOpts.bDebug?"true":"false");
 	MESSAGE("%16s : %lu\n","Line Length", 	pConfig->xDisplayOpts.ulLine);
+
+	MESSAGE("# Output\n");
+	MESSAGE("%16s : %s\n", "Force File",pConfig->xFile.bForce?"true":"false");
+	MESSAGE("%16s : %s\n", "Path", 		pConfig->xFile.pPath);
+	MESSAGE("%16s : %s\n", "Prefix", 	pConfig->xFile.pPrefix);
 
 	MESSAGE("    %16s %16s %8s\n", "NAME", "LEVEL", "OUTPUT");
 	for(i = 0 ; i < FTM_TRACE_MAX_MODULES ; i++)
@@ -565,6 +572,11 @@ FTM_RET	FTM_TRACE_out
 		nLen  += snprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, "[%s] ", szTime);
 	}
 
+	if (_xConfig.xDisplayOpts.bLevel)
+	{
+		nLen  += snprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, "[%s] ", FTM_TRACE_LEVEL_print(xLevel, FTM_FALSE));
+	}
+
 	if (bDebugInfo || (_xConfig.xDisplayOpts.bDebug && (pFunction != NULL)))
 	{
 		nLen += snprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, "%s[%04d] - ", pFunction, nLine);
@@ -573,11 +585,6 @@ FTM_RET	FTM_TRACE_out
 	if (_xConfig.xDisplayOpts.bModule)
 	{
 		nLen  += snprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, "[%8s] ", xInfo.pName);
-	}
-
-	if (_xConfig.xDisplayOpts.bLevel)
-	{
-		nLen  += snprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, "[%s] ", FTM_TRACE_LEVEL_print(xLevel, FTM_FALSE));
 	}
 
 	nLen += vsnprintf( &szBuff[nLen], FTM_TRACE_LINE_LEN - nLen, pFormat, argptr);
@@ -597,37 +604,34 @@ FTM_RET	FTM_TRACE_out
 		szBuff[_xConfig.xDisplayOpts.ulLine    ] = '\0';
 	}
 
-	switch(xInfo.xOut)
+	if ((_xConfig.xFile.bForce) || (xInfo.xOut == FTM_TRACE_OUT_FILE))
 	{
-	case	FTM_TRACE_OUT_FILE:
-		{
-			FTM_TRACE_printToFile(szBuff, _xConfig.xFile.pPath, _xConfig.xFile.pPrefix);
-		}
-		break;
-
-	case	FTM_TRACE_OUT_SYSLOG:
-		{
-			syslog(LOG_INFO, "%s", szBuff);
-		}
-		break;
-
-	default:
-		{
-			FTM_TRACE_printToTerm(szBuff);
-		}
+		FTM_TRACE_printToFile(szBuff, _xConfig.xFile.pPath, _xConfig.xFile.pPrefix);
+	}
+	else if (xInfo.xOut == FTM_TRACE_OUT_SYSLOG)
+	{
+		syslog(LOG_INFO, "%s", szBuff);
+	}
+	else
+	{
+		FTM_TRACE_printToTerm(szBuff);
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR szMsg)
+FTM_RET	FTM_TRACE_printToTerm(FTM_CHAR_PTR pMsg)
 {
-	fprintf(stdout, "%s", szMsg);
+	fprintf(stdout, "%s", pMsg);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_PTR pPrefix)
+FTM_RET	FTM_TRACE_printToFile
+(	FTM_CHAR_PTR 	pMsg, 
+	FTM_CHAR_PTR 	pPath, 
+	FTM_CHAR_PTR 	pPrefix
+)
 {
 	FILE 		*pFile;
 	time_t		rawTime;
@@ -639,9 +643,9 @@ FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_P
 	localTime = localtime(&rawTime);
 	strftime(szTime, 32, "%Y:%m:%d", localTime);
 
-	if(sprintf(szFileName, "%s%s-%s.log", pPath, pPrefix, szTime) <= 0)
+	if(sprintf(szFileName, "%s/%s-%s.log", pPath, pPrefix, szTime) <= 0)
 	{
-		return FTM_TRACE_printToTerm(szMsg);	
+		return FTM_TRACE_printToTerm(pMsg);	
 	}
 
 	pFile = fopen(szFileName, "a");
@@ -651,10 +655,8 @@ FTM_RET	FTM_TRACE_printToFile(FTM_CHAR_PTR szMsg, FTM_CHAR_PTR pPath, FTM_CHAR_P
 		return FTM_RET_ERROR;	
 	}
 
-	
 
-	strftime(szTime, 32, "%Y:%m:%d %H:%M:%S", localTime);
-	fprintf(pFile, "%s : %s", szTime, szMsg);
+	fprintf(pFile, "%s", pMsg);
 	fclose(pFile);
 
 	return	FTM_RET_OK;
@@ -698,6 +700,9 @@ FTM_RET	FTM_TRACE_shellCmd
 			fprintf(stdout, "%16s : %s\n", "Time",  _xConfig.xDisplayOpts.bTime?"Enabled":"Disabled");
 			fprintf(stdout, "%16s : %s\n", "Debug", _xConfig.xDisplayOpts.bDebug?"Enabled":"Disabled");
 			fprintf(stdout, "%16s : %lu\n","Line Length", _xConfig.xDisplayOpts.ulLine);
+			fprintf(stdout, "%16s : %s\n", "Force File",_xConfig.xFile.bForce?"true":"false");
+			fprintf(stdout, "%16s : %s\n", "Path", 		_xConfig.xFile.pPath);
+			fprintf(stdout, "%16s : %s\n", "Prefix", _xConfig.xFile.pPrefix);
 		}
 		break;
 

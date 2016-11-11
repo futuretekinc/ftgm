@@ -2,9 +2,16 @@
 #include "ftm.h"
 #include "ftom_ep.h"
 #include "ftom_msg.h"
+#include "ftom_modules.h"
 #include "ftom_message_queue.h"
 
-FTM_RET	FTOM_MSGQ_create(FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_MSGQ
+
+FTM_RET	FTOM_MSGQ_create
+(
+	FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ
+)
 {
 	ASSERT(ppMsgQ != NULL);
 
@@ -33,7 +40,10 @@ FTM_RET	FTOM_MSGQ_create(FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_MSGQ_destroy(FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ)
+FTM_RET	FTOM_MSGQ_destroy
+(
+	FTOM_MSG_QUEUE_PTR _PTR_ ppMsgQ
+)
 {
 	ASSERT(ppMsgQ != NULL);
 

@@ -81,6 +81,13 @@ FTM_RET	FTOM_SNMPC_init
 		bInit = FTM_TRUE;
 	}
 
+	if (pClient->pTrap != NULL)
+	{
+		xRet = FTM_RET_OK;
+		goto finish;
+	}	
+
+	TRACE("SNMPC[%08x:%s] init\n", pClient, pClient->xConfig.pName);
 	memset(pClient, 0, sizeof(FTOM_SNMPC));
 
 	xRet = FTOM_MSGQ_init(&pClient->xMsgQ);
@@ -128,16 +135,25 @@ FTM_RET	FTOM_SNMPC_final
 	FTM_RET		xRet;
 	FTM_ULONG 	i, ulCount;
 
+	if (pClient->pTrap == NULL)
+	{
+		xRet = FTM_RET_OK;
+		goto finish;
+	}
+
+	TRACE("SNMPC[%08x:%s] final\n", pClient, pClient->xConfig.pName);
 	xRet = FTOM_SNMPTRAP_destroy(&pClient->pTrap);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to destroy SNMP trap!\n");
+		goto finish;
 	}
-
+	
 	xRet = FTM_LOCK_final(&pClient->xLock);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to finalize lock!\n");	
+		goto finish;
 	}
 
 	FTM_LIST_count(&pClient->xConfig.xMIBList, &ulCount);
@@ -155,14 +171,17 @@ FTM_RET	FTOM_SNMPC_final
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to finalize list!\n");
+		goto finish;
 	}
 
 	xRet = FTOM_MSGQ_final(&pClient->xMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to release message queue SNMP Client!\n");
+		goto finish;
 	}
 
+finish:
 	return	FTM_RET_OK;
 }
 
@@ -254,9 +273,6 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 	FTOM_MSG_PTR	pBaseMsg;
 	FTM_TIMER		xLoopTimer;
 
-//	init_agent(pClient->xConfig.pName);
-//	init_snmp(pClient->xConfig.pName);
-
 	FTM_TIMER_initMS(&xLoopTimer, pClient->xConfig.ulLoopInterval);
 
 	pClient->bStop = FTM_FALSE;
@@ -272,6 +288,11 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 		{
 			switch(pBaseMsg->xType)
 			{
+			case	FTOM_MSG_TYPE_INITIALIZE_DONE:
+				{
+				}
+				break;
+
 			case	FTOM_MSG_TYPE_SNMPC_GET_EP_DATA:
 				{
 					FTOM_EP_PTR	pEP;
@@ -388,20 +409,17 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 		{
 			FTM_INT	nFDS = 0, nBlock = 0;
 			fd_set xReadFD;
-			fd_set xWriteFD;
-			fd_set xExceptFD;
 			struct timeval xTimeout = {.tv_sec = 0, .tv_usec = 100000};
 
 			FD_ZERO(&xReadFD);
-			FD_ZERO(&xWriteFD);
-			FD_ZERO(&xExceptFD);
 			snmp_select_info(&nFDS, &xReadFD, &xTimeout, &nBlock);
-			nFDS = select(nFDS, &xReadFD, &xWriteFD, &xExceptFD, &xTimeout);
+
+			nFDS = select(nFDS, &xReadFD, NULL, NULL, (nBlock)?NULL:&xTimeout);
 			if (nFDS < 0) 
 			{
 				WARN("Failed to select file descripters!\n");
 			}
-			else if (nFDS > 0)
+			else if (nFDS)
 			{
 				snmp_read(&xReadFD);
 			}
@@ -481,6 +499,7 @@ FTM_RET FTOM_SNMPC_loadConfig
 	FTM_CONFIG_ITEM		xSection;	
 	FTM_ULONG			ulValue;
 
+	TRACE("FTOM_SNMPC_loadConfig(%08x) ####################### \n",pClient);
 	xRet = FTM_CONFIG_getItem(pConfig, "snmpc", &xSection);
 	if (xRet == FTM_RET_OK)
 	{
@@ -1038,6 +1057,9 @@ FTM_RET	FTOM_SNMPC_get
 	if ((nRet != STAT_SUCCESS) || (pRespPDU->errstat != SNMP_ERR_NOERROR))
 	{
 		xRet = FTM_RET_SNMP_ERROR;
+		ERROR2(xRet, "URL : %s\n", pURL);
+		ERROR2(xRet, "COMMUNITY : %s\n", pCommunity);
+		ERROR2(xRet, "OID : %s\n", FTM_SNMP_OID_print(pOID));
 		ERROR2(xRet, "SNMP reponse error!\n");
 		goto finish;
 	}

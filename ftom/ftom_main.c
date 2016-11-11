@@ -22,6 +22,7 @@ int main(int nArgc, char *pArgv[])
 	FTM_BOOL	bDaemon = FTM_FALSE;
 	FTM_ULONG	ulDebugLevel = FTM_TRACE_LEVEL_ERROR;
 	FTM_CHAR	pConfigFileName[1024];
+	FTM_CONFIG_PTR		pConfig;
 
 	sprintf(pConfigFileName, "/etc/%s.conf", FTOM_getProgramName());
 
@@ -74,14 +75,55 @@ int main(int nArgc, char *pArgv[])
 	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_LOGGER,	"LOGGER",	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_CLIENT,	"CLIENT",	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
+	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_SERVICE,	"SERVICE", 	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_MSGQ,		"MSGQ", 	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+
+	xRet =FTM_CONFIG_create(pConfigFileName, &pConfig, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "SERVER configuration file[%s] load failed\n", pConfigFileName);
+
+		goto finish2;
+	}
+
+	xRet = FTM_TRACE_loadConfig(pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration from file[%s]\n", pConfigFileName);
+		FTM_CONFIG_destroy(&pConfig);
+
+		goto finish2;
+	}
+
 	xRet = FTOM_init();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Can't create object manager!\n");
-		return	-1;	
+		FTM_CONFIG_destroy(&pConfig);
+
+		goto finish2;
 	}
 
-	FTOM_loadConfigFromFile(pConfigFileName);
+	xRet = FTOM_loadConfig(pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration[%s]\n", pConfigFileName);
+		FTM_CONFIG_destroy(&pConfig);
+
+		goto finish1;
+	}
+
+	xRet = FTOM_SERVICE_loadConfig(FTOM_SERVICE_ALL, pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration from file[%s]\n", pConfigFileName);
+		FTM_CONFIG_destroy(&pConfig);
+
+		goto finish1;
+	}
+
+	FTM_CONFIG_destroy(&pConfig);
+	//FTOM_loadConfigFromFile(pConfigFileName);
 
 	if (bDaemon)
 	{
@@ -103,8 +145,12 @@ int main(int nArgc, char *pArgv[])
 		FTOM_waitingForFinished();
 	}
 
-	
+
+finish1:
 	FTOM_final();
+
+
+finish2:
 	FTM_MEM_final();
 
 	return	0;

@@ -183,6 +183,48 @@ FTM_RET	FTDM_EP_set
 	return	xRet;
 }
 
+FTM_RET	FTDM_EP_setFields
+(
+	FTDM_EP_PTR		pEP,
+	FTM_EP_FIELD	xFields,
+	FTM_EP_PTR		pInfo
+)
+{
+	ASSERT(pEP != NULL);
+	ASSERT(pInfo != NULL);
+
+	FTM_RET	xRet;
+	FTM_EP	xInfo;
+
+	memcpy(&xInfo, &pEP->xInfo, sizeof(FTM_EP));
+
+	FTM_EP_setFields(&xInfo, xFields, pInfo);
+
+	xRet = FTM_EP_isValid(&xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "EP is invalid!\n");
+		return	xRet;	
+	}
+
+	if (strcmp(pEP->xInfo.pEPID, xInfo.pEPID) != 0)
+	{
+		ERROR2(xRet, "EPID mismatch!\n");
+		return	FTM_RET_INVALID_ID;	
+	}
+
+	xRet = FTM_RET_OK;	
+
+	memcpy(&pEP->xInfo, &xInfo, sizeof(FTM_EP));
+
+	xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set EP.\n");
+	}
+
+	return	xRet;
+}
 
 FTM_RET	FTDM_EP_DATA_add
 (

@@ -90,6 +90,13 @@ FTM_RET	FTOM_DISCOVERY_getNodeInfoAt
 	FTM_NODE_PTR		pNodeInfo
 );
 
+FTM_RET	FTOM_DISCOVERY_getNodeInfo
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_CHAR_PTR		pNodeID,
+	FTM_NODE_PTR		pNodeInfo
+);
+
 FTM_RET	FTOM_DISCOVERY_getEPInfoCount
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,
@@ -102,4 +109,12 @@ FTM_RET	FTOM_DISCOVERY_getEPInfoAt
 	FTM_ULONG			ulIndex,
 	FTM_EP_PTR			pEPInfo
 );
+
+FTM_RET	FTOM_DISCOVERY_getEPInfo
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_PTR			pEPInfo
+);
+
 #endif

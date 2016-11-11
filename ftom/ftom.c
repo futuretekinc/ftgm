@@ -286,7 +286,6 @@ FTM_RET	FTOM_init
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_INFO]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryInfo;
 	onMessage[FTOM_MSG_TYPE_DISCOVERY_DONE]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryDone;
 
-	TRACE("%s[%d] : FTOM_onDiscoveryInfo= %08x\n", __func__, __LINE__,FTOM_onDiscoveryInfo);
 	xRet = FTM_LIST_init(&xSubnetList);
 	if (xRet != FTM_RET_OK)
 	{
@@ -425,6 +424,7 @@ FTM_RET	FTOM_final
 		while(FTM_LIST_iteratorNext(&xSubnetList, (FTM_VOID_PTR _PTR_)&pSubnet) == FTM_RET_OK)
 		{
 			FTM_LIST_remove(&xSubnetList, pSubnet);	
+			FTM_MEM_free(pSubnet);
 		}
 	}
 
@@ -523,6 +523,12 @@ FTM_RET	FTOM_loadConfigFromFile
 	}
 
 	xRet = FTOM_SERVICE_loadConfig(FTOM_SERVICE_ALL, pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration from file[%s]\n", pFileName);
+	}
+
+	xRet = FTM_TRACE_loadConfig(pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to load configuration from file[%s]\n", pFileName);
@@ -2811,7 +2817,7 @@ FTM_RET	FTOM_discoveryEP
 
 	FTM_RET		xRet;
 
-	memset(pEPInfo, 0, sizeof(FTM_EP));
+	FTM_EP_setDefault(pEPInfo);
 
 	pEPInfo->xType = xType;
 
@@ -2836,7 +2842,7 @@ FTM_RET	FTOM_discoveryEP
 		return	xRet;	
 	}
 
-	if (xType != FTM_EP_TYPE_DO)
+	if ((xType != FTM_EP_TYPE_DO) && (xType < FTM_EP_TYPE_DEVICE))
 	{
 		xRet = FTOM_NODE_getEPUpdateInterval(pNode, xType, ulIndex, &pEPInfo->ulUpdateInterval);
 		if (xRet != FTM_RET_OK)

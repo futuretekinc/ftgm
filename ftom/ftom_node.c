@@ -493,7 +493,7 @@ FTM_RET	FTOM_NODE_linkEP
 	xRet = pNode->pClass->fAttachEP(pNode, pEP);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to attach EP[%s] to Node[%s].\n", pEP->xInfo.pEPID, pNode->xInfo.pDID);
+		ERROR2(xRet, "Failed to attach EP[%s] to Node[%s] class[%s].\n", pEP->xInfo.pEPID, pNode->xInfo.pDID, pNode->pClass->pModel);
 		return	xRet;	
 	}
 
@@ -670,6 +670,7 @@ FTM_RET FTOM_NODE_getEPData
 	xRet = pNode->pClass->fGetEPData(pNode, pEP, pData);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "EP[%s] data get failed.\n", pEP->xInfo.pEPID);
 		pNode->xStatistics.ulGetError++;
 	}
 
@@ -727,7 +728,7 @@ FTM_RET	FTOM_NODE_getEPCount
 
 	if (ulCount == 0)
 	{
-#if 0
+#if 1
 		FTM_BOOL	bConnected = FTM_FALSE;
 
 		bConnected = FTOM_NODE_isConnected(pNode);
@@ -1181,7 +1182,7 @@ FTM_RET	FTOM_NODE_printList
 	FTOM_NODE_PTR	pNode;
 
 	MESSAGE("\n# Node Information\n");
-	MESSAGE("%16s %16s %16s %16s %16s %8s %8s %s\n", "DID", "MODEL", "NAME", "TYPE", "STATE", "REPORT", "TIMEOUT", "EPs");
+	MESSAGE("%16s %16s %16s %16s %16s %16s %8s %8s %s\n", "DID", "MODEL", "NAME", "TYPE", "URL", "STATE", "REPORT", "TIMEOUT", "EPs");
 
 	FTM_LIST_count(xDefaultModule.pNodeList, &ulCount);
 
@@ -1194,12 +1195,22 @@ FTM_RET	FTOM_NODE_printList
 		MESSAGE("%16s ", pNode->xInfo.pModel);
 		MESSAGE("%16s ", pNode->xInfo.pName);
 		MESSAGE("%16s ", FTM_NODE_typeString(pNode->xInfo.xType));
+		switch(pNode->xInfo.xType)
+		{
+		case	FTM_NODE_TYPE_SNMP:
+			MESSAGE("%16s ", pNode->xInfo.xOption.xSNMP.pURL);
+			break;
+
+		default:
+			MESSAGE("%16s ", "local");
+			break;
+		}
 		MESSAGE("%16s ", FTOM_NODE_printState(pNode));
 		MESSAGE("%8lu ", pNode->xInfo.ulReportInterval);
 		MESSAGE("%8lu ", pNode->xInfo.ulTimeout);
 
 		FTOM_NODE_getEPCount(pNode, 0, &ulEPCount);
-		MESSAGE("%3lu\n", ulCount);
+		MESSAGE("%3lu\n", ulEPCount);
 	}
 
 	return	FTM_RET_OK;

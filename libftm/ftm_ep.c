@@ -44,11 +44,12 @@ FTM_EP			xDefaultEP =
 	.xType					= 0,
 	.pName 					= {"Unknown"},
 	.bEnable				= FTM_TRUE,
-	.ulTimeout				= 5,
-	.ulUpdateInterval		= 10,
-	.ulReportInterval		= 60,
+	.ulTimeout				= 5000,
+	.ulUpdateInterval		= 10000,
+	.ulReportInterval		= 60000,
 	.xLimit.xType 			= FTM_EP_LIMIT_TYPE_MONTHS,
-	.xLimit.xParams.ulMonths= 1
+	.xLimit.xParams.ulMonths= 1,
+	.xFlags 				= FTM_EP_FLAG_SYNC
 };
 
 static 
@@ -245,6 +246,94 @@ FTM_RET	FTM_EP_count
 	}
 
 	return	FTM_LIST_count(pEPList, pulCount);
+}
+
+FTM_RET	FTM_EP_setFields
+(
+	FTM_EP_PTR		pEP,
+	FTM_EP_FIELD	xFields,
+	FTM_EP_PTR		pInfo
+)
+{
+	if (xFields & FTM_EP_FIELD_FLAGS)
+	{
+		pEP->xFlags = pInfo->xFlags;
+	}
+
+	if (xFields & FTM_EP_FIELD_NAME)
+	{
+		strcpy(pEP->pName, pInfo->pName);
+	}
+
+	if (xFields & FTM_EP_FIELD_UNIT)
+	{
+		strcpy(pEP->pUnit, pInfo->pUnit);
+	}
+
+	if (xFields & FTM_EP_FIELD_TIMEOUT)
+	{
+		pEP->ulTimeout = pInfo->ulTimeout;
+	}
+
+	if (xFields & FTM_EP_FIELD_INTERVAL)
+	{
+		pEP->ulUpdateInterval = pInfo->ulUpdateInterval;
+	}
+
+	if (xFields & FTM_EP_FIELD_DID)
+	{
+		strcpy(pEP->pDID, pInfo->pDID);
+	}
+
+	if (xFields & FTM_EP_FIELD_LIMIT)
+	{
+		if (pEP->xLimit.xType != pInfo->xLimit.xType)
+		{
+			memset(&pEP->xLimit, 0, sizeof(FTM_EP_LIMIT));
+		}
+		pEP->xLimit.xType = pInfo->xLimit.xType;
+
+		switch(pEP->xLimit.xType)
+		{
+		case	FTM_EP_LIMIT_TYPE_COUNT:	
+			{
+				pEP->xLimit.xParams.ulCount = pInfo->xLimit.xParams.ulCount;
+			}
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_TIME:	
+			{
+				pEP->xLimit.xParams.xTime.ulStart = pInfo->xLimit.xParams.xTime.ulStart;
+				pEP->xLimit.xParams.xTime.ulEnd = pInfo->xLimit.xParams.xTime.ulEnd;
+			}
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_HOURS:	
+			{
+				pEP->xLimit.xParams.ulHours= pInfo->xLimit.xParams.ulCount;
+			}
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_DAYS:	
+			{
+				pEP->xLimit.xParams.ulDays = pInfo->xLimit.xParams.ulCount;
+			}
+			break;
+	
+		case	FTM_EP_LIMIT_TYPE_MONTHS:	
+			{
+				pEP->xLimit.xParams.ulMonths = pInfo->xLimit.xParams.ulCount;
+			}
+			break;
+		}
+	}
+
+	if ((xFields & FTM_EP_FIELD_ENABLE) && (pEP->bEnable != pInfo->bEnable))
+	{
+		pEP->bEnable = pInfo->bEnable;
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTM_EP_get

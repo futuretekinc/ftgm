@@ -25,8 +25,10 @@ typedef	unsigned long	FTM_EP_STATE, 	_PTR_ FTM_EP_STATE_PTR;
 #define	FTM_EP_TYPE_COUNT			0x0B000000
 #define	FTM_EP_TYPE_PRESSURE		0x0C000000
 #define	FTM_EP_TYPE_DISCRETE		0x0D000000
-#define	FTM_EP_TYPE_DEVICE			0x0E000000
-#define	FTM_EP_TYPE_MULTI			0x7F000000
+
+#define	FTM_EP_TYPE_DEVICE			0x70000000
+#define	FTM_EP_TYPE_MULTI			0x7E000000
+#define	FTM_EP_TYPE_CTRL			0x7F000000
 
 typedef	unsigned long	FTM_EP_FIELD, _PTR_ FTM_EP_FIELD_PTR;
 
@@ -175,6 +177,13 @@ FTM_RET	FTM_EP_getAt
 (
 	FTM_ULONG 	ulIndex, 
 	FTM_EP_PTR _PTR_ ppNode
+);
+
+FTM_RET	FTM_EP_setFields
+(
+	FTM_EP_PTR		pEP,
+	FTM_EP_FIELD	xFields,
+	FTM_EP_PTR		pInfo
 );
 
 FTM_RET	FTM_EP_isValid

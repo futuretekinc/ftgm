@@ -50,6 +50,13 @@ FTM_RET	FTDM_EP_set
 	FTM_EP_PTR	pInfo
 );
 
+FTM_RET	FTDM_EP_setFields
+(
+	FTDM_EP_PTR		pEP,
+	FTM_EP_FIELD	xFields,
+	FTM_EP_PTR		pInfo
+);
+
 FTM_RET	FTDM_EP_DATA_add
 (
 	FTDM_EP_PTR			pEP,

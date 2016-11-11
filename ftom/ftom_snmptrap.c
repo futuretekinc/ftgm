@@ -90,6 +90,7 @@ FTM_RET	FTOM_SNMPTRAP_create
 	}
 
 	*ppSNMPTRAP = pSNMPTRAP;
+	TRACE("create ppSNMPTRAP : %08x\n", *ppSNMPTRAP);
 
 	return	xRet;
 }
@@ -103,6 +104,7 @@ FTM_RET	FTOM_SNMPTRAP_destroy
 
 	FTM_RET	xRet;
 
+	TRACE("destroy ppSNMPTRAP : %08x\n", *ppSNMPTRAP);
 	xRet = FTOM_SNMPTRAP_final(*ppSNMPTRAP);
 	if (xRet != FTM_RET_OK)
 	{

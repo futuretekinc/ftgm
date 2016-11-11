@@ -22,7 +22,7 @@ FTM_RET	FTOM_DISCOVERY_infoCB
 );
 
 static 
-FTM_VOID_PTR FTM_DISCOVERY_process
+FTM_VOID_PTR FTOM_DISCOVERY_process
 (
 	FTM_VOID_PTR	pData
 );
@@ -83,7 +83,11 @@ FTM_RET	FTOM_DISCOVERY_init
 	FTOM_DISCOVERY_PTR	pDiscovery
 )
 {
-	TRACE("DISCOVERY init\n");
+	if (pDiscovery->pMsgQ != NULL)
+	{
+		return	FTM_RET_OK;
+	}
+
 	pDiscovery->bStop 		= FTM_TRUE;
 	pDiscovery->bInProgress = FTM_FALSE;
 	pDiscovery->ulTimeout	= 2;
@@ -106,12 +110,28 @@ FTM_RET	FTOM_DISCOVERY_final
 )
 {
 	FTOM_DISCOVERY_INFO_PTR pInfo = NULL;
+	FTM_EP_PTR		pEPInfo;
+	FTM_NODE_PTR	pNodeInfo;
 
 	FTM_LIST_iteratorStart(&pDiscovery->xInfoList);
 	while(FTM_LIST_iteratorNext(&pDiscovery->xInfoList, (FTM_VOID_PTR _PTR_)&pInfo) == FTM_RET_OK)
 	{
 		FTM_LIST_remove(&pDiscovery->xInfoList, pInfo);
 		FTM_MEM_free(pInfo);
+	}
+
+	FTM_LIST_iteratorStart(&pDiscovery->xEPList);
+	while(FTM_LIST_iteratorNext(&pDiscovery->xEPList, (FTM_VOID_PTR _PTR_)&pEPInfo) == FTM_RET_OK)
+	{
+		FTM_LIST_remove(&pDiscovery->xEPList, pEPInfo);
+		FTM_MEM_free(pEPInfo);
+	}
+
+	FTM_LIST_iteratorStart(&pDiscovery->xNodeList);
+	while(FTM_LIST_iteratorNext(&pDiscovery->xNodeList, (FTM_VOID_PTR _PTR_)&pNodeInfo) == FTM_RET_OK)
+	{
+		FTM_LIST_remove(&pDiscovery->xNodeList, pNodeInfo);
+		FTM_MEM_free(pNodeInfo);
 	}
 
 	FTOM_MSGQ_destroy(&pDiscovery->pMsgQ);
@@ -148,7 +168,7 @@ FTM_RET	FTOM_DISCOVERY_start
 		return	xRet;
 	}
 
-	nRet = pthread_create(&pDiscovery->xThread, NULL, FTM_DISCOVERY_process, pDiscovery);
+	nRet = pthread_create(&pDiscovery->xThread, NULL, FTOM_DISCOVERY_process, pDiscovery);
 	if (nRet != 0)
 	{
 		ERROR2(FTM_RET_CANT_CREATE_THREAD, "Discovery thread creation failed[%d].\n", nRet);
@@ -182,7 +202,7 @@ FTM_RET	FTOM_DISCOVERY_stop
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTM_DISCOVERY_process
+FTM_VOID_PTR FTOM_DISCOVERY_process
 (
 	FTM_VOID_PTR	pData
 )
@@ -266,7 +286,7 @@ FTM_VOID_PTR FTM_DISCOVERY_process
 						break;	
 					}
 
-					FTOM_NODE_connect(pNode);
+					FTOM_NODE_connect((FTOM_NODE_PTR)pNode);
 					strcpy(pNode->pIP, pMsg->pIP);
 
 					FTM_LIST_append(&pDiscovery->xNodeList, pNode);
@@ -425,6 +445,44 @@ FTM_RET	FTOM_DISCOVERY_getNodeInfoAt
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_DISCOVERY_getNodeInfo
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_CHAR_PTR		pNodeID,
+	FTM_NODE_PTR		pNodeInfo
+)
+{
+	ASSERT(pDiscovery != NULL);
+	ASSERT(pNodeID != NULL);
+
+	FTM_RET			xRet;
+	FTM_NODE_PTR	pItem;
+	FTM_UINT32		i;
+	FTM_ULONG		ulCount;
+
+	xRet = FTM_LIST_count(&pDiscovery->xNodeList, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		xRet = FTM_LIST_getAt(&pDiscovery->xNodeList, i, (FTM_VOID_PTR _PTR_)&pItem);
+		if (xRet == FTM_RET_OK)
+		{
+			if (strcasecmp(pNodeID, pItem->pDID) == 0)
+			{
+				memcpy(pNodeInfo, pItem, sizeof(FTM_NODE));	
+
+				return	FTM_RET_OK;
+			}
+		}
+	}
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
+}
+
 FTM_RET	FTOM_DISCOVERY_getEPInfoCount
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,
@@ -461,6 +519,44 @@ FTM_RET	FTOM_DISCOVERY_getEPInfoAt
 	memcpy(pEPInfo, pItem, sizeof(FTM_EP));
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_DISCOVERY_getEPInfo
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_PTR			pEPInfo
+)
+{
+	ASSERT(pDiscovery != NULL);
+	ASSERT(pEPID != NULL);
+
+	FTM_RET		xRet;
+	FTM_EP_PTR	pItem;
+	FTM_UINT32	i;
+	FTM_ULONG	ulCount;
+
+	xRet = FTM_LIST_count(&pDiscovery->xEPList, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		xRet = FTM_LIST_getAt(&pDiscovery->xEPList, i, (FTM_VOID_PTR _PTR_)&pItem);
+		if (xRet == FTM_RET_OK)
+		{
+			if (strcasecmp(pEPID, pItem->pEPID) == 0)
+			{
+				memcpy(pEPInfo, pItem, sizeof(FTM_EP));	
+
+				return	FTM_RET_OK;
+			}
+		}
+	}
+
+	return	FTM_RET_OBJECT_NOT_FOUND;
 }
 
 FTM_RET	FTOM_DISCOVERY_infoCB

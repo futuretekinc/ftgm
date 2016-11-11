@@ -142,16 +142,20 @@ FTM_RET	FTOM_NODE_SNMPC_init
  	FTM_CHAR			pBuff[64];
 	FTOM_SERVICE_PTR 	pService;
 
+	TRACE("called\n");
 	if (strlen(pNode->pIP) == 0)
 	{
 		if (strlen(pNode->xCommon.xInfo.xOption.xSNMP.pURL) == 0)
 		{
-			return	FTM_RET_NOT_INITIALIZED;
+			xRet = FTM_RET_NOT_INITIALIZED;
+			ERROR2(xRet, "The node[%s] is not initialized.\n", pNode->xCommon.xInfo.pDID);
+			return	xRet;
 		}
 
 		strncpy(pNode->pIP, pNode->xCommon.xInfo.xOption.xSNMP.pURL, FTM_URL_LEN);
 	}
 
+	TRACE("NODE[%s] IP : %s\n", pNode->xCommon.xInfo.pDID, pNode->pIP);
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
@@ -202,6 +206,7 @@ FTM_RET	FTOM_NODE_SNMPC_init
 
 	if (pNode->pSNMPC == NULL)
 	{
+#if 0
 		FTOM_SNMPC_PTR		pSNMPC = NULL;
 
 		xRet = FTOM_SNMPC_create(&pSNMPC);
@@ -215,6 +220,9 @@ FTM_RET	FTOM_NODE_SNMPC_init
 		sprintf(pSNMPC->xConfig.pName, "ftom:%s", pNode->xCommon.xInfo.pDID);
 
 		pNode->pSNMPC = pSNMPC;
+#else
+		pNode->pSNMPC = (FTOM_SNMPC_PTR)pService->pData;
+#endif
 	}
 
 finish:
@@ -264,11 +272,14 @@ FTM_RET	FTOM_NODE_SNMPC_final
 
 	if (pNode->pSNMPC != NULL)
 	{
+		pNode->pSNMPC = NULL;
+#if 0
 		xRet = FTOM_SNMPC_destroy(&pNode->pSNMPC);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to destroy SNMPC!\n");	
 		}
+#endif
 	}
 
 	FTM_LIST_final(&pNode->xCommon.xEPList);
@@ -407,10 +418,12 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 	FTM_VALUE			xValue;
 	FTM_BOOL			bValid = FTM_TRUE;
 	FTOM_SNMPC_PTR		pSNMPC = NULL;
- 	
+
 	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		return	FTM_RET_SNMP_TIMEOUT;
+		xRet = FTM_RET_SNMP_TIMEOUT;
+		ERROR2(xRet, "The node[%s] is not connected!\n", pNode->xCommon.xInfo.pDID);
+		return	xRet;
 	} 
 
 	if (pNode->pSNMPC == NULL)
@@ -462,6 +475,10 @@ FTM_RET	FTOM_NODE_SNMPC_getEPData
 	{
 		xRet = FTM_EP_DATA_initVALUE(pData, &xValue);
 	}
+	else
+	{
+		ERROR2(xRet, "SNMP get failed.\n");
+	}
 
 	FTM_VALUE_final(&xValue);
 
@@ -483,7 +500,9 @@ FTM_RET	FTOM_NODE_SNMPC_setEPData
 	
 	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		return	FTM_RET_SNMP_TIMEOUT;
+		xRet = FTM_RET_NOT_CONNECTED;
+		ERROR2(xRet, "Node[%s] is not connected.\n", pNode->xCommon.xInfo.pDID);	
+		return	xRet;
 	} 
 
 	if (pNode->pSNMPC == NULL)
@@ -541,7 +560,9 @@ FTM_RET	FTOM_NODE_SNMPC_getEPDataAsync
 
 	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		return	FTM_RET_NOT_CONNECTED;
+		xRet = FTM_RET_NOT_CONNECTED;
+		ERROR2(xRet, "Node[%s] is not connected.\n", pNode->xCommon.xInfo.pDID);	
+		return	xRet;
 	} 
 
 	xRet = FTOM_EP_getDataType(pEP, &xDataType);
@@ -740,6 +761,7 @@ FTOM_NODE_SNMPC_OID_PREFIX	pOIDPrefixes[] =
 	{	FTM_EP_TYPE_DISCRETE, 	"dsc"},
 	{	FTM_EP_TYPE_DEVICE, 	"dev"},
 	{	FTM_EP_TYPE_MULTI, 		"multi"},
+	{	FTM_EP_TYPE_CTRL, 		"ctrl"},
 	{	0, 						NULL	}
 };
 
@@ -838,7 +860,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 	xRet = FTOM_NODE_SNMPC_getOIDForID(pNode, ulEPType, ulIndex, &xOID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to get OID for ID.\n");
+		ERROR2(xRet, "Failed to get OID for ID[Type = %08x].\n", ulEPType);
 		return	xRet;	
 	}
 
@@ -921,7 +943,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 	xRet = FTOM_NODE_SNMPC_getOIDForName(pNode, ulEPType, ulIndex, &xOID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to get OID for ID.\n");
+		ERROR2(xRet, "Failed to get OID for name.\n");
 		return	xRet;	
 	}
 
@@ -996,7 +1018,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPState
 	xRet = FTOM_NODE_SNMPC_getOIDForState(pNode, ulEPType, ulIndex, &xOID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to get OID for ID.\n");
+		ERROR2(xRet, "Failed to get OID for State.\n");
 		return	xRet;	
 	}
 
@@ -1070,7 +1092,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
 	xRet = FTOM_NODE_SNMPC_getOIDForUpdateInterval(pNode, ulEPType, ulIndex, &xOID);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet,"Failed to get OID for ID.\n");
+		ERROR2(xRet,"Failed to get OID for update interval.\n");
 		return	xRet;	
 	}
 
@@ -1182,6 +1204,7 @@ FTM_RET	FTOM_NODE_SNMPC_attachEP
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to get OID for EP[%s] of node[%s]\n", pEP->xInfo.pEPID, pNode->xCommon.xInfo.pDID);
+		ERROR2(xRet, "EP Info[Type = %08x, nIndex = %d]\n", pEP->xInfo.xType, nIndex - 1);
 		return	xRet;
 	}
 

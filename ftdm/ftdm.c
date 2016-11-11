@@ -177,7 +177,7 @@ FTM_RET 	FTDM_loadConfig
 		ERROR2(xRet, "FTDM_initEPClassInfo failed\n");	
 	}
 
-	FTM_TRACE_configSet(&pConfig->xPrint);
+	//FTM_TRACE_configSet(&pConfig->xPrint);
 
 
 	FTDMS_loadConfig(&xServer, &pConfig->xServer);
@@ -464,11 +464,12 @@ int main(int nArgc, char *pArgv[])
 	/* apply configuration */
 		
 	FTDM_init(&xFTDM);
-	FTDM_loadConfigFromFile(&xFTDM, pConfigFileName);
 
 	FTM_TRACE_setInfo2(FTDM_TRACE_MODULE_SERVER,"SERVER",	FTM_TRACE_LEVEL_DISABLE, FTM_TRACE_OUT_TERM);
 	FTM_TRACE_setInfo2(FTDM_TRACE_MODULE_EP,	"EP", 		FTM_TRACE_LEVEL_DISABLE, FTM_TRACE_OUT_TERM);
 	FTM_TRACE_setInfo2(FTDM_TRACE_MODULE_DBIF,	"DBIF", 	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+
+	FTDM_loadConfigFromFile(&xFTDM, pConfigFileName);
 
 	xRet = FTDM_DBIF_open();
 	if (xRet != FTM_RET_OK)

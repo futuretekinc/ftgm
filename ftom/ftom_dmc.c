@@ -191,6 +191,11 @@ FTM_VOID_PTR	FTOM_DMC_process
 			{
 				switch(pMsg->xType)
 				{
+				case	FTOM_MSG_TYPE_INITIALIZE_DONE:
+					{
+					}
+					break;
+
 				case	FTOM_MSG_TYPE_EP_DATA:
 					{
 						FTOM_DMC_onEPData(pDMC, (FTOM_MSG_EP_DATA_PTR)pMsg);

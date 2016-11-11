@@ -937,10 +937,19 @@ FTM_RET	FTDMS_EP_set
 	FTM_RET		xRet;
 	FTDM_EP_PTR	pEP;
 
-	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->xInfo.pEPID, &pEP);
+	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_EP_set(pEP, &pReq->xInfo);
+		xRet = FTDM_EP_setFields(pEP, pReq->xFields, &pReq->xInfo);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "EP[%s] set fields failed.\n", pReq->pEPID);	
+		}
+
+	}
+	else
+	{
+		ERROR2(xRet, "EP[%s] get failed.\n", pReq->pEPID);	
 	}
 
 	pResp->xCmd = pReq->xCmd;
