@@ -36,6 +36,7 @@ FTM_BOOL	FTOM_DISCOVERY_seekNode
 
 FTM_RET	FTOM_DISCOVERY_create
 (
+	FTOM_PTR	pFTOM,
 	FTOM_DISCOVERY_PTR _PTR_ 	ppDiscovery
 )
 {
@@ -56,6 +57,8 @@ FTM_RET	FTOM_DISCOVERY_create
 		FTM_MEM_free(pDiscovery);
 		return	xRet;	
 	}
+
+	pDiscovery->pFTOM = pFTOM;
 
 	*ppDiscovery = pDiscovery;
 
@@ -158,11 +161,11 @@ FTM_RET	FTOM_DISCOVERY_start
 		return	FTM_RET_ALREADY_STARTED;
 	}
 
-	xRet = FTOM_setMessageCallback(FTOM_MSG_TYPE_DISCOVERY_INFO, 
-				(FTOM_ON_MESSAGE_CALLBACK)FTOM_DISCOVERY_infoCB, 
+	xRet = FTOM_setMessageCallback(pDiscovery->pFTOM, 
+				FTOM_MSG_TYPE_DISCOVERY_INFO, 
+				(FTOM_MESSAGE_CB_FUNC)FTOM_DISCOVERY_infoCB, 
 				(FTM_VOID_PTR)pDiscovery, 
-				&pDiscovery->fOldCB, 
-				&pDiscovery->pOldData);
+				&pDiscovery->xOldCB);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
@@ -193,10 +196,10 @@ FTM_RET	FTOM_DISCOVERY_stop
 	pDiscovery->bStop = FTM_TRUE;
 	pthread_join(pDiscovery->xThread, NULL);
 
-	FTOM_setMessageCallback(FTOM_MSG_TYPE_DISCOVERY_INFO, 
-			pDiscovery->fOldCB, 
-			pDiscovery->pOldData, 
-			NULL, 
+	FTOM_setMessageCallback(pDiscovery->pFTOM,
+			FTOM_MSG_TYPE_DISCOVERY_INFO, 
+			pDiscovery->xOldCB.fCallback, 
+			pDiscovery->xOldCB.pData, 
 			NULL);
 
 	return	FTM_RET_OK;

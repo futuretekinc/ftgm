@@ -14,6 +14,7 @@ typedef	struct FTOM_DISCOVERY_INFO_STRUCT
 
 typedef	struct FTOM_DISCOVERY_STRUCT
 {
+	FTOM_PTR			pFTOM;
 	pthread_t			xThread;
 
 	FTM_BOOL			bStop;
@@ -29,12 +30,12 @@ typedef	struct FTOM_DISCOVERY_STRUCT
 	FTM_TIMER			xTimer;
 	FTM_CHAR			pTargetIP[256];
 	FTM_USHORT			usTargetPort;
-	FTOM_ON_MESSAGE_CALLBACK	fOldCB;
-	FTM_VOID_PTR				pOldData;
+	FTOM_MESSAGE_CB		xOldCB;
 }	FTOM_DISCOVERY, _PTR_ FTOM_DISCOVERY_PTR;
 
 FTM_RET	FTOM_DISCOVERY_create
 (
+	FTOM_PTR	pFTOM,
 	FTOM_DISCOVERY_PTR _PTR_ 	ppDiscovery
 );
 

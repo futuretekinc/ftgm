@@ -266,7 +266,6 @@ FTM_RET	FTOM_NODE_SNMPC_final
 )
 {
 	ASSERT(pNode != NULL);
-	FTM_RET	xRet;
 
 	FTM_LOCK_set(&pNode->xCommon.xLock);
 

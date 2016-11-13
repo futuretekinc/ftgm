@@ -229,6 +229,8 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 
 };
 
+extern	FTOM_PTR	pFTOM;
+
 FTM_ULONG		FTOM_shellCmdCount = sizeof(FTOM_shellCmds) / sizeof(FTM_SHELL_CMD);
 
 
@@ -240,10 +242,14 @@ FTM_RET	FTOM_SHELL_CMD_config
 	FTM_VOID_PTR 	pData
 )
 {
+	ASSERT(pShell != NULL);
+
+	FTOM_PTR	pFTOM = (FTOM_PTR)pShell->pData;
+
 	switch(nArgc)
 	{
 	case	1:
-		FTOM_showConfig();
+		FTOM_showConfig(pFTOM);
 		break;
 
 	case	3:
@@ -252,7 +258,7 @@ FTM_RET	FTOM_SHELL_CMD_config
 			{
 				FTM_RET	xRet;
 
-				xRet = FTOM_saveConfigToFile(pArgv[2]);
+				xRet = FTOM_saveConfigToFile(pFTOM, pArgv[2]);
 				if (xRet == FTM_RET_OK)
 				{
 					MESSAGE("This configuration has been saved successfully[%s].\n", pArgv[2]);	
@@ -279,6 +285,7 @@ FTM_RET	FTOM_SHELL_CMD_node
 {
 	ASSERT(pShell != NULL);
 	ASSERT(pArgv != NULL);
+
 
 	FTM_RET	xRet;
 	switch(nArgc)
@@ -480,6 +487,7 @@ FTM_RET	FTOM_SHELL_CMD_ep
 {
 	ASSERT(pShell != NULL);
 	ASSERT(pArgv != NULL);
+
 
 	FTM_RET	xRet;
 	switch(nArgc)
@@ -739,6 +747,7 @@ FTM_RET	FTOM_SHELL_CMD_action
 	ASSERT(pShell != NULL);
 	ASSERT(pArgv != NULL);
 
+
 	FTM_RET	xRet;
 	switch(nArgc)
 	{
@@ -816,6 +825,8 @@ FTM_RET	FTOM_SHELL_CMD_object
 	FTM_VOID_PTR 	pData
 )
 {
+	ASSERT(pShell != NULL);
+
 	switch(nArgc)
 	{
 	case	1:
@@ -972,9 +983,13 @@ FTM_RET	FTOM_SHELL_CMD_quit
 	FTM_VOID_PTR 	pData
 )
 {
+	ASSERT(pShell != NULL);
+
+	FTOM_PTR	pFTOM = (FTOM_PTR)pShell->pData;
+
 	FTM_RET	xRet;
 
-	xRet = FTOM_stop();
+	xRet = FTOM_stop(pFTOM);
 	if (xRet == FTM_RET_OK)
 	{
 		return	FTM_RET_SHELL_QUIT;
