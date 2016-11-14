@@ -24,32 +24,12 @@ typedef	struct
 	FTM_CHAR		pDID[FTM_DID_LEN + 1];
 }	FTOM_CONFIG, _PTR_ FTOM_CONFIG_PTR;
 
-typedef	struct
-{
-	FTOM_CONFIG		xConfig;
-
-	FTOM_STATE		xState;
-	pthread_t		xThread;
-
-	FTM_BOOL		bStop;
-
-	FTM_LIST			xSubnetList;
-	FTOM_MSG_QUEUE_PTR	pMsgQ;
-
-	FTOM_SERVICE_MANAGER	xServiceManager;
-}	FTOM, _PTR_ FTOM_PTR;
-
 typedef	struct FTOM_EPM_STRUCT 			_PTR_ FTOM_EPM_PTR;
 typedef struct FTOM_TRIGGERM_STRUCT 	_PTR_ FTOM_TRIGGERM_PTR;
 typedef struct FTOM_ACTIONM_STRUCT 		_PTR_ FTOM_ACTIONM_PTR;
 typedef struct FTOM_RULEM_STRUCT 		_PTR_ FTOM_RULEM_PTR;
 
-typedef	FTM_RET	(*FTOM_MESSAGE_CB_FUNC)(FTOM_MSG_PTR pMsg, FTM_VOID_PTR pData);
-typedef	struct
-{
-	FTOM_MESSAGE_CB_FUNC	fCallback;
-	FTM_VOID_PTR			pData;
-}	FTOM_MESSAGE_CB, _PTR_ FTOM_MESSAGE_CB_PTR;
+typedef	FTM_RET	(*FTOM_ON_MESSAGE_CALLBACK)(FTOM_MSG_PTR pMsg, FTM_VOID_PTR pData);
 
 FTM_CHAR_PTR	FTOM_getProgramName
 (
@@ -61,67 +41,53 @@ pid_t	FTOM_getPID
 	FTM_VOID
 );
 
-FTM_RET	FTOM_create
-(
-	FTOM_PTR _PTR_ ppFTOM
-);
-
-FTM_RET	FTOM_destroy
-(
-	FTOM_PTR _PTR_ ppFTOM
-);
-
 FTM_RET	FTOM_init
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET	FTOM_final
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET	FTOM_loadConfigFromFile
 (
-	FTOM_PTR		pFTOM,
 	FTM_CHAR_PTR 	pConfigFileName
 );
 
 FTM_RET	FTOM_saveConfigToFile
 (
-	FTOM_PTR		pFTOM,
 	FTM_CHAR_PTR	pFileName
 );
 
 FTM_RET	FTOM_loadConfig
 (
-	FTOM_PTR		pFTOM,
 	FTM_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTOM_showConfig
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET FTOM_start
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET FTOM_stop
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET FTOM_waitingForFinished
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET	FTOM_getDID
 (
-	FTOM_PTR		pFTOM,
 	FTM_CHAR_PTR 	pBuff, 
 	FTM_ULONG 		ulBuffLen
 );
@@ -402,6 +368,20 @@ FTM_RET	FTOM_nodeDiscovery
 	FTM_USHORT		usPort
 );
 
+FTM_RET	FTOM_SYS_EP_publishStatus
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL		bStatus,
+	FTM_ULONG		ulTimeout
+);
+
+FTM_RET	FTOM_SYS_EP_publishData
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulCount
+);
+
 FTM_RET	FTOM_sendAlert
 (
 	FTM_CHAR_PTR	pEPID,
@@ -457,11 +437,11 @@ FTM_RET	FTOM_sendMessage
 
 FTM_RET	FTOM_setMessageCallback
 (
-	FTOM_PTR				pFTOM,
-	FTOM_MSG_TYPE 			xMsg, 
-	FTOM_MESSAGE_CB_FUNC	fMessageCB,
-	FTM_VOID_PTR			pData,
-	FTOM_MESSAGE_CB_PTR		pOldCB
+	FTOM_MSG_TYPE 	xMsg, 
+	FTOM_ON_MESSAGE_CALLBACK	fMessageCB,
+	FTM_VOID_PTR				pData,
+	FTOM_ON_MESSAGE_CALLBACK _PTR_	pOldCB,
+	FTM_VOID_PTR _PTR_			pOldData
 );
 
 FTM_RET	FTOM_NOTIFY_SNMPTrap

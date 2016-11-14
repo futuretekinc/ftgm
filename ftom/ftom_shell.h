@@ -5,7 +5,6 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include "ftom.h"
 #include "ftm_shell.h"
 #include "ftom_service.h"
 
@@ -29,8 +28,7 @@ FTM_RET	FTOM_SHELL_destroy
 
 FTM_RET	FTOM_SHELL_init
 (
-	FTOM_SHELL_PTR 	pShell,
-	FTOM_PTR		pFTOM
+	FTOM_SHELL_PTR 	pShell
 );
 
 FTM_RET	FTOM_SHELL_final

@@ -37,38 +37,37 @@ FTM_VOID_PTR	FTOM_process
 
 FTM_RET			FTOM_TASK_startService
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET			FTOM_TASK_stopService
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET			FTOM_TASK_sync
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET			FTOM_TASK_start
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET			FTOM_TASK_stop
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 FTM_RET			FTOM_TASK_processing
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 );
 
 static 
 FTM_RET	FTOM_onQuit
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_TIME_SYNC_PTR	pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -76,7 +75,6 @@ FTM_RET	FTOM_onQuit
 static 
 FTM_RET	FTOM_onGWStatus
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_GW_STATUS_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -84,7 +82,6 @@ FTM_RET	FTOM_onGWStatus
 static 
 FTM_RET	FTOM_onTimeSync
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_TIME_SYNC_PTR	pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -92,7 +89,6 @@ FTM_RET	FTOM_onTimeSync
 static 
 FTM_RET	FTOM_onEPCtrl
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_EP_CTRL_PTR	pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -100,7 +96,6 @@ FTM_RET	FTOM_onEPCtrl
 static 
 FTM_RET	FTOM_onEPStatus
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_EP_STATUS_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -108,7 +103,6 @@ FTM_RET	FTOM_onEPStatus
 static 
 FTM_RET	FTOM_onEPData
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_EP_DATA_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -116,7 +110,6 @@ FTM_RET	FTOM_onEPData
 static 
 FTM_RET	FTOM_onRule
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_RULE_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -124,7 +117,6 @@ FTM_RET	FTOM_onRule
 static 
 FTM_RET	FTOM_onAlert
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_ALERT_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -132,7 +124,6 @@ FTM_RET	FTOM_onAlert
 static 
 FTM_RET	FTOM_onDiscovery
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_DISCOVERY_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -140,7 +131,6 @@ FTM_RET	FTOM_onDiscovery
 static 
 FTM_RET	FTOM_onDiscoveryInfo
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_DISCOVERY_INFO_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -148,7 +138,6 @@ FTM_RET	FTOM_onDiscoveryInfo
 static 
 FTM_RET	FTOM_onDiscoveryDone
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_DISCOVERY_DONE_PTR pMsg,
 	FTM_VOID_PTR		pData
 );
@@ -244,53 +233,18 @@ static 	FTOM_SERVICE	pServices[] =
 extern char *program_invocation_short_name;
 FTOM_CONFIG			xConfig;
 
-FTOM_MESSAGE_CB		onMessageCBs[FTOM_MSG_TYPE_MAX] = 
-{
-	[FTOM_MSG_TYPE_QUIT] = 
-	{
-		.fCallback = (FTOM_MESSAGE_CB_FUNC)FTOM_onQuit
-	},
-	[FTOM_MSG_TYPE_GW_STATUS]		= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onGWStatus
-	},
-	[FTOM_MSG_TYPE_EP_STATUS] 		= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onEPStatus
-	},
-	[FTOM_MSG_TYPE_EP_DATA] 		= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onEPData
-	},
-	[FTOM_MSG_TYPE_TIME_SYNC] 		= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onTimeSync
-	},
-	[FTOM_MSG_TYPE_EP_CTRL] 		= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onEPCtrl
-	},
-	[FTOM_MSG_TYPE_RULE] 			= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onRule
-	},
-	[FTOM_MSG_TYPE_ALERT] 			= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onAlert
-	},
-	[FTOM_MSG_TYPE_DISCOVERY] 		= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onDiscovery
-	},
-	[FTOM_MSG_TYPE_DISCOVERY_INFO]	= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onDiscoveryInfo
-	},
-	[FTOM_MSG_TYPE_DISCOVERY_DONE]	= 
-	{
-		.fCallback	= (FTOM_MESSAGE_CB_FUNC)FTOM_onDiscoveryDone
-	}
-};
+FTOM_STATE			xState;
+pthread_t			xThread;
+
+FTM_BOOL			bStop;
+
+FTOM_MSG_QUEUE_PTR	pMsgQ;
+FTM_SHELL			xShell;
+
+FTM_LIST			xSubnetList;
+
+FTOM_ON_MESSAGE_CALLBACK	onMessage[FTOM_MSG_TYPE_MAX];
+FTM_VOID_PTR				pOnMessageData[FTOM_MSG_TYPE_MAX];
 
 FTM_CHAR_PTR	FTOM_getProgramName
 (
@@ -308,60 +262,31 @@ pid_t	FTOM_getPID
 	return	getpid();
 }
 
-FTM_RET	FTOM_create
-(
-	FTOM_PTR _PTR_ ppFTOM
-)
-{
-	ASSERT(ppFTOM != NULL);
-
-	FTOM_PTR	pFTOM;
-
-	pFTOM = (FTOM_PTR)FTM_MEM_malloc(sizeof(FTOM));
-	if (pFTOM == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
-
-	*ppFTOM = pFTOM;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_destroy
-(
-	FTOM_PTR _PTR_ ppFTOM
-)
-{
-	ASSERT(ppFTOM != NULL);
-
-	if (*ppFTOM != NULL)
-	{
-		FTM_MEM_free(*ppFTOM);
-
-		*ppFTOM = NULL;
-	}
-
-	return	FTM_RET_OK;
-}
-
 FTM_RET	FTOM_init
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
-	ASSERT(pFTOM != NULL);
-
-	FTM_RET		xRet;
-	FTM_INT32	i;
+	FTM_RET	xRet;
 
 	FTOM_getDefaultDeviceID(xConfig.pDID);
 	TRACE("DID : %s\n", xConfig.pDID);
 
-	pFTOM->bStop = FTM_TRUE;
+	bStop = FTM_TRUE;
 
+	onMessage[FTOM_MSG_TYPE_QUIT] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onQuit;
+	onMessage[FTOM_MSG_TYPE_GW_STATUS]		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onGWStatus;
+	onMessage[FTOM_MSG_TYPE_EP_STATUS] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPStatus;
+	onMessage[FTOM_MSG_TYPE_EP_DATA] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPData;
+	onMessage[FTOM_MSG_TYPE_TIME_SYNC] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onTimeSync;
+	onMessage[FTOM_MSG_TYPE_EP_CTRL] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onEPCtrl;
+	onMessage[FTOM_MSG_TYPE_RULE] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onRule;
+	onMessage[FTOM_MSG_TYPE_ALERT] 			= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onAlert;
+	onMessage[FTOM_MSG_TYPE_DISCOVERY] 		= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscovery;
+	onMessage[FTOM_MSG_TYPE_DISCOVERY_INFO]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryInfo;
+	onMessage[FTOM_MSG_TYPE_DISCOVERY_DONE]	= (FTOM_ON_MESSAGE_CALLBACK)FTOM_onDiscoveryDone;
 
-	xRet = FTM_LIST_init(&pFTOM->xSubnetList);
+	xRet = FTM_LIST_init(&xSubnetList);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Failed to initialize list!\n");	
@@ -373,7 +298,7 @@ FTM_RET	FTOM_init
 		ERROR2(xRet,"Failed to initialize logger!\n");	
 	}
 
-	xRet = FTOM_MSGQ_create(&pFTOM->pMsgQ);
+	xRet = FTOM_MSGQ_create(&pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Message queue creation failed.\n");
@@ -415,17 +340,7 @@ FTM_RET	FTOM_init
 		goto error;
 	}
 
-	xRet = FTOM_SERVICE_init(&pFTOM->xServiceManager);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet,"Service management init failed.\n");
-		goto error;
-	}
-
-	for(i = 0 ; i < (sizeof(pServices) / sizeof(FTOM_SERVICE)); i++)
-	{
-		FTOM_SERVICE_register(&pFTOM->xServiceManager, &pServices[i]);
-	}
+	FTOM_SERVICE_init(pServices, sizeof(pServices) / sizeof(FTOM_SERVICE));
 	TRACE("initialization done.\n");
 
 	return	FTM_RET_OK;
@@ -437,9 +352,9 @@ error:
 		FTOM_EP_final();
 		FTOM_NODE_MODULE_final();
 	
-		if (pFTOM->pMsgQ!= NULL)
+		if (pMsgQ!= NULL)
 		{
-			FTOM_MSGQ_destroy(&pFTOM->pMsgQ);
+			FTOM_MSGQ_destroy(&pMsgQ);
 		}
 	
 
@@ -448,12 +363,12 @@ error:
 
 FTM_RET	FTOM_final
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
 	FTM_RET	xRet;
 
-	xRet = FTOM_SERVICE_final(&pFTOM->xServiceManager);
+	xRet = FTOM_SERVICE_final();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to finalize service!\n");
@@ -465,7 +380,7 @@ FTM_RET	FTOM_final
 		ERROR2(xRet, "Failed to finalize rule.\n");
 	}
 
-	xRet = FTOM_MSGQ_destroy(&pFTOM->pMsgQ);
+	xRet = FTOM_MSGQ_destroy(&pMsgQ);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to destroy Message queue.\n");
@@ -501,19 +416,19 @@ FTM_RET	FTOM_final
 		ERROR2(xRet,"Failed to finalize logger!\n");	
 	}
 
-	xRet =FTM_LIST_iteratorStart(&pFTOM->xSubnetList);
+	xRet =FTM_LIST_iteratorStart(&xSubnetList);
 	if (xRet == FTM_RET_OK)
 	{
 		FTOM_SUBNET_PTR	pSubnet;
 	
-		while(FTM_LIST_iteratorNext(&pFTOM->xSubnetList, (FTM_VOID_PTR _PTR_)&pSubnet) == FTM_RET_OK)
+		while(FTM_LIST_iteratorNext(&xSubnetList, (FTM_VOID_PTR _PTR_)&pSubnet) == FTM_RET_OK)
 		{
-			FTM_LIST_remove(&pFTOM->xSubnetList, pSubnet);	
+			FTM_LIST_remove(&xSubnetList, pSubnet);	
 			FTM_MEM_free(pSubnet);
 		}
 	}
 
-	FTM_LIST_final(&pFTOM->xSubnetList);
+	FTM_LIST_final(&xSubnetList);
 
 	TRACE("Finalize done.\n");
 
@@ -522,7 +437,6 @@ FTM_RET	FTOM_final
 
 FTM_RET	FTOM_loadConfig
 (
-	FTOM_PTR		pFTOM,
 	FTM_CONFIG_PTR	pConfig
 )
 {
@@ -572,7 +486,7 @@ FTM_RET	FTOM_loadConfig
 					strncpy(pSubnet->pIP, pNet, sizeof(pNet) - 1);
 					pSubnet->usPort = usPort;
 
-					xRet = FTM_LIST_append(&pFTOM->xSubnetList, pSubnet);
+					xRet = FTM_LIST_append(&xSubnetList, pSubnet);
 					if (xRet != FTM_RET_OK)
 					{
 						FTM_MEM_free(pSubnet);	
@@ -588,13 +502,10 @@ FTM_RET	FTOM_loadConfig
 
 FTM_RET	FTOM_loadConfigFromFile
 (
-	FTOM_PTR		pFTOM,
 	FTM_CHAR_PTR 	pFileName
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pFileName != NULL);
-
 	FTM_RET	xRet;
 	FTM_CONFIG_PTR		pConfig;
 
@@ -605,13 +516,13 @@ FTM_RET	FTOM_loadConfigFromFile
 		return	xRet;	
 	}
 
-	xRet = FTOM_loadConfig(pFTOM, pConfig);
+	xRet = FTOM_loadConfig(pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to load configuration[%s]\n", pFileName);
 	}
 
-	xRet = FTOM_SERVICE_loadConfig(&pFTOM->xServiceManager, FTOM_SERVICE_ALL, pConfig);
+	xRet = FTOM_SERVICE_loadConfig(FTOM_SERVICE_ALL, pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to load configuration from file[%s]\n", pFileName);
@@ -632,16 +543,13 @@ FTM_RET	FTOM_loadConfigFromFile
 
 FTM_RET	FTOM_saveConfigToFile
 (
-	FTOM_PTR		pFTOM,
 	FTM_CHAR_PTR	pFileName
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pFileName != NULL);
-
 	FTM_RET	xRet;
 
-	xRet =FTOM_SERVICE_saveConfigToFile(&pFTOM->xServiceManager, FTOM_SERVICE_ALL, pFileName);
+	xRet =FTOM_SERVICE_saveConfigToFile(FTOM_SERVICE_ALL, pFileName);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to save configuration to file[%s]\n", pFileName);
@@ -654,29 +562,25 @@ FTM_RET	FTOM_saveConfigToFile
 
 FTM_RET	FTOM_showConfig
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
-	ASSERT(pFTOM != NULL);
-
-	FTOM_SERVICE_showConfig(&pFTOM->xServiceManager, FTOM_SERVICE_ALL);
+	FTOM_SERVICE_showConfig(FTOM_SERVICE_ALL);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET FTOM_start
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
-	ASSERT(pFTOM != NULL);
-
-	if (!pFTOM->bStop)
+	if (!bStop)
 	{
 		return	FTM_RET_ALREADY_STARTED;	
 	}
 
-	if (pthread_create(&pFTOM->xThread, NULL, FTOM_process, pFTOM) < 0)
+	if (pthread_create(&xThread, NULL, FTOM_process, NULL) < 0)
 	{
 		return	FTM_RET_ERROR;	
 	}
@@ -686,31 +590,27 @@ FTM_RET FTOM_start
 
 FTM_RET FTOM_stop
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
-	ASSERT(pFTOM != NULL);
-
-	if (pFTOM->bStop)
+	if (bStop)
 	{
 		WARN("Not started\n");
 		return	FTM_RET_NOT_START;	
 	}
 
-	pFTOM->bStop = FTM_TRUE;
-	pthread_join(pFTOM->xThread, NULL);
+	bStop = FTM_TRUE;
+	pthread_join(xThread, NULL);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET FTOM_waitingForFinished
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
-	ASSERT(pFTOM != NULL);
-
-	pthread_join(pFTOM->xThread, NULL);
+	pthread_join(xThread, NULL);
 
 	return	FTM_RET_OK;
 }
@@ -720,47 +620,43 @@ FTM_VOID_PTR	FTOM_process
 	FTM_VOID_PTR 	pData
 )
 {
-	ASSERT(pData != NULL);
+	xState = FTOM_STATE_INITIALIZED;
+	bStop	= FTM_FALSE;
 
-	FTOM_PTR	pFTOM = (FTOM_PTR)pData;
-
-	pFTOM->xState = FTOM_STATE_INITIALIZED;
-	pFTOM->bStop	= FTM_FALSE;
-
-	while(!pFTOM->bStop)
+	while(!bStop)
 	{
-		switch(pFTOM->xState)
+		switch(xState)
 		{
 		case	FTOM_STATE_INITIALIZED:
 			{
-				FTOM_TASK_startService(pFTOM);
+				FTOM_TASK_startService();
 			}
 			break;
 
 		case	FTOM_STATE_CONNECTED:
 			{
-				FTOM_TASK_sync(pFTOM);
+				FTOM_TASK_sync();
 			}
 			break;
 
 		case	FTOM_STATE_SYNCHRONIZED:
 			{
-				FTOM_TASK_start(pFTOM);	
+				FTOM_TASK_start();	
 			}
 			break;
 
 		case	FTOM_STATE_PROCESSING:
 			{
-				FTOM_TASK_processing(pFTOM);	
+				FTOM_TASK_processing();	
 			}
 			break;
 		}
 	}
 
-	if (pFTOM->xState == FTOM_STATE_PROCESSING)
+	if (xState == FTOM_STATE_PROCESSING)
 	{
-		FTOM_TASK_stopService(pFTOM);	
-		FTOM_TASK_stop(pFTOM);	
+		FTOM_TASK_stopService();	
+		FTOM_TASK_stop();	
 	}
 
 	TRACE("finished.\n");
@@ -769,31 +665,27 @@ FTM_VOID_PTR	FTOM_process
 
 FTM_RET	FTOM_TASK_startService
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
-	ASSERT(pFTOM != NULL);
+	FTOM_SERVICE_start(FTOM_SERVICE_ALL);
 
-	FTOM_SERVICE_start(&pFTOM->xServiceManager, FTOM_SERVICE_ALL);
-
-	pFTOM->xState = FTOM_STATE_CONNECTED;
+	xState = FTOM_STATE_CONNECTED;
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_TASK_sync
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
-	ASSERT(pFTOM != NULL);
-
 	FTM_RET			xRet;
 	FTM_BOOL		bConnected = FTM_FALSE;
 	FTM_ULONG		ulCount = 0, i;
 	FTOM_SERVICE_PTR	pService;
 
-	xRet = FTOM_SERVICE_get(&pFTOM->xServiceManager, FTOM_SERVICE_DMC, &pService);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -1075,16 +967,16 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
-	pFTOM->xState = FTOM_STATE_SYNCHRONIZED;
-
+	xState = FTOM_STATE_SYNCHRONIZED;
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_TASK_start
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
+	FTM_RET		xRet;
 	FTM_ULONG	i, ulCount;
 	
 	FTOM_RULE_start(NULL);
@@ -1102,18 +994,16 @@ FTM_RET	FTOM_TASK_start
 		}
 	}
 
-	pFTOM->xState = FTOM_STATE_PROCESSING;
+	xState = FTOM_STATE_PROCESSING;
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_TASK_processing
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
-	ASSERT(pFTOM != NULL);
-
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg = NULL;
 	FTM_TIMER		xLoopTimer;
@@ -1127,23 +1017,23 @@ FTM_RET	FTOM_TASK_processing
 		return	0;	
 	}
 
-	xRet = FTOM_SERVICE_sendMessage(&pFTOM->xServiceManager, FTOM_SERVICE_ALL, pMsg);
+	xRet = FTOM_SERVICE_sendMessage(FTOM_SERVICE_ALL, pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		FTOM_MSG_destroy(&pMsg);	
 	}
 
-	while(!pFTOM->bStop)
+	while(!bStop)
 	{
 		FTM_ULONG	ulRemainTime;
 		
 		FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
-		xRet = FTOM_MSGQ_timedPop(pFTOM->pMsgQ, ulRemainTime, &pMsg);
+		xRet = FTOM_MSGQ_timedPop(pMsgQ, ulRemainTime, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
-			if ((pMsg->xType < FTOM_MSG_TYPE_MAX) && (onMessageCBs[pMsg->xType].fCallback != NULL))
+			if ((pMsg->xType < FTOM_MSG_TYPE_MAX) && (onMessage[pMsg->xType] != NULL))
 			{
-				xRet = onMessageCBs[pMsg->xType].fCallback(pMsg, onMessageCBs[pMsg->xType].pData);
+				xRet = onMessage[pMsg->xType](pMsg, pOnMessageData[pMsg->xType]);
 			}
 			else
 			{
@@ -1164,7 +1054,7 @@ FTM_RET	FTOM_TASK_processing
 
 FTM_RET	FTOM_TASK_stop
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
 	FTM_ULONG	i, ulCount;
@@ -1199,42 +1089,33 @@ FTM_RET	FTOM_TASK_stop
 
 FTM_RET	FTOM_TASK_stopService
 (
-	FTOM_PTR	pFTOM
+	FTM_VOID
 )
 {
-	ASSERT(pFTOM != NULL);
-
-	FTOM_SERVICE_stop(&pFTOM->xServiceManager, FTOM_SERVICE_ALL);
+	FTOM_SERVICE_stop(FTOM_SERVICE_ALL);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_onQuit
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_TIME_SYNC_PTR	pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
-	ASSERT(pMsg != NULL);
-
-	pFTOM->bStop = FTM_TRUE;
-	pFTOM->xState = FTOM_STATE_STOPED;
+	bStop = FTM_TRUE;
+	xState = FTOM_STATE_STOPED;
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_onTimeSync
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_TIME_SYNC_PTR	pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pMsg != NULL);
-
 
 	TRACE("Time Sync - %d\n", pMsg->ulTime);
 
@@ -1243,14 +1124,10 @@ FTM_RET	FTOM_onTimeSync
 
 FTM_RET	FTOM_onEPCtrl
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_EP_CTRL_PTR	pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
-	ASSERT(pMsg != NULL);
-
 	FTM_RET			xRet;
 	FTOM_EP_PTR		pEP;
 	FTM_EP_DATA		xData;
@@ -1279,20 +1156,17 @@ FTM_RET	FTOM_onEPCtrl
  **********************************************************************/
 FTM_RET	FTOM_onGWStatus
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_GW_STATUS_PTR pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pMsg != NULL);
-
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
 	FTOM_MSG_PTR	pNewMsg;
 	FTM_BOOL		bRun = FTM_FALSE;
 
-	xRet = FTOM_SERVICE_get(&pFTOM->xServiceManager, FTOM_SERVICE_SERVER, &pService);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Service[SERVER] not found\n");
@@ -1322,20 +1196,17 @@ FTM_RET	FTOM_onGWStatus
 
 FTM_RET	FTOM_onEPStatus
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_EP_STATUS_PTR pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pMsg != NULL);
-
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
 	FTOM_MSG_PTR	pNewMsg;
 	FTM_BOOL		bRun = FTM_FALSE;
 
-	xRet = FTOM_SERVICE_get(&pFTOM->xServiceManager, FTOM_SERVICE_SERVER, &pService);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Service[SERVER] not found\n");
@@ -1380,20 +1251,17 @@ FTM_RET	FTOM_onEPStatus
 
 FTM_RET	FTOM_onEPData
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_EP_DATA_PTR pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pMsg != NULL);
-
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
 	FTOM_MSG_PTR	pNewMsg;
 	FTM_BOOL		bRun = FTM_FALSE;
 
-	xRet = FTOM_SERVICE_get(&pFTOM->xServiceManager, FTOM_SERVICE_SERVER, &pService);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SERVER, &pService);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Service[SERVER] not found\n");
@@ -1438,12 +1306,10 @@ FTM_RET	FTOM_onEPData
 
 FTM_RET	FTOM_onRule
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_RULE_PTR pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pMsg != NULL);
 
 	TRACE("RULE[%s] is %s\n", pMsg->pRuleID, (pMsg->xRuleState == FTM_RULE_STATE_ACTIVATE)?"ACTIVATE":"DEACTIVATE");
@@ -1453,14 +1319,11 @@ FTM_RET	FTOM_onRule
 
 FTM_RET	FTOM_onAlert
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_ALERT_PTR	pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pMsg != NULL);
-
 	FTM_RET		xRet;
 	FTOM_EP_PTR	pEP;
 
@@ -1482,18 +1345,15 @@ FTM_RET	FTOM_onAlert
 
 FTM_RET	FTOM_onDiscovery
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_DISCOVERY_PTR	pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pMsg != NULL);
-
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
 	
-	xRet = FTOM_SERVICE_get(&pFTOM->xServiceManager, FTOM_SERVICE_DISCOVERY, &pService);
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -1506,12 +1366,10 @@ FTM_RET	FTOM_onDiscovery
 
 FTM_RET	FTOM_onDiscoveryInfo
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_DISCOVERY_INFO_PTR	pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pMsg != NULL);
 	
 	FTM_INT	i;
@@ -1527,14 +1385,12 @@ FTM_RET	FTOM_onDiscoveryInfo
 
 FTM_RET	FTOM_onDiscoveryDone
 (
-	FTOM_PTR		pFTOM,
 	FTOM_MSG_DISCOVERY_DONE_PTR	pMsg,
 	FTM_VOID_PTR		pData
 )
 {
-	ASSERT(pFTOM != NULL);
 	ASSERT(pMsg != NULL);
-
+	
 	TRACE("Discovery Done!\n");
 	FTM_INT	i;
 
@@ -1553,15 +1409,15 @@ FTM_RET	FTOM_onDiscoveryDone
 
 FTM_RET	FTOM_setMessageCallback
 (
-	FTOM_PTR				pFTOM,
-	FTOM_MSG_TYPE 			xMsg, 
-	FTOM_MESSAGE_CB_FUNC	fCallback,
-	FTM_VOID_PTR			pData,
-	FTOM_MESSAGE_CB_PTR 	pOldCB
+	FTOM_MSG_TYPE 				xMsg, 
+	FTOM_ON_MESSAGE_CALLBACK	fMessageCB,
+	FTM_VOID_PTR				pData,
+	FTOM_ON_MESSAGE_CALLBACK _PTR_	pOldCB,
+	FTM_VOID_PTR _PTR_	ppOldData
 
 )
 {
-	ASSERT(fCallback != NULL);
+	ASSERT(fMessageCB != NULL);
 
 	if (xMsg >= FTOM_MSG_TYPE_MAX)
 	{
@@ -1571,19 +1427,22 @@ FTM_RET	FTOM_setMessageCallback
 
 	if (pOldCB != NULL)
 	{
-		pOldCB->fCallback 	= onMessageCBs[xMsg].fCallback;
-		pOldCB->pData		= onMessageCBs[xMsg].pData;
+		*pOldCB = onMessage[xMsg];
 	}
 
-	onMessageCBs[xMsg].fCallback= fCallback;
-	onMessageCBs[xMsg].pData	= pData;
+	if (ppOldData != NULL)
+	{
+		*ppOldData = pOnMessageData[xMsg];
+	}
+
+	onMessage[xMsg] = fMessageCB;
+	pOnMessageData[xMsg] = pData;
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_getDID
 (
-	FTOM_PTR		pFTOM,
 	FTM_CHAR_PTR 	pBuff, 
 	FTM_ULONG 		ulBuffLen
 )
@@ -2128,6 +1987,66 @@ FTM_RET	FTOM_DB_EP_addData
 	}
 
 	return	xRet;
+}
+
+FTM_RET	FTOM_SYS_EP_publishStatus
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL		bStatus,
+	FTM_ULONG		ulTimeout
+)
+{
+	FTM_RET			xRet;
+	FTOM_MSG_PTR	pMsg;
+
+	xRet = FTOM_MSG_createEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Send EP data message creation failed.\n");
+		return	xRet;	
+	}
+
+
+	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet,"Message push error!\n");
+		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_SYS_EP_publishData
+(
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pData,
+	FTM_ULONG		ulCount
+)
+{
+	ASSERT(pData != NULL);
+
+	FTM_RET			xRet;
+	FTOM_MSG_PTR	pMsg;
+
+	xRet = FTOM_MSG_createEPData(pEPID, pData, ulCount, &pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		WARN("Send EP data message creation failed.\n");
+		return	xRet;	
+	}
+
+
+	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet,"Message push error!\n");
+		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
+		return	xRet;
+	}
+
+	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_DB_EP_getDataCount
@@ -2755,7 +2674,7 @@ FTM_RET	FTOM_sendAlert
 		return	xRet;	
 	}
 
-	xRet = FTOM_MSGQ_push(pFTOM->pMsgQ, (FTOM_MSG_PTR)pMsg);
+	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Message push error!\n");
@@ -2788,7 +2707,7 @@ FTM_RET	FTOM_receivedDiscovery
 		return	xRet;	
 	}
 
-	xRet = FTOM_MSGQ_push(pFTOM->pMsgQ, (FTOM_MSG_PTR)pMsg);
+	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Message push error!\n");
@@ -2818,7 +2737,7 @@ FTM_RET	FTOM_discoveryStart
 		return	xRet;	
 	}
 
-	xRet = FTOM_MSGQ_push(pFTOM->pMsgQ, (FTOM_MSG_PTR)pMsg);
+	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Message push error!\n");
@@ -2974,7 +2893,7 @@ FTM_RET	FTOM_sendMessage
 	if ((xRet != FTM_RET_OK) || (pService->fSendMessage == NULL))
 	{
 		ERROR2(xRet, "Send message not supported on service[%d]\n", xService);
-		xRet = FTOM_MSGQ_push(pFTOM->pMsgQ, pMsg);
+		xRet = FTOM_MSGQ_push(pMsgQ, pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to send message to main!\n");	

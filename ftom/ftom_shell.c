@@ -8,12 +8,20 @@ FTM_RET	FTOM_SHELL_create
 {
 	ASSERT(ppShell != NULL);
 
+	FTM_RET	xRet;
 	FTOM_SHELL_PTR	pShell;
 
 	pShell = (FTOM_SHELL_PTR)FTM_MEM_malloc(sizeof(FTOM_SHELL));
 	if (pShell == NULL)
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	xRet = FTOM_SHELL_init(pShell);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pShell);
+		return	xRet;	
 	}
 
 	*ppShell = pShell;
@@ -39,15 +47,14 @@ FTM_RET	FTOM_SHELL_destroy
 
 FTM_RET	FTOM_SHELL_init
 (
-	FTOM_SHELL_PTR 	pShell,
-	FTOM_PTR		pFTOM
+	FTOM_SHELL_PTR 	pShell
 )
 {
 	ASSERT(pShell != NULL);
 	
 	FTM_RET	xRet;
 
-	xRet = FTM_SHELL_init(&pShell->xShell, pFTOM);
+	xRet = FTM_SHELL_init(&pShell->xShell, NULL);
 	FTM_SHELL_setPrompt(&pShell->xShell, "FTOM> ");
 	if (xRet == FTM_RET_OK)
 	{

@@ -63,9 +63,7 @@ else
 CC=gcc
 CFLAGS= $(COMMON_CFLAGS) \
 		-I/usr/local/include \
-		-I/usr/local/include/cjson \
-		-I$(TARGET)/usr/local/include\
-		-I$(TARGET)/usr/local/include/cjson
+		-I/usr/local/include/cjson 
 
 LDFLAGS= -L/usr/local/lib \
 		$(COMMON_LDFLAGS)\

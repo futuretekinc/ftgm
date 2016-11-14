@@ -15,7 +15,6 @@ FTM_VOID	FTOM_usage
 	FTM_VOID
 );
 
-
 int main(int nArgc, char *pArgv[])
 {
 	FTM_RET		xRet;
@@ -24,7 +23,6 @@ int main(int nArgc, char *pArgv[])
 	FTM_ULONG	ulDebugLevel = FTM_TRACE_LEVEL_ERROR;
 	FTM_CHAR	pConfigFileName[1024];
 	FTM_CONFIG_PTR		pConfig;
-	FTOM_PTR	pFTOM = NULL;
 
 	sprintf(pConfigFileName, "/etc/%s.conf", FTOM_getProgramName());
 
@@ -57,7 +55,6 @@ int main(int nArgc, char *pArgv[])
 	}
 
 	FTM_MEM_init();
-
 	FTM_TRACE_setLevel(FTM_TRACE_MODULE_ALL, ulDebugLevel);
 	//FTM_TRACE_setModule(0, FTM_TRUE);
 	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_FTOM,		"FTOM", 	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
@@ -98,14 +95,7 @@ int main(int nArgc, char *pArgv[])
 		goto finish2;
 	}
 
-	xRet = FTOM_create(&pFTOM);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "FTOM creation failed.\n");
-		goto finish2;
-	}
-
-	xRet = FTOM_init(pFTOM);
+	xRet = FTOM_init();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Can't create object manager!\n");
@@ -114,7 +104,7 @@ int main(int nArgc, char *pArgv[])
 		goto finish2;
 	}
 
-	xRet = FTOM_loadConfig(pFTOM, pConfig);
+	xRet = FTOM_loadConfig(pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to load configuration[%s]\n", pConfigFileName);
@@ -141,34 +131,26 @@ int main(int nArgc, char *pArgv[])
 		{
 			return	0;
 		}
-		FTOM_start(pFTOM);
-		FTOM_waitingForFinished(pFTOM);
+		FTOM_start();
+		FTOM_waitingForFinished();
 	}
 	else
 	{
-		FTOM_SHELL	xShell;
+		FTOM_SHELL_PTR pShell;
 
-		FTOM_start(pFTOM);
-
-		FTOM_SHELL_init(&xShell, pFTOM);
-		FTOM_SHELL_process(&xShell);
-		FTOM_SHELL_final(&xShell);
-
-		FTOM_waitingForFinished(pFTOM);
+		FTOM_start();
+		FTOM_SHELL_create(&pShell);
+		FTOM_SHELL_process(pShell);
+		FTOM_SHELL_destroy(&pShell);
+		FTOM_waitingForFinished();
 	}
 
 
 finish1:
-	FTOM_final(pFTOM);
+	FTOM_final();
 
 
 finish2:
-
-	if (pFTOM != NULL)
-	{
-		FTOM_destroy(&pFTOM);	
-	}
-
 	FTM_MEM_final();
 
 	return	0;

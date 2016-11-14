@@ -1,7 +1,10 @@
 #ifndef	_FTM_SERVICE_H_
 #define	_FTM_SERVICE_H_
 
+#include "ftm.h"
 #include "ftom_msg.h"
+
+typedef	struct FTOM_STRUCT _PTR_ FTOM_PTR;
 
 typedef	enum
 {
@@ -59,102 +62,85 @@ typedef	struct
 	FTM_RET						xRet;
 }	FTOM_SERVICE, _PTR_ FTOM_SERVICE_PTR;
 
-typedef	struct
-{
-	FTM_LIST_PTR	pServiceList;
-}	FTOM_SERVICE_MANAGER, _PTR_ FTOM_SERVICE_MANAGER_PTR;
-
 FTM_RET	FTOM_SERVICE_init
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager
+	FTOM_SERVICE_PTR pServices, 
+	FTM_ULONG ulCount
 );
 
 FTM_RET	FTOM_SERVICE_final
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager
+	FTM_VOID
 );
 
 FTM_RET	FTOM_SERVICE_loadConfig
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType,
 	FTM_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTOM_SERVICE_loadConfigFromFile
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType, 
 	FTM_CHAR_PTR 		pFileName
 );
 
 FTM_RET	FTOM_SERVICE_saveConfig
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType,
 	FTM_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTOM_SERVICE_saveConfigToFile
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType, 
 	FTM_CHAR_PTR 	  pFileName
 );
 
 FTM_RET	FTOM_SERVICE_showConfig
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType
 );
 
 FTM_RET	FTOM_SERVICE_start
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType
 );
 
 FTM_RET	FTOM_SERVICE_stop
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType
 );
 
 FTM_RET	FTOM_SERVICE_sendMessage
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType, 
 	FTOM_MSG_PTR 		pMsg
 );
 
 FTM_RET	FTOM_SERVICE_register
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_PTR pService
 );
 
 FTM_RET	FTOM_SERVICE_unregister
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType
 );
 
 FTM_RET FTOM_SERVICE_count
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTM_ULONG_PTR 	pulCount
 );
 
 FTM_RET FTOM_SERVICE_get
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTOM_SERVICE_TYPE xType, 
 	FTOM_SERVICE_PTR _PTR_ ppService
 );
 
 FTM_RET FTOM_SERVICE_getAt
 (
-	FTOM_SERVICE_MANAGER_PTR	pManager,
 	FTM_ULONG ulIndex, 
 	FTOM_SERVICE_PTR _PTR_ ppService
 );

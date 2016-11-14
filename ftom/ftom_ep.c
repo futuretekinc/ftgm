@@ -1256,6 +1256,73 @@ FTM_RET	FTOM_EP_remoteSetDataAsync
 	return	xRet;
 }
 
+#if 0
+FTM_RET	FTOM_EP_reportStatus
+(
+	FTOM_EP_PTR 	pEP
+)
+{
+	ASSERT(pEP != NULL);
+
+	return	FTOM_SYS_EP_publishStatus(pEP->xInfo.pEPID, !pEP->bStop, pEP->xInfo.ulReportInterval);
+}
+
+FTM_RET	FTOM_EP_reportDataInTime
+(
+	FTOM_EP_PTR 	pEP,
+	FTM_ULONG		ulStartTime,
+	FTM_ULONG		ulEndTime
+)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET			xRet;
+	FTM_EP_DATA_PTR	pData;
+	FTM_EP_DATA_PTR	pDataList;
+	FTM_INT			nIndex, nDataCount = 0, nCount = 0;
+	FTM_ULONG		ulListCount = 0;
+
+	FTM_LIST_iteratorStart(&pEP->xDataList);
+	while(FTM_LIST_iteratorNext(&pEP->xDataList, (FTM_VOID_PTR _PTR_)&pData) == FTM_RET_OK)
+	{
+		if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
+		{
+			nCount++;
+		}
+	}
+
+	if (nCount == 0)
+	{
+		return	FTM_RET_OK;
+	}
+
+	pDataList = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * nCount);
+	if (pDataList == NULL)
+	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY,"Not enough memory!\n");
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	FTM_LIST_count(&pEP->xDataList, &ulListCount);
+	for(nIndex = ulListCount - 1 ; nIndex >= 0 ; nIndex--)
+	{
+		xRet = FTM_LIST_getAt(&pEP->xDataList, nIndex, (FTM_VOID_PTR _PTR_)&pData);
+		if ((xRet == FTM_RET_OK) && (nDataCount < nCount))
+		{
+			if (ulStartTime < pData->ulTime && pData->ulTime <= ulEndTime)
+			{
+				memcpy(&pDataList[nDataCount++], pData, sizeof(FTM_EP_DATA));
+			}
+		}
+	}
+
+	xRet = FTOM_SYS_EP_publishData(pEP->xInfo.pEPID, pDataList, nDataCount);
+	FTM_MEM_free(pDataList);
+
+	return	xRet;
+}
+#endif
+
 FTM_RET	FTOM_EP_getEventCount
 (
 	FTOM_EP_PTR 	pEP, 
