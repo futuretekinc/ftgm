@@ -3397,7 +3397,7 @@ FTM_RET	FTOM_SERVER_LOG_getList
 
 	FTM_RET	xRet;
 
-	xRet = FTOM_LOGGER_getAt(pReq->ulIndex, pReq->ulCount, pResp->pLogs, &pResp->ulCount);
+	xRet = FTOM_getLogsAt(pReq->ulIndex, pReq->ulCount, pResp->pLogs, &pResp->ulCount);
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(FTOM_RESP_LOG_GET_LIST_PARAMS) + sizeof(FTM_LOG) * pResp->ulCount;
@@ -3422,7 +3422,7 @@ FTM_RET	FTOM_SERVER_LOG_count
 
 	FTM_RET	xRet;
 
-	xRet = FTOM_LOGGER_count(&pResp->ulCount);
+	xRet = FTOM_getLogCount(&pResp->ulCount);
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(FTOM_RESP_LOG_COUNT_PARAMS);
@@ -3447,7 +3447,7 @@ FTM_RET	FTOM_SERVER_LOG_del
 
 	FTM_RET	xRet;
 
-	xRet = FTOM_LOGGER_remove(pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+	xRet = FTOM_removeLogsFrom(pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(FTOM_RESP_LOG_DEL_PARAMS);

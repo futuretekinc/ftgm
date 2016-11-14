@@ -9,6 +9,9 @@
 #include "ftom_server.h"
 #include "ftom_snmpc.h"
 #include "ftom_node.h"
+#include "ftom_trigger.h"
+#include "ftom_action.h"
+#include "ftom_rule.h"
 #include "ftom_msg.h"
 
 typedef	FTM_ULONG	FTOM_STATE;
@@ -457,6 +460,87 @@ FTM_RET	FTOM_serverSync
 FTM_RET	FTOM_getDefaultUpdateInterval
 (
 	FTM_ULONG_PTR	pulUpdateInterval
+);
+
+FTM_RET	FTOM_addNodeCreationLog
+(
+	FTOM_NODE_PTR	pNode
+);
+
+FTM_RET	FTOM_addNodeRemovalLog
+(
+	FTM_CHAR_PTR	pDID
+);
+
+FTM_RET	FTOM_addEPCreationLog
+(
+	FTOM_EP_PTR		pEP
+);
+
+FTM_RET	FTOM_addEPRemovalLog
+(
+	FTM_CHAR_PTR	pEPID
+);
+
+FTM_RET	FTOM_addTriggerCreationLog
+(
+	FTOM_TRIGGER_PTR	pTrigger
+);
+
+FTM_RET	FTOM_addTriggerRemovalLog
+(
+	FTM_CHAR_PTR	pID
+);
+
+FTM_RET	FTOM_addActionCreationLog
+(
+	FTOM_ACTION_PTR	pAction
+);
+
+FTM_RET	FTOM_addActionRemovalLog
+(
+	FTM_CHAR_PTR	pID
+);
+
+FTM_RET	FTOM_addRuleCreationLog
+(
+	FTOM_RULE_PTR	pRule
+);
+
+FTM_RET	FTOM_addRuleRemovalLog
+(
+	FTM_CHAR_PTR	pID
+);
+
+FTM_RET	FTOM_addEventCreationLog
+(
+	FTOM_RULE_PTR	pRule,
+	FTM_BOOL		bOccurred
+);
+
+FTM_RET	FTOM_addRuleRemovalLog
+(
+	FTM_CHAR_PTR	pID
+);
+
+FTM_RET	FTOM_getLogCount
+(
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_getLogsAt
+(
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_LOG_PTR		pLogs,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTOM_removeLogsFrom
+(
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulCount
 );
 
 #endif

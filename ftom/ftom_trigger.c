@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "ftm.h"
+#include "ftom.h"
 #include "ftom_ep.h"
 #include "ftom_trigger.h"
 #include "ftom_action.h"
@@ -155,7 +156,7 @@ FTM_RET	FTOM_TRIGGER_create
 		}
 		else
 		{
-			FTOM_LOG_createTrigger(&pTrigger->xInfo);
+			FTOM_addTriggerCreationLog(&pTrigger->xInfo);
 		}
 	}
 
@@ -190,7 +191,7 @@ FTM_RET	FTOM_TRIGGER_destroy
 		}
 		else
 		{
-			FTOM_LOG_destroyTrigger(&(*ppTrigger)->xInfo);
+			FTOM_addTriggerRemovalLog((*ppTrigger)->xInfo.pID);
 		}
 	}
 

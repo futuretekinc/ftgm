@@ -359,7 +359,7 @@ FTM_VOID_PTR FTOM_DISCOVERY_process
 	return	0;
 }
 
-FTM_RET	FTOM_DISCOVERY_call
+FTM_RET	FTOM_DISCOVERY_startSearch
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,
 	FTM_CHAR_PTR		pNetwork,

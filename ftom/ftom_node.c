@@ -188,7 +188,7 @@ FTM_RET	FTOM_NODE_create
 			ERROR2(xRet, "Failed to add node[%s] to DB.\n", pNode->xInfo.pDID);
 		}
 
-		FTOM_LOG_createNode(&pNode->xInfo);
+		FTOM_addNodeCreationLog(&pNode->xInfo);
 	}
 
 	pNode->xState = FTOM_NODE_STATE_STOP;
@@ -241,7 +241,7 @@ FTM_RET	FTOM_NODE_destroy
 		{
 			ERROR2(xRet, "Failed to remove Node[%s] from DB.\n", (*ppNode)->xInfo.pDID);
 		}
-		FTOM_LOG_destroyNode(&(*ppNode)->xInfo);
+		FTOM_addNodeRemovalLog((*ppNode)->xInfo.pDID);
 	}
 
 	while((FTM_LIST_count(&(*ppNode)->xEPList, &ulCount) == FTM_RET_OK) && (ulCount != 0))

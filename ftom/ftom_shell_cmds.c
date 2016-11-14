@@ -1086,7 +1086,7 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 			FTM_INT		i;
 			FTM_ULONG	ulCount;
 
-			xRet = FTOM_discoveryStart("255.255.255.255", 1234, 1);
+			xRet = FTOM_DISCOVERY_startSearch(pService->pData, "255.255.255.255", 1234, 1);
 			if (xRet != FTM_RET_OK)
 			{
 				MESSAGE("Discovery request was failed[%08lx].\n", xRet);	
@@ -1134,7 +1134,7 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 
 			if (strcasecmp(pArgv[1], "start") == 0)
 			{
-				xRet = FTOM_discoveryStart("255.255.255.255", 1234, 1);
+				xRet = FTOM_DISCOVERY_startSearch(pService->pData, "255.255.255.255", 1234, 1);
 				if (xRet != FTM_RET_OK)
 				{
 					MESSAGE("Discovery request was failed[%08lx].\n", xRet);	
@@ -1211,7 +1211,7 @@ FTM_RET	FTOM_SHELL_CMD_log
 
 			pLogs = (FTM_LOG_PTR)FTM_MEM_malloc(sizeof(FTM_LOG) * ulCount);
 
-			xRet = FTOM_LOGGER_getAt(0, ulCount, pLogs, &ulGetCount);
+			xRet = FTOM_getLogsAt(0, ulCount, pLogs, &ulGetCount);
 			if (xRet != FTM_RET_OK)
 			{
 				MESSAGE("Failed to get log!\n");	
@@ -1245,7 +1245,7 @@ FTM_RET	FTOM_SHELL_CMD_log
 					break;	
 				}
 		
-				xRet = FTOM_LOGGER_remove(0, ulCount, &ulCount);
+				xRet = FTOM_removeLogsFrom(0, ulCount, &ulCount);
 				if(xRet == FTM_RET_OK)
 				{
 					MESSAGE("Removed %lu logs.\n", ulCount);
@@ -1276,7 +1276,7 @@ FTM_RET	FTOM_SHELL_CMD_log
 	
 				pLogs = (FTM_LOG_PTR)FTM_MEM_malloc(sizeof(FTM_LOG) * ulCount);
 	
-				xRet = FTOM_LOGGER_getAt(ulIndex, ulCount, pLogs, &ulCount);
+				xRet = FTOM_getLogsAt(ulIndex, ulCount, pLogs, &ulCount);
 				if (xRet != FTM_RET_OK)
 				{
 					MESSAGE("Failed to get log!\n");	

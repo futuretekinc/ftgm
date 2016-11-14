@@ -137,11 +137,11 @@ FTM_RET	FTOM_ACTION_create
 		}
 		else
 		{
-			FTOM_LOG_createAction(&pAction->xInfo);	
+			FTOM_addActionCreationLog(&pAction->xInfo);	
 		}
 	}
 
-	FTOM_LOG_createAction(&pAction->xInfo);
+	FTOM_addActionCreationLog(&pAction->xInfo);
 
 	*ppAction = pAction;
 
@@ -168,7 +168,7 @@ FTM_RET	FTOM_ACTION_destroy
 		}
 		else
 		{
-			FTOM_LOG_destroyAction(&(*ppAction)->xInfo);	
+			FTOM_addActionRemovalLog((*ppAction)->xInfo.pID);	
 		}
 	}
 

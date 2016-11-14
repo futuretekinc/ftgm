@@ -246,6 +246,8 @@ FTM_LIST			xSubnetList;
 FTOM_ON_MESSAGE_CALLBACK	onMessage[FTOM_MSG_TYPE_MAX];
 FTM_VOID_PTR				pOnMessageData[FTOM_MSG_TYPE_MAX];
 
+FTOM_LOG_MANAGER	xLogManager;
+
 FTM_CHAR_PTR	FTOM_getProgramName
 (
 	FTM_VOID
@@ -292,7 +294,7 @@ FTM_RET	FTOM_init
 		ERROR2(xRet,"Failed to initialize list!\n");	
 	}
 
-	xRet = FTOM_LOGGER_init();
+	xRet = FTOM_LOGGER_init(&xLogManager);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Failed to initialize logger!\n");	
@@ -410,7 +412,7 @@ FTM_RET	FTOM_final
 		ERROR2(xRet, "Failed to finalize Node!\n");	
 	}
 
-	xRet = FTOM_LOGGER_final();
+	xRet = FTOM_LOGGER_final(&xLogManager);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Failed to finalize logger!\n");	
@@ -976,7 +978,6 @@ FTM_RET	FTOM_TASK_start
 	FTM_VOID
 )
 {
-	FTM_RET		xRet;
 	FTM_ULONG	i, ulCount;
 	
 	FTOM_RULE_start(NULL);
@@ -1359,7 +1360,7 @@ FTM_RET	FTOM_onDiscovery
 		return	xRet;	
 	}
 
-	FTOM_DISCOVERY_call(pService->pData, pMsg->pNetwork, pMsg->usPort, pMsg->ulRetryCount);
+	FTOM_DISCOVERY_startSearch(pService->pData, pMsg->pNetwork, pMsg->usPort, pMsg->ulRetryCount);
 
 	return	FTM_RET_OK;
 }
@@ -2728,24 +2729,15 @@ FTM_RET	FTOM_discoveryStart
 	ASSERT(pNetwork != NULL);
 
 	FTM_RET	xRet;
-	FTOM_MSG_DISCOVERY_PTR	pMsg;
-
-	xRet = FTOM_MSG_createDiscovery(pNetwork, usPort, ulRetryCount, &pMsg);
+	FTOM_SERVICE_PTR pService;
+	
+	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet,"Discovery message creation failed.\n");
 		return	xRet;	
 	}
 
-	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet,"Message push error!\n");
-		FTOM_MSG_destroy((FTOM_MSG_PTR _PTR_)&pMsg);
-		return	xRet;
-	}
-
-	return	FTM_RET_OK;
+	return	FTOM_DISCOVERY_startSearch(pService->pData, pNetwork, usPort, ulRetryCount);
 }
 
 FTM_RET	FTOM_discoveryIsFinished
@@ -2961,5 +2953,361 @@ FTM_RET	FTOM_getDefaultUpdateInterval
 	*pulUpdateInterval = FTOM_DEFAULT_UPDATE_INTERVAL;
 
 	return	FTM_RET_OK;
+}
+
+
+/*********************************************************************
+ * Log messages
+ *********************************************************************/
+FTM_RET	FTOM_addNodeCreationLog
+(
+	FTOM_NODE_PTR	pNode
+)
+{
+	ASSERT(pNode != NULL);
+	
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_CREATE_NODE;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pNode->xInfo.pDID, FTM_DID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addNodeRemovalLog
+(
+	FTM_CHAR_PTR	pDID
+)
+{
+	ASSERT(pDID != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_DESTROY_NODE;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pDID, FTM_DID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addEPCreationLog
+(
+	FTOM_EP_PTR		pEP
+)
+{
+	ASSERT(pEP != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_CREATE_EP;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pEP->xInfo.pEPID, FTM_EPID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addEPRemovalLog
+(
+	FTM_CHAR_PTR	pEPID
+)
+{
+	ASSERT(pEPID != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_DESTROY_EP;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pEPID, FTM_DID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addTriggerCreationLog
+(
+	FTOM_TRIGGER_PTR	pTrigger
+)
+{
+	ASSERT(pTrigger != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_CREATE_TRIGGER;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pTrigger->xInfo.pID, FTM_ID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addTriggerRemovalLog
+(
+	FTM_CHAR_PTR	pID
+)
+{
+	ASSERT(pID != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_DESTROY_TRIGGER;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pID, FTM_DID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addActionCreationLog
+(
+	FTOM_ACTION_PTR	pAction
+)
+{
+	ASSERT(pAction != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_CREATE_ACTION;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pAction->xInfo.pID, FTM_ID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addActionRemovalLog
+(
+	FTM_CHAR_PTR	pID
+)
+{
+	ASSERT(pID != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_DESTROY_ACTION;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pID, FTM_DID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addRuleCreationLog
+(
+	FTOM_RULE_PTR	pRule
+)
+{
+	ASSERT(pRule != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_CREATE_RULE;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pRule->xInfo.pID, FTM_ID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getLogCount
+(
+	FTM_ULONG_PTR	pulCount
+)
+{
+	ASSERT(pulCount != NULL);
+
+	return	FTM_LOGGER_count(&xLogManager.xLogger, pulCount);
+}
+
+FTM_RET	FTOM_addRuleRemovalLog
+(
+	FTM_CHAR_PTR	pID
+)
+{
+	ASSERT(pID != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType = FTM_LOG_TYPE_DESTROY_RULE;
+	pLog->ulTime = time(NULL);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pID, FTM_DID_LEN);
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_addEventCreationLog
+(
+	FTOM_RULE_PTR	pRule,
+	FTM_BOOL		bOccurred
+)
+{
+	ASSERT(pRule != NULL);
+
+	FTM_RET		xRet;
+	FTM_LOG_PTR	pLog;
+
+	xRet = FTM_LOG_create(&pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	pLog->xType 	= FTM_LOG_TYPE_EVENT;
+	pLog->ulTime 	= time(NULL);
+	strncpy(pLog->xParams.xEvent.pRuleID, pRule->xInfo.pID, FTM_ID_LEN);
+	pLog->xParams.xEvent.bOccurred = bOccurred;
+
+	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_LOG_destroy(&pLog);
+	}
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_getLogsAt
+(
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_LOG_PTR		pLogs,
+	FTM_ULONG_PTR	pulCount
+)
+{
+	return	FTOM_LOGGER_getAt(&xLogManager, ulIndex, ulCount, pLogs, pulCount);
+}
+
+FTM_RET	FTOM_removeLogsFrom
+(
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulRemovedCount
+)
+{
+	return	FTOM_LOGGER_remove(&xLogManager, ulIndex, ulCount, pulRemovedCount);
 }
 

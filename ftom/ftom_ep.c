@@ -222,7 +222,7 @@ FTM_RET	FTOM_EP_create
 			ERROR2(xRet, "Failed to add EP[%s] to DB!\n", pEP->xInfo.pEPID);
 		}
 		
-		FTOM_LOG_createEP(pEP->xInfo.pEPID);
+		FTOM_addEPCreationLog(&pEP->xInfo);
 	}
 
 
@@ -276,7 +276,7 @@ FTM_RET	FTOM_EP_destroy
 		{
 			ERROR2(xRet, "Failed to remove EP[%s] from DB.\n", (*ppEP)->xInfo.pEPID);
 		}
-		FTOM_LOG_destroyEP((*ppEP)->xInfo.pEPID);
+		FTOM_addEPRemovalLog((*ppEP)->xInfo.pEPID);
 	}
 
 	xRet = FTM_LIST_remove(pEPList, *ppEP);

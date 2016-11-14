@@ -123,7 +123,6 @@ int main(int nArgc, char *pArgv[])
 	}
 
 	FTM_CONFIG_destroy(&pConfig);
-	//FTOM_loadConfigFromFile(pConfigFileName);
 
 	if (bDaemon)
 	{

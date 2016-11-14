@@ -150,7 +150,7 @@ FTM_RET	FTOM_RULE_create
 		}
 		else
 		{
-			FTOM_LOG_createRule(&pRule->xInfo);
+			FTOM_addRuleCreationLog(&pRule->xInfo);
 		}
 	}
 
@@ -182,7 +182,7 @@ FTM_RET	FTOM_RULE_destroy
 		}
 		else
 		{
-			FTOM_LOG_destroyRule(&(*ppRule)->xInfo);
+			FTOM_addRuleRemovalLog((*ppRule)->xInfo.pID);
 		}
 	}
 
@@ -353,14 +353,14 @@ FTM_VOID_PTR FTOM_RULE_process
 						if (pMsg->bActivation)
 						{
 							pRule->bActive = FTM_TRUE;
-							FTOM_LOG_event(&pRule->xInfo, FTM_TRUE);
+							FTOM_addEventCreationLog(&pRule->xInfo, FTM_TRUE);
 							INFO("The rule[%s] have been activated.\n", pMsg->pRuleID);
 						}
 						else
 						{
 						
 							pRule->bActive = FTM_FALSE;
-							FTOM_LOG_event(&pRule->xInfo, FTM_FALSE);
+							FTOM_addEventCreationLog(&pRule->xInfo, FTM_FALSE);
 							INFO("The rule[%s] have been disabled.\n", pMsg->pRuleID);
 						}
 

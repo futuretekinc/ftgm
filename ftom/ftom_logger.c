@@ -6,37 +6,19 @@
 #undef	__MODULE__
 #define	__MODULE__	FTOM_TRACE_MODULE_LOGGER
 
-typedef	struct	FTOM_LOGGER_STRUCT 
-{
-	FTM_LOGGER	xCommon;
-}	FTOM_LOGGER, _PTR_ FTOM_LOGGER_PTR;
-
-static
-FTOM_LOGGER_PTR	pLogger = NULL;
-
 FTM_RET	FTOM_LOGGER_init
 (
-	FTM_VOID
+	FTOM_LOG_MANAGER_PTR	pManager
 )
 {
+	ASSERT(pManager != NULL);
+
 	FTM_RET	xRet;	
 
-	if (pLogger != NULL)
-	{
-		return	FTM_RET_ALREADY_INITIALIZED;	
-	}
-
-	pLogger = (FTOM_LOGGER_PTR)FTM_MEM_malloc(sizeof(FTOM_LOGGER));
-	if (pLogger == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
-
-	xRet = FTM_LOGGER_init(&pLogger->xCommon);
+	xRet = FTM_LOGGER_init(&pManager->xLogger);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pLogger);	
-		pLogger = NULL;
+		ERROR2(xRet, "Logger initialize failed!\n");
 	}
 
 	return	xRet;
@@ -44,26 +26,17 @@ FTM_RET	FTOM_LOGGER_init
 
 FTM_RET	FTOM_LOGGER_final
 (
-	FTM_VOID
+	FTOM_LOG_MANAGER_PTR	pManager
 )
 {
+	ASSERT(pManager != NULL);
+
 	FTM_RET	xRet;	
 
-	if (pLogger == NULL)
-	{
-		ERROR2(FTM_RET_NOT_INITIALIZED, NULL);
-		return	FTM_RET_NOT_INITIALIZED;
-	}
-
-	xRet = FTM_LOGGER_final(&pLogger->xCommon);
+	xRet = FTM_LOGGER_final(&pManager->xLogger);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to Logger final!\n");
-	}
-	else
-	{
-		FTM_MEM_free(pLogger);
-		pLogger = NULL;
+		ERROR2(xRet, "Logger finalize failed!\n");
 	}
 
 	return	xRet;
@@ -71,9 +44,11 @@ FTM_RET	FTOM_LOGGER_final
 
 FTM_RET	FTOM_LOGGER_add
 (
+	FTOM_LOG_MANAGER_PTR	pManager,
 	FTM_LOG_PTR		pLog
 )
 {
+	ASSERT(pManager != NULL);
 	ASSERT(pLog != NULL);
 
 	FTM_RET	xRet;
@@ -95,7 +70,7 @@ FTM_RET	FTOM_LOGGER_add
 	}
 	else
 	{
-		xRet  = FTM_LOGGER_add(&pLogger->xCommon, pLog);
+		xRet  = FTM_LOGGER_add(&pManager->xLogger, pLog);
 		if (xRet != FTM_RET_OK)
 		{
 			FTM_LOG_destroy(&pLog);
@@ -108,11 +83,14 @@ FTM_RET	FTOM_LOGGER_add
 
 FTM_RET	FTOM_LOGGER_remove
 (
+	FTOM_LOG_MANAGER_PTR	pManager,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulCount,
 	FTM_ULONG_PTR	pulRemovedCount
 )
 {
+	ASSERT(pManager != NULL);
+
 	FTM_RET		xRet;
 	FTM_ULONG	ulRemovedCount = 0;
 	FTOM_SERVICE_PTR pService;
@@ -132,7 +110,7 @@ FTM_RET	FTOM_LOGGER_remove
 	}
 	else
 	{
-		xRet = FTM_LOGGER_removeAt(&pLogger->xCommon, ulIndex, ulCount, &ulRemovedCount);
+		xRet = FTM_LOGGER_removeAt(&pManager->xLogger, ulIndex, ulCount, &ulRemovedCount);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, NULL);
@@ -144,10 +122,13 @@ FTM_RET	FTOM_LOGGER_remove
 
 FTM_RET	FTOM_LOGGER_count
 (
+	FTOM_LOG_MANAGER_PTR	pManager,
 	FTM_ULONG_PTR	pulCount
 )
 {
+	ASSERT(pManager != NULL);
 	ASSERT(pulCount != NULL);
+
 	FTM_RET	xRet;
 
 	FTOM_SERVICE_PTR pService;
@@ -159,7 +140,7 @@ FTM_RET	FTOM_LOGGER_count
 	}
 	else
 	{
-		xRet = FTM_LOGGER_count(&pLogger->xCommon, pulCount);
+		xRet = FTM_LOGGER_count(&pManager->xLogger, pulCount);
 	}
 
 	if (xRet != FTM_RET_OK)
@@ -172,13 +153,16 @@ FTM_RET	FTOM_LOGGER_count
 
 FTM_RET	FTOM_LOGGER_getAt
 (
+	FTOM_LOG_MANAGER_PTR	pManager,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulCount,
 	FTM_LOG_PTR		pLogs,
 	FTM_ULONG_PTR	pulCount
 )
 {
+	ASSERT(pManager != NULL);
 	ASSERT(pulCount != NULL);
+
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
 
@@ -199,7 +183,7 @@ FTM_RET	FTOM_LOGGER_getAt
 		{
 			FTM_LOG_PTR	pLog;
 
-			xRet = FTM_LOGGER_getAt(&pLogger->xCommon, ulIndex + i, &pLog);
+			xRet = FTM_LOGGER_getAt(&pManager->xLogger, ulIndex + i, &pLog);
 			if (xRet != FTM_RET_OK)
 			{
 				break;
@@ -215,349 +199,18 @@ FTM_RET	FTOM_LOGGER_getAt
 	return	xRet;
 }
 
-/*********************************************************************
- * Log messages
- *********************************************************************/
-FTM_RET	FTOM_LOG_createNode
-(
-	FTM_NODE_PTR	pNodeInfo
-)
-{
-	ASSERT(pNodeInfo != NULL);
-	
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_CREATE_NODE;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pNodeInfo->pDID, FTM_DID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_destroyNode
-(
-	FTM_NODE_PTR	pNodeInfo
-)
-{
-	ASSERT(pNodeInfo != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_DESTROY_NODE;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pNodeInfo->pDID, FTM_DID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_createEP
-(
-	FTM_CHAR_PTR	pEPID
-)
-{
-	ASSERT(pEPID != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_CREATE_EP;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pEPID, FTM_EPID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_destroyEP
-(
-	FTM_CHAR_PTR	pEPID
-)
-{
-	ASSERT(pEPID != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_DESTROY_EP;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pEPID, FTM_DID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_createTrigger
-(
-	FTM_TRIGGER_PTR	pTriggerInfo
-)
-{
-	ASSERT(pTriggerInfo != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_CREATE_TRIGGER;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pTriggerInfo->pID, FTM_ID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_destroyTrigger
-(
-	FTM_TRIGGER_PTR	pTriggerInfo
-)
-{
-	ASSERT(pTriggerInfo != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_DESTROY_TRIGGER;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pTriggerInfo->pID, FTM_DID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_createAction
-(
-	FTM_ACTION_PTR	pActionInfo
-)
-{
-	ASSERT(pActionInfo != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_CREATE_ACTION;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pActionInfo->pID, FTM_ID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_destroyAction
-(
-	FTM_ACTION_PTR	pActionInfo
-)
-{
-	ASSERT(pActionInfo != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_DESTROY_ACTION;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pActionInfo->pID, FTM_DID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_createRule
-(
-	FTM_RULE_PTR	pRuleInfo
-)
-{
-	ASSERT(pRuleInfo != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_CREATE_RULE;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pRuleInfo->pID, FTM_ID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_count
-(
-	FTM_ULONG_PTR	pulCount
-)
-{
-	ASSERT(pulCount != NULL);
-
-	return	FTM_LOGGER_count(&pLogger->xCommon, pulCount);
-}
-
-FTM_RET	FTOM_LOG_destroyRule
-(
-	FTM_RULE_PTR	pRuleInfo
-)
-{
-	ASSERT(pRuleInfo != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType = FTM_LOG_TYPE_DESTROY_RULE;
-	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pRuleInfo->pID, FTM_DID_LEN);
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_LOG_event
-(
-	FTM_RULE_PTR	pRuleInfo,
-	FTM_BOOL		bOccurred
-)
-{
-	ASSERT(pRuleInfo != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType 	= FTM_LOG_TYPE_EVENT;
-	pLog->ulTime 	= time(NULL);
-	strncpy(pLog->xParams.xEvent.pRuleID, pRuleInfo->pID, FTM_ID_LEN);
-	pLog->xParams.xEvent.bOccurred = bOccurred;
-
-	xRet = FTOM_LOGGER_add(pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
 
 FTM_RET	FTOM_LOGGER_DMC_get
 (
+	FTOM_LOG_MANAGER_PTR	pManager,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulCount,
 	FTM_LOG_PTR		pLog,
 	FTM_ULONG_PTR	pulCount
 )
 {
+	ASSERT(pManager != NULL);
+
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
 
