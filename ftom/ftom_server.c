@@ -3715,7 +3715,7 @@ FTM_RET FTOM_SERVER_showConfig
 	MESSAGE("\n[ SERVER CONFIGURATION ]\n");
 	MESSAGE("%16s : %d\n", "Port", pServer->xConfig.xTCP.usPort);
 	MESSAGE("%16s : %lu\n", "Max Session", pServer->xConfig.xTCP.ulMaxSession);
-	MESSAGE("%16s : %s",	"SMKey File", pServer->xConfig.xSM.pKeyFile);
+	MESSAGE("%16s : %s\n",	"SMKey File", pServer->xConfig.xSM.pKeyFile);
 
 	return	FTM_RET_OK;
 }

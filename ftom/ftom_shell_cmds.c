@@ -127,7 +127,7 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pShortHelp	= "Action management.",
 		.pHelp		= "\n"\
 					  "    Action management.\n"\
-					  "  Commands:\n"\
+					  "  COMMANDS:\n"\
 					  "    <ActionID>  Show Action Information.\n"
 	},
 	{
@@ -140,10 +140,10 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 	{
 		.pString	= "discovery",
 		.function	= FTOM_SHELL_CMD_discovery,
-		.pShortHelp = "Discovery NODEs and EPs.\n",
+		.pShortHelp = "Discovery NODEs and EPs.",
 		.pHelp      = "<cmds> [<opts>]\n"\
 					  "    Discovery NODEs and EPs.\n"\
-					  "  Commands:\n"\
+					  "  COMMANDS:\n"\
 					  "    search     Search NODE & EP.\n"\
 					  "    list       Show a list of discovered devices.\n"\
 					  "  OPtions:\n"\
@@ -155,16 +155,16 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 	{
 		.pString	= "ep",
 		.function	= FTOM_SHELL_CMD_ep,
-		.pShortHelp	= "End point management.\n",
+		.pShortHelp	= "End point management.",
 		.pHelp		= "<cmds> [<opts>] [<EPID> <EPID> ...]\n"
 					  "    End point management.\n"\
-					  "  Commands:\n"\
+					  "  COMMANDS:\n"\
 					  "    import     Get the EP from the discovered list and register.\n"\
 					  "    enable	  Set the EP to the enabled state.\n"\
 					  "    disable	  Set the EP to the disabled state.\n"\
 					  "    start	  Activate the EP.\n"\
 					  "    stop	  	  Stop the EP.\n"
-					  "  Options:\n"\
+					  "  OPTIONS:\n"\
 					  "    -a         Apply all end points.\n"\
 					  "    <EPID>     EP ID.\n"
 	},
@@ -174,7 +174,7 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pShortHelp	= "Log management.",
 		.pHelp		= "\n"\
 					  "    Log management.\n"\
-					  "  Commands:\n"\
+					  "  COMMANDS:\n"\
 					  "    <INDEX>  log index.\n"
 	},
 	{
@@ -183,11 +183,11 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pShortHelp	= "Node management.",
 		.pHelp		= "<cmds> [<opts>] [<DID> <DID> ...]\n"\
 					  "    Node management.\n"\
-					  "  Commands:\n"\
+					  "  COMMANDS:\n"\
 					  "    import     Get the NODE from the discovered list and register.\n"\
 					  "    start	  Activate the NODE.\n"\
 					  "    stop	  	  Stop the NODE.\n"\
-					  "  Options:\n"\
+					  "  OPTIONS:\n"\
 					  "    -a         Apply all nodes.\n"\
 					  "    <DID>      Node ID.\n"
 	},
@@ -211,7 +211,7 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pShortHelp	= "Rule management.",
 		.pHelp		= "\n"\
 					  "    Rule management.\n"\
-					  "  Commands:\n"\
+					  "  COMMANDS:\n"\
 					  "    <RuleID>  Show Rule Information.\n"
 	},
 	{
@@ -227,7 +227,7 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pShortHelp	= "Trace management.",
 		.pHelp		= "[<module> [<level>]]\n"\
 					  "    Trace management.\n"\
-					  "  Commands:\n"\
+					  "  COMMANDS:\n"\
 					  "    <module>  target module.\n"\
 					  "    <level>   target level.\n"
 	},
@@ -237,7 +237,7 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pShortHelp	= "Trigger management.",
 		.pHelp		= "\n"\
 					  "    Trigger management.\n"\
-					  "  Commands:\n"\
+					  "  COMMANDS:\n"\
 					  "    <TriggerID>  Show Trigger Information.\n"
 	},
 	{

@@ -1519,7 +1519,7 @@ FTM_RET	FTOM_EP_print
 	FTM_EP_DATA	xData;
 	FTM_ULONG	ulBegin, ulEnd, ulCount;
 
-	MESSAGE("\n# EP Information\n");
+	MESSAGE("\n[ EP INFORMATION ]\n");
 	FTM_EP_print(&pEP->xInfo);
 	MESSAGE("%16s : %s\n", 	"State",(!pEP->bStop)?"RUN":"STOP");
 	xRet = FTOM_EP_getDataInfo(pEP, &ulBegin, &ulEnd, &ulCount);
@@ -1559,7 +1559,7 @@ FTM_RET	FTOM_EP_printList
 	FTOM_EP_PTR	pEP;
 	FTM_EP_DATA	xData;
 	
-	MESSAGE("\n# EP Information\n");
+	MESSAGE("\n[ EP INFORMATION LIST ]\n");
 	MESSAGE("%16s %16s %16s %16s %8s %8s %8s %8s %8s %24s\n", "EPID", "TYPE", "NAME", "DID", "STATE", "VALUE", "UNIT", "UPDATE", "REPORT", "TIME");
 	FTOM_EP_count(0, NULL, &ulCount);
 	for(i = 0; i < ulCount ; i++)

@@ -28,7 +28,7 @@ FTM_RET	FTOM_CLIENT_CMD_EPList
 		FTM_CHAR		pEPIDs[50][FTM_EPID_LEN+1];
 		FTM_ULONG		ulStart = 0;
 
-		MESSAGE("\n# EP Information\n");
+		MESSAGE("\n[ EP INFORMATION ]\n");
 		MESSAGE("%16s %16s %16s %16s %8s %8s %8s %8s %8s %24s\n", "EPID", "TYPE", "NAME", "DID", "STATE", "VALUE", "UNIT", "UPDATE", "REPORT", "TIME");
 		while(ulCount > 0)
 		{
@@ -119,7 +119,7 @@ FTM_RET	FTOM_CLIENT_CMD_EPInfo
 		return	FTM_RET_OK;
 	}
 
-	MESSAGE("EP Information\n");
+	MESSAGE("\n[ EP INFORMATION ]\n");
 	FTM_EP_print(&xEPInfo);
 
 	xRet = FTOM_CLIENT_EP_isRun(pClient, pEPID, &bRun);
@@ -214,6 +214,133 @@ finish:
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTOM_CLIENT_CMD_addEP
+(
+	FTM_SHELL_PTR	pShell,
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[], 
+	FTM_VOID_PTR 	pData
+)
+{
+	ASSERT(pShell != NULL);
+	ASSERT(pArgv != NULL);
+
+	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
+	FTM_RET	xRet;
+	FTM_INT	i, nOpt;
+	FTM_EP	xInfo;
+
+	FTM_EP_setDefault(&xInfo);
+
+	if (nArgc < 4)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	nOpt = 4;
+	while(nOpt < nArgc)
+	{
+		if (pArgv[nOpt][0] == '-')
+		{
+			switch(pArgv[nOpt][1])
+			{
+			case	'n':	
+				{
+					if (++nOpt >= nArgc)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;	
+					}
+
+					strncpy(xInfo.pName, pArgv[nOpt], sizeof(xInfo.pName) - 1);
+				}
+				break;
+	
+			case	'u':
+				{
+					if (++nOpt >= nArgc)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;	
+					}
+
+					strncpy(xInfo.pUnit, pArgv[nOpt], sizeof(xInfo.pUnit) - 1);
+				}
+				break;
+	
+			case	'i':
+				{
+					if (++nOpt >= nArgc)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;	
+					}
+
+					xInfo.ulUpdateInterval = strtoul(pArgv[nOpt], NULL, 10);
+				}
+				break;
+	
+			case	'T':
+				{
+					if (++nOpt >= nArgc)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;	
+					}
+
+					if (strcasecmp(pArgv[nOpt], "temperature") == 0)
+					{
+						xInfo.xType = FTM_EP_TYPE_TEMPERATURE;	
+					}
+					else if (strcasecmp(pArgv[nOpt], "humidity") == 0)
+					{
+						xInfo.xType = FTM_EP_TYPE_HUMIDITY;	
+					}
+				}
+				break;
+	
+			case	't':
+				{
+					if (++nOpt >= nArgc)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;	
+					}
+
+					xInfo.ulTimeout = strtoul(pArgv[nOpt], NULL, 10);
+				}
+				break;
+	
+			default:
+				return	FTM_RET_INVALID_ARGUMENTS;
+			}
+			nOpt++;
+		}
+		else
+		{
+			break;	
+		}
+	}
+
+	strncpy(xInfo.pEPID, pArgv[2], FTM_EPID_LEN);
+
+	for(i = 0 ; i < sizeof(xInfo.pDID) - 1 && i < strlen(pArgv[3]); i ++)
+	{
+		xInfo.pDID[i] = toupper(pArgv[3][i]);
+	}
+
+	xRet = FTM_EP_isValid(&xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		MESSAGE("Invalid node information!\n");
+		return	xRet;
+	}
+
+	xRet = FTOM_CLIENT_EP_create(pClient, &xInfo, &xInfo);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to create EP[%s]\n", pArgv[2]);
+	}
+
+	return	FTM_RET_OK;
+
+}
+
 FTM_RET	FTOM_CLIENT_CMD_EP
 (
 	FTM_SHELL_PTR	pShell,
@@ -225,7 +352,6 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 	FTM_RET		xRet;
 	FTM_CHAR	pPID[FTM_DID_LEN + 1];
 	FTM_CHAR	pDID[FTM_DID_LEN + 1];
-	FTM_EP		xInfo;
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 
 	memset(pPID, 0, sizeof(pPID));
@@ -242,86 +368,7 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 	}
 	else if (strcmp(pArgv[1], "add") == 0)
 	{
-		FTM_INT	i, nOpt;
-
-
-		FTM_EP_setDefault(&xInfo);
-
-		optind = 2;
-		if ((nOpt = getopt(nArgc, pArgv, "n:u:i:t:")) != -1)
-		{
-			switch(nOpt)
-			{
-			case	'n':	
-				{
-					strncpy(xInfo.pName, optarg, sizeof(xInfo.pName) - 1);
-				}
-				break;
-
-			case	'u':
-				{
-					strncpy(xInfo.pUnit, optarg, sizeof(xInfo.pUnit) - 1);
-				}
-				break;
-
-			case	'i':
-				{
-					xInfo.ulUpdateInterval = strtoul(optarg, NULL, 10);
-				}
-				break;
-
-			case	'T':
-				{
-					if (strcasecmp(optarg, "temperature") == 0)
-					{
-						xInfo.xType = FTM_EP_TYPE_TEMPERATURE;	
-					}
-					else if (strcasecmp(optarg, "humidity") == 0)
-					{
-						xInfo.xType = FTM_EP_TYPE_HUMIDITY;	
-					}
-				}
-				break;
-
-			case	't':
-				{
-					xInfo.ulTimeout = strtoul(optarg, NULL, 10);
-				}
-				break;
-
-			default:
-				{
-					return	FTM_RET_INVALID_ARGUMENTS;
-				}
-
-			}
-		}
-
-		if (nArgc < 4)
-		{
-			return	FTM_RET_INVALID_ARGUMENTS;
-		}
-
-		strncpy(xInfo.pEPID, pArgv[2], FTM_EPID_LEN);
-
-		for(i = 0 ; i < sizeof(xInfo.pDID) - 1 && i < strlen(pArgv[3]); i ++)
-		{
-			xInfo.pDID[i] = toupper(pArgv[3][i]);
-		}
-
-		xRet = FTM_EP_isValid(&xInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			MESSAGE("Invalid node information!\n");
-			return	xRet;
-		}
-
-		xRet = FTOM_CLIENT_EP_create(pClient, &xInfo, &xInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			ERROR2(xRet, "Failed to create EP[%s]\n", pArgv[2]);
-		}
-
+		return	FTOM_CLIENT_CMD_addEP(pShell, nArgc, pArgv, pData);
 	}
 	else if (strcmp(pArgv[1], "del") == 0)
 	{

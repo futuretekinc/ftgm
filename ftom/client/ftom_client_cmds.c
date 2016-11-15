@@ -109,15 +109,15 @@ FTM_SHELL_CMD	_cmds[] =
 		.pString	= "discovery",
 		.function	= FTOM_CLIENT_CMD_discovery,
 		.pShortHelp = "Search for node and EP.",
-		.pHelp 		= "<cmd>\n"\
+		.pHelp 		= "<cmd> [<opt> <opt> ...]\n"\
 					  "\tSearch for node and EP.\n"\
 					  "COMMANDS:\n"\
-					  "\tstart [<COUNT>]\n"\
-					  "\t    - Start discovery.\n"\
-					  "\tstop\n"\
-					  "\t    - Stop discovery.\n"\
-					  "PARAMETERS:\n"\
-					  "\tCOUNT   The retry count of message for discovery.\n"
+					  "\tstart      Start discovery.\n"\
+					  "\tlist		Show discovered object list.\n"\
+					  "OPTIONS:\n"\
+					  "\t-i <IP>    Search network.\n"\
+					  "\t-p <PORT>  Service port.\n"\
+					  "\t-c <COUNT> Send message count.\n"
 	},
 	{	
 		.pString	= "quit",
