@@ -514,8 +514,7 @@ FTM_RET	FTOM_addRuleRemovalLog
 
 FTM_RET	FTOM_addEventCreationLog
 (
-	FTOM_RULE_PTR	pRule,
-	FTM_BOOL		bOccurred
+	FTOM_RULE_PTR	pRule
 );
 
 FTM_RET	FTOM_addRuleRemovalLog

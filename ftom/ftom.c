@@ -3261,8 +3261,7 @@ FTM_RET	FTOM_addRuleRemovalLog
 
 FTM_RET	FTOM_addEventCreationLog
 (
-	FTOM_RULE_PTR	pRule,
-	FTM_BOOL		bOccurred
+	FTOM_RULE_PTR	pRule
 )
 {
 	ASSERT(pRule != NULL);
@@ -3279,7 +3278,7 @@ FTM_RET	FTOM_addEventCreationLog
 	pLog->xType 	= FTM_LOG_TYPE_EVENT;
 	pLog->ulTime 	= time(NULL);
 	strncpy(pLog->xParams.xEvent.pRuleID, pRule->xInfo.pID, FTM_ID_LEN);
-	pLog->xParams.xEvent.bOccurred = bOccurred;
+	pLog->xParams.xEvent.bOccurred = pRule->bActive;
 
 	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
 	if (xRet != FTM_RET_OK)

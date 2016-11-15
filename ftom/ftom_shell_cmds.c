@@ -10,6 +10,9 @@
 #include "ftom_logger.h"
 #include "ftom_modules.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTOM_TRACE_MODULE_SHELL
+
 FTM_ULONG	ulGetheringTime = 3;
 
 FTM_RET	FTOM_SHELL_CMD_config
@@ -137,20 +140,33 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 	{
 		.pString	= "discovery",
 		.function	= FTOM_SHELL_CMD_discovery,
-		.pShortHelp	= "Discovery End Point.",
-	
-					  "    Discovery End point.\n"\
+		.pShortHelp = "Discovery NODEs and EPs.\n",
+		.pHelp      = "<cmds> [<opts>]\n"\
+					  "    Discovery NODEs and EPs.\n"\
 					  "  Commands:\n"\
-					  "    <NETWORK>  Discovery network.\n"
+					  "    search     Search NODE & EP.\n"\
+					  "    list       Show a list of discovered devices.\n"\
+					  "  OPtions:\n"\
+					  "    -u         Unregistered devices only.\n"\
+					  "    -n <NETWORK>  Network to search.\n"\
+					  "    -p <PORT>  Service port.\n"
+					  
 	},
 	{
 		.pString	= "ep",
 		.function	= FTOM_SHELL_CMD_ep,
-		.pShortHelp	= "End Point management.",
-		.pHelp		= "\n"\
+		.pShortHelp	= "End point management.\n",
+		.pHelp		= "<cmds> [<opts>] [<EPID> <EPID> ...]\n"
 					  "    End point management.\n"\
 					  "  Commands:\n"\
-					  "    <EPID>  Show EP Information.\n"
+					  "    import     Get the EP from the discovered list and register.\n"\
+					  "    enable	  Set the EP to the enabled state.\n"\
+					  "    disable	  Set the EP to the disabled state.\n"\
+					  "    start	  Activate the EP.\n"\
+					  "    stop	  	  Stop the EP.\n"
+					  "  Options:\n"\
+					  "    -a         Apply all end points.\n"\
+					  "    <EPID>     EP ID.\n"
 	},
 	{
 		.pString	= "log",
@@ -165,10 +181,15 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 		.pString	= "node",
 		.function	= FTOM_SHELL_CMD_node,
 		.pShortHelp	= "Node management.",
-		.pHelp		= "\n"\
+		.pHelp		= "<cmds> [<opts>] [<DID> <DID> ...]\n"\
 					  "    Node management.\n"\
 					  "  Commands:\n"\
-					  "    <EPID>  Show node Information.\n"
+					  "    import     Get the NODE from the discovered list and register.\n"\
+					  "    start	  Activate the NODE.\n"\
+					  "    stop	  	  Stop the NODE.\n"\
+					  "  Options:\n"\
+					  "    -a         Apply all nodes.\n"\
+					  "    <DID>      Node ID.\n"
 	},
 	{
 		.pString	= "object",
@@ -280,193 +301,199 @@ FTM_RET	FTOM_SHELL_CMD_node
 	ASSERT(pShell != NULL);
 	ASSERT(pArgv != NULL);
 
-	FTM_RET	xRet;
-	switch(nArgc)
+	FTM_RET			xRet;
+	FTM_CHAR_PTR	pCmd = NULL;
+	FTM_BOOL		bAll = FTM_FALSE;
+	FTM_INT			nOpt;
+
+	if (nArgc == 1)
 	{
-	case	1:
+		return	FTOM_NODE_printList();
+	}
+ 	if (nArgc == 2)
+	{
+		if (strcasecmp(pArgv[1], "show") == 0)
 		{
-			FTOM_NODE_printList();
+			return	FTOM_NODE_printList();
 		}
-		break;
-
-	case	2:
+		else
 		{
-			FTOM_NODE_PTR	pNode;
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
 
-			xRet = FTOM_NODE_get(pArgv[1], &pNode);
+	pCmd = pArgv[1];
+	nOpt = 2;
+
+	while(nOpt < nArgc)
+	{
+		if (pArgv[nOpt][0] == '-')
+		{
+			switch(pArgv[nOpt][1])
+			{
+			case 'a':
+				bAll = FTM_TRUE;
+				break;
+
+			default: /* '?' */
+				ERROR2(FTM_RET_INVALID_ARGUMENTS, "Invalid argument [Opt = %02x]!\n", (FTM_UINT8)nOpt);
+				return	FTM_RET_INVALID_ARGUMENTS;
+			}
+		}
+		else
+		{
+			break;	
+		}
+
+		nOpt++;
+	}
+
+	if(bAll == FTM_FALSE)
+	{
+		if (nArgc < 3)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+
+		if (strcasecmp(pCmd, "import") == 0)
+		{
+			FTOM_NODE_PTR	pNODE;
+			FTOM_SERVICE_PTR	pService;
+			FTM_NODE			xNodeInfo;
+	
+			xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
 			if (xRet != FTM_RET_OK)
 			{
-				MESSAGE("Can't found Node[%s]!\n", pArgv[1]);
-
-				break;
+				MESSAGE("Discovery not supported!\n");			
+				goto finished;
 			}
 
-			FTOM_NODE_print(pNode);
-		}
-		break;
-
-	case	3:
-		{
-			FTOM_NODE_PTR	pNode;
-
-			if(strcasecmp(pArgv[1], "discovery") == 0)
+			xRet = FTOM_DISCOVERY_getNodeInfo(pService->pData, pArgv[nOpt], &xNodeInfo);
+			if (xRet == FTM_RET_OK)
 			{
-				FTOM_SERVICE_PTR	pService;
-				FTM_NODE			xNodeInfo;
-
-				xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+				xRet = FTOM_NODE_create(&xNodeInfo, TRUE, &pNODE);
 				if (xRet != FTM_RET_OK)
 				{
-					MESSAGE("Discovery not supported!\n");			
-					break;
+					MESSAGE("NODE[%s] creation failed!\n", pArgv[nOpt]);
 				}
+				else
+				{
+					MESSAGE("NODE[%s] creation was completed successfully.\n", pArgv[nOpt]);
+				}
+			}
+		}
+		else 
+		{
+			FTOM_NODE_PTR	pNODE;
 
+			xRet = FTOM_NODE_get(pArgv[nOpt], &pNODE);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "NODE[%s] can't found!\n",	pArgv[nOpt]);
+			}
 
-				xRet = FTOM_DISCOVERY_getNodeInfo(pService->pData, pArgv[2], &xNodeInfo);
+			if (strcasecmp(pCmd, "show") == 0)
+			{
+				FTOM_NODE_print(pNODE);
+			}
+			else if (strcasecmp(pCmd, "stop") == 0)
+			{
+				xRet = FTOM_NODE_stop(pNODE);
+				if ((xRet != FTM_RET_OK) && (xRet == FTM_RET_NOT_START))	
+				{
+					MESSAGE("Failed to stop node[%s]!\n", pNODE->xInfo.pDID);	
+				}
+				else
+				{
+					MESSAGE("NODE[%s] stopped!\n", pNODE->xInfo.pDID);	
+				}
+			}
+			else if (strcasecmp(pCmd, "start") == 0) 
+			{
+				xRet = FTOM_NODE_start(pNODE);
 				if (xRet != FTM_RET_OK)
 				{
-					MESSAGE("Node[%s] not found!\n", pArgv[2]);	
-					break;
+					MESSAGE("Failed to start node[%s]!\n", pNODE->xInfo.pDID);	
 				}
-
-				xRet = FTOM_NODE_create(&xNodeInfo, TRUE, &pNode);
-				if (xRet != FTM_RET_OK)
+				else
 				{
-					MESSAGE("Node[%s] creation failed!\n", pArgv[2]);
-					break;	
+					MESSAGE("NODE[%s] started!\n", pNODE->xInfo.pDID);	
 				}
+			}
+		}
+	}
+	else if (strcasecmp(pCmd, "import") == 0)
+	{
+		FTOM_SERVICE_PTR	pService;
+		FTM_NODE			xNodeInfo;
+		FTM_INT			i;
+		FTM_ULONG		ulCount;
 
-				MESSAGE("Node[%s] creation was completed successfully.\n", pArgv[2]);
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+		if (xRet != FTM_RET_OK)
+		{
+			MESSAGE("Discovery not supported!\n");			
+			goto finished;
+		}
+
+		xRet = FTOM_DISCOVERY_getNodeInfoCount(pService->pData, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Discovered node count get failed.\n");
+			goto finished;
+		}
+
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			xRet = FTOM_DISCOVERY_getNodeInfoAt(pService->pData, i, &xNodeInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Discovered node[%d] information get failed.\n", i);
 			}
 			else
 			{
-				xRet = FTOM_NODE_get(pArgv[2], &pNode);
-				if (xRet != FTM_RET_OK)
-				{
-					MESSAGE("Can't found Node[%s]!\n", pArgv[1]);
-	
-					break;
-				}
-	
-				if (strcasecmp(pArgv[1], "disable") == 0)
-				{
-					FTM_BOOL	bRun;
-	
-					xRet = FTOM_NODE_isRun(pNode, &bRun);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Faield to get node[%s] status!\n", pNode->xInfo.pDID);
-						break;
-					}
-	
-					if (!bRun)
-					{
-						MESSAGE("Node[%s] is already stopped!\n", pNode->xInfo.pDID);
-						break;
-					}
-	
-					xRet = FTOM_NODE_stop(pNode);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Failed to start node[%s]!\n", pNode->xInfo.pDID);	
-					}
-					else
-					{
-						MESSAGE("Node[%s] started!\n", pNode->xInfo.pDID);	
-					}
-				}
-				else if (strcasecmp(pArgv[1], "stop") == 0)
-				{
-					FTM_BOOL	bRun;
-	
-					xRet = FTOM_NODE_isRun(pNode, &bRun);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Faield to get node[%s] status!\n", pNode->xInfo.pDID);
-						break;
-					}
-	
-					if (!bRun)
-					{
-						MESSAGE("Node[%s] is already stopped!\n", pNode->xInfo.pDID);
-						break;
-					}
-	
-					xRet = FTOM_NODE_stop(pNode);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Failed to start node[%s]!\n", pNode->xInfo.pDID);	
-					}
-					else
-					{
-						MESSAGE("Node[%s] started!\n", pNode->xInfo.pDID);	
-					}
-				}
-				else if (strcasecmp(pArgv[1], "start") == 0)
-				{
-				
-					FTM_BOOL	bRun;
-	
-					xRet = FTOM_NODE_isRun(pNode, &bRun);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Faield to get node[%s] status!\n", pNode->xInfo.pDID);
-						break;
-					}
-	
-					if (bRun)
-					{
-						MESSAGE("Node[%s] is already started!\n", pNode->xInfo.pDID);
-						break;
-					}
-	
-					xRet = FTOM_NODE_start(pNode);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Failed to stop node[%s]!\n", pNode->xInfo.pDID);	
-					}
-					else
-					{
-						MESSAGE("Node[%s] stopped!\n", pNode->xInfo.pDID);	
-					}
-				}
-				else if (strcasecmp(pArgv[1], "del") == 0)
-				{
-				
-					FTM_BOOL	bRun;
-	
-					xRet = FTOM_NODE_isRun(pNode, &bRun);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Faield to get node[%s] status!\n", pNode->xInfo.pDID);
-						break;
-					}
-	
-					if (bRun)
-					{
-						xRet = FTOM_NODE_stop(pNode);
-						if (xRet != FTM_RET_OK)
-						{
-							MESSAGE("Failed to stop Node[%s]!\n", pNode->xInfo.pDID);
-							break;
-						}
-					}
-	
-					xRet = FTOM_NODE_destroy(&pNode, FTM_TRUE);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Failed to remove node[%s]!\n", pNode->xInfo.pDID);	
-					}
-					else
-					{
-						MESSAGE("Node have been removed.\n");	
-					}
-				}
+				FTM_CHAR_PTR	pNewArgv[3];
+
+				pNewArgv[0] = pArgv[0];
+				pNewArgv[1] = pArgv[1];
+				pNewArgv[2] = xNodeInfo.pDID;
+
+				FTOM_SHELL_CMD_node(pShell, 3, pNewArgv, pData);
 			}
 		}
-		break;
+	}
+	else 
+	{
+		FTM_INT		i;
+		FTM_ULONG	ulCount;
+		FTM_CHAR_PTR	pNewArgv[3];
+		FTM_CHAR	pDID[FTM_DID_LEN+1];
+
+		pNewArgv[0] = pArgv[0];
+		pNewArgv[1] = pArgv[1];
+		pNewArgv[2] = pDID;
+			
+		xRet = FTOM_NODE_count(&ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "NODE count get failed!\n");	
+			goto finished;
+		}
+
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			FTOM_NODE_PTR	pNODE;
+		
+			xRet = FTOM_NODE_getAt(i, &pNODE);
+			if (xRet == FTM_RET_OK)
+			{
+				strncpy(pDID, pNODE->xInfo.pDID, FTM_DID_LEN);	
+				FTOM_SHELL_CMD_node(pShell, 3, pNewArgv, pData);
+			}
+		}
 	}
 
+finished:
 	return	FTM_RET_OK;
 }
 
@@ -481,210 +508,231 @@ FTM_RET	FTOM_SHELL_CMD_ep
 	ASSERT(pShell != NULL);
 	ASSERT(pArgv != NULL);
 
-	FTM_RET	xRet;
-	switch(nArgc)
+	FTM_RET			xRet;
+	FTM_CHAR_PTR	pCmd = NULL;
+	FTM_BOOL		bAll = FTM_FALSE;
+	FTM_INT			nOpt;
+
+	if (nArgc == 1)
 	{
-	case	1:
+		return	FTOM_EP_printList();
+	}
+	else if (nArgc == 2)
+	{
+		if (strcasecmp(pArgv[1], "show") == 0)
 		{
-			FTOM_EP_printList();
+			return	FTOM_EP_printList();
 		}
-		break;
+		else
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+	}
 
-	case	2:
+	pCmd = pArgv[1];
+	nOpt = 2;
+
+	while(nOpt < nArgc)
+	{
+		if (pArgv[nOpt][0] == '-')
+		{
+			switch(pArgv[nOpt][1])
+			{
+			case 'a':
+				bAll = FTM_TRUE;
+				break;
+
+			default: /* '?' */
+				ERROR2(FTM_RET_INVALID_ARGUMENTS, "Invalid argument [Opt = %02x]!\n", (FTM_UINT8)nOpt);
+				return	FTM_RET_INVALID_ARGUMENTS;
+			}
+		}
+		else
+		{
+			break;	
+		}
+
+		nOpt++;
+	}
+
+	if(bAll == FTM_FALSE)
+	{
+		if (nArgc < 3)
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;	
+		}
+
+		if (strcasecmp(pCmd, "import") == 0)
 		{
 			FTOM_EP_PTR	pEP;
-
-			if (strcasecmp(pArgv[1], "class") == 0)
+			FTOM_SERVICE_PTR	pService;
+			FTM_EP			xEPInfo;
+	
+			xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+			if (xRet != FTM_RET_OK)
 			{
-				FTM_INT	i;
-				for(i = 0 ; ; i++)
-				{
-					FTOM_EP_CLASS_PTR pEPClass = NULL;
-
-					xRet = FTOM_EP_CLASS_getAt( i, &pEPClass);
-					if (xRet != FTM_RET_OK)
-					{
-						break;
-					}
-
-					FTOM_EP_CLASS_print(pEPClass);
-				}
-			}
-			else
-			{
-				xRet = FTOM_EP_get(pArgv[1], &pEP);
-				if (xRet != FTM_RET_OK)
-				{
-					MESSAGE("Can't found EP[%s]!\n", pArgv[1]);
-					break;
-				}
-
-				FTOM_EP_print(pEP);
+				MESSAGE("Discovery not supported!\n");			
+				goto finished;
 			}
 
-		}
-		break;
-
-	case	3:
-		{
-			FTOM_EP_PTR	pEP;
-
-			if(strcasecmp(pArgv[1], "discovery") == 0)
+			xRet = FTOM_DISCOVERY_getEPInfo(pService->pData, pArgv[nOpt], &xEPInfo);
+			if (xRet == FTM_RET_OK)
 			{
-				FTOM_SERVICE_PTR	pService;
-				FTM_EP				xEPInfo;
-
-				xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
-				if (xRet != FTM_RET_OK)
-				{
-					MESSAGE("Discovery not supported!\n");			
-					break;
-				}
-
-
-				xRet = FTOM_DISCOVERY_getEPInfo(pService->pData, pArgv[2], &xEPInfo);
-				if (xRet != FTM_RET_OK)
-				{
-					MESSAGE("EP[%s] not found!\n", pArgv[2]);	
-					break;
-				}
-
 				xRet = FTOM_EP_create(&xEPInfo, TRUE, &pEP);
 				if (xRet != FTM_RET_OK)
 				{
-					MESSAGE("EP[%s] creation failed!\n", pArgv[2]);
-					break;	
+					MESSAGE("EP[%s] creation failed!\n", pArgv[nOpt]);
 				}
-
-				MESSAGE("EP[%s] creation was completed successfully.\n", pArgv[2]);
-			}
-			else
-			{
-				xRet = FTOM_EP_get(pArgv[2], &pEP);
-				if (xRet != FTM_RET_OK)
+				else
 				{
-					ERROR2(xRet, "Can't found EP[%s]!\n", pArgv[2]);
-					break;
-				}
-	
-				if (strcasecmp(pArgv[1], "enable") == 0)
-				{
-					FTM_EP	xInfo;
-
-					xInfo.bEnable = TRUE;
-					xRet = FTOM_EP_setInfo(pEP, FTM_EP_FIELD_ENABLE, &xInfo);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR2(xRet, "EP[%s] is failed to enable!\n", pEP->xInfo.pEPID);
-						break;
-					}
-					MESSAGE("The EP[%s] has been activated.\n", pEP->xInfo.pEPID);
-				}
-				else if (strcasecmp(pArgv[1], "disable") == 0)
-				{
-					FTM_EP	xInfo;
-
-					xInfo.bEnable = FALSE;
-					xRet = FTOM_EP_setInfo(pEP, FTM_EP_FIELD_ENABLE, &xInfo);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR2(xRet, "EP[%s] is failed to enable!\n", pEP->xInfo.pEPID);
-						break;
-					}
-
-					MESSAGE("The EP[%s] has been deactivated.\n", pEP->xInfo.pEPID);
-				}
-				else if (strcasecmp(pArgv[1], "stop") == 0)
-				{
-					FTM_BOOL	bRun;
-	
-					xRet = FTOM_EP_isRun(pEP, &bRun);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Faield to get EP[%s] status!\n", pEP->xInfo.pEPID);
-						break;
-					}
-	
-					if (!bRun)
-					{
-						MESSAGE("EP[%s] is already stopped!\n", pEP->xInfo.pEPID);
-						break;
-					}
-	
-					xRet = FTOM_EP_stop(pEP, FTM_TRUE);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Failed to stop EP[%s]!\n", pEP->xInfo.pEPID);	
-					}
-					else
-					{
-						MESSAGE("EP[%s] stopped!\n", pEP->xInfo.pEPID);	
-					}
-				}
-				else if (strcasecmp(pArgv[1], "start") == 0)
-				{
-					FTM_BOOL	bRun;
-	
-					xRet = FTOM_EP_isRun(pEP, &bRun);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Faield to get EP[%s] status!\n", pEP->xInfo.pEPID);
-						break;
-					}
-	
-					if (bRun)
-					{
-						MESSAGE("EP[%s] is already started!\n", pEP->xInfo.pEPID);
-						break;
-					}
-	
-					xRet = FTOM_EP_start(pEP);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Failed to start EP[%s]!\n", pEP->xInfo.pEPID);	
-					}
-					else
-					{
-						MESSAGE("EP[%s] started!\n", pEP->xInfo.pEPID);	
-					}
-				}
-				else if (strcasecmp(pArgv[1], "del") == 0)
-				{
-				
-					FTM_BOOL	bRun;
-	
-					xRet = FTOM_EP_isRun(pEP, &bRun);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Faield to get EP[%s] status!\n", pEP->xInfo.pEPID);
-						break;
-					}
-	
-					if (bRun)
-					{
-						xRet = FTOM_EP_stop(pEP, FTM_TRUE);
-						if (xRet != FTM_RET_OK)
-						{
-							MESSAGE("Failed to stop EP[%s]!\n", pEP->xInfo.pEPID);
-							break;
-						}
-					}
-	
-					xRet = FTOM_EP_destroy(&pEP, FTM_TRUE);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Failed to remove EP[%s]!\n", pEP->xInfo.pEPID);	
-					}
-					else
-					{
-						MESSAGE("Node have been removed.\n");	
-					}
+					MESSAGE("EP[%s] creation was completed successfully.\n", pArgv[nOpt]);
 				}
 			}
 		}
-		break;
+		else 
+		{
+			FTOM_EP_PTR	pEP;
+
+			xRet = FTOM_EP_get(pArgv[nOpt], &pEP);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "EP[%s] can't found!\n",	pArgv[nOpt]);
+			}
+
+			if (strcasecmp(pCmd, "show") == 0)
+			{
+				FTOM_EP_print(pEP);
+			}
+			else if (strcasecmp(pCmd, "disable") == 0)
+			{
+				FTM_EP	xInfo;
+
+				xInfo.bEnable = FTM_FALSE;
+
+				xRet = FTOM_EP_setInfo(pEP, FTM_EP_FIELD_ENABLE, &xInfo);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("The EP[%s] setting changing failed!\n", pEP->xInfo.pEPID);	
+				}
+				else
+				{
+					MESSAGE("EP[%s] is disabled!\n", pEP->xInfo.pEPID);	
+				}
+			}
+			else if (strcasecmp(pCmd, "enable") == 0)
+			{
+				FTM_EP	xInfo;
+
+				xInfo.bEnable = FTM_TRUE;
+
+				xRet = FTOM_EP_setInfo(pEP, FTM_EP_FIELD_ENABLE, &xInfo);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("The EP[%s] setting changing failed!\n", pEP->xInfo.pEPID);	
+				}
+				else
+				{
+					MESSAGE("EP[%s] is enabled!\n", pEP->xInfo.pEPID);	
+				}
+			}
+			else if (strcasecmp(pCmd, "stop") == 0)
+			{
+				xRet = FTOM_EP_stop(pEP, FALSE);
+				if ((xRet != FTM_RET_OK) && (xRet == FTM_RET_NOT_START))	
+				{
+					MESSAGE("Failed to stop ep[%s]!\n", pEP->xInfo.pEPID);	
+				}
+				else
+				{
+					MESSAGE("EP[%s] stopped!\n", pEP->xInfo.pEPID);	
+				}
+			}
+			else if (strcasecmp(pCmd, "start") == 0)
+			{
+				xRet = FTOM_EP_start(pEP);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Failed to start ep[%s]!\n", pEP->xInfo.pEPID);	
+				}
+				else
+				{
+					MESSAGE("EP[%s] started!\n", pEP->xInfo.pEPID);	
+				}
+			}
+		}
+	}
+	else if (strcasecmp(pCmd, "import") == 0)
+	{
+		FTOM_SERVICE_PTR	pService;
+		FTM_EP			xEPInfo;
+		FTM_INT			i;
+		FTM_ULONG		ulCount;
+
+		xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
+		if (xRet != FTM_RET_OK)
+		{
+			MESSAGE("Discovery not supported!\n");			
+			goto finished;
+		}
+
+		xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Discovered node count get failed.\n");
+			goto finished;
+		}
+
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Discovered node[%d] information get failed.\n", i);
+			}
+			else
+			{
+				FTM_CHAR_PTR	pNewArgv[3];
+
+				pNewArgv[0] = pArgv[0];
+				pNewArgv[1] = pArgv[1];
+				pNewArgv[2] = xEPInfo.pEPID;
+
+				FTOM_SHELL_CMD_ep(pShell, 3, pNewArgv, pData);
+			}
+		}
+	}
+	else 
+	{
+		FTM_INT		i;
+		FTM_ULONG	ulCount;
+		FTM_CHAR_PTR	pNewArgv[3];
+		FTM_CHAR	pEPID[FTM_EPID_LEN+1];
+
+		pNewArgv[0] = pArgv[0];
+		pNewArgv[1] = pArgv[1];
+		pNewArgv[2] = pEPID;
+			
+		xRet = FTOM_EP_count(0, NULL, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "EP count get failed!\n");	
+			goto finished;
+		}
+
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			FTOM_EP_PTR	pEP;
+		
+			xRet = FTOM_EP_getAt(i, &pEP);
+			if (xRet == FTM_RET_OK)
+			{
+				strncpy(pEPID, pEP->xInfo.pEPID, FTM_EPID_LEN);	
+				FTOM_SHELL_CMD_ep(pShell, 3, pNewArgv, pData);
+			}
+		}
 	}
 
+finished:
 	return	FTM_RET_OK;
 }
 
@@ -1070,7 +1118,58 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 {
 	FTM_RET		xRet;
 	FTOM_SERVICE_PTR	pService;
-	
+	FTM_INT			nOpt;
+	FTM_BOOL		bSearch = FTM_FALSE;
+	FTM_BOOL		bList = FTM_FALSE;
+	FTM_BOOL		bUnregisteredOnly = FTM_FALSE;
+	FTM_CHAR_PTR	pNetwork = "255.255.255.255";
+	FTM_INT			i, nIndex;
+	FTM_ULONG		ulCount;
+	FTM_USHORT		usPort = 1234;
+
+	if (nArgc < 2)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;
+	}
+
+	if (strcasecmp(pArgv[1], "search") == 0)
+	{
+		TRACE("CMD : search\n");
+		bSearch = FTM_TRUE;
+		bList = FTM_TRUE;
+	}
+	else if (strcasecmp(pArgv[1], "list") == 0)
+	{
+		TRACE("CMD : list\n");
+		bList = FTM_TRUE;
+	}
+	else
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	while ((nOpt = getopt(nArgc, pArgv, "un:l")) != -1) 
+	{
+		switch (nOpt) 
+		{
+		case 'u':
+			bUnregisteredOnly = FTM_TRUE;
+			break;
+
+		case 'n':
+			pNetwork = optarg; 
+			break;
+
+		case 'p':
+			usPort = (FTM_USHORT)strtoul(optarg, 0, 10);
+			break;
+
+		default: /* '?' */
+			ERROR2(FTM_RET_INVALID_ARGUMENTS, "Invalid argument [Opt = %02x]!\n", (FTM_UINT8)nOpt);
+			return	FTM_RET_INVALID_ARGUMENTS;
+		}
+	}
+
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DISCOVERY, &pService);
 	if (xRet != FTM_RET_OK)
 	{
@@ -1078,23 +1177,18 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 		return	FTM_RET_OK;
 	}
 
-	switch(nArgc)
+	if (bSearch)
 	{
-	case	1:
-		{
-			FTM_BOOL	bFinished;
-			FTM_INT		i;
-			FTM_ULONG	ulCount;
+		FTM_BOOL	bFinished;
 
-			xRet = FTOM_DISCOVERY_startSearch(pService->pData, "255.255.255.255", 1234, 1);
-			if (xRet != FTM_RET_OK)
-			{
-				MESSAGE("Discovery request was failed[%08lx].\n", xRet);	
-			}
-			else
-			{
-				MESSAGE("Discovery request is complete.\n");	
-			}
+		xRet = FTOM_DISCOVERY_startSearch(pService->pData, pNetwork, usPort, 1);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Discovery request was failed.\n");	
+		}
+		else
+		{
+			TRACE("Discovery request is complete.\n");	
 
 			usleep(1000000);
 			do
@@ -1105,69 +1199,89 @@ FTM_RET	FTOM_SHELL_CMD_discovery
 			}
 			while(!bFinished);
 
-			MESSAGE("Discovery finished!\n");
-			xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
-			if (xRet != FTM_RET_OK)
-			{
-				MESSAGE("Discovery get EP Info count failed.\n");
-			}
-			else
-			{
-				for(i = 0 ; i < ulCount ; i++)
-				{
-					FTM_EP	xEPInfo;
-
-					xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
-					if (xRet == FTM_RET_OK)
-					{
-						MESSAGE("%2d : %16s %16s\n", i+1, xEPInfo.pEPID, xEPInfo.pName);	
-					}
-				}
-			}
+	
+			TRACE("Discovery finished!\n");
 		}
-		break;
+	}
 
-	case	2:
+	if (bList)
+	{
+		xRet = FTOM_DISCOVERY_getNodeInfoCount(pService->pData, &ulCount);
+		if (xRet != FTM_RET_OK)
 		{
-			FTM_ULONG			ulCount;
-			FTM_INT				i;
+			ERROR2(xRet, "Discovery get EP Info count failed.\n");
+			goto finished;
+		}
 
-			if (strcasecmp(pArgv[1], "start") == 0)
+		MESSAGE("\n[ Discovered NODE ]\n");
+
+		nIndex = 0;
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			FTM_NODE	xNodeInfo;
+	
+			xRet = FTOM_DISCOVERY_getNodeInfoAt(pService->pData, i, &xNodeInfo);
+			if (xRet == FTM_RET_OK)
 			{
-				xRet = FTOM_DISCOVERY_startSearch(pService->pData, "255.255.255.255", 1234, 1);
-				if (xRet != FTM_RET_OK)
+				if (bUnregisteredOnly)
 				{
-					MESSAGE("Discovery request was failed[%08lx].\n", xRet);	
+					FTOM_NODE_PTR	pNode;
+	
+					xRet = FTOM_NODE_get(xNodeInfo.pDID, &pNode);
+					if (xRet != FTM_RET_OK)
+					{
+						MESSAGE("%2d : %16s %16s\n", ++nIndex, xNodeInfo.pDID, xNodeInfo.pName);	
+					}
 				}
 				else
 				{
-					MESSAGE("Discovery request is complete.\n");	
+					MESSAGE("%2d : %16s %16s\n", ++nIndex, xNodeInfo.pDID, xNodeInfo.pName);	
 				}
-
 			}
-			else if (strcasecmp(pArgv[1], "list") == 0)
+		}
+		
+		MESSAGE("%16s : %lu\n", "Discovered", ulCount);
+		MESSAGE("%16s : %d\n", "Unregistered", nIndex);
+
+		xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Discovery get EP Info count failed.\n");
+			goto finished;
+		}
+	
+		MESSAGE("\n[ Discovered EP ]\n");
+
+		nIndex = 0;
+		for(i = 0 ; i < ulCount ; i++)
+		{
+			FTM_EP	xEPInfo;
+	
+			xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
+			if (xRet == FTM_RET_OK)
 			{
-				xRet = FTOM_DISCOVERY_getEPInfoCount(pService->pData, &ulCount);
-				if (xRet != FTM_RET_OK)
+				if (bUnregisteredOnly)
 				{
-					MESSAGE("Discovery get EP Info count failed.\n");
-					break;	
-				}
-
-				for(i = 0 ; i < ulCount ; i++)
-				{
-					FTM_EP	xEPInfo;
-
-					xRet = FTOM_DISCOVERY_getEPInfoAt(pService->pData, i, &xEPInfo);
-					if (xRet == FTM_RET_OK)
+					FTOM_EP_PTR	pEP;
+	
+					xRet = FTOM_EP_get(xEPInfo.pEPID, &pEP);
+					if (xRet != FTM_RET_OK)
 					{
-						MESSAGE("%2d : %16s %16s\n", i+1, xEPInfo.pEPID, xEPInfo.pName);	
+						MESSAGE("%2d : %16s %16s %16s\n", ++nIndex, xEPInfo.pEPID, xEPInfo.pName, FTM_EP_typeString(xEPInfo.xType));	
 					}
 				}
+				else
+				{
+					MESSAGE("%2d : %16s %16s %16s\n", ++nIndex, xEPInfo.pEPID, xEPInfo.pName, FTM_EP_typeString(xEPInfo.xType));	
+				}
 			}
-				
 		}
+
+		MESSAGE("%16s : %lu\n", "Discovered", ulCount);
+		MESSAGE("%16s : %d\n", "Unregistered", nIndex);
 	}
+
+finished:
 
 	return	FTM_RET_OK;
 }

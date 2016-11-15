@@ -188,7 +188,7 @@ FTM_RET	FTOM_NODE_create
 			ERROR2(xRet, "Failed to add node[%s] to DB.\n", pNode->xInfo.pDID);
 		}
 
-		FTOM_addNodeCreationLog(&pNode->xInfo);
+		FTOM_addNodeCreationLog(pNode);
 	}
 
 	pNode->xState = FTOM_NODE_STATE_STOP;

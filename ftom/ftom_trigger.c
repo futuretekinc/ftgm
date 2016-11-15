@@ -156,7 +156,7 @@ FTM_RET	FTOM_TRIGGER_create
 		}
 		else
 		{
-			FTOM_addTriggerCreationLog(&pTrigger->xInfo);
+			FTOM_addTriggerCreationLog(pTrigger);
 		}
 	}
 

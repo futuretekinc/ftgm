@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "ftm.h"
+#include "ftom.h"
 #include "ftom_action.h"
 #include "ftom_msg.h"
 #include "ftom_message_queue.h"
@@ -137,11 +138,11 @@ FTM_RET	FTOM_ACTION_create
 		}
 		else
 		{
-			FTOM_addActionCreationLog(&pAction->xInfo);	
+			FTOM_addActionCreationLog(pAction);	
 		}
 	}
 
-	FTOM_addActionCreationLog(&pAction->xInfo);
+	FTOM_addActionCreationLog(pAction);
 
 	*ppAction = pAction;
 

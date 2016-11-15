@@ -60,8 +60,8 @@ FTM_RET	FTM_NODE_setDefault(FTM_NODE_PTR pNode)
 	memset(pNode, 0, sizeof(FTM_NODE));
 	
 	pNode->xType			= FTM_NODE_TYPE_SNMP;
-	pNode->ulReportInterval	= 60;
-	pNode->ulTimeout		= 10;
+	pNode->ulReportInterval	= 60000;
+	pNode->ulTimeout		= 10000;
 	pNode->xOption.xSNMP.ulVersion = FTM_SNMP_VERSION_2;
 	strcpy(pNode->xOption.xSNMP.pURL, "127.0.0.1");
 	strcpy(pNode->xOption.xSNMP.pCommunity, "public");

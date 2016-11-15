@@ -150,7 +150,7 @@ FTM_RET	FTOM_RULE_create
 		}
 		else
 		{
-			FTOM_addRuleCreationLog(&pRule->xInfo);
+			FTOM_addRuleCreationLog(pRule);
 		}
 	}
 
@@ -350,20 +350,8 @@ FTM_VOID_PTR FTOM_RULE_process
 							break;
 						}
 
-						if (pMsg->bActivation)
-						{
-							pRule->bActive = FTM_TRUE;
-							FTOM_addEventCreationLog(&pRule->xInfo, FTM_TRUE);
-							INFO("The rule[%s] have been activated.\n", pMsg->pRuleID);
-						}
-						else
-						{
-						
-							pRule->bActive = FTM_FALSE;
-							FTOM_addEventCreationLog(&pRule->xInfo, FTM_FALSE);
-							INFO("The rule[%s] have been disabled.\n", pMsg->pRuleID);
-						}
-
+						pRule->bActive = pMsg->bActivation;
+						FTOM_addEventCreationLog(pRule);
 
 						for(i = 0 ; i < pRule->xInfo.xParams.ulActions ; i++)
 						{

@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 #include "ftm.h"
-#include "ftom.h"
+#include "ftom_types.h"
 
 typedef	struct
 {

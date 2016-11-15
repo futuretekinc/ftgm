@@ -199,7 +199,7 @@ FTM_VOID	FTM_TRACE_packetDump
 	FTM_INT			nLen
 );
 
-#define	__MODULE__	0xFFUL
+#define	__MODULE__	FTM_TRACE_MODULE_ALL
 
 #define	ASSERT(x)	{ if (!(x)) FTM_TRACE_out(__MODULE__, FTM_TRACE_LEVEL_FATAL, __func__, __LINE__, FTM_RET_ASSERT, "%s\n", #x); }
 

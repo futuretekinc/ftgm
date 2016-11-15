@@ -79,11 +79,11 @@ FTM_RET	FTM_TRACE_loadConfig
 	FTM_CONFIG_ITEM	xSubSection;
 
 	xRet = FTM_CONFIG_getItem(pConfig, "trace", &xSection);
-	if ((xRet == FTM_RET_OBJECT_NOT_FOUND) || (xRet == FTM_RET_OK))
+	if (xRet == FTM_RET_OBJECT_NOT_FOUND)
 	{
 		return	FTM_RET_OK;	
 	}
-	else 
+	else if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
 	}

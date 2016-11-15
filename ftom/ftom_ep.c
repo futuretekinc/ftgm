@@ -222,7 +222,7 @@ FTM_RET	FTOM_EP_create
 			ERROR2(xRet, "Failed to add EP[%s] to DB!\n", pEP->xInfo.pEPID);
 		}
 		
-		FTOM_addEPCreationLog(&pEP->xInfo);
+		FTOM_addEPCreationLog(pEP);
 	}
 
 
@@ -524,15 +524,10 @@ FTM_RET FTOM_EP_start
 			ERROR2(xRet, "The EP[%s] can not attached to The Node[%s].\n", pEP->xInfo.pEPID, pEP->xInfo.pDID);
 			return	xRet;	
 		}
-
-		xRet = FTM_RET_EP_IS_NOT_ATTACHED;	
-		ERROR2(xRet, "EP[%s] is not attached.\n", pEP->xInfo.pEPID);
-		return	xRet;	
 	}
 
 	if (!pEP->xInfo.bEnable)
 	{
-		INFO("EP[%s] is disabled.\n", pEP->xInfo.pEPID);
 		return	FTM_RET_OBJECT_IS_DISABLED;
 	}
 
@@ -1585,14 +1580,7 @@ FTM_RET	FTOM_EP_printList
 		MESSAGE("%16s ", pEP->xInfo.pEPID);
 		MESSAGE("%16s ", FTM_EP_typeString(pEP->xInfo.xType));
 		MESSAGE("%16s ", pEP->xInfo.pName);
-		if (pEP->pNode != NULL)
-		{
-			MESSAGE("%16s ", pEP->pNode->xInfo.pDID);
-		}
-		else
-		{
-			MESSAGE("%16s ", "");
-		}
+		MESSAGE("%16s ", pEP->xInfo.pDID);
 
 		MESSAGE("%8s ", (!pEP->bStop)?"RUN":"STOP");
 		if (xData.xState == FTM_EP_DATA_STATE_INVALID)
