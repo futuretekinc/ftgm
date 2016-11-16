@@ -45,21 +45,33 @@ FTM_SHELL_CMD	_cmds[] =
 		.pHelp		= "<cmd>\n"\
 					  "\tNode management command set.\n"\
 					  "COMMANDS:\n"\
-					  "\tadd <DID> SNMP <URL> <COMMUNITY>\n"\
-					  "\tdel <DID>\n"\
-					  "\tinfo <DID>\n"\
-					  "\tlist\n"\
+					  "\tadd        Add new node.\n"\
+					  "\t           add <MODEL> <DID> [<opt> <opt> ...]\n"\
+					  "\t           Ex.) add 00405CABCDEF -t SNMP -u 192.168.1.100 -c test\n"\
+					  "\tdel        Remove the node\n"\
+					  "\t           del <DID>\n"\
+					  "\tinfo       Display node information\n"\
+					  "\t           info <DID> <DID> ...\n"\
+					  "\tlist       Display a list of node information.\n"\
+					  "\tmodel      Display a list of supported node model.\n"\
+					  "OPTONS:\n"\
+					  "\t-t <TYPE>  Define node type\n"\
+					  "\t-u <URL>   Internet address\n"\
+					  "\t-c <COMM>  SNMP communication community\n"\
+					  "\t-l <STRING>  Node location\n"\
 					  "PARAMETERS:\n"\
-					  "\tDID    Node Identifier Number.\n"\
-					  "\t       Max 32 characters\n"\
-					  "\tTYPE	Define node type\n"\
-					  "\t       SNMP - SNMP supported node\n"\
-					  "\t       MODBUS/TCP - MODBUS over TCP/IP supported node\n"\
-					  "\t       MODBUS - MODBUS over Serial supported node\n"\
-					  "\tURL    Node location\n"\
-					  "\t       (Ex. : www.node.com or 192.168.1.100)\n"\
-					  "\tCOMMUNITY SNMP communication community\n"\
-					  "\t       (Ex. : public, private,...)"
+					  "\tMODEL      Model of device.\n"\
+					  "\t           Ex.)FTE-E, FTM-50S,...\n"\
+					  "\tDID        Node Identifier Number.\n"\
+					  "\t           Max 32 characters\n"\
+					  "\tTYPE       Type of Node\n"\
+					  "\t           SNMP - SNMP supported node\n"\
+					  "\t           MBTCP - MODBUS over TCP/IP supported node\n"\
+					  "\t           MB - MODBUS over Serial supported node\n"\
+					  "\tURL        Internet IP or URL\n"\
+					  "\t           Ex.) www.node.com or 192.168.1.100\n"\
+					  "\tCOMM       SNMP communication community\n"\
+					  "\t           Ex.) public, private,..."
 	},
 	{	
 		.pString	= "ep",
@@ -113,11 +125,14 @@ FTM_SHELL_CMD	_cmds[] =
 					  "\tSearch for node and EP.\n"\
 					  "COMMANDS:\n"\
 					  "\tstart      Start discovery.\n"\
-					  "\tlist		Show discovered object list.\n"\
+					  "\t           ex) start [-i <IP>] [-p <PORT>] [-c <COUNT>]\n"\
+					  "\tlist       Display a list of discovered object.\n"\
+					  "\t           ex) list [-u]\n"\
 					  "OPTIONS:\n"\
 					  "\t-i <IP>    Search network.\n"\
 					  "\t-p <PORT>  Service port.\n"\
-					  "\t-c <COUNT> Send message count.\n"
+					  "\t-c <COUNT> Send message count.\n"\
+					  "\t-u         Unregistered object only.\n"
 	},
 	{	
 		.pString	= "quit",

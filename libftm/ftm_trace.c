@@ -655,7 +655,7 @@ FTM_RET	FTM_TRACE_printToFile
 	pFile = fopen(szFileName, "a");
 	if (pFile == 0)
 	{
-		fprintf(stderr, "Can't open log file\n");
+		fprintf(stderr, "Can't open log file[%s]\n", szFileName);
 		return FTM_RET_ERROR;	
 	}
 

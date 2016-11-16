@@ -82,6 +82,9 @@ FTM_INT main(int nArgc , char *pArgv[])
 		goto finish;
 	}
 
+	FTM_TRACE_setLevel(FTM_TRACE_MODULE_ALL, ulDebugLevel);
+	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_CLIENT,	"CLIENT",	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+
 	xRet =FTM_CONFIG_create(pConfigFileName, &pConfig, FTM_FALSE);
 	if (xRet == FTM_RET_OK)
 	{
@@ -89,10 +92,8 @@ FTM_INT main(int nArgc , char *pArgv[])
 	}
 	else
 	{
-		MESSAGE("Failed to create config!\n");	
+		ERROR2(xRet, "Failed to create config!\n");	
 	}
-
-	FTM_TRACE_setInfo2( FTOM_TRACE_MODULE_CLIENT,	"CLIENT",	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
 	xRet = FTOM_CLIENT_NET_create((FTOM_CLIENT_NET_PTR _PTR_)&pClient);
 	if (xRet != FTM_RET_OK)

@@ -16,21 +16,22 @@ FTM_RET	FTOM_CLIENT_CMD_client
 	ASSERT(pData != NULL);
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 
-	if (nArgc == 1)
+	if (nArgc < 2)
 	{
-		MESSAGE("\n# Client configuration\n");
+		return	FTM_RET_INVALID_ARGUMENTS;
 	}
-	else if (nArgc == 2)
+
+	if (strcasecmp(pArgv[1], "config") == 0)
+	{
+		FTM_TRACE_printConfig(NULL);
+	}
+	else if(strcasecmp(pArgv[1], "server") == 0)
 	{
 		FTOM_CLIENT_NET_PTR	pNetClient = (FTOM_CLIENT_NET_PTR)pClient;
 
-		if(strcasecmp(pArgv[1], "server") == 0)
-		{
-			MESSAGE("# Server Configuration.\n");
-			MESSAGE("%16s : %s\n", "Host", pNetClient->xConfig.xServer.pHost);
-			MESSAGE("%16s : %lu\n", "Port", (FTM_ULONG)pNetClient->xConfig.xServer.usPort);
-
-		}
+		MESSAGE("# Server Configuration.\n");
+		MESSAGE("%16s : %s\n", "Host", pNetClient->xConfig.xServer.pHost);
+		MESSAGE("%16s : %lu\n", "Port", (FTM_ULONG)pNetClient->xConfig.xServer.usPort);
 	}
 
 	return	FTM_RET_OK;
