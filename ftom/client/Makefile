@@ -10,6 +10,7 @@ CLIENT_SRCS=main.c\
 			cmd_client.c\
 			cmd_node.c\
 			cmd_ep.c\
+			cmd_trigger.c\
 			cmd_debug.c\
 			cmd_quit.c\
 			cmd_trace.c\

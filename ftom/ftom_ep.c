@@ -922,13 +922,13 @@ FTM_RET	FTOM_EP_getDataList
 	}
 	else
 	{
-		MESSAGE("%lu, %lu -> ", ulIndex, ulMaxCount);
+		TRACE("%lu, %lu -> ", ulIndex, ulMaxCount);
 		xRet = FTOM_DB_EP_getDataList(pEP->xInfo.pEPID, ulIndex, pDatas, ulMaxCount, pulCount, pbRemain);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to get EP data from DB!\n");	
 		}
-		MESSAGE("%lu, %d\n", *pulCount, *pbRemain);
+		TRACE("%lu, %d\n", *pulCount, *pbRemain);
 	}
 
 	return	xRet;

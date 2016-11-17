@@ -21,6 +21,7 @@ FTM_RET	FTOM_CLIENT_CMD_trace(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR 
 FTM_RET	FTOM_CLIENT_CMD_EP(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_NODE(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_EP(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+FTM_RET	FTOM_CLIENT_CMD_trigger(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_debug(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_discovery(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 FTM_RET	FTOM_CLIENT_CMD_quit(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
@@ -77,37 +78,86 @@ FTM_SHELL_CMD	_cmds[] =
 		.pString	= "ep",
 		.function   = FTOM_CLIENT_CMD_EP,
 		.pShortHelp = "EndPoint management command set.",
-		.pHelp      = "<cmd> ...\n"\
+		.pHelp      = "<CMD>\n"\
 					  "\tEndPoint management.\n"\
 					  "COMMANDS:\n"\
-					  "\tadd    <EPID> <DID> [-n <Name>] [-u <Unit>] [-i <Interval>] [-t <timeout>]\n"\
-					  "\tdel    <EPID>\n"\
-					  "\tlist\n"\
-					  "\t<EPID> [[name <name>] | [unit <unit>] | [interval <interval>]]\n"\
-					  "\t<EPID> data -i <index> <count>\n"\
-					  "\t<EPID> data -t <Begin Time> <End Time>\n"\
-					  "\t<EPID> add <Time> <Value>\n"\
-					  "\t<EPID> del -i <Index> <Count>\n"\
-					  "\t<EPID> del -t <Begin Time> [End Time | Count]\n"\
-					  "\t<EPID> count -i <Index>\n"\
-					  "\t<EPID> count -t <Begin Time> <End Time>\n"\
-					  "\t<EPID> get -i <Index> <Count>\n"\
-					  "\t<EPID> get -t <Begin Time> <End Time> <Count>\n"\
+					  "\tadd    Add new EP.\n"\
+					  "\t       add <EPID> <DID> [-n <NAME>] [-u <UNIT>] [-i <MSECS>] [-t <MSECS>]\n"\
+					  "\tdel    Remove the EP.\n"\
+					  "\t       del <EPID>\n"\
+					  "\tlist   Output a list of EPs.\n"\
+					  "\tcount  Count of EPs.\n"\
+					  "\tinfo   Output detail information of EP.\n"\
+					  "\t       info <EPID> [<EPID> ...]\n"\
+					  "\tstart  Activate EP\n"\
+					  "\t       start <EPID> [<EPID> ...]\n"\
+					  "\tstop   Deactivate EP\n"\
+					  "\t       stop <EPID> [<EPID> ...]\n"\
+					  "\tset    Set EP attributes.\n"
+					  "\t       set <EPID> [-n <NAME>] [-U <UNIT>] [-i <MSECS>] [-t <MSECS>]\n"\
+					  "\tdata   Output EP data\n"\
+					  "\t       data <EPID> <SUBCMD> [<OPT> ...]\n"\
 					  "OPTIONS:\n"\
-					  "\t-i     Index mode\n"\
-					  "\t-t     Time mode\n"\
+					  "\t-m     Data operation mode\n"\
+					  "\t       time - Time base mode\n"\
+					  "\t       index - index base mode\n"\
+					  "\t-i     Start index (Index mode only)\n"\
+					  "\t-c     Maximum data count\n"\
+					  "\t-s     Start time (Time mode only)\n"\
+					  "\t-e     End time (Time mode only)\n"\
 					  "PARAMETERS:\n"\
-					  "\tEPID   EndPoint ID. 8Digit Hexa Number\n"\
+					  "\tEPID   EndPoint ID(8 digits Hexa Number).\n"\
 					  "\t       (Ex. : 010A0003)\n"\
-					  "\tDID	Node ID.\n"\
-					  "\tname	EndPoint name.\n"\
-					  "\tunit   Unit of measurement, a definite magnitude of a physical quantity.\n"\
-					  "\tinterval Measurement interval.\n"\
-					  "\ttimeout The response latency.\n"\
-					  "\ttime   Format => YYYY-MM-DD HH:MM:SS\n"\
+					  "\tDID	Node ID(Max 32 characters).\n"\
+					  "\tNAME	EndPoint name.\n"\
+					  "\tUNIT   Unit of measurement, a definite magnitude of a physical quantity.\n"\
+					  "\tMSECS  Milliseconds.\n"\
+					  "\tTIME   Format => YYYY-MM-DD HH:MM:SS\n"\
 					  "\t       (Ex. : 2015-01-05 13:11:15)\n"\
-					  "\tindex  Decimal Number\n"\
-					  "\tcount  Element count"
+					  "\tINDEX  Decimal Number\n"\
+					  "\tCOUNT  Element count\n"\
+					  "\tSBUCMD List of data management command\n"\
+					  "\t       add - Add data\n"\
+					  "\t       del - Remove data\n"\
+					  "\t       get - Output data\n"
+
+	},
+	{	
+		.pString	= "trigger",
+		.function   = FTOM_CLIENT_CMD_trigger,
+		.pShortHelp = "Trigger management command set.",
+		.pHelp      = "<CMD>\n"\
+					  "\tTrigger management.\n"\
+					  "COMMANDS:\n"\
+					  "\tadd     Add new Trigger.\n"\
+					  "\t        add <ID> <EPID> -t <TYPE> [-n <NAME>] [-u <VALUE>] [-l <VALUE>] [-v <VALUE>]\n"\
+					  "\tdel     Remove the trigger.\n"\
+					  "\t        del <ID>\n"\
+					  "\tlist    Output a list of trigger.\n"\
+					  "\tcount   Count of trigger.\n"\
+					  "\tinfo    Output detail information of trigger.\n"\
+					  "\t        info <ID> [<ID> ...]\n"\
+					  "\tenable  Activate trigger\n"\
+					  "\t        enable <ID> [<ID> ...]\n"\
+					  "\tdisable Deactivate trigger\n"\
+					  "\t        disable <ID> [<ID> ...]\n"\
+					  "\tset     Set trigger attributes.\n"
+					  "\t        set <ID> [-n <NAME>] [-l <VALUE>] [-u <VALUE>] [-v <VALUE>]\n"\
+					  "OPTIONS:\n"\
+					  "\t-n      Trigger name.\n"\
+					  "\t-t      Trigger type.\n"\
+					  "\t        include - When included within a range.\n"\
+					  "\t        except - When out of range.\n"\
+					  "\t        above - Greate then the setting value.\n"\
+					  "\t        below - Less then the setting value.\n"\
+					  "\t        changed - The value change.\n"\
+					  "\t-u      Trigger condition upper value(Condition : Include, Except).\n"\
+					  "\t-l      Trigger condition lower value(Condition : Include, Except).\n"\
+					  "\t-v      Trigger condition value(Condition : Above, Below).\n"\
+					  "PARAMETERS:\n"\
+					  "\tID      Trigger ID(Max 32 digits Hexa Number).\n"\
+					  "\t        (Ex. : 010A0003)\n"\
+					  "\tEPID	 EPID(Max 32 characters).\n"
 
 	},
 	{	

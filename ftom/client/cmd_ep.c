@@ -449,7 +449,7 @@ FTM_RET	FTOM_CLIENT_CMD_stopEP
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOm_CLIENT_CMD_setEP
+FTM_RET	FTOM_CLIENT_CMD_setEP
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -535,95 +535,321 @@ FTM_RET	FTOm_CLIENT_CMD_setEP
 	{
 		MESSAGE("The EP[%s] setting changed.\n", pEPID);	
 	}
+
+	return	xRet;
 }
 
 
-FTM_RET	FTOM_CLIENT_CMD_delEPData
+FTM_RET	FTOM_CLIENT_CMD_EPData
 (
 	FTM_SHELL_PTR	pShell,
-	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[],
-	FTM_VOID_PTR	pData
+	FTM_INT 		nArgc, 
+	FTM_CHAR_PTR 	pArgv[], 
+	FTM_VOID_PTR 	pData
 )
 {
-	ASSERT(pArgv != NULL);
-	ASSERT(pData != NULL);
+	FTM_RET			xRet;
+	FTM_EP			xInfo;
+	FTM_CHAR_PTR	pEPID;
 
-	FTM_RET		xRet;
-	FTM_OPT		pOpts[8];
-	FTM_INT		i;
-	FTM_ULONG	ulOpts;
-	FTM_ULONG	ulIndex = 0;
-	FTM_ULONG	ulCount = 0;
-	FTM_ULONG	ulDeletedCount = 0;
-	FTM_ULONG	ulBeginTime;
-	FTM_ULONG	ulEndTime;
-	FTM_TIME	xTime;
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 
-	xRet = FTM_getOptions(nArgc, pArgv, "i:c:s:e:", pOpts, 8, &ulOpts);
+	if (nArgc < 3)
+	{
+		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	pEPID = pArgv[1];
+
+	xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Invalid arguments!\n");
+		MESSAGE("The EP[%s] is not exists.\n", pEPID);
 		return	xRet;
 	}
 
-	for(i = 0 ; i < ulOpts ; i++)
+
+	if (strcasecmp(pArgv[2], "del") == 0)
 	{
-		switch(pOpts[i].xOpt)
+		FTM_INT		i;
+		FTM_ULONG	ulOpts;
+		FTM_ULONG	ulIndex = 0;
+		FTM_ULONG	ulCount = 0;
+		FTM_ULONG	ulDeletedCount = 0;
+		FTM_ULONG	ulBeginTime;
+		FTM_ULONG	ulEndTime;
+		FTM_TIME	xTime;
+		FTM_OPT		pOpts[8];
+	
+		xRet = FTM_getOptions(nArgc, pArgv, "i:c:s:e:", pOpts, 8, &ulOpts);
+		if (xRet != FTM_RET_OK)
 		{
-		case	'i':	
+			ERROR2(xRet, "Invalid arguments!\n");
+			return	xRet;
+		}
+	
+		for(i = 0 ; i < ulOpts ; i++)
+		{
+			switch(pOpts[i].xOpt)
 			{
-				ulIndex = strtoul(pOpts[i].pParam, 0, 10);
-			}
-			break;
-
-		case	'c':	
-			{
-				ulCount = strtoul(pOpts[i].pParam, 0, 10);
-			}
-			break;
-
-		case	's':
-			{
-				xRet = FTM_TIME_setString(&xTime, pOpts[i].pParam);
-				if (xRet != FTM_RET_OK)
+			case	'i':	
 				{
-					return	FTM_RET_INVALID_ARGUMENTS;	
+					if ((ulBeginTime != 0) || (ulEndTime != 0))
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+
+					ulIndex = strtoul(pOpts[i].pParam, 0, 10);
 				}
-
-				FTM_TIME_toSecs(&xTime, &ulBeginTime);
-			}
-			break;
-
-		case	'e':
-			{
-				xRet = FTM_TIME_setString(&xTime, pOpts[i].pParam);
-				if (xRet != FTM_RET_OK)
+				break;
+	
+			case	'c':	
 				{
-					return	FTM_RET_INVALID_ARGUMENTS;	
-				}
+					if ((ulBeginTime != 0) || (ulEndTime != 0))
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
 
-				FTM_TIME_toSecs(&xTime, &ulEndTime);
+					ulCount = strtoul(pOpts[i].pParam, 0, 10);
+				}
+				break;
+	
+			case	's':
+				{
+					if ((ulIndex != 0) || (ulCount != 0))
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+
+					xRet = FTM_TIME_setString(&xTime, pOpts[i].pParam);
+					if (xRet != FTM_RET_OK)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;	
+					}
+	
+					FTM_TIME_toSecs(&xTime, &ulBeginTime);
+				}
+				break;
+	
+			case	'e':
+				{
+					if ((ulIndex != 0) || (ulCount != 0))
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+
+					xRet = FTM_TIME_setString(&xTime, pOpts[i].pParam);
+					if (xRet != FTM_RET_OK)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;	
+					}
+	
+					FTM_TIME_toSecs(&xTime, &ulEndTime);
+				}
+				break;
+	
+	
+			}
+		}
+	
+		if ((ulIndex != 0) || (ulCount != 0))
+		{
+			xRet = FTOM_CLIENT_EP_DATA_del(pClient, pArgv[1], ulIndex, ulCount, &ulDeletedCount);
+			if (xRet != FTM_RET_OK)
+			{
+				MESSAGE("Failed to remove data from EP[%s]\n", pArgv[1]);	
+			}
+		}
+		else if ((ulBeginTime != 0) || (ulEndTime != 0))
+		{
+			xRet = FTOM_CLIENT_EP_DATA_delWithTime(pClient, pArgv[1], ulBeginTime, ulEndTime, &ulDeletedCount);
+			if (xRet != FTM_RET_OK)
+			{
+				MESSAGE("Failed to remove data from EP[%s]\n", pArgv[1]);	
+			}
+		}
+		else
+		{
+			return	FTM_RET_INVALID_ARGUMENTS;
+		
+		}
+	}
+	else if (strcasecmp(pArgv[2], "get") == 0)
+	{
+		FTM_INT		i;
+		FTM_OPT		pOpts[8];
+		FTM_ULONG	ulMethod = 0;
+		FTM_ULONG	ulOpts;
+		FTM_ULONG	ulIndex = 0;
+		FTM_ULONG	ulMaxCount = 100;
+		FTM_ULONG	ulCount = 0;
+		FTM_ULONG	ulStart = 0;
+		FTM_ULONG	ulEnd = 0;
+
+		xRet = FTM_getOptions(nArgc, pArgv, "m:i:c:s:e:", pOpts, 8, &ulOpts);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Invalid arguments!\n");
+			return	xRet;
+		}
+
+		for(i = 0 ; i < ulOpts ; i++)
+		{
+			switch(pOpts[i].xOpt)
+			{
+			case	'm':
+				{
+					if (strcasecmp(pOpts[i].pParam, "index") == 0)
+					{
+						ulMethod = 1;	
+					}
+					else if (strcasecmp(pOpts[i].pParam, "time") == 0)
+					{
+						ulMethod = 2;	
+					}
+					else 
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;	
+					}
+				}
+				break;
+
+			case	'i':
+				{
+					if (ulMethod != 1)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+
+					ulIndex = strtoul(pOpts[i].pParam, NULL, 10);
+				}
+				break;
+
+			case	'c':
+				{
+					ulMaxCount = strtoul(pOpts[i].pParam, NULL, 10);
+				}
+				break;
+
+			case	's':	
+				{
+					FTM_TIME	xTime;
+
+					if (ulMethod != 2)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+
+					xRet = FTM_TIME_setString(&xTime, pOpts[i].pParam);
+					if (xRet != FTM_RET_OK)
+					{
+						MESSAGE("Invalid time!\n");
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+				
+					FTM_TIME_toSecs(&xTime, &ulStart);
+				}
+				break;
+
+			case	'e':
+				{
+					FTM_TIME	xTime;
+
+					if (ulMethod != 2)
+					{
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+
+					xRet = FTM_TIME_setString(&xTime, pOpts[i].pParam);
+					if (xRet != FTM_RET_OK)
+					{
+						MESSAGE("Invalid time!\n");
+						return	FTM_RET_INVALID_ARGUMENTS;
+					}
+				
+					FTM_TIME_toSecs(&xTime, &ulEnd);
+				}
+				break;
+			}
+		}
+
+		
+		switch(ulMethod)
+		{
+		case	2:
+			{
+				FTM_EP_DATA_PTR	pEPData;
+	
+				pEPData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulMaxCount);
+				if (pEPData == NULL)
+				{
+					MESSAGE("System not enough memory!\n");
+					return	FTM_RET_NOT_ENOUGH_MEMORY;		
+				}
+		
+				xRet = FTOM_CLIENT_EP_DATA_getListWithTime(pClient, pEPID, ulStart, ulEnd, pEPData, ulMaxCount, &ulCount);
+				if (xRet == FTM_RET_OK)
+				{
+					FTM_INT	i;
+								
+					MESSAGE("%8s %20s %8s\n", "INDEX", "DATE", "VALUE");	
+					for(i = 0 ; i < ulCount ; i++)
+					{
+						FTM_TIME	xTime;
+	
+						FTM_TIME_setSeconds(&xTime, pEPData[i].ulTime);
+						
+						MESSAGE("%8d %20s %8s\n", i+1, FTM_TIME_printf(&xTime, NULL), FTM_VALUE_print(&pEPData[i].xValue));	
+					}
+				}
+				else
+				{
+					MESSAGE("EndPoint data loading failed [ ERROR = %08lx ]\n", xRet);	
+				}
+				
+				FTM_MEM_free(pEPData);
 			}
 			break;
 
+		case	1:
+			{
+				FTM_EP_DATA_PTR	pEPData;
+	
+				pEPData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulMaxCount);
+				if (pEPData == NULL)
+				{
+					MESSAGE("System not enough memory!\n");
+					return	FTM_RET_NOT_ENOUGH_MEMORY;		
+				}
+				
+				xRet = FTOM_CLIENT_EP_DATA_getList(pClient, pEPID, ulIndex, pEPData, ulMaxCount, &ulCount);
+				if (xRet == FTM_RET_OK)
+				{
+					FTM_INT	i;
+				
+					MESSAGE("%8s %20s %8s\n", "INDEX", "DATE", "VALUE");	
+					for(i = 0 ; i < ulCount ; i++)
+					{
+						MESSAGE("%8lu %20s %8s\n", ulIndex + i, FTM_TIME_printf2(pEPData[i].ulTime, NULL), FTM_VALUE_print(&pEPData[i].xValue));	
+					}
+				}
+				else
+				{
+					MESSAGE("EndPoint data loading failed [ ERROR = %08lx ]\n", xRet);	
+				}
+				
+				FTM_MEM_free(pEPData);
+			}
+			break;
 
+		default:
+			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 	}
 
-	if ((ulIndex != 0) && (ulCount != 0))
-	{
-		xRet = FTOM_CLIENT_EP_DATA_del(pClient, pArgv[1], ulIndex, ulCount, &ulDeletedCount);
-	}
-	else if ((ulBeginTime != 0) || (ulEndTime != 0))
-	{
-		xRet = FTOM_CLIENT_EP_DATA_delWithTime(pClient, pArgv[1], ulBeginTime, ulEndTime, &ulDeletedCount);
-	}
-
-	return	FTM_RET_OK;	
+	return	FTM_RET_OK;
 }
-			
+
 FTM_RET	FTOM_CLIENT_CMD_EP
 (
 	FTM_SHELL_PTR	pShell,
@@ -633,12 +859,6 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 )
 {
 	FTM_RET		xRet;
-	FTM_CHAR	pPID[FTM_DID_LEN + 1];
-	FTM_CHAR	pDID[FTM_DID_LEN + 1];
-	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
-
-	memset(pPID, 0, sizeof(pPID));
-	memset(pDID, 0, sizeof(pDID));
 
 	if (nArgc < 2)
 	{
@@ -673,205 +893,19 @@ FTM_RET	FTOM_CLIENT_CMD_EP
 	{
 		xRet = FTOM_CLIENT_CMD_stopEP(pShell, nArgc - 1, &pArgv[1], pData);	
 	}
-	else 
+	else if (strcasecmp(pArgv[1], "set") == 0)
 	{
-		FTM_CHAR	pEPID[FTM_EPID_LEN+1];
-		FTM_EP			xInfo;
-
-		strncpy(pEPID, pArgv[1], FTM_EPID_LEN);
-		xRet = FTOM_CLIENT_EP_get(pClient, pEPID, &xInfo);
-		if (xRet != FTM_RET_OK)
-		{
-			MESSAGE("EP[%s] not exists.\n", pEPID);
-		}
-		else	
-		{
-					if ((nArgc < 5) || (9 < nArgc))
-					{
-						MESSAGE("Invalid arguments!\n");
-					}
-					else
-					{
-						if (strcasecmp(pArgv[3], "-i") == 0)
-						{
-							FTM_ULONG		nStartIndex=0;
-							FTM_ULONG		nMaxCount=50;
-							FTM_ULONG		ulCount=0;
-
-							switch(nArgc)
-							{
-							case	6:
-								nMaxCount 	= strtol(pArgv[5], NULL, 10);
-								nStartIndex = strtol(pArgv[4], NULL, 10);
-								break;
-								
-							case	5:
-								nMaxCount 	= strtol(pArgv[4], NULL, 10);
-								break;
-							
-							default:
-								MESSAGE("Invalid arguments!\n");
-								return	FTM_RET_INVALID_ARGUMENTS;
-							}
-			
-							pEPData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * nMaxCount);
-							if (pEPData == NULL)
-							{
-								MESSAGE("System not enough memory!\n");
-								return	FTM_RET_NOT_ENOUGH_MEMORY;		
-							}
-			
-							xRet = FTOM_CLIENT_EP_DATA_getList(pClient, pEPID, nStartIndex, pEPData, nMaxCount, &ulCount);
-							if (xRet == FTM_RET_OK)
-							{
-								FTM_INT	i;
-			
-								MESSAGE("%8s %32s %8s\n", "INDEX", "DATE", "VALUE");	
-								for(i = 0 ; i < ulCount ; i++)
-								{
-									FTM_CHAR	pTime[64];
-									time_t		xTime = pEPData[i].ulTime;
-			
-									strftime(pTime, sizeof(pTime), "%Y-%m-%d %H:%M:%S", gmtime(&xTime));
-									MESSAGE("%8lu %32s %8s\n", nStartIndex + i, pTime, FTM_VALUE_print(&pEPData[i].xValue));	
-								}
-							}
-							else
-							{
-								MESSAGE("EndPoint data loading failed [ ERROR = %08lx ]\n", xRet);	
-							}
-			
-							FTM_MEM_free(pEPData);
-						}
-						else if (strcasecmp(pArgv[3], "-t") == 0)
-						{
-							FTM_TIME	xBeginTime,xEndTime;
-							FTM_ULONG	ulBegin, ulEnd;
-							FTM_ULONG	ulMaxCount = 100;
-							FTM_ULONG	ulCount;
-
-							switch(nArgc)
-							{
-							case	7:
-								{
-									ulMaxCount = strtoul(pArgv[6], NULL, 10);
-
-									if (strlen(pArgv[5]) != 14)
-									{
-										MESSAGE("Invalid time!\n");
-										return	FTM_RET_INVALID_ARGUMENTS;
-									}
-
-									xRet = FTM_TIME_setString(&xEndTime, pArgv[5]);
-									if (xRet != FTM_RET_OK)
-									{
-										MESSAGE("Invalid time!\n");
-										return	FTM_RET_INVALID_ARGUMENTS;
-									}
-							
-									FTM_TIME_toSecs(&xEndTime, &ulEnd);
-
-									xRet = FTM_TIME_setString(&xBeginTime, pArgv[4]);
-									if (xRet != FTM_RET_OK)
-									{
-										MESSAGE("Invalid time!\n");
-										return	FTM_RET_INVALID_ARGUMENTS;
-									}
-									
-									FTM_TIME_toSecs(&xBeginTime, &ulBegin);
-								}	
-								break;
-
-							case	6:
-								{
-									if (strlen(pArgv[5]) == 14)
-									{
-										xRet = FTM_TIME_setString(&xEndTime, pArgv[5]);
-										if (xRet != FTM_RET_OK)
-										{
-											MESSAGE("Invalid time!\n");
-											return	FTM_RET_INVALID_ARGUMENTS;
-										}
-									
-										FTM_TIME_toSecs(&xEndTime, &ulEnd);
-									}
-									else 
-									{
-										ulEnd 	= time(NULL);
-										ulMaxCount = strtoul(pArgv[5], NULL, 10);
-									}
-
-									xRet = FTM_TIME_setString(&xBeginTime, pArgv[4]);
-									if (xRet != FTM_RET_OK)
-									{
-										MESSAGE("Invalid time!\n");
-										return	FTM_RET_INVALID_ARGUMENTS;
-									}
-									
-									FTM_TIME_toSecs(&xBeginTime, &ulBegin);
-								}	
-								break;
-
-							case	5:
-								{
-									xRet = FTM_TIME_setString(&xBeginTime, pArgv[4]);
-									if (xRet != FTM_RET_OK)
-									{
-										MESSAGE("Invalid time!\n");
-										return	FTM_RET_INVALID_ARGUMENTS;
-									}
-									
-									FTM_TIME_toSecs(&xBeginTime, &ulBegin);
-
-									ulEnd 	= time(NULL);
-								}	
-							
-								break;
-							
-							default:
-								MESSAGE("Invalid arguments!\n");
-								return	FTM_RET_INVALID_ARGUMENTS;
-							}
-			
-							pEPData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulMaxCount);
-							if (pEPData == NULL)
-							{
-								MESSAGE("System not enough memory!\n");
-								return	FTM_RET_NOT_ENOUGH_MEMORY;		
-							}
-	
-							xRet = FTOM_CLIENT_EP_DATA_getListWithTime(pClient, pEPID, ulBegin, ulEnd, pEPData, ulMaxCount, &ulCount);
-							if (xRet == FTM_RET_OK)
-							{
-								FTM_INT	i;
-							
-								MESSAGE("%8s %20s %8s\n", "INDEX", "DATE", "VALUE");	
-								for(i = 0 ; i < ulCount ; i++)
-								{
-									FTM_TIME	xTime;
-
-									FTM_TIME_setSeconds(&xTime, pEPData[i].ulTime);
-									
-									MESSAGE("%8d %20s %8s\n", i+1, FTM_TIME_printf(&xTime, NULL), FTM_VALUE_print(&pEPData[i].xValue));	
-								}
-							}
-							else
-							{
-								MESSAGE("EndPoint data loading failed [ ERROR = %08lx ]\n", xRet);	
-							}
-			
-							FTM_MEM_free(pEPData);
-						}
-					}
-				}
-				else
-				{
-					MESSAGE("Invalid arguemtns.\n");
-				}
-			}
-		}
+		xRet = FTOM_CLIENT_CMD_setEP(pShell, nArgc - 1, &pArgv[1], pData);
+	}
+	else if (strcasecmp(pArgv[1], "data") == 0)
+	{
+		xRet = FTOM_CLIENT_CMD_EPData(pShell, nArgc - 1, &pArgv[1], pData);
+	}
+	else
+	{
+		xRet = FTM_RET_INVALID_ARGUMENTS;	
 	}
 
-	return	FTM_RET_OK;
+	return	xRet;
 }
 
