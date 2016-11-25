@@ -923,16 +923,11 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 			{
 			case	FTOM_MSG_TYPE_CONNECTED:
 				{
-					xRet = FTOM_TP_CLIENT_serverSync(pClient, FTM_FALSE);
+					xRet = FTOM_TP_CLIENT_serverSyncStart(pClient, FTM_FALSE);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet, "Failed to sync with sever!\n");	
-						break;
 					}
-
-					FTOM_TP_CLIENT_report(pClient);
-
-					FTOM_TP_CLIENT_setReportCtrl(pClient, FTM_TRUE);
 				}
 				break;
 
@@ -1146,6 +1141,11 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 			}
 			FTOM_MSG_destroy(&pBaseMsg);
 		}
+		else
+		{
+		
+		
+		}
 	}
 
 finish:
@@ -1341,7 +1341,7 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 		xRet = FTOM_CLIENT_NODE_count(pClient->pFTOMC, &ulNodeCount);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet, "Fiailed to get Node count!\n");
+			ERROR2(xRet, "Failed to get Node count!\n");
 			goto finish;	
 		}
 
@@ -1431,6 +1431,7 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 
 	FTOM_TP_GATEWAY_destroy(&pClient->pGateway);
 	pClient->pGateway = pGateway;
+
 	FTM_LOCK_reset(pClient->pGatewayLock);
 
 	return	FTM_RET_OK;
@@ -1441,7 +1442,7 @@ finish:
 		FTOM_TP_GATEWAY_destroy(&pGateway);
 	}
 
-	return	FTM_RET_OK;
+	return	xRet;
 }
 			
 FTM_RET	FTOM_TP_CLIENT_NODE_register
@@ -1613,8 +1614,6 @@ FTM_RET	FTOM_TP_CLIENT_report
 	FTM_TIME_getCurrent(&xTime);
 
 	xRet = FTM_LIST_count(pClient->pGateway->pSensorList, &ulSensorCount);
-	TRACE("Current Time : %s\n", FTM_TIME_printf(&xTime, NULL));
-	TRACE("Sensor Count : %lu\n", ulSensorCount);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_ULONG			i;

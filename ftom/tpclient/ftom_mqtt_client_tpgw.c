@@ -540,16 +540,16 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 	FTM_CHAR	pBuff[FTOM_MQTT_CLIENT_MESSAGE_LENGTH+1];
 	FTM_ULONG	ulLen = 0;
 	FTM_ULONG	ulPublishedCount = 0;
-	FTM_ULONG	ulStartTime = 0xFFFFFFFF;
-	FTM_ULONG	ulEndTime = 0;
 	FTM_INT		i;
 
 	do
 	{
+		FTM_ULONG	ulStartTime = 0xFFFFFFFF;
+		FTM_ULONG	ulEndTime = 0;
 		FTM_ULONG	ulPartialCount = 0;
 		ulLen  = 0;
 		pBuff[sizeof(pBuff) - 1] = '\0';
-		
+	
 		sprintf(pTopic, "v/a/g/%s/s/%s", pClient->xConfig.pGatewayID, pEPID);
 	
 		ulLen = sprintf(pBuff, "[");
@@ -557,15 +557,21 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 		{
 			FTM_CHAR	pTemp[128];
 			FTM_ULONG	ulTempLen = 0;
-			if (i == 0)
+			if (ulPartialCount != 0)
 			{
-				ulTempLen += sprintf(pTemp, "%llu,%s", pData[i].ulTime*(FTM_UINT64)1000, FTM_VALUE_print(&pData[i].xValue));
+				ulTempLen += sprintf(pTemp, ",");
 			}
-			else
-			{
-				ulTempLen += sprintf(pTemp, ",%llu,%s", pData[i].ulTime*(FTM_UINT64)1000, FTM_VALUE_print(&pData[i].xValue));
-			}
+
+			ulTempLen += sprintf(&pTemp[ulTempLen], "%llu,", pData[i].ulTime*(FTM_UINT64)1000);
+
+			FTM_VALUE_snprint(&pTemp[ulTempLen], sizeof(pTemp) - ulTempLen, &pData[i].xValue);
+			ulTempLen += strlen(&pTemp[ulTempLen]);
 	
+			if (ulTempLen >= (FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen - 1))
+			{
+				break;	
+			}
+
 			if (ulStartTime > pData[i].ulTime)
 			{
 				ulStartTime = pData[i].ulTime;	
@@ -575,18 +581,15 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 			{
 				ulEndTime = pData[i].ulTime;	
 			}
-	
-			if (ulTempLen >= (FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen - 1))
-			{
-				break;	
-			}
-	
+
 			strcpy(&pBuff[ulLen], pTemp);
 			ulLen += ulTempLen;
 			ulPartialCount++;
-			ulPublishedCount++;
 		}
-	
+
+
+		ulPublishedCount += ulPartialCount;
+
 		ulLen += snprintf(&pBuff[ulLen], FTOM_MQTT_CLIENT_MESSAGE_LENGTH - ulLen, "]");
 	
 		FTOM_MQTT_TPGW_PUBLISH_INFO_PTR pInfo = FTM_MEM_malloc(sizeof(FTOM_MQTT_TPGW_PUBLISH_INFO));
@@ -604,19 +607,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 			break;
 		}
 
-		{
-			FTM_CHAR	pStartTime[64];
-			FTM_CHAR	pEndTime[64];
-			FTM_TIME	xTime;
-
-			FTM_TIME_setSeconds(&xTime, ulStartTime);
-			sprintf(pStartTime, "%s", FTM_TIME_printf(&xTime, NULL));
-
-			FTM_TIME_setSeconds(&xTime, ulEndTime);
-			sprintf(pEndTime, "%s", FTM_TIME_printf(&xTime, NULL));
-
-			TRACE("Send EP[%s] DATA[ %lu, %s, %s ]\n", pInfo->pEPID, ulPartialCount, pStartTime, pEndTime);
-		}
+		TRACE("Send EP[%s] DATA[ %lu, %lu ]\n", pInfo->pEPID, ulStartTime,  ulEndTime);
 
 		xRet = FTOM_MQTT_CLIENT_publish(pClient, pTopic, pBuff, ulLen, pInfo, NULL);
 		if (xRet != FTM_RET_OK)

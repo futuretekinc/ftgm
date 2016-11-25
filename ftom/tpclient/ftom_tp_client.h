@@ -61,6 +61,7 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 	pthread_t				xThreadEvent;
 	FTM_TIMER				xReportTimer;
 	FTM_TIMER				xRetryTimer;
+	FTM_TIMER				xServerSyncTimer;
 
 	FTOM_TP_GATEWAY_PTR		pGateway;
 	FTM_LOCK_PTR			pGatewayLock;

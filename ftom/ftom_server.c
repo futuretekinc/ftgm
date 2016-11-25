@@ -25,7 +25,7 @@
 #define __MODULE__	FTOM_TRACE_MODULE_SERVER
 
 #ifndef	FTOM_TRACE_IO
-//#define	FTOM_TRACE_IO		1
+#define	FTOM_TRACE_IO		0
 #endif
 
 #define	MK_CMD_SET(CMD,FUN)	{CMD, #CMD, (FTOM_SERVER_CALLBACK)FUN }

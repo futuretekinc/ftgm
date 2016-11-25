@@ -36,7 +36,7 @@ FTM_RET	FTOM_EP_message
 	FTOM_MSG_PTR	pBaseMsg
 );
 
-#if 0
+#if 1
 static
 FTM_RET	FTOM_EP_reportStatus
 (
@@ -625,8 +625,8 @@ FTM_VOID_PTR FTOM_EP_threadMain
 	TRACE("Report Interval : %lu ms\n",pEP->xInfo.ulReportInterval);
 
 	pEP->bStop = FTM_FALSE;
-	FTM_TIMER_initS(&pEP->xUpdateTimer, 0);
-	FTM_TIMER_initS(&pEP->xReportTimer, 0);
+	FTM_TIMER_initMS(&pEP->xUpdateTimer, 0);
+	FTM_TIMER_initMS(&pEP->xReportTimer, 0);
 
 	while(!pEP->bStop)
 	{
@@ -673,14 +673,14 @@ FTM_VOID_PTR FTOM_EP_threadMain
 
 		if (FTM_TIMER_isExpired(&pEP->xReportTimer))
 		{
-#if 0
-			FTM_ULONG	ulPrevTime, ulCurrentTime;
+#if 1
+			FTM_ULONG	ulPrevTime, ulExpiredTime;
 
-			FTM_TIMER_getTime(&pEP->xReportTimer, &ulCurrentTime);
-			ulPrevTime = ulCurrentTime - pEP->xInfo.ulReportInterval;
+			FTM_TIMER_getTime(&pEP->xReportTimer, &ulExpiredTime);
+			ulPrevTime = ulExpiredTime - pEP->xInfo.ulReportInterval / 1000;
 
 			FTOM_EP_reportStatus(pEP);
-			FTOM_EP_reportDataInTime(pEP, ulPrevTime, ulCurrentTime);
+			FTOM_EP_reportDataInTime(pEP, ulPrevTime, ulExpiredTime);
 #endif
 			FTM_TIMER_addMS(&pEP->xReportTimer, pEP->xInfo.ulReportInterval);
 		}
@@ -1251,7 +1251,7 @@ FTM_RET	FTOM_EP_remoteSetDataAsync
 	return	xRet;
 }
 
-#if 0
+#if 1
 FTM_RET	FTOM_EP_reportStatus
 (
 	FTOM_EP_PTR 	pEP

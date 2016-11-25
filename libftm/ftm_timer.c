@@ -229,7 +229,11 @@ FTM_CHAR_PTR	FTM_TIMER_toString
 	return	pString;
 }
 
-FTM_RET		FTM_TIMER_getTime(FTM_TIMER_PTR pTimer, FTM_ULONG_PTR pulTime)
+FTM_RET		FTM_TIMER_getTime
+(
+	FTM_TIMER_PTR pTimer, 
+	FTM_ULONG_PTR pulTime
+)
 {
 	ASSERT(pTimer != NULL);
 	ASSERT(pulTime != NULL);

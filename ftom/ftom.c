@@ -2038,7 +2038,6 @@ FTM_RET	FTOM_SYS_EP_publishData
 		return	xRet;	
 	}
 
-
 	xRet = FTOM_MSGQ_push(pMsgQ, (FTOM_MSG_PTR)pMsg);
 	if (xRet != FTM_RET_OK)
 	{

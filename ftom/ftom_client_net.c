@@ -491,6 +491,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadNet
 								FTOM_REQ_NOTIFY_PARAMS_PTR 	pReq = (FTOM_REQ_NOTIFY_PARAMS_PTR)pRecvPkt;
 								FTOM_MSG_PTR				pMsg;
 
+
 								xRet = FTOM_MSG_copy(&pReq->xMsg, &pMsg);
 								if (xRet == FTM_RET_OK)
 								{
