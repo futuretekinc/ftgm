@@ -1,0 +1,48 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CLIENT	Makefile	/^CLIENT=azureclient$/;"	m
+CLIENT_CFLAGS	Makefile	/^CLIENT_CFLAGS=$(CFLAGS) -std=gnu99 -I$(TOPDIR)\/..\/azure-iot-sdks\/c\/iothub_client\/inc -I$(TOPDIR)\/..\/azure-iot-sdks\/c\/c-utility\/inc$/;"	m
+CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -L.\/ \\$/;"	m
+CLIENT_OBJS	Makefile	/^CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)$/;"	m
+CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c \\$/;"	m
+FTOM_AZURE_CLIENT	ftom_azure_client.h	/^}	FTOM_AZURE_CLIENT, _PTR_ FTOM_AZURE_CLIENT_PTR;$/;"	t	typeref:struct:__anon2
+FTOM_AZURE_CLIENT_CONFIG	ftom_azure_client.h	/^}	FTOM_AZURE_CLIENT_CONFIG, _PTR_ FTOM_AZURE_CLIENT_CONIG_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_AZURE_CLIENT_CONIG_PTR	ftom_azure_client.h	/^}	FTOM_AZURE_CLIENT_CONFIG, _PTR_ FTOM_AZURE_CLIENT_CONIG_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_AZURE_CLIENT_PTR	ftom_azure_client.h	/^}	FTOM_AZURE_CLIENT, _PTR_ FTOM_AZURE_CLIENT_PTR;$/;"	t	typeref:struct:__anon2
+FTOM_AZURE_CLIENT_connect	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_connect$/;"	f
+FTOM_AZURE_CLIENT_create	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_create$/;"	f
+FTOM_AZURE_CLIENT_destroy	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_destroy$/;"	f
+FTOM_AZURE_CLIENT_loadConfigFromFile	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_loadConfigFromFile$/;"	f
+FTOM_AZURE_CLIENT_saveConfigToFile	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_saveConfigToFile$/;"	f
+FTOM_AZURE_CLIENT_serverSyncStart	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_serverSyncStart$/;"	f
+FTOM_AZURE_CLIENT_showConfig	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_showConfig$/;"	f
+FTOM_AZURE_CLIENT_start	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_start$/;"	f
+FTOM_AZURE_CLIENT_stop	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_stop$/;"	f
+FTOM_AZURE_CLIENT_usage	main.c	/^FTM_VOID	FTOM_AZURE_CLIENT_usage$/;"	f
+FTOM_AZURE_CLIENT_waitingForFinished	ftom_azure_client.c	/^FTM_RET	FTOM_AZURE_CLIENT_waitingForFinished$/;"	f
+FTOM_AZURE_SHARED_ACCESS_KEY_LEN	ftom_azure_client.h	12;"	d
+FTOM_AZURE_SHELL_CMD_config	ftom_azure_client_shell_cmds.c	/^FTM_RET	FTOM_AZURE_SHELL_CMD_config$/;"	f
+FTOM_AZURE_SHELL_CMD_object	ftom_azure_client_shell_cmds.c	/^FTM_RET	FTOM_AZURE_SHELL_CMD_object$/;"	f
+FTOM_AZURE_SHELL_CMD_quit	ftom_azure_client_shell_cmds.c	/^FTM_RET	FTOM_AZURE_SHELL_CMD_quit$/;"	f
+FTOM_AZURE_SHELL_CMD_server	ftom_azure_client_shell_cmds.c	/^FTM_RET	FTOM_AZURE_SHELL_CMD_server$/;"	f
+FTOM_AZURE_SHELL_CMD_task	ftom_azure_client_shell_cmds.c	/^FTM_RET	FTOM_AZURE_SHELL_CMD_task$/;"	f
+FTOM_AZURE_shellCmdCount	ftom_azure_client_shell_cmds.c	/^FTM_ULONG		FTOM_AZURE_shellCmdCount = sizeof(FTOM_AZURE_shellCmds) \/ sizeof(FTM_SHELL_CMD);$/;"	v
+FTOM_AZURE_shellCmds	ftom_azure_client_shell_cmds.c	/^FTM_SHELL_CMD	FTOM_AZURE_shellCmds[] = $/;"	v
+TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
+_FTOM_AZURE_CLIENT_H_	ftom_azure_client.h	2;"	d
+__MODULE__	ftom_azure_client_shell_cmds.c	5;"	d	file:
+__MODULE__	ftom_azure_client_shell_cmds.c	6;"	d	file:
+__MODULE__	main.c	13;"	d	file:
+__MODULE__	main.c	14;"	d	file:
+hClient	ftom_azure_client.h	/^	IOTHUB_CLIENT_LL_HANDLE		hClient;$/;"	m	struct:__anon2
+main	main.c	/^FTM_INT	main$/;"	f
+pConnectionString	ftom_azure_client.c	/^FTM_CHAR_PTR	pConnectionString="HostName=ftiot2.azure-devices.net;DeviceId=Device1;SharedAccessKey=qybocP7TqAF4Sc8V+ezRVGiUF5NNIQcadkkRgvfyq0w=";$/;"	v
+pDeviceID	ftom_azure_client.h	/^	FTM_CHAR	pDeviceID[FTM_ID_LEN + 1];$/;"	m	struct:__anon1
+pHostName	ftom_azure_client.h	/^	FTM_CHAR	pHostName[FTM_HOST_LEN + 1];$/;"	m	struct:__anon1
+pSharedAccessKey	ftom_azure_client.h	/^	FTM_CHAR	pSharedAccessKey[FTOM_AZURE_SHARED_ACCESS_KEY_LEN + 1];$/;"	m	struct:__anon1
+ulGetheringTime	ftom_azure_client_shell_cmds.c	/^FTM_ULONG	ulGetheringTime = 3;$/;"	v
+xConfig	ftom_azure_client.h	/^	FTOM_AZURE_CLIENT_CONFIG	xConfig;$/;"	m	struct:__anon2

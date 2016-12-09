@@ -61,7 +61,8 @@ LDFLAGS= $(COMMON_LDFLAGS)\
 
 else
 CC=gcc
-CFLAGS= $(COMMON_CFLAGS) \
+CFLAGS= -fPIC \
+	$(COMMON_CFLAGS) \
 		-I/usr/local/include \
 		-I/usr/local/include/cjson 
 

@@ -21,7 +21,8 @@ FTOM_SRCS=ftom_main.c \
 		ftom_node_hhtw.c\
 		ftom_node_virtual.c\
 		ftom_node_fte_es7v.c\
-		ftom_discovery.c
+		ftom_discovery.c\
+		ftom_shell_cmds.c
 
 FTOM_OBJS=$(FTOM_SRCS:.c=.o)
 FTOM_LDFLAGS=$(LDFLAGS) -lftom -lftdmc -lftm -lcjson -lpthread  -lnetsnmpmibs -lnetsnmpagent -lnetsnmp -lmosquitto -lrt -ldl -lm
@@ -33,7 +34,6 @@ LIB_FTOM_SRCS= ftom_msg.c \
 			   ftom_node.c\
 			   ftom_node_class.c\
 			   ftom_ep.c\
-			   ftom_shell_cmds.c\
 			   ftom_dmc.c\
 			   ftom_trigger.c\
 			   ftom_action.c\
@@ -43,7 +43,8 @@ LIB_FTOM_SRCS= ftom_msg.c \
 			   ftom_session.c\
 			   ftom_mqttc.c\
 			   ftom_mqttc_ft.c\
-			   ftom_shell.c
+				ftom_shell.c
+
 LIB_FTOM_OBJS=$(LIB_FTOM_SRCS:.c=.o)
 
 LIB_FTOMC=libftomc
