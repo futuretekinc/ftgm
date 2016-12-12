@@ -10,11 +10,8 @@
 
 typedef	struct
 {
-	struct
-	{
-		FTM_CHAR	pHost[FTM_URL_LEN+1];
-		FTM_USHORT	usPort;
-	}	xServer;
+	FTM_CHAR	pHostName[FTM_URL_LEN+1];
+	FTM_USHORT	usPort;
 }	FTOM_CLIENT_NET_CONFIG, _PTR_ FTOM_CLIENT_NET_CONFIG_PTR;
 
 typedef	struct
@@ -23,15 +20,13 @@ typedef	struct
 
 	FTOM_CLIENT_NET_CONFIG	xConfig;
 
-	pthread_t			xThreadMain;
-	FTOM_MSG_QUEUE_PTR	pMsgQ;
-
 	pthread_t			xThreadNet;
 	struct sockaddr_in	xRemoteAddr;
 	struct sockaddr_in	xLocalAddr;
 
 	FTM_BOOL			bInit;
-	FTM_BOOL			bStop;
+
+	FTM_BOOL			bNetStop;
 	FTM_BOOL			bConnected;
 	FTM_INT				hSock;
 	FTM_ULONG			ulTimeout;
@@ -60,16 +55,21 @@ FTM_RET	FTOM_CLIENT_NET_destroy
 	FTOM_CLIENT_NET_PTR _PTR_ ppClient
 );
 
-FTM_RET	FTOM_CLIENT_NET_setConfig
+FTM_RET	FTOM_CLIENT_NET_loadConfig
 (
-	FTOM_CLIENT_NET_PTR	pCliet,
-	FTOM_CLIENT_NET_CONFIG_PTR	pConfig
+	FTOM_CLIENT_NET_PTR	pClient,
+	FTM_CONFIG_PTR		pConfig
 );
 
-FTM_RET	FTOM_CLIENT_NET_getConfig
+FTM_RET	FTOM_CLIENT_NET_saveConfig
 (
-	FTOM_CLIENT_NET_PTR	pCliet,
-	FTOM_CLIENT_NET_CONFIG_PTR	pConfig
+	FTOM_CLIENT_NET_PTR	pClient,
+	FTM_CONFIG_PTR		pConfig
+);
+
+FTM_RET	FTOM_CLIENT_NET_showConfig
+(
+	FTOM_CLIENT_NET_PTR	pClient
 );
 
 FTM_RET	FTOM_CLIENT_NET_setNotifyCB
@@ -85,6 +85,11 @@ FTM_RET	FTOM_CLIENT_NET_start
 );
 
 FTM_RET	FTOM_CLIENT_NET_stop
+(
+	FTOM_CLIENT_NET_PTR	pClient
+);
+
+FTM_RET	FTOM_CLIENT_NET_waitingForFinished
 (
 	FTOM_CLIENT_NET_PTR	pClient
 );

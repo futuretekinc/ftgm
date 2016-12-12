@@ -4,7 +4,7 @@ endif
 
 include $(TOPDIR)/Makefile.in
 
-CLIENT=azureclient
+CLIENT=azclient
 CLIENT_SRCS=main.c \
 	ftom_azure_client.c\
 	ftom_azure_client_shell_cmds.c
@@ -16,7 +16,7 @@ CLIENT_LDFLAGS=$(LDFLAGS) -L./ \
 				-L$(TOPDIR)/../azure-iot-sdks/c/build_all/c-utility \
 				-L$(TOPDIR)/../azure-iot-sdks/c/build_all/umqtt \
 				-liothub_client -liothub_client_mqtt_transport -lumqtt -laziotsharedutil \
-				-lftom -lftomcl -lftomc -lftm \
+				-lftomcl -lftomc -lftom -lftm \
 				-lmosquitto -lcrypto -lssl -lcurl -lcjson -lpthread  -lm -lrt 
 
 all: $(CLIENT)

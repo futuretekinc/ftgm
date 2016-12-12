@@ -27,11 +27,7 @@ FTM_RET	FTOM_CLIENT_CMD_client
 	}
 	else if(strcasecmp(pArgv[1], "server") == 0)
 	{
-		FTOM_CLIENT_NET_PTR	pNetClient = (FTOM_CLIENT_NET_PTR)pClient;
-
-		MESSAGE("# Server Configuration.\n");
-		MESSAGE("%16s : %s\n", "Host", pNetClient->xConfig.xServer.pHost);
-		MESSAGE("%16s : %lu\n", "Port", (FTM_ULONG)pNetClient->xConfig.xServer.usPort);
+		FTOM_CLIENT_showConfig(pClient);
 	}
 
 	return	FTM_RET_OK;

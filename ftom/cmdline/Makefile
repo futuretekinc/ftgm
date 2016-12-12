@@ -11,7 +11,7 @@ TARGET=ftomcl
 TARGET_SRCS=main.c
 
 TARGET_OBJS=$(TARGET_SRCS:.c=.o)
-TARGET_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftm -lcjson -lpthread  -lrt -lm
+TARGET_LDFLAGS=$(LDFLAGS) -L./ -lftomcl -lftomc -lftom -lftm -lcjson -lpthread  -lrt -lm
 
 TARGET_LIB=libftomcl
 TARGET_LIB_SRCS= ftom_client_cmdline.c\

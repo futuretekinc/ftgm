@@ -99,7 +99,7 @@ FTM_VOID_PTR	FTM_SHELL_process
 	
 	while(!pShell->bStop)
 	{
-		printf("%s", pShell->pPrompt);
+		printf("%s> ", pShell->pPrompt);
 
 		memset(pCmdLine, 0, sizeof(pCmdLine));
 		fgets(pCmdLine, sizeof(pCmdLine), stdin);
@@ -114,7 +114,7 @@ FTM_VOID_PTR	FTM_SHELL_process
 			if (nRet == FTM_RET_OK)
 			{
 				TRACE("Shell Command called[%s]\n", pArgv[0]);
-				nRet = pCmd->function(pShell, nArgc, pArgv, pCmd->pData);
+				nRet = pCmd->function(pShell, nArgc, pArgv, (pCmd->pData != NULL)?pCmd->pData:pShell->pData);
 				switch(nRet)
 				{
 				case	FTM_RET_INVALID_ARGUMENTS:
@@ -145,6 +145,9 @@ FTM_VOID_PTR	FTM_SHELL_process
 FTM_RET FTM_SHELL_init
 (
 	FTM_SHELL_PTR	pShell,
+	FTM_CHAR_PTR	pPrompt,
+	FTM_SHELL_CMD_PTR	pCmds,
+	FTM_ULONG		ulCmdCount,
 	FTM_VOID_PTR	pData
 )
 {
@@ -152,6 +155,16 @@ FTM_RET FTM_SHELL_init
 
 	FTM_SHELL_CMD_PTR	pCmd;
 	FTM_INT				i;
+
+	if (pPrompt != NULL)
+	{
+		strncpy(pShell->pPrompt, pPrompt, sizeof(pShell->pPrompt));
+	}
+
+	if (pData != NULL)
+	{
+		pShell->pData = pData;
+	}
 
 	pShell->bStop = FTM_TRUE;
 	FTM_LIST_create(&pShell->pCmdList);
@@ -164,15 +177,11 @@ FTM_RET FTM_SHELL_init
 		if (pCmd != NULL)
 		{
 			memcpy(pCmd, &xDefaultCmds[i], sizeof(FTM_SHELL_CMD));
-			pCmd->pData = pData;
-
 			FTM_LIST_insert(pShell->pCmdList, pCmd, FTM_LIST_POS_ASSENDING);
 		}
 	}
 
-	pShell->pData = pData;
-
-	return	FTM_RET_OK;
+	return	FTM_SHELL_addCmds(pShell, pCmds, ulCmdCount);
 }	
 
 FTM_RET	FTM_SHELL_final
@@ -238,6 +247,30 @@ FTM_RET	FTM_SHELL_run
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTM_SHELL_run2
+(
+	FTM_CHAR_PTR	pPrompt,
+	FTM_SHELL_CMD_PTR	pCmds,
+	FTM_ULONG		ulCmdCount,
+	FTM_VOID_PTR	pData
+)
+{
+	FTM_RET		xRet;
+	FTM_SHELL	xShell;
+
+	xRet = FTM_SHELL_init(&xShell, pPrompt, pCmds, ulCmdCount, pData);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTM_SHELL_run(&xShell);
+
+	FTM_SHELL_final(&xShell);
+
+	return	xRet;
+}
+
 FTM_RET	FTM_SHELL_setPrompt
 (
 	FTM_SHELL_PTR	pShell,
@@ -301,10 +334,6 @@ FTM_RET	FTM_SHELL_appendCmd
 	}
 
 	memcpy(pNewCmd, pCmd, sizeof(FTM_SHELL_CMD));
-	if (pNewCmd->pData == NULL)
-	{
-		pNewCmd->pData = pShell->pData;	
-	}
 	xRet = FTM_LIST_insert(pShell->pCmdList, pNewCmd, FTM_LIST_POS_ASSENDING);
 	if (xRet != FTM_RET_OK)
 	{

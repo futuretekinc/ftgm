@@ -15,6 +15,8 @@
 
 extern	FTM_SHELL_CMD	FTOM_AZURE_shellCmds[];
 extern	FTM_ULONG		FTOM_AZURE_shellCmdCount;
+extern  FTM_SHELL_CONFIG	FTOM_AZURE_shellConfig;
+
 static
 FTM_VOID	FTOM_AZURE_CLIENT_usage
 (
@@ -28,12 +30,12 @@ FTM_INT	main
 	FTM_CHAR_PTR pArgv[]
 )
 {
-	FTM_RET				xRet;
-	FTM_INT				nOpt;
-	FTM_BOOL			bDaemon = FTM_FALSE;
-	FTM_ULONG			ulDebugLevel = FTM_TRACE_LEVEL_ALL;
-	FTOM_AZURE_CLIENT_PTR	pTPClient = NULL;
-	FTM_CHAR			pConfigFileName[1024];
+	FTM_RET			xRet;
+	FTM_INT			nOpt;
+	FTM_BOOL		bDaemon = FTM_FALSE;
+	FTM_ULONG		ulDebugLevel = FTM_TRACE_LEVEL_ALL;
+	FTOM_CLIENT_PTR	pClient = NULL;
+	FTM_CHAR		pConfigFileName[1024];
 
 	sprintf(pConfigFileName, "/etc/%s.conf", FTM_getProgramName());
 
@@ -75,26 +77,22 @@ FTM_INT	main
 		goto finish;	
 	}
 
-	xRet = FTOM_AZURE_CLIENT_create(&pTPClient);
+	FTM_TRACE_setLevel(FTM_TRACE_MAX_MODULES, ulDebugLevel);
+	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT,"CLIENT", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+
+	xRet = FTOM_AZURE_CLIENT_create((FTOM_AZURE_CLIENT_PTR _PTR_)&pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Can't create a TPClient.\n");
+		ERROR2(xRet, "Can't create a client.\n");
 		goto finish;
 	}
 
-	FTM_TRACE_setLevel(FTM_TRACE_MAX_MODULES, ulDebugLevel);
-	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT,"CLIENT", FTM_TRACE_LEVEL_FATAL, FTM_TRACE_OUT_TERM);
-	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_MQTTC, "MQTTC", FTM_TRACE_LEVEL_FATAL, FTM_TRACE_OUT_TERM);
-
-	xRet = FTOM_AZURE_CLIENT_loadConfigFromFile(pTPClient, pConfigFileName);
+	xRet = FTOM_CLIENT_loadConfigFromFile(pClient, pConfigFileName);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "TPClient failed to load configuration from file.\n");	
-		goto error;
+		ERROR2(xRet, "Client failed to load configuration from file.\n");	
+		goto release;
 	}
-
-
-	FTOM_AZURE_CLIENT_showConfig(pTPClient);
 
 	if (bDaemon)
 	{
@@ -102,39 +100,36 @@ FTM_INT	main
 		{
 			return	0;
 		}
-		FTOM_AZURE_CLIENT_start(pTPClient);
+	}
 
-		FTOM_AZURE_CLIENT_waitingForFinished(pTPClient);
+	FTOM_CLIENT_start(pClient);
+
+	if (!bDaemon)
+	{
+		FTM_SHELL_run2("azure", FTOM_AZURE_shellCmds, FTOM_AZURE_shellCmdCount, pClient);
+		xRet = FTOM_CLIENT_stop(pClient);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "The client was finished abnormally!!.\n");	
+		}
 	}
 	else
 	{
-		FTM_SHELL			xShell;
-		FTM_INT				i;
-		for(i = 0 ; i < FTOM_AZURE_shellCmdCount ; i++)
+		xRet = FTOM_CLIENT_waitingForFinished(pClient);
+		if (xRet != FTM_RET_OK)
 		{
-			FTOM_AZURE_shellCmds[i].pData = pTPClient;	
+			ERROR2(xRet, "The client was finished abnormally!!.\n");	
 		}
-
-		FTOM_AZURE_CLIENT_start(pTPClient);
-
-		FTM_SHELL_init(&xShell,pTPClient);
-		FTM_SHELL_setPrompt(&xShell, "Client> ");
-		FTM_SHELL_addCmds(&xShell, FTOM_AZURE_shellCmds, FTOM_AZURE_shellCmdCount);
-		FTM_SHELL_run(&xShell);
-		FTM_SHELL_final(&xShell);
-		FTOM_AZURE_CLIENT_waitingForFinished(pTPClient);
-	}
-	
-	xRet = FTOM_AZURE_CLIENT_destroy(&pTPClient);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Remove the TPClient failed\n");
 	}
 
-error:
-	if (pTPClient != NULL)
+release:
+	if (pClient != NULL)
 	{
-		FTOM_AZURE_CLIENT_destroy(&pTPClient);
+		xRet = FTOM_CLIENT_destroy(&pClient);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Remove the Client failed\n");
+		}
 	}
 
 finish:

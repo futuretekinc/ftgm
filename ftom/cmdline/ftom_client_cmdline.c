@@ -50,9 +50,7 @@ FTM_RET	FTOM_CLIENT_CL_init
 
 	pClient->xCommon.fStart = (FTOM_CLIENT_START)FTOM_CLIENT_CL_start;
 	pClient->xCommon.fStop = (FTOM_CLIENT_STOP)FTOM_CLIENT_CL_stop;
-	pClient->xCommon.fSetConfig = (FTOM_CLIENT_SET_CONFIG)FTOM_CLIENT_CL_setConfig;
 	pClient->xCommon.fLoadConfig= (FTOM_CLIENT_LOAD_CONFIG)FTOM_CLIENT_CL_loadConfig;
-	//pClient->xCommon.fSetNotifyCallback = (FTOM_CLIENT_SET_NOTIFY_CALLBACK)FTOM_CLIENT_CL_setNotifyCallback;
 	pClient->xCommon.fRequest = (FTOM_CLIENT_REQUEST)FTOM_CLIENT_CL_requestNet;	
 
 	return	FTM_RET_OK;

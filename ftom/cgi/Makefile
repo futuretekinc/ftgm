@@ -12,6 +12,7 @@ CFLAGS:=${CFLAGS}\
 LDFLAGS:=$(LDFLAGS)
 LIBS:= 	-lftomcl\
 		-lftomc\
+		-lftom\
 		-lftm\
 		-lpthread \
 		-lm\

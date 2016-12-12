@@ -7,6 +7,32 @@
 
 #define		FTM_SHELL_MAX_ARGS	16
 
+struct FTM_SHELL_STRUCT;
+typedef	FTM_RET	(*FTM_SHELL_CMD_CB)
+(
+	struct FTM_SHELL_STRUCT _PTR_ pShell, 
+	FTM_INT nArgc, 
+	FTM_CHAR_PTR pArgv[], 
+	FTM_VOID_PTR pData
+);
+
+typedef struct	_FTMC_CMD
+{
+	FTM_CHAR_PTR		pString;
+	FTM_SHELL_CMD_CB	function;
+	FTM_CHAR_PTR		pShortHelp;
+	FTM_CHAR_PTR		pHelp;
+	FTM_VOID_PTR		pData;
+}	FTM_SHELL_CMD, _PTR_ FTM_SHELL_CMD_PTR;
+
+typedef	struct
+{
+	FTM_CHAR_PTR		pPrompt;
+	FTM_ULONG			ulCmdCount;
+	FTM_SHELL_CMD_PTR	pCmdList;
+	FTM_VOID_PTR		pDefaultData;
+}	FTM_SHELL_CONFIG, _PTR_ FTM_SHELL_CONFIG_PTR;
+
 typedef	struct FTM_SHELL_STRUCT
 {
 	FTM_CHAR		pPrompt[128];
@@ -16,25 +42,12 @@ typedef	struct FTM_SHELL_STRUCT
 	FTM_VOID_PTR	pData;
 }	FTM_SHELL, _PTR_ FTM_SHELL_PTR;
 
-typedef struct	_FTMC_CMD
-{
-	FTM_CHAR_PTR	pString;
-	FTM_RET			(*function)(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-	FTM_CHAR_PTR	pShortHelp;
-	FTM_CHAR_PTR	pHelp;
-	FTM_VOID_PTR	pData;
-}	FTM_SHELL_CMD, _PTR_ FTM_SHELL_CMD_PTR;
-
-typedef	struct
-{
-	FTM_CHAR_PTR		pPrompt;
-	FTM_SHELL_CMD_PTR	pCmdList;
-	FTM_ULONG			ulCmdCount;
-}	FTM_SHELL_CONFIG, _PTR_ FTM_SHELL_CONFIG_PTR;
-
-FTM_RET	FTM_SHELL_init
+FTM_RET FTM_SHELL_init
 (
 	FTM_SHELL_PTR	pShell,
+	FTM_CHAR_PTR	pPrompt,
+	FTM_SHELL_CMD_PTR	pCmds,
+	FTM_ULONG		ulCmdCount,
 	FTM_VOID_PTR	pData
 );
 
@@ -65,6 +78,14 @@ FTM_RET	FTM_SHELL_appendCmd
 (
 	FTM_SHELL_PTR		pShell,
 	FTM_SHELL_CMD_PTR 	pCmd
+);
+
+FTM_RET	FTM_SHELL_run2
+(
+	FTM_CHAR_PTR	pPrompt,
+	FTM_SHELL_CMD_PTR	pCmds,
+	FTM_ULONG		ulCmdCount,
+	FTM_VOID_PTR	pData
 );
 
 #endif

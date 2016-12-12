@@ -5,8 +5,13 @@
 #include <semaphore.h>
 #include "ftm.h"
 #include "ftom_params.h"
+#include "ftom_message_queue.h"
 
-typedef	union	FTOM_CLIENT_CONFIG_UNION _PTR_ FTOM_CLIENT_CONFIG_PTR;
+#define	FTOM_CLIENT_TYPE_NET	(0x01000000UL)
+#define	FTOM_CLIENT_TYPE_TP		(FTOM_CLIENT_TYPE_NET | 0x01)
+#define	FTOM_CLIENT_TYPE_AZURE	(FTOM_CLIENT_TYPE_NET | 0x02)
+
+struct FTOM_CLIENT_CONFIG_STRUCT;
 
 struct FTOM_CLIENT_STRUCT;
 
@@ -14,6 +19,21 @@ typedef	FTM_RET (*FTOM_CLIENT_NOTIFY_CB)
 (
 	FTOM_MSG_PTR	pMsg,
 	FTM_VOID_PTR	pData
+);
+
+typedef	FTM_RET	(*FTOM_CLIENT_DESTROY)
+(
+	struct FTOM_CLIENT_STRUCT _PTR_ _PTR_ ppClient
+);
+
+typedef	FTM_RET	(*FTOM_CLIENT_INIT)
+(
+	struct FTOM_CLIENT_STRUCT _PTR_ pClient
+);
+
+typedef	FTM_RET	(*FTOM_CLIENT_FINAL)
+(
+	struct FTOM_CLIENT_STRUCT _PTR_ pClient
 );
 
 typedef	FTM_RET	(*FTOM_CLIENT_START)
@@ -26,16 +46,32 @@ typedef	FTM_RET	(*FTOM_CLIENT_STOP)
 	struct FTOM_CLIENT_STRUCT _PTR_	pClient
 );
 
+typedef FTM_RET	(*FTOM_CLIENT_WAITING_FOR_FINISHED)
+(
+	struct FTOM_CLIENT_STRUCT _PTR_	pClient
+);
+
+typedef	FTM_RET	(*FTOM_CLIENT_MESSAGE)
+(
+	struct FTOM_CLIENT_STRUCT _PTR_ pClient,
+	FTOM_MSG_PTR					pMsg
+);
+
 typedef FTM_RET	(*FTOM_CLIENT_LOAD_CONFIG)
 (
 	struct FTOM_CLIENT_STRUCT _PTR_	pClient,
 	FTM_CONFIG_PTR					pConfig
 );
 
-typedef FTM_RET	(*FTOM_CLIENT_SET_CONFIG)
+typedef FTM_RET	(*FTOM_CLIENT_SAVE_CONFIG)
 (
 	struct FTOM_CLIENT_STRUCT _PTR_	pClient,
-	FTOM_CLIENT_CONFIG_PTR			pConfig
+	FTM_CONFIG_PTR					pConfig
+);
+
+typedef FTM_RET	(*FTOM_CLIENT_SHOW_CONFIG)
+(
+	struct FTOM_CLIENT_STRUCT _PTR_	pClient
 );
 
 typedef	FTM_RET	(*FTOM_CLIENT_SET_NOTIFY_CB)
@@ -55,18 +91,93 @@ typedef	FTM_RET	(*FTOM_CLIENT_REQUEST)
 	FTM_ULONG_PTR					pulRespLen
 );
 
+typedef	struct	FTOM_CLIENT_FUCNTION_SET_STRUCT
+{
+	FTOM_CLIENT_DESTROY			fDestroy;
+
+	FTOM_CLIENT_INIT			fInit;
+	FTOM_CLIENT_FINAL			fFinal;
+
+	FTOM_CLIENT_START			fStart;
+	FTOM_CLIENT_STOP			fStop;
+	FTOM_CLIENT_MESSAGE			fMessageProcess;
+
+	FTOM_CLIENT_WAITING_FOR_FINISHED	fWaitingForFinished;
+	FTOM_CLIENT_LOAD_CONFIG		fLoadConfig;
+	FTOM_CLIENT_SAVE_CONFIG		fSaveConfig;
+	FTOM_CLIENT_SHOW_CONFIG		fShowConfig;
+	FTOM_CLIENT_SET_NOTIFY_CB	fSetNotifyCB;
+	FTOM_CLIENT_REQUEST			fRequest;	
+}	FTOM_CLIENT_FUNCTION_SET, _PTR_ FTOM_CLIENT_FUNCTION_SET_PTR;
+
 typedef	struct	FTOM_CLIENT_STRUCT 
 {
-	FTOM_CLIENT_START					fStart;
-	FTOM_CLIENT_STOP					fStop;
-	FTOM_CLIENT_LOAD_CONFIG				fLoadConfig;
-	FTOM_CLIENT_SET_CONFIG				fSetConfig;
-	FTOM_CLIENT_SET_NOTIFY_CB			fSetNotifyCB;
-	FTOM_CLIENT_REQUEST					fRequest;	
+//	Object Type
+	FTM_ULONG				xType;
 
-	FTOM_CLIENT_NOTIFY_CB 				fNotifyCB;
-	FTM_VOID_PTR						pNotifyData;
+//	Data
+	FTM_VOID_PTR			pNotifyData;
+
+//  Operator
+	FTOM_CLIENT_DESTROY			fDestroy;
+
+	FTOM_CLIENT_INIT			fInit;
+	FTOM_CLIENT_FINAL			fFinal;
+
+	FTOM_CLIENT_START			fStart;
+	FTOM_CLIENT_STOP			fStop;
+	FTOM_CLIENT_MESSAGE			fMessageProcess;
+
+	FTOM_CLIENT_WAITING_FOR_FINISHED	fWaitingForFinished;
+	FTOM_CLIENT_LOAD_CONFIG		fLoadConfig;
+	FTOM_CLIENT_SAVE_CONFIG		fSaveConfig;
+	FTOM_CLIENT_SHOW_CONFIG		fShowConfig;
+	FTOM_CLIENT_SET_NOTIFY_CB	fSetNotifyCB;
+	FTOM_CLIENT_REQUEST			fRequest;	
+	FTOM_CLIENT_NOTIFY_CB 		fNotifyCB;
+
+
+	struct
+	{
+		FTM_BOOL	bStop;
+		pthread_t	xThread;
+	}	xMain;
+
+	FTOM_MSG_QUEUE_PTR			pMsgQ;
 }	FTOM_CLIENT, _PTR_ FTOM_CLIENT_PTR;
+
+#define	FTOM_CLIENT_TYPE_isCorrect(obj, type) ((((FTOM_CLIENT_PTR)(obj))->xType & (type)) == (type))
+
+FTM_RET	FTOM_CLIENT_create
+(
+	FTM_ULONG	xType,
+	FTOM_CLIENT_PTR _PTR_ ppClient
+);
+
+FTM_RET	FTOM_CLIENT_destroy
+(
+	FTOM_CLIENT_PTR	_PTR_ ppClient
+);
+
+FTM_RET	FTOM_CLIENT_init
+(
+	FTOM_CLIENT_PTR	pClient
+);
+
+FTM_RET	FTOM_CLIENT_internalInit
+(
+	FTOM_CLIENT_PTR	pClient
+);
+
+FTM_RET	FTOM_CLIENT_final
+(
+	FTOM_CLIENT_PTR	pClient
+);
+
+FTM_RET	FTOM_CLIENT_internalFinal
+(
+	FTOM_CLIENT_PTR	pClient
+);
 
 FTM_RET	FTOM_CLIENT_start
 (
@@ -78,13 +189,34 @@ FTM_RET	FTOM_CLIENT_stop
 	FTOM_CLIENT_PTR	pClient
 );
 
-#if 0
-FTM_RET	FTOM_CLIENT_ReadConfig
+FTM_RET	FTOM_CLIENT_waitingForFinished
 (
-	FTOM_CLIENT_CONFIG_PTR 	pConfig, 
-	FTM_CHAR_PTR 			pFileName
+	FTOM_CLIENT_PTR	pClient
 );
-#endif
+
+FTM_RET FTOM_CLIENT_sendMessage
+(
+	FTOM_CLIENT_PTR pClient,
+	FTOM_MSG_PTR	pMsg
+);
+
+FTM_RET	FTOM_CLIENT_messageProcess
+(
+	FTOM_CLIENT_PTR pClient,
+	FTOM_MSG_PTR	pMsg
+);
+
+FTM_RET	FTOM_CLIENT_loadConfigFromFile
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pFileName
+);
+
+FTM_RET	FTOM_CLIENT_saveConfigToFile
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pFileName
+);
 
 FTM_RET	FTOM_CLIENT_loadConfig
 (
@@ -92,10 +224,15 @@ FTM_RET	FTOM_CLIENT_loadConfig
 	FTM_CONFIG_PTR		pConfig
 );
 
-FTM_RET	FTOM_CLIENT_setConfig
+FTM_RET	FTOM_CLIENT_saveConfig
 (
 	FTOM_CLIENT_PTR		pClient,
-	FTM_VOID_PTR		pConfig
+	FTM_CONFIG_PTR		pConfig
+);
+
+FTM_RET	FTOM_CLIENT_showConfig
+(
+	FTOM_CLIENT_PTR		pClient
 );
 
 FTM_RET	FTOM_CLIENT_setNotifyCB
@@ -103,6 +240,19 @@ FTM_RET	FTOM_CLIENT_setNotifyCB
 	FTOM_CLIENT_PTR			pClient,
 	FTOM_CLIENT_NOTIFY_CB	pCB,
 	FTM_VOID_PTR			pData
+);
+
+FTM_RET	FTOM_CLIENT_setNotifyInternalCB
+(
+	FTOM_CLIENT_PTR			pClient,
+	FTOM_CLIENT_NOTIFY_CB	pCB,
+	FTM_VOID_PTR			pData
+);
+
+FTM_RET	FTOM_CLIENT_setFunctionSet
+(
+	FTOM_CLIENT_PTR			pClient,
+	FTOM_CLIENT_FUNCTION_SET_PTR	pFunctionSet
 );
 
 FTM_RET FTOM_CLIENT_NODE_create

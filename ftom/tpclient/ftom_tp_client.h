@@ -7,6 +7,7 @@
 #include "ftom_mqttc.h"
 #include "ftom_tp_restapi.h"
 #include "ftom_client.h"
+#include "ftom_client_net.h"
 
 #define	FTOM_TP_CLIENT_DEFAULT_BROKER				"dmqtt.thingplus.net"
 #define	FTOM_TP_CLIENT_DEFAULT_PORT					8883
@@ -52,13 +53,18 @@ typedef	struct
 
 typedef	struct FTOM_TP_CLIENT_STRUCT
 {
+	FTOM_CLIENT_NET			xParent;
+
 	FTOM_TP_CLIENT_CONFIG	xConfig;
 
-	FTM_BOOL				bStop;
+	struct
+	{
+		FTM_BOOL			bStop;
+		pthread_t			xThread;
+	}	xEvent;
+
 	FTM_BOOL				bConnected;
 	FTM_BOOL				bReportON;
-	pthread_t				xThreadMain;
-	pthread_t				xThreadEvent;
 	FTM_TIMER				xReportTimer;
 	FTM_TIMER				xRetryTimer;
 	FTM_TIMER				xServerSyncTimer;
@@ -66,14 +72,12 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 	FTOM_TP_GATEWAY_PTR		pGateway;
 	FTM_LOCK_PTR			pGatewayLock;
 
-	FTOM_MSG_QUEUE			xMsgQ;
 	FTOM_MQTT_CLIENT		xMQTT;
 	FTOM_TP_RESTAPI			xRESTApi;
 
 	FTOM_SERVICE_ID			xServiceID;
 	FTOM_SERVICE_CB			fServiceCB;
 
-	FTOM_CLIENT_PTR			pFTOMC;
 }	FTOM_TP_CLIENT, _PTR_ FTOM_TP_CLIENT_PTR;
 
 FTM_RET	FTOM_TP_CLIENT_create

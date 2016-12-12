@@ -562,7 +562,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_publishEPData
 				ulTempLen += sprintf(pTemp, ",");
 			}
 
-			ulTempLen += sprintf(&pTemp[ulTempLen], "%llu,", pData[i].ulTime*(FTM_UINT64)1000);
+			ulTempLen += sprintf(&pTemp[ulTempLen], "%llu,", pData[i].ulTime*(long long unsigned int)1000);
 
 			FTM_VALUE_snprint(&pTemp[ulTempLen], sizeof(pTemp) - ulTempLen, &pData[i].xValue);
 			ulTempLen += strlen(&pTemp[ulTempLen]);

@@ -39,7 +39,6 @@ FTM_INT main(int nArgc , char *pArgv[])
 	FTM_INT			nOpt;
 	FTOM_CLIENT_PTR	pClient;
 	FTM_SHELL		xShell;
-	FTM_INT			i;
 	FTM_RET			xRet;
 	FTM_BOOL		bShowUsage = FTM_FALSE;
 	FTM_ULONG		ulDebugLevel = 0;
@@ -115,14 +114,7 @@ FTM_INT main(int nArgc , char *pArgv[])
 
 	TRACE("Configuraion loaded.\n");
 
-	FTM_SHELL_init(&xShell, NULL);
-	FTM_SHELL_setPrompt(&xShell, pPrompt);
-	for(i = 0 ; i < ulCmds;i++)
-	{
-		_cmds[i].pData = pClient;
-		FTM_SHELL_appendCmd(&xShell, &_cmds[i]);
-	}
-
+	FTM_SHELL_init(&xShell, pPrompt, _cmds, ulCmds, NULL);
 	FTOM_CLIENT_start(pClient);
 	FTOM_CLIENT_setNotifyCB(pClient, FTOM_CLIENT_subscriber, pClient);
 	 

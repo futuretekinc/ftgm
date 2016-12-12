@@ -1336,7 +1336,7 @@ FTM_RET	FTOM_SHELL_CMD_log
 			for(i = 0 ; i < ulGetCount ; i++)
 			{
 				strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&pLogs[i].ulTime));
-				MESSAGE("%3d : %16llu %s - %s\n", i+1, pLogs[i].ullID, pTimeString, FTM_LOG_print(&pLogs[i]));
+				MESSAGE("%3d : %16llu %s - %s\n", i+1, (long long unsigned int)pLogs[i].ullID, pTimeString, FTM_LOG_print(&pLogs[i]));
 			}
 
 
@@ -1400,7 +1400,7 @@ FTM_RET	FTOM_SHELL_CMD_log
 				for(i = 0 ; i < ulCount ; i++)
 				{
 					strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&pLogs[i].ulTime));
-					MESSAGE("%3d : %16llu %s - %s\n", i+1, pLogs[i].ullID, pTimeString, FTM_LOG_print(&pLogs[i]));
+					MESSAGE("%3d : %16llu %s - %s\n", i+1, (long long unsigned int)pLogs[i].ullID, pTimeString, FTM_LOG_print(&pLogs[i]));
 				}
 			}
 		}

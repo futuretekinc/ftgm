@@ -1,4 +1,3 @@
-#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -13,6 +12,109 @@
 #undef	__MODULE__
 #define	__MODULE__	FTOM_TRACE_MODULE_CLIENT
 
+static
+FTM_VOID_PTR	FTOM_CLIENT_threadMain
+(
+	FTM_VOID_PTR pData
+);
+
+FTM_RET	FTOM_CLIENT_destroy
+(
+	FTOM_CLIENT_PTR	_PTR_ ppClient
+)
+{
+	ASSERT(ppClient != NULL);
+
+	if ((*ppClient)->fDestroy != NULL)
+	{
+		return	(*ppClient)->fDestroy(ppClient);
+	}
+
+	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+}
+
+FTM_RET	FTOM_CLIENT_init
+(
+	FTOM_CLIENT_PTR	pClient
+)
+{
+	ASSERT(pClient != NULL);
+
+	if (pClient->fInit != NULL)
+	{
+		return	pClient->fInit(pClient);
+	}
+
+	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+}
+
+FTM_RET	FTOM_CLIENT_internalInit
+(
+	FTOM_CLIENT_PTR	pClient
+)
+{
+	ASSERT(pClient != NULL);
+
+	FTM_RET	xRet;
+
+	pClient->fInit 		= FTOM_CLIENT_internalInit;
+	pClient->fFinal		= FTOM_CLIENT_internalFinal;
+	pClient->fSetNotifyCB = FTOM_CLIENT_setNotifyInternalCB;
+
+	pClient->pNotifyData = NULL;
+
+	xRet = FTOM_MSGQ_create(&pClient->pMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		MESSAGE("Can't create message queue.[%08lx]\n", xRet);	
+		return	xRet;
+	}
+
+	pClient->xMain.bStop= FTM_TRUE;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CLIENT_final
+(
+	FTOM_CLIENT_PTR	pClient
+)
+{
+	ASSERT(pClient != NULL);
+
+	if (!pClient->xMain.bStop)
+	{
+		FTOM_CLIENT_stop(pClient);	
+	}
+
+	if (pClient->fFinal != NULL)
+	{
+		return	pClient->fFinal(pClient);
+	}
+
+	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+}
+
+FTM_RET	FTOM_CLIENT_internalFinal
+(
+	FTOM_CLIENT_PTR	pClient
+)
+{
+	ASSERT(pClient != NULL);
+	FTM_RET	xRet;
+
+	if (pClient->pMsgQ != NULL)
+	{
+		xRet = FTOM_MSGQ_destroy(&pClient->pMsgQ);
+		if (xRet != FTM_RET_OK)
+		{
+			MESSAGE("Failed to finaizlie message queue.\n");
+		}
+	}
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_CLIENT_start
 (
 	FTOM_CLIENT_PTR	pClient
@@ -20,12 +122,37 @@ FTM_RET	FTOM_CLIENT_start
 {
 	ASSERT(pClient != NULL);
 
-	if (pClient->fStart != NULL)
+	FTM_RET	xRet;
+
+	if (!pClient->xMain.bStop)
 	{
-		return	pClient->fStart(pClient);
+		return	FTM_RET_ALREADY_RUNNING;
 	}
 
-	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+	pClient->xMain.bStop = FTM_FALSE;
+
+	if (pthread_create(&pClient->xMain.xThread, NULL, FTOM_CLIENT_threadMain, pClient) <= 0)
+	{
+		return	FTM_RET_THREAD_CREATION_ERROR;
+	}
+
+	if (pClient->fStart != NULL)
+	{
+		xRet = pClient->fStart(pClient);
+		if (xRet != FTM_RET_OK)
+		{
+			pClient->xMain.bStop = FTM_TRUE;
+			goto error;
+		}
+	}
+
+	return	xRet;
+
+error:
+	pthread_join(pClient->xMain.xThread, NULL);
+	pClient->xMain.xThread= 0;
+
+	return	xRet;
 }
 
 FTM_RET	FTOM_CLIENT_stop
@@ -34,13 +161,128 @@ FTM_RET	FTOM_CLIENT_stop
 )
 {
 	ASSERT(pClient != NULL);
+	FTM_RET	xRet;
 
 	if (pClient->fStop != NULL)
 	{
-		return	pClient->fStop(pClient);
+		xRet = pClient->fStop(pClient);
+		if (xRet != FTM_RET_OK)
+		{
+			return	xRet;	
+		}
+	}
+
+	pClient->xMain.bStop = FTM_TRUE;
+	pthread_join(pClient->xMain.xThread, NULL);
+	pClient->xMain.xThread = 0;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CLIENT_waitingForFinished
+(
+	FTOM_CLIENT_PTR pClient
+)
+{
+	ASSERT(pClient != NULL);
+
+	if (pClient->fWaitingForFinished != NULL)
+	{
+		return	pClient->fWaitingForFinished(pClient);
 	}
 
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+}
+
+
+FTM_RET	FTOM_CLIENT_sendMessage
+(
+	FTOM_CLIENT_PTR	pClient,
+	FTOM_MSG_PTR	pMsg
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pMsg != NULL);
+
+	return	FTOM_MSGQ_push(pClient->pMsgQ, pMsg);	
+}
+
+FTM_RET	FTOM_CLIENT_messageProcess
+(
+	FTOM_CLIENT_PTR pClient,
+	FTOM_MSG_PTR	pMsg
+)
+{
+	ASSERT(pClient != NULL);
+
+	if (pClient->fMessageProcess != NULL)
+	{
+		return	pClient->fMessageProcess(pClient, pMsg);
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CLIENT_loadConfigFromFile
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pConfigFileName
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfigFileName != NULL);
+
+	FTM_RET	xRet;
+	FTM_CONFIG_PTR	pConfig;
+
+	xRet = FTM_CONFIG_create(pConfigFileName, &pConfig, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{   
+		ERROR2(xRet, "Configuration loading failed!\n");
+		return  xRet;
+	}   
+
+	xRet = FTOM_CLIENT_loadConfig(pClient, pConfig);
+	if (xRet != FTM_RET_OK)
+	{   
+		ERROR2(xRet, "Faield to load configuration!\n");    
+	}   
+
+	FTM_CONFIG_destroy(&pConfig);
+
+	return  xRet;
+
+}
+
+FTM_RET	FTOM_CLIENT_saveConfigToFile
+(
+	FTOM_CLIENT_PTR		pClient,
+	FTM_CHAR_PTR		pConfigFileName
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConfigFileName != NULL);
+
+	FTM_RET	xRet;
+	FTM_CONFIG_PTR	pConfig;
+
+	xRet = FTM_CONFIG_create(pConfigFileName, &pConfig, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{   
+		ERROR2(xRet, "Configuration loading failed!\n");
+		return  xRet;
+	}   
+
+	xRet = FTOM_CLIENT_saveConfig(pClient, pConfig);
+	if (xRet != FTM_RET_OK)
+	{   
+		ERROR2(xRet, "Faield to load configuration!\n");    
+	}   
+
+	FTM_CONFIG_destroy(&pConfig);
+
+	return  xRet;
+
 }
 
 FTM_RET	FTOM_CLIENT_loadConfig
@@ -60,18 +302,33 @@ FTM_RET	FTOM_CLIENT_loadConfig
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
 
-FTM_RET	FTOM_CLIENT_setConfig
+FTM_RET	FTOM_CLIENT_saveConfig
 (
 	FTOM_CLIENT_PTR			pClient,
-	FTM_VOID_PTR			pConfig
+	FTM_CONFIG_PTR			pConfig
 )
 {
 	ASSERT(pClient != NULL);
 	ASSERT(pConfig != NULL);
 
-	if (pClient->fSetConfig != NULL)
+	if (pClient->fSaveConfig != NULL)
 	{
-		return	pClient->fSetConfig(pClient, pConfig);
+		return	pClient->fSaveConfig(pClient, pConfig);
+	}
+
+	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
+}
+
+FTM_RET	FTOM_CLIENT_showConfig
+(
+	FTOM_CLIENT_PTR			pClient
+)
+{
+	ASSERT(pClient != NULL);
+
+	if (pClient->fShowConfig != NULL)
+	{
+		return	pClient->fShowConfig(pClient);
 	}
 
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
@@ -91,13 +348,129 @@ FTM_RET	FTOM_CLIENT_setNotifyCB
 	{
 		return	pClient->fSetNotifyCB(pClient, pCB, pData);
 	}
-	else
+	
+	return	FTOM_CLIENT_setNotifyInternalCB(pClient, pCB, pData);
+}
+
+FTM_RET	FTOM_CLIENT_setNotifyInternalCB
+(
+	FTOM_CLIENT_PTR			pClient,
+	FTOM_CLIENT_NOTIFY_CB	pCB,
+	FTM_VOID_PTR			pData
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pCB != NULL);
+
+	pClient->fNotifyCB	= pCB;
+	pClient->pNotifyData= pData;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_CLIENT_setFunctionSet
+(
+	FTOM_CLIENT_PTR			pClient,
+	FTOM_CLIENT_FUNCTION_SET_PTR	pFunctionSet
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pFunctionSet != NULL);
+
+	
+	if (pFunctionSet->fDestroy != NULL)
 	{
-		pClient->fNotifyCB	= pCB;
-		pClient->pNotifyData= pData;
+		pClient->fDestroy = pFunctionSet->fDestroy;
+	}
+
+	if (pFunctionSet->fInit != NULL)
+	{
+		pClient->fInit = pFunctionSet->fInit;
+	}
+
+	if (pFunctionSet->fFinal != NULL)
+	{
+		pClient->fFinal = pFunctionSet->fFinal;
+	}
+
+	if (pFunctionSet->fStart != NULL)
+	{
+		pClient->fStart = pFunctionSet->fStart;
+	}
+
+	if (pFunctionSet->fStop != NULL)
+	{
+		pClient->fStop = pFunctionSet->fStop;
+	}
+
+	if (pFunctionSet->fWaitingForFinished != NULL)
+	{
+		pClient->fWaitingForFinished = pFunctionSet->fWaitingForFinished;
+	}
+
+	if (pFunctionSet->fLoadConfig != NULL)
+	{
+		pClient->fLoadConfig = pFunctionSet->fLoadConfig;
+	}
+
+	if (pFunctionSet->fSaveConfig != NULL)
+	{
+		pClient->fSaveConfig = pFunctionSet->fSaveConfig;
+	}
+
+	if (pFunctionSet->fShowConfig != NULL)
+	{
+		pClient->fShowConfig = pFunctionSet->fShowConfig;
+	}
+
+	if (pFunctionSet->fSetNotifyCB != NULL)
+	{
+		pClient->fSetNotifyCB = pFunctionSet->fSetNotifyCB;
+	}
+
+	if (pFunctionSet->fRequest != NULL)
+	{
+		pClient->fRequest = pFunctionSet->fRequest;
 	}
 
 	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR	FTOM_CLIENT_threadMain
+(
+	FTM_VOID_PTR pData
+)
+{
+	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
+	FTM_RET		xRet;
+	FTM_TIMER	xLoopTimer;
+	FTM_ULONG	ulLoopInterval;
+
+	FTM_TIMER_initS(&xLoopTimer, 1);
+
+	while(!pClient->xMain.bStop)
+	{
+		FTOM_MSG_PTR	pBaseMsg;
+
+		FTM_TIMER_remainMS(&xLoopTimer, &ulLoopInterval);
+
+		while (FTM_TRUE)
+		{
+			xRet = FTOM_MSGQ_timedPop(pClient->pMsgQ, ulLoopInterval, &pBaseMsg);
+			if (xRet != FTM_RET_OK)
+			{
+				break;	
+			}
+
+			pClient->fMessageProcess(pClient, pBaseMsg);
+
+			FTOM_MSG_destroy(&pBaseMsg);
+		}
+
+		FTM_TIMER_addMS(&xLoopTimer, 1);
+	}
+
+	return	0;
 }
 
 FTM_RET FTOM_CLIENT_NODE_create
