@@ -2,6 +2,7 @@
 #include "ftm.h"
 #include "ftom_ep.h"
 #include "ftom_msg.h"
+#include "ftom_json.h"
 
 static
 FTM_CHAR_PTR	pMsgTypeString[] =
@@ -1086,4 +1087,99 @@ FTM_RET	FTOM_MSG_TP_createReport
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
 
 	return	FTM_RET_OK;
+}
+
+/***********************************************************************
+ * Print out to json formatted string
+ ***********************************************************************/
+FTM_RET	FTOM_MSG_JSON_createEPData
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			ulCount,
+	FTM_CHAR_PTR _PTR_	ppBuff
+)
+{
+	ASSERT(pEPID != NULL);
+	ASSERT(pData != NULL);
+	ASSERT(ppBuff != NULL);
+
+	FTM_RET         xRet;
+	FTM_ULONG		ulBuffSize;
+	FTM_CHAR_PTR	pBuff;
+	FTOM_JSON_PTR	pObject = NULL;
+
+	xRet = FTOM_JSON_createEPData(pEPID, pData, ulCount, &pObject);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTOM_JSON_getBufferSize(pObject, &ulBuffSize);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get buffer size!\n");
+		goto finished;	
+	}
+
+	pBuff = (FTM_CHAR_PTR)FTM_MEM_malloc(ulBuffSize);
+	if (pBuff == NULL)
+	{
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		goto finished;
+	}
+
+	xRet = FTOM_JSON_print(pObject, pBuff, ulBuffSize);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to json print!\n");
+		goto finished;	
+	}
+	
+	*ppBuff =pBuff;
+
+finished:
+
+	if (pBuff != NULL)
+	{
+		FTM_MEM_free(pBuff);
+	}
+
+	FTOM_JSON_destroy(&pObject);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_MSG_JSON_printEPData
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			ulCount,
+	FTM_CHAR_PTR 		pBuff,
+	FTM_ULONG			ulBuffLen
+)
+{
+	ASSERT(pEPID != NULL);
+	ASSERT(pData != NULL);
+	ASSERT(pBuff != NULL);
+
+	FTM_RET         xRet;
+	FTOM_JSON_PTR	pObject = NULL;
+
+	xRet = FTOM_JSON_createEPData(pEPID, pData, ulCount, &pObject);
+	if (xRet != FTM_RET_OK)
+	{
+		return	xRet;	
+	}
+
+	xRet = FTOM_JSON_print(pObject, pBuff, ulBuffLen);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to json print!\n");
+	}
+
+	
+	FTOM_JSON_destroy(&pObject);
+
+	return	xRet;
 }

@@ -62,7 +62,7 @@ const UINT SHA256_K[64] =
 //						  ChainVar		- 연쇄변수의 포인터 변수
 // o 출력				: 
 //*********************************************************************************************************************************
-void SHA256_Transform(ULONG_PTR Message, ULONG_PTR ChainVar)
+void SHA256_Transform2(ULONG_PTR Message, ULONG_PTR ChainVar)
 {
 	ULONG a, b, c, d, e, f, g, h, T1, X[64];
 	ULONG j;
@@ -121,7 +121,7 @@ void SHA256_Transform(ULONG_PTR Message, ULONG_PTR ChainVar)
 // o 입력				: Info		-  SHA-256 구조체의 포인터 변수
 // o 출력				: 
 //*********************************************************************************************************************************
-void SHA256_Init( OUT SHA256_INFO *Info )
+void SHA256_Init2( OUT SHA256_INFO *Info )
 {
 	Info->uChainVar[0] = 0x6a09e667;
 	Info->uChainVar[1] = 0xbb67ae85;
@@ -142,7 +142,7 @@ void SHA256_Init( OUT SHA256_INFO *Info )
 //						  uDataLen	 - 입력 메시지의 바이트 길이
 // o 출력				: 
 //*********************************************************************************************************************************
-void SHA256_Process( OUT SHA256_INFO *Info, IN const BYTE *pszMessage, IN UINT uDataLen )
+void SHA256_Process2( OUT SHA256_INFO *Info, IN const BYTE *pszMessage, IN UINT uDataLen )
 {
 	if ((Info->uLowLength += (uDataLen << 3)) < 0)
 		Info->uHighLength++;
@@ -152,7 +152,7 @@ void SHA256_Process( OUT SHA256_INFO *Info, IN const BYTE *pszMessage, IN UINT u
 	while (uDataLen >= SHA256_DIGEST_BLOCKLEN)
 	{
 		memcpy((UCHAR_PTR)Info->szBuffer, pszMessage, (SINT)SHA256_DIGEST_BLOCKLEN);
-		SHA256_Transform((ULONG_PTR)Info->szBuffer, (ULONG_PTR)Info->uChainVar);
+		SHA256_Transform2((ULONG_PTR)Info->szBuffer, (ULONG_PTR)Info->uChainVar);
 		pszMessage += SHA256_DIGEST_BLOCKLEN;
 		uDataLen -= SHA256_DIGEST_BLOCKLEN;
 	}
@@ -166,7 +166,7 @@ void SHA256_Process( OUT SHA256_INFO *Info, IN const BYTE *pszMessage, IN UINT u
 //						  pszDigest	- SHA-256 해쉬값을 저장할 포인터 변수
 // o 출력				:
 //*********************************************************************************************************************************
-void SHA256_Close( OUT SHA256_INFO *Info, IN BYTE *pszDigest )
+void SHA256_Close2( OUT SHA256_INFO *Info, IN BYTE *pszDigest )
 {
 	ULONG i, Index;
 
@@ -176,7 +176,7 @@ void SHA256_Close( OUT SHA256_INFO *Info, IN BYTE *pszDigest )
 	if (Index > SHA256_DIGEST_BLOCKLEN - 8)
 	{
 		memset((UCHAR_PTR)Info->szBuffer + Index, 0, (SINT)(SHA256_DIGEST_BLOCKLEN - Index));
-		SHA256_Transform((ULONG_PTR)Info->szBuffer, (ULONG_PTR)Info->uChainVar);
+		SHA256_Transform2((ULONG_PTR)Info->szBuffer, (ULONG_PTR)Info->uChainVar);
 		memset((UCHAR_PTR)Info->szBuffer, 0, (SINT)SHA256_DIGEST_BLOCKLEN - 8);
 	}
 	else
@@ -190,19 +190,19 @@ void SHA256_Close( OUT SHA256_INFO *Info, IN BYTE *pszDigest )
 	((ULONG_PTR)Info->szBuffer)[SHA256_DIGEST_BLOCKLEN / 4 - 2] = Info->uHighLength;
 	((ULONG_PTR)Info->szBuffer)[SHA256_DIGEST_BLOCKLEN / 4 - 1] = Info->uLowLength;
 
-	SHA256_Transform((ULONG_PTR)Info->szBuffer, (ULONG_PTR)Info->uChainVar);
+	SHA256_Transform2((ULONG_PTR)Info->szBuffer, (ULONG_PTR)Info->uChainVar);
 
 	for (i = 0; i < SHA256_DIGEST_VALUELEN; i += 4)
 		BIG_D2B((Info->uChainVar)[i / 4], &(pszDigest[i]));
 }
 
-void SHA256_Encrpyt( IN const BYTE *pszMessage, IN UINT uPlainTextLen, OUT BYTE *pszDigest )
+void SHA256_Encrypt2( IN const BYTE *pszMessage, IN UINT uPlainTextLen, OUT BYTE *pszDigest )
 {
 	SHA256_INFO info;
 
-	SHA256_Init( &info );
+	SHA256_Init2( &info );
 
-	SHA256_Process( &info, pszMessage, uPlainTextLen );
+	SHA256_Process2( &info, pszMessage, uPlainTextLen );
 
-	SHA256_Close( &info, pszDigest );
+	SHA256_Close2( &info, pszDigest );
 }

@@ -57,14 +57,12 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 
 	FTOM_TP_CLIENT_CONFIG	xConfig;
 
-	struct
-	{
-		FTM_BOOL			bStop;
-		pthread_t			xThread;
-	}	xEvent;
+	pthread_t				xThread;
 
+	FTM_BOOL				bStop;
 	FTM_BOOL				bConnected;
 	FTM_BOOL				bReportON;
+
 	FTM_TIMER				xReportTimer;
 	FTM_TIMER				xRetryTimer;
 	FTM_TIMER				xServerSyncTimer;

@@ -27,7 +27,9 @@ FTM_RET	FTM_makeID
 	pValue[2] = (FTM_ULONG)pValue[0] ^ 0xFFFFFFFF;
 	pValue[3] = (FTM_ULONG)pValue[1] ^ 0xFFFFFFFF;
 
-	SHA256_Encrpyt( (FTM_UINT8_PTR)pValue, sizeof(pValue), (FTM_UINT8_PTR)pDigest);
+
+	SHA256_Encrypt2((FTM_UINT8_PTR)pValue, sizeof(pValue), (FTM_UINT8_PTR)pDigest);
+
 
 	pValue[2] = pDigest[0] ^ pDigest[2] ^ pDigest[4] ^ pDigest[6];
 	pValue[3] = pDigest[1] ^ pDigest[3] ^ pDigest[5] ^ pDigest[7];

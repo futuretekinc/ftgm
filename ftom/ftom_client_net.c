@@ -24,13 +24,6 @@ typedef	struct
 }	FTOM_CLIENT_NET_TRANS, _PTR_ FTOM_CLIENT_NET_TRANS_PTR;
 
 static 
-FTM_VOID_PTR FTOM_CLIENT_NET_messageProcess
-(
-	FTOM_CLIENT_NET_PTR	pClient,
-	FTOM_MSG_PTR		pMsg
-);
-
-static 
 FTM_VOID_PTR FTOM_CLIENT_NET_threadNet
 (
 	FTM_VOID_PTR pData
@@ -286,10 +279,14 @@ FTM_RET	FTOM_CLIENT_NET_start
 )
 {
 	ASSERT(pClient != NULL);
+	FTM_RET	xRet;
 
-	if (pthread_create(&pClient->xThreadNet, NULL, FTOM_CLIENT_NET_threadNet, pClient) <= 0)
+	if (pthread_create(&pClient->xThreadNet, NULL, FTOM_CLIENT_NET_threadNet, pClient) < 0)
 	{
-		return	FTM_RET_THREAD_CREATION_ERROR;
+		xRet = FTM_RET_THREAD_CREATION_ERROR;
+		ERROR2(xRet, "The client net task creation failed!\n");
+
+		return	xRet;
 	}
 
 	return	FTM_RET_OK;
@@ -320,7 +317,7 @@ FTM_RET	FTOM_CLIENT_NET_waitingForFinished
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR	FTOM_CLIENT_NET_messageProcess
+FTM_RET	FTOM_CLIENT_NET_messageProcess
 (
 	FTOM_CLIENT_NET_PTR	pClient,
 	FTOM_MSG_PTR		pBaseMsg
@@ -382,6 +379,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadNet
 	FTOM_RESP_PARAMS_PTR	pRecvPkt;
 	FTM_ULONG				ulRecvBuffLen = FTOM_DEFAULT_PACKET_SIZE;
 
+	TRACE("The client net task was started!\n");
 	pRecvPkt = (FTOM_RESP_PARAMS_PTR)FTM_MEM_malloc(ulRecvBuffLen);
 	if (pRecvPkt == NULL)
 	{
@@ -564,7 +562,8 @@ finish:
 	{
 		FTM_MEM_free(pRecvPkt);
 	}
-	TRACE("Client stopped.\n");
+
+	TRACE("The client net task was stopped!\n");
 
 	return	0;
 }

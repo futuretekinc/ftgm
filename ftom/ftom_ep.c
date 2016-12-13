@@ -528,13 +528,16 @@ FTM_RET FTOM_EP_start
 
 	if (!pEP->xInfo.bEnable)
 	{
-		return	FTM_RET_OBJECT_IS_DISABLED;
+		xRet = FTM_RET_OBJECT_IS_DISABLED;
+		WARN2(xRet, "The EP[%s] is disabled.\n", pEP->xInfo.pEPID);
+		return	xRet;
 	}
 
 	if (!pEP->bStop)
 	{
-		WARN("EP[%s] already started.\n", pEP->xInfo.pEPID);
-		return	FTM_RET_ALREADY_STARTED;
+		xRet = FTM_RET_ALREADY_STARTED;
+		WARN2(xRet, "EP[%s] already started.\n", pEP->xInfo.pEPID);
+		return	xRet;
 	}
 
 	nRet = pthread_create(&pEP->xPThread, NULL, FTOM_EP_threadMain, (FTM_VOID_PTR)pEP);

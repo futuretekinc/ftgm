@@ -19,12 +19,12 @@ FTM_VOID	FTOM_TP_CLIENT_usage
 
 FTM_INT	main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 {
-	FTM_RET				xRet;
-	FTM_INT				nOpt;
-	FTM_BOOL			bDaemon = FTM_FALSE;
-	FTM_ULONG			ulDebugLevel = FTM_TRACE_LEVEL_ALL;
-	FTOM_TP_CLIENT_PTR	pTPClient = NULL;
-	FTM_CHAR			pConfigFileName[1024];
+	FTM_RET			xRet;
+	FTM_INT			nOpt;
+	FTM_BOOL		bDaemon = FTM_FALSE;
+	FTM_ULONG		ulDebugLevel = FTM_TRACE_LEVEL_ALL;
+	FTOM_CLIENT_PTR	pTPClient = NULL;
+	FTM_CHAR		pConfigFileName[1024];
 
 	sprintf(pConfigFileName, "/etc/%s.conf", FTM_getProgramName());
 
@@ -66,18 +66,18 @@ FTM_INT	main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		goto finish;	
 	}
 
-	xRet = FTOM_TP_CLIENT_create(&pTPClient);
+	FTM_TRACE_setLevel(FTM_TRACE_MAX_MODULES, ulDebugLevel);
+	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT,"CLIENT", FTM_TRACE_LEVEL_FATAL, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_MQTTC, "MQTTC", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+
+	xRet = FTOM_TP_CLIENT_create((FTOM_TP_CLIENT_PTR _PTR_)&pTPClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Can't create a TPClient.\n");
 		goto finish;
 	}
 
-	FTM_TRACE_setLevel(FTM_TRACE_MAX_MODULES, ulDebugLevel);
-	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT,"CLIENT", FTM_TRACE_LEVEL_FATAL, FTM_TRACE_OUT_TERM);
-	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_MQTTC, "MQTTC", FTM_TRACE_LEVEL_FATAL, FTM_TRACE_OUT_TERM);
-
-	xRet = FTOM_TP_CLIENT_loadConfigFromFile(pTPClient, pConfigFileName);
+	xRet = FTOM_CLIENT_loadConfigFromFile(pTPClient, pConfigFileName);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "TPClient failed to load configuration from file.\n");	
@@ -85,7 +85,7 @@ FTM_INT	main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 	}
 
 
-	FTOM_TP_CLIENT_showConfig(pTPClient);
+	FTOM_CLIENT_showConfig(pTPClient);
 
 	if (bDaemon)
 	{
@@ -93,27 +93,19 @@ FTM_INT	main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 		{
 			return	0;
 		}
-		FTOM_TP_CLIENT_start(pTPClient);
-
-		FTOM_TP_CLIENT_waitingForFinished(pTPClient);
 	}
-	else
+
+	FTOM_CLIENT_start(pTPClient);
+
+	if (!bDaemon)
 	{
-		FTM_SHELL			xShell;
-		FTM_INT				i;
-		for(i = 0 ; i < FTOM_shellCmdCount ; i++)
-		{
-			FTOM_shellCmds[i].pData = pTPClient;	
-		}
-
-		FTOM_TP_CLIENT_start(pTPClient);
-		FTM_SHELL_init(&xShell, "tpclient", FTOM_shellCmds, FTOM_shellCmdCount, pTPClient);
-		FTM_SHELL_run(&xShell);
-		FTM_SHELL_final(&xShell);
-		FTOM_TP_CLIENT_waitingForFinished(pTPClient);
+		FTM_SHELL_run2("tpclient", FTOM_shellCmds, FTOM_shellCmdCount, pTPClient);
 	}
+
+	FTOM_CLIENT_waitingForFinished(pTPClient);
+	TRACE("check!\n");
 	
-	xRet = FTOM_TP_CLIENT_destroy(&pTPClient);
+	xRet = FTOM_CLIENT_destroy(&pTPClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Remove the TPClient failed\n");
@@ -122,7 +114,7 @@ FTM_INT	main(FTM_INT nArgc, FTM_CHAR_PTR pArgv[])
 error:
 	if (pTPClient != NULL)
 	{
-		FTOM_TP_CLIENT_destroy(&pTPClient);
+		FTOM_CLIENT_destroy(&pTPClient);
 	}
 
 finish:

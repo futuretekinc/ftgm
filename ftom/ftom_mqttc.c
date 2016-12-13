@@ -390,6 +390,7 @@ FTM_RET	FTOM_MQTT_CLIENT_start
 {
 	ASSERT(pClient != NULL);
 	
+	TRACE("MQTT CLIENT[%s] started.\n", pClient->xConfig.pGatewayID);
 	if (pClient->bStop != FTM_TRUE)
 	{
 		INFO("MQTT client is already started!\n");

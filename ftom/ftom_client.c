@@ -124,16 +124,19 @@ FTM_RET	FTOM_CLIENT_start
 
 	FTM_RET	xRet;
 
+	TRACE("The client started!\n");
+
 	if (!pClient->xMain.bStop)
 	{
+		TRACE("The client is already started!\n");
 		return	FTM_RET_ALREADY_RUNNING;
 	}
 
-	pClient->xMain.bStop = FTM_FALSE;
-
-	if (pthread_create(&pClient->xMain.xThread, NULL, FTOM_CLIENT_threadMain, pClient) <= 0)
+	if (pthread_create(&pClient->xMain.xThread, NULL, FTOM_CLIENT_threadMain, pClient) < 0)
 	{
-		return	FTM_RET_THREAD_CREATION_ERROR;
+		xRet = FTM_RET_THREAD_CREATION_ERROR;
+		ERROR2(xRet, "The client main task creation failed!\n");
+		return	xRet;
 	}
 
 	if (pClient->fStart != NULL)
@@ -146,9 +149,13 @@ FTM_RET	FTOM_CLIENT_start
 		}
 	}
 
-	return	xRet;
+	TRACE("The client started!\n");
+
+	return	FTM_RET_OK;
 
 error:
+	TRACE("The client start error!\n");
+
 	pthread_join(pClient->xMain.xThread, NULL);
 	pClient->xMain.xThread= 0;
 
@@ -218,6 +225,10 @@ FTM_RET	FTOM_CLIENT_messageProcess
 	if (pClient->fMessageProcess != NULL)
 	{
 		return	pClient->fMessageProcess(pClient, pMsg);
+	}
+	else
+	{
+		TRACE("Message process not supported!\n");	
 	}
 
 	return	FTM_RET_OK;
@@ -423,6 +434,11 @@ FTM_RET	FTOM_CLIENT_setFunctionSet
 		pClient->fShowConfig = pFunctionSet->fShowConfig;
 	}
 
+	if (pFunctionSet->fMessageProcess != NULL)
+	{
+		pClient->fMessageProcess = pFunctionSet->fMessageProcess;
+	}
+
 	if (pFunctionSet->fSetNotifyCB != NULL)
 	{
 		pClient->fSetNotifyCB = pFunctionSet->fSetNotifyCB;
@@ -448,6 +464,10 @@ FTM_VOID_PTR	FTOM_CLIENT_threadMain
 
 	FTM_TIMER_initS(&xLoopTimer, 1);
 
+	TRACE("The client main task was started!\n");
+
+	pClient->xMain.bStop = FTM_FALSE;
+
 	while(!pClient->xMain.bStop)
 	{
 		FTOM_MSG_PTR	pBaseMsg;
@@ -462,13 +482,15 @@ FTM_VOID_PTR	FTOM_CLIENT_threadMain
 				break;	
 			}
 
-			pClient->fMessageProcess(pClient, pBaseMsg);
+			FTOM_CLIENT_messageProcess(pClient, pBaseMsg);
 
 			FTOM_MSG_destroy(&pBaseMsg);
 		}
 
-		FTM_TIMER_addMS(&xLoopTimer, 1);
+		FTM_TIMER_addMS(&xLoopTimer, 100);
 	}
+
+	TRACE("The client main task was finished !\n");
 
 	return	0;
 }

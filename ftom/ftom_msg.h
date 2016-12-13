@@ -621,5 +621,15 @@ FTM_RET	FTOM_MSG_TP_createReport
 	FTOM_MSG_PTR _PTR_	ppMsg
 );
 
-
+/****************************************************************
+ *
+ ****************************************************************/
+FTM_RET	FTOM_MSG_JSON_printEPData
+(
+	FTM_CHAR_PTR		pEPID,
+	FTM_EP_DATA_PTR		pData,
+	FTM_ULONG			ulCount,
+	FTM_CHAR_PTR		pBuff,
+	FTM_ULONG			ulBuffLen
+);
 #endif

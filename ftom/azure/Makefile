@@ -9,15 +9,28 @@ CLIENT_SRCS=main.c \
 	ftom_azure_client.c\
 	ftom_azure_client_shell_cmds.c
 
+
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_CFLAGS=$(CFLAGS) -std=gnu99 -I$(TOPDIR)/../azure-iot-sdks/c/iothub_client/inc -I$(TOPDIR)/../azure-iot-sdks/c/c-utility/inc
+CLIENT_CFLAGS=$(CFLAGS) -std=gnu99 \
+				-I/usr/include/azureiot \
+				-I/usr/include/azureiot/inc\
+				-DARCHITECTURE_x86=1
+
 CLIENT_LDFLAGS=$(LDFLAGS) -L./ \
-				-L$(TOPDIR)/../azure-iot-sdks/c/build_all/iothub_client \
-				-L$(TOPDIR)/../azure-iot-sdks/c/build_all/c-utility \
-				-L$(TOPDIR)/../azure-iot-sdks/c/build_all/umqtt \
-				-liothub_client -liothub_client_mqtt_transport -lumqtt -laziotsharedutil \
+				-L/usr/lib/azureiot \
 				-lftomcl -lftomc -lftom -lftm \
-				-lmosquitto -lcrypto -lssl -lcurl -lcjson -lpthread  -lm -lrt 
+				-liothub_client\
+				-liothub_client_mqtt_transport\
+				-lumqtt\
+				-laziotsharedutil\
+				-lpthread\
+				-lcurl\
+				-lssl\
+				-lcrypto\
+				-luuid\
+				-lcjson\
+				-lm\
+				-lrt 
 
 all: $(CLIENT)
 
@@ -25,7 +38,7 @@ $(CLIENT): $(CLIENT_OBJS)
 	$(CC)  -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)
 
 .c.o:  $(LIBTPCLIENT_SRCS) $(CLIENT_SRCS) *.h
-	$(CC) $(CLIENT_CFLAGS) $< -o $@
+	$(CC) $(CLIENT_CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(LIBTPCLIENT) $(CLIENT) *.a *.o

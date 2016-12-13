@@ -69,7 +69,7 @@ typedef struct{
 @brief 연쇄변수와 길이변수를 초기화하는 함수
 @param Info : SHA256_Process 호출 시 사용되는 구조체
 */
-void SHA256_Init( OUT SHA256_INFO *Info );
+void SHA256_Init2( OUT SHA256_INFO *Info );
 
 /**
 @brief 연쇄변수와 길이변수를 초기화하는 함수
@@ -77,14 +77,14 @@ void SHA256_Init( OUT SHA256_INFO *Info );
 @param pszMessage : 사용자 입력 평문
 @param inLen : 사용자 입력 평문 길이
 */
-void SHA256_Process( OUT SHA256_INFO *Info, IN const BYTE *pszMessage, IN UINT uDataLen );
+void SHA256_Process2( OUT SHA256_INFO *Info, IN const BYTE *pszMessage, IN UINT uDataLen );
 
 /**
 @brief 메시지 덧붙이기와 길이 덧붙이기를 수행한 후 마지막 메시지 블록을 가지고 압축함수를 호출하는 함수
 @param Info : SHA256_Init 호출하여 초기화된 구조체(내부적으로 사용된다.)
 @param pszDigest : 암호문
 */
-void SHA256_Close( OUT SHA256_INFO *Info, OUT BYTE *pszDigest );
+void SHA256_Close2( OUT SHA256_INFO *Info, OUT BYTE *pszDigest );
 
 /**
 @brief 사용자 입력 평문을 한번에 처리
@@ -92,7 +92,7 @@ void SHA256_Close( OUT SHA256_INFO *Info, OUT BYTE *pszDigest );
 @param pszDigest : 암호문
 @remarks 내부적으로 SHA256_Init, SHA256_Process, SHA256_Close를 호출한다.
 */
-void SHA256_Encrpyt( IN const BYTE *pszMessage, IN UINT uPlainTextLen, OUT BYTE *pszDigest );
+void SHA256_Encrypt2( IN const BYTE *pszMessage, IN UINT uPlainTextLen, OUT BYTE *pszDigest );
 
 #ifdef  __cplusplus
 }

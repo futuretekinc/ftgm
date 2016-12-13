@@ -13,14 +13,14 @@
 #define __MODULE__ FTOM_TRACE_MODULE_CLIENT
 
 static 
-FTM_VOID_PTR FTOM_TP_CLIENT_messageProcess
+FTM_RET	FTOM_TP_CLIENT_messageProcess
 (
 	FTOM_TP_CLIENT_PTR	pClient,
 	FTOM_MSG_PTR		pBaseMsg
 );
 
 static 
-FTM_VOID_PTR FTOM_TP_CLIENT_threadEvent
+FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 (
 	FTM_VOID_PTR 		pData
 );
@@ -76,6 +76,8 @@ FTOM_MQTT_CLIENT_CBSET	xMQTTCBSet =
 static
 FTOM_CLIENT_FUNCTION_SET _xFunctionSet =
 {
+	.fDestroy=	(FTOM_CLIENT_DESTROY)FTOM_TP_CLIENT_destroy,
+
 	.fInit	=	(FTOM_CLIENT_INIT)FTOM_TP_CLIENT_init,
 	.fFinal	=	(FTOM_CLIENT_FINAL)FTOM_TP_CLIENT_final,
 
@@ -139,10 +141,12 @@ FTM_RET	FTOM_TP_CLIENT_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
+	pClient->xParent.xCommon.xType = FTOM_CLIENT_TYPE_TP;
+
 	xRet = FTOM_TP_CLIENT_init(pClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "MQTT Client initialization was failed.\n");	
+		ERROR2(xRet, "Client initialization was failed.\n");	
 		FTM_MEM_free(pClient);
 	}
 	else
@@ -194,7 +198,7 @@ FTM_RET	FTOM_TP_CLIENT_init
 	memcpy(&pClient->xConfig, &xTPClientDefaultConfig, sizeof(xTPClientDefaultConfig));
 
 	pClient->bConnected = FTM_FALSE;
-	pClient->xEvent.bStop = FTM_TRUE;
+	pClient->bStop = FTM_TRUE;
 
 	xRet = FTOM_TP_GATEWAY_create(&pClient->pGateway);
 	if (xRet != FTM_RET_OK)
@@ -749,6 +753,12 @@ FTM_RET	FTOM_TP_CLIENT_start
 	FTM_INT	nRet;
 	FTM_CHAR				pTopic[FTM_MQTT_TOPIC_LEN + 1];
 
+	xRet = FTOM_CLIENT_NET_start((FTOM_CLIENT_NET_PTR)pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set User ID!\n");
+		return	xRet;
+	}
 
 	xRet = FTOM_TP_RESTAPI_setUserID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
@@ -787,7 +797,8 @@ FTM_RET	FTOM_TP_CLIENT_start
 		ERROR2(xRet, "Failed to subscribe topic[%s]\n",	pTopic);
 	}
 
-	nRet = pthread_create(&pClient->xEvent.xThread, NULL, FTOM_TP_CLIENT_threadEvent, pClient);
+	pClient->bStop = FTM_FALSE;
+	nRet = pthread_create(&pClient->xThread, NULL, FTOM_TP_CLIENT_threadMain, pClient);
 	if (nRet != 0)
 	{
 		xRet = FTM_RET_THREAD_CREATION_ERROR;
@@ -799,12 +810,12 @@ FTM_RET	FTOM_TP_CLIENT_start
 
 finish:
 
-	pClient->xEvent.bStop = FTM_TRUE;
+	pClient->bStop = FTM_TRUE;
 
-	if (pClient->xEvent.xThread != 0)
+	if (pClient->xThread != 0)
 	{
-		pthread_cancel(pClient->xEvent.xThread);
-		pClient->xEvent.xThread = 0;
+		pthread_cancel(pClient->xThread);
+		pClient->xThread = 0;
 	}
 
 	return	xRet;
@@ -817,10 +828,10 @@ FTM_RET	FTOM_TP_CLIENT_stop
 {
 	ASSERT(pClient != NULL);
 	
-	pClient->xEvent.bStop = FTM_TRUE;
+	pClient->bStop = FTM_TRUE;
 
-	pthread_join(pClient->xEvent.xThread, NULL);
-	pClient->xEvent.xThread = 0;
+	pthread_join(pClient->xThread, NULL);
+	pClient->xThread = 0;
 
 	return	FTM_RET_OK;
 }
@@ -831,7 +842,7 @@ FTM_RET	FTOM_TP_CLIENT_isRun
 	FTM_BOOL_PTR		pbRun
 )
 {
-	if ((pClient == NULL) || pClient->xEvent.bStop)
+	if ((pClient == NULL) || pClient->bStop)
 	{
 		*pbRun = FTM_FALSE	;
 	}
@@ -848,13 +859,13 @@ FTM_RET	FTOM_TP_CLIENT_waitingForFinished
 {
 	ASSERT(pClient != NULL);
 
-	pthread_join(pClient->xEvent.xThread, NULL);
-	pClient->xEvent.xThread = 0;
+	pthread_join(pClient->xThread, NULL);
+	pClient->xThread = 0;
 
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_TP_CLIENT_messageProcess
+FTM_RET	FTOM_TP_CLIENT_messageProcess
 (
 	FTOM_TP_CLIENT_PTR	pClient,
 	FTOM_MSG_PTR		pBaseMsg
@@ -865,12 +876,11 @@ FTM_VOID_PTR FTOM_TP_CLIENT_messageProcess
 
 	FTM_RET					xRet;
 
+	TRACE("MESSAGE : %s\n", FTOM_MSG_printType(pBaseMsg->xType));
 	switch(pBaseMsg->xType)
 	{
 	case	FTOM_MSG_TYPE_CONNECTED:
 		{
-			FTOM_MQTT_CLIENT_start(&pClient->xMQTT);
-
 			xRet = FTOM_TP_CLIENT_serverSyncStart(pClient, FTM_FALSE);
 			if (xRet != FTM_RET_OK)
 			{
@@ -882,8 +892,6 @@ FTM_VOID_PTR FTOM_TP_CLIENT_messageProcess
 
 	case	FTOM_MSG_TYPE_DISCONNECTED:
 		{
-			FTOM_MQTT_CLIENT_stop(&pClient->xMQTT);
-
 			FTOM_TP_CLIENT_setReportCtrl(pClient, FTM_FALSE);
 		}
 		break;
@@ -1086,14 +1094,14 @@ FTM_VOID_PTR FTOM_TP_CLIENT_messageProcess
 
 	default:
 		{
-			ERROR2(FTM_RET_INVALID_MESSAGE_TYPE, "Not supported msg[%08x]\n", pBaseMsg->xType);	
+			return	FTOM_CLIENT_NET_messageProcess((FTOM_CLIENT_NET_PTR)pClient, pBaseMsg);
 		}
 	}
 
 	return FTM_RET_OK;
 }
 
-FTM_VOID_PTR FTOM_TP_CLIENT_threadEvent
+FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 (
 	FTM_VOID_PTR pData
 )
@@ -1104,12 +1112,15 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadEvent
 	FTOM_TP_CLIENT_PTR		pClient = (FTOM_TP_CLIENT_PTR)pData;
 	FTM_TIME				xBaseTime, xCurrentTime, xDiffTime;
 
+	TRACE("The TPClient started!\n");
 	FTM_TIMER_initS(&pClient->xRetryTimer, 0);
 	FTM_TIMER_initS(&pClient->xReportTimer,	0);
 
 	FTM_TIME_getCurrent(&xBaseTime);
-	
-	while(!pClient->xEvent.bStop)
+
+	FTOM_MQTT_CLIENT_start(&pClient->xMQTT);
+
+	while(!pClient->bStop)
 	{
 		FTM_BOOL	bConnected = pClient->bConnected;
 
@@ -1198,6 +1209,7 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadEvent
 		FTM_TIME_addMS(&xBaseTime, 1000, &xBaseTime);
 	}
 
+	TRACE("The TPClient finished!\n");
 	return 0;
 }
 
@@ -1359,7 +1371,11 @@ FTM_RET	FTOM_TP_CLIENT_serverSync
 
 	FTM_LOCK_set(pClient->pGatewayLock);
 
-	FTOM_TP_GATEWAY_destroy(&pClient->pGateway);
+	if (pClient->pGateway != NULL)
+	{
+		FTOM_TP_GATEWAY_destroy(&pClient->pGateway);
+	}
+
 	pClient->pGateway = pGateway;
 
 	FTM_LOCK_reset(pClient->pGatewayLock);

@@ -135,5 +135,11 @@ FTM_RET	FTOM_CLIENT_NET_sendMessage
 	FTOM_MSG_PTR			pMsg
 );
 
+FTM_RET	FTOM_CLIENT_NET_messageProcess
+(
+	FTOM_CLIENT_NET_PTR	pClient,
+	FTOM_MSG_PTR		pMsg
+);
+
 #endif
 

@@ -30,12 +30,12 @@ LIB_FTM_SRCS= ftm_types.c \
 			  ftm_lock.c \
 			  ftm_snmp.c \
 			  ftm_shared_memory.c\
-			  ftm_json.c\
 			  ftm_util.c \
 			  ftm_opt.c \
 			  convert.c \
 			  KISA_SHA256.c\
 			  ftm_fins.c
+
 
 LIB_FTM_OBJS=$(LIB_FTM_SRCS:.c=.o)
 

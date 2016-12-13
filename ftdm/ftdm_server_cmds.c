@@ -149,7 +149,7 @@ FTM_SHELL_CMD	FTDMS_pCmdList[] =
 };
 
 FTM_ULONG		FTDMS_ulCmdCount = sizeof(FTDMS_pCmdList) / sizeof(FTM_SHELL_CMD);
-FTM_CHAR_PTR	FTDMS_pPrompt = "FTDMS> ";
+FTM_CHAR_PTR	FTDMS_pPrompt = "FTDMS";
 
 FTM_RET	FTDMS_SHELL_CMD_config
 (
