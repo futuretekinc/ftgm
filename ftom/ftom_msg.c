@@ -1129,12 +1129,7 @@ FTM_RET	FTOM_MSG_JSON_createEPData
 		goto finished;
 	}
 
-	xRet = FTOM_JSON_print(pObject, pBuff, ulBuffSize);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to json print!\n");
-		goto finished;	
-	}
+	strcpy(pBuff, FTOM_JSON_print(pObject));
 	
 	*ppBuff =pBuff;
 
@@ -1172,11 +1167,7 @@ FTM_RET	FTOM_MSG_JSON_printEPData
 		return	xRet;	
 	}
 
-	xRet = FTOM_JSON_print(pObject, pBuff, ulBuffLen);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to json print!\n");
-	}
+	strncpy(pBuff, FTOM_JSON_print(pObject), ulBuffLen);
 
 	
 	FTOM_JSON_destroy(&pObject);

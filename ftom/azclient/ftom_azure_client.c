@@ -60,7 +60,8 @@ FTM_VOID_PTR	FTOM_AZURE_CLIENT_threadMain
 );
 
 
-static	FTOM_AZURE_CLIENT_CONFIG	_xDefaultConfig =
+static	
+FTOM_AZURE_CLIENT_CONFIG	_xDefaultConfig =
 {
 	.bTraceON = FTM_FALSE,
 	.ulLoopInterval = 1000,	// 1000ms

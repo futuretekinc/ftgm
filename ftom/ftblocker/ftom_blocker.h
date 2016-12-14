@@ -1,0 +1,85 @@
+#ifndef	__FTOM_AZURE_BLOCKER_H__
+#define	__FTOM_AZURE_BLOCKER_H__
+
+#include "ftom.h"
+#include "ftom_net_client.h"
+#include "ftom_cloud_client.h"
+#include "ftom_message_queue.h"
+
+typedef	struct
+{
+	FTOM_NET_CLIENT_PTR		pNetClient;
+	FTOM_AZURE_CLIENT_PTR	pAzureClient;
+
+	FTOM_MSG_QUEUE_PTR		pMsgQ;
+
+	pthread_t				xThreadMain;
+	FTM_BOOL				bStop;
+
+
+	FTOM_CLOUD_CLIENT_CREATE	fCreate;
+	FTOM_CLOUD_CLIENT_DESTROY	fDestroy;
+	FTOM_CLOUD_CLIENT_INIT		fInit;
+	FTOM_CLOUD_CLIENT_FINAL		fFianl;
+	FTOM_CLOUD_CLIENT_START		fStart;
+	FTOM_CLOUD_CLIENT_STOP		fStop;
+	FTOM_CLOUD_CLIENT_IS_RUNNING	fIsRunning;
+	FTOM_CLOUD_CLIENT_WAITING_FOR_FINISHED	fWaitingForFinished;
+	FTOM_CLOUD_CLIENT_CONFIG_LOAD	fLoad;
+	FTOM_CLOUD_CLIENT_CONFIG_SAVE	fSave;
+	FTOM_CLOUD_CLIENT_CONFIG_SHOW	fShow;
+	FTOM_CLOUD_CLIENT_SET_NOTIFY_CB	fSetNotifyCB;
+	FTOM_CLOUD_CLIENT_MESSAGE_SEND	fMessageSend;
+	FTOM_CLOUD_CLIENT_MESSAGE_PROCESS	fMessageProcess;
+
+}	FTOM_BLOCKER, _PTR_ FTOM_BLOCKER_PTR;
+
+FTM_RET	FTOM_BLOCKER_create
+(
+	FTOM_BLOCKER_PTR _PTR_ ppBlocker
+);
+
+FTM_RET	FTOM_BLOCKER_destroy
+(
+	FTOM_BLOCKER_PTR _PTR_ ppBlocker
+);
+
+FTM_RET	FTOM_BLOCKER_start
+(
+	FTOM_BLOCKER_PTR pBlocker
+);
+
+FTM_RET	FTOM_BLOCKER_stop
+(
+	FTOM_BLOCKER_PTR pBlocker
+);
+
+FTM_RET FTOM_BLOCKER_waitingForFinished
+(	
+	FTOM_BLOCKER_PTR pBlocker
+);
+
+FTM_RET	FTOM_BLOCKER_CONFIG_load
+(
+	FTOM_BLOCKER_PTR	pBlocker,
+	FTM_CONFIG_PTR		pConfig
+);
+
+FTM_RET	FTOM_BLOCKER_CONFIG_save
+(
+	FTOM_BLOCKER_PTR	pBlocker,
+	FTM_CONFIG_PTR		pConfig
+);
+
+FTM_RET	FTOM_BLOCKER_CONFIG_show
+(
+	FTOM_BLOCKER_PTR	pBlocker
+);
+
+FTM_RET	FTOM_BLOCKER_MESSAGE_process
+(
+	FTOM_BLOCKER_PTR	pBlocker,
+	FTOM_MSG_PTR		pBaseMsg
+);
+
+#endif

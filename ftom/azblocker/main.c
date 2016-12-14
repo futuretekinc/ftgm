@@ -9,7 +9,7 @@
 #define __MODULE__ FTOM_TRACE_MODULE_CLIENT
 
 static
-FTM_VOID	FTOM_TP_BLOCKER_usage
+FTM_VOID	FTOM_AZURE_BLOCKER_usage
 (
 	FTM_VOID
 );
@@ -25,7 +25,7 @@ FTM_INT	main
 	FTM_INT			nOpt;
 	FTM_BOOL		bDaemon = FTM_FALSE;
 	FTM_ULONG		ulDebugLevel = FTM_TRACE_LEVEL_ALL;
-	FTOM_TP_BLOCKER_PTR	pAzureBlocker = NULL;
+	FTOM_AZURE_BLOCKER_PTR	pAzureBlocker = NULL;
 	FTM_CHAR		pConfigFileName[1024];
 	FTM_CONFIG_PTR	pConfig = NULL;
 
@@ -55,7 +55,7 @@ FTM_INT	main
 
 		default:
 			{
-				FTOM_TP_BLOCKER_usage();
+				FTOM_AZURE_BLOCKER_usage();
 			
 				goto finish;
 			}
@@ -72,7 +72,7 @@ FTM_INT	main
 	FTM_TRACE_setLevel(FTM_TRACE_MAX_MODULES, ulDebugLevel);
 	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT,"client", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
-	xRet = FTOM_TP_BLOCKER_create((FTOM_TP_BLOCKER_PTR _PTR_)&pAzureBlocker);
+	xRet = FTOM_AZURE_BLOCKER_create((FTOM_AZURE_BLOCKER_PTR _PTR_)&pAzureBlocker);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Can't create a client.\n");
@@ -83,7 +83,7 @@ FTM_INT	main
 	xRet = FTM_CONFIG_create(pConfigFileName, &pConfig, FTM_FALSE);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_TP_BLOCKER_CONFIG_load(pAzureBlocker, pConfig);
+		xRet = FTOM_AZURE_BLOCKER_CONFIG_load(pAzureBlocker, pConfig);
 		if (xRet != FTM_RET_OK)
 		{   
 			ERROR2(xRet, "Faield to load configuration!\n");    
@@ -105,14 +105,14 @@ FTM_INT	main
 		}
 	}
 
-	FTOM_TP_BLOCKER_start(pAzureBlocker);
+	FTOM_AZURE_BLOCKER_start(pAzureBlocker);
 
 	if (!bDaemon)
 	{
-		FTM_SHELL_run2(FTM_getProgramName(), FTOM_TP_BLOCKER_SHELL_cmds, FTOM_TP_BLOCKER_SHELL_cmdCount, pAzureBlocker);
+		FTM_SHELL_run2(FTM_getProgramName(), FTOM_AZURE_BLOCKER_SHELL_cmds, FTOM_AZURE_BLOCKER_SHELL_cmdCount, pAzureBlocker);
 	}
 
-	xRet = FTOM_TP_BLOCKER_waitingForFinished(pAzureBlocker);
+	xRet = FTOM_AZURE_BLOCKER_waitingForFinished(pAzureBlocker);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "The client was finished abnormally!!.\n");	
@@ -122,7 +122,7 @@ finish:
 
 	if (pAzureBlocker != NULL)
 	{
-		xRet = FTOM_TP_BLOCKER_destroy(&pAzureBlocker);
+		xRet = FTOM_AZURE_BLOCKER_destroy(&pAzureBlocker);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Remove the Client failed\n");
@@ -143,7 +143,7 @@ finish:
   	return 0;
 }
 
-FTM_VOID	FTOM_TP_BLOCKER_usage
+FTM_VOID	FTOM_AZURE_BLOCKER_usage
 (
 	FTM_VOID
 )

@@ -1,6 +1,6 @@
 #include "ftom_cgi.h"
 #include "ftom_client.h"
-#include "ftm_json.h"
+#include "ftom_json.h"
 #include "cJSON.h"
 
 static
