@@ -1026,6 +1026,7 @@ FTM_RET	FTOM_SERVER_sendMessage
 	pPacket->ulLen	= ulPacketLen;
 	memcpy(&pPacket->xMsg, pMsg, pMsg->ulLen);
 
+	TRACE("Send Message[%08x]\n", pMsg->xType);
 	FTM_LIST_iteratorStart(&pServer->xUDP.xClientList);
 	while(FTM_LIST_iteratorNext(&pServer->xUDP.xClientList, (FTM_VOID_PTR _PTR_)&pSubscriber) == FTM_RET_OK)
 	{

@@ -1,0 +1,37 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CLIENT	Makefile	/^CLIENT=azblocker$/;"	m
+CLIENT_CFLAGS	Makefile	/^CLIENT_CFLAGS=$(CFLAGS) -std=gnu99 \\$/;"	m
+CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -L.\/ \\$/;"	m
+CLIENT_OBJS	Makefile	/^CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)$/;"	m
+CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c \\$/;"	m
+FTOM_AZURE_BLOCKER	ftom_azure_blocker.h	/^}	FTOM_AZURE_BLOCKER, _PTR_ FTOM_AZURE_BLOCKER_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_AZURE_BLOCKER_CONFIG_load	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_CONFIG_load$/;"	f
+FTOM_AZURE_BLOCKER_CONFIG_save	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_CONFIG_save$/;"	f
+FTOM_AZURE_BLOCKER_CONFIG_show	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_CONFIG_show$/;"	f
+FTOM_AZURE_BLOCKER_PTR	ftom_azure_blocker.h	/^}	FTOM_AZURE_BLOCKER, _PTR_ FTOM_AZURE_BLOCKER_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_AZURE_BLOCKER_SHELL_CMD_config	ftom_azure_blocker_shell_cmds.c	/^FTM_RET	FTOM_AZURE_BLOCKER_SHELL_CMD_config$/;"	f
+FTOM_AZURE_BLOCKER_SHELL_CMD_server	ftom_azure_blocker_shell_cmds.c	/^FTM_RET	FTOM_AZURE_BLOCKER_SHELL_CMD_server$/;"	f
+FTOM_AZURE_BLOCKER_SHELL_CMD_trace	ftom_azure_blocker_shell_cmds.c	/^FTM_RET	FTOM_AZURE_BLOCKER_SHELL_CMD_trace$/;"	f
+FTOM_AZURE_BLOCKER_SHELL_cmdCount	ftom_azure_blocker_shell_cmds.c	/^FTM_ULONG FTOM_AZURE_BLOCKER_SHELL_cmdCount = sizeof(FTOM_AZURE_BLOCKER_SHELL_cmds) \/ sizeof(FTM_SHELL_CMD);$/;"	v
+FTOM_AZURE_BLOCKER_SHELL_cmds	ftom_azure_blocker_shell_cmds.c	/^FTM_SHELL_CMD	FTOM_AZURE_BLOCKER_SHELL_cmds[] =$/;"	v
+FTOM_AZURE_BLOCKER_create	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_create$/;"	f
+FTOM_AZURE_BLOCKER_destroy	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_destroy$/;"	f
+FTOM_AZURE_BLOCKER_start	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_start$/;"	f
+FTOM_AZURE_BLOCKER_stop	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_stop$/;"	f
+FTOM_AZURE_BLOCKER_usage	main.c	/^FTM_VOID	FTOM_AZURE_BLOCKER_usage$/;"	f
+FTOM_AZURE_BLOCKER_waitingForFinished	ftom_azure_blocker.c	/^FTM_RET FTOM_AZURE_BLOCKER_waitingForFinished$/;"	f
+TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
+__FTOM_AZURE_BLOCKER_H__	ftom_azure_blocker.h	2;"	d
+__FTOM_AZURE_BLOCKER_SHELL_CMDS_H__	ftom_azure_blocker_shell_cmds.h	2;"	d
+__MODULE__	ftom_azure_blocker_shell_cmds.c	5;"	d	file:
+__MODULE__	ftom_azure_blocker_shell_cmds.c	6;"	d	file:
+__MODULE__	main.c	8;"	d	file:
+__MODULE__	main.c	9;"	d	file:
+main	main.c	/^FTM_INT	main$/;"	f
+pAzureClient	ftom_azure_blocker.h	/^	FTOM_AZURE_CLIENT_PTR	pAzureClient;$/;"	m	struct:__anon1
+ulGetheringTime	ftom_azure_blocker_shell_cmds.c	/^FTM_ULONG	ulGetheringTime = 3;$/;"	v

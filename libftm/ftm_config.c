@@ -32,6 +32,7 @@ FTM_RET	FTM_CONFIG_create
 	xRet = FTM_CONFIG_init(pConfig, pFileName, bNew);
 	if (xRet != FTM_RET_OK)
 	{
+		FTM_MEM_free(pConfig);
 		ERROR2(xRet, "Configuration init failed!\n");
 		return	xRet;
 	}

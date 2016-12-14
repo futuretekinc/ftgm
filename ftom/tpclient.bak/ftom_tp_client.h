@@ -27,6 +27,12 @@ typedef	struct
 
 	struct
 	{
+		FTM_CHAR	pHost[FTM_URL_LEN+1];
+		FTM_USHORT	usPort;
+	}	xFTOMC;
+
+	struct
+	{
 		FTM_CHAR	pHost[FTM_HOST_LEN+1];
 		FTM_UINT16	usPort;
 	
@@ -47,14 +53,11 @@ typedef	struct
 
 typedef	struct FTOM_TP_CLIENT_STRUCT
 {
+	FTOM_CLIENT_NET			xParent;
+
 	FTOM_TP_CLIENT_CONFIG	xConfig;
 
-	pthread_t				xThreadMain;
-
-	FTOM_CLIENT_NOTIFY_CB	fNotifyCB;
-	FTM_VOID_PTR			pNotifyData;
-
-	FTOM_MSG_QUEUE_PTR		pMsgQ;
+	pthread_t				xThread;
 
 	FTM_BOOL				bStop;
 	FTM_BOOL				bConnected;
@@ -95,34 +98,39 @@ FTM_RET	FTOM_TP_CLIENT_final
 	FTOM_TP_CLIENT_PTR pClient
 );
 
-FTM_RET	FTOM_TP_CLIENT_CONFIG_load
+FTM_RET	FTOM_TP_CLIENT_setConfig
+(
+	FTOM_TP_CLIENT_PTR 		pClient, 
+	FTOM_TP_CLIENT_CONFIG_PTR 	pConfig
+);
+
+FTM_RET	FTOM_TP_CLIENT_loadConfig
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
 	FTM_CONFIG_PTR		pConfig
 );
 
-FTM_RET	FTOM_TP_CLIENT_CONFIG_save
+FTM_RET	FTOM_TP_CLIENT_loadConfigFromFile
+(
+	FTOM_TP_CLIENT_PTR pClient, 
+	FTM_CHAR_PTR 		pFileName
+);
+
+FTM_RET	FTOM_TP_CLIENT_saveConfig
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
 	FTM_CONFIG_PTR		pConfig
 );
 
-FTM_RET	FTOM_TP_CLIENT_CONFIG_show
+FTM_RET	FTOM_TP_CLIENT_saveConfigToFile
+(
+	FTOM_TP_CLIENT_PTR 	pClient, 
+	FTM_CHAR_PTR 		pFileName
+);
+
+FTM_RET	FTOM_TP_CLIENT_showConfig
 (
 	FTOM_TP_CLIENT_PTR pClient
-);
-
-FTM_RET	FTOM_TP_CLIENT_setNotifyCB
-(
-	FTOM_TP_CLIENT_PTR pClient,
-	FTOM_CLIENT_NOTIFY_CB	fNotifyCB,
-	FTM_VOID_PTR		pNotidyData
-);
-
-FTM_RET	FTOM_TP_CLIENT_MESSAGE_send
-(
-	FTOM_TP_CLIENT_PTR pClient,
-	FTOM_MSG_PTR		pMsg
 );
 
 FTM_RET	FTOM_TP_CLIENT_start

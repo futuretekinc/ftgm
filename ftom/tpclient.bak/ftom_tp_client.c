@@ -86,9 +86,9 @@ FTOM_CLIENT_FUNCTION_SET _xFunctionSet =
 	.fMessageProcess=	(FTOM_CLIENT_MESSAGE)FTOM_TP_CLIENT_messageProcess,
 
 	.fWaitingForFinished=	(FTOM_CLIENT_WAITING_FOR_FINISHED)FTOM_TP_CLIENT_waitingForFinished,
-	.fLoadConfig=	(FTOM_CLIENT_LOAD_CONFIG)FTOM_TP_CLIENT_CONFIG_load,
-	.fSaveConfig=	(FTOM_CLIENT_SAVE_CONFIG)FTOM_TP_CLIENT_CONFIG_save,
-	.fShowConfig=	(FTOM_CLIENT_SHOW_CONFIG)FTOM_TP_CLIENT_CONFIG_show,
+	.fLoadConfig=	(FTOM_CLIENT_LOAD_CONFIG)FTOM_TP_CLIENT_loadConfig,
+	.fSaveConfig=	(FTOM_CLIENT_SAVE_CONFIG)FTOM_TP_CLIENT_saveConfig,
+	.fShowConfig=	(FTOM_CLIENT_SHOW_CONFIG)FTOM_TP_CLIENT_showConfig,
 };
 
 static
@@ -100,6 +100,12 @@ FTOM_TP_CLIENT_CONFIG	xTPClientDefaultConfig =
 	.pUserID= "",
 	.pPasswd= "",
 	.ulReportInterval = FTOM_TP_CLIENT_DEFAULT_REPORT_INTERVAL,
+
+	.xFTOMC=
+	{
+		.pHost = "127.0.0.1",
+		.usPort = 8888
+	},
 
 	.xMQTT = 
 	{
@@ -124,6 +130,8 @@ FTM_RET	FTOM_TP_CLIENT_create
 	FTOM_TP_CLIENT_PTR _PTR_ 	ppClient
 )
 {
+	ASSERT(ppClient != NULL);
+
 	FTM_RET				xRet;
 	FTOM_TP_CLIENT_PTR	pClient;
 
@@ -133,33 +141,19 @@ FTM_RET	FTOM_TP_CLIENT_create
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	xRet = FTOM_MSGQ_create(&pClient->pMsgQ);
-	if (xRet != FTM_RET_OK)
-	{
-		goto error;	
-	}
+	pClient->xParent.xCommon.xType = FTOM_CLIENT_TYPE_TP;
 
 	xRet = FTOM_TP_CLIENT_init(pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Client initialization was failed.\n");	
-		goto error;
-	}
-
-	*ppClient = pClient;	
-
-	return	xRet;
-
-error:
-	if (pClient != NULL)
-	{
-		if (pClient->pMsgQ != NULL)
-		{
-			FTOM_MSGQ_destroy(&pClient->pMsgQ);	
-		}
-
 		FTM_MEM_free(pClient);
 	}
+	else
+	{
+		*ppClient = pClient;	
+	}
+
 	return	xRet;
 }
 
@@ -187,6 +181,20 @@ FTM_RET	FTOM_TP_CLIENT_init
 
 	FTM_RET	xRet;	
 
+	if (FTOM_CLIENT_TYPE_isCorrect(pClient, FTOM_CLIENT_TYPE_TP) != FTM_TRUE)
+	{
+		return  FTM_RET_INVALID_TYPE;
+	}
+
+	xRet = FTOM_CLIENT_NET_init((FTOM_CLIENT_NET_PTR)pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to create client!\n");
+		goto error;	
+	}
+
+    FTOM_CLIENT_setFunctionSet((FTOM_CLIENT_PTR)pClient, &_xFunctionSet);
+	
 	memcpy(&pClient->xConfig, &xTPClientDefaultConfig, sizeof(xTPClientDefaultConfig));
 
 	pClient->bConnected = FTM_FALSE;
@@ -243,6 +251,8 @@ error:
 		FTOM_TP_GATEWAY_destroy(&pClient->pGateway);	
 	}
 
+	FTOM_CLIENT_NET_final((FTOM_CLIENT_NET_PTR)pClient);
+
 	return	xRet;
 }
 
@@ -268,7 +278,7 @@ FTM_RET	FTOM_TP_CLIENT_final
 		FTOM_TP_GATEWAY_destroy(&pClient->pGateway);
 	}
 
-	return	FTM_RET_OK;
+	return	FTOM_CLIENT_NET_final((FTOM_CLIENT_NET_PTR)pClient);
 }
 
 FTM_RET	FTOM_TP_CLIENT_getConfig
@@ -299,14 +309,18 @@ FTM_RET	FTOM_TP_CLIENT_setConfig
 
 	memcpy(&pClient->xConfig, pConfig, sizeof(FTOM_TP_CLIENT_CONFIG));
 
-	strncpy(xRESTApiConfig.pGatewayID, 	pClient->xConfig.pGatewayID, FTM_GWID_LEN);
+	strncpy(pClient->xParent.xConfig.pHostName, pClient->xConfig.xFTOMC.pHost,		FTM_URL_LEN);
+	pClient->xParent.xConfig.usPort = pClient->xConfig.xFTOMC.usPort;
+
+
+	strncpy(xRESTApiConfig.pGatewayID, 	pClient->xConfig.pGatewayID,		FTM_GWID_LEN);
 	if (strlen(pClient->xConfig.pUserID) != 0)
 	{
-		strncpy(xRESTApiConfig.pUserID, pClient->xConfig.pUserID, FTM_USER_ID_LEN);
+		strncpy(xRESTApiConfig.pUserID, 	pClient->xConfig.pUserID,			FTM_USER_ID_LEN);
 	}
 	else
 	{
-		strncpy(xRESTApiConfig.pUserID, pClient->xConfig.pGatewayID,FTM_USER_ID_LEN);
+		strncpy(xRESTApiConfig.pUserID, 	pClient->xConfig.pGatewayID,			FTM_USER_ID_LEN);
 	}
 	strncpy(xRESTApiConfig.pPasswd,		pClient->xConfig.pAPIKey, 			FTM_PASSWD_LEN);
 	strncpy(xRESTApiConfig.pBaseURL,	pClient->xConfig.xRESTApi.pBaseURL,	FTM_URL_LEN);
@@ -345,7 +359,7 @@ FTM_RET	FTOM_TP_CLIENT_setConfig
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_CONFIG_load
+FTM_RET	FTOM_TP_CLIENT_loadConfig
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
 	FTM_CONFIG_PTR		pConfig
@@ -368,6 +382,7 @@ FTM_RET	FTOM_TP_CLIENT_CONFIG_load
 	xRet = FTM_CONFIG_getItem(pConfig, "tpclient", &xSection);
 	if (xRet == FTM_RET_OK)
 	{
+		FTM_CONFIG_ITEM xFTOMCConfig;
 		FTM_CONFIG_ITEM	xMQTTConfig;
 		FTM_CONFIG_ITEM	xRESTApiConfig;
 
@@ -407,6 +422,22 @@ FTM_RET	FTOM_TP_CLIENT_CONFIG_load
 			INFO("Can not find a report interval for the TPClient!\n");
 		}
 		
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "server", &xFTOMCConfig);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTM_CONFIG_ITEM_getItemString(&xFTOMCConfig, "host", xTPConfig.xFTOMC.pHost, FTM_HOST_LEN);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Can not find a host for the TPClient!\n");
+			}
+		
+			xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xFTOMCConfig, "port", &xTPConfig.xFTOMC.usPort);
+			if (xRet != FTM_RET_OK)
+			{
+				INFO("Can not find a port for the TPClient!\n");
+			}
+		}
+
 		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "restapi", &xRESTApiConfig);
 		if (xRet == FTM_RET_OK)
 		{
@@ -479,7 +510,63 @@ FTM_RET	FTOM_TP_CLIENT_CONFIG_load
 	return	xRet;
 }
 
-FTM_RET	FTOM_TP_CLIENT_CONFIG_save
+FTM_RET	FTOM_TP_CLIENT_loadConfigFromFile
+(
+	FTOM_TP_CLIENT_PTR 	pClient, 
+	FTM_CHAR_PTR 		pFileName
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pFileName != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pConfig;
+
+	xRet = FTM_CONFIG_create(pFileName, &pConfig, FTM_FALSE);
+	if (xRet !=  FTM_RET_OK)
+	{
+		ERROR2(xRet, "Configration loading failed!\n");
+		return	xRet;	
+	}
+
+	xRet = FTOM_TP_CLIENT_loadConfig(pClient, pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration!\n");	
+	}
+
+	FTM_CONFIG_destroy(&pConfig);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_TP_CLIENT_saveConfigToFile
+(
+	FTOM_TP_CLIENT_PTR 	pClient, 
+	FTM_CHAR_PTR 		pFileName
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pFileName != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_PTR		pConfig;
+
+	xRet = FTM_CONFIG_create(pFileName, &pConfig, FTM_TRUE);
+	if (xRet !=  FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to save configuration!\n");
+		return	xRet;	
+	}
+
+	xRet = FTOM_TP_CLIENT_saveConfig(pClient, pConfig);
+
+	FTM_CONFIG_destroy(&pConfig);
+
+	return	xRet;
+}
+
+FTM_RET	FTOM_TP_CLIENT_saveConfig
 (
 	FTOM_TP_CLIENT_PTR 	pClient, 
 	FTM_CONFIG_PTR		pConfig
@@ -551,6 +638,18 @@ FTM_RET	FTOM_TP_CLIENT_CONFIG_save
 		}
 	}
 
+	xRet = FTM_CONFIG_ITEM_setItemString(&xFTOMCConfig, "host", pClient->xConfig.xFTOMC.pHost);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Can not save a host for the TPClient!\n");
+	}
+
+	xRet = FTM_CONFIG_ITEM_setItemUSHORT(&xFTOMCConfig, "port", pClient->xConfig.xFTOMC.usPort);
+	if (xRet != FTM_RET_OK)
+	{
+		INFO("Can not save a port for the TPClient!\n");
+	}
+
 	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "mqtt", &xMQTTConfig);
 	if (xRet != FTM_RET_OK)
 	{
@@ -612,7 +711,7 @@ FTM_RET	FTOM_TP_CLIENT_CONFIG_save
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_TP_CLIENT_CONFIG_show
+FTM_RET	FTOM_TP_CLIENT_showConfig
 (
 	FTOM_TP_CLIENT_PTR 	pClient
 )
@@ -626,6 +725,10 @@ FTM_RET	FTOM_TP_CLIENT_CONFIG_show
 	MESSAGE("%16s : %s\n", "User ID", pClient->xConfig.pUserID);
 	MESSAGE("%16s : %s\n", "Password", pClient->xConfig.pPasswd);
 	MESSAGE("%16s : %lu\n","Report Interval", pClient->xConfig.ulReportInterval);
+
+	MESSAGE("\n# %s \n", "Server");
+	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.xFTOMC.pHost);
+	MESSAGE("%16s : %d\n", "Port", pClient->xConfig.xFTOMC.usPort);
 
 	MESSAGE("\n# %s\n", "ThingPlus MQTT");
 	MESSAGE("%16s : %s\n", "Host", pClient->xConfig.xMQTT.pHost);
@@ -649,6 +752,13 @@ FTM_RET	FTOM_TP_CLIENT_start
 	FTM_RET	xRet;
 	FTM_INT	nRet;
 	FTM_CHAR				pTopic[FTM_MQTT_TOPIC_LEN + 1];
+
+	xRet = FTOM_CLIENT_NET_start((FTOM_CLIENT_NET_PTR)pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to set User ID!\n");
+		return	xRet;
+	}
 
 	xRet = FTOM_TP_RESTAPI_setUserID(&pClient->xRESTApi, pClient->xConfig.pGatewayID);
 	if (xRet != FTM_RET_OK)
@@ -688,7 +798,7 @@ FTM_RET	FTOM_TP_CLIENT_start
 	}
 
 	pClient->bStop = FTM_FALSE;
-	nRet = pthread_create(&pClient->xThreadMain, NULL, FTOM_TP_CLIENT_threadMain, pClient);
+	nRet = pthread_create(&pClient->xThread, NULL, FTOM_TP_CLIENT_threadMain, pClient);
 	if (nRet != 0)
 	{
 		xRet = FTM_RET_THREAD_CREATION_ERROR;
@@ -702,10 +812,10 @@ finish:
 
 	pClient->bStop = FTM_TRUE;
 
-	if (pClient->xThreadMain != 0)
+	if (pClient->xThread != 0)
 	{
-		pthread_cancel(pClient->xThreadMain);
-		pClient->xThreadMain = 0;
+		pthread_cancel(pClient->xThread);
+		pClient->xThread = 0;
 	}
 
 	return	xRet;
@@ -720,7 +830,10 @@ FTM_RET	FTOM_TP_CLIENT_stop
 	
 	pClient->bStop = FTM_TRUE;
 
-	return	FTOM_TP_CLIENT_waitingForFinished(pClient);
+	pthread_join(pClient->xThread, NULL);
+	pClient->xThread = 0;
+
+	return	FTOM_CLIENT_NET_stop((FTOM_CLIENT_NET_PTR)pClient);
 }
 
 FTM_RET	FTOM_TP_CLIENT_isRun
@@ -746,8 +859,8 @@ FTM_RET	FTOM_TP_CLIENT_waitingForFinished
 {
 	ASSERT(pClient != NULL);
 
-	pthread_join(pClient->xThreadMain, NULL);
-	pClient->xThreadMain = 0;
+	pthread_join(pClient->xThread, NULL);
+	pClient->xThread = 0;
 
 	return	FTM_RET_OK;
 }
@@ -981,7 +1094,7 @@ FTM_RET	FTOM_TP_CLIENT_messageProcess
 
 	default:
 		{
-			return	FTM_RET_INVALID_MESSAGE_TYPE;
+			return	FTOM_CLIENT_NET_messageProcess((FTOM_CLIENT_NET_PTR)pClient, pBaseMsg);
 		}
 	}
 
@@ -1016,44 +1129,42 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 		{
 			if (bConnected != pClient->bConnected)
 			{
-				if (pClient->fNotifyCB != NULL)
+				if(bConnected)
 				{
-					if(bConnected)
+					FTOM_MSG_PTR	pMsg;
+	
+					xRet = FTOM_MSG_createConnected(&pMsg);
+					if (xRet != FTM_RET_OK)
 					{
-						FTOM_MSG_PTR	pMsg;
-		
-						xRet = FTOM_MSG_createConnected(&pMsg);
-						if (xRet != FTM_RET_OK)
-						{
-							ERROR2(xRet, "Failed to create message!\n");	
-						}
-						else
-						{
-							xRet = pClient->fNotifyCB(pMsg, pClient->pNotifyData);
-							if (xRet != FTM_RET_OK)
-							{
-								ERROR2(xRet, "Failed to send message!\n");	
-								FTOM_MSG_destroy(&pMsg);
-							}
-						}
+						ERROR2(xRet, "Failed to create message!\n");	
 					}
 					else
 					{
-						FTOM_MSG_PTR	pMsg;
-		
-						xRet = FTOM_MSG_createDisconnected(&pMsg);
+						xRet = FTOM_CLIENT_sendMessage((FTOM_CLIENT_PTR)pClient, pMsg);
 						if (xRet != FTM_RET_OK)
 						{
-							ERROR2(xRet, "Failed to create message!\n");	
+							ERROR2(xRet, "Failed to send message!\n");	
+							FTOM_MSG_destroy(&pMsg);
 						}
-						else
+					}
+	
+				}
+				else
+				{
+					FTOM_MSG_PTR	pMsg;
+	
+					xRet = FTOM_MSG_createDisconnected(&pMsg);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed to create message!\n");	
+					}
+					else
+					{
+						xRet = FTOM_CLIENT_sendMessage((FTOM_CLIENT_PTR)pClient, pMsg);
+						if (xRet != FTM_RET_OK)
 						{
-							xRet = pClient->fNotifyCB(pMsg, pClient->pNotifyData);
-							if (xRet != FTM_RET_OK)
-							{
-								ERROR2(xRet, "Failed to send message!\n");	
-								FTOM_MSG_destroy(&pMsg);
-							}
+							ERROR2(xRet, "Failed to send message!\n");	
+							FTOM_MSG_destroy(&pMsg);
 						}
 					}
 				}
@@ -1064,21 +1175,18 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 
 		if (pClient->bReportON && FTM_TIMER_isExpired(&pClient->xReportTimer))
 		{
-			if (pClient->fNotifyCB != NULL)
+			FTOM_MSG_PTR	pMsg;
+
+			xRet = FTOM_MSG_TP_createReport(&pMsg);
+			if (xRet != FTM_RET_OK)
 			{
-				FTOM_MSG_PTR	pMsg;
+				ERROR2(xRet, "Failed to create message!\n");	
+			}
 
-				xRet = FTOM_MSG_TP_createReport(&pMsg);
-				if (xRet != FTM_RET_OK)
-				{
-					ERROR2(xRet, "Failed to create message!\n");	
-				}
-
-				xRet = pClient->fNotifyCB(pMsg, pClient->pNotifyData);
-				if (xRet != FTM_RET_OK)
-				{
-					FTOM_MSG_destroy(&pMsg);
-				}
+			xRet = FTOM_CLIENT_sendMessage((FTOM_CLIENT_PTR)pClient, pMsg);
+			if (xRet != FTM_RET_OK)
+			{
+				FTOM_MSG_destroy(&pMsg);
 			}
 
 			FTM_TIMER_addS(&pClient->xReportTimer, pClient->xConfig.ulReportInterval);
@@ -1103,32 +1211,6 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 
 	TRACE("The TPClient finished!\n");
 	return 0;
-}
-
-FTM_RET	FTOM_TP_CLIENT_setNotifyCB
-(
-	FTOM_TP_CLIENT_PTR pClient,
-	FTOM_CLIENT_NOTIFY_CB	fNotifyCB,
-	FTM_VOID_PTR		pData
-)
-{
-	ASSERT(pClient != NULL);
-
-	pClient->fNotifyCB = fNotifyCB;
-	pClient->pNotifyData = pData;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_TP_CLIENT_MESSAGE_send
-(
-	FTOM_TP_CLIENT_PTR pClient,
-	FTOM_MSG_PTR		pMsg
-)
-{
-	ASSERT(pClient != NULL);
-
-	return	FTOM_MSGQ_push(pClient->pMsgQ, pMsg);
 }
 
 FTM_RET	FTOM_TP_CLIENT_serverSyncStart
