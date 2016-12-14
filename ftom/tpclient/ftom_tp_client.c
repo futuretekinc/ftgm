@@ -833,7 +833,7 @@ FTM_RET	FTOM_TP_CLIENT_stop
 	pthread_join(pClient->xThread, NULL);
 	pClient->xThread = 0;
 
-	return	FTM_RET_OK;
+	return	FTOM_CLIENT_NET_stop((FTOM_CLIENT_NET_PTR)pClient);
 }
 
 FTM_RET	FTOM_TP_CLIENT_isRun
