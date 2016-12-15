@@ -374,7 +374,7 @@ FTM_RET	FTOM_DISCOVERY_startSearch
 	FTM_RET		xRet;
 
 	TRACE("Received discovery request!\n");
-	xRet = FTOM_MSG_createDiscovery(pNetwork, usPort, ulRetryCount, &pMsg);
+	xRet = FTOM_MSG_createDiscovery(pDiscovery, pNetwork, usPort, ulRetryCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Discovery message creation failed.\n");
@@ -599,7 +599,7 @@ FTM_RET	FTOM_DISCOVERY_infoCB
 		return	xRet;	
 	}
 
-	xRet = FTOM_MSG_createDiscoveryInfo(pMsg->pName, pMsg->pDID, pMsg->pIP, pMsg->pTypes, pMsg->ulCount, &pNewMsg);
+	xRet = FTOM_MSG_createDiscoveryInfo(pDiscovery, pMsg->pName, pMsg->pDID, pMsg->pIP, pMsg->pTypes, pMsg->ulCount, &pNewMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Discovery info message creation failed.\n");

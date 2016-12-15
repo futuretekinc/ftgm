@@ -348,6 +348,7 @@ FTM_RET	FTOM_MQTT_CLIENT_onGWStatus
 
 	FTM_RET	xRet;
 
+	TRACE("pClient = %08x, pClient->pCBSet = %08x\n", pClient, pClient->pCBSet);
 	if ((pClient->pCBSet != NULL) && (pClient->pCBSet->fGWStatus != NULL))
 	{
 		xRet = pClient->pCBSet->fGWStatus(pClient, pMsg->pGatewayID, pMsg->bStatus, pMsg->ulTimeout);
@@ -617,7 +618,7 @@ FTM_RET	FTOM_MQTT_CLIENT_reportGWStatus
 	FTM_RET	xRet;
 	FTOM_MSG_GW_STATUS_PTR	pMsg;
 
-	xRet = FTOM_MSG_createGWStatus(pGatewayID, bStatus, ulTimeout, &pMsg);
+	xRet = FTOM_MSG_createGWStatus(pClient, pGatewayID, bStatus, ulTimeout, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -646,7 +647,7 @@ FTM_RET	FTOM_MQTT_CLIENT_publishEPStatus
 	FTM_RET	xRet;
 	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
+	xRet = FTOM_MSG_createEPStatus(pClient, pEPID, bStatus, ulTimeout, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -676,7 +677,7 @@ FTM_RET	FTOM_MQTT_CLIENT_publishEPData
 	FTM_RET	xRet;
 	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createEPData(pEPID, pData, ulCount, &pMsg);
+	xRet = FTOM_MSG_createEPData(pClient, pEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -707,7 +708,7 @@ FTM_RET	FTOM_MQTT_CLIENT_response
 	FTM_RET	xRet;
 	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_TP_createResponse(pMsgID, nCode, pMessage, &pMsg);
+	xRet = FTOM_MSG_TP_createResponse(pClient, pMsgID, nCode, pMessage, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	

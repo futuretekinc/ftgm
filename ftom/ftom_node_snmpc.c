@@ -579,6 +579,7 @@ FTM_RET	FTOM_NODE_SNMPC_getEPDataAsync
 	}
 
 	xRet = FTOM_MSG_SNMPC_createGetEPData(
+				pNode,
 				pNode->xCommon.xInfo.pDID, 
 				pEP->xInfo.pEPID,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,
@@ -626,6 +627,7 @@ FTM_RET	FTOM_NODE_SNMPC_setEPDataAsync
 	}
 
 	xRet = FTOM_MSG_SNMPC_createSetEPData(
+				pNode,
 				pNode->xCommon.xInfo.pDID, 
 				pEP->xInfo.pEPID,
 				pNode->xCommon.xInfo.xOption.xSNMP.ulVersion,

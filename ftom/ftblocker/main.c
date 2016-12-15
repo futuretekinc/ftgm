@@ -27,7 +27,9 @@ FTM_INT	main
 	FTM_ULONG		ulDebugLevel = FTM_TRACE_LEVEL_ALL;
 	FTOM_BLOCKER_PTR	pBlocker = NULL;
 	FTM_CHAR		pConfigFileName[1024];
+	FTM_CHAR		pCloudName[256];
 	FTM_CONFIG_PTR	pConfig = NULL;
+	FTM_CONFIG_ITEM	xSection;
 
 	sprintf(pConfigFileName, "/etc/%s.conf", FTM_getProgramName());
 
@@ -71,8 +73,31 @@ FTM_INT	main
 
 	FTM_TRACE_setLevel(FTM_TRACE_MAX_MODULES, ulDebugLevel);
 	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT,"client", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_MQTTC,"mqtt", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
-	xRet = FTOM_BLOCKER_create((FTOM_BLOCKER_PTR _PTR_)&pBlocker);
+	xRet = FTM_CONFIG_create(pConfigFileName, &pConfig, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Configuration loading failed!\n");
+		goto finish;
+	}
+
+	xRet = FTM_CONFIG_getItem(pConfig, "blocker", &xSection);
+	if (xRet != FTM_RET_OK)
+	{
+		MESSAGE("The blocker setting could not be found.\n");
+		goto finish;	
+	}
+
+	memset(pCloudName, 0, sizeof(pCloudName));
+	xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "cloud", pCloudName, sizeof(pCloudName) - 1);
+	if (xRet != FTM_RET_OK)
+	{
+		MESSAGE("The cloud name could not be found.\n");
+		goto finish;	
+	}
+
+	xRet = FTOM_BLOCKER_create(pCloudName, (FTOM_BLOCKER_PTR _PTR_)&pBlocker);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Can't create a client.\n");
@@ -80,22 +105,14 @@ FTM_INT	main
 	}
 
 
-	xRet = FTM_CONFIG_create(pConfigFileName, &pConfig, FTM_FALSE);
-	if (xRet == FTM_RET_OK)
-	{
-		xRet = FTOM_BLOCKER_CONFIG_load(pBlocker, pConfig);
-		if (xRet != FTM_RET_OK)
-		{   
-			ERROR2(xRet, "Faield to load configuration!\n");    
-			goto finish;
-		}   
-	
-		FTM_CONFIG_destroy(&pConfig);
-	}
-	else
+	xRet = FTOM_BLOCKER_CONFIG_load(pBlocker, pConfig);
+	if (xRet != FTM_RET_OK)
 	{   
-		ERROR2(xRet, "Configuration loading failed!\n");
+		ERROR2(xRet, "Faield to load configuration!\n");    
+		goto finish;
 	}   
+	
+	FTM_CONFIG_destroy(&pConfig);
 
 	if (bDaemon)
 	{
@@ -109,7 +126,7 @@ FTM_INT	main
 
 	if (!bDaemon)
 	{
-		FTM_SHELL_run2(FTM_getProgramName(), FTOM_BLOCKER_SHELL_cmds, FTOM_BLOCKER_SHELL_cmdCount, pBlocker);
+		FTM_SHELL_run2(pBlocker->pCloudClientModule->pName, FTOM_BLOCKER_SHELL_cmds, FTOM_BLOCKER_SHELL_cmdCount, pBlocker);
 	}
 
 	xRet = FTOM_BLOCKER_waitingForFinished(pBlocker);
@@ -122,6 +139,8 @@ finish:
 
 	if (pBlocker != NULL)
 	{
+		FTOM_BLOCKER_final(pBlocker);
+
 		xRet = FTOM_BLOCKER_destroy(&pBlocker);
 		if (xRet != FTM_RET_OK)
 		{

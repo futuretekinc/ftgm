@@ -7,11 +7,15 @@ include $(TOPDIR)/Makefile.in
 CLIENT=ftblocker
 CLIENT_SRCS=main.c \
 	ftom_blocker.c\
+	ftom_cloud_client.c\
+	ftom_cloud_client_wrapper.c\
 	ftom_blocker_shell_cmds.c
 
 
 CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
 CLIENT_CFLAGS=$(CFLAGS) -std=gnu99 \
+				-I/usr/include/azureiot \
+				-I/usr/include/azureiot/inc\
 				-I$(TOPDIR)/ftom/azclient \
 				-I$(TOPDIR)/ftom/netclient \
 				-DARCHITECTURE_x86=1
@@ -19,9 +23,16 @@ CLIENT_CFLAGS=$(CFLAGS) -std=gnu99 \
 CLIENT_LDFLAGS=$(LDFLAGS) -L./ \
 				-L$(TOPDIR)/ftom/azclient \
 				-L$(TOPDIR)/ftom/netclient \
+				-L/usr/lib/azureiot \
 				-lnetclient \
+				-lazclient \
+				-ltpclient \
 				-lftomcl -lftomc -lftom -lftm \
+				-liothub_client\
+				-liothub_client_mqtt_transport\
+				-lumqtt\
 				-laziotsharedutil\
+				-lmosquitto\
 				-lpthread\
 				-lcurl\
 				-lssl\
@@ -29,6 +40,7 @@ CLIENT_LDFLAGS=$(LDFLAGS) -L./ \
 				-luuid\
 				-lcjson\
 				-lm\
+				-ldl\
 				-lrt 
 
 all: $(CLIENT)

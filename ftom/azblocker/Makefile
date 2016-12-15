@@ -22,13 +22,13 @@ CLIENT_LDFLAGS=$(LDFLAGS) -L./ \
 				-L$(TOPDIR)/ftom/azclient \
 				-L$(TOPDIR)/ftom/netclient \
 				-L/usr/lib/azureiot \
-				-lazclient \
 				-lnetclient \
+				-lazclient \
 				-lftomcl -lftomc -lftom -lftm \
 				-liothub_client\
 				-liothub_client_mqtt_transport\
-				-lumqtt\
 				-laziotsharedutil\
+				-lumqtt\
 				-lpthread\
 				-lcurl\
 				-lssl\

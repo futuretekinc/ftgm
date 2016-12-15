@@ -1011,7 +1011,7 @@ FTM_RET	FTOM_TASK_processing
 
 	FTM_TIMER_initMS(&xLoopTimer, FTOM_LOOP_INTERVAL);
 
-	xRet = FTOM_MSG_createInitializeDone(&pMsg);
+	xRet = FTOM_MSG_createInitializeDone(NULL, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Failed to initialize message!\n");
@@ -1975,7 +1975,7 @@ FTM_RET	FTOM_DB_EP_addData
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createEPData(pEPID, pData, 1, &pMsg);
+	xRet = FTOM_MSG_createEPData(NULL, pEPID, pData, 1, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -2000,7 +2000,7 @@ FTM_RET	FTOM_SYS_EP_publishStatus
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createEPStatus(pEPID, bStatus, ulTimeout, &pMsg);
+	xRet = FTOM_MSG_createEPStatus(NULL, pEPID, bStatus, ulTimeout, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		WARN("Send EP data message creation failed.\n");
@@ -2031,7 +2031,7 @@ FTM_RET	FTOM_SYS_EP_publishData
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_createEPData(pEPID, pData, ulCount, &pMsg);
+	xRet = FTOM_MSG_createEPData(NULL, pEPID, pData, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		WARN("Send EP data message creation failed.\n");
@@ -2668,7 +2668,7 @@ FTM_RET	FTOM_sendAlert
 	FTM_RET				xRet;
 	FTOM_MSG_ALERT_PTR	pMsg;
 
-	xRet = FTOM_MSG_createAlert(pEPID, pData, &pMsg);
+	xRet = FTOM_MSG_createAlert(NULL, pEPID, pData, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -2700,7 +2700,7 @@ FTM_RET	FTOM_receivedDiscovery
 	FTM_RET				xRet;
 	FTOM_MSG_DISCOVERY_INFO_PTR	pMsg;
 
-	xRet = FTOM_MSG_createDiscoveryInfo(pName, pDID, pIP, pTypes, ulCount, &pMsg);
+	xRet = FTOM_MSG_createDiscoveryInfo(NULL, pName, pDID, pIP, pTypes, ulCount, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to create message!\n");
@@ -2925,7 +2925,7 @@ FTM_RET	FTOM_serverSync
 		return	xRet;
 	}
 
-	xRet = FTOM_MSG_createServerSync(bAutoRegister, &pMsg);
+	xRet = FTOM_MSG_createServerSync(NULL, bAutoRegister, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Message creation failed!\n");

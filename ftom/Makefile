@@ -58,7 +58,7 @@ LIB_HHTW=libhhtw
 LIB_HHTW_SRCS= ftom_node_hhtw.c
 LIB_HHTW_OBJS=$(LIB_HHTW_SRCS:.c=.o)
 
-SUBDIR=client cmdline cgi
+SUBDIR=client cmdline cgi netclient azclient tpclient ftblocker
 
 all: $(LIB_FTOM) $(FTOM) $(LIB_FTOMC) $(LIB_HHTW)
 	for dir in $(SUBDIR); do\

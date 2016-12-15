@@ -434,8 +434,10 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadNet
 				getsockname(pClient->hSock, (struct sockaddr *)&pClient->xLocalAddr, &xLocalAddrLen);
 				TRACE("Client bind success.[%s:%d]\n", inet_ntoa(pClient->xLocalAddr.sin_addr), ntohs(pClient->xLocalAddr.sin_port));
 				pClient->bConnected = FTM_TRUE;	
-				
-				xRet = FTOM_MSG_createNetConnected(&pNewMsg);
+		
+				TRACE_ENTRY();
+#if 0
+				xRet = FTOM_MSG_createNetConnected(pClient, &pNewMsg);
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR2(xRet, "Failed to create message!\n");	
@@ -449,6 +451,8 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadNet
 						FTOM_MSG_destroy(&pNewMsg);
 					}
 				}
+#endif
+				TRACE_EXIT();
 
 			}
 		}
@@ -525,7 +529,8 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadNet
 					close(pClient->hSock);
 					pClient->bConnected = FTM_FALSE;
 		
-					xRet = FTOM_MSG_createNetDisconnected(&pNewMsg);
+				TRACE_ENTRY();
+					xRet = FTOM_MSG_createNetDisconnected(pClient, &pNewMsg);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet, "Failed to create message!\n");	
@@ -539,6 +544,7 @@ FTM_VOID_PTR	FTOM_CLIENT_NET_threadNet
 							FTOM_MSG_destroy(&pNewMsg);
 						}
 					}
+				TRACE_EXIT();
 
 					xRet = FTM_RET_COMM_SOCKET_CLOSED;
 					ERROR2(xRet, "Failed to send packet[errno = %d]!\n", errno);
@@ -591,7 +597,7 @@ FTM_RET FTOM_CLIENT_NET_disconnect
 			FTM_RET	xRet;
 			FTOM_MSG_PTR	pMsg;
 		
-			xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_FALSE, &pMsg);
+			xRet = FTOM_MSG_createConnectionStatus(pClient, (FTM_ULONG)pClient, FTM_FALSE, &pMsg);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR2(xRet, "Failed to create message!\n");	

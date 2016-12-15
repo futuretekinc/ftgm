@@ -327,7 +327,7 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 									xData.xState = FTM_EP_DATA_STATE_INVALID;
 								}
 
-								xRet = FTOM_MSG_createEPData(pMsg->pEPID, &xData, 1, &pNewMsg);
+								xRet = FTOM_MSG_createEPData(pClient, pMsg->pEPID, &xData, 1, &pNewMsg);
 								if (xRet != FTM_RET_OK) 
 								{ 
 									ERROR2(xRet, "Failed to create message!\n");	
@@ -364,6 +364,7 @@ FTM_VOID_PTR	FTOM_SNMPC_process
 					}
 
 					xRet = FTOM_MSG_SNMPC_createGetEPData(
+								pClient,
 								pMsg->pDID, 
 								pMsg->pEPID,
 								pMsg->ulVersion,

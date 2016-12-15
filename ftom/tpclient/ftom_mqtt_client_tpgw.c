@@ -338,7 +338,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 		
 			ulTime = pTime->valueint;
 
-			xRet = FTOM_MSG_createTimeSync(ulTime, (FTOM_MSG_TIME_SYNC_PTR _PTR_)ppMsg);
+			xRet = FTOM_MSG_createTimeSync(NULL, ulTime, (FTOM_MSG_TIME_SYNC_PTR _PTR_)ppMsg);
 		}
 		break;
 
@@ -418,7 +418,7 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 				}	
 			}
 
-			xRet = FTOM_MSG_TP_createReqControlActuator(pReqID, pEPID, xEPCtrl, ulDuration, ppMsg);
+			xRet = FTOM_MSG_TP_createReqControlActuator(NULL, pReqID, pEPID, xEPCtrl, ulDuration, ppMsg);
 
 		}
 		break;
@@ -441,26 +441,26 @@ FTM_RET	FTOM_MQTT_CLIENT_TPGW_requestMessageParser
 			{
 				FTM_ULONG	ulReportIntervalMS = strtoul(pReportInterval->valuestring,0,10);
 
-				xRet = FTOM_MSG_TP_createReqSetReportInterval(pReqID, ulReportIntervalMS, ppMsg);
+				xRet = FTOM_MSG_TP_createReqSetReportInterval(NULL, pReqID, ulReportIntervalMS, ppMsg);
 			}
 		}
 		break;
 
 	case	FTOM_MQTT_METHOD_REQ_POWER_OFF:
 		{
-			xRet = FTOM_MSG_TP_createReqPowerOff(pReqID, ppMsg);
+			xRet = FTOM_MSG_TP_createReqPowerOff(NULL, pReqID, ppMsg);
 		}
 		break;
 
 	case	FTOM_MQTT_METHOD_REQ_REBOOT:
 		{
-			xRet = FTOM_MSG_TP_createReqReboot(pReqID, ppMsg);
+			xRet = FTOM_MSG_TP_createReqReboot(NULL, pReqID, ppMsg);
 		}
 		break;
 
 	case	FTOM_MQTT_METHOD_REQ_RESTART:
 		{
-			xRet = FTOM_MSG_TP_createReqRestart(pReqID, ppMsg);
+			xRet = FTOM_MSG_TP_createReqRestart(NULL, pReqID, ppMsg);
 		}
 		break;
 

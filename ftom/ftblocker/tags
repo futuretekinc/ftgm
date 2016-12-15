@@ -4,34 +4,155 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-CLIENT	Makefile	/^CLIENT=azblocker$/;"	m
+CLIENT	Makefile	/^CLIENT=ftblocker$/;"	m
 CLIENT_CFLAGS	Makefile	/^CLIENT_CFLAGS=$(CFLAGS) -std=gnu99 \\$/;"	m
 CLIENT_LDFLAGS	Makefile	/^CLIENT_LDFLAGS=$(LDFLAGS) -L.\/ \\$/;"	m
 CLIENT_OBJS	Makefile	/^CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)$/;"	m
 CLIENT_SRCS	Makefile	/^CLIENT_SRCS=main.c \\$/;"	m
-FTOM_AZURE_BLOCKER	ftom_azure_blocker.h	/^}	FTOM_AZURE_BLOCKER, _PTR_ FTOM_AZURE_BLOCKER_PTR;$/;"	t	typeref:struct:__anon1
-FTOM_AZURE_BLOCKER_CONFIG_load	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_CONFIG_load$/;"	f
-FTOM_AZURE_BLOCKER_CONFIG_save	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_CONFIG_save$/;"	f
-FTOM_AZURE_BLOCKER_CONFIG_show	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_CONFIG_show$/;"	f
-FTOM_AZURE_BLOCKER_PTR	ftom_azure_blocker.h	/^}	FTOM_AZURE_BLOCKER, _PTR_ FTOM_AZURE_BLOCKER_PTR;$/;"	t	typeref:struct:__anon1
-FTOM_AZURE_BLOCKER_SHELL_CMD_config	ftom_azure_blocker_shell_cmds.c	/^FTM_RET	FTOM_AZURE_BLOCKER_SHELL_CMD_config$/;"	f
-FTOM_AZURE_BLOCKER_SHELL_CMD_server	ftom_azure_blocker_shell_cmds.c	/^FTM_RET	FTOM_AZURE_BLOCKER_SHELL_CMD_server$/;"	f
-FTOM_AZURE_BLOCKER_SHELL_CMD_trace	ftom_azure_blocker_shell_cmds.c	/^FTM_RET	FTOM_AZURE_BLOCKER_SHELL_CMD_trace$/;"	f
-FTOM_AZURE_BLOCKER_SHELL_cmdCount	ftom_azure_blocker_shell_cmds.c	/^FTM_ULONG FTOM_AZURE_BLOCKER_SHELL_cmdCount = sizeof(FTOM_AZURE_BLOCKER_SHELL_cmds) \/ sizeof(FTM_SHELL_CMD);$/;"	v
-FTOM_AZURE_BLOCKER_SHELL_cmds	ftom_azure_blocker_shell_cmds.c	/^FTM_SHELL_CMD	FTOM_AZURE_BLOCKER_SHELL_cmds[] =$/;"	v
-FTOM_AZURE_BLOCKER_create	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_create$/;"	f
-FTOM_AZURE_BLOCKER_destroy	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_destroy$/;"	f
-FTOM_AZURE_BLOCKER_start	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_start$/;"	f
-FTOM_AZURE_BLOCKER_stop	ftom_azure_blocker.c	/^FTM_RET	FTOM_AZURE_BLOCKER_stop$/;"	f
-FTOM_AZURE_BLOCKER_usage	main.c	/^FTM_VOID	FTOM_AZURE_BLOCKER_usage$/;"	f
-FTOM_AZURE_BLOCKER_waitingForFinished	ftom_azure_blocker.c	/^FTM_RET FTOM_AZURE_BLOCKER_waitingForFinished$/;"	f
+FTOM_BLOCKER	ftom_blocker.h	/^}	FTOM_BLOCKER, _PTR_ FTOM_BLOCKER_PTR;$/;"	t	typeref:struct:__anon6
+FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_load	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_load$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_save	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_save$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_show	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_show$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_getLastTime	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_getLastTime$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_send	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_send$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_EP_getCount	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_getCount$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_EP_getEPIDAt	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_getEPIDAt$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_EP_isExist	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_isExist$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_EP_register	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_register$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_EP_updateStatus	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_updateStatus$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_GATEWAY_updateStatus	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_GATEWAY_updateStatus$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_process	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_process$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_send	ftom_cloud_client_wrapper.c	/^FTM_RET FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_send$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_NODE_getCount	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_NODE_getCount$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_NODE_isExist	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_NODE_isExist$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_NODE_register	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_NODE_register$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_create	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_create$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_destroy	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_destroy$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_final	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_final$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_init	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_init$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_isRunning	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_isRunning$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_start	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_start$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_stop	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_stop$/;"	f
+FTOM_BLOCKER_CLOUD_CLIENT_waitingForFinished	ftom_cloud_client_wrapper.c	/^FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_waitingForFinished$/;"	f
+FTOM_BLOCKER_CONFIG_load	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_CONFIG_load$/;"	f
+FTOM_BLOCKER_CONFIG_save	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_CONFIG_save$/;"	f
+FTOM_BLOCKER_CONFIG_show	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_CONFIG_show$/;"	f
+FTOM_BLOCKER_MESSAGE_process	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_MESSAGE_process$/;"	f
+FTOM_BLOCKER_MODULE_load	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_MODULE_load$/;"	f
+FTOM_BLOCKER_PTR	ftom_blocker.h	/^}	FTOM_BLOCKER, _PTR_ FTOM_BLOCKER_PTR;$/;"	t	typeref:struct:__anon6
+FTOM_BLOCKER_SERVER_sync	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_SERVER_sync$/;"	f
+FTOM_BLOCKER_SERVER_updateStatus	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_SERVER_updateStatus$/;"	f
+FTOM_BLOCKER_SHELL_CMD_config	ftom_blocker_shell_cmds.c	/^FTM_RET	FTOM_BLOCKER_SHELL_CMD_config$/;"	f
+FTOM_BLOCKER_SHELL_CMD_quit	ftom_blocker_shell_cmds.c	/^FTM_RET	FTOM_BLOCKER_SHELL_CMD_quit$/;"	f
+FTOM_BLOCKER_SHELL_CMD_server	ftom_blocker_shell_cmds.c	/^FTM_RET	FTOM_BLOCKER_SHELL_CMD_server$/;"	f
+FTOM_BLOCKER_SHELL_CMD_trace	ftom_blocker_shell_cmds.c	/^FTM_RET	FTOM_BLOCKER_SHELL_CMD_trace$/;"	f
+FTOM_BLOCKER_SHELL_cmdCount	ftom_blocker_shell_cmds.c	/^FTM_ULONG FTOM_BLOCKER_SHELL_cmdCount = sizeof(FTOM_BLOCKER_SHELL_cmds) \/ sizeof(FTM_SHELL_CMD);$/;"	v
+FTOM_BLOCKER_SHELL_cmds	ftom_blocker_shell_cmds.c	/^FTM_SHELL_CMD	FTOM_BLOCKER_SHELL_cmds[] =$/;"	v
+FTOM_BLOCKER_create	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_create$/;"	f
+FTOM_BLOCKER_destroy	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_destroy$/;"	f
+FTOM_BLOCKER_final	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_final$/;"	f
+FTOM_BLOCKER_init	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_init$/;"	f
+FTOM_BLOCKER_notifyCB	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_notifyCB$/;"	f
+FTOM_BLOCKER_start	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_start$/;"	f
+FTOM_BLOCKER_stop	ftom_blocker.c	/^FTM_RET	FTOM_BLOCKER_stop$/;"	f
+FTOM_BLOCKER_threadMain	ftom_blocker.c	/^FTM_VOID_PTR	FTOM_BLOCKER_threadMain$/;"	f
+FTOM_BLOCKER_usage	main.c	/^FTM_VOID	FTOM_BLOCKER_usage$/;"	f
+FTOM_BLOCKER_waitingForFinished	ftom_blocker.c	/^FTM_RET FTOM_BLOCKER_waitingForFinished$/;"	f
+FTOM_CLOUD_CLIENT_CONFIG_LOAD	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_CONFIG_LOAD)$/;"	t
+FTOM_CLOUD_CLIENT_CONFIG_SAVE	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_CONFIG_SAVE)$/;"	t
+FTOM_CLOUD_CLIENT_CONFIG_SHOW	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_CONFIG_SHOW)$/;"	t
+FTOM_CLOUD_CLIENT_CONNECT	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_CONNECT)$/;"	t
+FTOM_CLOUD_CLIENT_CREATE	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_CREATE)$/;"	t
+FTOM_CLOUD_CLIENT_DESTROY	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_DESTROY)$/;"	t
+FTOM_CLOUD_CLIENT_EP_DATA_GET_LAST_TIME	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_EP_DATA_GET_LAST_TIME)$/;"	t
+FTOM_CLOUD_CLIENT_EP_DATA_SEND	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_EP_DATA_SEND)$/;"	t
+FTOM_CLOUD_CLIENT_EP_GET_COUNT	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_EP_GET_COUNT)$/;"	t
+FTOM_CLOUD_CLIENT_EP_GET_EPID_AT	ftom_cloud_client.h	/^typedef	FTM_RET	 (*FTOM_CLOUD_CLIENT_EP_GET_EPID_AT)$/;"	t
+FTOM_CLOUD_CLIENT_EP_IS_EXIST	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_EP_IS_EXIST)$/;"	t
+FTOM_CLOUD_CLIENT_EP_REGISTER	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_EP_REGISTER)$/;"	t
+FTOM_CLOUD_CLIENT_EP_UPDATE_STATUS	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_EP_UPDATE_STATUS)$/;"	t
+FTOM_CLOUD_CLIENT_FINAL	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_FINAL)$/;"	t
+FTOM_CLOUD_CLIENT_GATEWAY_UPDATE_STATUS	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_GATEWAY_UPDATE_STATUS)$/;"	t
+FTOM_CLOUD_CLIENT_INIT	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_INIT)$/;"	t
+FTOM_CLOUD_CLIENT_IS_RUNNING	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_IS_RUNNING)$/;"	t
+FTOM_CLOUD_CLIENT_MESSAGE_PROCESS	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_MESSAGE_PROCESS)$/;"	t
+FTOM_CLOUD_CLIENT_MESSAGE_SEND	ftom_cloud_client.h	/^typedef	FTM_RET (*FTOM_CLOUD_CLIENT_MESSAGE_SEND)$/;"	t
+FTOM_CLOUD_CLIENT_MODULE	ftom_cloud_client.h	/^}	FTOM_CLOUD_CLIENT_MODULE, _PTR_ FTOM_CLOUD_CLIENT_MODULE_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_CLOUD_CLIENT_MODULE_PTR	ftom_cloud_client.h	/^}	FTOM_CLOUD_CLIENT_MODULE, _PTR_ FTOM_CLOUD_CLIENT_MODULE_PTR;$/;"	t	typeref:struct:__anon1
+FTOM_CLOUD_CLIENT_NODE_GET_COUNT	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_NODE_GET_COUNT)$/;"	t
+FTOM_CLOUD_CLIENT_NODE_IS_EXIST	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_NODE_IS_EXIST)$/;"	t
+FTOM_CLOUD_CLIENT_NODE_REGISTER	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_NODE_REGISTER)$/;"	t
+FTOM_CLOUD_CLIENT_NODE_UPDATE_STATUS	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_NODE_UPDATE_STATUS)$/;"	t
+FTOM_CLOUD_CLIENT_PTR	ftom_cloud_client.h	/^typedef	FTM_VOID _PTR_	FTOM_CLOUD_CLIENT_PTR;$/;"	t
+FTOM_CLOUD_CLIENT_SET_NOTIFY_CB	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_SET_NOTIFY_CB)$/;"	t
+FTOM_CLOUD_CLIENT_START	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_START)$/;"	t
+FTOM_CLOUD_CLIENT_STOP	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_STOP)$/;"	t
+FTOM_CLOUD_CLIENT_TRACE	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_TRACE)$/;"	t
+FTOM_CLOUD_CLIENT_WAITING_FOR_FINISHED	ftom_cloud_client.h	/^typedef	FTM_RET	(*FTOM_CLOUD_CLIENT_WAITING_FOR_FINISHED)$/;"	t
+FTOM_CLOUD_CLIENT_getModule	ftom_cloud_client.c	/^FTM_RET	FTOM_CLOUD_CLIENT_getModule$/;"	f
+FTOM_DUMMY_CLIENT_CONFIG_load	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_CONFIG_load$/;"	f
+FTOM_DUMMY_CLIENT_CONFIG_save	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_CONFIG_save$/;"	f
+FTOM_DUMMY_CLIENT_CONFIG_show	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_CONFIG_show$/;"	f
+FTOM_DUMMY_CLIENT_MESSAGE_process	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_MESSAGE_process$/;"	f
+FTOM_DUMMY_CLIENT_MESSAGE_send	ftom_cloud_client.c	/^FTM_RET FTOM_DUMMY_CLIENT_MESSAGE_send$/;"	f
+FTOM_DUMMY_CLIENT_create	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_create$/;"	f
+FTOM_DUMMY_CLIENT_destroy	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_destroy$/;"	f
+FTOM_DUMMY_CLIENT_final	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_final$/;"	f
+FTOM_DUMMY_CLIENT_init	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_init$/;"	f
+FTOM_DUMMY_CLIENT_isRunning	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_isRunning$/;"	f
+FTOM_DUMMY_CLIENT_setNotifyCB	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_setNotifyCB$/;"	f
+FTOM_DUMMY_CLIENT_start	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_start$/;"	f
+FTOM_DUMMY_CLIENT_stop	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_stop$/;"	f
+FTOM_DUMMY_CLIENT_waitingForFinished	ftom_cloud_client.c	/^FTM_RET	FTOM_DUMMY_CLIENT_waitingForFinished$/;"	f
 TOPDIR	Makefile	/^TOPDIR=..\/..$/;"	m
-__FTOM_AZURE_BLOCKER_H__	ftom_azure_blocker.h	2;"	d
-__FTOM_AZURE_BLOCKER_SHELL_CMDS_H__	ftom_azure_blocker_shell_cmds.h	2;"	d
-__MODULE__	ftom_azure_blocker_shell_cmds.c	5;"	d	file:
-__MODULE__	ftom_azure_blocker_shell_cmds.c	6;"	d	file:
+_FTOM_CLOUD_CLIENT_H_	ftom_cloud_client.h	2;"	d
+__FTOM_AZURE_BLOCKER_H__	ftom_blocker.h	2;"	d
+__FTOM_BLOCKER_SHELL_CMDS_H__	ftom_blocker_shell_cmds.h	2;"	d
+__FTOM_CLOUD_CLIENT_WRAPPER_H__	ftom_cloud_client_wrapper.h	2;"	d
+__MODULE__	ftom_blocker.c	4;"	d	file:
+__MODULE__	ftom_blocker.c	5;"	d	file:
+__MODULE__	ftom_blocker_shell_cmds.c	5;"	d	file:
+__MODULE__	ftom_blocker_shell_cmds.c	6;"	d	file:
 __MODULE__	main.c	8;"	d	file:
 __MODULE__	main.c	9;"	d	file:
+_pModules	ftom_cloud_client.c	/^FTOM_CLOUD_CLIENT_MODULE	_pModules[] =$/;"	v	file:
+bStop	ftom_blocker.h	/^	FTM_BOOL				bStop;$/;"	m	struct:__anon6
+fConfigLoad	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_CONFIG_LOAD	fConfigLoad;$/;"	m	struct:__anon1
+fConfigSave	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_CONFIG_SAVE	fConfigSave;$/;"	m	struct:__anon1
+fConfigShow	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_CONFIG_SHOW	fConfigShow;$/;"	m	struct:__anon1
+fCreate	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_CREATE	fCreate;$/;"	m	struct:__anon1
+fDestroy	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_DESTROY	fDestroy;$/;"	m	struct:__anon1
+fFinal	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_FINAL		fFinal;$/;"	m	struct:__anon1
+fGetCount	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_EP_GET_COUNT			fGetCount;$/;"	m	struct:__anon1::__anon4
+fGetCount	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_NODE_GET_COUNT		fGetCount;$/;"	m	struct:__anon1::__anon3
+fGetEPIDAt	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_EP_GET_EPID_AT		fGetEPIDAt;$/;"	m	struct:__anon1::__anon4
+fGetLastTime	ftom_cloud_client.h	/^			FTOM_CLOUD_CLIENT_EP_DATA_GET_LAST_TIME	fGetLastTime;$/;"	m	struct:__anon1::__anon4::__anon5
+fInit	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_INIT		fInit;$/;"	m	struct:__anon1
+fIsExist	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_EP_IS_EXIST			fIsExist;$/;"	m	struct:__anon1::__anon4
+fIsExist	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_NODE_IS_EXIST			fIsExist;$/;"	m	struct:__anon1::__anon3
+fIsRunning	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_IS_RUNNING	fIsRunning;$/;"	m	struct:__anon1
+fMessageProcess	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_MESSAGE_PROCESS	fMessageProcess;$/;"	m	struct:__anon1
+fMessageSend	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_MESSAGE_SEND	fMessageSend;$/;"	m	struct:__anon1
+fRegister	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_EP_REGISTER			fRegister;$/;"	m	struct:__anon1::__anon4
+fRegister	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_NODE_REGISTER			fRegister;$/;"	m	struct:__anon1::__anon3
+fSend	ftom_cloud_client.h	/^			FTOM_CLOUD_CLIENT_EP_DATA_SEND			fSend;$/;"	m	struct:__anon1::__anon4::__anon5
+fSetNotifyCB	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_SET_NOTIFY_CB	fSetNotifyCB;$/;"	m	struct:__anon1
+fStart	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_START		fStart;$/;"	m	struct:__anon1
+fStop	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_STOP		fStop;$/;"	m	struct:__anon1
+fUpdateStatus	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_EP_UPDATE_STATUS		fUpdateStatus;$/;"	m	struct:__anon1::__anon4
+fUpdateStatus	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_GATEWAY_UPDATE_STATUS	fUpdateStatus;$/;"	m	struct:__anon1::__anon2
+fUpdateStatus	ftom_cloud_client.h	/^		FTOM_CLOUD_CLIENT_NODE_UPDATE_STATUS	fUpdateStatus;$/;"	m	struct:__anon1::__anon3
+fWaitingForFinished	ftom_cloud_client.h	/^	FTOM_CLOUD_CLIENT_WAITING_FOR_FINISHED	fWaitingForFinished;$/;"	m	struct:__anon1
 main	main.c	/^FTM_INT	main$/;"	f
-pAzureClient	ftom_azure_blocker.h	/^	FTOM_AZURE_CLIENT_PTR	pAzureClient;$/;"	m	struct:__anon1
-ulGetheringTime	ftom_azure_blocker_shell_cmds.c	/^FTM_ULONG	ulGetheringTime = 3;$/;"	v
+pCloudClient	ftom_blocker.h	/^	FTOM_CLOUD_CLIENT_PTR		pCloudClient;$/;"	m	struct:__anon6
+pCloudClientModule	ftom_blocker.h	/^	FTOM_CLOUD_CLIENT_MODULE_PTR	pCloudClientModule;$/;"	m	struct:__anon6
+pMsgQ	ftom_blocker.h	/^	FTOM_MSG_QUEUE_PTR		pMsgQ;$/;"	m	struct:__anon6
+pName	ftom_cloud_client.h	/^	FTM_CHAR_PTR	pName;$/;"	m	struct:__anon1
+pNetClient	ftom_blocker.h	/^	FTOM_NET_CLIENT_PTR			pNetClient;$/;"	m	struct:__anon6
+ulGetheringTime	ftom_blocker_shell_cmds.c	/^FTM_ULONG	ulGetheringTime = 3;$/;"	v
+xData	ftom_cloud_client.h	/^		}	xData;$/;"	m	struct:__anon1::__anon4	typeref:struct:__anon1::__anon4::__anon5
+xEP	ftom_cloud_client.h	/^	}	xEP;$/;"	m	struct:__anon1	typeref:struct:__anon1::__anon4
+xGateway	ftom_cloud_client.h	/^	}	xGateway;$/;"	m	struct:__anon1	typeref:struct:__anon1::__anon2
+xNode	ftom_cloud_client.h	/^	}	xNode;$/;"	m	struct:__anon1	typeref:struct:__anon1::__anon3
+xThreadMain	ftom_blocker.h	/^	pthread_t				xThreadMain;$/;"	m	struct:__anon6

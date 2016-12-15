@@ -927,7 +927,7 @@ FTM_RET FTOM_NODE_stop
 			}
 		}
 
-		xRet = FTOM_MSG_createQuit(&pMsg);
+		xRet = FTOM_MSG_createQuit(pNode, &pMsg);
 		if (xRet == FTM_RET_OK)
 		{
 			xRet = FTOM_MSGQ_push(&pNode->xMsgQ, pMsg);

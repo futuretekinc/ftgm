@@ -233,7 +233,7 @@ FTM_RET	FTOM_RULE_stop
 
 	if (pRule == NULL)
 	{
-		xRet = FTOM_MSG_createQuit(&pMsg);
+		xRet = FTOM_MSG_createQuit(pRule, &pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			return	xRet;	
@@ -471,7 +471,7 @@ FTM_RET	FTOM_RULE_activation
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_RULE_createActivation(pRuleID, bActivation, &pMsg);
+	xRet = FTOM_MSG_RULE_createActivation(NULL, pRuleID, bActivation, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	

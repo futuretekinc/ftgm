@@ -55,6 +55,7 @@ FTM_CHAR_PTR	pMsgTypeString[] =
 
 FTM_RET FTOM_MSG_createInitializeDone
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTOM_MSG_PTR _PTR_ ppMsg
 )
 {
@@ -79,6 +80,7 @@ FTM_RET FTOM_MSG_createInitializeDone
 
 FTM_RET FTOM_MSG_createQuit
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTOM_MSG_PTR _PTR_ ppMsg
 )
 {
@@ -106,6 +108,7 @@ FTM_RET FTOM_MSG_createQuit
  *******************************************************************/
 FTM_RET	FTOM_MSG_createConnectionStatus
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_ULONG		xObjectID,
 	FTM_BOOL		bConnected,
 	FTOM_MSG_PTR _PTR_ ppMsg
@@ -135,6 +138,7 @@ FTM_RET	FTOM_MSG_createConnectionStatus
 
 FTM_RET	FTOM_MSG_createConnected
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTOM_MSG_PTR _PTR_ ppMsg
 )
 {
@@ -161,6 +165,7 @@ FTM_RET	FTOM_MSG_createConnected
 
 FTM_RET	FTOM_MSG_createDisconnected
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTOM_MSG_PTR _PTR_ ppMsg
 )
 {
@@ -190,6 +195,7 @@ FTM_RET	FTOM_MSG_createDisconnected
  *******************************************************************/
 FTM_RET	FTOM_MSG_createGWStatus
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pGatewayID,
 	FTM_BOOL			bStatus,
 	FTM_ULONG			ulTimeout,
@@ -221,6 +227,7 @@ FTM_RET	FTOM_MSG_createGWStatus
 
 FTM_RET	FTOM_MSG_createEPStatus
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_BOOL			bStatus,
 	FTM_ULONG			ulTimeout,
@@ -252,6 +259,7 @@ FTM_RET	FTOM_MSG_createEPStatus
 
 FTM_RET	FTOM_MSG_createEPData
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount,
@@ -283,6 +291,7 @@ FTM_RET	FTOM_MSG_createEPData
 
 FTM_RET	FTOM_MSG_createTimeSync
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_ULONG			ulTime,
 	FTOM_MSG_TIME_SYNC_PTR _PTR_ ppMsg
 )
@@ -310,6 +319,7 @@ FTM_RET	FTOM_MSG_createTimeSync
 
 FTM_RET FTOM_MSG_createEPCtrl
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_CTRL			xCtrl,
 	FTM_ULONG			ulDuration,
@@ -341,6 +351,7 @@ FTM_RET FTOM_MSG_createEPCtrl
 
 FTM_RET FTOM_MSG_createEPDataServerTime
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG			ulTime,
 	FTOM_MSG_PTR _PTR_ 	ppMsg
@@ -371,6 +382,7 @@ FTM_RET FTOM_MSG_createEPDataServerTime
 
 FTM_RET FTOM_MSG_createRule
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pRuleID,
 	FTM_RULE_STATE		xRuleState,
 	FTOM_MSG_RULE_PTR _PTR_ ppMsg
@@ -400,6 +412,7 @@ FTM_RET FTOM_MSG_createRule
 
 FTM_RET FTOM_MSG_createAction
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pActionID,
 	FTM_BOOL			bActivate,
 	FTOM_MSG_ACTION_PTR _PTR_ ppMsg
@@ -429,6 +442,7 @@ FTM_RET FTOM_MSG_createAction
 
 FTM_RET	FTOM_MSG_createAlert
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTOM_MSG_ALERT_PTR _PTR_ ppMsg
@@ -459,6 +473,7 @@ FTM_RET	FTOM_MSG_createAlert
 
 FTM_RET	FTOM_MSG_createDiscovery
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR	pNetwork,
 	FTM_USHORT		usPort,
 	FTM_ULONG		ulRetryCount,
@@ -492,6 +507,7 @@ FTM_RET	FTOM_MSG_createDiscovery
 
 FTM_RET	FTOM_MSG_createDiscoveryInfo
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pName,
 	FTM_CHAR_PTR		pDID,
 	FTM_CHAR_PTR		pIP,
@@ -532,6 +548,7 @@ FTM_RET	FTOM_MSG_createDiscoveryInfo
 
 FTM_RET	FTOM_MSG_createDiscoveryDone
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_NODE_PTR		pNodeInfos,
 	FTM_ULONG			ulNodeCount,
 	FTM_EP_PTR			pEPInfos,
@@ -569,6 +586,7 @@ FTM_RET	FTOM_MSG_createDiscoveryDone
 
 FTM_RET	FTOM_MSG_createServerSync
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_BOOL			bAutoRegister,
 	FTOM_MSG_SERVER_SYNC_PTR _PTR_ 	ppMsg
 )
@@ -636,17 +654,19 @@ FTM_RET	FTOM_MSG_copy
 
 FTM_CHAR_PTR	FTOM_MSG_printType
 (
-	FTOM_MSG_TYPE	xType
+	FTOM_MSG_PTR	pMsg
 )
 {
+	ASSERT(pMsg != NULL);
+
 	static FTM_CHAR	pBuff[32];
 
-	if (xType < FTOM_MSG_TYPE_MAX)
+	if (pMsg->xType < FTOM_MSG_TYPE_MAX)
 	{
-		return	pMsgTypeString[xType];
+		return	pMsgTypeString[pMsg->xType];
 	}
 
-	sprintf(pBuff, "%08lx", (FTM_ULONG)xType);
+	sprintf(pBuff, "%08lx", (FTM_ULONG)pMsg->xType);
 
 	return	pBuff;
 }
@@ -655,6 +675,7 @@ FTM_CHAR_PTR	FTOM_MSG_printType
  ********************************************************************************/
 FTM_RET	FTOM_MSG_createEvent
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR	pTriggerID,
 	FTM_BOOL		bOccurred,
 	FTOM_MSG_PTR _PTR_ ppMsg
@@ -686,6 +707,7 @@ FTM_RET	FTOM_MSG_createEvent
  ********************************************************************************/
 FTM_RET	FTOM_MSG_RULE_createActivation
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR	pRuleID,
 	FTM_BOOL		bActivation,
 	FTOM_MSG_PTR _PTR_ ppMsg
@@ -717,6 +739,7 @@ FTM_RET	FTOM_MSG_RULE_createActivation
  ********************************************************************************/
 FTM_RET	FTOM_MSG_ACTION_createActivation
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR	pActionID,
 	FTM_BOOL		bActivation,
 	FTOM_MSG_PTR _PTR_ ppMsg
@@ -748,6 +771,7 @@ FTM_RET	FTOM_MSG_ACTION_createActivation
  ********************************************************************************/
 FTM_RET	FTOM_MSG_SNMPC_createGetEPData
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pDID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG			ulVersion,
@@ -792,6 +816,7 @@ FTM_RET	FTOM_MSG_SNMPC_createGetEPData
 
 FTM_RET	FTOM_MSG_SNMPC_createSetEPData
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pDID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_ULONG			ulVersion,
@@ -838,6 +863,7 @@ FTM_RET	FTOM_MSG_SNMPC_createSetEPData
  ********************************************************************************/
 FTM_RET	FTOM_MSG_createNetConnected
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTOM_MSG_PTR _PTR_ 	ppMsg
 )
 {
@@ -860,6 +886,7 @@ FTM_RET	FTOM_MSG_createNetConnected
 
 FTM_RET	FTOM_MSG_createNetDisconnected
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTOM_MSG_PTR _PTR_ 	ppMsg
 )
 {
@@ -885,6 +912,7 @@ FTM_RET	FTOM_MSG_createNetDisconnected
  ********************************************************************************/
 FTM_RET	FTOM_MSG_TP_createReqSetReportInterval
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR	pReqID,
  	FTM_ULONG	ulReportIntervalMS,
 	FTOM_MSG_PTR _PTR_	ppMsg
@@ -914,6 +942,7 @@ FTM_RET	FTOM_MSG_TP_createReqSetReportInterval
 
 FTM_RET FTOM_MSG_TP_createReqControlActuator
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pReqID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_CTRL			xCtrl,
@@ -947,6 +976,7 @@ FTM_RET FTOM_MSG_TP_createReqControlActuator
 
 FTM_RET	FTOM_MSG_TP_createResponse
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR	pMsgID,
 	FTM_INT			nCode,
 	FTM_CHAR_PTR	pMessage,
@@ -982,6 +1012,7 @@ FTM_RET	FTOM_MSG_TP_createResponse
 
 FTM_RET	FTOM_MSG_TP_createReqRestart
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR	pReqID,
 	FTOM_MSG_PTR _PTR_	ppMsg
 )
@@ -1010,6 +1041,7 @@ FTM_RET	FTOM_MSG_TP_createReqRestart
 
 FTM_RET	FTOM_MSG_TP_createReqReboot
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR	pReqID,
 	FTOM_MSG_PTR _PTR_	ppMsg
 )
@@ -1038,6 +1070,7 @@ FTM_RET	FTOM_MSG_TP_createReqReboot
 
 FTM_RET	FTOM_MSG_TP_createReqPowerOff
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR	pReqID,
 	FTOM_MSG_PTR _PTR_	ppMsg
 )
@@ -1066,6 +1099,7 @@ FTM_RET	FTOM_MSG_TP_createReqPowerOff
 
 FTM_RET	FTOM_MSG_TP_createReport
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTOM_MSG_PTR _PTR_	ppMsg
 )
 {
@@ -1094,6 +1128,7 @@ FTM_RET	FTOM_MSG_TP_createReport
  ***********************************************************************/
 FTM_RET	FTOM_MSG_JSON_createEPData
 (
+	FTOM_MSG_SENDER_ID	xSendorID,
 	FTM_CHAR_PTR		pEPID,
 	FTM_EP_DATA_PTR		pData,
 	FTM_ULONG			ulCount,

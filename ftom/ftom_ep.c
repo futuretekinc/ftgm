@@ -567,7 +567,7 @@ FTM_RET	FTOM_EP_stop
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg = NULL;
 
-	xRet = FTOM_MSG_createQuit(&pMsg);
+	xRet = FTOM_MSG_createQuit(pEP, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"EP[%s] : Can't create quit message!\n", pEP->xInfo.pEPID);

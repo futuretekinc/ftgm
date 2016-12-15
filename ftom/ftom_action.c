@@ -229,7 +229,7 @@ FTM_RET	FTOM_ACTION_stop
 		FTM_RET			xRet;
 		FTOM_MSG_PTR	pMsg;
 	
-		xRet = FTOM_MSG_createQuit(&pMsg);
+		xRet = FTOM_MSG_createQuit(pAction, &pMsg);
 		if (xRet != FTM_RET_OK)
 		{
 			return	xRet;	
@@ -394,7 +394,7 @@ FTM_RET	FTOM_ACTION_activation
 	FTM_RET			xRet;
 	FTOM_MSG_PTR	pMsg;
 
-	xRet = FTOM_MSG_ACTION_createActivation(pActionID, bActivation, &pMsg);
+	xRet = FTOM_MSG_ACTION_createActivation(NULL, pActionID, bActivation, &pMsg);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet,"Action message creation failed.\n");

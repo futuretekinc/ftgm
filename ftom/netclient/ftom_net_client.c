@@ -440,7 +440,7 @@ FTM_VOID_PTR	FTOM_NET_CLIENT_threadMain
 
 				if (pClient->fNotifyCB != NULL)
 				{
-					xRet = FTOM_MSG_createNetConnected(&pNewMsg);
+					xRet = FTOM_MSG_createNetConnected(pClient, &pNewMsg);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet, "Failed to create message!\n");	
@@ -536,7 +536,7 @@ FTM_VOID_PTR	FTOM_NET_CLIENT_threadMain
 		
 					if (pClient->fNotifyCB != NULL)
 					{
-						xRet = FTOM_MSG_createNetDisconnected(&pNewMsg);
+						xRet = FTOM_MSG_createNetDisconnected(pClient, &pNewMsg);
 						if (xRet != FTM_RET_OK)
 						{
 							ERROR2(xRet, "Failed to create message!\n");	
@@ -603,7 +603,7 @@ FTM_RET FTOM_NET_CLIENT_disconnect
 			FTM_RET	xRet;
 			FTOM_MSG_PTR	pMsg;
 		
-			xRet = FTOM_MSG_createConnectionStatus((FTM_ULONG)pClient, FTM_FALSE, &pMsg);
+			xRet = FTOM_MSG_createConnectionStatus(pClient, (FTM_ULONG)pClient, FTM_FALSE, &pMsg);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR2(xRet, "Failed to create message!\n");	

@@ -298,7 +298,7 @@ FTM_VOID_PTR FTOM_TRIGGER_process
 						FTM_TIME_getCurrent(&pTrigger->xOccurrenceTime);
 						FTM_TIMER_initS(&pTrigger->xHoldingTimer, pTrigger->xInfo.xParams.xCommon.ulHoldingTime);
 
-						FTOM_MSG_createEvent(pTrigger->xInfo.pID, FTM_TRUE, &pMsg);
+						FTOM_MSG_createEvent(pTrigger, pTrigger->xInfo.pID, FTM_TRUE, &pMsg);
 						FTOM_RULE_sendMessage(pMsg);
 					}
 				}
@@ -313,7 +313,7 @@ FTM_VOID_PTR FTOM_TRIGGER_process
 						pTrigger->xState = FTOM_TRIGGER_STATE_RESET;
 						FTM_TIME_getCurrent(&pTrigger->xReleaseTime);
 
-						FTOM_MSG_createEvent(pTrigger->xInfo.pID, FTM_FALSE, &pMsg);
+						FTOM_MSG_createEvent(pTrigger, pTrigger->xInfo.pID, FTM_FALSE, &pMsg);
 						FTOM_RULE_sendMessage(pMsg);
 					}
 				}

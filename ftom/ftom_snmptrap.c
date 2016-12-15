@@ -1079,7 +1079,7 @@ FTM_RET	FTOM_SNMPTRAP_receiveTrap
 			{
 				FTOM_MSG_PTR	pMsg;
 
-				xRet = FTOM_MSG_createEPData(pEPID, &xData, 1, &pMsg);
+				xRet = FTOM_MSG_createEPData(pSNMPTRAP, pEPID, &xData, 1, &pMsg);
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR2(xRet, "Can't creation message!\n");	
