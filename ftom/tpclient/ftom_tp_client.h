@@ -244,11 +244,6 @@ FTM_RET	FTOM_TP_CLIENT_serverSyncStart
 	FTM_BOOL			bAutoRegister
 );
 
-FTM_RET	FTOM_TP_CLIENT_reportStatus
-(
-	FTOM_TP_CLIENT_PTR	pClient
-);
-
 FTM_RET	FTOM_TP_CLIENT_reportGWStatus
 (
 	FTOM_TP_CLIENT_PTR	pClient,

@@ -271,28 +271,25 @@ FTM_RET	FTM_EVENT_TIMER_MANAGER_create
 	pETM = (FTM_EVENT_TIMER_MANAGER_PTR)FTM_MEM_malloc(sizeof(FTM_EVENT_TIMER_MANAGER));
 	if (pETM == NULL)
 	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
+		ERROR2(xRet, "Failed to create event timer manager!\n");
+		return	xRet;
 	}
 
 	pETM->ulLoopInterval = 10;
 	xRet = FTM_LIST_create(&pETM->pEventList);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to creat event list!\n");
 		FTM_MEM_free(pETM);
 		return	xRet;
 	}
 	FTM_LIST_setComparator(pETM->pEventList, FTM_EVENT_TIMER_comparator);
 
 	FTM_LOCK_init(&pETM->xLock);
-	pETM->bStop = FTM_FALSE;
+	pETM->bStop = FTM_TRUE;
 	
-	if (pthread_create(&pETM->xThreadMain, NULL, FTM_EVENT_TIMER_MANAGER_threadMain, pETM) < 0)
-	{
-		FTM_MEM_free(pETM);
-		xRet = FTM_RET_THREAD_CREATION_ERROR;
-		ERROR2(xRet, "The blocker main thread creation failed!\n");
-		return  xRet;
-	}
+	*ppETM = pETM;
 
 	return	FTM_RET_OK;
 }
@@ -302,17 +299,63 @@ FTM_RET	FTM_EVENT_TIMER_MANAGER_destroy
 	FTM_EVENT_TIMER_MANAGER_PTR _PTR_ ppETM
 )
 {	
-	if (!(*ppETM)->bStop)
+	ASSERT(ppETM != NULL);
+	FTM_EVENT_TIMER_PTR	pEvent;
+
+	FTM_EVENT_TIMER_MANAGER_stop((*ppETM));
+
+	FTM_LOCK_set(&(*ppETM)->xLock);
+	
+	while(FTM_LIST_getFirst((*ppETM)->pEventList, (FTM_VOID_PTR _PTR_)&pEvent) == FTM_RET_OK)
 	{
-		(*ppETM)->bStop = FTM_TRUE;	
+		FTM_LIST_remove((*ppETM)->pEventList, pEvent);	
+
+		FTM_MEM_free(pEvent);
 	}
 
-	pthread_join((*ppETM)->xThreadMain, NULL);
-	(*ppETM)->xThreadMain = 0;
+	FTM_LIST_destroy((*ppETM)->pEventList);
+
+	FTM_LOCK_reset(&(*ppETM)->xLock);
 
 	FTM_LOCK_final(&(*ppETM)->xLock);
+
 	FTM_MEM_free(*ppETM);
 	*ppETM = NULL;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EVENT_TIMER_MANAGER_start
+(
+	FTM_EVENT_TIMER_MANAGER_PTR	pETM
+)
+{
+	ASSERT(pETM != NULL);
+	FTM_RET	xRet;
+
+	pETM->bStop = FTM_FALSE;
+	
+	if (pthread_create(&pETM->xThreadMain, NULL, FTM_EVENT_TIMER_MANAGER_threadMain, pETM) < 0)
+	{
+		xRet = FTM_RET_THREAD_CREATION_ERROR;
+		ERROR2(xRet, "The blocker main thread creation failed!\n");
+		return  xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EVENT_TIMER_MANAGER_stop
+(
+	FTM_EVENT_TIMER_MANAGER_PTR	pETM
+)
+{
+	ASSERT(pETM != NULL);
+
+	pETM->bStop = FTM_TRUE;
+	
+	pthread_join(pETM->xThreadMain, NULL);
+	pETM->xThreadMain = 0;
 
 	return	FTM_RET_OK;
 }
@@ -350,6 +393,11 @@ FTM_RET	FTM_EVENT_TIMER_MANAGER_add
 
 	FTM_LOCK_reset(&pETM->xLock);
 
+	if (ppEvent != NULL)
+	{
+		*ppEvent = pEvent;
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -358,6 +406,8 @@ FTM_VOID_PTR	FTM_EVENT_TIMER_MANAGER_threadMain
 	FTM_VOID_PTR	pData
 )
 {
+	ASSERT(pData != NULL);
+
 	FTM_EVENT_TIMER_MANAGER_PTR	pETM = (FTM_EVENT_TIMER_MANAGER_PTR)pData;
 	FTM_TIMER	xLoopTimer;
 

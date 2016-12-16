@@ -8,17 +8,33 @@
 
 typedef	struct
 {
-	FTOM_NET_CLIENT_PTR			pNetClient;
+	struct
+	{
+		FTM_BOOL	bEnabled;
+	}	xServerSync;
 
-	FTOM_CLOUD_CLIENT_PTR		pCloudClient;
+	struct
+	{
+		FTM_BOOL	bEnabled;
+		FTM_ULONG	ulInterval;
+	}	xAutoStatusPublish;
+}	FTOM_BLOCKER_CONFIG, _PTR_ FTOM_BLOCKER_CONFIG_PTR;
+
+typedef	struct
+{
+	FTOM_BLOCKER_CONFIG				xConfig;
+
+	FTOM_NET_CLIENT_PTR				pNetClient;
+
+	FTOM_CLOUD_CLIENT_PTR			pCloudClient;
 	FTOM_CLOUD_CLIENT_MODULE_PTR	pCloudClientModule;
 
 	FTOM_MSG_QUEUE_PTR		pMsgQ;
 
 	pthread_t				xThreadMain;
-	pthread_t				xThreadTimer;
 	FTM_BOOL				bStop;
 
+	FTM_EVENT_TIMER_MANAGER_PTR	pETM;
 
 }	FTOM_BLOCKER, _PTR_ FTOM_BLOCKER_PTR;
 
@@ -73,6 +89,12 @@ FTM_RET	FTOM_BLOCKER_CONFIG_save
 FTM_RET	FTOM_BLOCKER_CONFIG_show
 (
 	FTOM_BLOCKER_PTR	pBlocker
+);
+
+FTM_RET	FTOM_BLOCKER_MESSAGE_send
+(
+	FTOM_BLOCKER_PTR	pBlocker,
+	FTOM_MSG_PTR		pMsg
 );
 
 FTM_RET	FTOM_BLOCKER_MESSAGE_process

@@ -22,12 +22,6 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
  *	Request message to parent
  ***************************************************/
 static
-FTM_RET	FTOM_TP_CLIENT_report
-(
-	FTOM_TP_CLIENT_PTR	pClient
-);
-
-static
 FTM_RET	FTOM_TP_CLIENT_setReportCtrl
 (
 	FTOM_TP_CLIENT_PTR	pClient,
@@ -764,20 +758,6 @@ FTM_RET	FTOM_TP_CLIENT_MESSAGE_process
 		}
 		break;
 
-	case	FTOM_MSG_TYPE_TP_REPORT:
-		{
-			FTM_LOCK_set(pClient->pGatewayLock);
-
-			if (pClient->pGateway != NULL)
-			{
-				FTOM_TP_CLIENT_report(pClient);
-			}
-
-			FTM_LOCK_reset(pClient->pGatewayLock);
-
-		}			
-		break;
-
 	case	FTOM_MSG_TYPE_GW_STATUS:
 		{
 			FTOM_MSG_GW_STATUS_PTR	pMsg = (FTOM_MSG_GW_STATUS_PTR)pBaseMsg;
@@ -1011,28 +991,6 @@ FTM_VOID_PTR FTOM_TP_CLIENT_threadMain
 
 				pClient->bConnected = bConnected;
 			}
-		}
-
-		if (pClient->bReportON && FTM_TIMER_isExpired(&pClient->xReportTimer))
-		{
-			if (pClient->fNotifyCB != NULL)
-			{
-				FTOM_MSG_PTR	pMsg;
-
-				xRet = FTOM_MSG_TP_createReport(pClient, &pMsg);
-				if (xRet != FTM_RET_OK)
-				{
-					ERROR2(xRet, "Failed to create message!\n");	
-				}
-
-				xRet = pClient->fNotifyCB(pMsg, pClient->pNotifyData);
-				if (xRet != FTM_RET_OK)
-				{
-					FTOM_MSG_destroy(&pMsg);
-				}
-			}
-
-			FTM_TIMER_addS(&pClient->xReportTimer, pClient->xConfig.ulReportInterval);
 		}
 
 		FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
@@ -1453,109 +1411,6 @@ FTM_RET	FTOM_TP_CLIENT_controlActuator
 	return	FTM_RET_OK;
 }
 
-
-FTM_RET	FTOM_TP_CLIENT_report
-(
-	FTOM_TP_CLIENT_PTR	pClient
-)
-{
-	ASSERT(pClient != NULL);
-
-	FTM_RET		xRet;
-	FTM_TIME	xTime;
-	FTM_ULONG	ulSensorCount;
-
-	FTOM_TP_CLIENT_reportGWStatus(pClient, pClient->xConfig.pGatewayID, FTM_TRUE, pClient->xConfig.ulReportInterval);
-
-	FTM_TIME_getCurrent(&xTime);
-
-	xRet = FTM_LIST_count(pClient->pGateway->pSensorList, &ulSensorCount);
-	if (xRet == FTM_RET_OK)
-	{
-		FTM_ULONG			i;
-		FTM_ULONG			ulCurrentTime = 0;
-		FTM_EP				xEPInfo;
-		FTOM_TP_SENSOR_PTR	pSensor;
-		FTM_ULONG			ulMaxDataCount = 100;
-		FTM_EP_DATA_PTR		pData;
-
-		pData = (FTM_EP_DATA_PTR)FTM_MEM_malloc(sizeof(FTM_EP_DATA) * ulMaxDataCount);
-		if (pData == NULL)
-		{
-			ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %lu]\n", sizeof(FTM_EP_DATA) * ulMaxDataCount);	
-		}
-
-		for(i = 0 ; i < ulSensorCount ; i++)
-		{
-			xRet = FTM_LIST_getAt(pClient->pGateway->pSensorList, i, (FTM_VOID_PTR _PTR_)&pSensor);
-			if (xRet == FTM_RET_OK)
-			{
-				xRet = FTOM_CLIENT_EP_get((FTOM_CLIENT_PTR)pClient, pSensor->pID, &xEPInfo);
-				if (xRet == FTM_RET_OK)
-				{
-					FTM_BOOL	bRun = FTM_FALSE;
-
-					xRet = FTOM_CLIENT_EP_isRun((FTOM_CLIENT_PTR)pClient, pSensor->pID, &bRun);
-					if (xRet == FTM_RET_OK)
-					{
-						FTOM_TP_CLIENT_sendEPStatus(pClient, xEPInfo.pEPID, bRun, pClient->xConfig.ulReportInterval);
-					}
-				}
-
-				if (xRet == FTM_RET_OK)
-				{
-					FTM_TIME_toSecs(&xTime, &ulCurrentTime);
-				}
-
-				if (pData != NULL)
-				{
-					FTM_ULONG	ulUnsyncDataCount = 0;
-					FTM_ULONG	ulSendDataCount = 0;
-					FTM_ULONG	ulStartTime = pSensor->ulServerDataTime;	
-
-					xRet = FTOM_CLIENT_EP_DATA_countWithTime((FTOM_CLIENT_PTR)pClient, pSensor->pID, ulStartTime + 1, ulCurrentTime, &ulUnsyncDataCount);
-					if (xRet == FTM_RET_OK)
-					{
-						while(ulSendDataCount < ulUnsyncDataCount)
-						{
-							FTM_ULONG	ulDataCount = 0;
-
-							xRet = FTOM_CLIENT_EP_DATA_getListWithTime((FTOM_CLIENT_PTR)pClient, pSensor->pID, ulStartTime + 1, ulCurrentTime, pData, ulMaxDataCount, &ulDataCount);
-							if (xRet != FTM_RET_OK)
-							{
-								ERROR2(xRet, "Failed to get ep data with time!\n");
-								break;
-							}
-
-							if (ulDataCount == 0)
-							{
-								break;
-							}
-
-							xRet = FTOM_TP_CLIENT_sendEPData(pClient, pSensor->pID, pData, ulDataCount);
-							if (xRet != FTM_RET_OK)
-							{
-								ERROR2(xRet, "Failed to send EP data!\n");	
-								break;
-							}
-
-							ulSendDataCount += ulDataCount;
-							ulStartTime = pData[ulDataCount - 1].ulTime;
-						}
-					}
-				}
-
-			}
-		}
-
-		if (pData != NULL)
-		{
-			FTM_MEM_free(pData);
-		}
-	}
-
-	return	FTM_RET_OK;
-}
 
 FTM_RET	FTOM_TP_CLIENT_setReportCtrl
 (

@@ -7,6 +7,7 @@ include $(TOPDIR)/Makefile.in
 CLIENT=ftblocker
 CLIENT_SRCS=main.c \
 	ftom_blocker.c\
+	ftom_blocker_cb.c\
 	ftom_cloud_client.c\
 	ftom_cloud_client_wrapper.c\
 	ftom_blocker_shell_cmds.c

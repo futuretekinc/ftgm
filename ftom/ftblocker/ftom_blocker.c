@@ -1,4 +1,5 @@
 #include "ftom_blocker.h"
+#include "ftom_blocker_cb.h"
 #include "ftom_cloud_client_wrapper.h"
 
 #undef	__MODULE__
@@ -11,17 +12,25 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 );
 
 static
-FTM_VOID_PTR	FTOM_BLOCKER_threadTimer
-(
-	FTM_VOID_PTR	pData
-);
-
-static
 FTM_RET	FTOM_BLOCKER_notifyCB
 (
 	FTOM_MSG_PTR	pMsg,
 	FTM_VOID_PTR	pData
 );
+
+static
+FTOM_BLOCKER_CONFIG	_xDefaultConfig =
+{
+	.xServerSync=
+	{
+		.bEnabled 	= FTM_FALSE,
+	},
+	.xAutoStatusPublish =
+	{
+		.bEnabled 	= FTM_FALSE,
+		.ulInterval = 60000
+	}
+};
 
 FTM_RET	FTOM_BLOCKER_create
 (
@@ -49,19 +58,41 @@ FTM_RET	FTOM_BLOCKER_create
 		return	xRet;	
 	}
 
+	xRet = FTM_EVENT_TIMER_MANAGER_create(&pBlocker->pETM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to create event timer!\n");	
+		goto error;
+	}
+
+	memcpy(&pBlocker->xConfig, &_xDefaultConfig, sizeof(FTOM_BLOCKER_CONFIG));
+
 	pBlocker->pCloudClientModule = pModule;
 	pBlocker->bStop = FTM_TRUE;
 
 	xRet = FTOM_BLOCKER_init(pBlocker);
 	if (xRet != FTM_RET_OK)
 	{
-		FTM_MEM_free(pBlocker);
-		return	xRet;
+		ERROR2(xRet, "Failed to blocker initialize!\n");
+		goto error;
 	}
 
 	*ppBlocker = pBlocker;
 
 	return	FTM_RET_OK;
+
+error:
+	if (pBlocker != NULL)
+	{
+		if (pBlocker->pETM != NULL)
+		{
+			FTM_EVENT_TIMER_MANAGER_destroy(&pBlocker->pETM);	
+		}
+
+		FTM_MEM_free(pBlocker);
+	
+	}
+	return	xRet;
 }
 
 FTM_RET	FTOM_BLOCKER_destroy
@@ -72,6 +103,8 @@ FTM_RET	FTOM_BLOCKER_destroy
 	ASSERT(ppBlocker != NULL);
 
 	FTOM_BLOCKER_final(*ppBlocker);
+
+	FTM_EVENT_TIMER_MANAGER_destroy(&(*ppBlocker)->pETM);
 
 	FTM_MEM_free(*ppBlocker);
 
@@ -186,16 +219,6 @@ FTM_RET	FTOM_BLOCKER_start
 		return  xRet;
     }
 
-    if (pthread_create(&pBlocker->xThreadTimer, NULL, FTOM_BLOCKER_threadTimer, pBlocker) < 0)
-	{
-		xRet = FTM_RET_THREAD_CREATION_ERROR;
-		ERROR2(xRet, "The blocker timer thread creation failed!\n");
-
-		pthread_cancel(pBlocker->xThreadMain);
-		pBlocker->xThreadMain = 0;
-		return  xRet;
-    }
-
 	return	FTM_RET_OK;	
 }
 
@@ -252,24 +275,95 @@ FTM_RET	FTOM_BLOCKER_CONFIG_load
 	ASSERT(pConfig != NULL);
 	FTM_RET	xRet;
 	FTM_CONFIG_ITEM	xSection;
+	FTM_CONFIG_ITEM	xServices;
 	FTM_CHAR	pCloudName[FTM_NAME_LEN + 1];
 
 	xRet = FTM_CONFIG_getItem(pConfig, "blocker", &xSection);
 	if (xRet != FTM_RET_OK)
 	{
+		TRACE("Failed to get blocker section!\n");
 		return	xRet;	
 	}
 
 	xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "cloud", pCloudName, FTM_NAME_LEN);
 	if (xRet != FTM_RET_OK)
 	{
+		TRACE("Failed to get could type!\n");
 		return	xRet;	
 	}
 
 	xRet = FTOM_CLOUD_CLIENT_getModule(pCloudName, &pBlocker->pCloudClientModule);
 	if (xRet != FTM_RET_OK)
 	{
+		TRACE("Failed to get module!\n");
 		return	xRet;
+	}
+
+	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "services", &xServices);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_ULONG	i, ulServiceCount = 0;
+
+		xRet = FTM_CONFIG_LIST_getItemCount(&xServices, &ulServiceCount);	
+		if (xRet == FTM_RET_OK)
+		{
+			for(i = 0 ; i < ulServiceCount ; i++)
+			{
+			
+				FTM_CONFIG_ITEM	xService;
+
+				xRet = FTM_CONFIG_LIST_getItemAt(&xServices, i, &xService);	
+				if (xRet == FTM_RET_OK)
+				{
+					FTM_CHAR	pTypeName[FTM_NAME_LEN+1];
+					FTM_BOOL	bActivation = FTM_FALSE;
+
+					FTM_CONFIG_ITEM_getItemString(&xService, "type", pTypeName, FTM_NAME_LEN);	
+					if (strcasecmp(pTypeName, "auto_server_sync") == 0)
+					{
+						xRet = FTM_CONFIG_ITEM_getItemBOOL(&xService, "activation", &bActivation);	
+						if (xRet == FTM_RET_OK)
+						{
+							pBlocker->xConfig.xServerSync.bEnabled = bActivation;
+						}
+					}
+					else if (strcasecmp(pTypeName, "auto_status_publish") == 0)
+					{
+						FTM_ULONG	ulInterval;
+
+						xRet = FTM_CONFIG_ITEM_getItemBOOL(&xService, "activation", &bActivation);	
+						if (xRet == FTM_RET_OK)
+						{
+							xRet = FTM_CONFIG_ITEM_getItemULONG(&xService, "interval", &ulInterval);	
+							if (xRet == FTM_RET_OK)
+							{
+								pBlocker->xConfig.xAutoStatusPublish.bEnabled = bActivation;
+								pBlocker->xConfig.xAutoStatusPublish.ulInterval = ulInterval;
+							}
+							else
+							{
+								WARN2(xRet, "The time interval setting is missing!\n");	
+							}
+						}
+						else
+						{
+							WARN2(xRet, "The activation setting is missing!\n");	
+						}
+					}
+					else
+					{
+						WARN2(xRet, "Not supported service[%s]!\n", pTypeName);	
+					
+					}
+						
+				}
+				else
+				{
+					ERROR2(xRet, "Failed to get service item!\n");	
+				}
+			}
+		
+		}
 	}
 
 	xRet = FTOM_NET_CLIENT_CONFIG_load(pBlocker->pNetClient, pConfig);
@@ -329,7 +423,6 @@ FTM_RET	FTOM_BLOCKER_CONFIG_show
 	return	FTM_RET_OK;
 }
 
-
 FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 (
 	FTM_VOID_PTR	pData
@@ -339,6 +432,7 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 	FTM_RET     xRet;
 	FTM_TIMER   xLoopTimer;
 	FTM_ULONG   ulLoopInterval;
+	FTM_EVENT_TIMER_PTR	pEvent;
 
 	FTM_TIMER_initMS(&xLoopTimer, 1000);
 
@@ -362,6 +456,21 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to start cloud client!\n");
+	}
+
+	xRet = FTM_EVENT_TIMER_MANAGER_start(pBlocker->pETM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to start event timer!\n");	
+	}
+
+	if (pBlocker->xConfig.xAutoStatusPublish.bEnabled)
+	{
+		xRet = FTM_EVENT_TIMER_MANAGER_add(pBlocker->pETM, FTM_EVENT_TIMER_TYPE_REPEAT, pBlocker->xConfig.xAutoStatusPublish.ulInterval, FTOM_BLOCKER_EVENT_publishStatusCB, pBlocker, &pEvent);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to add event timer!\n");	
+		}
 	}
 
 	pBlocker->bStop = FTM_FALSE;
@@ -390,6 +499,8 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 		FTM_TIMER_addMS(&xLoopTimer, 100);
 	}    
 
+	FTM_EVENT_TIMER_MANAGER_stop(pBlocker->pETM);
+
 	xRet = FTOM_BLOCKER_CLOUD_CLIENT_stop(pBlocker, pBlocker->pCloudClient);
 	if (xRet != FTM_RET_OK)
 	{
@@ -415,31 +526,16 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 	return  0;
 }
 
-FTM_VOID_PTR	FTOM_BLOCKER_threadTimer
+FTM_RET	FTOM_BLOCKER_MESSAGE_send
 (
-	FTM_VOID_PTR	pData
+	FTOM_BLOCKER_PTR	pBlocker,
+	FTOM_MSG_PTR		pMsg
 )
 {
-	FTOM_BLOCKER_PTR	pBlocker = (FTOM_BLOCKER_PTR)pData;
-	FTM_TIMER   xLoopTimer;
-	FTM_ULONG   ulLoopInterval;
+	ASSERT(pBlocker != NULL);
+	ASSERT(pMsg != NULL);
 
-	FTM_TIMER_initMS(&xLoopTimer, 1000);
-
-	TRACE("The timer was started!\n");
-
-	pBlocker->bStop = FTM_FALSE;
-
-	while(!pBlocker->bStop)
-	{    
-		FTM_TIMER_remainMS(&xLoopTimer, &ulLoopInterval);
-
-		TRACE("TIMER : \n");
-		FTM_TIMER_addMS(&xLoopTimer, 100);
-	}    
-
-	TRACE("The timer was finished!\n");
-	return	0;
+	return	FTOM_MSGQ_push(pBlocker->pMsgQ, pMsg);
 }
 
 FTM_RET	FTOM_BLOCKER_MESSAGE_process
@@ -460,10 +556,26 @@ FTM_RET	FTOM_BLOCKER_MESSAGE_process
 		{
 			if (pBaseMsg->xSenderID == pBlocker->pCloudClient)
 			{
-				xRet = FTOM_BLOCKER_SERVER_sync(pBlocker);
+				if (pBlocker->xConfig.xServerSync.bEnabled)
+				{
+					xRet = FTOM_BLOCKER_SERVER_sync(pBlocker);
+					if (xRet != FTM_RET_OK)
+					{
+						ERROR2(xRet, "Failed  to server sync!\n");	
+					}
+				}
+			}
+		}
+		break;
+
+	case	FTOM_MSG_TYPE_REPORT:
+		{
+			if (pBlocker->xConfig.xAutoStatusPublish.bEnabled)
+			{
+				xRet = FTOM_BLOCKER_SERVER_updateStatus(pBlocker);
 				if (xRet != FTM_RET_OK)
 				{
-					ERROR2(xRet, "Failed  to server sync!\n");	
+					ERROR2(xRet, "Failed to update status!\n");	
 				}
 			}
 		}
