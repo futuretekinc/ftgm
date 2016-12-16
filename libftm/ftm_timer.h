@@ -4,6 +4,8 @@
 #include "ftm_types.h"
 #include <sys/time.h>
 #include "ftm_time.h"
+#include "ftm_list.h"
+#include "ftm_lock.h"
 
 typedef	enum
 {
@@ -31,5 +33,53 @@ FTM_RET 	FTM_TIMER_remainS(FTM_TIMER_PTR pTimer, FTM_ULONG_PTR pulTimeS);
 FTM_RET 	FTM_TIMER_remainMS(FTM_TIMER_PTR pTimer, FTM_ULONG_PTR pulTimeMS);
 FTM_RET 	FTM_TIMER_remainUS(FTM_TIMER_PTR pTimer, FTM_UINT64_PTR pulTimeUS);
 FTM_RET		FTM_TIMER_getTime(FTM_TIMER_PTR pTimer, FTM_ULONG_PTR pulTime);
+
+typedef	FTM_RET	(*FTM_EVENT_TIMER_CB)(FTM_TIMER_PTR pTimer, FTM_VOID_PTR pData);
+
+typedef	enum
+{
+	FTM_EVENT_TIMER_TYPE_ONCE,
+	FTM_EVENT_TIMER_TYPE_REPEAT
+}	FTM_EVENT_TIMER_TYPE, _PTR_ FTM_EVENT_TIMER_TYPE_PTR;
+
+typedef	struct
+{
+	FTM_EVENT_TIMER_TYPE	xType;
+	FTM_ULONG				ulTimeMS;
+	FTM_TIMER				xTimer;
+	FTM_EVENT_TIMER_CB		fCallback;
+	FTM_VOID_PTR			pData;
+}	FTM_EVENT_TIMER, _PTR_ FTM_EVENT_TIMER_PTR;
+
+typedef	struct
+{
+	FTM_ULONG		ulLoopInterval;
+	FTM_LIST_PTR	pEventList;
+	pthread_t		xThreadMain;
+	FTM_LOCK		xLock;
+
+	FTM_BOOL		bStop;
+}	FTM_EVENT_TIMER_MANAGER, _PTR_ FTM_EVENT_TIMER_MANAGER_PTR;
+
+FTM_RET	FTM_EVENT_TIMER_MANAGER_create
+(
+	FTM_EVENT_TIMER_MANAGER_PTR _PTR_ ppETM
+);
+
+FTM_RET	FTM_EVENT_TIMER_MANAGER_destroy
+(
+	FTM_EVENT_TIMER_MANAGER_PTR _PTR_ ppETM
+);
+
+FTM_RET	FTM_EVENT_TIMER_MANAGER_add
+(
+	FTM_EVENT_TIMER_MANAGER_PTR	pETM,
+	FTM_EVENT_TIMER_TYPE		xType,
+	FTM_ULONG					ulTimeMS,
+	FTM_EVENT_TIMER_CB			fCallback,
+	FTM_VOID_PTR				pData,
+	FTM_EVENT_TIMER_PTR _PTR_	ppTimer
+);
+
 #endif
 

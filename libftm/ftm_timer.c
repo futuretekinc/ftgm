@@ -1,8 +1,24 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 #include "ftm_timer.h"
 #include "ftm_trace.h"
+#include "ftm_list.h"
+#include "ftm_mem.h"
+
+static
+FTM_VOID_PTR	FTM_EVENT_TIMER_MANAGER_threadMain
+(
+	FTM_VOID_PTR	pData
+);
+
+static
+FTM_INT		FTM_EVENT_TIMER_comparator
+(
+	const FTM_VOID_PTR pElement1, 
+	const FTM_VOID_PTR pElement2
+);
 
 FTM_RET	FTM_TIMER_initS
 (
@@ -241,4 +257,167 @@ FTM_RET		FTM_TIMER_getTime
 	*pulTime = pTimer->xTime.tv_sec;
 
 	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EVENT_TIMER_MANAGER_create
+(
+	FTM_EVENT_TIMER_MANAGER_PTR _PTR_ ppETM
+)
+{
+	ASSERT(ppETM != NULL);
+	FTM_RET	xRet;
+	FTM_EVENT_TIMER_MANAGER_PTR	pETM;
+
+	pETM = (FTM_EVENT_TIMER_MANAGER_PTR)FTM_MEM_malloc(sizeof(FTM_EVENT_TIMER_MANAGER));
+	if (pETM == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+
+	pETM->ulLoopInterval = 10;
+	xRet = FTM_LIST_create(&pETM->pEventList);
+	if (xRet != FTM_RET_OK)
+	{
+		FTM_MEM_free(pETM);
+		return	xRet;
+	}
+	FTM_LIST_setComparator(pETM->pEventList, FTM_EVENT_TIMER_comparator);
+
+	FTM_LOCK_init(&pETM->xLock);
+	pETM->bStop = FTM_FALSE;
+	
+	if (pthread_create(&pETM->xThreadMain, NULL, FTM_EVENT_TIMER_MANAGER_threadMain, pETM) < 0)
+	{
+		FTM_MEM_free(pETM);
+		xRet = FTM_RET_THREAD_CREATION_ERROR;
+		ERROR2(xRet, "The blocker main thread creation failed!\n");
+		return  xRet;
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EVENT_TIMER_MANAGER_destroy
+(
+	FTM_EVENT_TIMER_MANAGER_PTR _PTR_ ppETM
+)
+{	
+	if (!(*ppETM)->bStop)
+	{
+		(*ppETM)->bStop = FTM_TRUE;	
+	}
+
+	pthread_join((*ppETM)->xThreadMain, NULL);
+	(*ppETM)->xThreadMain = 0;
+
+	FTM_LOCK_final(&(*ppETM)->xLock);
+	FTM_MEM_free(*ppETM);
+	*ppETM = NULL;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTM_EVENT_TIMER_MANAGER_add
+(
+	FTM_EVENT_TIMER_MANAGER_PTR	pETM,
+	FTM_EVENT_TIMER_TYPE		xType,
+	FTM_ULONG					ulExpiredTime,
+	FTM_EVENT_TIMER_CB			fCallback,
+	FTM_VOID_PTR				pData,
+	FTM_EVENT_TIMER_PTR _PTR_	ppEvent
+)
+{
+	ASSERT(pETM != NULL);
+
+	FTM_EVENT_TIMER_PTR	pEvent;
+
+	pEvent = (FTM_EVENT_TIMER_PTR)FTM_MEM_malloc(sizeof(FTM_EVENT_TIMER));
+	if (pEvent == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+	}
+
+	pEvent->xType 		= xType;
+	pEvent->ulTimeMS	= (ulExpiredTime > pETM->ulLoopInterval)?ulExpiredTime:pETM->ulLoopInterval;
+	pEvent->fCallback	= fCallback;
+	pEvent->pData		= pData;
+	FTM_TIMER_initMS(&pEvent->xTimer, ulExpiredTime);
+
+	
+	FTM_LOCK_set(&pETM->xLock);
+
+	FTM_LIST_insert(pETM->pEventList, pEvent, FTM_LIST_POS_ASSENDING);
+
+	FTM_LOCK_reset(&pETM->xLock);
+
+	return	FTM_RET_OK;
+}
+
+FTM_VOID_PTR	FTM_EVENT_TIMER_MANAGER_threadMain
+(
+	FTM_VOID_PTR	pData
+)
+{
+	FTM_EVENT_TIMER_MANAGER_PTR	pETM = (FTM_EVENT_TIMER_MANAGER_PTR)pData;
+	FTM_TIMER	xLoopTimer;
+
+	FTM_TIMER_initMS(&xLoopTimer, 10);
+
+	while(!pETM->bStop)
+	{
+		FTM_ULONG	ulRemainTime = 0;
+		FTM_EVENT_TIMER_PTR	pEvent;
+
+		FTM_LOCK_set(&pETM->xLock);
+		while(FTM_TRUE)
+		{
+			FTM_RET	xRet;
+
+			xRet = FTM_LIST_getFirst(pETM->pEventList, (FTM_VOID_PTR _PTR_)&pEvent);
+			if ((xRet != FTM_RET_OK) || (FTM_TIMER_isExpired(&pEvent->xTimer) == FTM_FALSE))
+			{
+				break;
+			}
+
+			FTM_LIST_remove(pETM->pEventList, pEvent);
+
+			xRet = pEvent->fCallback(&pEvent->xTimer, pEvent->pData);
+
+			if (pEvent->xType == FTM_EVENT_TIMER_TYPE_REPEAT)
+			{
+				FTM_TIMER_addMS(&pEvent->xTimer, pEvent->ulTimeMS);
+
+				FTM_LIST_insert(pETM->pEventList, pEvent, FTM_LIST_POS_ASSENDING);
+			}
+			else
+			{
+				FTM_MEM_free(pEvent);
+			}
+		}
+		FTM_LOCK_reset(&pETM->xLock);
+
+		FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
+		usleep(ulRemainTime * 1000);
+		FTM_TIMER_addMS(&xLoopTimer, pETM->ulLoopInterval);
+	}
+
+	return	0;
+}
+
+
+FTM_INT		FTM_EVENT_TIMER_comparator
+(
+	const FTM_VOID_PTR pElement1, 
+	const FTM_VOID_PTR pElement2
+)
+{
+	FTM_EVENT_TIMER_PTR	pEvent1 = (FTM_EVENT_TIMER_PTR)pElement1;
+	FTM_EVENT_TIMER_PTR	pEvent2 = (FTM_EVENT_TIMER_PTR)pElement2;
+	FTM_ULONG			ulRemainTime1;
+	FTM_ULONG			ulRemainTime2;
+
+	FTM_TIMER_remainMS(&pEvent1->xTimer, &ulRemainTime1);
+	FTM_TIMER_remainMS(&pEvent2->xTimer, &ulRemainTime2);
+
+	return	(ulRemainTime1 > ulRemainTime2)?1:(ulRemainTime1 == ulRemainTime2)?0:-1;
 }
