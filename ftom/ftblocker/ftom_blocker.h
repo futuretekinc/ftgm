@@ -2,12 +2,24 @@
 #define	__FTOM_AZURE_BLOCKER_H__
 
 #include "ftom.h"
-#include "ftom_net_client.h"
+#include "ftom_server_client.h"
 #include "ftom_cloud_client.h"
 #include "ftom_message_queue.h"
 
 typedef	struct
 {
+	FTM_CHAR	pName[FTM_NAME_LEN+1];
+
+	struct
+	{
+		FTM_CHAR	pName[FTM_NAME_LEN+1];
+	}	xServerClient;
+
+	struct
+	{
+		FTM_CHAR	pName[FTM_NAME_LEN+1];
+	}	xCloudClient;
+
 	struct
 	{
 		FTM_BOOL	bEnabled;
@@ -24,7 +36,8 @@ typedef	struct
 {
 	FTOM_BLOCKER_CONFIG				xConfig;
 
-	FTOM_NET_CLIENT_PTR				pNetClient;
+	FTOM_SERVER_CLIENT_PTR			pServerClient;
+	FTOM_SERVER_CLIENT_MODULE_PTR	pServerClientModule;
 
 	FTOM_CLOUD_CLIENT_PTR			pCloudClient;
 	FTOM_CLOUD_CLIENT_MODULE_PTR	pCloudClientModule;

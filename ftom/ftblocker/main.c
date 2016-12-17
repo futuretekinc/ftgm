@@ -27,9 +27,7 @@ FTM_INT	main
 	FTM_ULONG		ulDebugLevel = FTM_TRACE_LEVEL_ALL;
 	FTOM_BLOCKER_PTR	pBlocker = NULL;
 	FTM_CHAR		pConfigFileName[1024];
-	FTM_CHAR		pCloudName[256];
 	FTM_CONFIG_PTR	pConfig = NULL;
-	FTM_CONFIG_ITEM	xSection;
 
 	sprintf(pConfigFileName, "/etc/%s.conf", FTM_getProgramName());
 
@@ -82,28 +80,12 @@ FTM_INT	main
 		goto finish;
 	}
 
-	xRet = FTM_CONFIG_getItem(pConfig, "blocker", &xSection);
-	if (xRet != FTM_RET_OK)
-	{
-		MESSAGE("The blocker setting could not be found.\n");
-		goto finish;	
-	}
-
-	memset(pCloudName, 0, sizeof(pCloudName));
-	xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "cloud", pCloudName, sizeof(pCloudName) - 1);
-	if (xRet != FTM_RET_OK)
-	{
-		MESSAGE("The cloud name could not be found.\n");
-		goto finish;	
-	}
-
-	xRet = FTOM_BLOCKER_create(pCloudName, (FTOM_BLOCKER_PTR _PTR_)&pBlocker);
+	xRet = FTOM_BLOCKER_create(FTM_getProgramName(), (FTOM_BLOCKER_PTR _PTR_)&pBlocker);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Can't create a client.\n");
 		goto finish;
 	}
-
 
 	xRet = FTOM_BLOCKER_CONFIG_load(pBlocker, pConfig);
 	if (xRet != FTM_RET_OK)
@@ -113,6 +95,13 @@ FTM_INT	main
 	}   
 	
 	FTM_CONFIG_destroy(&pConfig);
+
+	xRet = FTOM_BLOCKER_init(pBlocker);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to blocker initialize!\n");
+		goto finish;
+	}
 
 	if (bDaemon)
 	{

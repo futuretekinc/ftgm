@@ -121,7 +121,7 @@ FTOM_CLOUD_CLIENT_MODULE	_pModules[] =
 		.fMessageProcess	= (FTOM_CLOUD_CLIENT_MESSAGE_PROCESS)FTOM_DUMMY_CLIENT_MESSAGE_process
 	},
 	{
-		.pName	= "azure",
+		.pName	= "azclient",
 
 		.xFlags	=
 		{
@@ -144,7 +144,7 @@ FTOM_CLOUD_CLIENT_MODULE	_pModules[] =
 		.fMessageProcess	= (FTOM_CLOUD_CLIENT_MESSAGE_PROCESS)FTOM_AZURE_CLIENT_MESSAGE_process
 	},
 	{
-		.pName	= "thingplus",
+		.pName	= "tpclient",
 
 		.xFlags	=
 		{
@@ -334,4 +334,5 @@ FTM_RET	FTOM_DUMMY_CLIENT_MESSAGE_process
 {
 	return	FTM_RET_FUNCTION_NOT_SUPPORTED;
 }
+
 
