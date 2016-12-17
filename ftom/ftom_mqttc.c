@@ -95,15 +95,15 @@ FTM_BOOL FTOM_MQTT_PUBLISH_LIST_seeker
 static 
 FTOM_MQTT_CLIENT_CBSET	xCBDefaultSet =
 {
-	.fConnect 	= FTOM_MQTT_CLIENT_FT_connectCB,
-	.fDisconnect= FTOM_MQTT_CLIENT_FT_disconnectCB,
-	.fPublish 	= FTOM_MQTT_CLIENT_FT_publishCB,
-	.fMessage 	= FTOM_MQTT_CLIENT_FT_messageCB,
-	.fSubscribe = FTOM_MQTT_CLIENT_FT_subscribeCB,
-	.fGWStatus	= FTOM_MQTT_CLIENT_TPGW_GWStatus,
-	.fEPStatus	= FTOM_MQTT_CLIENT_TPGW_publishEPStatus,
-	.fEPData	= FTOM_MQTT_CLIENT_TPGW_publishEPData,
-	.fTPResponse= FTOM_MQTT_CLIENT_TPGW_response,
+	.fConnect 	= NULL,
+	.fDisconnect= NULL,
+	.fPublish 	= NULL,
+	.fMessage 	= NULL,
+	.fSubscribe = NULL,
+	.fGWStatus	= NULL,
+	.fEPStatus	= NULL,
+	.fEPData	= NULL,
+	.fTPResponse= NULL,
 };
 
 static 	FTM_ULONG	ulClientInstance = 0;

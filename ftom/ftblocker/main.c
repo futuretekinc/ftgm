@@ -80,20 +80,13 @@ FTM_INT	main
 		goto finish;
 	}
 
-	xRet = FTOM_BLOCKER_create(FTM_getProgramName(), (FTOM_BLOCKER_PTR _PTR_)&pBlocker);
+	xRet = FTOM_BLOCKER_create(FTM_getProgramName(), pConfig, (FTOM_BLOCKER_PTR _PTR_)&pBlocker);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Can't create a client.\n");
 		goto finish;
 	}
 
-	xRet = FTOM_BLOCKER_CONFIG_load(pBlocker, pConfig);
-	if (xRet != FTM_RET_OK)
-	{   
-		ERROR2(xRet, "Faield to load configuration!\n");    
-		goto finish;
-	}   
-	
 	FTM_CONFIG_destroy(&pConfig);
 
 	xRet = FTOM_BLOCKER_init(pBlocker);

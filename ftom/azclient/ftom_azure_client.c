@@ -214,7 +214,7 @@ FTM_RET	FTOM_AZURE_CLIENT_CONFIG_load
 
 	memcpy(&xAzureConfig, &pClient->xConfig, sizeof(FTOM_AZURE_CLIENT_CONFIG));
 
-	xRet = FTM_CONFIG_getItem(pConfig, "azure", &xSection);
+	xRet = FTM_CONFIG_getItem(pConfig, pClient->xConfig.pName, &xSection);
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_OK;	
@@ -258,7 +258,7 @@ FTM_RET	FTOM_AZURE_CLIENT_CONFIG_save
 	FTM_RET	xRet;
 	FTM_CONFIG_ITEM	xSection;
 
-	xRet = FTM_CONFIG_getItem(pConfig, "azure", &xSection);
+	xRet = FTM_CONFIG_getItem(pConfig, pClient->xConfig.pName, &xSection);
 	if (xRet != FTM_RET_OK)
 	{
 		return	FTM_RET_OK;	

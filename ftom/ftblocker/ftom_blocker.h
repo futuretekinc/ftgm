@@ -54,6 +54,7 @@ typedef	struct
 FTM_RET	FTOM_BLOCKER_create
 (
 	FTM_CHAR_PTR	pCloudName,
+	FTM_CONFIG_PTR	pConfig,
 	FTOM_BLOCKER_PTR _PTR_ ppBlocker
 );
 

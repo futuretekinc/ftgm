@@ -94,7 +94,7 @@ FTM_INT main(int nArgc , char *pArgv[])
 		ERROR2(xRet, "Failed to create config!\n");	
 	}
 
-	xRet = FTOM_CLIENT_NET_create((FTOM_CLIENT_NET_PTR _PTR_)&pClient);
+	xRet = FTOM_NET_CLIENT_create((FTOM_CLIENT_NET_PTR _PTR_)&pClient);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to create client!\n");

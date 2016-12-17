@@ -36,17 +36,20 @@ FTOM_BLOCKER_CONFIG	_xDefaultConfig =
 FTM_RET	FTOM_BLOCKER_create
 (
 	FTM_CHAR_PTR	pName,
+	FTM_CONFIG_PTR	pConfig,
 	FTOM_BLOCKER_PTR _PTR_ ppBlocker
 )
 {
 	ASSERT(ppBlocker != NULL);
 	FTM_RET	xRet;	
 	FTOM_BLOCKER_PTR	pBlocker = NULL;
+	FTM_CHAR	pModuleName[FTM_NAME_LEN + 1];
+
 	pBlocker = (FTOM_BLOCKER_PTR)FTM_MEM_malloc(sizeof(FTOM_BLOCKER));
 	if (pBlocker == NULL)
 	{
 		xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
-		ERROR2(xRet, "Failed to create azure blocker!\n");
+		ERROR2(xRet, "Failed to create blocker!\n");
 		return	xRet;	
 	}
 
@@ -61,6 +64,71 @@ FTM_RET	FTOM_BLOCKER_create
 
 	strncpy(pBlocker->xConfig.pName, pName, sizeof(pBlocker->xConfig.pName) - 1);
 	pBlocker->bStop = FTM_TRUE;
+
+	memset(pModuleName, 0, sizeof(pModuleName));
+
+	if (pConfig != NULL)
+	{
+		FTM_CONFIG_ITEM	xSection;
+
+		xRet = FTM_CONFIG_getItem(pConfig, pBlocker->xConfig.pName, &xSection);
+		if (xRet != FTM_RET_OK)
+		{
+			TRACE("Failed to get blocker section!\n");
+			return	xRet;	
+		}
+		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "server", pModuleName, sizeof(pModuleName) - 1);
+		if (xRet == FTM_RET_OK)
+		{
+			strncpy(pBlocker->xConfig.xServerClient.pName, pModuleName, sizeof(pBlocker->xConfig.xServerClient.pName) - 1);
+	
+			xRet = FTOM_SERVER_CLIENT_getModule(pBlocker->xConfig.xServerClient.pName, &pBlocker->pServerClientModule);
+			if (xRet != FTM_RET_OK)
+			{
+				TRACE("Failed to get module[%s]!\n", pBlocker->xConfig.xServerClient.pName);
+				return	xRet;
+			}
+	
+			xRet = FTOM_BLOCKER_SERVER_CLIENT_create(pBlocker, &pBlocker->pServerClient);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to create server client!\n");
+				return	xRet;
+			}
+		}
+		else
+		{
+			TRACE("Failed to get could type!\n");
+			return	xRet;	
+		}
+	
+		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "cloud", pModuleName, sizeof(pModuleName) - 1);
+		if (xRet == FTM_RET_OK)
+		{
+			strncpy(pBlocker->xConfig.xCloudClient.pName, pModuleName, sizeof(pBlocker->xConfig.xCloudClient.pName) - 1);
+	
+			xRet = FTOM_CLOUD_CLIENT_getModule(pBlocker->xConfig.xCloudClient.pName, &pBlocker->pCloudClientModule);
+			if (xRet != FTM_RET_OK)
+			{
+				TRACE("Failed to get module[%s]!\n", pBlocker->xConfig.xCloudClient.pName);
+				return	xRet;
+			}
+	
+			xRet = FTOM_BLOCKER_CLOUD_CLIENT_create(pBlocker, &pBlocker->pCloudClient);
+			if (xRet != FTM_RET_OK)
+			{
+				ERROR2(xRet, "Failed to create cloud client!\n");
+				return	xRet;
+			}
+		}
+		else
+		{
+			TRACE("Failed to get could type!\n");
+			return	xRet;	
+		}
+
+		FTOM_BLOCKER_CONFIG_load(pBlocker, pConfig);
+	}
 
 	*ppBlocker = pBlocker;
 
@@ -121,16 +189,6 @@ error:
 		FTOM_MSGQ_destroy(&pBlocker->pMsgQ);	
 	}
 
-	if (pBlocker->pServerClient != NULL)
-	{
-		FTOM_BLOCKER_SERVER_CLIENT_destroy(pBlocker, &pBlocker->pServerClient);	
-	}
-
-	if (pBlocker->pCloudClient != NULL)
-	{
-		FTOM_BLOCKER_CLOUD_CLIENT_destroy(pBlocker, &pBlocker->pCloudClient);	
-	}
-
 	return	xRet;
 }
 
@@ -166,7 +224,7 @@ FTM_RET	FTOM_BLOCKER_final
 		xRet = FTOM_BLOCKER_CLOUD_CLIENT_destroy(pBlocker, &pBlocker->pCloudClient);	
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet, "Failed to destroy azure client!\n");	
+			ERROR2(xRet, "Failed to destroy cloud client!\n");	
 		}
 	}
 
@@ -247,79 +305,12 @@ FTM_RET	FTOM_BLOCKER_CONFIG_load
 	FTM_RET	xRet;
 	FTM_CONFIG_ITEM	xSection;
 	FTM_CONFIG_ITEM	xServices;
-	FTM_CHAR	pModuleName[FTM_NAME_LEN + 1];
 
 	xRet = FTM_CONFIG_getItem(pConfig, pBlocker->xConfig.pName, &xSection);
 	if (xRet != FTM_RET_OK)
 	{
 		TRACE("Failed to get blocker section!\n");
 		return	xRet;	
-	}
-
-	memset(pModuleName, 0, sizeof(pModuleName));
-
-	xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "server", pModuleName, sizeof(pModuleName) - 1);
-	if (xRet == FTM_RET_OK)
-	{
-		strncpy(pBlocker->xConfig.xServerClient.pName, pModuleName, sizeof(pBlocker->xConfig.xServerClient.pName) - 1);
-	}
-	else
-	{
-		TRACE("Failed to get could type!\n");
-		return	xRet;	
-	}
-
-	xRet = FTOM_SERVER_CLIENT_getModule(pBlocker->xConfig.xServerClient.pName, &pBlocker->pServerClientModule);
-	if (xRet != FTM_RET_OK)
-	{
-		TRACE("Failed to get module[%s]!\n", pBlocker->xConfig.xServerClient.pName);
-		return	xRet;
-	}
-
-	xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "cloud", pModuleName, sizeof(pModuleName) - 1);
-	if (xRet == FTM_RET_OK)
-	{
-		strncpy(pBlocker->xConfig.xCloudClient.pName, pModuleName, sizeof(pBlocker->xConfig.xCloudClient.pName) - 1);
-	}
-	else
-	{
-		TRACE("Failed to get could type!\n");
-		return	xRet;	
-	}
-
-	xRet = FTOM_CLOUD_CLIENT_getModule(pBlocker->xConfig.xCloudClient.pName, &pBlocker->pCloudClientModule);
-	if (xRet != FTM_RET_OK)
-	{
-		TRACE("Failed to get module[%s]!\n", pBlocker->xConfig.xCloudClient.pName);
-		return	xRet;
-	}
-
-	xRet = FTOM_BLOCKER_SERVER_CLIENT_create(pBlocker, &pBlocker->pServerClient);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to create server client!\n");
-		return	xRet;
-	}
-	
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_create(pBlocker, &pBlocker->pCloudClient);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to create azure client!\n");
-		return	xRet;
-	}
-
-	xRet = FTOM_BLOCKER_SERVER_CLIENT_CONFIG_load(pBlocker, pBlocker->pServerClient, pConfig);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to load sever client configuration.\n");
-		return	xRet;
-	}
-
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_load(pBlocker, pBlocker->pCloudClient, pConfig);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to load cloud client configuration.\n");
-		return	xRet;
 	}
 
 	xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "services", &xServices);
@@ -389,6 +380,26 @@ FTM_RET	FTOM_BLOCKER_CONFIG_load
 		}
 	}
 
+	if (pBlocker->pServerClient != NULL)
+	{
+		xRet = FTOM_BLOCKER_SERVER_CLIENT_CONFIG_load(pBlocker, pBlocker->pServerClient, pConfig);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to load sever client configuration.\n");
+			return	xRet;
+		}
+	}
+
+	if (pBlocker->pCloudClient != NULL)
+	{
+		xRet = FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_load(pBlocker, pBlocker->pCloudClient, pConfig);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to load cloud client configuration.\n");
+			return	xRet;
+		}
+	}
+
 	return	xRet;
 }
 
@@ -412,7 +423,7 @@ FTM_RET	FTOM_BLOCKER_CONFIG_save
 	xRet = FTOM_BLOCKER_SERVER_CLIENT_CONFIG_save(pBlocker, pBlocker->pServerClient, pConfig);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to load ftom client configuration.\n");
+		ERROR2(xRet, "Failed to load serverftom client configuration.\n");
 		return	xRet;
 	}
 
@@ -425,6 +436,13 @@ FTM_RET	FTOM_BLOCKER_CONFIG_show
 )
 {
 	ASSERT(pBlocker != NULL);
+
+	MESSAGE("[ Blocker Configuration ]\n");
+	MESSAGE("# Auto Server Sync\n");
+	MESSAGE("%16s : %s\n", "Activation", (pBlocker->xConfig.xServerSync.bEnabled)?"on":"off");
+	MESSAGE("# Auto Status Publish \n");
+	MESSAGE("%16s : %s\n", "Activation", (pBlocker->xConfig.xAutoStatusPublish.bEnabled)?"on":"off");
+	MESSAGE("%16s : %lu ms\n", "Interval" ,pBlocker->xConfig.xAutoStatusPublish.ulInterval);
 
 	FTOM_BLOCKER_SERVER_CLIENT_CONFIG_show(pBlocker, pBlocker->pServerClient);
 	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_show(pBlocker, pBlocker->pCloudClient);
@@ -445,14 +463,14 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 
 	FTM_TIMER_initMS(&xLoopTimer, 1000);
 
-	TRACE("The azure blocker was started!\n");
+	TRACE("The blocker was started!\n");
 
 	FTOM_BLOCKER_SERVER_CLIENT_setNotifyCB(pBlocker, pBlocker->pServerClient, FTOM_BLOCKER_notifyCB, pBlocker);
 
 	xRet = FTOM_BLOCKER_SERVER_CLIENT_start(pBlocker, pBlocker->pServerClient);	
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to start ftom client!\n");
+		ERROR2(xRet, "Failed to start server client!\n");
 	}
 
 	xRet = FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB(pBlocker, pBlocker->pCloudClient, FTOM_BLOCKER_notifyCB, pBlocker);
@@ -513,7 +531,7 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 	xRet = FTOM_BLOCKER_CLOUD_CLIENT_stop(pBlocker, pBlocker->pCloudClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to stop azure client!\n");	
+		ERROR2(xRet, "Failed to stop cloud client!\n");	
 	}
 
 	xRet = FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB(pBlocker, pBlocker->pCloudClient, NULL, NULL);
@@ -525,12 +543,12 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 	xRet = FTOM_BLOCKER_SERVER_CLIENT_stop(pBlocker, pBlocker->pServerClient);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to stop ftom client!\n");	
+		ERROR2(xRet, "Failed to stop server client!\n");	
 	}
 
 	FTOM_BLOCKER_SERVER_CLIENT_setNotifyCB(pBlocker, pBlocker->pServerClient, NULL, NULL);
 
-	TRACE("The azure blocker was finished !\n");
+	TRACE("The blocker was finished !\n");
 
 	return  0;
 }
