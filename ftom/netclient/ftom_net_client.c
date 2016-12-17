@@ -89,13 +89,56 @@ FTOM_CLIENT_FUNCTION_SET	_xFunctionSet  =
 	.fStart		= (FTOM_CLIENT_START)FTOM_NET_CLIENT_start,
 	.fStop		= (FTOM_CLIENT_STOP)FTOM_NET_CLIENT_stop,
 
-	.fMessageProcess=(FTOM_CLIENT_MESSAGE)FTOM_NET_CLIENT_messageProcess,
+	.fMessageProcess=(FTOM_CLIENT_MESSAGE)FTOM_NET_CLIENT_MESSAGE_process,
 
 	.fWaitingForFinished = (FTOM_CLIENT_WAITING_FOR_FINISHED)FTOM_NET_CLIENT_waitingForFinished,
-	.fLoadConfig= (FTOM_CLIENT_LOAD_CONFIG)FTOM_NET_CLIENT_CONFIG_load,
-	.fSetNotifyCB=(FTOM_CLIENT_SET_NOTIFY_CB)FTOM_NET_CLIENT_setNotifyCB,
-	.fRequest	= (FTOM_CLIENT_REQUEST)FTOM_NET_CLIENT_request
+	.fLoadConfig	= (FTOM_CLIENT_LOAD_CONFIG)FTOM_NET_CLIENT_CONFIG_load,
+	.fSetNotifyCB	=(FTOM_CLIENT_SET_NOTIFY_CB)FTOM_NET_CLIENT_setNotifyCB,
+	.fRequest		= (FTOM_CLIENT_REQUEST)FTOM_NET_CLIENT_request
 };
+
+FTM_RET	FTOM_NET_CLIENT_create
+(
+	FTM_CHAR_PTR	pName,
+	FTOM_NET_CLIENT_PTR _PTR_ ppClient
+)
+{
+	ASSERT(ppClient != NULL);
+
+	FTOM_NET_CLIENT_PTR	pClient;
+
+	pClient = (FTOM_NET_CLIENT_PTR)FTM_MEM_malloc(sizeof(FTOM_NET_CLIENT));
+	if (pClient == NULL)
+	{
+		return	FTM_RET_NOT_ENOUGH_MEMORY;
+	}
+	
+	memset(pClient, 0, sizeof(FTOM_NET_CLIENT));
+
+	strncpy(pClient->xConfig.pName, pName, sizeof(pClient->xConfig.pName));
+
+	FTOM_NET_CLIENT_init(pClient);
+
+	*ppClient = pClient;
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_NET_CLIENT_destroy
+(
+	FTOM_NET_CLIENT_PTR _PTR_ ppClient
+)
+{
+	ASSERT(ppClient != NULL);
+	
+	FTOM_NET_CLIENT_final(*ppClient);
+
+	FTM_MEM_free(*ppClient);
+
+	*ppClient = NULL;
+
+	return	FTM_RET_OK;
+}
 
 FTM_RET	FTOM_NET_CLIENT_init
 (
@@ -167,46 +210,6 @@ FTM_RET	FTOM_NET_CLIENT_final
 	return	FTOM_CLIENT_internalFinal((FTOM_CLIENT_PTR)pClient);
 }
 
-FTM_RET	FTOM_NET_CLIENT_create
-(
-	FTOM_NET_CLIENT_PTR _PTR_ ppClient
-)
-{
-	ASSERT(ppClient != NULL);
-
-	FTOM_NET_CLIENT_PTR	pClient;
-
-	pClient = (FTOM_NET_CLIENT_PTR)FTM_MEM_malloc(sizeof(FTOM_NET_CLIENT));
-	if (pClient == NULL)
-	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;
-	}
-	
-	memset(pClient, 0, sizeof(FTOM_NET_CLIENT));
-
-	FTOM_NET_CLIENT_init(pClient);
-
-	*ppClient = pClient;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTOM_NET_CLIENT_destroy
-(
-	FTOM_NET_CLIENT_PTR _PTR_ ppClient
-)
-{
-	ASSERT(ppClient != NULL);
-	
-	FTOM_NET_CLIENT_final(*ppClient);
-
-	FTM_MEM_free(*ppClient);
-
-	*ppClient = NULL;
-
-	return	FTM_RET_OK;
-}
-
 FTM_RET	FTOM_NET_CLIENT_CONFIG_load
 (
 	FTOM_NET_CLIENT_PTR	pClient,
@@ -219,7 +222,7 @@ FTM_RET	FTOM_NET_CLIENT_CONFIG_load
     FTM_RET             xRet;
 	FTM_CONFIG_ITEM     xClient;
 
-	xRet = FTM_CONFIG_getItem(pConfig, "client", &xClient);
+	xRet = FTM_CONFIG_getItem(pConfig, pClient->xConfig.pName, &xClient);
 	if (xRet != FTM_RET_OK)
 	{    
 		ERROR2(xRet, "Client configuration not found!\n");
@@ -305,6 +308,20 @@ FTM_RET	FTOM_NET_CLIENT_stop
 	return FTOM_NET_CLIENT_waitingForFinished(pClient);
 }
 
+FTM_RET	FTOM_NET_CLIENT_isRunning
+(
+	FTOM_NET_CLIENT_PTR pClient,
+	FTM_BOOL_PTR		pIsRunning
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pIsRunning != NULL);
+
+	*pIsRunning = !pClient->bStop;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTOM_NET_CLIENT_waitingForFinished
 (
 	FTOM_NET_CLIENT_PTR 	pClient
@@ -318,7 +335,26 @@ FTM_RET	FTOM_NET_CLIENT_waitingForFinished
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_NET_CLIENT_messageProcess
+FTM_RET	FTOM_NET_CLIENT_MESSAGE_send
+(
+	FTOM_NET_CLIENT_PTR	pClient,
+	FTOM_MSG_PTR		pMsg
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pMsg != NULL);
+	FTM_RET	xRet;
+
+	xRet = FTOM_CLIENT_sendMessage((FTOM_CLIENT_PTR)pClient, pMsg);
+	if (xRet != FTM_RET_OK)
+	{    
+		ERROR2(xRet, "Failed to push message!\n");
+	}    
+
+	return  xRet;
+}
+
+FTM_RET	FTOM_NET_CLIENT_MESSAGE_process
 (
 	FTOM_NET_CLIENT_PTR	pClient,
 	FTOM_MSG_PTR		pBaseMsg

@@ -70,6 +70,7 @@ FTOM_AZURE_CLIENT_CONFIG	_xDefaultConfig =
 
 FTM_RET	FTOM_AZURE_CLIENT_create
 (	
+	FTM_CHAR_PTR	pName,
 	FTOM_AZURE_CLIENT_PTR _PTR_ ppClient
 )
 {
@@ -85,6 +86,7 @@ FTM_RET	FTOM_AZURE_CLIENT_create
 	}
 
 	memcpy(&pClient->xConfig, &_xDefaultConfig, sizeof(FTOM_AZURE_CLIENT_CONFIG));
+	strncpy(pClient->xConfig.pName, pName, sizeof(pClient->xConfig.pName) - 1);
 
 	xRet = FTM_LIST_create(&pClient->pCompletionWaitingList);
 	if (xRet != FTM_RET_OK)

@@ -10,6 +10,7 @@
 
 typedef	struct
 {
+	FTM_CHAR	pName[FTM_NAME_LEN + 1];
 	FTM_CHAR	pHostName[FTM_HOST_LEN + 1];
 	FTM_CHAR	pDeviceID[FTM_ID_LEN + 1];
 	FTM_CHAR	pSharedAccessKey[FTOM_AZURE_SHARED_ACCESS_KEY_LEN + 1];
@@ -50,6 +51,7 @@ typedef struct
 
 FTM_RET	FTOM_AZURE_CLIENT_create
 (
+	FTM_CHAR_PTR	pName,
 	FTOM_AZURE_CLIENT_PTR _PTR_ ppClient
 );
 

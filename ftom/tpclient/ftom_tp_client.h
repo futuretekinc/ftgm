@@ -18,6 +18,7 @@
 
 typedef	struct
 {
+	FTM_CHAR	pName[FTM_NAME_LEN + 1];
 	FTM_CHAR	pGatewayID[FTM_GWID_LEN+1];
 	FTM_CHAR	pAPIKey[FTM_PASSWD_LEN+1];
 	FTM_CHAR	pCertFile[FTM_FILE_NAME_LEN+1];
@@ -73,6 +74,7 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 
 FTM_RET	FTOM_TP_CLIENT_create
 (
+	FTM_CHAR_PTR	pName,
 	FTOM_TP_CLIENT_PTR _PTR_ ppClient
 );
 

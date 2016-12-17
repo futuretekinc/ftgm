@@ -72,6 +72,7 @@ FTOM_TP_CLIENT_CONFIG	xTPClientDefaultConfig =
 
 FTM_RET	FTOM_TP_CLIENT_create
 (
+	FTM_CHAR_PTR	pName,
 	FTOM_TP_CLIENT_PTR _PTR_ 	ppClient
 )
 {
@@ -83,6 +84,8 @@ FTM_RET	FTOM_TP_CLIENT_create
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
+
+	strncpy(pClient->xConfig.pName, pName, sizeof(pClient->xConfig.pName) - 1);
 
 	xRet = FTOM_MSGQ_create(&pClient->pMsgQ);
 	if (xRet != FTM_RET_OK)
