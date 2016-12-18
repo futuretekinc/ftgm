@@ -39,7 +39,7 @@ FTM_RET	FTM_SM_create
 	}
 
 	pSM = (FTM_SM_PTR)shmat(nID, NULL, 0);
-	if ((FTM_INT)pSM == -1)
+	if (pSM < 0)
 	{
 		ERROR("Shared memory don't attached the segment to our space.\n");
 		return	FTM_RET_ERROR;
@@ -142,7 +142,7 @@ FTM_RET	FTM_SMQ_create
 	}
 
 	pHead = (FTM_SMQ_HEAD_PTR)shmat(nShmID, NULL, 0);
-	if ((FTM_INT)pHead== -1)
+	if (pHead== (FTM_VOID_PTR)-1)
 	{
 		ERROR("Shared memory don't attached the segment to our space.\n");
 		return	FTM_RET_ERROR;
@@ -386,7 +386,7 @@ FTM_RET	FTM_SMP_createServer
 	TRACE("SM[%d:%d] creation success!\n", pSMP->xKey, pSMP->nShmID);
 
 	pSMP->pBlock = (FTM_SMP_BLOCK_PTR)shmat(pSMP->nShmID, NULL, 0);
-	if ((FTM_INT)pSMP->pBlock == -1)
+	if (pSMP->pBlock == (FTM_VOID_PTR)-1)
 	{
 		ERROR("Shared memory don't attached the segment to our space.\n");
 		shmctl(pSMP->nShmID, IPC_RMID, (struct shmid_ds *)0);
@@ -470,7 +470,7 @@ FTM_RET	FTM_SMP_createClient
 
 	TRACE("KEY : %d, SHMID : %d\n", pSMP->xKey, pSMP->nShmID);
 	pSMP->pBlock = (FTM_SMP_BLOCK_PTR)shmat(pSMP->nShmID, NULL, 0);
-	if ((FTM_INT)pSMP->pBlock == -1)
+	if (pSMP->pBlock == (FTM_VOID_PTR)-1)
 	{
 		ERROR("Shared memory don't attached the segment to our space.\n");
 		xRet = FTM_RET_SM_IS_NOT_EXIST;

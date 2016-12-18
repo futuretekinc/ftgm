@@ -1,34 +1,25 @@
 ifeq ($(TOPDIR),)
-TOPDIR=../..
+TOPDIR=$(shell PWD)/../..
 endif
 
 include $(TOPDIR)/Makefile.in
 
-CLIENT=ftomc
-CLIENT_SRCS=main.c\
-			ftom_client_cmds.c\
-			cmd_client.c\
-			cmd_node.c\
-			cmd_ep.c\
-			cmd_trigger.c\
-			cmd_debug.c\
-			cmd_quit.c\
-			cmd_trace.c\
-			cmd_discovery.c
+export TOPDIR
 
-CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_LDFLAGS=$(LDFLAGS) -lftomc -lftom -lftm -lcjson -lpthread  -lrt -lm
+SUBDIR=ftom mqtt cloud cmdline cgi
 
-all: $(CLIENT) 
+all: 
+	for dir in $(SUBDIR); do\
+		make -C $$dir;\
+	done
 
-$(CLIENT): $(CLIENT_OBJS)
-	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)
-
-	$(CC) $(CFLAGS) $< -o $@
-
-install: $(CLIENT)
-	install -d $(EXEC_PREFIX)
-	install -t $(EXEC_PREFIX) $(CLIENT)
+install:
+	for dir in $(SUBDIR); do\
+		make -C $$dir install;\
+	done
 
 clean:
-	rm $(CLIENT) *.a *.o
+	for dir in $(SUBDIR); do\
+		make -C $$dir clean;\
+	done
+

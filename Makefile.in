@@ -9,36 +9,49 @@ CONF_PREFIX=$(TARGET)/etc
 CGI_PREFIX=$(TARGET)/www/cgi-bin
 export MODEL
 
-COMMON_CFLAGS= -c -g -Wall -DDEBUG \
+CFLAGS:= -c -g -Wall -DDEBUG \
 				-I. \
 				-I$(TOPDIR)/libftm \
 				-I$(TOPDIR)/ftom \
 				-I$(TOPDIR)/ftdm \
 				-I$(TOPDIR)/ftdm/client \
 				-I$(TOPDIR)/ftom/client \
-				-I$(TOPDIR)/ftom/cmdline\
-				-I$(TOPDIR)/ftom/tpclient
-COMMON_LDFLAGS= -Wl,--no-as-needed\
+				-I$(TOPDIR)/ftom/client/ftom \
+				-I$(TOPDIR)/ftom/client/ftom/net \
+				-I$(TOPDIR)/ftom/client/mqtt \
+				-I$(TOPDIR)/ftom/client/cloud\
+				-I$(TOPDIR)/ftom/client/cloud/azure \
+				-I$(TOPDIR)/ftom/client/cloud/thingplus \
+				-I$(TOPDIR)/ftom/client/cmdline\
+				-I$(TOPDIR)/ftom/node 
+
+LDFLAGS:= -Wl,--no-as-needed\
 				-L.\
 				-L$(TOPDIR)/libftm \
 				-L$(TOPDIR)/ftom \
 				-L$(TOPDIR)/ftdm \
 				-L$(TOPDIR)/ftdm/client \
 				-L$(TOPDIR)/ftom/client \
-				-L$(TOPDIR)/ftom/cmdline \
-				-L$(TOPDIR)/ftom/tpclient
+				-L$(TOPDIR)/ftom/client/ftom\
+				-L$(TOPDIR)/ftom/client/ftom/net\
+				-L$(TOPDIR)/ftom/client/mqtt\
+				-L$(TOPDIR)/ftom/client/cloud\
+				-L$(TOPDIR)/ftom/client/cloud/azure \
+				-L$(TOPDIR)/ftom/client/cloud/thingplus \
+				-L$(TOPDIR)/ftom/client/cmdline \
+				-L$(TOPDIR)/ftom/node 
 
 ifeq ("$(MODEL)","ftm-50s")
 CC=armv5-linux-gcc
 AR=armv5-linux-ar
-CFLAGS=-fPIC \
-		$(COMMON_CFLAGS)\
+CFLAGS:=-fPIC \
+		$(CFLAGS)\
 		-I$(TOPDIR)/devtools/include\
 		-I/home/xtra/ftm/build/ftm-50s/_root/include\
 		-I/home/xtra/ftm/build/ftm-50s/_root/usr/include\
 		-I/home/xtra/ftm/build/ftm-50s/_root/usr/local/include\
 		-I/home/xtra/ftm/build/ftm-50s/_root/usr/include/cjson
-LDFLAGS=$(COMMON_LDFLAGS)\
+LDFLAGS:=$(LDFLAGS)\
 		-L$(TOPDIR)/devtools/lib\
 		-L/home/xtra/ftm/build/ftm-50s/_root/lib \
 		-L/home/xtra/ftm/build/ftm-50s/_root/usr/lib \
@@ -46,27 +59,27 @@ LDFLAGS=$(COMMON_LDFLAGS)\
 else ifeq ("$(MODEL)","ftm-100s")
 CC=arm-openwrt-linux-uclibcgnueabi-gcc
 AR=arm-openwrt-linux-uclibcgnueabi-ar
-CFLAGS=-fPIC \
-		$(COMMON_CFLAGS) \
+CFLAGS:=-fPIC \
+		$(CFLAGS) \
 		-I$(TOPDIR)/devtools/include \
 		-I/home/xtra/ftm/build/ftm-100s/_root/include\
 		-I/home/xtra/ftm/build/ftm-100s/_root/usr/include\
 		-I/home/xtra/ftm/build/ftm-100s/_root/usr/local/include\
 		-I/home/xtra/ftm/build/ftm-100s/_root/usr/include/cjson
 
-LDFLAGS= $(COMMON_LDFLAGS)\
+LDFLAGS:= $(LDFLAGS)\
 		-L/home/xtra/ftm/build/ftm-100s/_root/lib \
 		-L/home/xtra/ftm/build/ftm-100s/_root/usr/lib \
 		-L/home/xtra/ftm/build/ftm-100s/_root/usr/local/lib \
 
 else
 CC=gcc
-CFLAGS= -fPIC \
-	$(COMMON_CFLAGS) \
+CFLAGS:= -fPIC \
+	$(CFLAGS) \
 		-I/usr/local/include \
 		-I/usr/local/include/cjson 
 
-LDFLAGS= $(COMMON_LDFLAGS)\
+LDFLAGS:= $(LDFLAGS)\
 		-L/usr/local/lib 
 
 endif
