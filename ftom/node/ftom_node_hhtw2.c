@@ -1,10 +1,12 @@
 #include <stdlib.h>
 #include <semaphore.h>
 #include "ftom.h"
+#include "ftom_node.h"
 #include "ftom_dmc.h"
 #include "ftom_ep.h"
 #include "ftm_timer.h"
 #include "ftom_node_class.h"
+#include "ftom_node_modbusc.h"
 #include "modbus/modbus-tcp.h"
 #include "ftm_lock.h"
 
@@ -44,6 +46,7 @@ FTM_RET	FTOM_NODE_MBC_HHTW_prestart
 )
 {
 	ASSERT(pNode != NULL);
+	FTM_RET	xRet;
 	FTM_INT	nRet;
 
 	pNode->pMB = modbus_new_tcp(pNode->xCommon.xInfo.xOption.xMB.pURL, pNode->xCommon.xInfo.xOption.xMB.ulPort);
@@ -108,7 +111,7 @@ FTM_RET	FTOM_NODE_MBC_HHTW_get
 	FTM_INT		nRet;
 	FTM_USHORT	usValue = 0;
 	FTM_USHORT	usRegID = 0;
-	FTM_EP_DATA_TYPE	xDataType;
+	FTM_VALUE_TYPE	xDataType;
 
 	if (pNode->pMB == NULL)
 	{
@@ -147,7 +150,6 @@ FTM_RET	FTOM_NODE_MBC_HHTW_get
 
 	pData->ulTime = time(NULL);
 	pData->xState = FTM_EP_DATA_STATE_VALID;
-	pData->xType  = FTM_VALUE_TYPE_FLOAT;
 	xRet = FTM_VALUE_initFLOAT(&pData->xValue, (FTM_FLOAT)usValue / 100);
 
 finish:
@@ -180,7 +182,7 @@ FTM_RET	FTOM_NODE_MBC_HHTW_set
 FTOM_NODE_CLASS	xNodeModbusClientHHTW = 
 {
 	.pModel = "hhtw comp",
-	.xType		= FTOM_NODE_TYPE_MBC,
+	.xType		= FTM_NODE_TYPE_MODBUS_OVER_TCP,
 	.fCreate	= (FTOM_NODE_CREATE)FTOM_NODE_MBC_create,
 	.fDestroy	= (FTOM_NODE_DESTROY)FTOM_NODE_MBC_destroy,
 	.fInit		= (FTOM_NODE_INIT)FTOM_NODE_MBC_HHTW_init,

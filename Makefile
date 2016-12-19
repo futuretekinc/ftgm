@@ -1,9 +1,11 @@
 TOPDIR=$(shell pwd)
-SUBDIR=libftm ftdm ftom
+SUBDIR=common ftdm ftom
 
 export TOPDIR
 
-all:
+all: subdirs
+
+subdirs:
 	for dir in $(SUBDIR); do\
 		make -C $$dir;\
 	done

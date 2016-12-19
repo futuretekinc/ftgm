@@ -14,6 +14,7 @@
 *.o.*
 *.a
 *.s
+*.d
 *.ko
 *.so
 *.so.dbg
@@ -36,7 +37,7 @@ modules.builtin
 #
 # Top-level generic files
 #
-/tags
+tags
 /TAGS
 /linux
 /vmlinux

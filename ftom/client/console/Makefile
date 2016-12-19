@@ -2,35 +2,23 @@ ifeq ($(TOPDIR),)
 TOPDIR=$(PWD)/../../..
 endif
 
-include $(TOPDIR)/Makefile.in
+include $(TOPDIR)/IncludePre.mk
 
-CLIENT=ftomclient
-CLIENT_SRCS=main.c\
-			ftom_client_cmds.c\
-			cmd_client.c\
-			cmd_node.c\
-			cmd_ep.c\
-			cmd_trigger.c\
-			cmd_debug.c\
-			cmd_quit.c\
-			cmd_trace.c\
-			cmd_discovery.c
+BIN_TARGET=ftomclient
 
-CLIENT_OBJS=$(CLIENT_SRCS:.c=.o)
-CLIENT_CFLAGS=$(CFLAGS) -I$(TOPDIR)/ftom/netclient
-CLIENT_LDFLAGS=$(LDFLAGS) -L$(TOPDIR)/ftom/netclient -lnetclient -lftomclient -lftom -lftm -lcjson -lpthread  -lrt -lm
+BIN_OBJS=$(patsubst %.c,%.o,$(wildcard *.c))
 
-all: $(CLIENT) 
+BIN_CFLAGS=$(CFLAGS)\
+		-I$(TOPDIR)/ftom/netclient
 
-$(CLIENT): $(CLIENT_OBJS)
-	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS)
+BIN_LDFLAGS=$(LDFLAGS)\
+		-L$(TOPDIR)/ftom/netclient\
+		-lftomclient\
+		-lftom\
+		-lftm\
+		-lcjson\
+		-lpthread\
+		-lrt\
+		-lm
 
-.c.o:  $(CLIENT_SRCS) *.h
-	$(CC) $(CLIENT_CFLAGS) -c $< -o $@
-
-install: $(CLIENT)
-	install -d $(EXEC_PREFIX)
-	install -t $(EXEC_PREFIX) $(CLIENT)
-
-clean:
-	rm $(CLIENT) *.a *.o
+include $(TOPDIR)/IncludePost.mk

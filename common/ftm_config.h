@@ -6,7 +6,7 @@
 #include "ftm_ep.h"
 #include "ftm_time.h"
 #include "ftm_value.h"
-#include "cJSON.h"
+#include "cjson/cJSON.h"
 
 typedef	struct
 {

@@ -1229,6 +1229,8 @@ FTM_CHAR_PTR	FTOM_NODE_printState
 		case	FTOM_NODE_STATE_STOP:	return	"Stop";
 		case	FTOM_NODE_STATE_CONNECT:return	"Connect";
 		case	FTOM_NODE_STATE_RUN:	return	"Run";
+		default:
+			return	"Unknown";
 		}
 	}
 

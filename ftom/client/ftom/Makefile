@@ -2,41 +2,15 @@ ifeq ($(TOPDIR),)
 TOPDIR=$(PWD)/../../..
 endif
 
-include $(TOPDIR)/Makefile.in
-
-export TOPDIR
-
-SUBDIR=net 
-
-TARGET=ftomclient
-
-INCS= $(foreach dir, . $(SUBDIR), $(wildcard $(dir)/*.h))
-SRCS= $(foreach dir, . $(SUBDIR), $(wildcard $(dir)/*.c))
-
-OBJS=$(SRCS:.c=.o)
-
-CFLAGS:=$(CFLAGS) -I$(TOPDIR)/libftm
+include $(TOPDIR)/IncludePre.mk
 
 
-all: lib$(TARGET).a lib$(TARGET).so
+LIB_TARGET=libftomclient.a
 
-lib$(TARGET).a: $(OBJS)
-	$(AR) rcs $(TARGET).a $(OBJS)
+LIB_SRCS= $(foreach dir, . net, $(wildcard $(dir)/*.c))
+LIB_OBJS=$(LIB_SRCS:.c=.o)
 
-lib$(TARGET).so: $(OBJS)
-	$(CC) -shared -o $(TARGET).so $(OBJS) 
+LIB_CFLAGS:=$(CFLAGS) -I$(TOPDIR)/libftm
 
-.c.o:  $(SRCS) *.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-
-install:
-	for dir in $(SUBDIR); do\
-		make -C $$dir install;\
-	done
-
-clean:
-	for dir in $(SUBDIR); do\
-		make -C $$dir clean;\
-	done
+include $(TOPDIR)/IncludePost.mk
 

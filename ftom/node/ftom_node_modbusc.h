@@ -58,6 +58,6 @@ FTM_RET	FTOM_NODE_MBC_set
 FTM_RET	FTOM_NODE_MBC_printOpts
 (
 	FTOM_NODE_MBC_PTR	pNode
-)
+);
 #endif
 

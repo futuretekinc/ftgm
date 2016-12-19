@@ -1,8 +1,8 @@
 ifeq ($(TOPDIR),)
-TOPDIR=../..
+TOPDIR=$(PWD)/../..
 endif
 
-include $(TOPDIR)/Makefile.in
+include $(TOPDIR)/IncludePre.mk
 
 MODBUS_TEST=ftom_node_modbus_test
 MODBUS_TEST_SRCS=ftom_node_modbus_test.c
@@ -21,5 +21,4 @@ $(MODBUS_TEST) : $(MODBUS_TEST_OBJS)
 $(TEST_MAIN) : main.o
 	gcc -o $@ main.o -ldl
 
-clean:
-	rm  *.a *.o
+include $(TOPDIR)/IncludePost.mk

@@ -1,5 +1,8 @@
-TOPDIR=../..
-include ${TOPDIR}/Makefile.in
+ifeq ($(TOPDIR),)
+TOPDIR=$(PWD)/../..
+endif
+
+include $(TOPDIR)/IncludePre.mk
 
 CLIENT=ftm_test
 CLIENT_SRCS=main.c
@@ -12,8 +15,4 @@ all: $(LIB_FTDMC) $(CLIENT)
 $(CLIENT): $(CLIENT_OBJS) 
 	$(CC) -o $@ $(CLIENT_OBJS) $(CLIENT_LDFLAGS) $(LIBS)
 
-.c.o:  *.c *.h
-	$(CC) $(CFLAGS) $< -o $@
-
-clean:
-	rm -f $(SERVER) $(CLIENT) *.a *.o $(LIB_FTDM) $(LIB_FTDMC) 
+include $(TOPDIR)/IncludePost.mk

@@ -2,33 +2,10 @@ ifeq ($(TOPDIR),)
 TOPDIR=$(PWD)/../../..
 endif
 
-include $(TOPDIR)/Makefile.in
+include $(TOPDIR)/IncludePre.mk
 
-TARGET=cloudclient
-SUBDIR=azure thingplus
-SRCS= $(foreach dir, . $(SUBDIR),$(wildcard $(dir)/*.c))
+LIB_TARGET=libcloudclient.a
+LIB_SRCS= $(foreach dir, . azure thingplus, $(wildcard $(dir)/*.c))
+LIB_OBJS=$(LIB_SRCS:.c=.o)
 
-OBJS=$(SRCS:.c=.o)
-
-all: lib$(TARGET).a
-
-lib$(TARGET).a: $(OBJS) 
-	$(AR) rcs lib$(TARGET).a $(OBJS)
-
-lib$(TARGET).so: $(OBJS) 
-	$(CC) -shared -o lib$(TARGET).so $(OBJS) 
-
-.c.o:  $(SRCS) *.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-install:
-	for dir in $(SUBDIR); do\
-		make -C $$dir install;\
-	done
-
-clean:
-	rm -f *.a *.o *.so.1.0.1
-	for dir in $(SUBDIR); do\
-		make -C $$dir clean;\
-	done
-
+include $(TOPDIR)/IncludePost.mk

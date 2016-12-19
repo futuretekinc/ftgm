@@ -7,15 +7,17 @@ EXEC_PREFIX=$(TARGET)/usr/bin
 LIB_PREFIX=$(TARGET)/usr/lib
 CONF_PREFIX=$(TARGET)/etc
 CGI_PREFIX=$(TARGET)/www/cgi-bin
-export MODEL
+export MODEL TOPDIR
 
 CFLAGS:= -std=gnu99 -fPIC -c -g -Wall -DDEBUG \
 				-I. \
 				-I/usr/include/azureiot\
 				-I/usr/include/azureiot/inc\
-				-I$(TOPDIR)/libftm \
-				-I$(TOPDIR)/ftom \
+				-I$(TOPDIR)/common\
 				-I$(TOPDIR)/ftdm \
+				-I$(TOPDIR)/ftdm/lib \
+				-I$(TOPDIR)/ftom \
+				-I$(TOPDIR)/ftom/lib \
 				-I$(TOPDIR)/ftdm/client \
 				-I$(TOPDIR)/ftom/client \
 				-I$(TOPDIR)/ftom/client/ftom \
@@ -29,9 +31,11 @@ CFLAGS:= -std=gnu99 -fPIC -c -g -Wall -DDEBUG \
 
 LDFLAGS:= -Wl,--no-as-needed\
 				-L.\
-				-L$(TOPDIR)/libftm \
-				-L$(TOPDIR)/ftom \
+				-L$(TOPDIR)/common\
 				-L$(TOPDIR)/ftdm \
+				-L$(TOPDIR)/ftdm/lib \
+				-L$(TOPDIR)/ftom \
+				-L$(TOPDIR)/ftom/lib \
 				-L$(TOPDIR)/ftdm/client \
 				-L$(TOPDIR)/ftom/client \
 				-L$(TOPDIR)/ftom/client/ftom\
@@ -85,3 +89,8 @@ LDFLAGS:= $(LDFLAGS)\
 		-L/usr/local/lib 
 
 endif
+
+BIN_CFLAGS=$(CFLAGS)
+BIN_LDFLAGS=$(LDFLAGS)
+LIB_CFLAGS=$(CFLAGS)
+LIB_LDFLAGS=$(LDFLAGS)
