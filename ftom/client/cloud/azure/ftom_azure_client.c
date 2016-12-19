@@ -45,6 +45,21 @@ FTM_RET	FTOM_AZURE_CLIENT_sendEPData
 	FTM_ULONG				ulDataCount
 );
 
+static
+FTM_VOID FTOM_AZURE_CLIENT_sendConfirmationCB
+(
+ 	IOTHUB_CLIENT_CONFIRMATION_RESULT xResult, 
+	FTM_VOID_PTR	pData
+);
+
+static
+FTM_VOID	FTOM_AZURE_CLIENT_connectionStatusCB
+(
+	IOTHUB_CLIENT_CONNECTION_STATUS 		xResult, 
+	IOTHUB_CLIENT_CONNECTION_STATUS_REASON 	xReason, 
+	FTM_VOID_PTR							pUserContextCallback
+);
+
 static 
 IOTHUBMESSAGE_DISPOSITION_RESULT FTOM_AZURE_CLIENT_receiveCB
 (
@@ -436,16 +451,21 @@ FTM_RET	FTOM_AZURE_CLIENT_connect
 			pClient->xConfig.pDeviceID,
 			pClient->xConfig.pSharedAccessKey);
 
-	pClient->hAzureClient = IoTHubClient_LL_CreateFromConnectionString(pConnectionString, MQTT_Protocol);
+	pClient->hAzureClient = IoTHubClient_CreateFromConnectionString(pConnectionString, MQTT_Protocol);
 	if (pClient->hAzureClient == NULL)
 	{
 		ERROR2(FTM_RET_ERROR, "Failed to connect to azure.\n");
 		return	FTM_RET_ERROR;
 	}
 
-	if (IoTHubClient_LL_SetMessageCallback(pClient->hAzureClient, FTOM_AZURE_CLIENT_receiveCB, pClient) != IOTHUB_CLIENT_OK)
+	if (IoTHubClient_SetConnectionStatusCallback(pClient->hAzureClient, FTOM_AZURE_CLIENT_connectionStatusCB, pClient) != IOTHUB_CLIENT_OK)
 	{
-		TRACE("Failed to set message callback!\r\n");
+		TRACE("Failed to set connection status callback!\n");
+	}
+
+	if (IoTHubClient_SetMessageCallback(pClient->hAzureClient, FTOM_AZURE_CLIENT_receiveCB, pClient) != IOTHUB_CLIENT_OK)
+	{
+		TRACE("Failed to set message callback!\n");
 	}
 
 	TRACE("Azure connected![%08x]\n", pClient->hAzureClient);
@@ -526,24 +546,63 @@ FTM_VOID_PTR	FTOM_AZURE_CLIENT_threadMain
 	return	0;
 }
 
-static 
+FTM_VOID	FTOM_AZURE_CLIENT_connectionStatusCB
+(
+	IOTHUB_CLIENT_CONNECTION_STATUS 		xResult, 
+	IOTHUB_CLIENT_CONNECTION_STATUS_REASON 	xReason, 
+	FTM_VOID_PTR							pUserContextCallback
+)
+{
+	if (xResult == IOTHUB_CLIENT_CONNECTION_UNAUTHENTICATED)
+	{
+		switch(xReason)
+		{
+		case	IOTHUB_CLIENT_CONNECTION_EXPIRED_SAS_TOKEN:
+			WARN2(FTM_RET_ERROR, "The client connection expired sas token.\n");
+			break;
+
+		case	IOTHUB_CLIENT_CONNECTION_DEVICE_DISABLED:
+			WARN2(FTM_RET_ERROR, "The client connection device disabled.\n");
+			break;
+
+		case	IOTHUB_CLIENT_CONNECTION_BAD_CREDENTIAL:
+			WARN2(FTM_RET_ERROR, "The client connection bad credential.\n");
+			break;
+
+		case	IOTHUB_CLIENT_CONNECTION_RETRY_EXPIRED: 
+			WARN2(FTM_RET_ERROR, "The client connection retry expired.\n");
+			break;
+
+		case	IOTHUB_CLIENT_CONNECTION_NO_NETWORK:
+			WARN2(FTM_RET_ERROR, "The client connection eno network.\n");
+			break;
+
+		case	IOTHUB_CLIENT_CONNECTION_OK:
+			WARN2(FTM_RET_ERROR, "The client connection ok.\n");
+			break;
+
+		}
+	}
+}
+
 IOTHUBMESSAGE_DISPOSITION_RESULT FTOM_AZURE_CLIENT_receiveCB
 (
-	IOTHUB_MESSAGE_HANDLE 	message, 
+	IOTHUB_MESSAGE_HANDLE 	hMessage, 
 	FTM_VOID_PTR			pData
 )
 {
 	const FTM_CHAR_PTR pBuffer;
 	size_t size;
 
-	TRACE("Recv Msg!\n");
-	if (IoTHubMessage_GetByteArray(message, (const unsigned char **)&pBuffer, &size) != IOTHUB_MESSAGE_OK)
+	if (IoTHubMessage_GetByteArray(hMessage, (const unsigned char **)&pBuffer, &size) != IOTHUB_MESSAGE_OK)
 	{   
 		ERROR2(FTM_RET_ERROR, "unable to retrieve the message data.\n");
 	}   
 
+	TRACE("Recv Msg[%s]!\n", pBuffer);
+
 	// Retrieve properties from the message
-	MAP_HANDLE mapProperties = IoTHubMessage_Properties(message);
+	MAP_HANDLE mapProperties = IoTHubMessage_Properties(hMessage);
 	if (mapProperties != NULL)
 	{   
 		const char*const* keys;
@@ -566,7 +625,6 @@ IOTHUBMESSAGE_DISPOSITION_RESULT FTOM_AZURE_CLIENT_receiveCB
 }
 
 
-static 
 FTM_VOID FTOM_AZURE_CLIENT_sendConfirmationCB
 (
  	IOTHUB_CLIENT_CONFIRMATION_RESULT xResult, 
@@ -606,7 +664,7 @@ FTM_RET	FTOM_AZURE_CLIENT_sendToAzure
 		return	xRet;
 	}
 
-	if (IoTHubClient_LL_SendEventAsync(pClient->hAzureClient, pTrans->hMessage, FTOM_AZURE_CLIENT_sendConfirmationCB, pTrans) != IOTHUB_CLIENT_OK)
+	if (IoTHubClient_SendEventAsync(pClient->hAzureClient, pTrans->hMessage, FTOM_AZURE_CLIENT_sendConfirmationCB, pTrans) != IOTHUB_CLIENT_OK)
 	{   
 		FTOM_AZURE_CLIENT_TRANS_destroy(&pTrans);
 
@@ -670,7 +728,7 @@ FTM_RET	FTOM_AZURE_CLIENT_trace
 	pClient->xConfig.bTraceON = bTraceON;
 	if (pClient->hAzureClient != NULL)
 	{
-		IoTHubClient_LL_SetOption(pClient->hAzureClient, "logtrace", &pClient->xConfig.bTraceON);
+		IoTHubClient_SetOption(pClient->hAzureClient, "logtrace", &pClient->xConfig.bTraceON);
 	}
 
 	MESSAGE("TRACE : %s\n", (bTraceON)?"ON":"OFF");

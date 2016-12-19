@@ -98,7 +98,7 @@ FTM_RET	FTOM_BLOCKER_create
 		}
 		else
 		{
-			TRACE("Failed to get could type!\n");
+			TRACE("Failed to get server type!\n");
 			return	xRet;	
 		}
 	

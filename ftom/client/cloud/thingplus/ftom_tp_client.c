@@ -122,8 +122,22 @@ FTM_RET	FTOM_TP_CLIENT_destroy
 )
 {
 	ASSERT(ppClient != NULL);
+	FTM_RET	xRet;
 
-	FTOM_TP_CLIENT_final(*ppClient);
+	xRet = FTOM_TP_CLIENT_final(*ppClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to finalize tp client!\n");	
+	}
+
+	if ((*ppClient)->pMsgQ != NULL)
+	{
+		xRet = FTOM_MSGQ_destroy(&(*ppClient)->pMsgQ);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to destroy message queue!\n");	
+		}
+	}
 
 	FTM_MEM_free(*ppClient);
 	*ppClient = NULL;

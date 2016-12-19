@@ -7,6 +7,8 @@
 #include "ftm_trace.h"
 #include "ftm_mem.h"
 
+#undef	__MODULE__
+#define	__MODULE__	FTM_TRACE_MODULE_CONFIG
 
 FTM_RET	FTM_CONFIG_create
 (
@@ -76,7 +78,7 @@ FTM_RET	FTM_CONFIG_init
 		fp = fopen(pFileName, "rt");
 		if (fp == NULL)
 		{
-			ERROR("Can't open file[%s]\n", pFileName);
+			ERROR2(FTM_RET_FAILED_TO_READ_FILE, "Can't open file[%s]\n", pFileName);
 			return	FTM_RET_CONFIG_LOAD_FAILED;	
 		}
 	
@@ -94,7 +96,7 @@ FTM_RET	FTM_CONFIG_init
 		pConfig->pData = (FTM_CHAR_PTR)FTM_MEM_malloc(pConfig->ulLen);
 		if (pConfig->pData == NULL)
 		{
-			ERROR("Not enough memory[size = %d]\n", pConfig->ulLen);
+			ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]\n", pConfig->ulLen);
 			pConfig->ulLen = 0;
 			fclose(fp);
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
@@ -108,6 +110,7 @@ FTM_RET	FTM_CONFIG_init
 			pConfig->pData = NULL;
 			pConfig->ulLen = 0;
 			fclose(fp);
+			ERROR2(FTM_RET_FAILED_TO_READ_FILE, "Failed to read file!\n");
 			return	FTM_RET_CONFIG_LOAD_FAILED;	
 		}
 	
@@ -120,6 +123,7 @@ FTM_RET	FTM_CONFIG_init
 			pConfig->pData = NULL;
 			pConfig->ulLen = 0;
 	
+			ERROR2(FTM_RET_INVALID_JSON_FORMAT, "Invalid json format!\n");
 			return	FTM_RET_CONFIG_LOAD_FAILED;	
 		}
 	}
@@ -128,6 +132,7 @@ FTM_RET	FTM_CONFIG_init
 		pConfig->pRoot = cJSON_CreateObject();
 		if (pConfig->pRoot == NULL)
 		{
+			ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 
