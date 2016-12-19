@@ -1,12 +1,12 @@
 ifeq ($(TOPDIR),)
-TOPDIR=$(shell PWD)/../..
+TOPDIR=$(PWD)/../..
 endif
 
 include $(TOPDIR)/Makefile.in
 
 export TOPDIR
 
-SUBDIR=ftom mqtt cloud cmdline cgi
+SUBDIR=ftom mqtt cloud cmdline cgi console
 
 all: 
 	for dir in $(SUBDIR); do\

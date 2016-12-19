@@ -9,8 +9,10 @@ CONF_PREFIX=$(TARGET)/etc
 CGI_PREFIX=$(TARGET)/www/cgi-bin
 export MODEL
 
-CFLAGS:= -c -g -Wall -DDEBUG \
+CFLAGS:= -std=gnu99 -fPIC -c -g -Wall -DDEBUG \
 				-I. \
+				-I/usr/include/azureiot\
+				-I/usr/include/azureiot/inc\
 				-I$(TOPDIR)/libftm \
 				-I$(TOPDIR)/ftom \
 				-I$(TOPDIR)/ftdm \

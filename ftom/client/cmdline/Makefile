@@ -32,7 +32,7 @@ $(TARGET): $(TARGET_OBJS) $(TARGET_LIB)
 
 $(TARGET_LIB): $(TARGET_LIB_OBJS)
 	$(AR) rcs $(TARGET_LIB).a $(TARGET_LIB_OBJS)
-	$(CC) -shared -o $(TARGET_LIB).so.1.0.1 $(TARGET_LIB_OBJS) $(TARGET_LDFLAGS)
+	$(CC) -shared -o $(TARGET_LIB).so.1 $(TARGET_LIB_OBJS) $(TARGET_LDFLAGS)
 
 .c.o:  $(TARGET_SRC) $(TARGET_LIB_OBJS) *.h
 	$(CC) $(CFLAGS) $< -o $@
@@ -42,7 +42,7 @@ install: $(TARGET) $(TARGET_LIB)
 	install -t $(EXEC_PREFIX) $(TARGET)
 	install -d $(LIB_PREFIX)
 	install -t $(LIB_PREFIX) $(TARGET_LIB).a
-	install -t $(LIB_PREFIX) $(TARGET_LIB).so.1.0.1
+	install -t $(LIB_PREFIX) $(TARGET_LIB).so.1
 
 clean:
 	rm $(TARGET) *.a *.o

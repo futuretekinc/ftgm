@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "iothub_client.h"
-#include "iothub_message.h"
-#include "azure_c_shared_utility/platform.h"
-#include "iothubtransportmqtt.h"
+#include "azureiot/iothub_client.h"
+#include "azureiot/iothub_message.h"
+#include "azureiot/inc/azure_c_shared_utility/platform.h"
+#include "azureiot/iothubtransportmqtt.h"
 
 
 #include "ftom_azure_client.h"

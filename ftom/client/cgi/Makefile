@@ -4,11 +4,8 @@ endif
 include $(TOPDIR)/Makefile.in
 
 CFLAGS:=${CFLAGS}\
- 		-std=gnu99\
-		-Wall\
-		-fPIC\
-		-g \
 		-D_GNU_SOURCE
+
 LDFLAGS:=$(LDFLAGS)
 LIBS:= 	-lftomcl\
 		-lftomclient\
@@ -21,7 +18,7 @@ LIBS:= 	-lftomcl\
 		-lm\
 		-lrt
 
-CGI=	ftom.cgi
+TARGET=	ftom.cgi
 SRCS=	main.o\
 		ftom_cgi.o\
 		cmd_ep.o\
@@ -34,9 +31,9 @@ SRCS=	main.o\
 
 OBJS=$(SRCS:.c=.o)
 
-all: $(CGI) xmltest
+all: $(TARGET) xmltest
 
-$(CGI): $(OBJS) 
+$(TARGET): $(OBJS) 
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 xmltest : xmltest.o
@@ -45,7 +42,7 @@ xmltest : xmltest.o
 .c.o:  $(SRCS) *.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-install: 	$(CGI)
+install: 	$(TARGET)
 	install -d $(CGI_PREFIX)
 	install -t $(CGI_PREFIX) ftom.cgi
 	ln -s -f ftom.cgi $(CGI_PREFIX)/node

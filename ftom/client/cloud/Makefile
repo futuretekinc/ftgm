@@ -1,27 +1,22 @@
 ifeq ($(TOPDIR),)
-TOPDIR=$(shell PWD)/../../..
+TOPDIR=$(PWD)/../../..
 endif
 
 include $(TOPDIR)/Makefile.in
 
-TARGET=libcloudclient
-SRCS= ftom_cloud_client.c
+TARGET=cloudclient
+SUBDIR=azure thingplus
+SRCS= $(foreach dir, . $(SUBDIR),$(wildcard $(dir)/*.c))
+
 OBJS=$(SRCS:.c=.o)
 
-CFLAGS:=$(CFLAGS) -std=gnu99 
+all: lib$(TARGET).a
 
+lib$(TARGET).a: $(OBJS) 
+	$(AR) rcs lib$(TARGET).a $(OBJS)
 
-SUBDIR=azure thingplus
-
-all: $(TARGET) 
-	for dir in $(SUBDIR); do\
-		make -C $$dir;\
-	done
-
-$(TARGET): $(OBJS) 
-	rm -f $(TARGET).a $(TARGET).so.1.0.1
-	$(AR) rcs $(TARGET).a $(OBJS)
-	$(CC) -shared -o $(TARGET).so.1.0.1 $(OBJS) 
+lib$(TARGET).so: $(OBJS) 
+	$(CC) -shared -o lib$(TARGET).so $(OBJS) 
 
 .c.o:  $(SRCS) *.h
 	$(CC) $(CFLAGS) -c $< -o $@

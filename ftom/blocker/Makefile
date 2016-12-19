@@ -22,10 +22,7 @@ CFLAGS:=$(CFLAGS) -std=gnu99 \
 LDFLAGS:=$(LDFLAGS) -L./ \
 		-L/usr/lib/azureiot \
 		-lftomclient \
-		-lnetclient \
 		-lcloudclient \
-		-lazclient \
-		-ltpclient \
 		-lmqttclient \
 		-lftomclient \
 		-lftom \
