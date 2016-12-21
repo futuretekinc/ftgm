@@ -5,16 +5,8 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h>
 #include "ftom.h"
-
-static 
-FTM_RET FTOM_FINS_request
-(
-	FTOM_FINS_SESSION_PTR	pSession, 
-	FTOM_REQ_PARAMS_PTR		pReq,
-	FTM_INT					nReqLen,
-	FTOM_RESP_PARAMS_PTR	pResp,
-	FTM_INT					nRespLen
-);
+#include "ftom_db.h"
+#include "ftom_finsc.h"
 
 /*****************************************************************
  *

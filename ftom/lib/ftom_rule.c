@@ -1,6 +1,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "ftom.h"
+#include "ftom_db.h"
 #include "ftom_msg.h"
 #include "ftom_message_queue.h"
 #include "ftom_rule.h"

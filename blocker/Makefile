@@ -1,5 +1,5 @@
 ifeq ($(TOPDIR),)
-TOPDIR=$(shell pwd)/../..
+TOPDIR=$(PWD)/..
 endif
 
 include $(TOPDIR)/IncludePre.mk

@@ -2,6 +2,7 @@
 #include <string.h>
 #include "ftm.h"
 #include "ftom.h"
+#include "ftom_db.h"
 #include "ftom_ep.h"
 #include "ftom_dmc.h"
 #include "ftom_message_queue.h"

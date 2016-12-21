@@ -4,6 +4,7 @@ MODEL=i686
 
 TARGET=$(TOPDIR)/target/$(MODEL)
 EXEC_PREFIX=$(TARGET)/usr/bin
+INC_PREFIX=$(TARGET)/usr/include
 LIB_PREFIX=$(TARGET)/usr/lib
 CONF_PREFIX=$(TARGET)/etc
 CGI_PREFIX=$(TARGET)/www/cgi-bin
@@ -18,6 +19,7 @@ CFLAGS:= -std=gnu99 -fPIC -c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftdm/lib \
 				-I$(TOPDIR)/ftom \
 				-I$(TOPDIR)/ftom/lib \
+				-I$(TOPDIR)/ftomcl\
 				-I$(TOPDIR)/ftdm/client \
 				-I$(TOPDIR)/ftom/client \
 				-I$(TOPDIR)/ftom/client/ftom \
@@ -26,7 +28,6 @@ CFLAGS:= -std=gnu99 -fPIC -c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftom/client/cloud\
 				-I$(TOPDIR)/ftom/client/cloud/azure \
 				-I$(TOPDIR)/ftom/client/cloud/thingplus \
-				-I$(TOPDIR)/ftom/client/cmdline\
 				-I$(TOPDIR)/ftom/node 
 
 LDFLAGS:= -Wl,--no-as-needed\
@@ -36,6 +37,7 @@ LDFLAGS:= -Wl,--no-as-needed\
 				-L$(TOPDIR)/ftdm/lib \
 				-L$(TOPDIR)/ftom \
 				-L$(TOPDIR)/ftom/lib \
+				-L$(TOPDIR)/ftomcl \
 				-L$(TOPDIR)/ftdm/client \
 				-L$(TOPDIR)/ftom/client \
 				-L$(TOPDIR)/ftom/client/ftom\
@@ -44,7 +46,6 @@ LDFLAGS:= -Wl,--no-as-needed\
 				-L$(TOPDIR)/ftom/client/cloud\
 				-L$(TOPDIR)/ftom/client/cloud/azure \
 				-L$(TOPDIR)/ftom/client/cloud/thingplus \
-				-L$(TOPDIR)/ftom/client/cmdline \
 				-L$(TOPDIR)/ftom/node 
 
 ifeq ("$(MODEL)","ftm-50s")

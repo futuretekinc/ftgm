@@ -1,16 +1,15 @@
 ifeq ($(TOPDIR),)
-TOPDIR=$(PWD)/../../..
+TOPDIR=$(PWD)/..
 endif
 
 include $(TOPDIR)/IncludePre.mk
 
-TARGET=	ftom.cgi
+BIN_TARGET=ftom.cgi
 BIN_CFLAGS:=${CFLAGS}\
 		-D_GNU_SOURCE
 
-BIN_LDFLAGS:=$(LDFLAGS)
-
-BIN_LIBS:= 	-lftomcl\
+BIN_LDFLAGS:=$(LDFLAGS)\
+		-lftomcl\
 		-lftomclient\
 		-lftom\
 		-lftm\

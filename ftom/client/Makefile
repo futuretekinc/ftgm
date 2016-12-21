@@ -6,6 +6,6 @@ include $(TOPDIR)/IncludePre.mk
 
 export TOPDIR
 
-SUBDIR=ftom mqtt cloud cmdline cgi console
+SUBDIR=ftom mqtt cloud 
 
 include $(TOPDIR)/IncludePost.mk

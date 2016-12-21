@@ -6,6 +6,11 @@
 #include "ftdm_params.h"
 #include "ftdm_client_config.h"
 
+typedef	struct
+{
+	FTM_ULONG	ulID;
+}	FTOM_FINS_CFG, _PTR_ FTOM_FINS_CFG_PTR;
+
 typedef struct 
 {
 	FTM_INT		hSock;

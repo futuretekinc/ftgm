@@ -1,4 +1,4 @@
-all: subdirs $(BIN_TARGET) $(LIB_TARGET)
+all: subdirs $(LIB_TARGET) $(BIN_TARGET)
 
 $(BIN_TARGET): $(BIN_OBJS)
 	$(CC) -o $@ $^ $(BIN_LDFLAGS)
@@ -21,9 +21,31 @@ subdirs:
 	@for dir in $(SUBDIR); do\
 		make -C $$dir TOPDIR=$(TOPDIR);\
 	done
-	
+
+install: $(BIN_TARGET)
+ifneq ($(BIN_TARGET),)
+	@install -d $(EXEC_PREFIX)
+	@install -t $(EXEC_PREFIX) $(BIN_TARGET)
+endif
+	@for dir in $(SUBDIR); do\
+		make -C $$dir install TOPDIR=$(TOPDIR);\
+	done
+
+
+dev_install: 
+ifneq ($(LIB_TARGET),)
+	@install -d $(INC_PREFIX)
+	@install -t $(INC_PREFIX) *.h
+	@install -d $(LIB_PREFIX)
+	@install -t $(LIB_PREFIX) $(LIB_TARGET)
+endif
+	@for dir in $(SUBDIR); do\
+		make -C $$dir dev_install TOPDIR=$(TOPDIR);\
+	done
+
+
 clean:
-	rm -f *.so *.a $(LIB_OBJS) $(BIN_OBJS) *.d
+	@rm -f *.so *.a $(LIB_OBJS) $(BIN_OBJS) *.d
 	@for dir in $(SUBDIR); do\
 		make -C $$dir clean;\
 	done

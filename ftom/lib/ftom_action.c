@@ -3,6 +3,7 @@
 #include <string.h>
 #include "ftm.h"
 #include "ftom.h"
+#include "ftom_db.h"
 #include "ftom_action.h"
 #include "ftom_msg.h"
 #include "ftom_message_queue.h"

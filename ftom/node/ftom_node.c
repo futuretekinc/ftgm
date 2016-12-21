@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "ftm.h"
 #include "ftom.h"
+#include "ftom_db.h"
 #include "ftom_node.h"
 #include "ftom_ep.h"
 #include "ftm_list.h"

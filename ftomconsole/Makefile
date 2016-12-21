@@ -1,10 +1,10 @@
 ifeq ($(TOPDIR),)
-TOPDIR=$(PWD)/../../..
+TOPDIR=$(PWD)/..
 endif
 
 include $(TOPDIR)/IncludePre.mk
 
-BIN_TARGET=ftomclient
+BIN_TARGET=ftomconsole
 
 BIN_OBJS=$(patsubst %.c,%.o,$(wildcard *.c))
 
