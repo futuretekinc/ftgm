@@ -119,26 +119,41 @@ FTM_RET	FTDMS_final
 
 FTM_RET	FTDMS_loadConfig
 (
-	FTDM_SERVER_PTR			pServer,
-	FTDM_CFG_SERVER_PTR		pConfig
+	FTDM_SERVER_PTR		pServer,
+	FTM_CONFIG_PTR		pConfig
 )
 {
 	ASSERT(pServer != NULL);
 	ASSERT(pConfig != NULL);
+	FTM_RET	xRet;
+	FTM_CONFIG_ITEM	xSection;
 
-	memcpy(&pServer->xConfig, pConfig, sizeof(FTDM_CFG_SERVER));
+	xRet = FTM_CONFIG_getItem(pConfig, "server", &xSection);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_USHORT	usPort;
+		FTM_ULONG	ulSession;
+		FTM_ULONG	ulBufferLen;
 
-	return	FTM_RET_OK;
-}
+		xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xSection, "port", &usPort);
+		if (xRet == FTM_RET_OK)
+		{
+			pServer->xConfig.usPort = usPort;
+		}
 
-FTM_RET	FTDMS_loadFromFile
-(
-	FTDM_SERVER_PTR			pServer,
-	FTM_CHAR_PTR			pFileName
-)
-{
-	ASSERT(pServer != NULL);
-	ASSERT(pFileName != NULL);
+		xRet = FTM_CONFIG_ITEM_getItemULONG(&xSection, "session_count", &ulSession);
+		if (xRet == FTM_RET_OK)
+		{
+			pServer->xConfig.ulMaxSession = ulSession;
+		}
+
+		xRet = FTM_CONFIG_ITEM_getItemULONG(&xSection, "buffer_len", &ulBufferLen);
+		if (xRet == FTM_RET_OK)
+		{
+			pServer->xConfig.ulBufferLen = ulBufferLen;
+		}
+
+	}
 
 	return	FTM_RET_OK;
 }

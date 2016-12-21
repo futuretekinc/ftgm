@@ -5,13 +5,11 @@
 #include "ftom.h"
 #include "ftm_timer.h"
 #include "ftom_node.h"
-#include "modbus/modbus-tcp.h"
 #include "ftm_lock.h"
 
 typedef	struct 
 {
 	FTOM_NODE				xCommon;
-	modbus_t				*pMB;
 	FTM_LOCK				xLock;
 
 	struct 

@@ -105,12 +105,12 @@ FTM_RET	FTDMC_CFG_load
 				xRet = FTM_CONFIG_LIST_getItemAt(&xEPIDList, i, &xElement);
 				if (xRet == FTM_RET_OK)
 				{
-					FTM_INT	nEPID;
+					FTM_ULONG	ulEPID;
 					
-					xRet = FTM_CONFIG_ITEM_getINT(&xElement, &nEPID);
+					xRet = FTM_CONFIG_ITEM_getULONG(&xElement, &ulEPID);
 					if (xRet == FTM_RET_OK)
 					{
-						FTM_LIST_append(&pConfig->xDiagnostic.xEPList, (void *)nEPID);
+						FTM_LIST_append(&pConfig->xDiagnostic.xEPList, (FTM_VOID_PTR)ulEPID);
 					}
 				}
 			}

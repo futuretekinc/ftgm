@@ -34,7 +34,7 @@ FTM_RET 	FTDM_init(FTDM_CONTEXT_PTR pDM)
 {
 	FTM_RET	xRet;
 
-	xRet = FTDM_DBIF_init();
+	xRet = FTDM_DBIF_init(&pDM->xDBIF);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "FTDM initialization failed.\n");
@@ -92,7 +92,10 @@ FTM_RET 	FTDM_init(FTDM_CONTEXT_PTR pDM)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_final(FTDM_CONTEXT_PTR pFTDM)
+FTM_RET	FTDM_final
+(	
+	FTDM_CONTEXT_PTR pFTDM
+)
 {
 	FTM_RET	xRet;
 
@@ -144,7 +147,7 @@ FTM_RET	FTDM_final(FTDM_CONTEXT_PTR pFTDM)
 		ERROR2(xRet, "Node management finalize failed.\n");	
 	}
 
-	xRet = FTDM_DBIF_final();
+	xRet = FTDM_DBIF_final(&pFTDM->xDBIF);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "FTDM finalization failed. [ %08lx ]\n", xRet);
@@ -159,49 +162,28 @@ FTM_RET	FTDM_final(FTDM_CONTEXT_PTR pFTDM)
 FTM_RET 	FTDM_loadConfig
 (
 	FTDM_CONTEXT_PTR	pDM,
-	FTDM_CFG_PTR 		pConfig
+	FTM_CONFIG_PTR		pConfig
 )
 {
 	FTM_RET	xRet;
 
-	xRet = FTDM_DBIF_loadConfig(&pConfig->xDB);
+	xRet = FTDM_DBIF_loadConfig(&pDM->xDBIF, pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "FTDM initialization failed.\n");
 		return	xRet;
 	}
 
-	xRet = FTDM_EP_CLASS_loadConfig(&pConfig->xEP);
+	xRet = FTDM_EP_CLASS_loadConfig(pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "FTDM_initEPClassInfo failed\n");	
 	}
 
-	//FTM_TRACE_configSet(&pConfig->xPrint);
 
-
-	FTDMS_loadConfig(&xServer, &pConfig->xServer);
+	FTDMS_loadConfig(&xServer, pConfig);
 
 	TRACE("FTDM initialization completed successfully.\n");
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET	FTDM_loadConfigFromFile
-(
-	FTDM_CONTEXT_PTR	pDM,
-	FTM_CHAR_PTR pFileName
-)
-{
-	FTDM_CFG	xConfig;
-
-	/* load configuration  */
-	FTDM_CFG_init(&xConfig);
-	FTDM_CFG_readFromFile(&xConfig, pFileName);
-
-	FTDM_loadConfig(pDM, &xConfig);
-
-	FTDM_CFG_final(&xConfig);
 
 	return	FTM_RET_OK;
 }
@@ -394,6 +376,7 @@ int main(int nArgc, char *pArgv[])
 	FTM_BOOL	bDBErase = FTM_FALSE;
 	FTM_CHAR	pConfigFileName[1024];
 	FTM_CHAR	pObjectFileName[1024];
+	FTM_CONFIG_PTR		pConfig;
 
 	FTM_MEM_init();
 	
@@ -462,15 +445,50 @@ int main(int nArgc, char *pArgv[])
 
 	/* apply configuration */
 		
-	FTDM_init(&xFTDM);
 
 	FTM_TRACE_setInfo2(FTDM_TRACE_MODULE_SERVER,"SERVER",	FTM_TRACE_LEVEL_DISABLE, FTM_TRACE_OUT_TERM);
 	FTM_TRACE_setInfo2(FTDM_TRACE_MODULE_EP,	"EP", 		FTM_TRACE_LEVEL_DISABLE, FTM_TRACE_OUT_TERM);
 	FTM_TRACE_setInfo2(FTDM_TRACE_MODULE_DBIF,	"DBIF", 	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
-	FTDM_loadConfigFromFile(&xFTDM, pConfigFileName);
+	xRet =FTM_CONFIG_create(pConfigFileName, &pConfig, FTM_FALSE);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "SERVER configuration file[%s] load failed\n", pConfigFileName);
 
-	xRet = FTDM_DBIF_open();
+		goto finish2;
+	}
+
+	xRet = FTM_TRACE_loadConfig(pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration from file[%s]\n", pConfigFileName);
+		FTM_CONFIG_destroy(&pConfig);
+
+		goto finish2;
+	}
+
+	xRet = FTDM_init(&xFTDM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to initialize ftdm!\n");
+		goto  finish2;	
+	}
+
+	xRet = FTDM_loadConfig(&xFTDM, pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to load configuration!\n");
+		goto finish1;	
+	}
+
+	xRet = FTM_CONFIG_destroy(&pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to destroy config object!\n");
+		goto finish1;	
+	}
+
+	xRet = FTDM_DBIF_open(&xFTDM.xDBIF);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("DB open failed[%08x].\n", xRet);
@@ -525,10 +543,13 @@ int main(int nArgc, char *pArgv[])
 		FTDMS_stop(&xServer);
 	}
 
+
+	FTDM_DBIF_close(&xFTDM.xDBIF);
+
+finish1:
 	FTDM_final(&xFTDM);
 
-	FTDM_DBIF_close();
-	
+finish2:
 	FTM_MEM_final();
 
 	return	0;

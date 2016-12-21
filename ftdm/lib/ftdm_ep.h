@@ -1,6 +1,7 @@
 #ifndef	__FTDM_EP_H__
 #define	__FTDM_EP_H__
 
+#include "ftdm.h"
 #include "ftdm_config.h"
 
 typedef	struct
@@ -13,39 +14,46 @@ typedef	struct
 	
 FTM_RET	FTDM_EP_init
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	pEP,
 	FTM_EP_PTR	pInfo
 );
 
 FTM_RET FTDM_EP_final
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	pEP
 );
 
 FTM_RET	FTDM_EP_create
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_EP_PTR	pInfo,
 	FTDM_EP_PTR	_PTR_ ppEP
 );
 
 FTM_RET	FTDM_EP_destroy
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	_PTR_ ppEP
 );
 
 FTM_RET	FTDM_EP_destroy2
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	_PTR_ ppEP
 );
 
 FTM_RET	FTDM_EP_get
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	pEP,
 	FTM_EP_PTR	pInfo
 );
 
 FTM_RET	FTDM_EP_set
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	pEP,
 	FTM_EP_PTR	pInfo
 );

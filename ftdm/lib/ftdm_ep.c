@@ -19,6 +19,7 @@ static FTM_RET FTDM_EP_DATA_infoInternal
 
 FTM_RET	FTDM_EP_init
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	pEP,
 	FTM_EP_PTR	pInfo
 )
@@ -34,6 +35,7 @@ FTM_RET	FTDM_EP_init
 
 FTM_RET FTDM_EP_final
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	pEP
 )
 {
@@ -43,6 +45,7 @@ FTM_RET FTDM_EP_final
 
 FTM_RET	FTDM_EP_create
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_EP_PTR	pInfo,
 	FTDM_EP_PTR	_PTR_ ppEP
 )
@@ -62,7 +65,7 @@ FTM_RET	FTDM_EP_create
 	memset(pEP, 0, sizeof(FTDM_EP));
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
 
-	xRet = FTDM_DBIF_EP_isExist(pInfo->pEPID, &bExist);
+	xRet = FTDM_DBIF_EP_isExist(pFTDM->pDBIF, pInfo->pEPID, &bExist);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
@@ -71,7 +74,7 @@ FTM_RET	FTDM_EP_create
 
 	if (!bExist)
 	{
-		xRet = FTDM_DBIF_EP_append(pInfo);
+		xRet = FTDM_DBIF_EP_append(pFTDM->pDBIF, pInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "EP append failed.\n");
@@ -98,6 +101,7 @@ FTM_RET	FTDM_EP_create
 
 FTM_RET	FTDM_EP_destroy
 (
+	FTDM_CONTEXT_PTR pFTDM,
 	FTDM_EP_PTR	_PTR_ ppEP
 )
 {
@@ -120,6 +124,7 @@ FTM_RET	FTDM_EP_destroy
 
 FTM_RET	FTDM_EP_destroy2
 (
+	FTDM_CONTEXT_PTR pFTDM,
 	FTDM_EP_PTR	_PTR_ ppEP
 )
 {

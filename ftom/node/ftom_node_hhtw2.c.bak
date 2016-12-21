@@ -7,7 +7,6 @@
 #include "ftm_timer.h"
 #include "ftom_node_class.h"
 #include "ftom_node_modbusc.h"
-#include "modbus/modbus-tcp.h"
 #include "ftm_lock.h"
 
 static

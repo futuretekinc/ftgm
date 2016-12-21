@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "ftm.h"
+#include "ftdm.h"
 #include "ftdm_config.h"
 #include "ftdm_action.h"
 #include "ftdm_sqlite.h"
@@ -8,7 +9,7 @@
 
 FTM_RET	FTDM_ACTION_init
 (
-	FTM_VOID
+	FTDM_CONTEXT_PTR	pFTDM
 )
 {
 	return	FTM_ACTION_init();
@@ -16,7 +17,7 @@ FTM_RET	FTDM_ACTION_init
 
 FTM_RET FTDM_ACTION_final
 (
-	FTM_VOID
+	FTDM_CONTEXT_PTR	pFTDM
 )
 {
 	return	FTM_ACTION_final();
@@ -24,6 +25,7 @@ FTM_RET FTDM_ACTION_final
 
 FTM_RET	FTDM_ACTION_loadConfig
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_CONFIG_PTR		pConfig
 )
 {
@@ -92,7 +94,7 @@ FTM_RET	FTDM_ACTION_loadConfig
 										continue;
 								}
 
-								xRet = FTDM_ACTION_create(&xInfo, &pAction);
+								xRet = FTDM_ACTION_create(pFTDM, &xInfo, &pAction);
 								if (xRet != FTM_RET_OK)
 								{
 										ERROR("The new event can not creation.\n");
@@ -127,6 +129,7 @@ FTM_RET	FTDM_ACTION_loadConfig
 
 FTM_RET	FTDM_ACTION_loadFromFile
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_CHAR_PTR			pFileName
 )
 {
@@ -141,7 +144,7 @@ FTM_RET	FTDM_ACTION_loadFromFile
 		return	FTM_RET_CONFIG_LOAD_FAILED;
 	}
 
-	xRet = FTDM_ACTION_loadConfig(pConfig);
+	xRet = FTDM_ACTION_loadConfig(pFTDM, pConfig);
 
 	FTM_CONFIG_destroy(&pConfig);
 
@@ -150,12 +153,13 @@ FTM_RET	FTDM_ACTION_loadFromFile
 
 FTM_RET	FTDM_ACTION_loadFromDB
 (
-	FTM_VOID
+	FTDM_CONTEXT_PTR	pFTDM
 )
 {
+	ASSERT(pFTDM != NULL);
 	FTM_ULONG	nMaxCount = 0;
 
-	if ((FTDM_DBIF_ACTION_count(&nMaxCount) == FTM_RET_OK) &&
+	if ((FTDM_DBIF_ACTION_count(pFTDM->pDBIF, &nMaxCount) == FTM_RET_OK) &&
 		(nMaxCount > 0))
 	{
 
@@ -168,14 +172,14 @@ FTM_RET	FTDM_ACTION_loadFromDB
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 	
-		if (FTDM_DBIF_ACTION_getList(pActions, nMaxCount, &nActionCount) == FTM_RET_OK)
+		if (FTDM_DBIF_ACTION_getList(pFTDM->pDBIF, pActions, nMaxCount, &nActionCount) == FTM_RET_OK)
 		{
 			FTM_INT	i;
 			FTDM_ACTION_PTR	pAction;
 
 			for(i = 0 ; i < nActionCount ; i++)
 			{
-				FTDM_ACTION_create(&pActions[i], &pAction);
+				FTDM_ACTION_create(pFTDM, &pActions[i], &pAction);
 			}
 		}
 
@@ -187,9 +191,11 @@ FTM_RET	FTDM_ACTION_loadFromDB
 
 FTM_RET	FTDM_ACTION_saveToDB
 (
-	FTM_VOID
+	FTDM_CONTEXT_PTR	pFTDM
 )
 {
+	ASSERT(pFTDM != NULL);
+
 	FTM_RET			i, xRet;
 	FTM_ULONG		ulCount;
 	FTM_ACTION_PTR	pAction;
@@ -207,10 +213,10 @@ FTM_RET	FTDM_ACTION_saveToDB
 		{
 			FTM_ACTION	xInfo;
 
-			xRet = FTDM_DBIF_ACTION_get(pAction->pID, &xInfo);
+			xRet = FTDM_DBIF_ACTION_get(pFTDM->pDBIF, pAction->pID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
-				xRet = FTDM_DBIF_ACTION_create(&xInfo);	
+				xRet = FTDM_DBIF_ACTION_create(pFTDM->pDBIF, &xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR("Failed to save the new action.[%08x]\n", xRet);
@@ -228,6 +234,7 @@ FTM_RET	FTDM_ACTION_saveToDB
 
 FTM_RET	FTDM_ACTION_create
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_ACTION_PTR 	pInfo,
 	FTDM_ACTION_PTR	_PTR_ ppAction
 )
@@ -236,7 +243,7 @@ FTM_RET	FTDM_ACTION_create
 	FTM_RET				xRet;
 	FTDM_ACTION_PTR	pAction;
 
-	if (FTDM_ACTION_get(pInfo->pID, &pAction) == FTM_RET_OK)
+	if (FTDM_ACTION_get(pFTDM, pInfo->pID, &pAction) == FTM_RET_OK)
 	{
 			ERROR("Action[%s] already exist.\n", pInfo->pID);
 		return	FTM_RET_ALREADY_EXIST_OBJECT;
@@ -252,17 +259,17 @@ FTM_RET	FTDM_ACTION_create
 			sprintf(pInfo->pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
 			usleep(10);
 		}
-		while (FTDM_ACTION_get(pInfo->pID, &pAction) == FTM_RET_OK);
+		while (FTDM_ACTION_get(pFTDM, pInfo->pID, &pAction) == FTM_RET_OK);
 	}
 
-	xRet = FTDM_DBIF_ACTION_create(pInfo);
+	xRet = FTDM_DBIF_ACTION_create(pFTDM->pDBIF, pInfo);
 	if (xRet == FTM_RET_OK)
 	{
 		pAction = (FTDM_ACTION_PTR)FTM_MEM_malloc(sizeof(FTDM_ACTION));
 		if (pAction == NULL)
 		{
 			ERROR("Not enough memory!\n");
-			FTDM_DBIF_ACTION_destroy(pInfo->pID);
+			FTDM_DBIF_ACTION_destroy(pFTDM->pDBIF, pInfo->pID);
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 
@@ -272,7 +279,7 @@ FTM_RET	FTDM_ACTION_create
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Action[%s] append failed.\n", pAction->xInfo.pID);
-			FTDM_DBIF_ACTION_destroy(pInfo->pID);
+			FTDM_DBIF_ACTION_destroy(pFTDM->pDBIF, pInfo->pID);
 			FTM_MEM_free(pAction);
 		}
 		else
@@ -289,19 +296,20 @@ FTM_RET	FTDM_ACTION_create
 
 FTM_RET	FTDM_ACTION_destroy
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_CHAR_PTR	pActionID
 )
 {
 	FTM_RET				xRet;
 	FTDM_ACTION_PTR	pAction = NULL;
 
-	xRet = FTDM_ACTION_get(pActionID, &pAction);
+	xRet = FTDM_ACTION_get(pFTDM, pActionID, &pAction);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	FTDM_DBIF_ACTION_destroy(pActionID);
+	FTDM_DBIF_ACTION_destroy(pFTDM->pDBIF, pActionID);
 	FTM_ACTION_remove((FTM_ACTION_PTR)pAction);
 
 	FTM_MEM_free(pAction);
@@ -311,6 +319,7 @@ FTM_RET	FTDM_ACTION_destroy
 
 FTM_RET	FTDM_ACTION_count
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_ULONG_PTR		pulCount
 )
 {
@@ -321,6 +330,7 @@ FTM_RET	FTDM_ACTION_count
 
 FTM_RET	FTDM_ACTION_get
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_CHAR_PTR	pActionID,
 	FTDM_ACTION_PTR	_PTR_ 	ppAction
 )
@@ -330,6 +340,7 @@ FTM_RET	FTDM_ACTION_get
 
 FTM_RET	FTDM_ACTION_getAt
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_ULONG				nIndex,
 	FTDM_ACTION_PTR	_PTR_ 	ppAction
 )
@@ -339,6 +350,7 @@ FTM_RET	FTDM_ACTION_getAt
 
 FTM_RET	FTDM_ACTION_getByIndex
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_ULONG				ulIndex,
 	FTDM_ACTION_PTR _PTR_ 	ppAction
 )
@@ -347,7 +359,7 @@ FTM_RET	FTDM_ACTION_getByIndex
 	FTM_ULONG	ulCount;
 	FTM_INT		i;
 
-	xRet = FTDM_ACTION_count(&ulCount);
+	xRet = FTDM_ACTION_count(pFTDM, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -355,7 +367,7 @@ FTM_RET	FTDM_ACTION_getByIndex
 
 	for(i = 0 ; i  < ulCount ; i++)
 	{
-		xRet = FTDM_ACTION_getAt(i, ppAction);
+		xRet = FTDM_ACTION_getAt(pFTDM, i, ppAction);
 		if (xRet == FTM_RET_OK)
 		{
 			return	xRet;	
@@ -372,6 +384,7 @@ FTM_RET	FTDM_ACTION_getByIndex
 
 FTM_RET	FTDM_ACTION_set
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_CHAR_PTR		pID,
 	FTM_ACTION_FIELD	xFields,
 	FTM_ACTION_PTR		pInfo
@@ -416,13 +429,14 @@ FTM_RET	FTDM_ACTION_set
 		}
 	}
 
-	FTDM_DBIF_ACTION_set(pID, &pAction->xInfo);
+	FTDM_DBIF_ACTION_set(pFTDM->pDBIF, pID, &pAction->xInfo);
 
 	return	FTM_RET_OK;
 }
 
 FTM_RET	FTDM_ACTION_getIDList
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_ID_PTR		pIDs,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulMaxCount,
@@ -436,7 +450,7 @@ FTM_RET	FTDM_ACTION_getIDList
 	FTM_ULONG	i, ulCount;
 	FTDM_ACTION_PTR	pAction;
 
-	xRet = FTDM_ACTION_count(&ulCount);
+	xRet = FTDM_ACTION_count(pFTDM, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -445,7 +459,7 @@ FTM_RET	FTDM_ACTION_getIDList
 	*pulCount = 0;
 	for(i = 0 ; i < ulMaxCount && (ulIndex + i) < ulCount ; i++)
 	{
-		xRet = FTDM_ACTION_getAt(ulIndex + i, &pAction);
+		xRet = FTDM_ACTION_getAt(pFTDM, ulIndex + i, &pAction);
 		if (xRet != FTM_RET_OK)
 		{
 			break;	
@@ -459,7 +473,7 @@ FTM_RET	FTDM_ACTION_getIDList
 
 FTM_RET	FTDM_ACTION_showList
 (
-	FTM_VOID
+	FTDM_CONTEXT_PTR	pFTDM
 )
 {
 	FTM_ACTION_PTR	pAction;

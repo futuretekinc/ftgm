@@ -53,13 +53,7 @@ FTM_RET	FTDMS_final
 FTM_RET	FTDMS_loadConfig
 (
 	FTDM_SERVER_PTR			pServer,
-	FTDM_CFG_SERVER_PTR		pConfig
-);
-
-FTM_RET	FTDMS_loadFromFile
-(
-	FTDM_SERVER_PTR			pServer,
-	FTM_CHAR_PTR			pFileName
+	FTM_CONFIG_PTR			pConfig
 );
 
 FTM_RET	FTDMS_start

@@ -44,8 +44,6 @@ typedef	struct
 FTM_RET	FTDM_CFG_init(FTDM_CFG_PTR pConfig);
 FTM_RET	FTDM_CFG_final(FTDM_CFG_PTR pConfig);
 
-FTM_RET	FTDM_CFG_readFromFile(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName);
-
 FTM_RET FTDM_CFG_show(FTDM_CFG_PTR pConfig);
 
 FTM_RET FTDM_CFG_setDBFileName(FTDM_CFG_PTR pConfig, FTM_CHAR_PTR pFileName);

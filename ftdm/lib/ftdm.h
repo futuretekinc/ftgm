@@ -3,6 +3,20 @@
 
 #include "ftm.h"
 #include "ftdm_types.h"
+
+struct FTDM_DBIF_STRUCT ;
+struct FTDM_MODEM_STRUCT;
+struct FTDM_EPM_STRUCT;
+struct FTDM_LOGGER_STRUCT;
+
+typedef struct FTDM_CONTEXT_STRUCT
+{
+	struct FTDM_DBIF_STRUCT _PTR_	pDBIF;
+	struct FTDM_NODEM_STRUCT _PTR_	pNodeM;	
+	struct FTDM_EPM_STRUCT _PTR_	pEPM;	
+	struct FTDM_LOGGER_STRUCT _PTR_	pLogger;
+} FTDM_CONTEXT, _PTR_ FTDM_CONTEXT_PTR;
+
 #include "ftdm_cmd.h"
 #include "ftdm_config.h"
 #include "ftdm_node.h"
@@ -13,13 +27,7 @@
 #include "ftdm_server.h"
 #include "ftdm_logger.h"
 #include "ftdm_modules.h"
-
-typedef struct FTDM_CONTEXT_STRUCT
-{
-	FTDM_NODEM_PTR	pNodeM;	
-	FTDM_EPM_PTR	pEPM;	
-	FTDM_LOGGER_PTR	pLogger;
-} FTDM_CONTEXT, _PTR_ FTDM_CONTEXT_PTR;
+#include "ftdm_sqlite.h"
 
 FTM_RET	FTDM_init
 (
@@ -34,7 +42,7 @@ FTM_RET	FTDM_final
 FTM_RET FTDM_loadConfig
 (
 	FTDM_CONTEXT_PTR	pFTDM,
-	FTDM_CFG_PTR 		pConfig
+	FTM_CONFIG_PTR 		pConfig
 );
 
 FTM_RET	FTDM_loadFromFile
@@ -68,5 +76,6 @@ FTM_RET	FTDM_removeInvalidData
 (
 	FTDM_CONTEXT_PTR	pDM
 );	
+
 #endif
 
