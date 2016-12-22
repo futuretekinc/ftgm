@@ -3,12 +3,13 @@
 #include <string.h>
 #include "ftdm.h"
 #include "ftdm_node.h"
-#include "ftdm_sqlite.h"
+#include "ftdm_dbif.h"
 #include "ftm_mem.h"
 #include "ftdm_log.h"
 
 FTM_RET    FTDM_NODE_create
 (   
+	FTDM_DBIF_PTR	pDBIF,
 	FTM_NODE_PTR	pInfo,
 	FTDM_NODE_PTR _PTR_ ppNode
 )   
@@ -24,7 +25,7 @@ FTM_RET    FTDM_NODE_create
 		return	xRet;
 	}
 
-	xRet = FTDM_DBIF_NODE_create(pInfo);
+	xRet = FTDM_DBIF_createNode(pDBIF, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to create node[%s] to DB.\n", pInfo->pDID);
@@ -35,7 +36,7 @@ FTM_RET    FTDM_NODE_create
 	if (pNode == NULL)
 	{
 		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
-		FTDM_DBIF_NODE_destroy(pInfo->pDID);
+		FTDM_DBIF_destroyNode(pDBIF, pInfo->pDID);
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
 
@@ -55,7 +56,7 @@ FTM_RET 	FTDM_NODE_destroy
 	ASSERT(ppNode != NULL);
 	FTM_RET	xRet;
 
-	xRet = FTDM_DBIF_NODE_destroy((*ppNode)->xInfo.pDID);
+	xRet = FTDM_DBIF_destroyNode((*ppNode)->pDBIF, (*ppNode)->xInfo.pDID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to remove node[%s] from DB[%08x].\n", (*ppNode)->xInfo.pDID);

@@ -22,9 +22,9 @@ FTM_RET FTDM_CFG_init(FTDM_CFG_PTR pConfig)
 	FTM_LIST_init(&pConfig->xEP.xTypeList);
 	FTM_LIST_setSeeker(&pConfig->xEP.xTypeList, FTDM_CFG_EP_CLASS_seeker);
 
-	pConfig->xServer.usPort 		= FTDM_SERVER_DEFAULT_PORT;
-	pConfig->xServer.ulMaxSession 	= FTDM_SERVER_DEFAULT_MAX_SESSION;
-	pConfig->xServer.ulBufferLen 	= FTDM_SERVER_DEFAULT_BUFFER_LEN;
+	//pConfig->xServer.usPort 		= FTDM_SERVER_DEFAULT_PORT;
+	//pConfig->xServer.ulMaxSession 	= FTDM_SERVER_DEFAULT_MAX_SESSION;
+	//pConfig->xServer.ulBufferLen 	= FTDM_SERVER_DEFAULT_BUFFER_LEN;
 
 	return	FTM_RET_OK;
 }
@@ -61,9 +61,6 @@ FTM_RET	FTDM_CFG_readFromFile
 {
 	FTM_RET			xRet;
 	FTM_CONFIG_PTR	pRoot;
-	FTM_CONFIG_ITEM	xServer;
-	FTM_CONFIG_ITEM	xDB;
-	FTM_CONFIG_ITEM	xEPSection;
 
 	ASSERT(pConfig != NULL);
 	ASSERT(pFileName != NULL);
@@ -72,84 +69,6 @@ FTM_RET	FTDM_CFG_readFromFile
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
-	}
-
-	xRet = FTM_CONFIG_getItem(pRoot, "database", &xDB);
-	if (xRet == FTM_RET_OK)
-	{
-		FTM_CHAR	pDBFileName[FTM_FILE_NAME_LEN+1];
-
-		xRet = FTM_CONFIG_ITEM_getItemString(&xDB, "file", pDBFileName, sizeof(pDBFileName));
-		if (xRet == FTM_RET_OK)
-		{
-			strcpy(pConfig->xDB.pFileName, pDBFileName);
-		}
-	}
-
-	xRet = FTM_CONFIG_getItem(pRoot, "server", &xServer);
-	if (xRet == FTM_RET_OK)
-	{
-		FTM_USHORT	usPort;
-		FTM_ULONG	ulSession;
-		FTM_ULONG	ulBufferLen;
-
-		xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xServer, "port", &usPort);
-		if (xRet == FTM_RET_OK)
-		{
-			pConfig->xServer.usPort = usPort;
-		}
-
-		xRet = FTM_CONFIG_ITEM_getItemULONG(&xServer, "session_count", &ulSession);
-		if (xRet == FTM_RET_OK)
-		{
-			pConfig->xServer.ulMaxSession = ulSession;
-		}
-
-		xRet = FTM_CONFIG_ITEM_getItemULONG(&xServer, "buffer_len", &ulBufferLen);
-		if (xRet == FTM_RET_OK)
-		{
-			pConfig->xServer.ulBufferLen = ulBufferLen;
-		}
-
-	}
-
-	xRet = FTM_CONFIG_getItem(pRoot, "ep", &xEPSection);
-	if (xRet == FTM_RET_OK)
-	{
-		FTM_CONFIG_ITEM	xTypeItemList;
-
-		xRet = FTM_CONFIG_ITEM_getChildItem(&xEPSection, "types", &xTypeItemList);
-		if (xRet == FTM_RET_OK)
-		{
-			FTM_ULONG		ulItemCount;
-
-			xRet = FTM_CONFIG_LIST_getItemCount(&xTypeItemList, &ulItemCount);	
-			if (xRet == FTM_RET_OK)
-			{
-				FTM_ULONG		i;
-				FTM_CONFIG_ITEM	xTypeItem;
-
-				for(i = 0 ; i < ulItemCount ; i++)
-				{
-					xRet = FTM_CONFIG_LIST_getItemAt(&xTypeItemList, i, &xTypeItem);
-					if (xRet == FTM_RET_OK)
-					{
-						FTM_EP_CLASS	xEPClass;
-						xRet = FTM_CONFIG_ITEM_getEPClass(&xTypeItem, &xEPClass);
-						if (xRet != FTM_RET_OK)
-						{
-							continue;
-						}
-
-						xRet = FTDM_CFG_EP_CLASS_append(&pConfig->xEP, &xEPClass);
-						if (xRet != FTM_RET_OK)
-						{
-							ERROR("Cant not append EP Type[%08x]\n", xEPClass.xType);
-						}
-					}
-				}
-			}
-		}
 	}
 
 	xRet = FTM_TRACE_loadConfig(pRoot);
@@ -219,8 +138,8 @@ FTM_RET	FTDM_CFG_setServer(FTDM_CFG_PTR pConfig, FTM_SERVER_INFO_PTR pInfo)
 {
 	ASSERT((pConfig != NULL) && (pInfo != NULL));
 
-	pConfig->xServer.usPort = pInfo->usPort;
-	pConfig->xServer.ulMaxSession = pInfo->ulSessionCount;
+	//pConfig->xServer.usPort = pInfo->usPort;
+	//pConfig->xServer.ulMaxSession = pInfo->ulSessionCount;
 
 	return	FTM_RET_OK;
 }

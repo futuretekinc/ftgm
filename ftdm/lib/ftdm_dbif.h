@@ -1,0 +1,567 @@
+#ifndef	__FTDM_DBIF_H__
+#define	__FTDM_DBIF_H__
+
+#include <sqlite3.h>
+#include "ftm_types.h"
+#include "ftm_trigger.h"
+#include "ftdm_config.h"
+
+typedef	struct
+{
+	FTM_CHAR		pDBName[FTM_FILE_NAME_LEN+1];
+	sqlite3 _PTR_	pSQLiteDB;
+}	FTDM_DBIF, _PTR_ FTDM_DBIF_PTR;
+
+FTM_RET	FTDM_DBIF_create
+(
+	FTDM_DBIF_PTR _PTR_ ppDBMF
+);
+
+FTM_RET	FTDM_DBIF_destroy
+(
+	FTDM_DBIF_PTR _PTR_ ppDBMF
+);
+
+FTM_RET	FTDM_DBIF_init
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_final
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_open
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_close
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_loadConfig
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CONFIG_PTR	pConfig
+);
+
+FTM_RET	FTDM_DBIF_initNodeTable
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_BOOL	FTDM_DBIF_isNodeTableExist
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_getTableCount
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET FTDM_DBIF_getTableList
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR _PTR_	pTables,
+	FTM_ULONG		ulMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_getNodeCount
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_ULONG_PTR	pCount
+);
+
+FTM_RET	FTDM_DBIF_getNodeList
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_NODE_PTR	pInfos,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pCount
+);
+
+FTM_RET	FTDM_DBIF_deleteTable
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName
+);
+
+FTM_RET	FTDM_DBIF_deleteAllTables
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_createNode
+(
+	FTDM_DBIF_PTR	pDBIF,
+ 	FTM_NODE_PTR	pInfo
+);
+
+FTM_RET	FTDM_DBIF_destroyNode
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pDID
+);
+
+FTM_RET	FTDM_DBIF_getNode
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pDID,
+	FTM_NODE_PTR	pInfo
+);
+
+FTM_RET	FTDM_DBIF_setNodeURL
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pURL
+);
+
+FTM_RET	FTDM_DBIF_getNodeURL
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		nBuffLen
+);
+
+FTM_RET	FTDM_DBIF_setNodeLocation
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pLocation
+);
+
+FTM_RET	FTDM_DBIF_getNodeLocation
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pDID,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		nBuffLen
+);
+
+FTM_RET	FTDM_DBIF_initEPTable
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_BOOL	FTDM_DBIF_isEPTableExist
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_appendEP
+(
+	FTDM_DBIF_PTR	pDBIF,
+ 	FTM_EP_PTR		pInfo
+);
+
+FTM_RET	FTDM_DBIF_removeEP
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID
+);
+
+FTM_RET	FTDM_DBIF_getEPCount
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_ULONG_PTR	pCount
+);
+
+FTM_RET	FTDM_DBIF_isEPExist
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_BOOL_PTR	pbExist
+);
+
+FTM_RET	FTDM_DBIF_getEPList
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_EP_PTR		pInfos,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pCount
+);
+
+FTM_RET	FTDM_DBIF_getEP
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_PTR		pInfo
+);
+
+FTM_RET	FTDM_DBIF_setEP
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+ 	FTM_EP_PTR		pInfo
+);
+
+FTM_RET	FTDM_DBIF_setEPName
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_CHAR_PTR	pName,
+	FTM_INT			nNameLen
+);
+
+FTM_RET	FTDM_DBIF_getEPName
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_CHAR_PTR	pName,
+	FTM_INT_PTR		pNameLen
+);
+
+FTM_RET	FTDM_DBIF_setEPInterval
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nInterval
+);
+
+FTM_RET	FTDM_DBIF_getEPInterval
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pInterval
+);
+
+FTM_RET	FTDM_DBIF_setEPUnit
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_CHAR_PTR	pUnit,
+	FTM_INT			nUnitLen
+);
+
+FTM_RET	FTDM_DBIF_getEPUnit
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_CHAR_PTR	pUnit,
+	FTM_INT_PTR		pUnitLen
+);
+
+
+FTM_RET	FTDM_DBIF_initEPDataTable
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID
+);
+
+FTM_RET	FTDM_DBIF_appendEPData
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_EP_DATA_PTR	pData
+);
+
+FTM_RET	FTDM_DBIF_getEPDataInfo
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pulBeginTime,
+	FTM_ULONG_PTR	pulEndTime
+);
+
+FTM_RET	FTDM_DBIF_getEPDataList
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		nStartIndex,
+	FTM_EP_DATA_PTR	pEPData,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pCount
+);
+
+FTM_RET	FTDM_DBIF_getEPDataListWithTime
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		xBeginTime,
+	FTM_ULONG		xEndTime,
+	FTM_BOOL		bAscending,
+	FTM_EP_DATA_PTR	pEPData,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pCount
+);
+
+FTM_RET	FTDM_DBIF_delEPData
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_INT			nIndex,
+	FTM_ULONG		nCount
+);
+
+FTM_RET	FTDM_DBIF_delEPDataWithTime
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		xBeginTime,
+	FTM_ULONG		xEndTime
+);
+
+FTM_RET	FTDM_DBIF_getEPDataCount
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG_PTR	pCount
+);
+
+FTM_RET	FTDM_DBIF_getEPDataCountWithTime
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pEPID,
+	FTM_ULONG		xBeginTime,
+	FTM_ULONG		xEndTime,
+	FTM_ULONG_PTR	pCount
+);
+
+FTM_RET FTDM_DBIF_setTrace
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_BOOL		bTraceON
+);
+
+FTM_RET FTDM_DBIF_getTrace
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_BOOL_PTR	pbTranceON
+);
+
+FTM_RET	FTDM_DBIF_initTriggerTable
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_createTrigger
+(
+	FTDM_DBIF_PTR	pDBIF,
+ 	FTM_TRIGGER_PTR	pTrigger
+);
+
+FTM_RET	FTDM_DBIF_destroyTrigger
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pID
+);
+
+FTM_RET	FTDM_DBIF_getTriggerCount
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_ULONG_PTR	pCount
+);
+
+FTM_RET	FTDM_DBIF_getTrigger
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pID,
+ 	FTM_TRIGGER_PTR	pTrigger
+);
+
+FTM_RET	FTDM_DBIF_getTriggerList
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_TRIGGER_PTR	pTriggers, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_setTrigger
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pID,
+ 	FTM_TRIGGER_PTR	pTrigger
+);
+
+FTM_RET	FTDM_DBIF_initActionTable
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_createAction
+(
+	FTDM_DBIF_PTR	pDBIF,
+ 	FTM_ACTION_PTR	pInfo
+);
+
+FTM_RET	FTDM_DBIF_destroyAction
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pActionID
+);
+
+FTM_RET	FTDM_DBIF_getActionCount
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_getAction
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pActionID,
+ 	FTM_ACTION_PTR	pAction
+);
+
+FTM_RET	FTDM_DBIF_setAction
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pActionID,
+ 	FTM_ACTION_PTR	pAction
+);
+
+FTM_RET	FTDM_DBIF_getActionList
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_ACTION_PTR	pActions, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_initRuleTable
+(
+	FTDM_DBIF_PTR	pDBIF
+);
+
+FTM_RET	FTDM_DBIF_createRule
+(
+	FTDM_DBIF_PTR	pDBIF,
+ 	FTM_RULE_PTR	pInfo
+);
+
+FTM_RET	FTDM_DBIF_destroyRule
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pRuleID
+);
+
+FTM_RET	FTDM_DBIF_getRuleCount
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_getRule
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pRuleID,
+ 	FTM_RULE_PTR	pRule
+);
+
+FTM_RET	FTDM_DBIF_getRuleList
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_RULE_PTR	pRules, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_setRule
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pRuleID,
+ 	FTM_RULE_PTR	pRule
+);
+
+FTM_RET	FTDM_DBIF_initLogTable
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName
+);
+
+FTM_RET	FTDM_DBIF_isLogTableExist
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+	FTM_BOOL_PTR	pbExist
+);
+
+FTM_RET	FTDM_DBIF_getLogInfo
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG_PTR	pulCount,
+	FTM_ULONG_PTR	pulStart,
+	FTM_ULONG_PTR	pulEnd
+);
+
+FTM_RET	FTDM_DBIF_appendLog
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+ 	FTM_LOG_PTR	pLog
+);
+
+FTM_RET	FTDM_DBIF_delLog
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulCount,
+	FTM_ULONG_PTR	pulDeletedCount
+);
+
+FTM_RET	FTDM_DBIF_delLogWithTime
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulDeletedCount
+);
+
+FTM_RET	FTDM_DBIF_getLogCount
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_getLogCountWithTime
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulStart,
+	FTM_ULONG		ulEnd,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_isLogExist
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+	FTM_UINT64		ullID,
+	FTM_BOOL_PTR	pbExist
+);
+
+FTM_RET	FTDM_DBIF_getLogList
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulIndex,
+	FTM_ULONG		ulMaxCount,
+	FTM_LOG_PTR		pLogs, 
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET	FTDM_DBIF_getLogListWithTime
+(
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_CHAR_PTR	pTableName,
+	FTM_ULONG		ulBegin,
+	FTM_ULONG		ulEnd,
+	FTM_LOG_PTR		pLogs, 
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pulCount
+);
+
+#endif

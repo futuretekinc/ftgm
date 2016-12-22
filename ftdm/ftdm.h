@@ -12,10 +12,15 @@
 #include "ftdm_ep_class.h"
 #include "ftdm_server.h"
 #include "ftdm_logger.h"
+#include "ftdm_rule.h"
+#include "ftdm_action.h"
+#include "ftdm_event.h"
 #include "ftdm_modules.h"
+#include "ftdm_dbif.h"
 
 typedef struct FTDM_CONTEXT_STRUCT
 {
+	FTDM_DBIF_PTR	pDBIF;
 	FTDM_NODEM_PTR	pNodeM;	
 	FTDM_EPM_PTR	pEPM;	
 	FTDM_LOGGER_PTR	pLogger;
@@ -23,35 +28,27 @@ typedef struct FTDM_CONTEXT_STRUCT
 
 FTM_RET	FTDM_init
 (
-	FTDM_CONTEXT_PTR	pFTDM
+	FTM_VOID
 );
 
 FTM_RET	FTDM_final
 (
-	FTDM_CONTEXT_PTR	pFTDM
+	FTM_VOID
 );
 
 FTM_RET FTDM_loadConfig
 (
-	FTDM_CONTEXT_PTR	pFTDM,
-	FTDM_CFG_PTR 		pConfig
-);
-
-FTM_RET	FTDM_loadFromFile
-(
-	FTDM_CONTEXT_PTR	pFTDM,
-	FTM_CHAR_PTR		pFileName
+	FTM_CONFIG_PTR		pConfig
 );
 
 FTM_RET	FTDM_loadObjectFromFile
 (
-	FTDM_CONTEXT_PTR	pFTDM,
 	FTM_CHAR_PTR		pFileName
 );
 
 FTM_RET	FTDM_saveObjectToDB
 (
-	FTDM_CONTEXT_PTR	pFTDM
+	FTM_VOID
 );
 
 FTM_RET	FTDM_setDebugLevel
@@ -66,7 +63,90 @@ FTM_RET	FTDM_getServer
 	
 FTM_RET	FTDM_removeInvalidData
 (
-	FTDM_CONTEXT_PTR	pDM
+	FTM_VOID
 );	
+
+FTM_RET	FTDM_createAction
+(
+	FTM_ACTION_PTR 	pInfo,
+	FTDM_ACTION_PTR	_PTR_ ppAction
+);
+
+FTM_RET	FTDM_destroyAction
+(
+	FTM_CHAR_PTR	pActionID
+);
+
+FTM_RET	FTDM_loadActionConfig
+(
+	FTM_CONFIG_PTR		pConfig
+);
+
+FTM_RET	FTDM_loadActionFromFile
+(
+	FTM_CHAR_PTR			pFileName
+);
+
+FTM_RET	FTDM_loadActionFromDB
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_saveActionToDB
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_createRule
+(
+	FTM_RULE_PTR 	pInfo,
+	FTDM_RULE_PTR _PTR_ ppRule
+);
+
+FTM_RET	FTDM_destroyRule
+(
+	FTM_CHAR_PTR	pRuleID
+);
+
+FTM_RET	FTDM_loadRuleConfig
+(
+	FTM_CONFIG_PTR	pConfig
+);
+
+FTM_RET	FTDM_loadRuleFromDB
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_saveRuleToDB
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_createTrigger
+(
+	FTM_TRIGGER_PTR 	pInfo,
+	FTDM_EVENT_PTR _PTR_ ppTrigger
+);
+
+FTM_RET	FTDM_destroyTrigger
+(
+	FTM_CHAR_PTR	pID
+);
+
+FTM_RET	FTDM_loadTriggerConfig
+(
+	FTM_CONFIG_PTR	pConfig
+);
+
+FTM_RET	FTDM_loadTriggerFromDB
+(
+	FTM_VOID
+);
+
+FTM_RET	FTDM_saveTriggerToDB
+(
+	FTM_VOID
+);
 #endif
 

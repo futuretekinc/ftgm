@@ -89,7 +89,7 @@ FTM_RET	FTDMS_SHELL_CMD_EP_showData
 
 static 
 FTDM_CFG	xConfig;
-FTM_SHELL_CMD	FTDMS_pCmdList[] =
+FTM_SHELL_CMD	FTDM_pCmdList[] =
 {
 	{
 		.pString	= "config",
@@ -148,8 +148,8 @@ FTM_SHELL_CMD	FTDMS_pCmdList[] =
 	},
 };
 
-FTM_ULONG		FTDMS_ulCmdCount = sizeof(FTDMS_pCmdList) / sizeof(FTM_SHELL_CMD);
-FTM_CHAR_PTR	FTDMS_pPrompt = "FTDMS";
+FTM_ULONG		FTDM_ulCmdCount = sizeof(FTDM_pCmdList) / sizeof(FTM_SHELL_CMD);
+FTM_CHAR_PTR	FTDM_pPrompt = "FTDMS";
 
 FTM_RET	FTDMS_SHELL_CMD_config
 (
@@ -186,7 +186,6 @@ FTM_RET	FTDMS_SHELL_CMD_object
 {
 	FTDM_SERVER_PTR	pServer = (FTDM_SERVER_PTR)pData;
 
-	FTM_RET	xRet;
 
 	TRACE("pServer = %08x, pServer->pDM = %08x\n", pServer, pServer->pDM);
 	switch (nArgc)
@@ -201,11 +200,14 @@ FTM_RET	FTDMS_SHELL_CMD_object
 		}	
 		break;
 
+#if 0
 	case	3:
 		{
 			if (strcasecmp(pArgv[1], "load") == 0)
 			{
-				xRet = FTDM_loadObjectFromFile(pServer->pDM, pArgv[2]);	
+				FTM_RET	xRet;
+
+				xRet = FTDM_loadObjectFromFile(pArgv[2]);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR("Objects loading failed.[%08x]\n", xRet);
@@ -216,6 +218,7 @@ FTM_RET	FTDMS_SHELL_CMD_object
 			}
 		}
 		break;
+#endif
 
 	default:
 		{
@@ -247,12 +250,12 @@ FTM_RET	FTDMS_SHELL_CMD_session
 		return	xRet;
 	}
 
-	FTDMS_getSessionCount(pServer, &ulCount);
+	FTDM_SERVER_getSessionCount(pServer, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTM_CHAR	pIPAddr[32];
 
-		FTDMS_getSessionInfo(pServer, i, &xSession);
+		FTDM_SERVER_getSessionInfo(pServer, i, &xSession);
 
 		sprintf(pIPAddr,"%d.%d.%d.%d", 
 				((xSession.xPeer.sin_addr.s_addr      ) & 0xFF),

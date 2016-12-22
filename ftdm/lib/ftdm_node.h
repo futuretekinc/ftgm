@@ -3,17 +3,21 @@
 
 #include "ftm.h"
 #include "ftdm_config.h"
+#include "ftdm_dbif.h"
 
 #define	FTDM_DT_ROOT	0x00000001
 
 typedef	struct
 {
 	FTM_NODE	xInfo;
+
+	FTDM_DBIF_PTR	pDBIF;
 }	FTDM_NODE, _PTR_ FTDM_NODE_PTR;
 
 FTM_RET	FTDM_NODE_create
 (
-	FTM_NODE_PTR		pInfo,
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_NODE_PTR	pInfo,
 	FTDM_NODE_PTR _PTR_ ppNode
 );
 

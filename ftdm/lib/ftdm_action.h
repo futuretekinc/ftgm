@@ -2,11 +2,14 @@
 #define	_FTDM_ACTION_H_
 
 #include "ftm.h"
+#include "ftdm_dbif.h"
 
 typedef	struct
 {
 	FTM_ACTION	xInfo;
 	FTM_ULONG	ulIndex;
+
+	FTDM_DBIF_PTR	pDBIF;
 }	FTDM_ACTION, _PTR_ FTDM_ACTION_PTR;
 
 FTM_RET	FTDM_ACTION_init

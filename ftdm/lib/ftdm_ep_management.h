@@ -3,9 +3,11 @@
 
 #include "ftdm_config.h"
 #include "ftdm_ep.h"
+#include "ftdm_dbif.h"
 
 typedef	struct FTDM_EPM_STRUCT
 {
+	FTDM_DBIF_PTR	pDBIF;
 	FTM_LIST_PTR	pList;
 }	FTDM_EPM, _PTR_ FTDM_EPM_PTR;
 	
@@ -21,6 +23,7 @@ FTM_RET FTDM_EPM_final
 
 FTM_RET	FTDM_EPM_create
 (
+	FTDM_DBIF_PTR	pDBIF,
 	FTDM_EPM_PTR _PTR_ ppEPM
 );
 
@@ -32,7 +35,7 @@ FTM_RET	FTDM_EPM_destroy
 FTM_RET	FTDM_EPM_loadConfig
 (
 	FTDM_EPM_PTR	pEPM,
-	FTDM_CFG_EP_PTR	pConfig
+	FTM_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTDM_EPM_loadFromFile

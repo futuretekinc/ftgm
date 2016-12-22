@@ -4,7 +4,7 @@
 #include "ftm.h"
 #include "ftdm.h"
 #include "ftdm_ep_class.h"
-#include "ftdm_sqlite.h"
+#include "ftdm_dbif.h"
 
 static FTM_RET	FTDM_EP_CLASS_LIST_append
 (
@@ -56,32 +56,58 @@ FTM_RET	FTDM_EP_CLASS_init
 
 FTM_RET	FTDM_EP_CLASS_loadConfig
 (
-	FTDM_CFG_EP_PTR	pConfig
+	FTM_CONFIG_PTR	pConfig
 )
 {
 	ASSERT(pConfig != NULL);
-	FTM_ULONG	nMaxEPCount = 0;
+	FTM_RET			xRet;
+	FTM_CONFIG_ITEM	xSection;
 
-	if (FTDM_CFG_EP_CLASS_count(pConfig, &nMaxEPCount) == FTM_RET_OK)
+	xRet = FTM_CONFIG_getItem(pConfig, "ep", &xSection);
+	if (xRet == FTM_RET_OK)
 	{
-		FTM_ULONG	i;
+		FTM_CONFIG_ITEM	xTypeItemList;
 
-		for(i = 0 ; i < nMaxEPCount ; i++)
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "types", &xTypeItemList);
+		if (xRet == FTM_RET_OK)
 		{
-			FTM_EP_CLASS	xEPClassInfo;
+			FTM_ULONG		ulItemCount;
 
-			if (FTDM_CFG_EP_CLASS_getAt(pConfig, i, &xEPClassInfo) == FTM_RET_OK)
+			xRet = FTM_CONFIG_LIST_getItemCount(&xTypeItemList, &ulItemCount);	
+			if (xRet == FTM_RET_OK)
 			{
-				FTM_BOOL	bExist;
+				FTM_ULONG		i;
+				FTM_CONFIG_ITEM	xTypeItem;
 
-				FTDM_EP_CLASS_LIST_isExist(xEPClassInfo.xType, &bExist);
-				if (!bExist)
+				for(i = 0 ; i < ulItemCount ; i++)
 				{
-					FTDM_EP_CLASS_add(&xEPClassInfo);	
+					xRet = FTM_CONFIG_LIST_getItemAt(&xTypeItemList, i, &xTypeItem);
+					if (xRet == FTM_RET_OK)
+					{
+						FTM_BOOL		bExist;
+						FTM_EP_CLASS	xEPClass;
+						xRet = FTM_CONFIG_ITEM_getEPClass(&xTypeItem, &xEPClass);
+						if (xRet != FTM_RET_OK)
+						{
+							continue;
+						}
+
+
+						FTDM_EP_CLASS_LIST_isExist(xEPClass.xType, &bExist);
+						if (!bExist)
+						{
+							xRet = FTDM_EP_CLASS_add(&xEPClass);	
+							if (xRet != FTM_RET_OK)
+							{
+								ERROR2(xRet, "Failed to add EP class[%08x]\n", xEPClass.xType);
+							}
+						}
+					}
 				}
 			}
 		}
 	}
+
 	return	FTM_RET_OK;
 }
 

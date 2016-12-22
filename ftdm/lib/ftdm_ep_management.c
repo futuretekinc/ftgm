@@ -5,7 +5,7 @@
 #include "ftdm.h"
 #include "ftdm_ep.h"
 #include "ftdm_ep_management.h"
-#include "ftdm_sqlite.h"
+#include "ftdm_dbif.h"
 #include "ftdm_log.h"
 
 static 
@@ -53,6 +53,7 @@ FTM_RET FTDM_EPM_final
 
 FTM_RET	FTDM_EPM_create
 (
+	FTDM_DBIF_PTR	pDBIF,
 	FTDM_EPM_PTR _PTR_ ppEPM
 )
 {
@@ -66,6 +67,8 @@ FTM_RET	FTDM_EPM_create
 		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
+
+	pEPM->pDBIF = pDBIF;
 
 	xRet = FTDM_EPM_init(pEPM);
 	if (xRet != FTM_RET_OK)
@@ -143,7 +146,7 @@ FTM_RET	FTDM_EPM_loadFromFile
 						{
 							FTDM_EP_PTR	pEP;
 
-							xRet = FTDM_EP_create(&xInfo, &pEP);
+							xRet = FTDM_EP_create(pEPM->pDBIF, &xInfo, &pEP);
 							if (xRet != FTM_RET_OK)
 							{
 								ERROR2(xRet, "Can't not append EP[%s]\n", xInfo.pEPID);
@@ -179,10 +182,12 @@ FTM_RET	FTDM_EPM_loadFromDB
 	FTDM_EPM_PTR	pEPM
 )
 {
+	ASSERT(pEPM != NULL);
+
 	FTM_RET		xRet;
 	FTM_ULONG	nMaxEPCount = 0;
 
-	if ((FTDM_DBIF_EP_count(&nMaxEPCount) == FTM_RET_OK) &&
+	if ((FTDM_DBIF_getEPCount(pEPM->pDBIF, &nMaxEPCount) == FTM_RET_OK) &&
 		(nMaxEPCount > 0))
 	{
 
@@ -195,7 +200,7 @@ FTM_RET	FTDM_EPM_loadFromDB
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 	
-		if (FTDM_DBIF_EP_getList(pInfos, nMaxEPCount, &nEPCount) == FTM_RET_OK)
+		if (FTDM_DBIF_getEPList(pEPM->pDBIF, pInfos, nMaxEPCount, &nEPCount) == FTM_RET_OK)
 		{
 			FTM_INT	i;
 
@@ -203,7 +208,7 @@ FTM_RET	FTDM_EPM_loadFromDB
 			{
 				FTDM_EP_PTR	pEP;
 
-				xRet = FTDM_EP_create(&pInfos[i], &pEP);
+				xRet = FTDM_EP_create(pEPM->pDBIF, &pInfos[i], &pEP);
 				if (xRet == FTM_RET_OK)
 				{
 					xRet = FTDM_EPM_append(pEPM, pEP);
@@ -224,33 +229,64 @@ FTM_RET	FTDM_EPM_loadFromDB
 FTM_RET	FTDM_EPM_loadConfig
 (
 	FTDM_EPM_PTR	pEPM,
-	FTDM_CFG_EP_PTR	pConfig
+	FTM_CONFIG_PTR	pConfig
 )
 {
 	FTM_RET		xRet;
-	FTM_ULONG	nMaxEPCount = 0;
+	FTM_CONFIG_ITEM	xSection;
 
-	if (FTDM_CFG_EP_count(pConfig, &nMaxEPCount) == FTM_RET_OK)
+	xRet = FTM_CONFIG_getItem(pConfig, "ep", &xSection);
+	if (xRet == FTM_RET_OK)
 	{
-		FTM_ULONG	i;
+		FTM_CONFIG_ITEM	xEPItemList;
 
-		for(i = 0 ; i < nMaxEPCount ; i++)
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "eps", &xEPItemList);
+		if (xRet == FTM_RET_OK)
 		{
-			FTM_EP	xInfo;
+			FTM_ULONG		ulItemCount;
 
-			if (FTDM_CFG_EP_getAt(pConfig, i, &xInfo) == FTM_RET_OK)
+			xRet = FTM_CONFIG_LIST_getItemCount(&xEPItemList, &ulItemCount);	
+			if (xRet == FTM_RET_OK)
 			{
-				FTDM_EP_PTR	pEP;
+				FTM_ULONG		i;
+				FTM_CONFIG_ITEM	xItem;
 
-				xRet = FTDM_EP_create(&xInfo, &pEP);	
-				if (xRet == FTM_RET_OK)
+				for(i = 0 ; i < ulItemCount ; i++)
 				{
-					FTDM_EPM_append(pEPM, pEP);
+					xRet = FTM_CONFIG_LIST_getItemAt(&xEPItemList, i, &xItem);
+					if (xRet == FTM_RET_OK)
+					{
+						FTM_EP	xInfo;
+
+						xRet = FTM_CONFIG_ITEM_getEP(&xItem, &xInfo);
+						if (xRet == FTM_RET_OK)
+						{
+							FTDM_EP_PTR	pEP;
+
+							xRet = FTDM_EP_create(pEPM->pDBIF, &xInfo, &pEP);
+							if (xRet != FTM_RET_OK)
+							{
+								ERROR2(xRet, "Can't not append EP[%s]\n", xInfo.pEPID);
+							}
+							else
+							{
+								xRet = FTDM_EPM_append(pEPM, pEP);
+							}
+							FTDM_LOG_createEP(xInfo.pEPID, xRet);
+						}
+						else
+						{
+							ERROR2(xRet, "EP configuratoin load failed.\n");	
+						}
+					}
+					else
+					{
+						ERROR2(xRet, "EP configuratoin load failed.\n");	
+					}
 				}
 			}
 		}
 	}
-
 	return	FTM_RET_OK;
 }
 
@@ -276,10 +312,10 @@ FTM_RET	FTDM_EPM_saveToDB
 		{
 			FTM_EP	xInfo;
 		
-			xRet = FTDM_DBIF_EP_get(pEP->xInfo.pEPID, &xInfo);
+			xRet = FTDM_DBIF_getEP(pEPM->pDBIF, pEP->xInfo.pEPID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
-				xRet = FTDM_DBIF_EP_append(&pEP->xInfo);	
+				xRet = FTDM_DBIF_appendEP(pEPM->pDBIF, &pEP->xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR2(xRet, "Failed to save the new EP.[%08x]\n", xRet);

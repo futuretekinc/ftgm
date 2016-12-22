@@ -4,15 +4,17 @@
 #include "ftm.h"
 #include "ftdm_node.h"
 #include "ftdm_config.h"
-
+#include "ftdm_dbif.h"
 
 typedef struct
 {
+	FTDM_DBIF_PTR	pDBIF;
 	FTM_LIST_PTR	pList;
 }	FTDM_NODEM, _PTR_ FTDM_NODEM_PTR;
 
 FTM_RET	FTDM_NODEM_create
 (
+	FTDM_DBIF_PTR	pDBIF,
 	FTDM_NODEM_PTR _PTR_ ppNodeM
 );
 
@@ -34,7 +36,7 @@ FTM_RET	FTDM_NODEM_final
 FTM_RET	FTDM_NODEM_loadConfig
 (
 	FTDM_NODEM_PTR	pNodeM,
-	FTDM_CFG_NODE_PTR	pConfig
+	FTM_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTDM_NODEM_loadFromDB
@@ -51,16 +53,6 @@ FTM_RET	FTDM_NODEM_loadFromFile
 FTM_RET	FTDM_NODEM_saveToDB
 (
 	FTDM_NODEM_PTR	pNodeM
-);
-
-FTM_RET	FTDM_NODEM_create
-(
-	FTDM_NODEM_PTR	_PTR_ ppNodeM
-);
-
-FTM_RET FTDM_NODEM_destroy
-(
-	FTDM_NODEM_PTR	_PTR_ ppNodeM
 );
 
 FTM_RET	FTDM_NODEM_append

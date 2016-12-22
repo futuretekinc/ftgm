@@ -4,9 +4,12 @@
 #include "ftdm.h"
 #include "ftdm_node.h"
 #include "ftdm_node_management.h"
-#include "ftdm_sqlite.h"
+#include "ftdm_dbif.h"
 #include "ftdm_log.h"
 #include "ftm_mem.h"
+
+#undef	__MODULE__
+#define	__MODULE__ FTDM_TRACE_MODULE_FTDM
 
 static FTM_BOOL FTDM_NODEM_seekNode
 (
@@ -22,6 +25,7 @@ static FTM_BOOL FTDM_NODEM_seekNode
 
 FTM_RET	FTDM_NODEM_create
 (
+	FTDM_DBIF_PTR	pDBIF,
 	FTDM_NODEM_PTR _PTR_ ppNodeM
 )
 {
@@ -32,12 +36,15 @@ FTM_RET	FTDM_NODEM_create
 	pNodeM = (FTDM_NODEM_PTR)FTM_MEM_malloc(sizeof(FTDM_NODEM));
 	if (pNodeM == NULL)
 	{
+		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
+	pNodeM->pDBIF = pDBIF;
 	xRet = FTDM_NODEM_init(pNodeM);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to initialize node management.\n");
 		FTM_MEM_free(pNodeM);
 	}
 	else
@@ -104,9 +111,74 @@ FTM_RET	FTDM_NODEM_final
 FTM_RET	FTDM_NODEM_loadConfig
 (
 	FTDM_NODEM_PTR	pNodeM,
-	FTDM_CFG_NODE_PTR	pConfig
+	FTM_CONFIG_PTR	pConfig
 )
 {
+	ASSERT(pNodeM != NULL);
+	ASSERT(pConfig != NULL);
+
+	FTM_RET				xRet;
+	FTM_CONFIG_ITEM		xNodeSection;
+
+	xRet = FTM_CONFIG_getItem(pConfig, "node", &xNodeSection);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_CONFIG_ITEM	xNodeItemList;
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xNodeSection, "nodes", &xNodeItemList);
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_ULONG		ulItemCount;
+
+			xRet = FTM_CONFIG_LIST_getItemCount(&xNodeItemList, &ulItemCount);	
+			if (xRet == FTM_RET_OK)
+			{
+				FTM_ULONG		i;
+				FTM_CONFIG_ITEM	xNodeItem;
+
+				for(i = 0 ; i < ulItemCount ; i++)
+				{
+					xRet = FTM_CONFIG_LIST_getItemAt(&xNodeItemList, i, &xNodeItem);
+					if (xRet == FTM_RET_OK)
+					{
+						FTM_NODE		xInfo;
+						FTDM_NODE_PTR	pNode;
+
+						xRet = FTM_CONFIG_ITEM_getNode(&xNodeItem, &xInfo);
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Node info read failed.\n");
+							continue;
+						}
+				
+						xRet = FTDM_NODE_create(pNodeM->pDBIF, &xInfo, &pNode);
+						if (xRet == FTM_RET_OK)
+						{
+							FTDM_NODEM_append(pNodeM, pNode);
+						}
+						else
+						{
+							ERROR2(xRet, "Node[%s] creation failed.\n", xInfo.pDID);	
+						
+						}
+						FTDM_LOG_createNode(xInfo.pDID, xRet);
+					}
+				}
+			}
+			else
+			{
+				ERROR2(xRet, "Node count read failed.\n");	
+			}
+		}
+		else
+		{
+			ERROR2(xRet, "Node list not found!\n");	
+		}
+	}
+	else
+	{
+		ERROR2(xRet, "NODE section not found!\n");	
+	}
+
 	return	FTM_RET_OK;
 }
 
@@ -118,20 +190,27 @@ FTM_RET	FTDM_NODEM_loadFromDB
 	FTM_RET		xRet;
 	FTM_ULONG	nMaxNodeCount = 0;
 
-	if ((FTDM_DBIF_NODE_count(&nMaxNodeCount) == FTM_RET_OK) &&
-		(nMaxNodeCount > 0))
+	xRet = FTDM_DBIF_getNodeCount(pNodeM->pDBIF, &nMaxNodeCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get node count!\n");
+		return	xRet;
+	}
+
+	if (nMaxNodeCount > 0)
 	{
 	
-		FTM_NODE_PTR	pInfos;
+		FTM_NODE_PTR	pNodeList;
 		FTM_ULONG		nNodeCount = 0;
 		
-		pInfos = (FTM_NODE_PTR)FTM_MEM_malloc(nMaxNodeCount * sizeof(FTM_NODE));
-		if (pInfos == NULL)
+		pNodeList = (FTM_NODE_PTR)FTM_MEM_malloc(nMaxNodeCount * sizeof(FTM_NODE));
+		if (pNodeList == NULL)
 		{
+			ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 	
-		if (FTDM_DBIF_NODE_getList(pInfos, nMaxNodeCount, &nNodeCount) == FTM_RET_OK)
+		if (FTDM_DBIF_getNodeList(pNodeM->pDBIF, pNodeList, nMaxNodeCount, &nNodeCount) == FTM_RET_OK)
 		{
 			FTM_INT	i;
 
@@ -139,10 +218,10 @@ FTM_RET	FTDM_NODEM_loadFromDB
 			{
 				FTDM_NODE_PTR	pNode;
 
-				xRet = FTDM_NODE_create2(&pInfos[i], &pNode);
+				xRet = FTDM_NODE_create2(&pNodeList[i], &pNode);
 				if (xRet == FTM_RET_OK)
 				{
-					xRet = FTM_LIST_append(pNodeM->pList, pNode);
+					xRet = FTDM_NODEM_append(pNodeM, pNode);
 					if (xRet != FTM_RET_OK)
 					{
 						FTDM_NODE_destroy2(&pNode);	
@@ -151,7 +230,7 @@ FTM_RET	FTDM_NODEM_loadFromDB
 			}
 		}
 
-		FTM_MEM_free(pInfos);
+		FTM_MEM_free(pNodeList);
 	}
 
 	return	FTM_RET_OK;
@@ -206,10 +285,10 @@ FTM_RET	FTDM_NODEM_loadFromFile
 							continue;
 						}
 				
-						xRet = FTDM_NODE_create(&xInfo, &pNode);
+						xRet = FTDM_NODE_create(pNodeM->pDBIF, &xInfo, &pNode);
 						if (xRet == FTM_RET_OK)
 						{
-							FTM_LIST_append(pNodeM->pList, pNode);
+							FTDM_NODEM_append(pNodeM, pNode);
 						}
 						else
 						{
@@ -265,11 +344,11 @@ FTM_RET	FTDM_NODEM_saveToDB
 		{
 			FTM_NODE	xInfo;
 			
-			xRet = FTDM_DBIF_NODE_get(pNode->xInfo.pDID, &xInfo);
+			xRet = FTDM_DBIF_getNode(pNode->pDBIF, pNode->xInfo.pDID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
 				TRACE("NODE[%s]	save to DB.\n", pNode->xInfo.pDID);
-				xRet = FTDM_DBIF_NODE_create(&pNode->xInfo);	
+				xRet = FTDM_DBIF_createNode(pNode->pDBIF, &pNode->xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR2(xRet, "Failed to save the new node.[%08x]\n", xRet);

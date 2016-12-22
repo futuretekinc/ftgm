@@ -4,14 +4,14 @@
 #include "ftm.h"
 #include "ftdm.h"
 #include "ftdm_ep.h"
-#include "ftdm_sqlite.h"
+#include "ftdm_dbif.h"
 
 #undef	__MODULE__
 #define	__MODULE__ FTDM_TRACE_MODULE_EP
 
-static FTM_RET FTDM_EP_DATA_infoInternal
+static FTM_RET FTDM_EP_getDataInfoInternal
 (
-	FTM_CHAR_PTR	pEPID,
+	FTDM_EP_PTR		pEP,
 	FTM_ULONG_PTR	pulBeginTime,
 	FTM_ULONG_PTR	pulEndTime,
 	FTM_ULONG_PTR	pulCount
@@ -43,7 +43,8 @@ FTM_RET FTDM_EP_final
 
 FTM_RET	FTDM_EP_create
 (
-	FTM_EP_PTR	pInfo,
+	FTDM_DBIF_PTR	pDBIF,
+	FTM_EP_PTR		pInfo,
 	FTDM_EP_PTR	_PTR_ ppEP
 )
 {
@@ -61,8 +62,9 @@ FTM_RET	FTDM_EP_create
 	
 	memset(pEP, 0, sizeof(FTDM_EP));
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
+	pEP->pDBIF = pDBIF;
 
-	xRet = FTDM_DBIF_EP_isExist(pInfo->pEPID, &bExist);
+	xRet = FTDM_DBIF_isEPExist(pDBIF, pInfo->pEPID, &bExist);
 	if (xRet != FTM_RET_OK)
 	{
 		FTM_MEM_free(pEP);
@@ -71,7 +73,7 @@ FTM_RET	FTDM_EP_create
 
 	if (!bExist)
 	{
-		xRet = FTDM_DBIF_EP_append(pInfo);
+		xRet = FTDM_DBIF_appendEP(pDBIF, pInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "EP append failed.\n");
@@ -83,7 +85,7 @@ FTM_RET	FTDM_EP_create
 	{
 		FTM_ULONG	ulFirstTime, ulLastTime, ulCount = 0;
 
-		xRet = FTDM_EP_DATA_infoInternal(pInfo->pEPID, &ulFirstTime, &ulLastTime, &ulCount);
+		xRet = FTDM_EP_getDataInfoInternal(pEP, &ulFirstTime, &ulLastTime, &ulCount);
 		if (xRet == FTM_RET_OK)
 		{
 			pEP->ulFirstTime = ulFirstTime;
@@ -104,8 +106,9 @@ FTM_RET	FTDM_EP_destroy
 	ASSERT(ppEP != NULL);
 
 	FTM_RET		xRet;
+	FTDM_DBIF_PTR	pDBIF = (*ppEP)->pDBIF;
 
-	xRet = FTDM_DBIF_EP_remove((*ppEP)->xInfo.pEPID);
+	xRet = FTDM_DBIF_removeEP(pDBIF, (*ppEP)->xInfo.pEPID);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
@@ -132,7 +135,7 @@ FTM_RET	FTDM_EP_destroy2
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_EP_get
+FTM_RET	FTDM_EP_getInfo
 (
 	FTDM_EP_PTR		pEP,
 	FTM_EP_PTR		pInfo
@@ -146,7 +149,7 @@ FTM_RET	FTDM_EP_get
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_EP_set
+FTM_RET	FTDM_EP_setInfo
 (
 	FTDM_EP_PTR		pEP,
 	FTM_EP_PTR		pInfo
@@ -174,7 +177,7 @@ FTM_RET	FTDM_EP_set
 
 	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
 
-	xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
+	xRet =FTDM_DBIF_setEP(pEP->pDBIF, pEP->xInfo.pEPID, &pEP->xInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to set EP.\n");
@@ -217,7 +220,7 @@ FTM_RET	FTDM_EP_setFields
 
 	memcpy(&pEP->xInfo, &xInfo, sizeof(FTM_EP));
 
-	xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
+	xRet =FTDM_DBIF_setEP(pEP->pDBIF, pEP->xInfo.pEPID, &pEP->xInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to set EP.\n");
@@ -244,13 +247,13 @@ FTM_RET	FTDM_EP_DATA_add
 		{
 			FTM_ULONG	ulCount = pEP->ulCount - pEP->xInfo.xLimit.xParams.ulCount + 1;
 
-			xRet = FTDM_DBIF_EP_DATA_del(pEP->xInfo.pEPID, pEP->ulCount - ulCount, ulCount);
+			xRet = FTDM_DBIF_delEPData(pEP->pDBIF, pEP->xInfo.pEPID, pEP->ulCount - ulCount, ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				pEP->ulCount -= ulCount;
 
 				FTM_ULONG	ulBeginTime, ulEndTime;
-				xRet = FTDM_DBIF_EP_DATA_info(pEP->xInfo.pEPID,&ulBeginTime, &ulEndTime);
+				xRet = FTDM_DBIF_getEPDataInfo(pEP->pDBIF, pEP->xInfo.pEPID,&ulBeginTime, &ulEndTime);
 				if (xRet == FTM_RET_OK)
 				{
 					pEP->ulFirstTime = ulBeginTime;
@@ -261,7 +264,7 @@ FTM_RET	FTDM_EP_DATA_add
 		}
 	}
 
-	xRet = FTDM_DBIF_EP_DATA_append(pEP->xInfo.pEPID, pData);
+	xRet = FTDM_DBIF_appendEPData(pEP->pDBIF, pEP->xInfo.pEPID, pData);
 	if (xRet == FTM_RET_OK)
 	{
 		pEP->ulCount++;	
@@ -279,28 +282,28 @@ FTM_RET	FTDM_EP_DATA_add
 	return	xRet;
 }
 
-FTM_RET FTDM_EP_DATA_infoInternal
+FTM_RET FTDM_EP_getDataInfoInternal
 (
-	FTM_CHAR_PTR	pEPID,
+	FTDM_EP_PTR		pEP,
 	FTM_ULONG_PTR	pulBeginTime,
 	FTM_ULONG_PTR	pulEndTime,
 	FTM_ULONG_PTR	pulCount
 )
 {
-	ASSERT(pEPID != NULL);
+	ASSERT(pEP != NULL);
 	ASSERT(pulBeginTime != NULL);
 	ASSERT(pulEndTime != NULL);
 	ASSERT(pulCount != NULL);
 
 	FTM_RET		xRet;
 
-	xRet = FTDM_DBIF_EP_DATA_info(pEPID, pulBeginTime, pulEndTime);
+	xRet = FTDM_DBIF_getEPDataInfo(pEP->pDBIF, pEP->xInfo.pEPID, pulBeginTime, pulEndTime);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	return	FTDM_DBIF_EP_DATA_count(pEPID, pulCount);
+	return	FTDM_DBIF_getEPDataCount(pEP->pDBIF, pEP->xInfo.pEPID, pulCount);
 }
 
 FTM_RET FTDM_EP_DATA_info
@@ -395,7 +398,7 @@ FTM_RET FTDM_EP_DATA_setLimit
 		{
 			FTM_ULONG	ulCount = 0;
 
-			xRet = FTDM_DBIF_EP_DATA_count(pEP->xInfo.pEPID, &ulCount);
+			xRet = FTDM_DBIF_getEPDataCount(pEP->pDBIF, pEP->xInfo.pEPID, &ulCount);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR2(xRet, "Failed to get EP[%s] data count!\n", pEP->xInfo.pEPID);	
@@ -404,7 +407,7 @@ FTM_RET FTDM_EP_DATA_setLimit
 
 			if (pLimit->xParams.ulCount < ulCount)
 			{
-				xRet = FTDM_DBIF_EP_DATA_del(pEP->xInfo.pEPID, pLimit->xParams.ulCount, ulCount - pLimit->xParams.ulCount);
+				xRet = FTDM_DBIF_delEPData(pEP->pDBIF, pEP->xInfo.pEPID, pLimit->xParams.ulCount, ulCount - pLimit->xParams.ulCount);
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR2(xRet, "Failed to remove EP[%s] data[%lu:%lu]!\n", pEP->xInfo.pEPID,
@@ -416,7 +419,7 @@ FTM_RET FTDM_EP_DATA_setLimit
 
 	case	FTM_EP_LIMIT_TYPE_TIME:
 		{
-			xRet = FTDM_DBIF_EP_DATA_delWithTime(pEP->xInfo.pEPID, pLimit->xParams.xTime.ulStart, pLimit->xParams.xTime.ulEnd);
+			xRet = FTDM_DBIF_delEPDataWithTime(pEP->pDBIF, pEP->xInfo.pEPID, pLimit->xParams.xTime.ulStart, pLimit->xParams.xTime.ulEnd);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR2(xRet, "Failed to remove EP[%s] data[%lu:%lu]!\n", pEP->xInfo.pEPID,
@@ -433,7 +436,7 @@ FTM_RET FTDM_EP_DATA_setLimit
 			FTM_ULONG	ulStartTime;
 			FTM_ULONG	ulEndTime;
 
-			xRet = FTDM_DBIF_EP_DATA_info(pEP->xInfo.pEPID, &ulStartTime, &ulEndTime);
+			xRet = FTDM_DBIF_getEPDataInfo(pEP->pDBIF, pEP->xInfo.pEPID, &ulStartTime, &ulEndTime);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR2(xRet, "Failed to EP[%s] data times!\n", pEP->xInfo.pEPID);	
@@ -467,7 +470,7 @@ FTM_RET FTDM_EP_DATA_setLimit
 			FTM_TIME_toSecs(&xEndTime, &ulStartTime);
 			FTM_TIME_toSecs(&xTime, &ulEndTime);
 
-			xRet = FTDM_DBIF_EP_DATA_delWithTime(pEP->xInfo.pEPID, ulStartTime, ulEndTime);
+			xRet = FTDM_DBIF_delEPDataWithTime(pEP->pDBIF, pEP->xInfo.pEPID, ulStartTime, ulEndTime);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR2(xRet, "Failed to remove EP[%s] data.\n", pEP->xInfo.pEPID);			
@@ -512,7 +515,8 @@ FTM_RET	FTDM_EP_DATA_get
 	ASSERT(pEPData != NULL);
 	ASSERT(pCount != NULL);
 
-	return	FTDM_DBIF_EP_DATA_get(
+	return	FTDM_DBIF_getEPDataList(
+				pEP->pDBIF,
 				pEP->xInfo.pEPID, 
 				nStartIndex,
 				pEPData, 
@@ -534,7 +538,8 @@ FTM_RET	FTDM_EP_DATA_getWithTime
 	ASSERT(pEP != NULL);
 	ASSERT(pCount != NULL);
 
-	return	FTDM_DBIF_EP_DATA_getWithTime(
+	return	FTDM_DBIF_getEPDataListWithTime(
+				pEP->pDBIF,
 				pEP->xInfo.pEPID, 
 				nBeginTime, 
 				nEndTime, 
@@ -556,16 +561,16 @@ FTM_RET	FTDM_EP_DATA_del
 	FTM_ULONG	ulFirstTime, ulLastTime;
 	FTM_ULONG	ulCount1 = 0, ulCount2= 0;
 
-	xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount1);
+	xRet = FTDM_EP_getDataInfoInternal(pEP, &ulFirstTime, &ulLastTime, &ulCount1);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	xRet = FTDM_DBIF_EP_DATA_del( pEP->xInfo.pEPID, nIndex, nCount);
+	xRet = FTDM_DBIF_delEPData(pEP->pDBIF, pEP->xInfo.pEPID, nIndex, nCount);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount2);
+		xRet = FTDM_EP_getDataInfoInternal(pEP, &ulFirstTime, &ulLastTime, &ulCount2);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
@@ -603,17 +608,17 @@ FTM_RET	FTDM_EP_DATA_delWithTime
 	FTM_ULONG	ulFirstTime, ulLastTime;
 	FTM_ULONG	ulCount1 = 0, ulCount2 = 0;
 
-	xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount1);
+	xRet = FTDM_EP_getDataInfoInternal(pEP, &ulFirstTime, &ulLastTime, &ulCount1);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	xRet = FTDM_DBIF_EP_DATA_delWithTime( pEP->xInfo.pEPID, nBeginTime, nEndTime);
+	xRet = FTDM_DBIF_delEPDataWithTime(pEP->pDBIF, pEP->xInfo.pEPID, nBeginTime, nEndTime);
 	if (xRet == FTM_RET_OK)
 	{
 
-		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount2);
+		xRet = FTDM_EP_getDataInfoInternal(pEP, &ulFirstTime, &ulLastTime, &ulCount2);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
@@ -662,7 +667,7 @@ FTM_RET	FTDM_EP_DATA_countWithTime
 {
 	ASSERT(pulCount != NULL);
 
-	return	FTDM_DBIF_EP_DATA_countWithTime( pEP->xInfo.pEPID, nBeginTime, nEndTime, pulCount);
+	return	FTDM_DBIF_getEPDataCountWithTime(pEP->pDBIF, pEP->xInfo.pEPID, nBeginTime, nEndTime, pulCount);
 }
 
 FTM_INT	FTDM_EPSeeker

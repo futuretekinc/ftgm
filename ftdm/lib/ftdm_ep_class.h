@@ -13,7 +13,7 @@ FTM_RET FTDM_EP_CLASS_final
 
 FTM_RET	FTDM_EP_CLASS_loadConfig
 (
-	FTDM_CFG_EP_PTR	pConfig
+	FTM_CONFIG_PTR	pConfig
 );
 
 FTM_RET	FTDM_EP_CLASS_loadFromDB

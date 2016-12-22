@@ -1,0 +1,1075 @@
+./ftdm_server_cmds.c:191:	TRACE("pServer = %08x, pServer->pDM = %08x\n", pServer, pServer->pDM);
+./ftdm_server_cmds.c:196:			FTDM_NODEM_showList(pServer->pDM->pNodeM);
+./ftdm_server_cmds.c:197:			FTDM_EPM_showList(pServer->pDM->pEPM);
+./ftdm_server_cmds.c:208:				xRet = FTDM_loadObjectFromFile(pServer->pDM, pArgv[2]);	
+./ftdm_server_cmds.c:350:			FTDM_SHELL_showNodeList(pServer->pDM->pNodeM);
+./ftdm_server_cmds.c:369:				FTDM_SHELL_showNodeInfo(pServer->pDM->pNodeM, pArgv[1]);
+./ftdm_server_cmds.c:392:			FTDM_SHELL_showEPList(pServer->pDM->pEPM);
+./ftdm_server_cmds.c:412:				FTDM_SHELL_showEPInfo(pServer->pDM->pEPM, pArgv[1]);
+./ftdm_server_cmds.c:422:				FTDM_SHELL_showEPData(pServer->pDM->pEPM, pArgv[1], 0, 100);
+./ftdm_server_cmds.c:442:				FTDM_SHELL_showEPData(pServer->pDM->pEPM, pArgv[1], ulStart - 1, ulCount);
+./ftdm_server_cmds.c:465:					FTDM_SHELL_delEPData(pServer->pDM->pEPM, pArgv[1], nIndex, ulCount);
+./ftdm_server_cmds.c:492:			xRet = FTDM_LOGGER_info(pServer->pDM->pLogger, &ulBeginTime, &ulEndTime, &ulCount);
+./ftdm_server_cmds.c:506:					strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&ulBeginTime));
+./ftdm_server_cmds.c:508:					strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&ulEndTime));
+./ftdm_server_cmds.c:531:				xRet = FTDM_LOGGER_get(pServer->pDM->pLogger, 0, pLogs,  100, &ulCount);
+./ftdm_server_cmds.c:540:					strftime(pTimeString, sizeof(pTimeString) - 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t *)&pLogs[i].ulTime));
+./ftdm_server_cmds.c:541:					MESSAGE("%3lu : %16llu %s - %s\n", i+1, pLogs[i].ullID, pTimeString, FTM_LOG_print(&pLogs[i]));
+./lib/ftdm_shell_cmds.c:32:					pNode->xInfo.pDID, 
+./lib/ftdm_shell_cmds.c:33:					FTM_NODE_typeString(pNode->xInfo.xType), 
+./lib/ftdm_shell_cmds.c:34:				pNode->xInfo.pLocation,
+./lib/ftdm_shell_cmds.c:35:				pNode->xInfo.ulReportInterval,
+./lib/ftdm_shell_cmds.c:36:				pNode->xInfo.ulTimeout);
+./lib/ftdm_shell_cmds.c:38:				switch(pNode->xInfo.xType)
+./lib/ftdm_shell_cmds.c:43:							FTM_SNMP_versionString(pNode->xInfo.xOption.xSNMP.ulVersion),
+./lib/ftdm_shell_cmds.c:44:							pNode->xInfo.xOption.xSNMP.pURL,
+./lib/ftdm_shell_cmds.c:45:							pNode->xInfo.xOption.xSNMP.pCommunity);
+./lib/ftdm_shell_cmds.c:52:							pNode->xInfo.xOption.xMB.pURL,
+./lib/ftdm_shell_cmds.c:53:							pNode->xInfo.xOption.xMB.ulPort);
+./lib/ftdm_shell_cmds.c:80:		MESSAGE("%-16s : %s\n", "DID", 		pDID);	
+./lib/ftdm_shell_cmds.c:81:		MESSAGE("%-16s : %s\n", "TYPE", 	FTM_NODE_typeString(pNode->xInfo.xType)); 
+./lib/ftdm_shell_cmds.c:82:		MESSAGE("%-16s : %s\n", "LOCATION", pNode->xInfo.pLocation);
+./lib/ftdm_shell_cmds.c:83:		MESSAGE("%-16s : %lu\n", "INTERVAL",pNode->xInfo.ulReportInterval);
+./lib/ftdm_shell_cmds.c:84:		MESSAGE("%-16s : %lu\n", "TIMEOUT", pNode->xInfo.ulTimeout);
+./lib/ftdm_shell_cmds.c:85:		MESSAGE("%-16s : %s\n", "OPT 0", 	FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion));	
+./lib/ftdm_shell_cmds.c:86:		MESSAGE("%-16s : %s\n", "OPT 1", 	pNode->xInfo.xOption.xSNMP.pURL);	
+./lib/ftdm_shell_cmds.c:87:		MESSAGE("%-16s : %s\n", "OPT 2", 	pNode->xInfo.xOption.xSNMP.pCommunity);	
+./lib/ftdm_shell_cmds.c:103:					if (strcasecmp(pEP->xInfo.pDID, pDID) == 0)
+./lib/ftdm_shell_cmds.c:110:			MESSAGE("%-16s : %d\n", "EPs", 	ulEPCount);
+./lib/ftdm_shell_cmds.c:114:				MESSAGE("%16s   %-5s %-8s %-16s %-16s %-8s %-8s %-8s %-8s %-16s %-8s\n",
+./lib/ftdm_shell_cmds.c:123:						if (strcasecmp(pEP->xInfo.pDID, pDID) == 0)
+./lib/ftdm_shell_cmds.c:125:							MESSAGE("%16s   %-5d %08lx %-16s %-16s %-8s ",
+./lib/ftdm_shell_cmds.c:128:								pEP->xInfo.pEPID,
+./lib/ftdm_shell_cmds.c:129:								FTM_EP_typeString(pEP->xInfo.xType),
+./lib/ftdm_shell_cmds.c:130:								pEP->xInfo.pName,
+./lib/ftdm_shell_cmds.c:131:								pEP->xInfo.pUnit);
+./lib/ftdm_shell_cmds.c:133:							if(pEP->xInfo.bEnable)
+./lib/ftdm_shell_cmds.c:135:								MESSAGE("%-8s ", "ENABLE");
+./lib/ftdm_shell_cmds.c:139:								MESSAGE("%-8s ", "DISABLE");
+./lib/ftdm_shell_cmds.c:142:							MESSAGE("%-8lu %-8lu %-16s %08lx\n",
+./lib/ftdm_shell_cmds.c:143:								pEP->xInfo.ulInterval,
+./lib/ftdm_shell_cmds.c:144:								pEP->xInfo.ulTimeout,
+./lib/ftdm_shell_cmds.c:145:								pEP->xInfo.pDID,
+./lib/ftdm_shell_cmds.c:146:								pEP->xInfo.xDEPID);
+./lib/ftdm_shell_cmds.c:162:	MESSAGE("# PRE-REGISTERED ENDPOINT\n");
+./lib/ftdm_shell_cmds.c:177:				pEP->xInfo.pEPID,
+./lib/ftdm_shell_cmds.c:178:				FTM_EP_typeString(pEP->xInfo.xType),
+./lib/ftdm_shell_cmds.c:179:				pEP->xInfo.pName,
+./lib/ftdm_shell_cmds.c:180:				pEP->xInfo.pUnit);
+./lib/ftdm_shell_cmds.c:182:			if (pEP->xInfo.bEnable)
+./lib/ftdm_shell_cmds.c:192:				pEP->xInfo.ulUpdateInterval,
+./lib/ftdm_shell_cmds.c:193:				pEP->xInfo.ulReportInterval,
+./lib/ftdm_shell_cmds.c:194:				pEP->xInfo.ulTimeout,
+./lib/ftdm_shell_cmds.c:195:				pEP->xInfo.pDID);
+./lib/ftdm_shell_cmds.c:255:	if (ulCount > (ulTotalCount - ulBegin))
+./lib/ftdm_shell_cmds.c:257:		ulCount = ulTotalCount - ulBegin;
+./lib/ftdm_shell_cmds.c:279:		pTime[strlen(pTime) - 1] = '\0';
+./lib/ftdm_shell_cmds.c:337:		xRet = FTDM_EP_DATA_del(pEP, nIndex - 1, ulCount, &ulCount);
+./lib/ftdm_shell_cmds.c:356:	MESSAGE("%lu data has been deleted.\n", ulTotalCount - ulNewCount);
+./lib/ftdm_action.c:102:									pAction->ulIndex = ulIndex;	
+./lib/ftdm_action.c:210:			xRet = FTDM_DBIF_ACTION_get(pAction->pID, &xInfo);
+./lib/ftdm_action.c:239:	if (FTDM_ACTION_get(pInfo->pID, &pAction) == FTM_RET_OK)
+./lib/ftdm_action.c:241:			ERROR("Action[%s] already exist.\n", pInfo->pID);
+./lib/ftdm_action.c:245:	if (strlen(pInfo->pID) == 0)
+./lib/ftdm_action.c:252:			sprintf(pInfo->pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
+./lib/ftdm_action.c:255:		while (FTDM_ACTION_get(pInfo->pID, &pAction) == FTM_RET_OK);
+./lib/ftdm_action.c:265:			FTDM_DBIF_ACTION_destroy(pInfo->pID);
+./lib/ftdm_action.c:270:		memcpy(&pAction->xInfo, pInfo, sizeof(FTM_ACTION));
+./lib/ftdm_action.c:274:			ERROR("Action[%s] append failed.\n", pAction->xInfo.pID);
+./lib/ftdm_action.c:275:			FTDM_DBIF_ACTION_destroy(pInfo->pID);
+./lib/ftdm_action.c:364:		if ((*ppAction)->ulIndex == ulIndex)
+./lib/ftdm_action.c:392:	switch(pAction->xInfo.xType)
+./lib/ftdm_action.c:398:				strcpy(pAction->xInfo.pName, pInfo->pName);
+./lib/ftdm_action.c:403:				strcpy(pAction->xInfo.xParams.xSet.pEPID, pInfo->xParams.xSet.pEPID);
+./lib/ftdm_action.c:408:				memcpy(&pAction->xInfo.xParams.xSet.xValue, &pInfo->xParams.xSet.xValue, sizeof(FTM_VALUE));
+./lib/ftdm_action.c:419:	FTDM_DBIF_ACTION_set(pID, &pAction->xInfo);
+./lib/ftdm_action.c:454:		strcpy(pIDs[(*pulCount)++], pAction->xInfo.pID);
+./lib/ftdm_action.c:476:			MESSAGE("\t%16s ", pAction->pID);
+./lib/ftdm_action.c:477:			MESSAGE("%16s ", pAction->pName);
+./lib/ftdm_action.c:479:			switch(pAction->xType)
+./lib/ftdm_action.c:484:						pAction->xParams.xSet.pEPID,
+./lib/ftdm_action.c:486:						FTM_VALUE_print(&pAction->xParams.xSet.xValue));
+./lib/ftdm_action.c:509:	return	strcasecmp(pAction->pID, pActionID) == 0;
+./lib/ftdm_ep_class.c:120:	nRet = FTDM_EP_CLASS_LIST_get(pEPClassInfo->xType, &pTempInfo);
+./lib/ftdm_ep_class.c:209:	if (pEPClassInfo->xType == *pClass)
+./lib/ftdm_log.c:20:		pLog->xType = FTM_LOG_TYPE_CREATE_NODE;
+./lib/ftdm_log.c:44:		pLog->xType = FTM_LOG_TYPE_CREATE_EP;
+./lib/ftdm_log.c:68:		pLog->xType = FTM_LOG_TYPE_CREATE_TRIGGER;
+./lib/ftdm_log.c:92:		pLog->xType = FTM_LOG_TYPE_CREATE_ACTION;
+./lib/ftdm_log.c:116:		pLog->xType = FTM_LOG_TYPE_CREATE_RULE;
+./lib/ftdm_logger.c:29:	strcpy(pLogger->xConfig.pName, "log");
+./lib/ftdm_logger.c:30:	pLogger->xConfig.xLimit.xType = FTM_LIMIT_TYPE_COUNT;
+./lib/ftdm_logger.c:31:	pLogger->xConfig.xLimit.xParams.ulCount=100;
+./lib/ftdm_logger.c:33:	pLogger->ulCount = 0;
+./lib/ftdm_logger.c:34:	pLogger->ulFirstTime = 0;
+./lib/ftdm_logger.c:35:	pLogger->ulLastTime = 0;
+./lib/ftdm_logger.c:66:	xRet = FTDM_DBIF_LOG_isTableExist(pLogger->xConfig.pName, &bExist);
+./lib/ftdm_logger.c:74:		xRet = FTDM_DBIF_LOG_initTable(pLogger->xConfig.pName);
+./lib/ftdm_logger.c:95:	if (pLogger->xConfig.xLimit.xType == FTM_LIMIT_TYPE_COUNT)
+./lib/ftdm_logger.c:98:		if (pLogger->ulCount >= pLogger->xConfig.xLimit.xParams.ulCount)
+./lib/ftdm_logger.c:100:			FTM_ULONG	ulCount = pLogger->ulCount - pLogger->xConfig.xLimit.xParams.ulCount + 1;
+./lib/ftdm_logger.c:102:			xRet = FTDM_DBIF_LOG_del(pLogger->xConfig.pName, 0, ulCount, &ulCount);
+./lib/ftdm_logger.c:105:				pLogger->ulCount -= ulCount;
+./lib/ftdm_logger.c:108:				xRet = FTDM_DBIF_LOG_info(pLogger->xConfig.pName, &ulCount, &ulBeginTime, &ulEndTime);
+./lib/ftdm_logger.c:111:					pLogger->ulCount = ulCount;
+./lib/ftdm_logger.c:112:					pLogger->ulFirstTime = ulBeginTime;
+./lib/ftdm_logger.c:113:					pLogger->ulLastTime = ulEndTime;
+./lib/ftdm_logger.c:120:	xRet = FTDM_DBIF_LOG_append(pLogger->xConfig.pName, pLog);
+./lib/ftdm_logger.c:123:		pLogger->ulCount++;	
+./lib/ftdm_logger.c:124:		if ((pLogger->ulLastTime == 0) || (pLogger->ulLastTime < pLog->ulTime))
+./lib/ftdm_logger.c:126:			pLogger->ulLastTime = pLog->ulTime;
+./lib/ftdm_logger.c:129:		if((pLogger->ulFirstTime == 0) || (pLogger->ulFirstTime > pLog->ulTime))
+./lib/ftdm_logger.c:131:			pLogger->ulFirstTime = pLog->ulTime;
+./lib/ftdm_logger.c:151:	*pulBeginTime = pLogger->ulFirstTime;
+./lib/ftdm_logger.c:152:	*pulEndTime	= pLogger->ulLastTime;
+./lib/ftdm_logger.c:153:	*pulCount = pLogger->ulCount;
+./lib/ftdm_logger.c:172:				pLogger->xConfig.pName, 
+./lib/ftdm_logger.c:193:				pLogger->xConfig.pName, 
+./lib/ftdm_logger.c:213:	xRet = FTDM_LOGGER_infoInternal(pLogger->xConfig.pName, &ulFirstTime, &ulLastTime, &ulCount1);
+./lib/ftdm_logger.c:220:	xRet = FTDM_DBIF_LOG_del( pLogger->xConfig.pName, nIndex, nCount, &nCount);
+./lib/ftdm_logger.c:223:		xRet = FTDM_LOGGER_infoInternal(pLogger->xConfig.pName, &ulFirstTime, &ulLastTime, &ulCount2);
+./lib/ftdm_logger.c:226:			ERROR("EP[%s] information update failed.\n", pLogger->xConfig.pName);	
+./lib/ftdm_logger.c:230:			pLogger->ulFirstTime = ulFirstTime;
+./lib/ftdm_logger.c:231:			pLogger->ulLastTime = ulLastTime;
+./lib/ftdm_logger.c:232:			pLogger->ulCount = ulCount2;
+./lib/ftdm_logger.c:236:				*pulCount = ulCount1 - ulCount2;
+./lib/ftdm_logger.c:263:	xRet = FTDM_LOGGER_infoInternal(pLogger->xConfig.pName, &ulFirstTime, &ulLastTime, &ulCount1);
+./lib/ftdm_logger.c:269:	xRet = FTDM_DBIF_LOG_delWithTime( pLogger->xConfig.pName, nBeginTime, nEndTime, &ulCount);
+./lib/ftdm_logger.c:273:		xRet = FTDM_LOGGER_infoInternal(pLogger->xConfig.pName, &ulFirstTime, &ulLastTime, &ulCount2);
+./lib/ftdm_logger.c:276:			ERROR("EP[%s] information update failed.\n", pLogger->xConfig.pName);	
+./lib/ftdm_logger.c:280:			pLogger->ulFirstTime = ulFirstTime;
+./lib/ftdm_logger.c:281:			pLogger->ulLastTime = ulLastTime;
+./lib/ftdm_logger.c:282:			pLogger->ulCount = ulCount2;
+./lib/ftdm_logger.c:286:				*pulCount = ulCount1 - ulCount2;
+./lib/ftdm_logger.c:307:	*pulCount = pLogger->ulCount;
+./lib/ftdm_logger.c:322:	return	FTDM_DBIF_LOG_countWithTime( pLogger->xConfig.pName, nBeginTime, nEndTime, pulCount);
+./lib/ftdm_node.c:30:		ERROR2(xRet, "Failed to create node[%s] to DB.\n", pInfo->pDID);
+./lib/ftdm_node.c:38:		FTDM_DBIF_NODE_destroy(pInfo->pDID);
+./lib/ftdm_node.c:43:	memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
+./lib/ftdm_node.c:58:	xRet = FTDM_DBIF_NODE_destroy((*ppNode)->xInfo.pDID);
+./lib/ftdm_node.c:61:		ERROR2(xRet, "Failed to remove node[%s] from DB[%08x].\n", (*ppNode)->xInfo.pDID);
+./lib/ftdm_node.c:95:	memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
+./lib/ftdm_node.c:132:	memcpy(&pNode->xInfo, pInfo, sizeof(FTM_NODE));
+./lib/ftdm_dbif.c:195:	if ((pConfig != NULL) && (pConfig->pFileName != NULL))
+./lib/ftdm_dbif.c:197:		_strDefaultDBName = pConfig->pFileName;
+./lib/ftdm_dbif.c:223:		pParams->ulCount = atoi(pArgv[0]);
+./lib/ftdm_dbif.c:313:			pParams->ulTime = strtoul(pArgv[0], 0, 10);
+./lib/ftdm_dbif.c:563:		if (pParams->ulCount < pParams->ulMaxCount)
+./lib/ftdm_dbif.c:565:			strncpy(pParams->pTables[pParams->ulCount++], pArgv[0], 63);
+./lib/ftdm_dbif.c:854:	*pulDeletedCount = ulBeforeCount - ulAfterCount;
+./lib/ftdm_dbif.c:888:				memcpy(&pParams->pInfos[(*pParams->pulCount)], pArgv[i], sizeof(FTM_NODE));
+./lib/ftdm_dbif.c:889:				(*pParams->pulCount)++;
+./lib/ftdm_dbif.c:953:	xRet = _FTDM_DBIF_NODE_isExist(pInfo->pDID, &bExist);
+./lib/ftdm_dbif.c:962:		ERROR2(FTM_RET_ALREADY_EXISTS, "Node[%s] is already exist.\n", pInfo->pDID);
+./lib/ftdm_dbif.c:969:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:976:		pInfo->xFlags |= FTM_EP_FLAG_STATIC;
+./lib/ftdm_dbif.c:978:		sqlite3_bind_text(pStmt, 1, pInfo->pDID, strlen(pInfo->pDID), 0);
+./lib/ftdm_dbif.c:1072:	if (strcmp(pInfo->pDID, pDID) != 0)
+./lib/ftdm_dbif.c:1199:	xRet = FTDM_DBIF_EP_isExist(pInfo->pEPID, &bExist);
+./lib/ftdm_dbif.c:1202:		ERROR2(xRet, "Failed to append EP[%s]!\n", pInfo->pEPID);
+./lib/ftdm_dbif.c:1208:		WARN("EP[%s] is already exist.\n", pInfo->pEPID);
+./lib/ftdm_dbif.c:1215:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:1221:		pInfo->xFlags |= FTM_EP_FLAG_STATIC;
+./lib/ftdm_dbif.c:1223:		sqlite3_bind_text(pStmt, 1, pInfo->pEPID, strlen(pInfo->pEPID), 0);
+./lib/ftdm_dbif.c:1353:		if (pParams->nCount < pParams->nMaxCount)
+./lib/ftdm_dbif.c:1359:					memcpy(&pParams->pInfos[pParams->nCount], pArgv[i], sizeof(FTM_EP));
+./lib/ftdm_dbif.c:1360:					pParams->nCount++;
+./lib/ftdm_dbif.c:1417:			strncpy(pInfo->pEPID, pArgv[0], FTM_EPID_LEN);
+./lib/ftdm_dbif.c:1485:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:1569:	switch (pData->xValue.xType)
+./lib/ftdm_dbif.c:1578:						pData->ulTime, 
+./lib/ftdm_dbif.c:1579:						(FTM_ULONG)pData->xState,
+./lib/ftdm_dbif.c:1580:						pData->xValue.xValue.nValue);
+./lib/ftdm_dbif.c:1586:					pData->ulTime, 
+./lib/ftdm_dbif.c:1587:					(FTM_ULONG)pData->xState,
+./lib/ftdm_dbif.c:1588:					pData->xValue.xValue.nValue);
+./lib/ftdm_dbif.c:1599:						pData->ulTime, 
+./lib/ftdm_dbif.c:1600:						(FTM_ULONG)pData->xState,
+./lib/ftdm_dbif.c:1601:						pData->xValue.xValue.ulValue);
+./lib/ftdm_dbif.c:1606:					pData->ulTime, 
+./lib/ftdm_dbif.c:1607:					(FTM_ULONG)pData->xState,
+./lib/ftdm_dbif.c:1608:					pData->xValue.xValue.ulValue);
+./lib/ftdm_dbif.c:1619:						pData->ulTime, 
+./lib/ftdm_dbif.c:1620:						(FTM_ULONG)pData->xState,
+./lib/ftdm_dbif.c:1621:						pData->xValue.xValue.fValue);
+./lib/ftdm_dbif.c:1626:					pData->ulTime, 
+./lib/ftdm_dbif.c:1627:					(FTM_ULONG)pData->xState,
+./lib/ftdm_dbif.c:1628:					pData->xValue.xValue.fValue);
+./lib/ftdm_dbif.c:1830:	if ((nArgc != 0) && (pParams->nCount < pParams->nMaxCount))
+./lib/ftdm_dbif.c:1834:		pParams->nCount++;
+./lib/ftdm_dbif.c:1839:				if (pParams->nCount <= pParams->nMaxCount)
+./lib/ftdm_dbif.c:1841:					pParams->pEPData[pParams->nCount-1].ulTime = strtoul(pArgv[i], 0, 10);
+./lib/ftdm_dbif.c:1846:				pParams->pEPData[pParams->nCount-1].xState = strtoul(&pArgv[i][1], NULL, 10);
+./lib/ftdm_dbif.c:1850:				if (pParams->nCount <= pParams->nMaxCount)
+./lib/ftdm_dbif.c:1857:						FTM_VALUE_initINT(&pParams->pEPData[pParams->nCount-1].xValue, nValue);
+./lib/ftdm_dbif.c:1864:						FTM_VALUE_initULONG(&pParams->pEPData[pParams->nCount-1].xValue, ulValue);
+./lib/ftdm_dbif.c:1871:						FTM_VALUE_initFLOAT(&pParams->pEPData[pParams->nCount-1].xValue, fValue);
+./lib/ftdm_dbif.c:1984:			nCount = ulTotalCount - nIndex;	
+./lib/ftdm_dbif.c:1996:			nIndex = ulTotalCount - nCount;	
+./lib/ftdm_dbif.c:2007:	xRet = FTDM_DBIF_EP_DATA_get(pEPID, nIndex + nCount - 1, &xLastData, 1, &ulRetCount);
+./lib/ftdm_dbif.c:2082:            if (strcmp(pParams->pName, pArgv[i]) == 0)
+./lib/ftdm_dbif.c:2084:                pParams->bExist = FTM_TRUE;
+./lib/ftdm_dbif.c:2176:			pParams->bExist = FTM_TRUE;
+./lib/ftdm_dbif.c:2302:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:2308:		sqlite3_bind_text(pStmt, 1, pTrigger->pID, strlen(pTrigger->pID), 0);
+./lib/ftdm_dbif.c:2391:			strncpy(pTrigger->pID, pArgv[0], FTM_ID_LEN);
+./lib/ftdm_dbif.c:2460:		FTM_TRIGGER_PTR	pTrigger = &pParams->pTriggers[pParams->ulCount++];
+./lib/ftdm_dbif.c:2466:				strncpy(pTrigger->pID , pArgv[i], FTM_ID_LEN);
+./lib/ftdm_dbif.c:2538:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:2545:		sqlite3_bind_text(pStmt, 2, pInfo->pID, strlen(pInfo->pID), 0);
+./lib/ftdm_dbif.c:2621:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:2627:		sqlite3_bind_text(pStmt, 1, pInfo->pID, strlen(pInfo->pID), 0);
+./lib/ftdm_dbif.c:2661:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:2668:		sqlite3_bind_text(pStmt, 2, pInfo->pID, strlen(pInfo->pID), 0);
+./lib/ftdm_dbif.c:2757:			strncpy(pAction->pID, pArgv[0], FTM_ID_LEN);
+./lib/ftdm_dbif.c:2827:		FTM_ACTION_PTR	pAction = &pParams->pActions[pParams->ulCount++];
+./lib/ftdm_dbif.c:2833:				strncpy( pAction->pID, pArgv[i], FTM_ID_LEN);
+./lib/ftdm_dbif.c:2949:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:2955:	    sqlite3_bind_text(pStmt, 1, pRule->pID, strlen(pRule->pID), 0);
+./lib/ftdm_dbif.c:3016:			strncpy(pRule->pID, pArgv[0], FTM_ID_LEN);
+./lib/ftdm_dbif.c:3020:			memcpy(&pRule->xParams, pArgv[0], sizeof(pRule->xParams));
+./lib/ftdm_dbif.c:3048:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:3055:		sqlite3_bind_text(pStmt, 1, pRule->pID, strlen(pRule->pID), 0);
+./lib/ftdm_dbif.c:3154:		FTM_RULE_PTR	pRule = &pParams->pRules[pParams->ulCount++];
+./lib/ftdm_dbif.c:3160:				strncpy(pRule->pID, pArgv[i], FTM_ID_LEN);
+./lib/ftdm_dbif.c:3230:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:3237:		sqlite3_bind_text(pStmt, 2, pInfo->pID, strlen(pInfo->pID), 0);
+./lib/ftdm_dbif.c:3351:		nRet = sqlite3_prepare(_pSQLiteDB, pSQL, -1, &pStmt, 0);
+./lib/ftdm_dbif.c:3357:		sqlite3_bind_int64(pStmt, 1, pLog->ullID);
+./lib/ftdm_dbif.c:3358:		sqlite3_bind_int(pStmt, 2, pLog->ulTime);
+./lib/ftdm_dbif.c:3359:		sqlite3_bind_int(pStmt, 3, pLog->xLevel);
+./lib/ftdm_dbif.c:3411:			ulCount = ulTotalCount - ulIndex;	
+./lib/ftdm_dbif.c:3423:			ulIndex = ulTotalCount - ulCount;	
+./lib/ftdm_dbif.c:3434:	xRet = FTDM_DBIF_LOG_get("log", ulIndex + ulCount - 1, &xLastLog, 1, &ulRetCount);
+./lib/ftdm_dbif.c:3541:	if ((nArgc != 0) && (pParams->ulCount < pParams->ulMaxCount))
+./lib/ftdm_dbif.c:3549:				memcpy(&pParams->pLogs[pParams->ulCount++], pArgv[i], sizeof(FTM_LOG));
+./lib/ftdm_dbif.c:3680:	if ((nArgc != 0) && (pParams->nCount < pParams->nMaxCount))
+./lib/ftdm_dbif.c:3688:				if (pParams->nCount <= pParams->nMaxCount)
+./lib/ftdm_dbif.c:3690:					memcpy(&pParams->pLogs[pParams->nCount++], pArgv[i], sizeof(FTM_LOG));
+./lib/ftdm_node_management.c:20:	return	(strcmp(pNode->xInfo.pDID, pDID) == 0);
+./lib/ftdm_node_management.c:75:	xRet = FTM_LIST_create(&pNodeM->pList);
+./lib/ftdm_node_management.c:78:		FTM_LIST_setSeeker(pNodeM->pList, FTDM_NODEM_seekNode);	
+./lib/ftdm_node_management.c:92:	FTM_LIST_iteratorStart(pNodeM->pList);
+./lib/ftdm_node_management.c:93:	while(FTM_LIST_iteratorNext(pNodeM->pList, (FTM_VOID_PTR _PTR_)&pNode) == FTM_RET_OK)
+./lib/ftdm_node_management.c:98:	FTM_LIST_destroy(pNodeM->pList);
+./lib/ftdm_node_management.c:99:	pNodeM->pList = NULL;
+./lib/ftdm_node_management.c:145:					xRet = FTM_LIST_append(pNodeM->pList, pNode);
+./lib/ftdm_node_management.c:212:							FTM_LIST_append(pNodeM->pList, pNode);
+./lib/ftdm_node_management.c:268:			xRet = FTDM_DBIF_NODE_get(pNode->xInfo.pDID, &xInfo);
+./lib/ftdm_node_management.c:271:				TRACE("NODE[%s]	save to DB.\n", pNode->xInfo.pDID);
+./lib/ftdm_node_management.c:272:				xRet = FTDM_DBIF_NODE_create(&pNode->xInfo);	
+./lib/ftdm_node_management.c:297:	return	FTM_LIST_count(pNodeM->pList, pulCount);
+./lib/ftdm_node_management.c:309:	return	FTM_LIST_append(pNodeM->pList, pNode);
+./lib/ftdm_node_management.c:321:	return	FTM_LIST_remove(pNodeM->pList, pNode);
+./lib/ftdm_node_management.c:338:	xRet = FTM_LIST_get(pNodeM->pList, (FTM_VOID_PTR)pDID, (FTM_VOID_PTR _PTR_)&pNode);
+./lib/ftdm_node_management.c:363:	xRet = FTM_LIST_getAt(pNodeM->pList, nIndex, (FTM_VOID_PTR _PTR_)&pNode);
+./lib/ftdm_node_management.c:390:	xRet = FTM_LIST_count(pNodeM->pList, &ulCount);
+./lib/ftdm_node_management.c:401:		xRet = FTM_LIST_getAt(pNodeM->pList, ulIndex + i, (FTM_VOID_PTR _PTR_)&pNode);
+./lib/ftdm_node_management.c:407:		strcpy(pDIDs[(*pulCount)++], pNode->xInfo.pDID);
+./lib/ftdm_node_management.c:425:	xRet = FTM_LIST_seek(pNodeM->pList, (FTM_VOID_PTR)pDID);
+./lib/ftdm_node_management.c:447:	if (FTM_LIST_count(pNodeM->pList, &ulCount) == FTM_RET_OK)
+./lib/ftdm_node_management.c:455:				pNode->xInfo.pDID,
+./lib/ftdm_node_management.c:456:				pNode->xInfo.pName,
+./lib/ftdm_node_management.c:458:				pNode->xInfo.pModel,
+./lib/ftdm_node_management.c:459:				FTM_NODE_typeString(pNode->xInfo.xType),
+./lib/ftdm_node_management.c:460:				pNode->xInfo.pLocation,
+./lib/ftdm_node_management.c:461:				pNode->xInfo.ulReportInterval,
+./lib/ftdm_node_management.c:462:				pNode->xInfo.ulTimeout);
+./lib/ftdm_node_management.c:464:			switch(pNode->xInfo.xType)
+./lib/ftdm_node_management.c:469:						FTDM_CFG_SNMP_getVersionString(pNode->xInfo.xOption.xSNMP.ulVersion),
+./lib/ftdm_node_management.c:470:						pNode->xInfo.xOption.xSNMP.pURL,
+./lib/ftdm_node_management.c:471:						pNode->xInfo.xOption.xSNMP.pCommunity,
+./lib/ftdm_node_management.c:472:						pNode->xInfo.xOption.xSNMP.pMIB);
+./lib/ftdm_node_management.c:480:						pNode->xInfo.xOption.xMB.pURL,
+./lib/ftdm_node_management.c:481:						pNode->xInfo.xOption.xMB.ulPort,
+./lib/ftdm_node_management.c:482:						pNode->xInfo.xOption.xMB.ulSlaveID);
+./lib/ftdm_node_management.c:489:						pNode->xInfo.xOption.xFINS.pDIP,
+./lib/ftdm_node_management.c:490:						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >> 16) & 0xFF), 
+./lib/ftdm_node_management.c:491:						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >> 8) & 0xFF), 
+./lib/ftdm_node_management.c:492:						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulDA >> 0) & 0xFF), 
+./lib/ftdm_node_management.c:493:						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >> 16) & 0xFF), 
+./lib/ftdm_node_management.c:494:						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >> 8) & 0xFF), 
+./lib/ftdm_node_management.c:495:						(FTM_UINT8)((pNode->xInfo.xOption.xFINS.ulSA >> 0) & 0xFF), 
+./lib/ftdm_node_management.c:496:						pNode->xInfo.xOption.xFINS.ulServerID);
+./lib/ftdm_config.c:19:	FTM_LIST_init(&pConfig->xEP.xList);
+./lib/ftdm_config.c:20:	FTM_LIST_setSeeker(&pConfig->xEP.xList, FTDM_CFG_EP_seeker);
+./lib/ftdm_config.c:22:	FTM_LIST_init(&pConfig->xEP.xTypeList);
+./lib/ftdm_config.c:23:	FTM_LIST_setSeeker(&pConfig->xEP.xTypeList, FTDM_CFG_EP_CLASS_seeker);
+./lib/ftdm_config.c:25:	pConfig->xServer.usPort 		= FTDM_SERVER_DEFAULT_PORT;
+./lib/ftdm_config.c:26:	pConfig->xServer.ulMaxSession 	= FTDM_SERVER_DEFAULT_MAX_SESSION;
+./lib/ftdm_config.c:27:	pConfig->xServer.ulBufferLen 	= FTDM_SERVER_DEFAULT_BUFFER_LEN;
+./lib/ftdm_config.c:39:	FTM_LIST_iteratorStart(&pConfig->xEP.xList);
+./lib/ftdm_config.c:40:	while( FTM_LIST_iteratorNext(&pConfig->xEP.xList, (FTM_VOID_PTR _PTR_)&pEPInfo) == FTM_RET_OK)
+./lib/ftdm_config.c:44:	FTM_LIST_final(&pConfig->xEP.xList);
+./lib/ftdm_config.c:46:	FTM_LIST_iteratorStart(&pConfig->xEP.xTypeList);
+./lib/ftdm_config.c:47:	while( FTM_LIST_iteratorNext(&pConfig->xEP.xTypeList, (FTM_VOID_PTR _PTR_)&pEPClassInfo) == FTM_RET_OK)
+./lib/ftdm_config.c:51:	FTM_LIST_final(&pConfig->xEP.xTypeList);
+./lib/ftdm_config.c:85:			strcpy(pConfig->xDB.pFileName, pDBFileName);
+./lib/ftdm_config.c:99:			pConfig->xServer.usPort = usPort;
+./lib/ftdm_config.c:105:			pConfig->xServer.ulMaxSession = ulSession;
+./lib/ftdm_config.c:111:			pConfig->xServer.ulBufferLen = ulBufferLen;
+./lib/ftdm_config.c:144:						xRet = FTDM_CFG_EP_CLASS_append(&pConfig->xEP, &xEPClass);
+./lib/ftdm_config.c:174:	MESSAGE("\t %-8s : %s\n", "DB FILE", pConfig->xDB.pFileName);
+./lib/ftdm_config.c:179:	if (FTDM_CFG_EP_CLASS_count(&pConfig->xEP, &ulCount) == FTM_RET_OK)
+./lib/ftdm_config.c:185:			FTDM_CFG_EP_CLASS_getAt(&pConfig->xEP, i, &xEPClassInfo);
+./lib/ftdm_config.c:186:			MESSAGE("\t%08lx %-16s %-16s %-16s %-16s %-16s %-16s\n",
+./lib/ftdm_config.c:210:	strcpy(pConfig->xDB.pFileName, pFileName);
+./lib/ftdm_config.c:222:	pConfig->xServer.usPort = pInfo->usPort;
+./lib/ftdm_config.c:223:	pConfig->xServer.ulMaxSession = pInfo->ulSessionCount;
+./lib/ftdm_config.c:246:	FTM_LIST_append(&pConfig->xList, pNewInfo);
+./lib/ftdm_config.c:256:	return	FTM_LIST_count(&pConfig->xList, pCount);
+./lib/ftdm_config.c:266:	xRet = FTM_LIST_getAt(&pConfig->xList, ulIndex, (FTM_VOID_PTR _PTR_)&pNodeInfo);
+./lib/ftdm_config.c:294:	FTM_LIST_append(&pConfig->xList, pNewInfo);
+./lib/ftdm_config.c:303:	return	FTM_LIST_count(&pConfig->xList, pCount);
+./lib/ftdm_config.c:314:	if (FTM_LIST_getAt(&pConfig->xList, ulIndex, (FTM_VOID_PTR _PTR_)&pEPInfo) != FTM_RET_OK)
+./lib/ftdm_config.c:341:	FTM_LIST_append(&pConfig->xTypeList, pNewInfo);
+./lib/ftdm_config.c:350:	FTM_LIST_count(&pConfig->xTypeList, pCount);
+./lib/ftdm_config.c:369:	xRet = FTM_LIST_getAt(&pConfig->xTypeList, ulIndex, (FTM_VOID_PTR _PTR_)&pEPClassInfo);
+./lib/ftdm_config.c:392:	return	strncpy(pInfo->pEPID, pEPID, FTM_EPID_LEN) == 0;
+./lib/ftdm_config.c:404:	return	(pInfo->xType == *pClass);
+./lib/ftdm_trigger.c:75:						xRet = FTM_CONFIG_ITEM_getItemString(&xTriggerItem, "type", pTypeString, sizeof(pTypeString) - 1);
+./lib/ftdm_trigger.c:209:							pTrigger->ulIndex = ulIndex;	
+./lib/ftdm_trigger.c:290:				memcpy(&pTrigger->xInfo, &pInfos[i], sizeof(FTM_TRIGGER));
+./lib/ftdm_trigger.c:333:		xRet = FTDM_DBIF_TRIGGER_get(pTrigger->pID, &xInfo);
+./lib/ftdm_trigger.c:357:	if (FTDM_TRIGGER_get(pInfo->pID, &pTrigger) == FTM_RET_OK)
+./lib/ftdm_trigger.c:363:	if (strlen(pInfo->pID) == 0)
+./lib/ftdm_trigger.c:370:			sprintf(pInfo->pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
+./lib/ftdm_trigger.c:373:		while (FTDM_TRIGGER_get(pInfo->pID, &pTrigger) == FTM_RET_OK);
+./lib/ftdm_trigger.c:383:			FTDM_DBIF_TRIGGER_destroy(pInfo->pID);
+./lib/ftdm_trigger.c:388:		memcpy(&pTrigger->xInfo, pInfo, sizeof(FTM_TRIGGER));
+./lib/ftdm_trigger.c:393:			ERROR("Trigger[%s] append failed\n", pTrigger->xInfo.pID);
+./lib/ftdm_trigger.c:394:			FTDM_DBIF_TRIGGER_destroy(pInfo->pID);
+./lib/ftdm_trigger.c:401:		ERROR("Trigger[%s] DB creation failed.\n", pInfo->pID);
+./lib/ftdm_trigger.c:486:		if ((*ppTrigger)->ulIndex == ulIndex)
+./lib/ftdm_trigger.c:516:		strcpy(pTrigger->xInfo.pName, pInfo->pName);
+./lib/ftdm_trigger.c:521:		strcpy(pTrigger->xInfo.pEPID, pInfo->pEPID);
+./lib/ftdm_trigger.c:526:		pTrigger->xInfo.xParams.xCommon.ulDetectionTime = pInfo->xParams.xCommon.ulDetectionTime;
+./lib/ftdm_trigger.c:531:		pTrigger->xInfo.xParams.xCommon.ulHoldingTime = pInfo->xParams.xCommon.ulHoldingTime;
+./lib/ftdm_trigger.c:536:		memcpy(&pTrigger->xInfo.xParams.xAbove.xValue, &pInfo->xParams.xAbove.xValue, sizeof(FTM_VALUE));
+./lib/ftdm_trigger.c:541:		memcpy(&pTrigger->xInfo.xParams.xInclude.xLower, &pInfo->xParams.xInclude.xLower, sizeof(FTM_VALUE));
+./lib/ftdm_trigger.c:546:		memcpy(&pTrigger->xInfo.xParams.xInclude.xUpper, &pInfo->xParams.xInclude.xUpper, sizeof(FTM_VALUE));
+./lib/ftdm_trigger.c:549:	FTDM_DBIF_TRIGGER_set(pID, &pTrigger->xInfo);
+./lib/ftdm_trigger.c:584:		strcpy(pIDs[(*pulCount)++], pTrigger->xInfo.pID);
+./lib/ftdm_trigger.c:607:				pTrigger->xInfo.pID, 
+./lib/ftdm_trigger.c:608:				pTrigger->xInfo.pName, 
+./lib/ftdm_trigger.c:610:				pTrigger->xInfo.pEPID);
+./lib/ftdm_trigger.c:612:			switch(pTrigger->xInfo.xType)
+./lib/ftdm_trigger.c:616:					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xAbove.ulDetectionTime) / 1000000.0);
+./lib/ftdm_trigger.c:617:					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xAbove.ulHoldingTime) / 1000000.0); 
+./lib/ftdm_trigger.c:618:					MESSAGE("x >= %s ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xAbove.xValue));
+./lib/ftdm_trigger.c:624:					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xBelow.ulDetectionTime) / 1000000.0);
+./lib/ftdm_trigger.c:625:					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xBelow.ulHoldingTime) / 1000000.0); 
+./lib/ftdm_trigger.c:626:					MESSAGE("x <= %s ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xBelow.xValue));
+./lib/ftdm_trigger.c:632:					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xInclude.ulDetectionTime) / 1000000.0);
+./lib/ftdm_trigger.c:633:					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xInclude.ulHoldingTime) / 1000000.0); 
+./lib/ftdm_trigger.c:634:					MESSAGE("(%s <= x <= ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xInclude.xLower));
+./lib/ftdm_trigger.c:635:					MESSAGE("%s) ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xInclude.xUpper));
+./lib/ftdm_trigger.c:641:					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xExcept.ulDetectionTime) / 1000000.0);
+./lib/ftdm_trigger.c:642:					MESSAGE("%16.1f ", (pTrigger->xInfo.xParams.xExcept.ulHoldingTime) / 1000000.0); 
+./lib/ftdm_trigger.c:643:					MESSAGE("(x < %s) && ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xExcept.xLower));
+./lib/ftdm_trigger.c:644:					MESSAGE("(%s < x) ", FTM_VALUE_print(&pTrigger->xInfo.xParams.xExcept.xUpper));
+./lib/ftdm_trigger.c:668:	return	strcpy(pTrigger->pID,pTriggerID) == 0;
+./lib/ftdm_client_config.c:13:	strcpy(pConfig->xNetwork.pServerIP, "127.0.0.1");
+./lib/ftdm_client_config.c:14:	pConfig->xNetwork.usPort = 8888;
+./lib/ftdm_client_config.c:15:	FTM_LIST_init(&pConfig->xDiagnostic.xEPList);
+./lib/ftdm_client_config.c:65:					xRet |= FTM_CONFIG_ITEM_getItemString(&xElement, "name", pName, sizeof(pName) - 1);
+./lib/ftdm_client_config.c:84:			FTM_CONFIG_ITEM_getItemString(&xServerSetting, "ip", pConfig->xNetwork.pServerIP, sizeof(pConfig->xNetwork.pServerIP) - 1);
+./lib/ftdm_client_config.c:85:			FTM_CONFIG_ITEM_getItemUSHORT(&xServerSetting, "port", &pConfig->xNetwork.usPort );
+./lib/ftdm_client_config.c:86:			FTM_CONFIG_ITEM_getItemBOOL(&xServerSetting, "auto_connect", &pConfig->xNetwork.bAutoConnect);
+./lib/ftdm_client_config.c:113:						FTM_LIST_append(&pConfig->xDiagnostic.xEPList, (void *)nEPID);
+./lib/ftdm_client_config.c:121:		xRet = FTM_CONFIG_ITEM_getItemString(&xEPTest, "start_time", pTimeString, sizeof(pTimeString) - 1);
+./lib/ftdm_client_config.c:126:		xRet = FTM_CONFIG_ITEM_getItemString(&xEPTest, "end_time", pTimeString, sizeof(pTimeString) - 1);
+./lib/ftdm_client_config.c:145:	FTM_LIST_final(&pConfig->xDiagnostic.xEPList);
+./lib/ftdm_ep.c:30:	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
+./lib/ftdm_ep.c:63:	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
+./lib/ftdm_ep.c:65:	xRet = FTDM_DBIF_EP_isExist(pInfo->pEPID, &bExist);
+./lib/ftdm_ep.c:86:		xRet = FTDM_EP_DATA_infoInternal(pInfo->pEPID, &ulFirstTime, &ulLastTime, &ulCount);
+./lib/ftdm_ep.c:89:			pEP->ulFirstTime = ulFirstTime;
+./lib/ftdm_ep.c:90:			pEP->ulLastTime = ulLastTime;
+./lib/ftdm_ep.c:91:			pEP->ulCount = ulCount;
+./lib/ftdm_ep.c:108:	xRet = FTDM_DBIF_EP_remove((*ppEP)->xInfo.pEPID);
+./lib/ftdm_ep.c:111:		ERROR2(xRet, "The EP[%s] removed from database failed.\n", (*ppEP)->xInfo.pEPID);
+./lib/ftdm_ep.c:144:	memcpy(pInfo, &pEP->xInfo, sizeof(FTM_EP));
+./lib/ftdm_ep.c:167:	if (strcmp(pEP->xInfo.pEPID, pInfo->pEPID) != 0)
+./lib/ftdm_ep.c:175:	memcpy(&pEP->xInfo, pInfo, sizeof(FTM_EP));
+./lib/ftdm_ep.c:177:	xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
+./lib/ftdm_ep.c:199:	memcpy(&xInfo, &pEP->xInfo, sizeof(FTM_EP));
+./lib/ftdm_ep.c:210:	if (strcmp(pEP->xInfo.pEPID, xInfo.pEPID) != 0)
+./lib/ftdm_ep.c:218:	memcpy(&pEP->xInfo, &xInfo, sizeof(FTM_EP));
+./lib/ftdm_ep.c:220:	xRet =FTDM_DBIF_EP_set(pEP->xInfo.pEPID, &pEP->xInfo);
+./lib/ftdm_ep.c:240:	if (pEP->xInfo.xLimit.xType == FTM_EP_LIMIT_TYPE_COUNT)
+./lib/ftdm_ep.c:243:		if (pEP->ulCount >= pEP->xInfo.xLimit.xParams.ulCount)
+./lib/ftdm_ep.c:245:			FTM_ULONG	ulCount = pEP->ulCount - pEP->xInfo.xLimit.xParams.ulCount + 1;
+./lib/ftdm_ep.c:247:			xRet = FTDM_DBIF_EP_DATA_del(pEP->xInfo.pEPID, pEP->ulCount - ulCount, ulCount);
+./lib/ftdm_ep.c:250:				pEP->ulCount -= ulCount;
+./lib/ftdm_ep.c:253:				xRet = FTDM_DBIF_EP_DATA_info(pEP->xInfo.pEPID,&ulBeginTime, &ulEndTime);
+./lib/ftdm_ep.c:256:					pEP->ulFirstTime = ulBeginTime;
+./lib/ftdm_ep.c:257:					pEP->ulLastTime = ulEndTime;
+./lib/ftdm_ep.c:264:	xRet = FTDM_DBIF_EP_DATA_append(pEP->xInfo.pEPID, pData);
+./lib/ftdm_ep.c:267:		pEP->ulCount++;	
+./lib/ftdm_ep.c:268:		if ((pEP->ulLastTime == 0) || (pEP->ulLastTime < pData->ulTime))
+./lib/ftdm_ep.c:270:			pEP->ulLastTime = pData->ulTime;
+./lib/ftdm_ep.c:273:		if((pEP->ulFirstTime == 0) || (pEP->ulFirstTime > pData->ulTime))
+./lib/ftdm_ep.c:275:			pEP->ulFirstTime = pData->ulTime;
+./lib/ftdm_ep.c:320:	*pulBeginTime = pEP->ulFirstTime;
+./lib/ftdm_ep.c:321:	*pulEndTime	= pEP->ulLastTime;
+./lib/ftdm_ep.c:322:	*pulCount = pEP->ulCount;
+./lib/ftdm_ep.c:338:	if (pEP->xInfo.xLimit.xType == pLimit->xType)
+./lib/ftdm_ep.c:340:		switch(pEP->xInfo.xLimit.xType)
+./lib/ftdm_ep.c:344:				if (pEP->xInfo.xLimit.xParams.ulCount == pLimit->xParams.ulCount )
+./lib/ftdm_ep.c:353:				if ((pEP->xInfo.xLimit.xParams.xTime.ulStart == pLimit->xParams.xTime.ulStart)
+./lib/ftdm_ep.c:354:					&& (pEP->xInfo.xLimit.xParams.xTime.ulEnd == pLimit->xParams.xTime.ulEnd))
+./lib/ftdm_ep.c:363:				if (pEP->xInfo.xLimit.xParams.ulHours == pLimit->xParams.ulHours)
+./lib/ftdm_ep.c:372:				if (pEP->xInfo.xLimit.xParams.ulDays == pLimit->xParams.ulDays)
+./lib/ftdm_ep.c:381:				if (pEP->xInfo.xLimit.xParams.ulMonths == pLimit->xParams.ulMonths)
+./lib/ftdm_ep.c:391:	memcpy(&pEP->xInfo.xLimit, pLimit, sizeof(FTM_EP_LIMIT));
+./lib/ftdm_ep.c:392:	switch(pEP->xInfo.xLimit.xType)
+./lib/ftdm_ep.c:398:			xRet = FTDM_DBIF_EP_DATA_count(pEP->xInfo.pEPID, &ulCount);
+./lib/ftdm_ep.c:401:				ERROR2(xRet, "Failed to get EP[%s] data count!\n", pEP->xInfo.pEPID);	
+./lib/ftdm_ep.c:405:			if (pLimit->xParams.ulCount < ulCount)
+./lib/ftdm_ep.c:407:				xRet = FTDM_DBIF_EP_DATA_del(pEP->xInfo.pEPID, pLimit->xParams.ulCount, ulCount - pLimit->xParams.ulCount);
+./lib/ftdm_ep.c:410:					ERROR2(xRet, "Failed to remove EP[%s] data[%lu:%lu]!\n", pEP->xInfo.pEPID,
+./lib/ftdm_ep.c:411:							pLimit->xParams.ulCount, ulCount - pLimit->xParams.ulCount);
+./lib/ftdm_ep.c:419:			xRet = FTDM_DBIF_EP_DATA_delWithTime(pEP->xInfo.pEPID, pLimit->xParams.xTime.ulStart, pLimit->xParams.xTime.ulEnd);
+./lib/ftdm_ep.c:422:				ERROR2(xRet, "Failed to remove EP[%s] data[%lu:%lu]!\n", pEP->xInfo.pEPID,
+./lib/ftdm_ep.c:423:						pLimit->xParams.xTime.ulStart, pLimit->xParams.xTime.ulEnd);
+./lib/ftdm_ep.c:436:			xRet = FTDM_DBIF_EP_DATA_info(pEP->xInfo.pEPID, &ulStartTime, &ulEndTime);
+./lib/ftdm_ep.c:439:				ERROR2(xRet, "Failed to EP[%s] data times!\n", pEP->xInfo.pEPID);	
+./lib/ftdm_ep.c:460:			xRet = FTM_TIME_subHours(&xTime, pLimit->xParams.ulHours, &xTime);
+./lib/ftdm_ep.c:470:			xRet = FTDM_DBIF_EP_DATA_delWithTime(pEP->xInfo.pEPID, ulStartTime, ulEndTime);
+./lib/ftdm_ep.c:473:				ERROR2(xRet, "Failed to remove EP[%s] data.\n", pEP->xInfo.pEPID);			
+./lib/ftdm_ep.c:480:			if (pEP->xInfo.xLimit.xParams.ulDays == pLimit->xParams.ulDays)
+./lib/ftdm_ep.c:489:			if (pEP->xInfo.xLimit.xParams.ulMonths == pLimit->xParams.ulMonths)
+./lib/ftdm_ep.c:516:				pEP->xInfo.pEPID, 
+./lib/ftdm_ep.c:538:				pEP->xInfo.pEPID, 
+./lib/ftdm_ep.c:559:	xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount1);
+./lib/ftdm_ep.c:565:	xRet = FTDM_DBIF_EP_DATA_del( pEP->xInfo.pEPID, nIndex, nCount);
+./lib/ftdm_ep.c:568:		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount2);
+./lib/ftdm_ep.c:571:			ERROR2(xRet, "EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
+./lib/ftdm_ep.c:575:			pEP->ulFirstTime = ulFirstTime;
+./lib/ftdm_ep.c:576:			pEP->ulLastTime = ulLastTime;
+./lib/ftdm_ep.c:577:			pEP->ulCount = ulCount2;
+./lib/ftdm_ep.c:581:				*pulCount = ulCount1 - ulCount2;
+./lib/ftdm_ep.c:606:	xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount1);
+./lib/ftdm_ep.c:612:	xRet = FTDM_DBIF_EP_DATA_delWithTime( pEP->xInfo.pEPID, nBeginTime, nEndTime);
+./lib/ftdm_ep.c:616:		xRet = FTDM_EP_DATA_infoInternal(pEP->xInfo.pEPID, &ulFirstTime, &ulLastTime, &ulCount2);
+./lib/ftdm_ep.c:619:			ERROR2(xRet, "EP[%s] information update failed.\n", pEP->xInfo.pEPID);	
+./lib/ftdm_ep.c:623:			pEP->ulFirstTime = ulFirstTime;
+./lib/ftdm_ep.c:624:			pEP->ulLastTime = ulLastTime;
+./lib/ftdm_ep.c:625:			pEP->ulCount = ulCount2;
+./lib/ftdm_ep.c:629:				*pulCount = ulCount1 - ulCount2;
+./lib/ftdm_ep.c:650:	*pulCount = pEP->ulCount;
+./lib/ftdm_ep.c:665:	return	FTDM_DBIF_EP_DATA_countWithTime( pEP->xInfo.pEPID, nBeginTime, nEndTime, pulCount);
+./lib/ftdm_ep.c:677:	return	(strcmp(pEP->xInfo.pEPID, pEPID) == 0);
+./lib/ftdm_ep.c:690:	xRet = FTM_EP_print(&pEP->xInfo);
+./lib/ftdm_ep.c:699:		MESSAGE("%-16s : %lu\n", "data count", ulCount);
+./lib/ftdm_ep.c:703:		MESSAGE("%-16s : %s\n", "data count", "unknown");
+./lib/ftdm_server.c:103:	pServer->pDM = pDM;
+./lib/ftdm_server.c:104:	FTM_LIST_init(&pServer->xSessionList);
+./lib/ftdm_server.c:105:	FTM_LIST_setSeeker(&pServer->xSessionList, FTDMS_SESSION_LIST_seeker);
+./lib/ftdm_server.c:129:	memcpy(&pServer->xConfig, pConfig, sizeof(FTDM_CFG_SERVER));
+./lib/ftdm_server.c:153:	if (pthread_create(&pServer->xThread, NULL, FTDMS_process, (void *)pServer) < 0)
+./lib/ftdm_server.c:169:	pServer->bStop = FTM_TRUE;
+./lib/ftdm_server.c:170:	close(pServer->hSocket);
+./lib/ftdm_server.c:182:	pthread_join(pServer->xThread, NULL);
+./lib/ftdm_server.c:196:	if (sem_init(&pServer->xSemaphore, 0, pServer->xConfig.ulMaxSession) < 0)
+./lib/ftdm_server.c:202:	pServer->hSocket = socket(AF_INET, SOCK_STREAM, 0);
+./lib/ftdm_server.c:203:	if (pServer->hSocket == -1)
+./lib/ftdm_server.c:209: 	if( fcntl(pServer->hSocket, F_SETFL, O_NONBLOCK) == -1 )
+./lib/ftdm_server.c:218:	xServer.sin_port 		= htons( pServer->xConfig.usPort );
+./lib/ftdm_server.c:220:	nRet = bind( pServer->hSocket, (struct sockaddr *)&xServer, sizeof(xServer));
+./lib/ftdm_server.c:227:	listen(pServer->hSocket, 3);
+./lib/ftdm_server.c:231:	while(!pServer->bStop)
+./lib/ftdm_server.c:236:		hClient = accept(pServer->hSocket, (struct sockaddr *)&xClient, (socklen_t *)&nSockAddrInLen);
+./lib/ftdm_server.c:256:				nRet = pthread_create(&pSession->xThread, NULL, FTDMS_service, pSession);
+./lib/ftdm_server.c:267:			FTDM_removeInvalidData(pServer->pDM);	
+./lib/ftdm_server.c:276:	FTM_LIST_iteratorStart(&pServer->xSessionList);
+./lib/ftdm_server.c:277:	while(FTM_LIST_iteratorNext(&pServer->xSessionList, (FTM_VOID_PTR _PTR_)&pSession) == FTM_RET_OK)
+./lib/ftdm_server.c:279:		pSession->bStop = FTM_TRUE;
+./lib/ftdm_server.c:280:		shutdown(pSession->hSocket, SHUT_RD);
+./lib/ftdm_server.c:281:		pthread_join(pSession->xThread, 0);
+./lib/ftdm_server.c:295:	FTDM_REQ_PARAMS_PTR		pReq 	= (FTDM_REQ_PARAMS_PTR)pSession->pReqBuff;
+./lib/ftdm_server.c:296:	FTDM_RESP_PARAMS_PTR	pResp 	= (FTDM_RESP_PARAMS_PTR)pSession->pRespBuff;
+./lib/ftdm_server.c:299:	pServer = pSession->pServer;
+./lib/ftdm_server.c:303:	if (sem_timedwait(&pSession->pServer->xSemaphore, &xTimeout) < 0)
+./lib/ftdm_server.c:305:		TRACE("The session(%08x) was closed\n", pSession->hSocket);
+./lib/ftdm_server.c:306:		shutdown(pSession->hSocket, SHUT_RD);
+./lib/ftdm_server.c:310:	while(!pSession->bStop)
+./lib/ftdm_server.c:314:		nLen = recv(pSession->hSocket, pReq, pSession->ulReqBufferLen, 0);
+./lib/ftdm_server.c:322:			ERROR2(FTM_RET_COMM_RECV_ERROR, "recv failed[%d]\n", -nLen);
+./lib/ftdm_server.c:326:		FTM_TIME_getCurrent(&pSession->xLastTime);
+./lib/ftdm_server.c:328:		pResp->nLen = pSession->ulRespBufferLen;
+./lib/ftdm_server.c:329:		if (FTM_RET_OK != FTDMS_serviceCall(pSession->pServer, pReq, pResp))
+./lib/ftdm_server.c:331:			pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:332:			pResp->xRet = FTM_RET_INTERNAL_ERROR;
+./lib/ftdm_server.c:333:			pResp->nLen = sizeof(FTDM_RESP_PARAMS);
+./lib/ftdm_server.c:336:		nLen = send(pSession->hSocket, pResp, pResp->nLen, MSG_DONTWAIT);
+./lib/ftdm_server.c:339:			ERROR2(FTM_RET_COMM_SEND_ERROR, "send failed[%d]\n", -nLen);	
+./lib/ftdm_server.c:346:	sem_post(&pServer->xSemaphore);
+./lib/ftdm_server.c:361:	while(pSet->xCmd != FTDM_CMD_UNKNOWN)
+./lib/ftdm_server.c:363:		if (pSet->xCmd == pReq->xCmd)
+./lib/ftdm_server.c:365:			xRet = pSet->fService(pServer, pReq, pResp);
+./lib/ftdm_server.c:373:	ERROR2(FTM_RET_FUNCTION_NOT_SUPPORTED, "Function[%d] not supported.\n", pReq->xCmd);
+./lib/ftdm_server.c:385:	return (pSession->xThread == *pPThread);
+./lib/ftdm_server.c:411:	pSession->ulReqBufferLen = pServer->xConfig.ulBufferLen;
+./lib/ftdm_server.c:412:	pSession->pReqBuff = (FTM_BYTE_PTR)FTM_MEM_malloc(pServer->xConfig.ulBufferLen);
+./lib/ftdm_server.c:413:	if (pSession->pReqBuff == NULL)
+./lib/ftdm_server.c:420:	pSession->ulRespBufferLen = pServer->xConfig.ulBufferLen;
+./lib/ftdm_server.c:421:	pSession->pRespBuff = (FTM_BYTE_PTR)FTM_MEM_malloc(pServer->xConfig.ulBufferLen);
+./lib/ftdm_server.c:422:	if (pSession->pRespBuff == NULL)
+./lib/ftdm_server.c:429:	pSession->pServer = pServer;
+./lib/ftdm_server.c:430:	pSession->hSocket = hClient;
+./lib/ftdm_server.c:431:	memcpy(&pSession->xPeer, pSockAddr, sizeof(struct sockaddr));
+./lib/ftdm_server.c:433:	if (sem_init(&pSession->xSemaphore, 0, 1) < 0)
+./lib/ftdm_server.c:441:	xRet = FTM_LIST_append(&pServer->xSessionList, pSession);	
+./lib/ftdm_server.c:444:		sem_destroy(&pSession->xSemaphore);	
+./lib/ftdm_server.c:450:	FTM_TIME_getCurrent(&pSession->xStartTime);
+./lib/ftdm_server.c:460:		if (pSession->pReqBuff != NULL)
+./lib/ftdm_server.c:462:			FTM_MEM_free(pSession->pReqBuff);
+./lib/ftdm_server.c:463:			pSession->pReqBuff = NULL;
+./lib/ftdm_server.c:466:		if (pSession->pRespBuff != NULL)
+./lib/ftdm_server.c:468:			FTM_MEM_free(pSession->pRespBuff);
+./lib/ftdm_server.c:469:			pSession->pRespBuff = NULL;
+./lib/ftdm_server.c:485:	if ((*ppSession)->hSocket != 0)
+./lib/ftdm_server.c:487:		TRACE("The session(%08x) was closed\n", (*ppSession)->hSocket);
+./lib/ftdm_server.c:488:		close((*ppSession)->hSocket);
+./lib/ftdm_server.c:489:		(*ppSession)->hSocket = 0;
+./lib/ftdm_server.c:492:	sem_destroy(&(*ppSession)->xSemaphore);
+./lib/ftdm_server.c:494:	FTM_LIST_remove(&pServer->xSessionList, (FTM_VOID_PTR)*ppSession);	
+./lib/ftdm_server.c:496:	if ((*ppSession)->pReqBuff != NULL)
+./lib/ftdm_server.c:498:		FTM_MEM_free((*ppSession)->pReqBuff);
+./lib/ftdm_server.c:499:		(*ppSession)->pReqBuff = NULL;
+./lib/ftdm_server.c:502:	if ((*ppSession)->pRespBuff != NULL)
+./lib/ftdm_server.c:504:		FTM_MEM_free((*ppSession)->pRespBuff);
+./lib/ftdm_server.c:505:		(*ppSession)->pRespBuff = NULL;
+./lib/ftdm_server.c:520:	return	FTM_LIST_count(&pServer->xSessionList, pulCount);
+./lib/ftdm_server.c:530:	xRet = FTM_LIST_getAt(&pServer->xSessionList, ulIndex, (FTM_VOID_PTR _PTR_)&pElement);
+./lib/ftdm_server.c:549:	xRet = FTDM_NODE_create(&pReq->xNodeInfo, &pNode);
+./lib/ftdm_server.c:552:		xRet = FTDM_NODEM_append(pServer->pDM->pNodeM, pNode);
+./lib/ftdm_server.c:555:			ERROR2(xRet, "Failed to add node[%s] : Error Code - %08x\n", pReq->xNodeInfo.pDID, xRet);
+./lib/ftdm_server.c:561:		ERROR2(xRet, "Failed to add node[%s] : Error Code - %08x\n", pReq->xNodeInfo.pDID, xRet);
+./lib/ftdm_server.c:564:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:565:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:566:	pResp->xRet = xRet;
+./lib/ftdm_server.c:568:	return	pResp->xRet;
+./lib/ftdm_server.c:583:	TRACE("Try to remove node[%s].\n", pReq->pDID);
+./lib/ftdm_server.c:584:	xRet = FTDM_NODEM_get(pServer->pDM->pNodeM, pReq->pDID, &pNode);
+./lib/ftdm_server.c:587:		xRet = FTDM_NODEM_remove(pServer->pDM->pNodeM, pNode);
+./lib/ftdm_server.c:594:			ERROR2(xRet, "Failed to remove node[%s] from list : Error Code - %08x\n", pReq->pDID, xRet);
+./lib/ftdm_server.c:599:		ERROR2(xRet, "Failed to get node[%s] : Error Code - %08x\n", pReq->pDID, xRet);
+./lib/ftdm_server.c:602:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:603:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:604:	pResp->xRet = xRet;
+./lib/ftdm_server.c:606:	return	pResp->xRet;
+./lib/ftdm_server.c:616:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:617:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:618:	pResp->xRet = FTDM_NODEM_count(pServer->pDM->pNodeM, &pResp->nCount);
+./lib/ftdm_server.c:620:	return	pResp->xRet;
+./lib/ftdm_server.c:632:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:633:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:634:	pResp->xRet = FTDM_NODEM_get(pServer->pDM->pNodeM, pReq->pDID, &pNode);
+./lib/ftdm_server.c:635:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:637:		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
+./lib/ftdm_server.c:640:	return	pResp->xRet;
+./lib/ftdm_server.c:652:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:653:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:654:	pResp->xRet = FTDM_NODEM_getAt(pServer->pDM->pNodeM, pReq->nIndex, &pNode);
+./lib/ftdm_server.c:656:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:658:		memcpy(&pResp->xNodeInfo, &pNode->xInfo, sizeof(FTM_NODE));
+./lib/ftdm_server.c:661:	return	pResp->xRet;
+./lib/ftdm_server.c:674:	xRet = FTDM_NODEM_get(pServer->pDM->pNodeM, pReq->xNodeInfo.pDID, &pNode);
+./lib/ftdm_server.c:677:		xRet = FTDM_NODE_setInfo(pNode, &pReq->xNodeInfo);
+./lib/ftdm_server.c:680:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:681:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:682:	pResp->xRet = xRet;
+./lib/ftdm_server.c:684:	return	pResp->xRet;
+./lib/ftdm_server.c:696:	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_DID);
+./lib/ftdm_server.c:698:	if (pReq->ulCount < ulMaxCount)
+./lib/ftdm_server.c:700:		ulMaxCount = pReq->ulCount;
+./lib/ftdm_server.c:703:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:704:	pResp->xRet = FTDM_NODEM_getDIDList(pServer->pDM->pNodeM, pResp->pDIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
+./lib/ftdm_server.c:705:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:707:		pResp->nLen = sizeof(*pResp) + sizeof(FTM_DID) * pResp->ulCount;
+./lib/ftdm_server.c:711:		pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:714:	return	pResp->xRet;
+./lib/ftdm_server.c:725:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:726:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:727:	pResp->xRet = FTDM_NODEM_get(pServer->pDM->pNodeM, pReq->pDID, &pNode);
+./lib/ftdm_server.c:729:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:731:		pResp->xType = pNode->xInfo.xType;
+./lib/ftdm_server.c:734:	return	pResp->xRet;
+./lib/ftdm_server.c:746:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:747:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:748:	pResp->nURLLen = FTM_URL_LEN;
+./lib/ftdm_server.c:749:	pResp->xRet = FTDM_NODEM_get(pServer->pDM->pNodeM, pReq->pDID, &pNode);
+./lib/ftdm_server.c:751:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:755:	return	pResp->xRet;
+./lib/ftdm_server.c:765:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:766:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:767:	//pResp->xRet = FTDM_setNodeURL(pReq->pDID, pReq->pURL);
+./lib/ftdm_server.c:769:	return	pResp->xRet;
+./lib/ftdm_server.c:779:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:780:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:781:	pResp->nLocationLen = FTM_LOCATION_LEN;
+./lib/ftdm_server.c:782:	//pResp->xRet = FTDM_getNodeLocation(
+./lib/ftdm_server.c:783:	//				pReq->pDID, 
+./lib/ftdm_server.c:784:	//				pResp->pLocation, 
+./lib/ftdm_server.c:785:	//				pResp->nLocationLen);
+./lib/ftdm_server.c:787:	return	pResp->xRet;
+./lib/ftdm_server.c:797:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:798:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:799:	//pResp->xRet = FTDM_setNodeLocation(
+./lib/ftdm_server.c:800:	//				pReq->pDID, 
+./lib/ftdm_server.c:801:	//				pReq->pLocation);
+./lib/ftdm_server.c:803:	return	pResp->xRet;
+./lib/ftdm_server.c:816:	xRet = FTDM_EP_create(&pReq->xInfo, &pEP);
+./lib/ftdm_server.c:819:		xRet = FTDM_EPM_append(pServer->pDM->pEPM, pEP);
+./lib/ftdm_server.c:826:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:827:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:828:	pResp->xRet = xRet;
+./lib/ftdm_server.c:830:	return	pResp->xRet;
+./lib/ftdm_server.c:843:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:846:		xRet = FTDM_EPM_remove(pServer->pDM->pEPM, pEP);
+./lib/ftdm_server.c:852:				TRACE("EP[%s] destroy falled!\n", pReq->pEPID);
+./lib/ftdm_server.c:857:			TRACE("EP[%s] remove falled!\n", pReq->pEPID);
+./lib/ftdm_server.c:862:		TRACE("EP[%s] not found!\n", pReq->pEPID);
+./lib/ftdm_server.c:865:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:866:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:867:	pResp->xRet = xRet;
+./lib/ftdm_server.c:869:	return	pResp->xRet;
+./lib/ftdm_server.c:879:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:880:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:881:	pResp->xRet = FTDM_EPM_count(pServer->pDM->pEPM, pReq->xType, &pResp->nCount);
+./lib/ftdm_server.c:882:	return	pResp->xRet;
+./lib/ftdm_server.c:895:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:898:		xRet = FTDM_EP_get(pEP, &pResp->xInfo);
+./lib/ftdm_server.c:901:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:902:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:903:	pResp->xRet = xRet;
+./lib/ftdm_server.c:905:	return	pResp->xRet;
+./lib/ftdm_server.c:918:	xRet = FTDM_EPM_getAt(pServer->pDM->pEPM, pReq->nIndex, &pEP);
+./lib/ftdm_server.c:921:		FTDM_EP_get(pEP, &pResp->xInfo);
+./lib/ftdm_server.c:923:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:924:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:925:	pResp->xRet = xRet;
+./lib/ftdm_server.c:927:	return	pResp->xRet;
+./lib/ftdm_server.c:940:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:943:		xRet = FTDM_EP_setFields(pEP, pReq->xFields, &pReq->xInfo);
+./lib/ftdm_server.c:946:			ERROR2(xRet, "EP[%s] set fields failed.\n", pReq->pEPID);	
+./lib/ftdm_server.c:952:		ERROR2(xRet, "EP[%s] get failed.\n", pReq->pEPID);	
+./lib/ftdm_server.c:955:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:956:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:957:	pResp->xRet = xRet;
+./lib/ftdm_server.c:959:	return	pResp->xRet;
+./lib/ftdm_server.c:971:	ulMaxCount = (pResp->nLen -  sizeof(*pResp)) / sizeof(FTM_EPID);
+./lib/ftdm_server.c:972:	if (ulMaxCount > pReq->ulCount)
+./lib/ftdm_server.c:974:		ulMaxCount = pReq->ulCount;	
+./lib/ftdm_server.c:977:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:978:	pResp->xRet = FTDM_EPM_getEPIDList(pServer->pDM->pEPM, pResp->pEPIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
+./lib/ftdm_server.c:979:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:981:		pResp->nLen = sizeof(*pResp) + sizeof(FTM_EPID) * pResp->ulCount;
+./lib/ftdm_server.c:985:		pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:988:	return	pResp->xRet;
+./lib/ftdm_server.c:998:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:999:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1000:	pResp->xRet = FTDM_EP_CLASS_add(&pReq->xInfo);
+./lib/ftdm_server.c:1002:	return	pResp->xRet;
+./lib/ftdm_server.c:1012:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1013:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1014:	pResp->xRet = FTDM_EP_CLASS_del(pReq->xType);
+./lib/ftdm_server.c:1016:	return	pResp->xRet;
+./lib/ftdm_server.c:1026:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1027:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1028:	pResp->xRet = FTDM_EP_CLASS_count(&pResp->nCount);
+./lib/ftdm_server.c:1030:	return	pResp->xRet;
+./lib/ftdm_server.c:1040:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1041:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1042:	pResp->xRet = FTDM_EP_CLASS_get(pReq->xEPClass, &pResp->xInfo);
+./lib/ftdm_server.c:1044:	return	pResp->xRet;
+./lib/ftdm_server.c:1054:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1055:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1056:	pResp->xRet = FTDM_EP_CLASS_getAt(pReq->nIndex, &pResp->xInfo);
+./lib/ftdm_server.c:1058:	return	pResp->xRet;
+./lib/ftdm_server.c:1071:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:1074:		xRet = FTDM_EP_DATA_add(pEP, &pReq->xData);
+./lib/ftdm_server.c:1077:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1078:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1079:	pResp->xRet = xRet;
+./lib/ftdm_server.c:1081:	return	pResp->xRet;
+./lib/ftdm_server.c:1094:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:1097:		xRet = FTDM_EP_DATA_info(pEP, &pResp->ulBeginTime, &pResp->ulEndTime, &pResp->ulCount);
+./lib/ftdm_server.c:1100:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1101:	pResp->ulLen = sizeof(*pResp);
+./lib/ftdm_server.c:1102:	pResp->xRet = xRet;
+./lib/ftdm_server.c:1104:	return	pResp->xRet;
+./lib/ftdm_server.c:1117:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:1120:		xRet = FTDM_EP_DATA_setLimit(pEP, &pReq->xLimit);
+./lib/ftdm_server.c:1123:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1124:	pResp->ulLen = sizeof(*pResp);
+./lib/ftdm_server.c:1125:	pResp->xRet = xRet;
+./lib/ftdm_server.c:1127:	return	pResp->xRet;
+./lib/ftdm_server.c:1141:	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_EP_DATA);
+./lib/ftdm_server.c:1142:	if (ulMaxCount > pReq->nCount)
+./lib/ftdm_server.c:1144:		ulMaxCount = pReq->nCount;
+./lib/ftdm_server.c:1147:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:1154:			xRet = FTDM_EP_DATA_get( pEP, pReq->nStartIndex, pResp->pData, ulMaxCount, &pResp->nCount);
+./lib/ftdm_server.c:1157:				if (pReq->nStartIndex + pResp->nCount < ulDataCount)
+./lib/ftdm_server.c:1159:					pResp->bRemain = FTM_TRUE;	
+./lib/ftdm_server.c:1164:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1165:	pResp->xRet = xRet;
+./lib/ftdm_server.c:1167:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1169:		pResp->nLen = sizeof(FTDM_RESP_EP_DATA_GET_PARAMS) + pResp->nCount * sizeof(FTM_EP_DATA);
+./lib/ftdm_server.c:1173:		pResp->nLen = sizeof(FTDM_RESP_EP_DATA_GET_PARAMS);
+./lib/ftdm_server.c:1175:	return	pResp->xRet;
+./lib/ftdm_server.c:1189:	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_EP_DATA);
+./lib/ftdm_server.c:1190:	if (ulMaxCount > pReq->nCount)
+./lib/ftdm_server.c:1192:		ulMaxCount = pReq->nCount;
+./lib/ftdm_server.c:1195:	pResp->nCount = 0;
+./lib/ftdm_server.c:1196:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:1200:		xRet = FTDM_EP_DATA_countWithTime(pEP,pReq->nBeginTime, pReq->nEndTime, &ulDataCount);
+./lib/ftdm_server.c:1205:				xRet = FTDM_EP_DATA_getWithTime(pEP, pReq->nBeginTime, pReq->nEndTime, pReq->bAscending, pResp->pData, ulMaxCount, &pResp->nCount);
+./lib/ftdm_server.c:1210:						pResp->bRemain = FTM_TRUE;	
+./lib/ftdm_server.c:1216:				pResp->nCount  = 0;	
+./lib/ftdm_server.c:1221:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1222:	pResp->xRet = xRet;
+./lib/ftdm_server.c:1224:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1226:		pResp->nLen = sizeof(FTDM_RESP_EP_DATA_GET_WITH_TIME_PARAMS) + pResp->nCount * sizeof(FTM_EP_DATA);
+./lib/ftdm_server.c:1230:		pResp->nLen = sizeof(FTDM_RESP_EP_DATA_GET_WITH_TIME_PARAMS);
+./lib/ftdm_server.c:1232:	return	pResp->xRet;
+./lib/ftdm_server.c:1245:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:1248:		xRet = FTDM_EP_DATA_del(pEP, pReq->nIndex, pReq->nCount, &pResp->ulCount);
+./lib/ftdm_server.c:1251:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1252:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1253:	pResp->xRet = xRet;
+./lib/ftdm_server.c:1255:	return	pResp->xRet;
+./lib/ftdm_server.c:1268:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:1271:		xRet = FTDM_EP_DATA_delWithTime( pEP, pReq->nBeginTime, pReq->nEndTime, &pResp->ulCount);
+./lib/ftdm_server.c:1273:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1274:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1275:	pResp->xRet = xRet;
+./lib/ftdm_server.c:1277:	return	pResp->xRet;
+./lib/ftdm_server.c:1290:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:1293:		xRet = FTDM_EP_DATA_count( pEP, &pResp->nCount);
+./lib/ftdm_server.c:1295:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1296:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1297:	pResp->xRet = xRet;
+./lib/ftdm_server.c:1299:	return	pResp->xRet;
+./lib/ftdm_server.c:1312:	xRet = FTDM_EPM_get(pServer->pDM->pEPM, pReq->pEPID, &pEP);
+./lib/ftdm_server.c:1315:		xRet = FTDM_EP_DATA_countWithTime(pEP, pReq->nBeginTime, pReq->nEndTime, &pResp->nCount);
+./lib/ftdm_server.c:1317:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1318:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1319:	pResp->xRet = xRet;
+./lib/ftdm_server.c:1321:	return	pResp->xRet;
+./lib/ftdm_server.c:1333:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1334:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1335:	pResp->xRet = FTDM_TRIGGER_create(&pReq->xTrigger, &pTrigger);
+./lib/ftdm_server.c:1337:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1339:		strncpy(pResp->pTriggerID, pTrigger->xInfo.pID, FTM_ID_LEN);
+./lib/ftdm_server.c:1341:	return	pResp->xRet;
+./lib/ftdm_server.c:1352:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1353:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1354:	pResp->xRet = FTDM_TRIGGER_destroy(pReq->pTriggerID);
+./lib/ftdm_server.c:1356:	return	pResp->xRet;
+./lib/ftdm_server.c:1366:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1367:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1368:	pResp->xRet = FTDM_TRIGGER_count(&pResp->nCount);
+./lib/ftdm_server.c:1370:	return	pResp->xRet;
+./lib/ftdm_server.c:1382:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1383:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1384:	pResp->xRet = FTDM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
+./lib/ftdm_server.c:1385:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1387:		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+./lib/ftdm_server.c:1390:	return	pResp->xRet;
+./lib/ftdm_server.c:1402:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1403:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1404:	pResp->xRet = FTDM_TRIGGER_getAt(pReq->nIndex, &pTrigger);
+./lib/ftdm_server.c:1406:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1408:		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+./lib/ftdm_server.c:1411:	return	pResp->xRet;
+./lib/ftdm_server.c:1423:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1424:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1425:	pResp->xRet = FTDM_TRIGGER_set(pReq->pTriggerID, pReq->xFields, &pReq->xTrigger);
+./lib/ftdm_server.c:1426:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1428:		pResp->xRet = FTDM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
+./lib/ftdm_server.c:1429:		if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1431:			memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+./lib/ftdm_server.c:1435:	return	pResp->xRet;
+./lib/ftdm_server.c:1447:	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_ID);
+./lib/ftdm_server.c:1448:	if (ulMaxCount > pReq->ulCount)
+./lib/ftdm_server.c:1450:		ulMaxCount = pReq->ulCount;
+./lib/ftdm_server.c:1453:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1454:	pResp->xRet = FTDM_TRIGGER_getIDList(pResp->pIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
+./lib/ftdm_server.c:1455:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1457:		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;
+./lib/ftdm_server.c:1461:		pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1464:	return	pResp->xRet;
+./lib/ftdm_server.c:1476:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1477:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1478:	pResp->xRet = FTDM_ACTION_create(&pReq->xAction, &pAction);
+./lib/ftdm_server.c:1480:	return	pResp->xRet;
+./lib/ftdm_server.c:1490:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1491:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1492:	pResp->xRet = FTDM_ACTION_destroy(pReq->pActionID);
+./lib/ftdm_server.c:1494:	return	pResp->xRet;
+./lib/ftdm_server.c:1504:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1505:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1506:	pResp->xRet = FTDM_ACTION_count(&pResp->nCount);
+./lib/ftdm_server.c:1508:	return	pResp->xRet;
+./lib/ftdm_server.c:1520:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1521:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1522:	pResp->xRet = FTDM_ACTION_get(pReq->pActionID, &pAction);
+./lib/ftdm_server.c:1523:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1525:		memcpy(&pResp->xAction, &pAction->xInfo, sizeof(FTM_ACTION));
+./lib/ftdm_server.c:1528:	return	pResp->xRet;
+./lib/ftdm_server.c:1540:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1541:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1542:	pResp->xRet = FTDM_ACTION_getAt(pReq->nIndex, &pAction);
+./lib/ftdm_server.c:1544:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1546:		memcpy(&pResp->xAction, &pAction->xInfo, sizeof(FTM_ACTION));
+./lib/ftdm_server.c:1549:	return	pResp->xRet;
+./lib/ftdm_server.c:1561:	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_ID);
+./lib/ftdm_server.c:1562:	if (ulMaxCount > pReq->ulCount)
+./lib/ftdm_server.c:1564:		ulMaxCount = pReq->ulCount;
+./lib/ftdm_server.c:1567:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1568:	pResp->xRet = FTDM_ACTION_getIDList(pResp->pIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
+./lib/ftdm_server.c:1569:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1571:		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;
+./lib/ftdm_server.c:1575:		pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1578:	return	pResp->xRet;
+./lib/ftdm_server.c:1588:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1589:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1590:	pResp->xRet = FTDM_RULE_create(&pReq->xRule);
+./lib/ftdm_server.c:1592:	return	pResp->xRet;
+./lib/ftdm_server.c:1603:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1604:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1605:	pResp->xRet = FTDM_RULE_destroy(pReq->pRuleID);
+./lib/ftdm_server.c:1607:	return	pResp->xRet;
+./lib/ftdm_server.c:1617:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1618:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1619:	pResp->xRet = FTDM_RULE_count(&pResp->nCount);
+./lib/ftdm_server.c:1621:	return	pResp->xRet;
+./lib/ftdm_server.c:1633:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1634:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1635:	pResp->xRet = FTDM_RULE_get(pReq->pRuleID, &pRule);
+./lib/ftdm_server.c:1636:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1638:		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_RULE));
+./lib/ftdm_server.c:1641:	return	pResp->xRet;
+./lib/ftdm_server.c:1653:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1654:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1655:	pResp->xRet = FTDM_RULE_getAt(pReq->nIndex, &pRule);
+./lib/ftdm_server.c:1657:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1659:		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_RULE));
+./lib/ftdm_server.c:1662:	return	pResp->xRet;
+./lib/ftdm_server.c:1674:	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_EP_DATA);
+./lib/ftdm_server.c:1675:	if (ulMaxCount > pReq->ulCount)
+./lib/ftdm_server.c:1677:		ulMaxCount = pReq->ulCount;
+./lib/ftdm_server.c:1680:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1681:	pResp->xRet = FTDM_RULE_getIDList(pResp->pIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
+./lib/ftdm_server.c:1682:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1684:		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;
+./lib/ftdm_server.c:1688:		pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1691:	return	pResp->xRet;
+./lib/ftdm_server.c:1701:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1702:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1703:	pResp->xRet = FTDM_LOGGER_add(pServer->pDM->pLogger, &pReq->xLog);
+./lib/ftdm_server.c:1705:	return	pResp->xRet;
+./lib/ftdm_server.c:1716:	pResp->xCmd = pReq->xCmd;
+./lib/ftdm_server.c:1717:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1718:	pResp->xRet = FTDM_LOGGER_del(pServer->pDM->pLogger, pReq->ulIndex, pReq->ulCount, &pResp->ulCount);
+./lib/ftdm_server.c:1720:	return	pResp->xRet;
+./lib/ftdm_server.c:1730:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1731:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1732:	pResp->xRet = FTDM_LOGGER_count(pServer->pDM->pLogger, &pResp->nCount);
+./lib/ftdm_server.c:1734:	return	pResp->xRet;
+./lib/ftdm_server.c:1746:	ulMaxCount = (pResp->nLen - sizeof(*pResp)) / sizeof(FTM_LOG);
+./lib/ftdm_server.c:1747:	if (ulMaxCount > pReq->ulCount)
+./lib/ftdm_server.c:1749:		ulMaxCount = pReq->ulCount;
+./lib/ftdm_server.c:1752:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1753:	pResp->xRet = FTDM_LOGGER_get(pServer->pDM->pLogger, pReq->ulIndex, pResp->pLogs, ulMaxCount, &pResp->ulCount);
+./lib/ftdm_server.c:1754:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1756:		pResp->nLen = sizeof(*pResp) + sizeof(FTM_LOG) * pResp->ulCount;
+./lib/ftdm_server.c:1759:	return	pResp->xRet;
+./lib/ftdm_server.c:1771:	pResp->xCmd	= pReq->xCmd;
+./lib/ftdm_server.c:1772:	pResp->nLen = sizeof(*pResp);
+./lib/ftdm_server.c:1773:	pResp->xRet = FTM_RET_FUNCTION_NOT_SUPPORTED;
+./lib/ftdm_server.c:1775:	pResp->xRet = FTDM_LOG_getAt(pReq->nIndex, &pRule);
+./lib/ftdm_server.c:1777:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_server.c:1779:		memcpy(&pResp->xRule, &pRule->xInfo, sizeof(FTM_LOG));
+./lib/ftdm_server.c:1782:	return	pResp->xRet;
+./lib/ftdm_ep_management.c:26:	xRet = FTM_LIST_create(&pEPM->pList);
+./lib/ftdm_ep_management.c:29:		FTM_LIST_setSeeker(pEPM->pList, FTDM_EPM_seekEP);
+./lib/ftdm_ep_management.c:42:	FTM_LIST_iteratorStart(pEPM->pList);
+./lib/ftdm_ep_management.c:43:	while(FTM_LIST_iteratorNext(pEPM->pList, (FTM_VOID_PTR _PTR_)&pEP) == FTM_RET_OK)
+./lib/ftdm_ep_management.c:48:	FTM_LIST_destroy(pEPM->pList);
+./lib/ftdm_ep_management.c:49:	pEPM->pList = NULL;
+./lib/ftdm_ep_management.c:279:			xRet = FTDM_DBIF_EP_get(pEP->xInfo.pEPID, &xInfo);
+./lib/ftdm_ep_management.c:282:				xRet = FTDM_DBIF_EP_append(&pEP->xInfo);	
+./lib/ftdm_ep_management.c:312:	xRet = FTM_LIST_count(pEPM->pList, &ulTotalCount);
+./lib/ftdm_ep_management.c:322:		if (xType == (pEP->xInfo.xType & FTM_EP_TYPE_MASK))
+./lib/ftdm_ep_management.c:342:	return	FTM_LIST_append(pEPM->pList, pEP);
+./lib/ftdm_ep_management.c:354:	return	FTM_LIST_remove(pEPM->pList, pEP);
+./lib/ftdm_ep_management.c:368:	return	FTM_LIST_get(pEPM->pList, pEPID, (FTM_VOID_PTR _PTR_)ppEP);
+./lib/ftdm_ep_management.c:381:	return	FTM_LIST_getAt(pEPM->pList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
+./lib/ftdm_ep_management.c:417:		strcpy(pEPIDs[(*pulCount)++], pEP->xInfo.pEPID);
+./lib/ftdm_ep_management.c:442:				pEP->xInfo.pEPID,
+./lib/ftdm_ep_management.c:443:				pEP->xInfo.pName,
+./lib/ftdm_ep_management.c:444:				(pEP->xInfo.bEnable)?"Running":"Stopped",
+./lib/ftdm_ep_management.c:445:				FTM_EP_typeString(pEP->xInfo.xType),
+./lib/ftdm_ep_management.c:446:				pEP->xInfo.pUnit);
+./lib/ftdm_ep_management.c:449:				pEP->xInfo.ulUpdateInterval,
+./lib/ftdm_ep_management.c:450:				pEP->xInfo.ulReportInterval,
+./lib/ftdm_ep_management.c:451:				pEP->xInfo.ulTimeout,
+./lib/ftdm_ep_management.c:452:				pEP->xInfo.pDID,
+./lib/ftdm_ep_management.c:453:				pEP->ulCount,
+./lib/ftdm_ep_management.c:454:				pEP->ulFirstTime,
+./lib/ftdm_ep_management.c:455:				pEP->ulLastTime);
+./lib/ftdm_ep_management.c:475:	return	strcmp(pEP->xInfo.pEPID, pEPID) == 0;
+./lib/ftdm_client.c:56:	FTM_LOCK_init(&pSession->xLock);
+./lib/ftdm_client.c:58:	if (hSock == -1)
+./lib/ftdm_client.c:74:	pSession->hSock = hSock;
+./lib/ftdm_client.c:75:	pSession->nTimeout = 5000;
+./lib/ftdm_client.c:88:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:93:	close(pSession->hSock);
+./lib/ftdm_client.c:94:	FTM_LOCK_final(&pSession->xLock);
+./lib/ftdm_client.c:95:	pSession->hSock = 0;
+./lib/ftdm_client.c:109:	if ((pSession != NULL) && (pSession->hSock != 0))
+./lib/ftdm_client.c:134:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:177:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:220:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:267:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:311:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:361:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:404:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:436:	xRet = pResp->xRet;
+./lib/ftdm_client.c:440:		*pulCount = pResp->ulCount;
+./lib/ftdm_client.c:441:		memcpy(pDIDs, pResp->pDIDs, sizeof(FTM_DID) * pResp->ulCount);
+./lib/ftdm_client.c:462:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:503:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:540:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:587:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:633:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:681:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:728:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:760:	xRet = pResp->xRet;
+./lib/ftdm_client.c:764:		*pulCount = pResp->ulCount;
+./lib/ftdm_client.c:765:		memcpy(pEPIDs, pResp->pEPIDs, sizeof(FTM_EPID) * pResp->ulCount);
+./lib/ftdm_client.c:785:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:831:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:877:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:924:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:964:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1005:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1048:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1079:	xRet = pResp->xRet;
+./lib/ftdm_client.c:1081:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_client.c:1085:		for( i = 0 ; i < pResp->nCount && i < nMaxCount ; i++)
+./lib/ftdm_client.c:1087:			memcpy(&pData[i], &pResp->pData[i], sizeof(FTM_EP_DATA));
+./lib/ftdm_client.c:1090:		*pbRemain = pResp->bRemain;
+./lib/ftdm_client.c:1091:		*pnCount = pResp->nCount;
+./lib/ftdm_client.c:1120:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1152:	xRet = pResp->xRet;
+./lib/ftdm_client.c:1154:	if (pResp->xRet == FTM_RET_OK)
+./lib/ftdm_client.c:1158:		for( i = 0 ; i < pResp->nCount && i < nMaxCount ; i++)
+./lib/ftdm_client.c:1160:			memcpy(&pData[i], &pResp->pData[i], sizeof(FTM_EP_DATA));
+./lib/ftdm_client.c:1163:		*pbRemain = pResp->bRemain;
+./lib/ftdm_client.c:1164:		*pnCount = pResp->nCount;
+./lib/ftdm_client.c:1188:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1234:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1275:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1316:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1569:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1601:	xRet = pResp->xRet;
+./lib/ftdm_client.c:1605:		*pulCount = pResp->ulCount;
+./lib/ftdm_client.c:1606:		memcpy(pIDs, pResp->pIDs, sizeof(FTM_ID) * pResp->ulCount);
+./lib/ftdm_client.c:1841:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:1873:	xRet = pResp->xRet;
+./lib/ftdm_client.c:1877:		*pulCount = pResp->ulCount;
+./lib/ftdm_client.c:1878:		memcpy(pIDs, pResp->pIDs, sizeof(FTM_ID) * pResp->ulCount);
+./lib/ftdm_client.c:2258:		xRet = pResp->xRet;
+./lib/ftdm_client.c:2264:		if (pResp->ulCount > ulCount)
+./lib/ftdm_client.c:2267:			ERROR2(xRet, "The requested quantity[%lu] has been exceeded[%lu]\n", ulRequestCount, pResp->ulCount);	
+./lib/ftdm_client.c:2271:		memcpy(&pLogs[ulReadCount], pResp->pLogs, sizeof(FTM_LOG) * pResp->ulCount);
+./lib/ftdm_client.c:2272:		ulIndex += pResp->ulCount;
+./lib/ftdm_client.c:2273:		ulReadCount += pResp->ulCount;
+./lib/ftdm_client.c:2274:		ulCount -= pResp->ulCount;
+./lib/ftdm_client.c:2275:		if (ulRequestCount > pResp->ulCount)
+./lib/ftdm_client.c:2347:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:2379:	xRet = pResp->xRet;
+./lib/ftdm_client.c:2383:		*pulCount = pResp->ulCount;
+./lib/ftdm_client.c:2384:		memcpy(pIDs, pResp->pIDs, sizeof(FTM_ID) * pResp->ulCount);
+./lib/ftdm_client.c:2408:	if ((pSession == NULL) || (pSession->hSock == 0))
+./lib/ftdm_client.c:2413:	FTM_LOCK_set(&pSession->xLock);
+./lib/ftdm_client.c:2415:	//TRACE("send(%08lx, pReq, %d, 0)\n", pSession->hSock, nReqLen);
+./lib/ftdm_client.c:2417:	if( send(pSession->hSock, pReq, nReqLen, 0) < 0)
+./lib/ftdm_client.c:2423:		nTimeout = pSession->nTimeout;
+./lib/ftdm_client.c:2424:		while(--nTimeout > 0)
+./lib/ftdm_client.c:2426:			int	nLen = recv(pSession->hSock, pResp, nRespLen, MSG_DONTWAIT);
+./lib/ftdm_client.c:2427://			TRACE("recv(%08lx, pResp, %d, MSG_DONTWAIT)\n", pSession->hSock, nLen);
+./lib/ftdm_client.c:2443:	FTM_LOCK_reset(&pSession->xLock);
+./lib/ftdm_rule.c:106:								strcpy(xInfo.xParams.pTriggers[xInfo.xParams.ulTriggers++], pTrigger->xInfo.pID);
+./lib/ftdm_rule.c:153:								strcpy(xInfo.xParams.pActions[xInfo.xParams.ulActions++], pAction->xInfo.pID);
+./lib/ftdm_rule.c:254:			xRet = FTDM_DBIF_RULE_get(pRule->pID, &xInfo);
+./lib/ftdm_rule.c:282:	if (FTDM_RULE_get(pInfo->pID, &pRule) == FTM_RET_OK)
+./lib/ftdm_rule.c:284:		ERROR2(FTM_RET_ALREADY_EXIST_OBJECT, "Rule[%s] already exist.\n", pInfo->pID);
+./lib/ftdm_rule.c:288:	if (strlen(pInfo->pID) == 0)
+./lib/ftdm_rule.c:295:			sprintf(pInfo->pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
+./lib/ftdm_rule.c:298:		while (FTDM_RULE_get(pInfo->pID, &pRule) == FTM_RET_OK);
+./lib/ftdm_rule.c:308:			FTDM_DBIF_RULE_destroy(pInfo->pID);
+./lib/ftdm_rule.c:313:		memcpy(&pRule->xInfo, pInfo, sizeof(FTM_RULE));
+./lib/ftdm_rule.c:317:			ERROR2(xRet, "Rule[%s] append failed.\n", pRule->xInfo.pID);
+./lib/ftdm_rule.c:318:			FTDM_DBIF_RULE_destroy(pInfo->pID);
+./lib/ftdm_rule.c:324:		ERROR2(xRet, "Rule[%s] DB append failed.\n", pInfo->pID);	
+./lib/ftdm_rule.c:401:		strcpy(pRule->xInfo.pName, pInfo->pName);
+./lib/ftdm_rule.c:406:		pRule->xInfo.xState = pInfo->xState;
+./lib/ftdm_rule.c:411:		pRule->xInfo.xParams.ulTriggers = pInfo->xParams.ulTriggers;
+./lib/ftdm_rule.c:412:		memcpy(pRule->xInfo.xParams.pTriggers, pInfo->xParams.pTriggers, sizeof(pInfo->xParams.pTriggers));
+./lib/ftdm_rule.c:417:		pRule->xInfo.xParams.ulActions = pInfo->xParams.ulActions;
+./lib/ftdm_rule.c:418:		memcpy(pRule->xInfo.xParams.pActions, pInfo->xParams.pActions, sizeof(pInfo->xParams.pActions));
+./lib/ftdm_rule.c:421:	FTDM_DBIF_RULE_set(pID, &pRule->xInfo);
+./lib/ftdm_rule.c:456:		strcpy(pIDs[(*pulCount)++], pRule->xInfo.pID);
+./lib/ftdm_rule.c:472:	MESSAGE("%16s : %s\n", "ID", pRule->xInfo.pID);
+./lib/ftdm_rule.c:473:	MESSAGE("%16s : %s\n", "Name", pRule->xInfo.pName);
+./lib/ftdm_rule.c:474:	if (pRule->xInfo.xState == FTM_RULE_STATE_ACTIVATE)
+./lib/ftdm_rule.c:483:	for(j = 0 ; j < pRule->xInfo.xParams.ulTriggers ; j++)
+./lib/ftdm_rule.c:485:		MESSAGE(" %16s", pRule->xInfo.xParams.pTriggers[j]);
+./lib/ftdm_rule.c:490:	for(j = 0 ; j < pRule->xInfo.xParams.ulActions ; j++)
+./lib/ftdm_rule.c:492:		MESSAGE(" %16s", pRule->xInfo.xParams.pActions[j]);
+./lib/ftdm_rule.c:521:			for(j = 0 ; j < pRule->xParams.ulTriggers || j < pRule->xParams.ulActions ; j++)
+./lib/ftdm_rule.c:525:					MESSAGE("\t%16s %16s %8s", pRule->pID, pRule->pName, (pRule->xState == FTM_RULE_STATE_ACTIVATE)?"Running":"Stopped");
+./lib/ftdm_rule.c:531:				if (pRule->xParams.pTriggers[j] != 0)
+./lib/ftdm_rule.c:533:					MESSAGE(" %16s", pRule->xParams.pTriggers[j]);
+./lib/ftdm_rule.c:540:				if (pRule->xParams.pActions[j] != 0)
+./lib/ftdm_rule.c:542:					MESSAGE(" %16s", pRule->xParams.pActions[j]);
+./lib/ftdm_rule.c:564:	return	strcasecmp(pRule->xInfo.pID, pRuleID) == 0;
+./ftdm.c:44:	xRet = FTDM_NODEM_create(&pDM->pNodeM);
+./ftdm.c:50:	xRet = FTDM_EPM_create(&pDM->pEPM);
+./ftdm.c:56:	xRet = FTDM_LOGGER_create(&pDM->pLogger);
+./ftdm.c:129:	xRet = FTDM_LOGGER_destroy(&pFTDM->pLogger);
+./ftdm.c:135:	xRet = FTDM_EPM_destroy(&pFTDM->pEPM);
+./ftdm.c:141:	xRet = FTDM_NODEM_destroy(&pFTDM->pNodeM);
+./ftdm.c:167:	xRet = FTDM_DBIF_loadConfig(&pConfig->xDB);
+./ftdm.c:174:	xRet = FTDM_EP_CLASS_loadConfig(&pConfig->xEP);
+./ftdm.c:180:	//FTM_TRACE_configSet(&pConfig->xPrint);
+./ftdm.c:183:	FTDMS_loadConfig(&xServer, &pConfig->xServer);
+./ftdm.c:218:	xRet = FTDM_NODEM_loadFromFile(pDM->pNodeM, pFileName);
+./ftdm.c:225:	xRet = FTDM_EPM_loadFromFile(pDM->pEPM, pFileName);
+./ftdm.c:264:	xRet = FTDM_NODEM_loadFromDB(pDM->pNodeM);
+./ftdm.c:270:	xRet = FTDM_EPM_loadFromDB(pDM->pEPM);
+./ftdm.c:303:	xRet = FTDM_NODEM_saveToDB(pDM->pNodeM);
+./ftdm.c:309:	xRet = FTDM_EPM_saveToDB(pDM->pEPM);
+./ftdm.c:371:	xRet = FTDM_EPM_count(pDM->pEPM, 0, &ulCount);
+./ftdm.c:376:		xRet = FTDM_EPM_getAt(pDM->pEPM, i, &pEP);
+./ftdm.c:403:	while((nOpt = getopt(nArgc, pArgv, "c:dv:a:i:e?")) != -1)
+./ftdm.c:539:	MESSAGE("Usage : %s [-c FILE] [-d] [-v <level>]\n", pAppName);
+./ftdm.c:542:	MESSAGE("\t-c FILE\tConfiguration file\n");
+./ftdm.c:543:	MESSAGE("\t-i FILE\tobject file\n");
+./ftdm.c:544:	MESSAGE("\t-d\tRun as a daemon\n");
+./ftdm.c:545:	MESSAGE("\t-e\terase all object\n");
+./ftdm.c:546:	MESSAGE("\t-v LEVEL\tSet message output mode.\n");
+./ftdm.c:549:	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ALL, 	"all", 	"Output all message");
+./ftdm.c:550:	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_TRACE, "trace","Output trace message");
+./ftdm.c:551:	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_DEBUG, "debug","Output debug message");
+./ftdm.c:552:	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_INFO, 	"info", "Output information message");
+./ftdm.c:553:	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_WARN, 	"warn", "Output warning message");
+./ftdm.c:554:	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_ERROR, "error","Output error message");
+./ftdm.c:555:	MESSAGE("\t%8s %d:%8s - %s\n", "        ", FTM_TRACE_LEVEL_FATAL, "fatal","Output fatal message");
