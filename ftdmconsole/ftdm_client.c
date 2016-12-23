@@ -1343,22 +1343,22 @@ FTM_RET	FTDMC_EP_DATA_countWithTime
 	return	xResp.xRet;
 }
 
-FTM_RET	FTDMC_TRIGGER_add
+FTM_RET	FTDMC_EVENT_add
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_TRIGGER_PTR     		pTrigger
+	FTM_EVENT_PTR     		pEvent
 )
 {
 	ASSERT(pSession != NULL);
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_RET						xRet;
-	FTDM_REQ_TRIGGER_ADD_PARAMS	xReq;
-	FTDM_RESP_TRIGGER_ADD_PARAMS	xResp;
+	FTDM_REQ_EVENT_ADD_PARAMS	xReq;
+	FTDM_RESP_EVENT_ADD_PARAMS	xResp;
 
-	xReq.xCmd	=	FTDM_CMD_TRIGGER_ADD;
+	xReq.xCmd	=	FTDM_CMD_EVENT_ADD;
 	xReq.nLen	=	sizeof(xReq);
-	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
+	memcpy(&xReq.xEvent, pEvent, sizeof(FTM_EVENT));
 
 	xRet = FTDMC_request(
 				pSession, 
@@ -1374,21 +1374,21 @@ FTM_RET	FTDMC_TRIGGER_add
 	return	xResp.xRet;
 }
 
-FTM_RET	FTDMC_TRIGGER_del
+FTM_RET	FTDMC_EVENT_del
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_CHAR_PTR			pTriggerID
+	FTM_CHAR_PTR			pEventID
 )
 {
 	ASSERT(pSession != NULL);
 
 	FTM_RET						xRet;
-	FTDM_REQ_TRIGGER_DEL_PARAMS	xReq;
-	FTDM_RESP_TRIGGER_DEL_PARAMS	xResp;
+	FTDM_REQ_EVENT_DEL_PARAMS	xReq;
+	FTDM_RESP_EVENT_DEL_PARAMS	xResp;
 
-	xReq.xCmd	=	FTDM_CMD_TRIGGER_DEL;
+	xReq.xCmd	=	FTDM_CMD_EVENT_DEL;
 	xReq.nLen	=	sizeof(xReq);
-	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
+	strncpy(xReq.pEventID, pEventID, FTM_ID_LEN);
 
 	xRet = FTDMC_request(
 				pSession, 
@@ -1404,7 +1404,7 @@ FTM_RET	FTDMC_TRIGGER_del
 	return	xResp.xRet;
 }
 
-FTM_RET	FTDMC_TRIGGER_count
+FTM_RET	FTDMC_EVENT_count
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG_PTR			pulCount
@@ -1414,10 +1414,10 @@ FTM_RET	FTDMC_TRIGGER_count
 	ASSERT(pulCount != NULL);
 
 	FTM_RET							xRet;
- 	FTDM_REQ_TRIGGER_COUNT_PARAMS		xReq;
-	FTDM_RESP_TRIGGER_COUNT_PARAMS	xResp;
+ 	FTDM_REQ_EVENT_COUNT_PARAMS		xReq;
+	FTDM_RESP_EVENT_COUNT_PARAMS	xResp;
 
-	xReq.xCmd	=	FTDM_CMD_TRIGGER_COUNT;
+	xReq.xCmd	=	FTDM_CMD_EVENT_COUNT;
 	xReq.nLen	=	sizeof(xReq);
 
 	xRet = FTDMC_request(
@@ -1439,23 +1439,23 @@ FTM_RET	FTDMC_TRIGGER_count
 	return	xResp.xRet;
 }
 
-FTM_RET	FTDMC_TRIGGER_get
+FTM_RET	FTDMC_EVENT_get
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_CHAR_PTR			pTriggerID,
-	FTM_TRIGGER_PTR			pTrigger
+	FTM_CHAR_PTR			pEventID,
+	FTM_EVENT_PTR			pEvent
 )
 {
 	ASSERT(pSession != NULL);
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_RET						xRet;
- 	FTDM_REQ_TRIGGER_GET_PARAMS	xReq;
-	FTDM_RESP_TRIGGER_GET_PARAMS	xResp;
+ 	FTDM_REQ_EVENT_GET_PARAMS	xReq;
+	FTDM_RESP_EVENT_GET_PARAMS	xResp;
 
-	xReq.xCmd	=	FTDM_CMD_TRIGGER_GET;
+	xReq.xCmd	=	FTDM_CMD_EVENT_GET;
 	xReq.nLen	=	sizeof(xReq);
-	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
+	strncpy(xReq.pEventID, pEventID, FTM_ID_LEN);
 
 	xRet = FTDMC_request(
 				pSession, 
@@ -1470,28 +1470,28 @@ FTM_RET	FTDMC_TRIGGER_get
 
 	if (xResp.xRet == FTM_RET_OK)
 	{
-		memcpy(pTrigger, &xResp.xTrigger, sizeof(FTM_TRIGGER));
+		memcpy(pEvent, &xResp.xEvent, sizeof(FTM_EVENT));
 	}
 
 	return	xResp.xRet;
 }
 
-FTM_RET	FTDMC_TRIGGER_getAt
+FTM_RET	FTDMC_EVENT_getAt
 (
 	FTDMC_SESSION_PTR		pSession,
 	FTM_ULONG				ulIndex,
-	FTM_TRIGGER_PTR			pTrigger
+	FTM_EVENT_PTR			pEvent
 
 )
 {
 	ASSERT(pSession != NULL);
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_RET							xRet;
- 	FTDM_REQ_TRIGGER_GET_AT_PARAMS	xReq;
-	FTDM_RESP_TRIGGER_GET_AT_PARAMS	xResp;
+ 	FTDM_REQ_EVENT_GET_AT_PARAMS	xReq;
+	FTDM_RESP_EVENT_GET_AT_PARAMS	xResp;
 
-	xReq.xCmd	=	FTDM_CMD_TRIGGER_GET_AT;
+	xReq.xCmd	=	FTDM_CMD_EVENT_GET_AT;
 	xReq.nLen 	=	sizeof(xReq);
 	xReq.nIndex	=	ulIndex;
 
@@ -1508,32 +1508,32 @@ FTM_RET	FTDMC_TRIGGER_getAt
 
 	if (xResp.xRet == FTM_RET_OK)
 	{
-		memcpy(pTrigger, &xResp.xTrigger, sizeof(FTM_TRIGGER));
+		memcpy(pEvent, &xResp.xEvent, sizeof(FTM_EVENT));
 	}
 
 	return	xResp.xRet;
 }
 
-FTM_RET	FTDMC_TRIGGER_set
+FTM_RET	FTDMC_EVENT_set
 (
 	FTDMC_SESSION_PTR		pSession,
-	FTM_CHAR_PTR			pTriggerID,
-	FTM_TRIGGER_FIELD		xFields,
-	FTM_TRIGGER_PTR			pTrigger
+	FTM_CHAR_PTR			pEventID,
+	FTM_EVENT_FIELD		xFields,
+	FTM_EVENT_PTR			pEvent
 )
 {
 	ASSERT(pSession != NULL);
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_RET							xRet;
- 	FTDM_REQ_TRIGGER_SET_PARAMS		xReq;
-	FTDM_RESP_TRIGGER_SET_PARAMS	xResp;
+ 	FTDM_REQ_EVENT_SET_PARAMS		xReq;
+	FTDM_RESP_EVENT_SET_PARAMS	xResp;
 
-	xReq.xCmd	=	FTDM_CMD_TRIGGER_GET;
+	xReq.xCmd	=	FTDM_CMD_EVENT_GET;
 	xReq.nLen	=	sizeof(xReq);
 	xReq.xFields=	xFields;
-	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
-	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
+	strncpy(xReq.pEventID, pEventID, FTM_ID_LEN);
+	memcpy(&xReq.xEvent, pEvent, sizeof(FTM_EVENT));
 
 	xRet = FTDMC_request(
 				pSession, 
@@ -1552,7 +1552,7 @@ FTM_RET	FTDMC_TRIGGER_set
 /*****************************************************************
  *
  *****************************************************************/
-FTM_RET FTDMC_TRIGGER_getIDList
+FTM_RET FTDMC_EVENT_getIDList
 (
  	FTDMC_SESSION_PTR	pSession,
 	FTM_ID_PTR			pIDs,
@@ -1563,8 +1563,8 @@ FTM_RET FTDMC_TRIGGER_getIDList
 {
 	FTM_RET	xRet;
 	FTM_ULONG	ulRespLen;
-	FTDM_REQ_TRIGGER_GET_ID_LIST_PARAMS	xReq;
-	FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR	pResp = NULL;
+	FTDM_REQ_EVENT_GET_ID_LIST_PARAMS	xReq;
+	FTDM_RESP_EVENT_GET_ID_LIST_PARAMS_PTR	pResp = NULL;
 
 	if ((pSession == NULL) || (pSession->hSock == 0))
 	{
@@ -1573,13 +1573,13 @@ FTM_RET FTDMC_TRIGGER_getIDList
 
 	memset(&xReq, 0, sizeof(xReq));
 
-	xReq.xCmd 	=	FTDM_CMD_TRIGGER_GET_ID_LIST;
+	xReq.xCmd 	=	FTDM_CMD_EVENT_GET_ID_LIST;
 	xReq.nLen	=	sizeof(xReq);
 	xReq.ulIndex=	ulIndex;
 	xReq.ulCount=	ulMaxCount;
 
-	ulRespLen = sizeof(FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS) + sizeof(FTM_ID) * ulMaxCount;
-	pResp = (FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
+	ulRespLen = sizeof(FTDM_RESP_EVENT_GET_ID_LIST_PARAMS) + sizeof(FTM_ID) * ulMaxCount;
+	pResp = (FTDM_RESP_EVENT_GET_ID_LIST_PARAMS_PTR)FTM_MEM_malloc(ulRespLen);
 	if (pResp == NULL)
 	{
 		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory[size = %d]!\n", ulRespLen);

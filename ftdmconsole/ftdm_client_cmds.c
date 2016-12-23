@@ -20,7 +20,7 @@ static FTM_RET	FTDMC_cmdDisconnect(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR
 static FTM_RET	FTDMC_NODE_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 static FTM_RET	FTDMC_EP_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 static FTM_RET	FTDMC_EP_DATA_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
-static FTM_RET	FTDMC_TRIGGER_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
+static FTM_RET	FTDMC_EVENT_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 static FTM_RET	FTDMC_DEBUG_cmd(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 static FTM_RET	FTDMC_cmdQuit(FTM_SHELL_PTR pShell, FTM_INT nArgc, FTM_CHAR_PTR pArgv[], FTM_VOID_PTR pData);
 
@@ -120,7 +120,7 @@ FTM_SHELL_CMD			FTDMC_pCmdList[] =
 		
 	},
 	{	.pString	= "event",
-		.function	= FTDMC_TRIGGER_cmd,
+		.function	= FTDMC_EVENT_cmd,
 		.pShortHelp = "Event management command set.",
 		.pHelp		= "<COMMAND> ...\n"\
 					 "\tEvent management\n"\
@@ -1093,7 +1093,7 @@ FTM_RET	FTDMC_EP_DATA_cmd
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_TRIGGER_cmd
+FTM_RET	FTDMC_EVENT_cmd
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
@@ -1107,7 +1107,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 	{
 		FTM_ULONG	i, ulCount;
 
-		xRet = FTDMC_TRIGGER_count(&_xSession, &ulCount);
+		xRet = FTDMC_EVENT_count(&_xSession, &ulCount);
 		if (xRet != FTM_RET_OK)
 		{
 			return	xRet;
@@ -1116,14 +1116,14 @@ FTM_RET	FTDMC_TRIGGER_cmd
 		MESSAGE("\t%16s %16s %16s %s\n", "ID", "EPID", "TYPE", "CONDITION");
 		for(i = 0 ; i < ulCount ; i++)
 		{
-			FTM_TRIGGER	xTrigger;
-			xRet = FTDMC_TRIGGER_getAt(&_xSession, i, &xTrigger);
+			FTM_EVENT	xTrigger;
+			xRet = FTDMC_EVENT_getAt(&_xSession, i, &xTrigger);
 			if (xRet == FTM_RET_OK)
 			{
 				FTM_CHAR	pBuff[1024];
 
-				FTM_TRIGGER_conditionToString(&xTrigger, pBuff, sizeof(pBuff) );
-				MESSAGE("\t%16s %16s %16s %s\n", xTrigger.pID, xTrigger.pEPID, FTM_TRIGGER_typeString(xTrigger.xType), pBuff);
+				FTM_EVENT_conditionToString(&xTrigger, pBuff, sizeof(pBuff) );
+				MESSAGE("\t%16s %16s %16s %s\n", xTrigger.pID, xTrigger.pEPID, FTM_EVENT_typeString(xTrigger.xType), pBuff);
 			}
 		}
 	}
@@ -1132,7 +1132,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 		FTM_CHAR	pTriggerID[FTM_ID_LEN+1];
 
 		strncpy(pTriggerID,pArgv[2], FTM_ID_LEN);
-		xRet = FTDMC_TRIGGER_del(&_xSession, pTriggerID);
+		xRet = FTDMC_EVENT_del(&_xSession, pTriggerID);
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("The event deleted successfully.\n");	
@@ -1144,14 +1144,14 @@ FTM_RET	FTDMC_TRIGGER_cmd
 	}
 	else if ((nArgc == 5) && (strcasecmp(pArgv[1], "add") == 0))
 	{
-		FTM_TRIGGER		xTrigger;
+		FTM_EVENT		xTrigger;
 
 		memset(&xTrigger, 0, sizeof(xTrigger));
 		strncpy(xTrigger.pEPID,	pArgv[2], FTM_EPID_LEN);
 		
 		if (strcasecmp(pArgv[3], "ge") == 0)
 		{
-			xTrigger.xType = FTM_TRIGGER_TYPE_ABOVE;
+			xTrigger.xType = FTM_EVENT_TYPE_ABOVE;
 			if ((pArgv[4][0] | 0x20) == 'f')
 			{
 				FTM_FLOAT	fValue;
@@ -1180,7 +1180,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 		}
 		else if (strcasecmp(pArgv[3], "le") == 0)
 		{
-			xTrigger.xType = FTM_TRIGGER_TYPE_BELOW;
+			xTrigger.xType = FTM_EVENT_TYPE_BELOW;
 			if ((pArgv[4][0] | 0x20) == 'f')
 			{
 				FTM_FLOAT	fValue;
@@ -1212,7 +1212,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		xRet = FTDMC_TRIGGER_add(&_xSession, &xTrigger);
+		xRet = FTDMC_EVENT_add(&_xSession, &xTrigger);
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("The event added successfully.\n");	
@@ -1225,14 +1225,14 @@ FTM_RET	FTDMC_TRIGGER_cmd
 	}
 	else if ((nArgc == 6) && (strcasecmp(pArgv[1], "add") == 0))
 	{
-		FTM_TRIGGER		xTrigger;
+		FTM_EVENT		xTrigger;
 
 		memset(&xTrigger, 0, sizeof(xTrigger));
 		strncpy(xTrigger.pEPID,	pArgv[2], FTM_EPID_LEN);
 
 		if (strcasecmp(pArgv[3], "include") == 0)
 		{
-			xTrigger.xType = FTM_TRIGGER_TYPE_INCLUDE;
+			xTrigger.xType = FTM_EVENT_TYPE_INCLUDE;
 			if ((pArgv[4][0] | 0x20) == 'f')
 			{
 				FTM_FLOAT	fValue;
@@ -1282,7 +1282,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 		}
 		else if (strcasecmp(pArgv[3], "except") == 0)
 		{
-			xTrigger.xType = FTM_TRIGGER_TYPE_EXCEPT;
+			xTrigger.xType = FTM_EVENT_TYPE_EXCEPT;
 			if ((pArgv[4][0] | 0x20) == 'f')
 			{
 				FTM_FLOAT	fValue;
@@ -1335,7 +1335,7 @@ FTM_RET	FTDMC_TRIGGER_cmd
 			return	FTM_RET_INVALID_ARGUMENTS;
 		}
 
-		xRet = FTDMC_TRIGGER_add(&_xSession, &xTrigger);
+		xRet = FTDMC_EVENT_add(&_xSession, &xTrigger);
 		if (xRet == FTM_RET_OK)
 		{
 			MESSAGE("The event added successfully.\n");	

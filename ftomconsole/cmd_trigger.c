@@ -17,7 +17,7 @@
 #undef	__MODULE__
 #define	__MODULE__	FTOM_TRACE_MODULE_CLIENT
 
-FTM_RET	FTOM_CLIENT_CMD_printTriggerList
+FTM_RET	FTOM_CLIENT_CMD_printEventList
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -30,20 +30,20 @@ FTM_RET	FTOM_CLIENT_CMD_printTriggerList
 	FTM_RET		xRet;
 	FTM_ULONG	ulCount;
 	FTM_ULONG	ulIndex;
-	FTM_TRIGGER	xInfo;
+	FTM_EVENT	xInfo;
 
-	xRet = FTOM_CLIENT_TRIGGER_count(pClient, &ulCount);
+	xRet = FTOM_CLIENT_EVENT_count(pClient, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		MESSAGE("Failed to get trigger count!");
 		return	xRet;
 	}
 
-	MESSAGE("\n[ TRIGGER INFORMATION ]\n");
+	MESSAGE("\n[ EVENT INFORMATION ]\n");
 	MESSAGE("%16s %16s %16s %8s %8s %32s %16s\n", "ID", "NAME", "TYPE", "DETECT", "HOLD", "CONDITION", "EPID");
 	for(ulIndex = 0; ulIndex < ulCount ; ulIndex++)
 	{
-		xRet = FTOM_CLIENT_TRIGGER_getAt(pClient, ulIndex, &xInfo);
+		xRet = FTOM_CLIENT_EVENT_getAt(pClient, ulIndex, &xInfo);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to get the trigger information for the 10th position.\n");
@@ -52,10 +52,10 @@ FTM_RET	FTOM_CLIENT_CMD_printTriggerList
 		{
 			FTM_CHAR	pCondition[1024];
 
-			FTM_TRIGGER_conditionToString(&xInfo, pCondition, sizeof(pCondition));
+			FTM_EVENT_conditionToString(&xInfo, pCondition, sizeof(pCondition));
 
 			MESSAGE("%16s %16s %16s %8lu %8lu %32s %16s\n", 
-					xInfo.pID, xInfo.pName, FTM_TRIGGER_typeString(xInfo.xType), 
+					xInfo.pID, xInfo.pName, FTM_EVENT_typeString(xInfo.xType), 
 					xInfo.xParams.xCommon.ulDetectionTime / 1000000,
 					xInfo.xParams.xCommon.ulHoldingTime / 1000000,
 					pCondition, xInfo.pEPID);
@@ -65,7 +65,7 @@ FTM_RET	FTOM_CLIENT_CMD_printTriggerList
 	return	xRet;
 }
 
-FTM_RET	FTOM_CLIENT_CMD_printTriggerInfo
+FTM_RET	FTOM_CLIENT_CMD_printEventInfo
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -77,7 +77,7 @@ FTM_RET	FTOM_CLIENT_CMD_printTriggerInfo
 	ASSERT(pArgv != NULL);
 
 	FTM_RET		xRet;
-	FTM_TRIGGER	xInfo;
+	FTM_EVENT	xInfo;
 	FTM_INT		i;
 	FTM_CHAR	pCondition[1024];
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
@@ -89,20 +89,20 @@ FTM_RET	FTOM_CLIENT_CMD_printTriggerInfo
 
 	for(i = 1 ; i < nArgc ; i++)
 	{
-		xRet = FTOM_CLIENT_TRIGGER_get(pClient, pArgv[i], &xInfo);	
+		xRet = FTOM_CLIENT_EVENT_get(pClient, pArgv[i], &xInfo);	
 		if (xRet != FTM_RET_OK)
 		{
-			MESSAGE("Trigger[%s] not found!\n", pArgv[i]);
+			MESSAGE("Event[%s] not found!\n", pArgv[i]);
 			return	FTM_RET_OK;
 		}
 	
 	
-		MESSAGE("\n[ TRIGGER INFORMATION ]\n");
-		FTM_TRIGGER_conditionToString(&xInfo, pCondition, sizeof(pCondition));
+		MESSAGE("\n[ EVENT INFORMATION ]\n");
+		FTM_EVENT_conditionToString(&xInfo, pCondition, sizeof(pCondition));
 	
 		MESSAGE("%16s : %s\n", 	"ID", 		xInfo.pID); 
 		MESSAGE("%16s : %s\n", 	"Name",		xInfo.pName); 
-		MESSAGE("%16s : %s\n", 	"Type",		FTM_TRIGGER_typeString(xInfo.xType));
+		MESSAGE("%16s : %s\n", 	"Type",		FTM_EVENT_typeString(xInfo.xType));
 		MESSAGE("%16s : %8.3f\n","Detect",	xInfo.xParams.xCommon.ulDetectionTime / 1000000.0);
 		MESSAGE("%16s : %8.3f\n","Hold", 	xInfo.xParams.xCommon.ulHoldingTime / 1000000.0);
 		MESSAGE("%16s : %s\n", 	"Condition", pCondition);
@@ -112,7 +112,7 @@ FTM_RET	FTOM_CLIENT_CMD_printTriggerInfo
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_CLIENT_CMD_addTrigger
+FTM_RET	FTOM_CLIENT_CMD_addEvent
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT 		nArgc, 
@@ -126,14 +126,14 @@ FTM_RET	FTOM_CLIENT_CMD_addTrigger
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 	FTM_RET	xRet;
 	FTM_INT	i;
-	FTM_TRIGGER	xInfo;
+	FTM_EVENT	xInfo;
 	FTM_EP		xEPInfo;
 	FTM_OPT	pOpts[10];
 	FTM_ULONG	ulOpts;
 	FTM_ULONG	ulFields = 0;
 	FTM_VALUE_TYPE	xValueType;
 
-	FTM_TRIGGER_setDefault(&xInfo);
+	FTM_EVENT_setDefault(&xInfo);
 
 	if (nArgc < 5)
 	{
@@ -175,13 +175,13 @@ FTM_RET	FTOM_CLIENT_CMD_addTrigger
 
 		case	't':
 			{
-				xRet = FTM_TRIGGER_strToType(pOpts[i].pParam, &xInfo.xType);
+				xRet = FTM_EVENT_strToType(pOpts[i].pParam, &xInfo.xType);
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR2(xRet, "Invalid trigger type[%s]\n", pOpts[i].pParam);	
 					goto finished;
 				}
-				ulFields |= FTM_TRIGGER_FIELD_TYPE;
+				ulFields |= FTM_EVENT_FIELD_TYPE;
 			}
 			break;
 
@@ -199,7 +199,7 @@ FTM_RET	FTOM_CLIENT_CMD_addTrigger
 
 		case	'u':
 			{
-				if ((xInfo.xType != FTM_TRIGGER_TYPE_INCLUDE) && (xInfo.xType != FTM_TRIGGER_TYPE_EXCEPT))
+				if ((xInfo.xType != FTM_EVENT_TYPE_INCLUDE) && (xInfo.xType != FTM_EVENT_TYPE_EXCEPT))
 				{
 					xRet = FTM_RET_INVALID_ARGUMENTS;
 					goto finished;
@@ -213,13 +213,13 @@ FTM_RET	FTOM_CLIENT_CMD_addTrigger
 					ERROR2(xRet, "Failed to set upper limit!\n");
 					goto finished;
 				}
-				ulFields |= FTM_TRIGGER_FIELD_UPPER;
+				ulFields |= FTM_EVENT_FIELD_UPPER;
 			}
 			break;
 
 		case	'l':
 			{
-				if ((xInfo.xType != FTM_TRIGGER_TYPE_INCLUDE) && (xInfo.xType != FTM_TRIGGER_TYPE_EXCEPT))
+				if ((xInfo.xType != FTM_EVENT_TYPE_INCLUDE) && (xInfo.xType != FTM_EVENT_TYPE_EXCEPT))
 				{
 					xRet = FTM_RET_INVALID_ARGUMENTS;
 					goto finished;
@@ -233,13 +233,13 @@ FTM_RET	FTOM_CLIENT_CMD_addTrigger
 					ERROR2(xRet, "Failed to set lower limit!\n");
 					goto finished;
 				}
-				ulFields |= FTM_TRIGGER_FIELD_LOWER;
+				ulFields |= FTM_EVENT_FIELD_LOWER;
 			}
 			break;
 
 		case	'v':
 			{
-				if ((xInfo.xType != FTM_TRIGGER_TYPE_ABOVE) && (xInfo.xType != FTM_TRIGGER_TYPE_BELOW))
+				if ((xInfo.xType != FTM_EVENT_TYPE_ABOVE) && (xInfo.xType != FTM_EVENT_TYPE_BELOW))
 				{
 					xRet = FTM_RET_INVALID_ARGUMENTS;
 					goto finished;
@@ -253,7 +253,7 @@ FTM_RET	FTOM_CLIENT_CMD_addTrigger
 					ERROR2(xRet, "Failed to set value!\n");
 					goto finished;
 				}
-				ulFields |= FTM_TRIGGER_FIELD_VALUE;
+				ulFields |= FTM_EVENT_FIELD_VALUE;
 			}
 			break;
 
@@ -263,8 +263,8 @@ FTM_RET	FTOM_CLIENT_CMD_addTrigger
 		}
 	}
 
-	if (((ulFields & (FTM_TRIGGER_FIELD_TYPE | FTM_TRIGGER_FIELD_UPPER | FTM_TRIGGER_FIELD_LOWER)) != ulFields) &&
-	    ((ulFields & (FTM_TRIGGER_FIELD_TYPE | FTM_TRIGGER_FIELD_VALUE)) != ulFields))
+	if (((ulFields & (FTM_EVENT_FIELD_TYPE | FTM_EVENT_FIELD_UPPER | FTM_EVENT_FIELD_LOWER)) != ulFields) &&
+	    ((ulFields & (FTM_EVENT_FIELD_TYPE | FTM_EVENT_FIELD_VALUE)) != ulFields))
 	{
 		ERROR2(xRet, "Invalid arguments.\n");
 		xRet = FTM_RET_INVALID_ARGUMENTS;
@@ -274,7 +274,7 @@ FTM_RET	FTOM_CLIENT_CMD_addTrigger
 	strncpy(xInfo.pID, pArgv[1], FTM_ID_LEN);
 	strncpy(xInfo.pEPID, pArgv[2], FTM_ID_LEN);
 
-	xRet = FTOM_CLIENT_TRIGGER_add(pClient, &xInfo);
+	xRet = FTOM_CLIENT_EVENT_add(pClient, &xInfo);
 
 finished:
 	if (xRet != FTM_RET_OK)
@@ -289,7 +289,7 @@ finished:
 
 }
 
-FTM_RET	FTOM_CLIENT_CMD_delTrigger
+FTM_RET	FTOM_CLIENT_CMD_delEvent
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -308,7 +308,7 @@ FTM_RET	FTOM_CLIENT_CMD_delTrigger
 
 	for(i = 1 ; i < nArgc ;i++)
 	{
-		xRet = FTOM_CLIENT_TRIGGER_del(pClient, pArgv[1]);	
+		xRet = FTOM_CLIENT_EVENT_del(pClient, pArgv[1]);	
 		if (xRet != FTM_RET_OK)
 		{
 			MESSAGE("Failed to remove the trigger[%s].\n", pArgv[i]);
@@ -322,7 +322,7 @@ FTM_RET	FTOM_CLIENT_CMD_delTrigger
 	return	xRet;
 }
 
-FTM_RET	FTOM_CLIENT_CMD_printTriggerCount
+FTM_RET	FTOM_CLIENT_CMD_printEventCount
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -334,20 +334,20 @@ FTM_RET	FTOM_CLIENT_CMD_printTriggerCount
 	FTM_ULONG	ulCount;
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 
-	xRet = FTOM_CLIENT_TRIGGER_count(pClient, &ulCount);
+	xRet = FTOM_CLIENT_EVENT_count(pClient, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		MESSAGE("Failed to get Trigger count\n");
+		MESSAGE("Failed to get Event count\n");
 	}
 	else
 	{
-		MESSAGE("Trigger Count : %lu\n", ulCount);	
+		MESSAGE("Event Count : %lu\n", ulCount);	
 	}
 
 	return	xRet;
 }
 
-FTM_RET	FTOM_CLIENT_CMD_enableTrigger
+FTM_RET	FTOM_CLIENT_CMD_enableEvent
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -358,7 +358,7 @@ FTM_RET	FTOM_CLIENT_CMD_enableTrigger
 #if 0
 	FTM_RET		xRet;
 	FTM_INT		i;
-	FTM_TRIGGER		xInfo;
+	FTM_EVENT		xInfo;
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 
 	if (nArgc < 2)
@@ -370,14 +370,14 @@ FTM_RET	FTOM_CLIENT_CMD_enableTrigger
 
 	for(i = 1 ; i < nArgc ; i++)
 	{
-		xRet = FTOM_CLIENT_TRIGGER_set(pClient, pArgv[i], FTM_TRIGGER_FIELD_ENABLE, &xInfo);
+		xRet = FTOM_CLIENT_EVENT_set(pClient, pArgv[i], FTM_EVENT_FIELD_ENABLE, &xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			MESSAGE("Failed to activate Trigger[%s].\n", pArgv[i]);
+			MESSAGE("Failed to activate Event[%s].\n", pArgv[i]);
 		}
 		else
 		{
-			MESSAGE("The Trigger[%s] is activated.\n", pArgv[i]);	
+			MESSAGE("The Event[%s] is activated.\n", pArgv[i]);	
 		}
 	}
 #endif 
@@ -385,7 +385,7 @@ FTM_RET	FTOM_CLIENT_CMD_enableTrigger
 	return	FTM_RET_OK;
 }
 	
-FTM_RET	FTOM_CLIENT_CMD_disableTrigger
+FTM_RET	FTOM_CLIENT_CMD_disableEvent
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -396,7 +396,7 @@ FTM_RET	FTOM_CLIENT_CMD_disableTrigger
 #if 0
 	FTM_RET		xRet;
 	FTM_INT		i;
-	FTM_Trigger		xInfo;
+	FTM_Event		xInfo;
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 
 	if (nArgc < 2)
@@ -408,14 +408,14 @@ FTM_RET	FTOM_CLIENT_CMD_disableTrigger
 
 	for(i = 1 ; i < nArgc ; i++)
 	{
-		xRet = FTOM_CLIENT_TRIGGER_set(pClient, pArgv[i], FTM_TRIGGER_FIELD_ENABLE, &xInfo);
+		xRet = FTOM_CLIENT_EVENT_set(pClient, pArgv[i], FTM_EVENT_FIELD_ENABLE, &xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			MESSAGE("Failed to stop Trigger[%s].\n", pArgv[i]);
+			MESSAGE("Failed to stop Event[%s].\n", pArgv[i]);
 		}
 		else
 		{
-			MESSAGE("The Trigger[%s] is stopped.\n", pArgv[i]);	
+			MESSAGE("The Event[%s] is stopped.\n", pArgv[i]);	
 		}
 	}
 #endif
@@ -423,7 +423,7 @@ FTM_RET	FTOM_CLIENT_CMD_disableTrigger
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTOM_CLIENT_CMD_setTrigger
+FTM_RET	FTOM_CLIENT_CMD_setEvent
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -433,7 +433,7 @@ FTM_RET	FTOM_CLIENT_CMD_setTrigger
 {
 	FTM_RET		xRet;
 	FTM_INT		i;
-	FTM_TRIGGER		xInfo;
+	FTM_EVENT		xInfo;
 	FTOM_CLIENT_PTR	pClient = (FTOM_CLIENT_PTR)pData;
 	FTM_CHAR_PTR	pID;
 	FTM_OPT		pOpts[8];
@@ -447,7 +447,7 @@ FTM_RET	FTOM_CLIENT_CMD_setTrigger
 
 	pID = pArgv[1];
 
-	xRet = FTOM_CLIENT_TRIGGER_get(pClient, pID, &xInfo);
+	xRet = FTOM_CLIENT_EVENT_get(pClient, pID, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to get the trigger[%s] information.\n", pID);
@@ -473,27 +473,27 @@ FTM_RET	FTOM_CLIENT_CMD_setTrigger
 				}
 
 				strncpy(xInfo.pName, pOpts[i].pParam, sizeof(xInfo.pName) - 1);
-				ulFields |= FTM_TRIGGER_FIELD_NAME;
+				ulFields |= FTM_EVENT_FIELD_NAME;
 			}
 			break;
 
 		case	'd':
 			{
 				xInfo.xParams.xCommon.ulDetectionTime = strtoul(pOpts[i].pParam, NULL, 10);
-				ulFields |= FTM_TRIGGER_FIELD_DETECT_TIME;
+				ulFields |= FTM_EVENT_FIELD_DETECT_TIME;
 			}
 			break;
 
 		case	'h':
 			{
 				xInfo.xParams.xCommon.ulHoldingTime = strtoul(pOpts[i].pParam, NULL, 10);
-				ulFields |= FTM_TRIGGER_FIELD_HOLD_TIME;
+				ulFields |= FTM_EVENT_FIELD_HOLD_TIME;
 			}
 			break;
 
 		case	'u':
 			{
-				if ((xInfo.xType != FTM_TRIGGER_TYPE_INCLUDE) && (xInfo.xType != FTM_TRIGGER_TYPE_EXCEPT))
+				if ((xInfo.xType != FTM_EVENT_TYPE_INCLUDE) && (xInfo.xType != FTM_EVENT_TYPE_EXCEPT))
 				{
 					return	FTM_RET_INVALID_ARGUMENTS;
 				}
@@ -505,13 +505,13 @@ FTM_RET	FTOM_CLIENT_CMD_setTrigger
 					return	xRet;	
 				}
 
-				ulFields |= FTM_TRIGGER_FIELD_UPPER;
+				ulFields |= FTM_EVENT_FIELD_UPPER;
 			}
 			break;
 
 		case	'l':
 			{
-				if ((xInfo.xType != FTM_TRIGGER_TYPE_INCLUDE) && (xInfo.xType != FTM_TRIGGER_TYPE_EXCEPT))
+				if ((xInfo.xType != FTM_EVENT_TYPE_INCLUDE) && (xInfo.xType != FTM_EVENT_TYPE_EXCEPT))
 				{
 					return	FTM_RET_INVALID_ARGUMENTS;
 				}
@@ -523,21 +523,21 @@ FTM_RET	FTOM_CLIENT_CMD_setTrigger
 					return	xRet;	
 				}
 
-				ulFields |= FTM_TRIGGER_FIELD_LOWER;
+				ulFields |= FTM_EVENT_FIELD_LOWER;
 			}
 			break;
 
 		}
 	}
 
-	xRet = FTOM_CLIENT_TRIGGER_set(pClient, pID, ulFields, &xInfo);
+	xRet = FTOM_CLIENT_EVENT_set(pClient, pID, ulFields, &xInfo);
 	if (xRet != FTM_RET_OK)
 	{
-		MESSAGE("Failed to set Trigger[%s].\n", pID);
+		MESSAGE("Failed to set Event[%s].\n", pID);
 	}
 	else
 	{
-		MESSAGE("The Trigger[%s] setting changed.\n", pID);	
+		MESSAGE("The Event[%s] setting changed.\n", pID);	
 	}
 
 	return	xRet;
@@ -561,35 +561,35 @@ FTM_RET	FTOM_CLIENT_CMD_trigger
 
 	if (strcmp(pArgv[1], "add") == 0)
 	{
-		xRet = FTOM_CLIENT_CMD_addTrigger(pShell, nArgc - 1, &pArgv[1], pData);
+		xRet = FTOM_CLIENT_CMD_addEvent(pShell, nArgc - 1, &pArgv[1], pData);
 	}
 	else if (strcmp(pArgv[1], "del") == 0)
 	{
-		xRet = FTOM_CLIENT_CMD_delTrigger(pShell, nArgc - 1, &pArgv[1], pData);
+		xRet = FTOM_CLIENT_CMD_delEvent(pShell, nArgc - 1, &pArgv[1], pData);
 	}
 	else if (strcmp(pArgv[1], "list") == 0)
 	{
-		xRet = FTOM_CLIENT_CMD_printTriggerList(pShell, nArgc - 1, &pArgv[1], pData);
+		xRet = FTOM_CLIENT_CMD_printEventList(pShell, nArgc - 1, &pArgv[1], pData);
 	}
 	else if (strcasecmp(pArgv[1], "info") == 0)
 	{
-		xRet = FTOM_CLIENT_CMD_printTriggerInfo(pShell, nArgc - 1, &pArgv[1], pData);
+		xRet = FTOM_CLIENT_CMD_printEventInfo(pShell, nArgc - 1, &pArgv[1], pData);
 	}
 	else if (strcasecmp(pArgv[1], "count") == 0)
 	{
-		xRet = FTOM_CLIENT_CMD_printTriggerCount(pShell, nArgc - 1, &pArgv[1], pData);
+		xRet = FTOM_CLIENT_CMD_printEventCount(pShell, nArgc - 1, &pArgv[1], pData);
 	}
 	else if (strcasecmp(pArgv[1], "enable") == 0)
 	{
-		xRet = FTOM_CLIENT_CMD_enableTrigger(pShell, nArgc - 1, &pArgv[1], pData);	
+		xRet = FTOM_CLIENT_CMD_enableEvent(pShell, nArgc - 1, &pArgv[1], pData);	
 	}
 	else if (strcasecmp(pArgv[1], "disable") == 0)
 	{
-		xRet = FTOM_CLIENT_CMD_enableTrigger(pShell, nArgc - 1, &pArgv[1], pData);	
+		xRet = FTOM_CLIENT_CMD_enableEvent(pShell, nArgc - 1, &pArgv[1], pData);	
 	}
 	else if (strcasecmp(pArgv[1], "set") == 0)
 	{
-		xRet = FTOM_CLIENT_CMD_setTrigger(pShell, nArgc - 1, &pArgv[1], pData);
+		xRet = FTOM_CLIENT_CMD_setEvent(pShell, nArgc - 1, &pArgv[1], pData);
 	}
 	else
 	{
