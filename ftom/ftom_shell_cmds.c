@@ -3,7 +3,7 @@
 #include "ftom_msg.h"
 #include "ftom_node.h"
 #include "ftom_ep.h"
-#include "ftom_trigger.h"
+#include "ftom_event.h"
 #include "ftom_action.h"
 #include "ftom_rule.h"
 #include "ftom_discovery.h"
@@ -131,11 +131,11 @@ FTM_SHELL_CMD	FTOM_shellCmds[] =
 	{
 		.pString	= "trigger",
 		.function	= FTOM_SHELL_CMD_trigger,
-		.pShortHelp	= "Trigger management.",
+		.pShortHelp	= "Event management.",
 		.pHelp		= "\n"\
-					  "    Trigger management.\n"\
+					  "    Event management.\n"\
 					  "  COMMANDS:\n"\
-					  "    <TriggerID>  Show Trigger Information.\n"
+					  "    <EventID>  Show Event Information.\n"
 	},
 	{
 		.pString	= "server",
@@ -649,22 +649,22 @@ FTM_RET	FTOM_SHELL_CMD_trigger
 	{
 	case	1:
 		{
-			FTOM_TRIGGER_printList();
+			FTOM_EVENT_printList();
 		}
 		break;
 
 	case	2:
 		{
-			FTOM_TRIGGER_PTR	pTrigger;
+			FTOM_EVENT_PTR	pEvent;
 
-			xRet = FTOM_TRIGGER_get(pArgv[1], &pTrigger);
+			xRet = FTOM_EVENT_get(pArgv[1], &pEvent);
 			if (xRet != FTM_RET_OK)
 			{
-				ERROR2(xRet, "Can't found Trigger[%s]!\n", pArgv[1]);
+				ERROR2(xRet, "Can't found Event[%s]!\n", pArgv[1]);
 				break;
 			}
 
-			FTOM_TRIGGER_print(pTrigger);
+			FTOM_EVENT_print(pEvent);
 
 		}
 		break;
@@ -767,7 +767,7 @@ FTM_RET	FTOM_SHELL_CMD_object
 		{
 			FTOM_NODE_printList();
 			FTOM_EP_printList();
-			FTOM_TRIGGER_printList();
+			FTOM_EVENT_printList();
 			FTOM_ACTION_printList();
 			FTOM_RULE_printList();
 		}
@@ -778,7 +778,7 @@ FTM_RET	FTOM_SHELL_CMD_object
 			FTM_RET	xRet;
 			FTOM_NODE_PTR		pNode;
 			FTOM_EP_PTR			pEP;
-			FTOM_TRIGGER_PTR	pTrigger;
+			FTOM_EVENT_PTR	pEvent;
 			FTOM_ACTION_PTR		pAction;
 			FTOM_RULE_PTR		pRule;
 
@@ -796,10 +796,10 @@ FTM_RET	FTOM_SHELL_CMD_object
 				break;
 			}
 
-			xRet = FTOM_TRIGGER_get(pArgv[1], &pTrigger);
+			xRet = FTOM_EVENT_get(pArgv[1], &pEvent);
 			if (xRet == FTM_RET_OK)
 			{
-				FTOM_TRIGGER_print(pTrigger);
+				FTOM_EVENT_print(pEvent);
 				break;	
 			}
 
@@ -825,7 +825,7 @@ FTM_RET	FTOM_SHELL_CMD_object
 			FTM_RET	xRet;
 			FTOM_NODE_PTR		pNode;
 			FTOM_EP_PTR			pEP;
-			FTOM_TRIGGER_PTR	pTrigger;
+			FTOM_EVENT_PTR	pEvent;
 			FTOM_ACTION_PTR		pAction;
 			FTOM_RULE_PTR		pRule;
 			FTM_BOOL			bEnable = FTM_FALSE;
@@ -874,16 +874,16 @@ FTM_RET	FTOM_SHELL_CMD_object
 				break;
 			}
 
-			xRet = FTOM_TRIGGER_get(pArgv[1], &pTrigger);
+			xRet = FTOM_EVENT_get(pArgv[1], &pEvent);
 			if (xRet == FTM_RET_OK)
 			{
 				if (bEnable)
 				{
-					FTOM_TRIGGER_start(pTrigger);
+					FTOM_EVENT_start(pEvent);
 				}
 				else
 				{
-					FTOM_TRIGGER_stop(pTrigger);
+					FTOM_EVENT_stop(pEvent);
 				}
 				break;	
 			}

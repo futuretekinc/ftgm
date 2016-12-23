@@ -535,44 +535,44 @@ FTM_RET	FTOM_CLIENT_EP_DATA_setServerTime
  *
  *****************************************************************/
 
-FTM_RET	FTOM_CLIENT_TRIGGER_add
+FTM_RET	FTOM_CLIENT_EVENT_add
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_TRIGGER_PTR	pTrigger
+	FTM_EVENT_PTR	pEvent
 );
 
-FTM_RET	FTOM_CLIENT_TRIGGER_del
+FTM_RET	FTOM_CLIENT_EVENT_del
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_CHAR_PTR	pTriggerID
+	FTM_CHAR_PTR	pEventID
 );
 
-FTM_RET	FTOM_CLIENT_TRIGGER_count
+FTM_RET	FTOM_CLIENT_EVENT_count
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_ULONG_PTR	pulCount
 );
 
-FTM_RET	FTOM_CLIENT_TRIGGER_get
+FTM_RET	FTOM_CLIENT_EVENT_get
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_CHAR_PTR	pTriggerID,
-	FTM_TRIGGER_PTR	pTriggerInfo
+	FTM_CHAR_PTR	pEventID,
+	FTM_EVENT_PTR	pEventInfo
 );
 
-FTM_RET	FTOM_CLIENT_TRIGGER_getAt
+FTM_RET	FTOM_CLIENT_EVENT_getAt
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_ULONG		ulIndex,
-	FTM_TRIGGER_PTR	pTriggerInfo
+	FTM_EVENT_PTR	pEventInfo
 );
 
-FTM_RET	FTOM_CLIENT_TRIGGER_set
+FTM_RET	FTOM_CLIENT_EVENT_set
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_CHAR_PTR	pTriggerID,
-	FTM_TRIGGER_FIELD xFields,
-	FTM_TRIGGER_PTR	pTriggerInfo
+	FTM_CHAR_PTR	pEventID,
+	FTM_EVENT_FIELD xFields,
+	FTM_EVENT_PTR	pEventInfo
 );
 
 /*****************************************************************

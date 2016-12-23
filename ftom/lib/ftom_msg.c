@@ -676,7 +676,7 @@ FTM_CHAR_PTR	FTOM_MSG_printType
 FTM_RET	FTOM_MSG_createEvent
 (
 	FTOM_MSG_SENDER_ID	xSenderID,
-	FTM_CHAR_PTR	pTriggerID,
+	FTM_CHAR_PTR	pEventID,
 	FTM_BOOL		bOccurred,
 	FTOM_MSG_PTR _PTR_ ppMsg
 )
@@ -694,7 +694,7 @@ FTM_RET	FTOM_MSG_createEvent
 
 	pMsg->xType	= FTOM_MSG_TYPE_EVENT;
 	pMsg->ulLen = ulMsgLen;
-	strncpy(pMsg->pTriggerID, pTriggerID, FTM_ID_LEN);
+	strncpy(pMsg->pEventID, pEventID, FTM_ID_LEN);
 	pMsg->bOccurred = bOccurred;
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;

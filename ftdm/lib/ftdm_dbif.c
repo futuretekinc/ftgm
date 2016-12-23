@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include "ftdm.h"
-#include "ftm_trigger.h"
+#include "ftm_event.h"
 #include "ftdm_dbif.h"
 
 #undef	__MODULE__
@@ -17,8 +17,8 @@ static int	_FTDM_DBIF_getEPDataTimeCB(void *pData, int nArgc, char **pArgv, char
 static int _FTDM_DBIF_getEPDataCB(void *pData, int nArgc, char **pArgv, char **pColName);
 static int _FTDM_DBIF_CB_isTableExist(void *pData, int nArgc, char **pArgv, char **pColName);
 static int _FTDM_DBIF_CB_isExist(void *pData, int nArgc, char **pArgv, char **pColName);
-static int _FTDM_DBIF_getTriggerCB(void *pData, int nArgc, char **pArgv, char **pColName);
-static int _FTDM_DBIF_getTriggerListCB(void *pData, int nArgc, char **pArgv, char **pColName);
+static int _FTDM_DBIF_getEventCB(void *pData, int nArgc, char **pArgv, char **pColName);
+static int _FTDM_DBIF_getEventListCB(void *pData, int nArgc, char **pArgv, char **pColName);
 static int _FTDM_DBIF_getActionCB(void *pData, int nArgc, char **pArgv, char **pColName);
 static int _FTDM_DBIF_getActionListCB(void *pData, int nArgc, char **pArgv, char **pColName);
 static int _FTDM_DBIF_getRuleCB(void *pData, int nArgc, char **pArgv, char **pColName);
@@ -79,7 +79,7 @@ FTM_RET _FTDM_DBIF_createEPTable
 	FTM_CHAR_PTR	pTableName
 );
 
-FTM_RET _FTDM_DBIF_createTriggerTable
+FTM_RET _FTDM_DBIF_createEventTable
 (
 	FTDM_DBIF_PTR	pDBIF,
 	FTM_CHAR_PTR	pTableName
@@ -188,7 +188,7 @@ FTM_RET	FTDM_DBIF_open
 		return	xRet;	
 	}
 
-	xRet = FTDM_DBIF_initTriggerTable(pDBIF);
+	xRet = FTDM_DBIF_initEventTable(pDBIF);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to initilize trigger table!\n");
@@ -2360,7 +2360,7 @@ FTM_RET FTDM_DBIF_getTrace
 /***************************************************************
  *
  ***************************************************************/
-FTM_RET	FTDM_DBIF_initTriggerTable
+FTM_RET	FTDM_DBIF_initEventTable
 (
 	FTDM_DBIF_PTR	pDBIF
 )
@@ -2382,19 +2382,19 @@ FTM_RET	FTDM_DBIF_initTriggerTable
 
 	if (bExist != FTM_TRUE)
 	{
-		xRet = _FTDM_DBIF_createTriggerTable(pDBIF, pTableName);
+		xRet = _FTDM_DBIF_createEventTable(pDBIF, pTableName);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Can't create a new tables[%s].\n", pTableName);
 			return	xRet;	
 		}
-		TRACE("It created new TRIGGER table[%s].\n", pTableName);
+		TRACE("It created new EVENT table[%s].\n", pTableName);
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_getTriggerCount
+FTM_RET	FTDM_DBIF_getEventCount
 (
 	FTDM_DBIF_PTR	pDBIF,
 	FTM_ULONG_PTR	pulCount
@@ -2403,13 +2403,13 @@ FTM_RET	FTDM_DBIF_getTriggerCount
 	return	FTDM_DBIF_getItemCount(pDBIF, "trigger", pulCount);
 }
 
-FTM_RET	FTDM_DBIF_createTrigger
+FTM_RET	FTDM_DBIF_createEvent
 (
 	FTDM_DBIF_PTR	pDBIF,
- 	FTM_TRIGGER_PTR	pTrigger
+ 	FTM_EVENT_PTR	pEvent
 )
 {
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_INT			nRet;
 	sqlite3_stmt 	*pStmt;
@@ -2430,8 +2430,8 @@ FTM_RET	FTDM_DBIF_createTrigger
 			return FTM_RET_ERROR;
 		}
 
-		sqlite3_bind_text(pStmt, 1, pTrigger->pID, strlen(pTrigger->pID), 0);
-		sqlite3_bind_blob(pStmt, 2, pTrigger, sizeof(FTM_TRIGGER), SQLITE_STATIC);
+		sqlite3_bind_text(pStmt, 1, pEvent->pID, strlen(pEvent->pID), 0);
+		sqlite3_bind_blob(pStmt, 2, pEvent, sizeof(FTM_EVENT), SQLITE_STATIC);
 
 		nRet = sqlite3_step(pStmt);
 		ASSERT( nRet != SQLITE_ROW);
@@ -2445,7 +2445,7 @@ FTM_RET	FTDM_DBIF_createTrigger
 /***************************************************************
  *
  ***************************************************************/
-FTM_RET	FTDM_DBIF_destroyTrigger
+FTM_RET	FTDM_DBIF_destroyEvent
 (
 	FTDM_DBIF_PTR	pDBIF,
 	FTM_CHAR_PTR	pID
@@ -2476,7 +2476,7 @@ FTM_RET	FTDM_DBIF_destroyTrigger
 /***************************************************************
  *
  ***************************************************************/
-FTM_RET	_FTDM_DBIF_createTriggerTable
+FTM_RET	_FTDM_DBIF_createEventTable
 (
 	FTDM_DBIF_PTR	pDBIF,
 	FTM_CHAR_PTR	pTableName
@@ -2507,36 +2507,36 @@ FTM_RET	_FTDM_DBIF_createTriggerTable
 }
 
 
-int _FTDM_DBIF_getTriggerCB(void *pData, int nArgc, char **pArgv, char **pColName)
+int _FTDM_DBIF_getEventCB(void *pData, int nArgc, char **pArgv, char **pColName)
 {
-	FTM_TRIGGER_PTR	pTrigger = (FTM_TRIGGER_PTR)pData;
+	FTM_EVENT_PTR	pEvent = (FTM_EVENT_PTR)pData;
 
 	if (nArgc != 0)
 	{
 		if (strcmp(pColName[0], "ID") == 0)
 		{
-			strncpy(pTrigger->pID, pArgv[0], FTM_ID_LEN);
+			strncpy(pEvent->pID, pArgv[0], FTM_ID_LEN);
 		}
 		else if (strcmp(pColName[0], "VALUE") == 0)
 		{
-			memcpy(pTrigger, pArgv[0], sizeof(FTM_TRIGGER));
+			memcpy(pEvent, pArgv[0], sizeof(FTM_EVENT));
 		}
 	}
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_getTrigger
+FTM_RET	FTDM_DBIF_getEvent
 (
 	FTDM_DBIF_PTR	pDBIF,
 	FTM_CHAR_PTR	pID,
- 	FTM_TRIGGER_PTR	pTrigger
+ 	FTM_EVENT_PTR	pEvent
 )
 {
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
     FTM_CHAR_PTR	pErrMsg = NULL;
-	FTM_TRIGGER		xTrigger;
+	FTM_EVENT		xEvent;
 
 	if (pDBIF->pSQLiteDB == NULL)
 	{
@@ -2544,10 +2544,10 @@ FTM_RET	FTDM_DBIF_getTrigger
 		return	FTM_RET_NOT_INITIALIZED;	
 	}
 
-	memset(&xTrigger, 0, sizeof(xTrigger));
+	memset(&xEvent, 0, sizeof(xEvent));
 
     sprintf(pSQL, "SELECT * FROM trigger WHERE ID = '%s'", pID);
-    xRet = sqlite3_exec(pDBIF->pSQLiteDB, pSQL, _FTDM_DBIF_getTriggerCB, &xTrigger, &pErrMsg);
+    xRet = sqlite3_exec(pDBIF->pSQLiteDB, pSQL, _FTDM_DBIF_getEventCB, &xEvent, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
         ERROR2(xRet, "%s\n", pErrMsg);
@@ -2556,12 +2556,12 @@ FTM_RET	FTDM_DBIF_getTrigger
     	return  FTM_RET_ERROR;
     }
 
-	if (strcpy(xTrigger.pID, pID) != 0)
+	if (strcpy(xEvent.pID, pID) != 0)
 	{
 		return	FTM_RET_OBJECT_NOT_FOUND;	
 	}
 
-	memcpy(pTrigger, &xTrigger, sizeof(FTM_TRIGGER));
+	memcpy(pEvent, &xEvent, sizeof(FTM_EVENT));
 	return	FTM_RET_OK;
 }
 
@@ -2569,10 +2569,10 @@ typedef struct
 {
 	FTM_ULONG		ulMaxCount;
 	FTM_ULONG		ulCount;
-	FTM_TRIGGER_PTR	pTriggers;
-}	FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS_PTR;
+	FTM_EVENT_PTR	pEvents;
+}	FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS, _PTR_ FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS_PTR;
 
-FTM_INT	_FTDM_DBIF_getTriggerListCB
+FTM_INT	_FTDM_DBIF_getEventListCB
 (
 	FTM_VOID_PTR	pData, 
 	FTM_INT			nArgc, 
@@ -2580,22 +2580,22 @@ FTM_INT	_FTDM_DBIF_getTriggerListCB
 	FTM_CHAR_PTR _PTR_ pColName
 )
 {
-	FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS_PTR)pData;
+	FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS_PTR pParams = (FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS_PTR)pData;
 
 	if (nArgc != 0)
 	{
 		FTM_INT	i;
-		FTM_TRIGGER_PTR	pTrigger = &pParams->pTriggers[pParams->ulCount++];
+		FTM_EVENT_PTR	pEvent = &pParams->pEvents[pParams->ulCount++];
 
 		for(i = 0 ; i < nArgc ; i++)
 		{
 			if (strcasecmp(pColName[i], "ID") == 0)
 			{
-				strncpy(pTrigger->pID , pArgv[i], FTM_ID_LEN);
+				strncpy(pEvent->pID , pArgv[i], FTM_ID_LEN);
 			}
 			else if (strcasecmp(pColName[i], "VALUE") == 0)
 			{
-				memcpy(pTrigger, pArgv[i], sizeof(FTM_TRIGGER));
+				memcpy(pEvent, pArgv[i], sizeof(FTM_EVENT));
 			}
 		}
 
@@ -2603,10 +2603,10 @@ FTM_INT	_FTDM_DBIF_getTriggerListCB
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_getTriggerList
+FTM_RET	FTDM_DBIF_getEventList
 (
 	FTDM_DBIF_PTR		pDBIF,
-	FTM_TRIGGER_PTR		pTriggers, 
+	FTM_EVENT_PTR		pEvents, 
 	FTM_ULONG			nMaxCount,
 	FTM_ULONG_PTR		pulCount
 )
@@ -2614,11 +2614,11 @@ FTM_RET	FTDM_DBIF_getTriggerList
     FTM_INT			xRet;
     FTM_CHAR		pSQL[1024];
     FTM_CHAR_PTR	pErrMsg = NULL;
-	FTDM_DBIF_CB_GET_TRIGGER_LIST_PARAMS xParams= 
+	FTDM_DBIF_CB_GET_EVENT_LIST_PARAMS xParams= 
 	{
 		.ulMaxCount = nMaxCount,
 		.ulCount	= 0,
-		.pTriggers	= pTriggers
+		.pEvents	= pEvents
 	};
 
 	if (pDBIF->pSQLiteDB == NULL)
@@ -2628,7 +2628,7 @@ FTM_RET	FTDM_DBIF_getTriggerList
 	}
 
     sprintf(pSQL, "SELECT * FROM trigger");
-    xRet = sqlite3_exec(pDBIF->pSQLiteDB, pSQL, _FTDM_DBIF_getTriggerListCB, &xParams, &pErrMsg);
+    xRet = sqlite3_exec(pDBIF->pSQLiteDB, pSQL, _FTDM_DBIF_getEventListCB, &xParams, &pErrMsg);
     if (xRet != SQLITE_OK)
     {
         ERROR2(xRet, "%s\n", pErrMsg);
@@ -2642,11 +2642,11 @@ FTM_RET	FTDM_DBIF_getTriggerList
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_DBIF_setTrigger
+FTM_RET	FTDM_DBIF_setEvent
 (
 	FTDM_DBIF_PTR	pDBIF,
-	FTM_CHAR_PTR	pTriggerID,
- 	FTM_TRIGGER_PTR	pInfo
+	FTM_CHAR_PTR	pEventID,
+ 	FTM_EVENT_PTR	pInfo
 )
 {
 	ASSERT(pInfo != NULL);
@@ -2671,7 +2671,7 @@ FTM_RET	FTDM_DBIF_setTrigger
 			return FTM_RET_ERROR;
 		}
 
-		sqlite3_bind_blob(pStmt, 1, pInfo, sizeof(FTM_TRIGGER), SQLITE_STATIC);
+		sqlite3_bind_blob(pStmt, 1, pInfo, sizeof(FTM_EVENT), SQLITE_STATIC);
 		sqlite3_bind_text(pStmt, 2, pInfo->pID, strlen(pInfo->pID), 0);
 
 		nRet = sqlite3_step(pStmt);

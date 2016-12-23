@@ -9,7 +9,7 @@
 #include "ftom_server.h"
 #include "ftom_snmpc.h"
 #include "ftom_node.h"
-#include "ftom_trigger.h"
+#include "ftom_event.h"
 #include "ftom_action.h"
 #include "ftom_rule.h"
 #include "ftom_msg.h"
@@ -28,7 +28,7 @@ typedef	struct
 }	FTOM_CONFIG, _PTR_ FTOM_CONFIG_PTR;
 
 typedef	struct FTOM_EPM_STRUCT 			_PTR_ FTOM_EPM_PTR;
-typedef struct FTOM_TRIGGERM_STRUCT 	_PTR_ FTOM_TRIGGERM_PTR;
+typedef struct FTOM_EVENTM_STRUCT 	_PTR_ FTOM_EVENTM_PTR;
 typedef struct FTOM_ACTIONM_STRUCT 		_PTR_ FTOM_ACTIONM_PTR;
 typedef struct FTOM_RULEM_STRUCT 		_PTR_ FTOM_RULEM_PTR;
 
@@ -212,12 +212,12 @@ FTM_RET	FTOM_addEPRemovalLog
 	FTM_CHAR_PTR	pEPID
 );
 
-FTM_RET	FTOM_addTriggerCreationLog
+FTM_RET	FTOM_addEventCreationLog
 (
-	FTOM_TRIGGER_PTR	pTrigger
+	FTOM_EVENT_PTR	pEvent
 );
 
-FTM_RET	FTOM_addTriggerRemovalLog
+FTM_RET	FTOM_addEventRemovalLog
 (
 	FTM_CHAR_PTR	pID
 );
@@ -242,7 +242,7 @@ FTM_RET	FTOM_addRuleRemovalLog
 	FTM_CHAR_PTR	pID
 );
 
-FTM_RET	FTOM_addEventCreationLog
+FTM_RET	FTOM_addRuleCreationLog
 (
 	FTOM_RULE_PTR	pRule
 );

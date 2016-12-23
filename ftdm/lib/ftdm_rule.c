@@ -3,7 +3,7 @@
 #include "ftm.h"
 #include "ftdm_rule.h"
 #include "ftdm_action.h"
-#include "ftdm_trigger.h"
+#include "ftdm_event.h"
 #include "ftdm_dbif.h"
 #include "ftdm_log.h"
 
@@ -80,10 +80,10 @@ FTM_RET	FTDM_RULE_set
 		pRule->xInfo.xState = pInfo->xState;
 	}
 
-	if (xFields & FTM_RULE_FIELD_TRIGGERS)
+	if (xFields & FTM_RULE_FIELD_EVENTS)
 	{
-		pRule->xInfo.xParams.ulTriggers = pInfo->xParams.ulTriggers;
-		memcpy(pRule->xInfo.xParams.pTriggers, pInfo->xParams.pTriggers, sizeof(pInfo->xParams.pTriggers));
+		pRule->xInfo.xParams.ulEvents = pInfo->xParams.ulEvents;
+		memcpy(pRule->xInfo.xParams.pEvents, pInfo->xParams.pEvents, sizeof(pInfo->xParams.pEvents));
 	}
 
 	if (xFields & FTM_RULE_FIELD_ACTIONS)
@@ -154,9 +154,9 @@ FTM_RET	FTDM_RULE_show
 		MESSAGE("%16s : %s\n", "State", "Deactive");
 	}
 	MESSAGE("%16s : ", "Triggres");
-	for(j = 0 ; j < pRule->xInfo.xParams.ulTriggers ; j++)
+	for(j = 0 ; j < pRule->xInfo.xParams.ulEvents ; j++)
 	{
-		MESSAGE(" %16s", pRule->xInfo.xParams.pTriggers[j]);
+		MESSAGE(" %16s", pRule->xInfo.xParams.pEvents[j]);
 	}
 	MESSAGE("\n");
 
@@ -192,7 +192,7 @@ FTM_RET	FTDM_RULE_showList
 		{
 			FTM_ULONG	j;
 
-			for(j = 0 ; j < pRule->xParams.ulTriggers || j < pRule->xParams.ulActions ; j++)
+			for(j = 0 ; j < pRule->xParams.ulEvents || j < pRule->xParams.ulActions ; j++)
 			{
 				if (j == 0)
 				{
@@ -202,9 +202,9 @@ FTM_RET	FTDM_RULE_showList
 				{
 					MESSAGE("\t%16s %16s %8s", pSpace, pSpace, pSpace);
 				}
-				if (pRule->xParams.pTriggers[j] != 0)
+				if (pRule->xParams.pEvents[j] != 0)
 				{
-					MESSAGE(" %16s", pRule->xParams.pTriggers[j]);
+					MESSAGE(" %16s", pRule->xParams.pEvents[j]);
 				}
 				else
 				{

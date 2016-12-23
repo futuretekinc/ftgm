@@ -14,7 +14,7 @@
 #include "ftdm_server_cmds.h"
 #include "ftdm_server.h"
 #include "ftdm_dbif.h"
-#include "ftdm_trigger.h"
+#include "ftdm_event.h"
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
 
@@ -62,10 +62,10 @@ FTM_RET 	FTDM_init
 		ERROR2(xRet, "Failed to create logger!\n");
 	}
 
-	xRet = FTDM_TRIGGER_init();
+	xRet = FTDM_EVENT_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Trigger management initialization fialed.\n");
+		ERROR2(xRet, "Event management initialization fialed.\n");
 	}
 
 	xRet = FTDM_ACTION_init();
@@ -126,10 +126,10 @@ FTM_RET	FTDM_final
 		ERROR2(xRet, "Action management finalize failed.\n");	
 	}
 
-	xRet = FTDM_TRIGGER_final();
+	xRet = FTDM_EVENT_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Trigger management finalize failed.\n");	
+		ERROR2(xRet, "Event management finalize failed.\n");	
 	}
 
 	xRet = FTDM_LOGGER_destroy(&xFTDM.pLogger);
@@ -219,7 +219,7 @@ FTM_RET	FTDM_loadObject
 		return	FTM_RET_ERROR;
 	}
 
-	xRet = FTDM_loadTriggerConfig(pConfig);
+	xRet = FTDM_loadEventConfig(pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Event configuration load failed.\n");	
@@ -263,7 +263,7 @@ FTM_RET	FTDM_loadObjectFromDB
 		ERROR("Failed to load the EP.[%08x]\n");
 	}
 
-	xRet = FTDM_loadTriggerFromDB();
+	xRet = FTDM_loadEventFromDB();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to load the trigger.[%08x]\n");
@@ -302,7 +302,7 @@ FTM_RET	FTDM_saveObjectToDB
 		ERROR("Failed to save the EP.[%08x]\n");
 	}
 
-	xRet = FTDM_saveTriggerToDB();
+	xRet = FTDM_saveEventToDB();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to save the trigger.[%08x]\n");
@@ -990,7 +990,7 @@ FTM_RET	FTDM_loadRuleConfig
 
 						FTM_CONFIG_ITEM_getItemString(&xRuleItem, "id", xInfo.pID, FTM_ID_LEN);
 						FTM_CONFIG_ITEM_getItemString(&xRuleItem, "name", xInfo.pName, FTM_NAME_LEN);
-						xInfo.xParams.ulTriggers = 0;
+						xInfo.xParams.ulEvents = 0;
 
 						xRet = FTM_CONFIG_ITEM_getChildItem(&xRuleItem, "triggers", &xRulesItem);
 						if (xRet != FTM_RET_OK)
@@ -1016,7 +1016,7 @@ FTM_RET	FTDM_loadRuleConfig
 							if (xRet == FTM_RET_OK)
 							{
 								FTM_ULONG	ulIndex;
-								FTDM_TRIGGER_PTR	pTrigger;
+								FTDM_EVENT_PTR	pEvent;
 
 								xRet = FTM_CONFIG_ITEM_getULONG(&xRuleItem, &ulIndex);
 								if (xRet != FTM_RET_OK)
@@ -1025,14 +1025,14 @@ FTM_RET	FTDM_loadRuleConfig
 									continue;	
 								}
 
-								xRet = FTDM_TRIGGER_getByIndex(ulIndex, &pTrigger);
+								xRet = FTDM_EVENT_getByIndex(ulIndex, &pEvent);
 								if (xRet != FTM_RET_OK)
 								{
 									ERROR2(xRet, "Failed to get tirgger at %lu!\n", ulIndex);
 									continue;	
 								}
 
-								strcpy(xInfo.xParams.pTriggers[xInfo.xParams.ulTriggers++], pTrigger->xInfo.pID);
+								strcpy(xInfo.xParams.pEvents[xInfo.xParams.ulEvents++], pEvent->xInfo.pID);
 							}
 							else
 							{
@@ -1179,17 +1179,17 @@ FTM_RET	FTDM_saveRuleToDB
 /*************************************************************************
  *
  *************************************************************************/
-FTM_RET	FTDM_createTrigger
+FTM_RET	FTDM_createEvent
 (
-	FTM_TRIGGER_PTR 	pInfo,
-	FTDM_TRIGGER_PTR _PTR_ ppTrigger
+	FTM_EVENT_PTR 	pInfo,
+	FTDM_EVENT_PTR _PTR_ ppEvent
 )
 {
 	ASSERT(pInfo != NULL);
 	FTM_RET				xRet;
-	FTDM_TRIGGER_PTR	pTrigger;
+	FTDM_EVENT_PTR	pEvent;
 
-	if (FTDM_TRIGGER_get(pInfo->pID, &pTrigger) == FTM_RET_OK)
+	if (FTDM_EVENT_get(pInfo->pID, &pEvent) == FTM_RET_OK)
 	{
 		ERROR("Object already exist!\n");
 		return	FTM_RET_ALREADY_EXIST_OBJECT;
@@ -1205,66 +1205,66 @@ FTM_RET	FTDM_createTrigger
 			sprintf(pInfo->pID, "%08lx%08lx", (FTM_ULONG)xTime.tv_sec, (FTM_ULONG)xTime.tv_usec);
 			usleep(10);
 		}
-		while (FTDM_TRIGGER_get(pInfo->pID, &pTrigger) == FTM_RET_OK);
+		while (FTDM_EVENT_get(pInfo->pID, &pEvent) == FTM_RET_OK);
 	}
 
-	xRet = FTDM_DBIF_createTrigger(xFTDM.pDBIF, pInfo);
+	xRet = FTDM_DBIF_createEvent(xFTDM.pDBIF, pInfo);
 	if (xRet == FTM_RET_OK)
 	{
-		pTrigger = (FTDM_TRIGGER_PTR)FTM_MEM_malloc(sizeof(FTDM_TRIGGER));
-		if (pTrigger == NULL)
+		pEvent = (FTDM_EVENT_PTR)FTM_MEM_malloc(sizeof(FTDM_EVENT));
+		if (pEvent == NULL)
 		{
 			ERROR("Not enough memory!\n");
-			FTDM_DBIF_destroyTrigger(xFTDM.pDBIF, pInfo->pID);
+			FTDM_DBIF_destroyEvent(xFTDM.pDBIF, pInfo->pID);
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 
-		memset(pTrigger, 0, sizeof(FTDM_TRIGGER));
-		memcpy(&pTrigger->xInfo, pInfo, sizeof(FTM_TRIGGER));
+		memset(pEvent, 0, sizeof(FTDM_EVENT));
+		memcpy(&pEvent->xInfo, pInfo, sizeof(FTM_EVENT));
 
-		xRet = FTM_TRIGGER_append((FTM_TRIGGER_PTR)pTrigger);
+		xRet = FTM_EVENT_append((FTM_EVENT_PTR)pEvent);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("Trigger[%s] append failed\n", pTrigger->xInfo.pID);
-			FTDM_DBIF_destroyTrigger(xFTDM.pDBIF, pInfo->pID);
+			ERROR("Event[%s] append failed\n", pEvent->xInfo.pID);
+			FTDM_DBIF_destroyEvent(xFTDM.pDBIF, pInfo->pID);
 		}
 	}
 	else
 	{
-		ERROR("Trigger[%s] DB creation failed.\n", pInfo->pID);
+		ERROR("Event[%s] DB creation failed.\n", pInfo->pID);
 	}
 
-	if ((xRet == FTM_RET_OK) && (ppTrigger != NULL))
+	if ((xRet == FTM_RET_OK) && (ppEvent != NULL))
 	{
-		*ppTrigger = pTrigger;	
+		*ppEvent = pEvent;	
 	}
 	
 	return	xRet;
 }
 
-FTM_RET	FTDM_destroyTrigger
+FTM_RET	FTDM_destroyEvent
 (
 	FTM_CHAR_PTR	pID
 )
 {
 	FTM_RET				xRet;
-	FTDM_TRIGGER_PTR	pTrigger = NULL;
+	FTDM_EVENT_PTR	pEvent = NULL;
 
-	xRet = FTDM_TRIGGER_get(pID, &pTrigger);
+	xRet = FTDM_EVENT_get(pID, &pEvent);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	FTDM_DBIF_destroyTrigger(xFTDM.pDBIF, pID);
-	FTM_TRIGGER_remove((FTM_TRIGGER_PTR)pTrigger);
+	FTDM_DBIF_destroyEvent(xFTDM.pDBIF, pID);
+	FTM_EVENT_remove((FTM_EVENT_PTR)pEvent);
 
-	FTM_MEM_free(pTrigger);
+	FTM_MEM_free(pEvent);
 
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_loadTriggerConfig
+FTM_RET	FTDM_loadEventConfig
 (
 	FTM_CONFIG_PTR	pConfig
 )
@@ -1272,77 +1272,77 @@ FTM_RET	FTDM_loadTriggerConfig
 	ASSERT(pConfig != NULL);
 
 	FTM_RET				xRet;
-	FTM_CONFIG_ITEM		xTrigger;
-	FTM_CONFIG_ITEM		xTriggers;
-	FTM_CONFIG_ITEM		xTriggerItem;
+	FTM_CONFIG_ITEM		xEvent;
+	FTM_CONFIG_ITEM		xEvents;
+	FTM_CONFIG_ITEM		xEventItem;
 
-	xRet = FTM_CONFIG_getItem(pConfig, "event", &xTrigger);
+	xRet = FTM_CONFIG_getItem(pConfig, "event", &xEvent);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTM_CONFIG_ITEM_getChildItem(&xTrigger, "triggers", &xTriggers);
+		xRet = FTM_CONFIG_ITEM_getChildItem(&xEvent, "triggers", &xEvents);
 		if (xRet == FTM_RET_OK)
 		{
 			FTM_ULONG	ulCount;
 
-			xRet = FTM_CONFIG_LIST_getItemCount(&xTriggers, &ulCount);
+			xRet = FTM_CONFIG_LIST_getItemCount(&xEvents, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				FTM_ULONG	i;
-				FTDM_TRIGGER_PTR	pTrigger;
+				FTDM_EVENT_PTR	pEvent;
 
 				for(i = 0 ; i < ulCount ; i++)
 				{
-					xRet = FTM_CONFIG_LIST_getItemAt(&xTriggers, i, &xTriggerItem);	
+					xRet = FTM_CONFIG_LIST_getItemAt(&xEvents, i, &xEventItem);	
 					if (xRet == FTM_RET_OK)
 					{
-						FTM_TRIGGER		xInfo;
+						FTM_EVENT		xInfo;
 						FTM_ULONG		ulIndex = 0;
 						FTM_CHAR		pTypeString[64];
 
-						FTM_TRIGGER_setDefault(&xInfo);
+						FTM_EVENT_setDefault(&xInfo);
 
-						FTM_CONFIG_ITEM_getItemString(&xTriggerItem, "id", xInfo.pID, FTM_ID_LEN);
-						FTM_CONFIG_ITEM_getItemString(&xTriggerItem, "name", xInfo.pName, FTM_NAME_LEN);
-						FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "index", &ulIndex);
+						FTM_CONFIG_ITEM_getItemString(&xEventItem, "id", xInfo.pID, FTM_ID_LEN);
+						FTM_CONFIG_ITEM_getItemString(&xEventItem, "name", xInfo.pName, FTM_NAME_LEN);
+						FTM_CONFIG_ITEM_getItemULONG(&xEventItem, "index", &ulIndex);
 						
-						xRet = FTM_CONFIG_ITEM_getItemString(&xTriggerItem, "epid", xInfo.pEPID, FTM_EPID_LEN);
+						xRet = FTM_CONFIG_ITEM_getItemString(&xEventItem, "epid", xInfo.pEPID, FTM_EPID_LEN);
 						if (xRet != FTM_RET_OK)
 						{
-							TRACE("Trigger epid get failed.\n");
+							TRACE("Event epid get failed.\n");
 							continue;
 						}
 
-						xRet = FTM_CONFIG_ITEM_getItemString(&xTriggerItem, "type", pTypeString, sizeof(pTypeString) - 1);
+						xRet = FTM_CONFIG_ITEM_getItemString(&xEventItem, "type", pTypeString, sizeof(pTypeString) - 1);
 						if (xRet != FTM_RET_OK)
 						{
-							TRACE("Trigger type get failed.\n");
+							TRACE("Event type get failed.\n");
 							continue;
 						}
 
-						xRet = FTM_TRIGGER_strToType(pTypeString, &xInfo.xType);
+						xRet = FTM_EVENT_strToType(pTypeString, &xInfo.xType);
 						if (xRet != FTM_RET_OK)
 						{
-							TRACE("Trigger type[%s] is invalid.\n", pTypeString);
+							TRACE("Event type[%s] is invalid.\n", pTypeString);
 							continue;
 						}
 
 						switch(xInfo.xType)
 						{
-						case	FTM_TRIGGER_TYPE_ABOVE:
+						case	FTM_EVENT_TYPE_ABOVE:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "detect",&xInfo.xParams.xAbove.ulDetectionTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xEventItem, "detect",&xInfo.xParams.xAbove.ulDetectionTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "hold",&xInfo.xParams.xAbove.ulHoldingTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xEventItem, "hold",&xInfo.xParams.xAbove.ulHoldingTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "value", &xInfo.xParams.xAbove.xValue);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xEventItem, "value", &xInfo.xParams.xAbove.xValue);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
@@ -1351,21 +1351,21 @@ FTM_RET	FTDM_loadTriggerConfig
 							}
 							break;
 
-						case	FTM_TRIGGER_TYPE_BELOW:
+						case	FTM_EVENT_TYPE_BELOW:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "detect",&xInfo.xParams.xBelow.ulDetectionTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xEventItem, "detect",&xInfo.xParams.xBelow.ulDetectionTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "hold",&xInfo.xParams.xBelow.ulHoldingTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xEventItem, "hold",&xInfo.xParams.xBelow.ulHoldingTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "value", &xInfo.xParams.xBelow.xValue);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xEventItem, "value", &xInfo.xParams.xBelow.xValue);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
@@ -1374,27 +1374,27 @@ FTM_RET	FTDM_loadTriggerConfig
 							}
 							break;
 
-						case	FTM_TRIGGER_TYPE_INCLUDE:
+						case	FTM_EVENT_TYPE_INCLUDE:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "detect",&xInfo.xParams.xInclude.ulDetectionTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xEventItem, "detect",&xInfo.xParams.xInclude.ulDetectionTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "hold",&xInfo.xParams.xInclude.ulHoldingTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xEventItem, "hold",&xInfo.xParams.xInclude.ulHoldingTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "upper", &xInfo.xParams.xInclude.xUpper);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xEventItem, "upper", &xInfo.xParams.xInclude.xUpper);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "lower", &xInfo.xParams.xInclude.xLower);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xEventItem, "lower", &xInfo.xParams.xInclude.xLower);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
@@ -1403,27 +1403,27 @@ FTM_RET	FTDM_loadTriggerConfig
 							}
 							break;
 
-						case	FTM_TRIGGER_TYPE_EXCEPT:
+						case	FTM_EVENT_TYPE_EXCEPT:
 							{
-								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "detect",&xInfo.xParams.xExcept.ulDetectionTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xEventItem, "detect",&xInfo.xParams.xExcept.ulDetectionTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemULONG(&xTriggerItem, "hold",&xInfo.xParams.xExcept.ulHoldingTime);
+								xRet = FTM_CONFIG_ITEM_getItemULONG(&xEventItem, "hold",&xInfo.xParams.xExcept.ulHoldingTime);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "upper", &xInfo.xParams.xExcept.xUpper);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xEventItem, "upper", &xInfo.xParams.xExcept.xUpper);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
 								}
 
-								xRet = FTM_CONFIG_ITEM_getItemValue(&xTriggerItem, "lower", &xInfo.xParams.xExcept.xLower);
+								xRet = FTM_CONFIG_ITEM_getItemValue(&xEventItem, "lower", &xInfo.xParams.xExcept.xLower);
 								if (xRet != FTM_RET_OK)
 								{
 									continue;
@@ -1432,30 +1432,30 @@ FTM_RET	FTDM_loadTriggerConfig
 							}
 							break;
 
-						case	FTM_TRIGGER_TYPE_CHANGE:
+						case	FTM_EVENT_TYPE_CHANGE:
 						default:
 							{
 							}
 							break;
 						}
 
-						xRet = FTDM_createTrigger(&xInfo, &pTrigger);
+						xRet = FTDM_createEvent(&xInfo, &pEvent);
 						if (xRet != FTM_RET_OK)
 						{
 							ERROR("The new trigger can not creation.\n");
 						}
 						else if (ulIndex != 0)
 						{
-							pTrigger->ulIndex = ulIndex;	
+							pEvent->ulIndex = ulIndex;	
 						}
-						//FTDM_LOG_createTrigger(xInfo.pID, xRet);
+						//FTDM_LOG_createEvent(xInfo.pID, xRet);
 					}
 				}
 			}
 		}
 		else
 		{
-			TRACE("Triggers not found.\n");	
+			TRACE("Events not found.\n");	
 		}
 	}
 	else
@@ -1466,7 +1466,7 @@ FTM_RET	FTDM_loadTriggerConfig
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_loadTriggerFromDB
+FTM_RET	FTDM_loadEventFromDB
 (
 	FTM_VOID
 )
@@ -1475,40 +1475,40 @@ FTM_RET	FTDM_loadTriggerFromDB
 	FTM_RET		xRet;
 	FTM_ULONG	nMaxCount = 0;
 
-	if ((FTDM_DBIF_getTriggerCount(xFTDM.pDBIF, &nMaxCount) == FTM_RET_OK) &&
+	if ((FTDM_DBIF_getEventCount(xFTDM.pDBIF, &nMaxCount) == FTM_RET_OK) &&
 		(nMaxCount > 0))
 	{
 
-		FTM_TRIGGER_PTR	pInfos;
-		FTM_ULONG		nTriggerCount = 0;
+		FTM_EVENT_PTR	pInfos;
+		FTM_ULONG		nEventCount = 0;
 		
-		pInfos = (FTM_TRIGGER_PTR)FTM_MEM_malloc(nMaxCount * sizeof(FTM_TRIGGER));
+		pInfos = (FTM_EVENT_PTR)FTM_MEM_malloc(nMaxCount * sizeof(FTM_EVENT));
 		if (pInfos == NULL)
 		{
 			return	FTM_RET_NOT_ENOUGH_MEMORY;	
 		}
 	
-		if (FTDM_DBIF_getTriggerList(xFTDM.pDBIF, pInfos, nMaxCount, &nTriggerCount) == FTM_RET_OK)
+		if (FTDM_DBIF_getEventList(xFTDM.pDBIF, pInfos, nMaxCount, &nEventCount) == FTM_RET_OK)
 		{
 			FTM_INT	i;
 
-			for(i = 0 ; i < nTriggerCount ; i++)
+			for(i = 0 ; i < nEventCount ; i++)
 			{
-				FTDM_TRIGGER_PTR	pTrigger;
+				FTDM_EVENT_PTR	pEvent;
 
-				pTrigger = (FTDM_TRIGGER_PTR)FTM_MEM_malloc(sizeof(FTDM_TRIGGER));
-				if (pTrigger == NULL)
+				pEvent = (FTDM_EVENT_PTR)FTM_MEM_malloc(sizeof(FTDM_EVENT));
+				if (pEvent == NULL)
 				{
 					ERROR("Not enough memory!\n");
 					break;	
 				}
 
-				memcpy(&pTrigger->xInfo, &pInfos[i], sizeof(FTM_TRIGGER));
+				memcpy(&pEvent->xInfo, &pInfos[i], sizeof(FTM_EVENT));
 
-				xRet = FTM_TRIGGER_append((FTM_TRIGGER_PTR)pTrigger);
+				xRet = FTM_EVENT_append((FTM_EVENT_PTR)pEvent);
 				if (xRet != FTM_RET_OK)
 				{
-					FTM_MEM_free(pTrigger);	
+					FTM_MEM_free(pEvent);	
 				}
 			}
 		}
@@ -1519,16 +1519,16 @@ FTM_RET	FTDM_loadTriggerFromDB
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_saveTriggerToDB
+FTM_RET	FTDM_saveEventToDB
 (
 	FTM_VOID
 )
 {
 	FTM_RET			i, xRet;
 	FTM_ULONG		ulCount;
-	FTM_TRIGGER_PTR	pTrigger;
+	FTM_EVENT_PTR	pEvent;
 	
-	xRet = FTM_TRIGGER_count(&ulCount);
+	xRet = FTM_EVENT_count(&ulCount);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;
@@ -1536,9 +1536,9 @@ FTM_RET	FTDM_saveTriggerToDB
 
 	for(i = 0 ; i < ulCount ; i++)
 	{
-		FTM_TRIGGER	xInfo;
+		FTM_EVENT	xInfo;
 
-		xRet = FTM_TRIGGER_getAt(i, &pTrigger);
+		xRet = FTM_EVENT_getAt(i, &pEvent);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("Failed to get trigger information[%08x]\n", xRet);
@@ -1546,10 +1546,10 @@ FTM_RET	FTDM_saveTriggerToDB
 		}
 		
 
-		xRet = FTDM_DBIF_getTrigger(xFTDM.pDBIF, pTrigger->pID, &xInfo);
+		xRet = FTDM_DBIF_getEvent(xFTDM.pDBIF, pEvent->pID, &xInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			xRet = FTDM_DBIF_createTrigger(xFTDM.pDBIF, pTrigger);	
+			xRet = FTDM_DBIF_createEvent(xFTDM.pDBIF, pEvent);	
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR("Failed to save the new trigger.[%08x]\n", xRet);

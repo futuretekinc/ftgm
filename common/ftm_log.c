@@ -185,7 +185,7 @@ FTM_CHAR_PTR	FTM_LOG_print
 		sprintf(pBuff,"EP[%s] created.", pLog->xParams.xCreateObject.pObjectID);
 		break;
 
-	case FTM_LOG_TYPE_CREATE_TRIGGER:
+	case FTM_LOG_TYPE_CREATE_EVENT:
 		sprintf(pBuff,"Trigger[%s] created.", pLog->xParams.xCreateObject.pObjectID);
 		break;
 

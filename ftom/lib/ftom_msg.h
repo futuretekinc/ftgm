@@ -418,14 +418,14 @@ typedef struct
 	FTOM_MSG_TYPE	xType;
 	FTM_ULONG		ulLen;
 	FTOM_MSG_SENDER_ID	xSenderID;
-	FTM_CHAR		pTriggerID[FTM_ID_LEN+1];
+	FTM_CHAR		pEventID[FTM_ID_LEN+1];
 	FTM_BOOL		bOccurred;
 }	FTOM_MSG_EVENT, _PTR_ FTOM_MSG_EVENT_PTR;
 
 FTM_RET	FTOM_MSG_createEvent
 (
 	FTOM_MSG_SENDER_ID	xSenderID,
-	FTM_CHAR_PTR	pTriggerID,
+	FTM_CHAR_PTR	pEventID,
 	FTM_BOOL		bOccurred,
 	FTOM_MSG_PTR _PTR_ ppMsg
 );

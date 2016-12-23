@@ -3,7 +3,7 @@
 
 #include <sqlite3.h>
 #include "ftm_types.h"
-#include "ftm_trigger.h"
+#include "ftm_event.h"
 #include "ftdm_config.h"
 
 typedef	struct
@@ -337,49 +337,49 @@ FTM_RET FTDM_DBIF_getTrace
 	FTM_BOOL_PTR	pbTranceON
 );
 
-FTM_RET	FTDM_DBIF_initTriggerTable
+FTM_RET	FTDM_DBIF_initEventTable
 (
 	FTDM_DBIF_PTR	pDBIF
 );
 
-FTM_RET	FTDM_DBIF_createTrigger
+FTM_RET	FTDM_DBIF_createEvent
 (
 	FTDM_DBIF_PTR	pDBIF,
- 	FTM_TRIGGER_PTR	pTrigger
+ 	FTM_EVENT_PTR	pEvent
 );
 
-FTM_RET	FTDM_DBIF_destroyTrigger
+FTM_RET	FTDM_DBIF_destroyEvent
 (
 	FTDM_DBIF_PTR	pDBIF,
 	FTM_CHAR_PTR	pID
 );
 
-FTM_RET	FTDM_DBIF_getTriggerCount
+FTM_RET	FTDM_DBIF_getEventCount
 (
 	FTDM_DBIF_PTR	pDBIF,
 	FTM_ULONG_PTR	pCount
 );
 
-FTM_RET	FTDM_DBIF_getTrigger
+FTM_RET	FTDM_DBIF_getEvent
 (
 	FTDM_DBIF_PTR	pDBIF,
 	FTM_CHAR_PTR	pID,
- 	FTM_TRIGGER_PTR	pTrigger
+ 	FTM_EVENT_PTR	pEvent
 );
 
-FTM_RET	FTDM_DBIF_getTriggerList
+FTM_RET	FTDM_DBIF_getEventList
 (
 	FTDM_DBIF_PTR	pDBIF,
-	FTM_TRIGGER_PTR	pTriggers, 
+	FTM_EVENT_PTR	pEvents, 
 	FTM_ULONG		nMaxCount,
 	FTM_ULONG_PTR	pulCount
 );
 
-FTM_RET	FTDM_DBIF_setTrigger
+FTM_RET	FTDM_DBIF_setEvent
 (
 	FTDM_DBIF_PTR	pDBIF,
 	FTM_CHAR_PTR	pID,
- 	FTM_TRIGGER_PTR	pTrigger
+ 	FTM_EVENT_PTR	pEvent
 );
 
 FTM_RET	FTDM_DBIF_initActionTable

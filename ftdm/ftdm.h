@@ -123,28 +123,28 @@ FTM_RET	FTDM_saveRuleToDB
 	FTM_VOID
 );
 
-FTM_RET	FTDM_createTrigger
+FTM_RET	FTDM_createEvent
 (
-	FTM_TRIGGER_PTR 	pInfo,
-	FTDM_EVENT_PTR _PTR_ ppTrigger
+	FTM_EVENT_PTR 	pInfo,
+	FTDM_EVENT_PTR _PTR_ ppEvent
 );
 
-FTM_RET	FTDM_destroyTrigger
+FTM_RET	FTDM_destroyEvent
 (
 	FTM_CHAR_PTR	pID
 );
 
-FTM_RET	FTDM_loadTriggerConfig
+FTM_RET	FTDM_loadEventConfig
 (
 	FTM_CONFIG_PTR	pConfig
 );
 
-FTM_RET	FTDM_loadTriggerFromDB
+FTM_RET	FTDM_loadEventFromDB
 (
 	FTM_VOID
 );
 
-FTM_RET	FTDM_saveTriggerToDB
+FTM_RET	FTDM_saveEventToDB
 (
 	FTM_VOID
 );

@@ -3,7 +3,7 @@
 
 #include "ftm_types.h"
 #include "ftm_ep.h"
-#include "ftm_trigger.h"
+#include "ftm_event.h"
 #include "ftm_action.h"
 #include "ftm_time.h"
 #include "ftm_list.h"
@@ -13,7 +13,7 @@ typedef	FTM_ULONG	FTM_RULE_FIELD, _PTR_ FTM_RULE_FIELD_PTR;
 #define	FTM_RULE_FIELD_ID			(1 << 0)
 #define	FTM_RULE_FIELD_NAME			(1 << 1)
 #define	FTM_RULE_FIELD_STATE		(1 << 2)
-#define	FTM_RULE_FIELD_TRIGGERS		(1 << 3)
+#define	FTM_RULE_FIELD_EVENTS		(1 << 3)
 #define	FTM_RULE_FIELD_ACTIONS		(1 << 4)
 #define	FTM_RULE_FIELD_RULE			(1 << 5)
 #define	FTM_RULE_FIELD_ALL			(0xFFFF)
@@ -35,8 +35,8 @@ typedef	struct
 	FTM_RULE_STATE	xState;
 	struct 
 	{
-		FTM_ULONG		ulTriggers;
-		FTM_CHAR		pTriggers[8][FTM_ID_LEN+1];
+		FTM_ULONG		ulEvents;
+		FTM_CHAR		pEvents[8][FTM_ID_LEN+1];
 		FTM_ULONG		ulActions;
 		FTM_CHAR		pActions[8][FTM_ID_LEN+1];
 	}	xParams;

@@ -5,7 +5,7 @@
 #include "ftom_msg.h"
 #include "ftom_message_queue.h"
 #include "ftom_rule.h"
-#include "ftom_trigger.h"
+#include "ftom_event.h"
 #include "ftom_action.h"
 #include "ftom_logger.h"
 
@@ -304,18 +304,18 @@ FTM_VOID_PTR FTOM_RULE_process
 						{
 							FTM_INT	i;
 					
-							for(i = 0 ; i < pRule->xInfo.xParams.ulTriggers; i++)
+							for(i = 0 ; i < pRule->xInfo.xParams.ulEvents; i++)
 							{
-								if (strcasecmp(pRule->xInfo.xParams.pTriggers[i], pMsg->pTriggerID) == 0)
+								if (strcasecmp(pRule->xInfo.xParams.pEvents[i], pMsg->pEventID) == 0)
 								{
 									FTM_BOOL		bActivation  = FTM_TRUE;
 									FTM_INT			j;
 						
-									for(j = 0 ; j < pRule->xInfo.xParams.ulTriggers; j++)
+									for(j = 0 ; j < pRule->xInfo.xParams.ulEvents; j++)
 									{
-										FTOM_TRIGGER_PTR	pTrigger;
-										xRet = FTOM_TRIGGER_get(pRule->xInfo.xParams.pTriggers[j], &pTrigger);
-										if ((xRet != FTM_RET_OK) || (pTrigger->xState != FTOM_TRIGGER_STATE_SET))
+										FTOM_EVENT_PTR	pEvent;
+										xRet = FTOM_EVENT_get(pRule->xInfo.xParams.pEvents[j], &pEvent);
+										if ((xRet != FTM_RET_OK) || (pEvent->xState != FTOM_EVENT_STATE_SET))
 										{
 											bActivation  = FTM_FALSE;
 											break;
@@ -352,7 +352,7 @@ FTM_VOID_PTR FTOM_RULE_process
 						}
 
 						pRule->bActive = pMsg->bActivation;
-						FTOM_addEventCreationLog(pRule);
+						FTOM_addRuleCreationLog(pRule);
 
 						for(i = 0 ; i < pRule->xInfo.xParams.ulActions ; i++)
 						{
@@ -445,10 +445,10 @@ FTM_RET	FTOM_RULE_setInfo
 		pRule->xInfo.xState = pInfo->xState;
 	}
 	
-	if (xFields & FTM_RULE_FIELD_TRIGGERS)
+	if (xFields & FTM_RULE_FIELD_EVENTS)
 	{
-		pRule->xInfo.xParams.ulTriggers = pInfo->xParams.ulTriggers;
-		memcpy(pRule->xInfo.xParams.pTriggers, pInfo->xParams.pTriggers, sizeof(pInfo->xParams.pTriggers));
+		pRule->xInfo.xParams.ulEvents = pInfo->xParams.ulEvents;
+		memcpy(pRule->xInfo.xParams.pEvents, pInfo->xParams.pEvents, sizeof(pInfo->xParams.pEvents));
 	}
 
 	if (xFields & FTM_RULE_FIELD_ACTIONS)
@@ -510,10 +510,10 @@ FTM_RET	FTOM_RULE_print
 	FTM_INT	i;
 
 	MESSAGE("%16s : %s\n", "ID", pRule->xInfo.pID);
-	MESSAGE("%16s : %s\n", "Trigger", pRule->xInfo.xParams.pTriggers[0]);
-	for(i = 1 ; i < pRule->xInfo.xParams.ulTriggers ; i++)
+	MESSAGE("%16s : %s\n", "Event", pRule->xInfo.xParams.pEvents[0]);
+	for(i = 1 ; i < pRule->xInfo.xParams.ulEvents ; i++)
 	{
-		MESSAGE("%16s   %s\n", "", pRule->xInfo.xParams.pTriggers[i]);
+		MESSAGE("%16s   %s\n", "", pRule->xInfo.xParams.pEvents[i]);
 	}
 	MESSAGE("%16s : %s\n", "Action", pRule->xInfo.xParams.pActions[0]);
 	for(i = 1 ; i < pRule->xInfo.xParams.ulActions ; i++)
@@ -535,7 +535,7 @@ FTM_RET	FTOM_RULE_printList
 
 	MESSAGE("\n# Rule Information\n");
 	FTOM_RULE_count(&ulCount);
-	MESSAGE("%16s %16s %16s\n", "ID","TRIGGER", "ACTION");
+	MESSAGE("%16s %16s %16s\n", "ID","Event", "ACTION");
 	for(i = 0; i< ulCount ; i++)
 	{
 		FTOM_RULE_PTR	pRule;
@@ -547,16 +547,16 @@ FTM_RET	FTOM_RULE_printList
 
 			MESSAGE("%16s", pRule->xInfo.pID);
 			
-			for(j = 0 ; j < pRule->xInfo.xParams.ulTriggers || j < pRule->xInfo.xParams.ulActions ; j++)
+			for(j = 0 ; j < pRule->xInfo.xParams.ulEvents || j < pRule->xInfo.xParams.ulActions ; j++)
 			{
 				if (j != 0)
 				{
 					MESSAGE("%16s", "");
 				}
 
-				if (j < pRule->xInfo.xParams.ulTriggers)
+				if (j < pRule->xInfo.xParams.ulEvents)
 				{
-					MESSAGE(" %16s", pRule->xInfo.xParams.pTriggers[j]);
+					MESSAGE(" %16s", pRule->xInfo.xParams.pEvents[j]);
 				}
 				else
 				{

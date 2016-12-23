@@ -53,7 +53,7 @@ FTM_RET	FTDM_LOG_createEP
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_LOG_createTrigger
+FTM_RET	FTDM_LOG_createEvent
 (
 	FTM_CHAR_PTR	pID,
 	FTM_RET			xResult
@@ -65,7 +65,7 @@ FTM_RET	FTDM_LOG_createTrigger
 	xRet = FTM_LOG_createObject(pID, xResult, &pLog);
 	if (xRet == FTM_RET_OK)
 	{
-		pLog->xType = FTM_LOG_TYPE_CREATE_TRIGGER;
+		pLog->xType = FTM_LOG_TYPE_CREATE_EVENT;
 		xRet = FTDM_LOGGER_add(xFTDM.pLogger, pLog);
 		if (xRet != FTM_RET_OK)
 		{

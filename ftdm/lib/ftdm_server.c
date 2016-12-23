@@ -13,7 +13,7 @@
 #include "ftdm_config.h"
 #include "ftdm_params.h"
 #include "ftdm_server.h"
-#include "ftdm_trigger.h"
+#include "ftdm_event.h"
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
 #include "ftdm_dbif.h"
@@ -64,13 +64,13 @@ static FTDM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTDM_CMD_EP_DATA_COUNT,			FTDM_SERVER_EP_DATA_count),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_COUNT_WITH_TIME,FTDM_SERVER_EP_DATA_countWithTime),
 	MK_CMD_SET(FTDM_CMD_EP_DATA_SET_LIMIT,		FTDM_SERVER_EP_DATA_setLimit),
-	MK_CMD_SET(FTDM_CMD_TRIGGER_ADD,			FTDM_SERVER_TRIGGER_add ),
-	MK_CMD_SET(FTDM_CMD_TRIGGER_DEL,			FTDM_SERVER_TRIGGER_del ),
-	MK_CMD_SET(FTDM_CMD_TRIGGER_COUNT,			FTDM_SERVER_TRIGGER_count ),
-	MK_CMD_SET(FTDM_CMD_TRIGGER_GET,			FTDM_SERVER_TRIGGER_get ),
-	MK_CMD_SET(FTDM_CMD_TRIGGER_GET_AT,			FTDM_SERVER_TRIGGER_getAt ),
-	MK_CMD_SET(FTDM_CMD_TRIGGER_SET,			FTDM_SERVER_TRIGGER_set ),
-	MK_CMD_SET(FTDM_CMD_TRIGGER_GET_ID_LIST,	FTDM_SERVER_TRIGGER_getIDList ),
+	MK_CMD_SET(FTDM_CMD_EVENT_ADD,			FTDM_SERVER_EVENT_add ),
+	MK_CMD_SET(FTDM_CMD_EVENT_DEL,			FTDM_SERVER_EVENT_del ),
+	MK_CMD_SET(FTDM_CMD_EVENT_COUNT,			FTDM_SERVER_EVENT_count ),
+	MK_CMD_SET(FTDM_CMD_EVENT_GET,			FTDM_SERVER_EVENT_get ),
+	MK_CMD_SET(FTDM_CMD_EVENT_GET_AT,			FTDM_SERVER_EVENT_getAt ),
+	MK_CMD_SET(FTDM_CMD_EVENT_SET,			FTDM_SERVER_EVENT_set ),
+	MK_CMD_SET(FTDM_CMD_EVENT_GET_ID_LIST,	FTDM_SERVER_EVENT_getIDList ),
 	MK_CMD_SET(FTDM_CMD_ACTION_ADD,				FTDM_SERVER_ACTION_add ),
 	MK_CMD_SET(FTDM_CMD_ACTION_DEL,				FTDM_SERVER_ACTION_del ),
 	MK_CMD_SET(FTDM_CMD_ACTION_COUNT,			FTDM_SERVER_ACTION_count ),
@@ -1340,125 +1340,125 @@ FTM_RET 	FTDM_SERVER_EP_DATA_countWithTime
 	return	pResp->xRet;
 }
 
-FTM_RET	FTDM_SERVER_TRIGGER_add
+FTM_RET	FTDM_SERVER_EVENT_add
 (
 	FTDM_SERVER_PTR					pServer,
-	FTDM_REQ_TRIGGER_ADD_PARAMS_PTR	pReq,
-	FTDM_RESP_TRIGGER_ADD_PARAMS_PTR	pResp
+	FTDM_REQ_EVENT_ADD_PARAMS_PTR	pReq,
+	FTDM_RESP_EVENT_ADD_PARAMS_PTR	pResp
 )
 {
-	FTDM_TRIGGER_PTR	pTrigger = NULL;
+	FTDM_EVENT_PTR	pEvent = NULL;
 
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->xRet = FTDM_createTrigger(&pReq->xTrigger, &pTrigger);
+	pResp->xRet = FTDM_createEvent(&pReq->xEvent, &pEvent);
 	
 	if (pResp->xRet == FTM_RET_OK)
 	{
-		strncpy(pResp->pTriggerID, pTrigger->xInfo.pID, FTM_ID_LEN);
+		strncpy(pResp->pEventID, pEvent->xInfo.pID, FTM_ID_LEN);
 	}
 	return	pResp->xRet;
 }
 
 
-FTM_RET	FTDM_SERVER_TRIGGER_del
+FTM_RET	FTDM_SERVER_EVENT_del
 (
 	FTDM_SERVER_PTR					pServer,
- 	FTDM_REQ_TRIGGER_DEL_PARAMS_PTR	pReq,
-	FTDM_RESP_TRIGGER_DEL_PARAMS_PTR	pResp
+ 	FTDM_REQ_EVENT_DEL_PARAMS_PTR	pReq,
+	FTDM_RESP_EVENT_DEL_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd = pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->xRet = FTDM_destroyTrigger(pReq->pTriggerID);
+	pResp->xRet = FTDM_destroyEvent(pReq->pEventID);
 
 	return	pResp->xRet;
 }
 
-FTM_RET	FTDM_SERVER_TRIGGER_count
+FTM_RET	FTDM_SERVER_EVENT_count
 (
 	FTDM_SERVER_PTR					pServer,
- 	FTDM_REQ_TRIGGER_COUNT_PARAMS_PTR	pReq,
-	FTDM_RESP_TRIGGER_COUNT_PARAMS_PTR	pResp
+ 	FTDM_REQ_EVENT_COUNT_PARAMS_PTR	pReq,
+	FTDM_RESP_EVENT_COUNT_PARAMS_PTR	pResp
 )
 {
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->xRet = FTDM_TRIGGER_count(&pResp->nCount);
+	pResp->xRet = FTDM_EVENT_count(&pResp->nCount);
 
 	return	pResp->xRet;
 }
 
-FTM_RET	FTDM_SERVER_TRIGGER_get
+FTM_RET	FTDM_SERVER_EVENT_get
 (
 	FTDM_SERVER_PTR					pServer,
- 	FTDM_REQ_TRIGGER_GET_PARAMS_PTR		pReq,
-	FTDM_RESP_TRIGGER_GET_PARAMS_PTR	pResp
+ 	FTDM_REQ_EVENT_GET_PARAMS_PTR		pReq,
+	FTDM_RESP_EVENT_GET_PARAMS_PTR	pResp
 )
 {
-	FTDM_TRIGGER_PTR	pTrigger;
+	FTDM_EVENT_PTR	pEvent;
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->xRet = FTDM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
+	pResp->xRet = FTDM_EVENT_get(pReq->pEventID, &pEvent);
 	if (pResp->xRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+		memcpy(&pResp->xEvent, &pEvent->xInfo, sizeof(FTM_EVENT));
 	}
 
 	return	pResp->xRet;
 }
 
-FTM_RET	FTDM_SERVER_TRIGGER_getAt
+FTM_RET	FTDM_SERVER_EVENT_getAt
 (
 	FTDM_SERVER_PTR					pServer,
- 	FTDM_REQ_TRIGGER_GET_AT_PARAMS_PTR	pReq,
-	FTDM_RESP_TRIGGER_GET_AT_PARAMS_PTR	pResp
+ 	FTDM_REQ_EVENT_GET_AT_PARAMS_PTR	pReq,
+	FTDM_RESP_EVENT_GET_AT_PARAMS_PTR	pResp
 )
 {
-	FTDM_TRIGGER_PTR	pTrigger;
+	FTDM_EVENT_PTR	pEvent;
 
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->xRet = FTDM_TRIGGER_getAt(pReq->nIndex, &pTrigger);
+	pResp->xRet = FTDM_EVENT_getAt(pReq->nIndex, &pEvent);
 	
 	if (pResp->xRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+		memcpy(&pResp->xEvent, &pEvent->xInfo, sizeof(FTM_EVENT));
 	}
 
 	return	pResp->xRet;
 }
 
-FTM_RET	FTDM_SERVER_TRIGGER_set
+FTM_RET	FTDM_SERVER_EVENT_set
 (
 	FTDM_SERVER_PTR					pServer,
- 	FTDM_REQ_TRIGGER_SET_PARAMS_PTR		pReq,
-	FTDM_RESP_TRIGGER_SET_PARAMS_PTR	pResp
+ 	FTDM_REQ_EVENT_SET_PARAMS_PTR		pReq,
+	FTDM_RESP_EVENT_SET_PARAMS_PTR	pResp
 )
 {
-	FTDM_TRIGGER_PTR	pTrigger;
+	FTDM_EVENT_PTR	pEvent;
  
 	pResp->xCmd	= pReq->xCmd;
 	pResp->nLen = sizeof(*pResp);
-	pResp->xRet = FTDM_TRIGGER_set(pReq->pTriggerID, pReq->xFields, &pReq->xTrigger);
+	pResp->xRet = FTDM_EVENT_set(pReq->pEventID, pReq->xFields, &pReq->xEvent);
 	if (pResp->xRet == FTM_RET_OK)
 	{
-		pResp->xRet = FTDM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
+		pResp->xRet = FTDM_EVENT_get(pReq->pEventID, &pEvent);
 		if (pResp->xRet == FTM_RET_OK)
 		{
-			memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+			memcpy(&pResp->xEvent, &pEvent->xInfo, sizeof(FTM_EVENT));
 		}
 	}
 
 	return	pResp->xRet;
 }
 
-FTM_RET	FTDM_SERVER_TRIGGER_getIDList
+FTM_RET	FTDM_SERVER_EVENT_getIDList
 (
 	FTDM_SERVER_PTR					pServer,
- 	FTDM_REQ_TRIGGER_GET_ID_LIST_PARAMS_PTR	pReq,
-	FTDM_RESP_TRIGGER_GET_ID_LIST_PARAMS_PTR	pResp
+ 	FTDM_REQ_EVENT_GET_ID_LIST_PARAMS_PTR	pReq,
+	FTDM_RESP_EVENT_GET_ID_LIST_PARAMS_PTR	pResp
 )
 {
 	FTM_ULONG	ulMaxCount;
@@ -1470,7 +1470,7 @@ FTM_RET	FTDM_SERVER_TRIGGER_getIDList
 	}
 
 	pResp->xCmd	= pReq->xCmd;
-	pResp->xRet = FTDM_TRIGGER_getIDList(pResp->pIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
+	pResp->xRet = FTDM_EVENT_getIDList(pResp->pIDs, pReq->ulIndex, ulMaxCount, &pResp->ulCount);
 	if (pResp->xRet == FTM_RET_OK)
 	{
 		pResp->nLen = sizeof(*pResp) + sizeof(FTM_ID) * pResp->ulCount;

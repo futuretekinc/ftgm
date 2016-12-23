@@ -2211,25 +2211,25 @@ FTM_RET	FTOM_CLIENT_EP_DATA_setServerTime
  *
  *****************************************************************/
 
-FTM_RET	FTOM_CLIENT_TRIGGER_add
+FTM_RET	FTOM_CLIENT_EVENT_add
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_TRIGGER_PTR	pTrigger
+	FTM_EVENT_PTR	pEvent
 )
 {
 	ASSERT(pClient != NULL);
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_RET						xRet;
-	FTOM_REQ_TRIGGER_ADD_PARAMS	xReq;
-	FTOM_RESP_TRIGGER_ADD_PARAMS	xResp;
+	FTOM_REQ_EVENT_ADD_PARAMS	xReq;
+	FTOM_RESP_EVENT_ADD_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
 
 	memset(&xReq, 0, sizeof(xReq));
 
 	xReq.xCmd		=	FTOM_CMD_TRIG_ADD;
 	xReq.ulLen		=	sizeof(xReq);
-	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
+	memcpy(&xReq.xEvent, pEvent, sizeof(FTM_EVENT));
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -2245,29 +2245,29 @@ FTM_RET	FTOM_CLIENT_TRIGGER_add
 
 	if (xResp.xRet == FTM_RET_OK)
 	{
-		strncpy(pTrigger->pID, xResp.pTriggerID, FTM_ID_LEN);
+		strncpy(pEvent->pID, xResp.pEventID, FTM_ID_LEN);
 	}
 	return	xResp.xRet;
 }
 
-FTM_RET	FTOM_CLIENT_TRIGGER_del
+FTM_RET	FTOM_CLIENT_EVENT_del
 (
 	FTOM_CLIENT_PTR	pClient,
-	FTM_CHAR_PTR	pTriggerID
+	FTM_CHAR_PTR	pEventID
 )
 {
 	ASSERT(pClient != NULL);
 
 	FTM_RET						xRet;
-	FTOM_REQ_TRIGGER_DEL_PARAMS	xReq;
-	FTOM_RESP_TRIGGER_DEL_PARAMS	xResp;
+	FTOM_REQ_EVENT_DEL_PARAMS	xReq;
+	FTOM_RESP_EVENT_DEL_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
 
 	memset(&xReq, 0, sizeof(xReq));
 
 	xReq.xCmd		=	FTOM_CMD_TRIG_DEL;
 	xReq.ulLen		=	sizeof(xReq);
-	strncpy(xReq.pTriggerID, pTriggerID, FTM_ID_LEN);
+	strncpy(xReq.pEventID, pEventID, FTM_ID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -2284,7 +2284,7 @@ FTM_RET	FTOM_CLIENT_TRIGGER_del
 	return	xResp.xRet;
 }
 
-FTM_RET	FTOM_CLIENT_TRIGGER_count
+FTM_RET	FTOM_CLIENT_EVENT_count
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_ULONG_PTR	pulCount
@@ -2294,8 +2294,8 @@ FTM_RET	FTOM_CLIENT_TRIGGER_count
 	ASSERT(pulCount != NULL);
 
 	FTM_RET						xRet;
-	FTOM_REQ_TRIGGER_COUNT_PARAMS	xReq;
-	FTOM_RESP_TRIGGER_COUNT_PARAMS	xResp;
+	FTOM_REQ_EVENT_COUNT_PARAMS	xReq;
+	FTOM_RESP_EVENT_COUNT_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
 
 	memset(&xReq, 0, sizeof(xReq));
@@ -2323,26 +2323,26 @@ FTM_RET	FTOM_CLIENT_TRIGGER_count
 	return	xResp.xRet;
 }
 
-FTM_RET	FTOM_CLIENT_TRIGGER_get
+FTM_RET	FTOM_CLIENT_EVENT_get
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR	pID,
-	FTM_TRIGGER_PTR	pTrigger
+	FTM_EVENT_PTR	pEvent
 )
 {
 	ASSERT(pClient != NULL);
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_RET						xRet;
-	FTOM_REQ_TRIGGER_GET_PARAMS	xReq;
-	FTOM_RESP_TRIGGER_GET_PARAMS	xResp;
+	FTOM_REQ_EVENT_GET_PARAMS	xReq;
+	FTOM_RESP_EVENT_GET_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
 
 	memset(&xReq, 0, sizeof(xReq));
 
 	xReq.xCmd		=	FTOM_CMD_TRIG_GET;
 	xReq.ulLen		=	sizeof(xReq);
-	strncpy(xReq.pTriggerID, pID, FTM_ID_LEN);
+	strncpy(xReq.pEventID, pID, FTM_ID_LEN);
 
 	xRet = pClient->fRequest(
 				pClient, 
@@ -2358,25 +2358,25 @@ FTM_RET	FTOM_CLIENT_TRIGGER_get
 
 	if (xResp.xRet == FTM_RET_OK)
 	{
-		memcpy(pTrigger, &xResp.xTrigger, sizeof(FTM_TRIGGER));
+		memcpy(pEvent, &xResp.xEvent, sizeof(FTM_EVENT));
 	}	
 
 	return	xResp.xRet;
 }
 
-FTM_RET	FTOM_CLIENT_TRIGGER_getAt
+FTM_RET	FTOM_CLIENT_EVENT_getAt
 (
 	FTOM_CLIENT_PTR	pClient,
 	FTM_ULONG		ulIndex,
-	FTM_TRIGGER_PTR	pTrigger
+	FTM_EVENT_PTR	pEvent
 )
 {
 	ASSERT(pClient != NULL);
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_RET						xRet;
-	FTOM_REQ_TRIGGER_GET_AT_PARAMS	xReq;
-	FTOM_RESP_TRIGGER_GET_AT_PARAMS	xResp;
+	FTOM_REQ_EVENT_GET_AT_PARAMS	xReq;
+	FTOM_RESP_EVENT_GET_AT_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
 
 	memset(&xReq, 0, sizeof(xReq));
@@ -2399,27 +2399,27 @@ FTM_RET	FTOM_CLIENT_TRIGGER_getAt
 
 	if (xResp.xRet == FTM_RET_OK)
 	{
-		memcpy(pTrigger, &xResp.xTrigger, sizeof(FTM_TRIGGER));
+		memcpy(pEvent, &xResp.xEvent, sizeof(FTM_EVENT));
 	}	
 
 	return	xResp.xRet;
 }
 
 
-FTM_RET	FTOM_CLIENT_TRIGGER_set
+FTM_RET	FTOM_CLIENT_EVENT_set
 (
 	FTOM_CLIENT_PTR		pClient,
-	FTM_CHAR_PTR		pTriggerID,
-	FTM_TRIGGER_FIELD	xFields,
-	FTM_TRIGGER_PTR		pTrigger
+	FTM_CHAR_PTR		pEventID,
+	FTM_EVENT_FIELD	xFields,
+	FTM_EVENT_PTR		pEvent
 )
 {
 	ASSERT(pClient != NULL);
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_RET						xRet;
-	FTOM_REQ_TRIGGER_SET_PARAMS	xReq;
-	FTOM_RESP_TRIGGER_SET_PARAMS	xResp;
+	FTOM_REQ_EVENT_SET_PARAMS	xReq;
+	FTOM_RESP_EVENT_SET_PARAMS	xResp;
 	FTM_ULONG						ulRespLen;
 
 	memset(&xReq, 0, sizeof(xReq));
@@ -2427,8 +2427,8 @@ FTM_RET	FTOM_CLIENT_TRIGGER_set
 	xReq.xCmd		=	FTOM_CMD_TRIG_SET;
 	xReq.ulLen		=	sizeof(xReq);
 	xReq.xFields	=	xFields;
-	strcpy(xReq.pTriggerID, pTriggerID);
-	memcpy(&xReq.xTrigger, pTrigger, sizeof(FTM_TRIGGER));
+	strcpy(xReq.pEventID, pEventID);
+	memcpy(&xReq.xEvent, pEvent, sizeof(FTM_EVENT));
 
 	xRet = pClient->fRequest(
 				pClient, 

@@ -661,19 +661,19 @@ FTM_RET	FTOM_DMC_EP_CLASS_getAt
 	return	FTDMC_EP_CLASS_getAt(&pDMC->xSession, ulIndex, pInfo);
 }
 
-FTM_RET	FTOM_DMC_TRIGGER_add
+FTM_RET	FTOM_DMC_EVENT_add
 (
 	FTOM_DMC_PTR	pDMC,
-	FTM_TRIGGER_PTR	pInfo
+	FTM_EVENT_PTR	pInfo
 )
 {
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_TRIGGER_add(&pDMC->xSession, pInfo);
+	return	FTDMC_EVENT_add(&pDMC->xSession, pInfo);
 }
 
-FTM_RET	FTOM_DMC_TRIGGER_remove
+FTM_RET	FTOM_DMC_EVENT_remove
 (
 	FTOM_DMC_PTR	pDMC,
 	FTM_CHAR_PTR	pID
@@ -682,10 +682,10 @@ FTM_RET	FTOM_DMC_TRIGGER_remove
 	ASSERT(pDMC != NULL);
 	ASSERT(pID != NULL);
 
-	return	FTDMC_TRIGGER_del(&pDMC->xSession, pID);
+	return	FTDMC_EVENT_del(&pDMC->xSession, pID);
 }
 
-FTM_RET	FTOM_DMC_TRIGGER_count
+FTM_RET	FTOM_DMC_EVENT_count
 (
 	FTOM_DMC_PTR	pDMC,
 	FTM_ULONG_PTR	pulCount
@@ -694,10 +694,10 @@ FTM_RET	FTOM_DMC_TRIGGER_count
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 	
-	return	FTDMC_TRIGGER_count(&pDMC->xSession, pulCount);
+	return	FTDMC_EVENT_count(&pDMC->xSession, pulCount);
 }
 
-FTM_RET	FTOM_DMC_TRIGGER_getIDList
+FTM_RET	FTOM_DMC_EVENT_getIDList
 (
 	FTOM_DMC_PTR	pDMC,
 	FTM_ID_PTR		pIDs,
@@ -710,49 +710,49 @@ FTM_RET	FTOM_DMC_TRIGGER_getIDList
 	ASSERT(pIDs != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_TRIGGER_getIDList(&pDMC->xSession, pIDs, ulIndex, ulMaxCount, pulCount);
+	return	FTDMC_EVENT_getIDList(&pDMC->xSession, pIDs, ulIndex, ulMaxCount, pulCount);
 }
 
-FTM_RET	FTOM_DMC_TRIGGER_get
+FTM_RET	FTOM_DMC_EVENT_get
 (
 	FTOM_DMC_PTR	pDMC,
 	FTM_CHAR_PTR	pID,
-	FTM_TRIGGER_PTR	pInfo
+	FTM_EVENT_PTR	pInfo
 )
 {
 	ASSERT(pDMC != NULL);
 	ASSERT(pID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_TRIGGER_get(&pDMC->xSession, pID, pInfo);
+	return	FTDMC_EVENT_get(&pDMC->xSession, pID, pInfo);
 }
 
-FTM_RET	FTOM_DMC_TRIGGER_getAt
+FTM_RET	FTOM_DMC_EVENT_getAt
 (
 	FTOM_DMC_PTR	pDMC,
 	FTM_ULONG		ulIndex,
-	FTM_TRIGGER_PTR	pInfo
+	FTM_EVENT_PTR	pInfo
 )
 {
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_TRIGGER_getAt(&pDMC->xSession, ulIndex, pInfo);
+	return	FTDMC_EVENT_getAt(&pDMC->xSession, ulIndex, pInfo);
 }
 
-FTM_RET	FTOM_DMC_TRIGGER_set
+FTM_RET	FTOM_DMC_EVENT_set
 (
 	FTOM_DMC_PTR	pDMC,
 	FTM_CHAR_PTR	pID,
-	FTM_TRIGGER_FIELD	xFields,
-	FTM_TRIGGER_PTR	pInfo
+	FTM_EVENT_FIELD	xFields,
+	FTM_EVENT_PTR	pInfo
 )
 {
 	ASSERT(pDMC != NULL);
 	ASSERT(pID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_TRIGGER_set(&pDMC->xSession, pID, xFields, pInfo);
+	return	FTDMC_EVENT_set(&pDMC->xSession, pID, xFields, pInfo);
 }
 
 FTM_RET	FTOM_DMC_ACTION_add

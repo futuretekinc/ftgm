@@ -11,7 +11,7 @@
 #include "ftom_params.h"
 #include "ftom_node.h"
 #include "ftom_ep.h"
-#include "ftom_trigger.h"
+#include "ftom_event.h"
 #include "ftom_action.h"
 #include "ftom_rule.h"
 #include "ftom_server.h"
@@ -456,62 +456,62 @@ FTM_RET	FTOM_SERVER_EP_DATA_setServerTime
 );
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_add
+FTM_RET	FTOM_SERVER_EVENT_add
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_ADD_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_ADD_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_ADD_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_ADD_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 );
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_del
+FTM_RET	FTOM_SERVER_EVENT_del
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_DEL_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_DEL_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_DEL_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_DEL_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 );
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_count
+FTM_RET	FTOM_SERVER_EVENT_count
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_COUNT_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_COUNT_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_COUNT_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_COUNT_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 );
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_get
+FTM_RET	FTOM_SERVER_EVENT_get
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_GET_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_GET_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_GET_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_GET_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 );
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_getAt
+FTM_RET	FTOM_SERVER_EVENT_getAt
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_GET_AT_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_GET_AT_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_GET_AT_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_GET_AT_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 );
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_set
+FTM_RET	FTOM_SERVER_EVENT_set
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_SET_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_SET_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_SET_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_SET_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 );
 
@@ -763,12 +763,12 @@ static FTOM_SERVER_CMD_SET	pCmdSet[] =
 	MK_CMD_SET(FTOM_CMD_EP_DATA_SET_SERVER_TIME,		FTOM_SERVER_EP_DATA_setServerTime),
 	MK_CMD_SET(FTOM_CMD_EP_DATA_COUNT_WITH_TIME,FTOM_SERVER_EP_DATA_countWithTime),
 
-	MK_CMD_SET(FTOM_CMD_TRIG_ADD,				FTOM_SERVER_TRIGGER_add),
-	MK_CMD_SET(FTOM_CMD_TRIG_DEL,				FTOM_SERVER_TRIGGER_del),
-	MK_CMD_SET(FTOM_CMD_TRIG_COUNT,				FTOM_SERVER_TRIGGER_count),
-	MK_CMD_SET(FTOM_CMD_TRIG_GET,				FTOM_SERVER_TRIGGER_get),
-	MK_CMD_SET(FTOM_CMD_TRIG_GET_AT,			FTOM_SERVER_TRIGGER_getAt),
-	MK_CMD_SET(FTOM_CMD_TRIG_SET,				FTOM_SERVER_TRIGGER_set),
+	MK_CMD_SET(FTOM_CMD_TRIG_ADD,				FTOM_SERVER_EVENT_add),
+	MK_CMD_SET(FTOM_CMD_TRIG_DEL,				FTOM_SERVER_EVENT_del),
+	MK_CMD_SET(FTOM_CMD_TRIG_COUNT,				FTOM_SERVER_EVENT_count),
+	MK_CMD_SET(FTOM_CMD_TRIG_GET,				FTOM_SERVER_EVENT_get),
+	MK_CMD_SET(FTOM_CMD_TRIG_GET_AT,			FTOM_SERVER_EVENT_getAt),
+	MK_CMD_SET(FTOM_CMD_TRIG_SET,				FTOM_SERVER_EVENT_set),
 	
 	MK_CMD_SET(FTOM_CMD_ACTION_ADD,				FTOM_SERVER_ACTION_add),
 	MK_CMD_SET(FTOM_CMD_ACTION_DEL,				FTOM_SERVER_ACTION_del),
@@ -2791,12 +2791,12 @@ FTM_RET	FTOM_SERVER_EP_DATA_setServerTime
 /********************************************************************
  *
  ********************************************************************/
-FTM_RET	FTOM_SERVER_TRIGGER_add
+FTM_RET	FTOM_SERVER_EVENT_add
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_ADD_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_ADD_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_ADD_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_ADD_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 )
 {
@@ -2805,16 +2805,16 @@ FTM_RET	FTOM_SERVER_TRIGGER_add
 	ASSERT(pResp != NULL);
 
 	FTM_RET	xRet;
-	FTOM_TRIGGER_PTR	pTrigger;
+	FTOM_EVENT_PTR	pEvent;
 
-	xRet = FTOM_TRIGGER_create(&pReq->xTrigger, FTM_TRUE, &pTrigger);
+	xRet = FTOM_EVENT_create(&pReq->xEvent, FTM_TRUE, &pEvent);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to create trigger[%s].\n", pReq->xTrigger.pID);
+		ERROR2(xRet, "Failed to create trigger[%s].\n", pReq->xEvent.pID);
 		goto finish;
 	}
 
-	strcpy(pResp->pTriggerID, pTrigger->xInfo.pID);
+	strcpy(pResp->pEventID, pEvent->xInfo.pID);
 
 finish:
 	pResp->xCmd = pReq->xCmd;
@@ -2825,12 +2825,12 @@ finish:
 }
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_del
+FTM_RET	FTOM_SERVER_EVENT_del
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_DEL_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_DEL_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_DEL_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_DEL_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 )
 {
@@ -2839,19 +2839,19 @@ FTM_RET	FTOM_SERVER_TRIGGER_del
 	ASSERT(pResp != NULL);
 	
 	FTM_RET	xRet;
-	FTOM_TRIGGER_PTR	pTrigger;
+	FTOM_EVENT_PTR	pEvent;
 
-	xRet = FTOM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
+	xRet = FTOM_EVENT_get(pReq->pEventID, &pEvent);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to find trigger[%s].\n", pReq->pTriggerID);
+		ERROR2(xRet, "Failed to find trigger[%s].\n", pReq->pEventID);
 		goto finish;
 	}
 
-	xRet = FTOM_TRIGGER_destroy(&pTrigger, FTM_TRUE);
+	xRet = FTOM_EVENT_destroy(&pEvent, FTM_TRUE);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to remove trigger[%s].\n", pReq->pTriggerID);
+		ERROR2(xRet, "Failed to remove trigger[%s].\n", pReq->pEventID);
 		goto finish;
 	}
 
@@ -2864,12 +2864,12 @@ finish:
 }
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_count
+FTM_RET	FTOM_SERVER_EVENT_count
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_COUNT_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_COUNT_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_COUNT_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_COUNT_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 )
 {
@@ -2877,7 +2877,7 @@ FTM_RET	FTOM_SERVER_TRIGGER_count
 	ASSERT(pReq != NULL);
 	ASSERT(pResp != NULL);
 
-	pResp->xRet = FTOM_TRIGGER_count(&pResp->ulCount);
+	pResp->xRet = FTOM_EVENT_count(&pResp->ulCount);
 	pResp->xCmd = pReq->xCmd;
 	pResp->ulLen = sizeof(*pResp);
 
@@ -2885,12 +2885,12 @@ FTM_RET	FTOM_SERVER_TRIGGER_count
 }
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_get
+FTM_RET	FTOM_SERVER_EVENT_get
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_GET_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_GET_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_GET_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_GET_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 )
 {
@@ -2899,12 +2899,12 @@ FTM_RET	FTOM_SERVER_TRIGGER_get
 	ASSERT(pResp != NULL);
 
 	FTM_RET	xRet;
-	FTOM_TRIGGER_PTR	pTrigger;
+	FTOM_EVENT_PTR	pEvent;
 
-	xRet = FTOM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
+	xRet = FTOM_EVENT_get(pReq->pEventID, &pEvent);
 	if (xRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+		memcpy(&pResp->xEvent, &pEvent->xInfo, sizeof(FTM_EVENT));
 	}
 	pResp->xRet = xRet;
 	pResp->xCmd = pReq->xCmd;
@@ -2914,12 +2914,12 @@ FTM_RET	FTOM_SERVER_TRIGGER_get
 }
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_getAt
+FTM_RET	FTOM_SERVER_EVENT_getAt
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_GET_AT_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_GET_AT_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_GET_AT_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_GET_AT_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 )
 {
@@ -2928,12 +2928,12 @@ FTM_RET	FTOM_SERVER_TRIGGER_getAt
 	ASSERT(pResp != NULL);
 
 	FTM_RET	xRet;
-	FTOM_TRIGGER_PTR	pTrigger;
+	FTOM_EVENT_PTR	pEvent;
 
-	xRet = FTOM_TRIGGER_getAt(pReq->ulIndex, &pTrigger);
+	xRet = FTOM_EVENT_getAt(pReq->ulIndex, &pEvent);
 	if (xRet == FTM_RET_OK)
 	{
-		memcpy(&pResp->xTrigger, &pTrigger->xInfo, sizeof(FTM_TRIGGER));
+		memcpy(&pResp->xEvent, &pEvent->xInfo, sizeof(FTM_EVENT));
 	}
 	pResp->xRet = xRet;
 	pResp->xCmd = pReq->xCmd;
@@ -2943,12 +2943,12 @@ FTM_RET	FTOM_SERVER_TRIGGER_getAt
 }
 
 static 
-FTM_RET	FTOM_SERVER_TRIGGER_set
+FTM_RET	FTOM_SERVER_EVENT_set
 (
 	FTOM_SERVER_PTR	pServer,
- 	FTOM_REQ_TRIGGER_SET_PARAMS_PTR	pReq,
+ 	FTOM_REQ_EVENT_SET_PARAMS_PTR	pReq,
 	FTM_ULONG		ulReqLen,
-	FTOM_RESP_TRIGGER_SET_PARAMS_PTR	pResp,
+	FTOM_RESP_EVENT_SET_PARAMS_PTR	pResp,
 	FTM_ULONG		ulRespLen
 )
 {
@@ -2957,20 +2957,20 @@ FTM_RET	FTOM_SERVER_TRIGGER_set
 	ASSERT(pResp != NULL);
 
 	FTM_RET	xRet;
-	FTOM_TRIGGER_PTR	pTrigger;
+	FTOM_EVENT_PTR	pEvent;
 
-	xRet = FTOM_TRIGGER_get(pReq->pTriggerID, &pTrigger);
+	xRet = FTOM_EVENT_get(pReq->pEventID, &pEvent);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_TRIGGER_setInfo( pTrigger, pReq->xFields, &pReq->xTrigger);
+		xRet = FTOM_EVENT_setInfo( pEvent, pReq->xFields, &pReq->xEvent);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet, "Trigger[%s] failed to set info.\n", pReq->pTriggerID);
+			ERROR2(xRet, "Event[%s] failed to set info.\n", pReq->pEventID);
 		}
 	}
 	else
 	{
-		ERROR2(xRet, "Trigger[%s] is not found.!\n", pReq->pTriggerID);	
+		ERROR2(xRet, "Event[%s] is not found.!\n", pReq->pEventID);	
 	}
 
 	pResp->xRet = xRet;

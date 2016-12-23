@@ -15,7 +15,7 @@
 #include "ftom_shell.h"
 #include "ftom_msg.h"
 #include "ftom_message_queue.h"
-#include "ftom_trigger.h"
+#include "ftom_event.h"
 #include "ftom_action.h"
 #include "ftom_rule.h"
 #include "ftom_discovery.h"
@@ -322,10 +322,10 @@ FTM_RET	FTOM_init
 		goto error;
 	}
 
-	xRet = FTOM_TRIGGER_init();
+	xRet = FTOM_EVENT_init();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet,"Trigger management creation failed.\n");
+		ERROR2(xRet,"Event management creation failed.\n");
 		goto error;
 	}
 
@@ -351,7 +351,7 @@ FTM_RET	FTOM_init
 error:
 		FTOM_RULE_final();
 		FTOM_ACTION_final();
-		FTOM_TRIGGER_final();
+		FTOM_EVENT_final();
 		FTOM_EP_final();
 		FTOM_NODE_MODULE_final();
 	
@@ -395,7 +395,7 @@ FTM_RET	FTOM_final
 		ERROR2(xRet, "Failed to finalize action!\n");	
 	}
 
-	xRet = FTOM_TRIGGER_final();
+	xRet = FTOM_EVENT_final();
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to finalize trigger!\n");	
@@ -832,10 +832,10 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
-	xRet = FTOM_DMC_TRIGGER_count(pService->pData, &ulCount);
+	xRet = FTOM_DMC_EVENT_count(pService->pData, &ulCount);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet,"Trigger count get failed.\n");
+		ERROR2(xRet,"Event count get failed.\n");
 		return	xRet;
 	}
 
@@ -846,22 +846,22 @@ FTM_RET	FTOM_TASK_sync
 		pIDs = (FTM_ID_PTR)FTM_MEM_malloc(sizeof(FTM_ID) * ulCount);
 		if (pIDs != NULL)
 		{
-			xRet = FTOM_DB_TRIGGER_getIDList(pIDs, 0, ulCount, &ulCount);
+			xRet = FTOM_DB_EVENT_getIDList(pIDs, 0, ulCount, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				for(i = 0 ; i < ulCount ; i++)
 				{
-					FTM_TRIGGER			xInfo;
-					FTOM_TRIGGER_PTR	pTrigger = NULL;
+					FTM_EVENT			xInfo;
+					FTOM_EVENT_PTR	pEvent = NULL;
 
-					xRet = FTOM_DB_TRIGGER_getInfo(pIDs[i], &xInfo);
+					xRet = FTOM_DB_EVENT_getInfo(pIDs[i], &xInfo);
 					if (xRet != FTM_RET_OK)
 					{
-						ERROR2(xRet,"Failed to get Trigger[%s] information!\n", pIDs[i]);
+						ERROR2(xRet,"Failed to get Event[%s] information!\n", pIDs[i]);
 						continue;
 					}
 
-					xRet = FTOM_TRIGGER_create(&xInfo, FTM_FALSE, &pTrigger);
+					xRet = FTOM_EVENT_create(&xInfo, FTM_FALSE, &pEvent);
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet,"The new event can not registration!\n") ;
@@ -983,7 +983,7 @@ FTM_RET	FTOM_TASK_start
 	
 	FTOM_RULE_start(NULL);
 	FTOM_ACTION_start(NULL);
-	FTOM_TRIGGER_start(NULL);
+	FTOM_EVENT_start(NULL);
 
 	FTOM_NODE_count(&ulCount);
 	for(i = 0 ; i < ulCount ; i++)
@@ -1061,7 +1061,7 @@ FTM_RET	FTOM_TASK_stop
 {
 	FTM_ULONG	i, ulCount;
 	
-	FTOM_TRIGGER_stop(NULL);
+	FTOM_EVENT_stop(NULL);
 	FTOM_ACTION_stop(NULL);
 	FTOM_RULE_stop(NULL);
 	FTOM_EP_count(0, NULL, &ulCount);
@@ -1976,12 +1976,12 @@ FTM_RET	FTOM_addEPRemovalLog
 	return	xRet;
 }
 
-FTM_RET	FTOM_addTriggerCreationLog
+FTM_RET	FTOM_addEventCreationLog
 (
-	FTOM_TRIGGER_PTR	pTrigger
+	FTOM_EVENT_PTR	pEvent
 )
 {
-	ASSERT(pTrigger != NULL);
+	ASSERT(pEvent != NULL);
 
 	FTM_RET		xRet;
 	FTM_LOG_PTR	pLog;
@@ -1992,9 +1992,9 @@ FTM_RET	FTOM_addTriggerCreationLog
 		return	xRet;	
 	}
 
-	pLog->xType = FTM_LOG_TYPE_CREATE_TRIGGER;
+	pLog->xType = FTM_LOG_TYPE_CREATE_EVENT;
 	pLog->ulTime = time(NULL);
-	strncpy(pLog->xParams.xCreateObject.pObjectID, pTrigger->xInfo.pID, FTM_ID_LEN);
+	strncpy(pLog->xParams.xCreateObject.pObjectID, pEvent->xInfo.pID, FTM_ID_LEN);
 
 	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
 	if (xRet != FTM_RET_OK)
@@ -2005,7 +2005,7 @@ FTM_RET	FTOM_addTriggerCreationLog
 	return	xRet;
 }
 
-FTM_RET	FTOM_addTriggerRemovalLog
+FTM_RET	FTOM_addEventRemovalLog
 (
 	FTM_CHAR_PTR	pID
 )
@@ -2021,7 +2021,7 @@ FTM_RET	FTOM_addTriggerRemovalLog
 		return	xRet;	
 	}
 
-	pLog->xType = FTM_LOG_TYPE_DESTROY_TRIGGER;
+	pLog->xType = FTM_LOG_TYPE_DESTROY_EVENT;
 	pLog->ulTime = time(NULL);
 	strncpy(pLog->xParams.xCreateObject.pObjectID, pID, FTM_DID_LEN);
 
@@ -2150,36 +2150,6 @@ FTM_RET	FTOM_addRuleRemovalLog
 	pLog->xType = FTM_LOG_TYPE_DESTROY_RULE;
 	pLog->ulTime = time(NULL);
 	strncpy(pLog->xParams.xCreateObject.pObjectID, pID, FTM_DID_LEN);
-
-	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		FTM_LOG_destroy(&pLog);
-	}
-
-	return	xRet;
-}
-
-FTM_RET	FTOM_addEventCreationLog
-(
-	FTOM_RULE_PTR	pRule
-)
-{
-	ASSERT(pRule != NULL);
-
-	FTM_RET		xRet;
-	FTM_LOG_PTR	pLog;
-
-	xRet = FTM_LOG_create(&pLog);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	pLog->xType 	= FTM_LOG_TYPE_EVENT;
-	pLog->ulTime 	= time(NULL);
-	strncpy(pLog->xParams.xEvent.pRuleID, pRule->xInfo.pID, FTM_ID_LEN);
-	pLog->xParams.xEvent.bOccurred = pRule->bActive;
 
 	xRet = FTOM_LOGGER_add(&xLogManager, pLog);
 	if (xRet != FTM_RET_OK)

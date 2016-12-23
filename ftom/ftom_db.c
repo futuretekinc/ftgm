@@ -652,9 +652,9 @@ FTM_RET	FTOM_DB_EP_removeDataWithTime
 	return	xRet;
 }
 
-FTM_RET	FTOM_DB_TRIGGER_add
+FTM_RET	FTOM_DB_EVENT_add
 (
-	FTM_TRIGGER_PTR		pInfo
+	FTM_EVENT_PTR		pInfo
 )
 {
 	ASSERT(pInfo != NULL);
@@ -664,10 +664,10 @@ FTM_RET	FTOM_DB_TRIGGER_add
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_TRIGGER_add(pService->pData, pInfo);
+		xRet = FTOM_DMC_EVENT_add(pService->pData, pInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet,"Trigger[%s] failed to add to DB.\n", pInfo->pID);
+			ERROR2(xRet,"Event[%s] failed to add to DB.\n", pInfo->pID);
 		}
 	}
 	else
@@ -678,22 +678,22 @@ FTM_RET	FTOM_DB_TRIGGER_add
 	return	xRet;
 }
 
-FTM_RET	FTOM_DB_TRIGGER_remove
+FTM_RET	FTOM_DB_EVENT_remove
 (
-	FTM_CHAR_PTR	pTriggerID
+	FTM_CHAR_PTR	pEventID
 )
 {
-	ASSERT(pTriggerID != NULL);
+	ASSERT(pEventID != NULL);
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
 	
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_TRIGGER_remove(pService->pData, pTriggerID);
+		xRet = FTOM_DMC_EVENT_remove(pService->pData, pEventID);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet,"Trigger[%s] failed to remove from DB.\n", pTriggerID);
+			ERROR2(xRet,"Event[%s] failed to remove from DB.\n", pEventID);
 		}
 	}
 	else
@@ -704,7 +704,7 @@ FTM_RET	FTOM_DB_TRIGGER_remove
 	return	xRet;
 }
 
-FTM_RET FTOM_DB_TRIGGER_getIDList
+FTM_RET FTOM_DB_EVENT_getIDList
 (
 	FTM_ID_PTR		pIDs,
 	FTM_ULONG		ulIndex,
@@ -720,7 +720,7 @@ FTM_RET FTOM_DB_TRIGGER_getIDList
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_TRIGGER_getIDList(pService->pData, pIDs, ulIndex, ulMaxCount, pulCount);
+		xRet = FTOM_DMC_EVENT_getIDList(pService->pData, pIDs, ulIndex, ulMaxCount, pulCount);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to get trigger id list from DB.\n");			
@@ -734,13 +734,13 @@ FTM_RET FTOM_DB_TRIGGER_getIDList
 	return	xRet;
 }
 
-FTM_RET	FTOM_DB_TRIGGER_getInfo
+FTM_RET	FTOM_DB_EVENT_getInfo
 (
-	FTM_CHAR_PTR	pTriggerID,
-	FTM_TRIGGER_PTR	pInfo
+	FTM_CHAR_PTR	pEventID,
+	FTM_EVENT_PTR	pInfo
 )
 {
-	ASSERT(pTriggerID != NULL);
+	ASSERT(pEventID != NULL);
 	ASSERT(pInfo != NULL);
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
@@ -748,10 +748,10 @@ FTM_RET	FTOM_DB_TRIGGER_getInfo
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_TRIGGER_get(pService->pData, pTriggerID, pInfo);
+		xRet = FTOM_DMC_EVENT_get(pService->pData, pEventID, pInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet,"Trigger[%s] failed to get information.\n", pTriggerID);	
+			ERROR2(xRet,"Event[%s] failed to get information.\n", pEventID);	
 		}
 	}
 	else
@@ -765,7 +765,7 @@ FTM_RET	FTOM_DB_TRIGGER_getInfo
 FTM_RET	FTOM_DB_TRIgger_getInfoAt
 (
 	FTM_ULONG		ulIndex,
-	FTM_TRIGGER_PTR	pInfo
+	FTM_EVENT_PTR	pInfo
 )
 {
 	ASSERT(pInfo != NULL);
@@ -775,10 +775,10 @@ FTM_RET	FTOM_DB_TRIgger_getInfoAt
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_TRIGGER_getAt(pService->pData, ulIndex, pInfo);
+		xRet = FTOM_DMC_EVENT_getAt(pService->pData, ulIndex, pInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet,"Trigger[%d] failed to get information.\n", ulIndex);	
+			ERROR2(xRet,"Event[%d] failed to get information.\n", ulIndex);	
 		}
 	}
 	else
@@ -789,14 +789,14 @@ FTM_RET	FTOM_DB_TRIgger_getInfoAt
 	return	xRet;
 }
 
-FTM_RET	FTOM_DB_TRIGGER_setInfo
+FTM_RET	FTOM_DB_EVENT_setInfo
 (
-	FTM_CHAR_PTR		pTriggerID,
-	FTM_TRIGGER_FIELD	xFields,
-	FTM_TRIGGER_PTR		pInfo
+	FTM_CHAR_PTR		pEventID,
+	FTM_EVENT_FIELD	xFields,
+	FTM_EVENT_PTR		pInfo
 )
 {
-	ASSERT(pTriggerID != NULL);
+	ASSERT(pEventID != NULL);
 	ASSERT(pInfo != NULL);
 	FTM_RET	xRet;
 	FTOM_SERVICE_PTR pService;
@@ -804,10 +804,10 @@ FTM_RET	FTOM_DB_TRIGGER_setInfo
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTOM_DMC_TRIGGER_set(pService->pData, pTriggerID, xFields, pInfo);
+		xRet = FTOM_DMC_EVENT_set(pService->pData, pEventID, xFields, pInfo);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet,"Trigger[%s] DB update failed.\n", pTriggerID);	
+			ERROR2(xRet,"Event[%s] DB update failed.\n", pEventID);	
 		}
 	}
 	else

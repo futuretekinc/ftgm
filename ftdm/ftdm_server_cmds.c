@@ -10,7 +10,7 @@
 #include "ftdm_config.h"
 #include "ftdm_server.h"
 #include "ftdm_server_cmds.h"
-#include "ftdm_trigger.h"
+#include "ftdm_event.h"
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
 
@@ -195,7 +195,7 @@ FTM_RET	FTDMS_SHELL_CMD_object
 			FTDM_NODEM_showList(pServer->pDM->pNodeM);
 			FTDM_EPM_showList(pServer->pDM->pEPM);
 			FTDM_RULE_showList();
-			FTDM_TRIGGER_showList();
+			FTDM_EVENT_showList();
 			FTDM_ACTION_showList();
 		}	
 		break;
