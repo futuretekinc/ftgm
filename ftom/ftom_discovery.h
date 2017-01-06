@@ -71,6 +71,12 @@ FTM_RET	FTOM_DISCOVERY_startSearch
 	FTM_ULONG			ulRetryCount
 );
 
+FTM_RET	FTOM_DISCOVERY_isRunning
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_BOOL_PTR		pbRunning
+);
+	
 FTM_RET	FTOM_DISCOVERY_isFinished
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,

@@ -25,10 +25,10 @@ CFLAGS:= -std=gnu99 -fPIC -c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftom/client/ftom \
 				-I$(TOPDIR)/ftom/client/ftom/net \
 				-I$(TOPDIR)/ftom/client/mqtt \
-				-I$(TOPDIR)/ftom/client/cloud\
-				-I$(TOPDIR)/ftom/client/cloud/azure \
-				-I$(TOPDIR)/ftom/client/cloud/thingplus \
-				-I$(TOPDIR)/ftom/node 
+				-I$(TOPDIR)/ftom/node \
+				-I$(TOPDIR)/blocker/cloud\
+				-I$(TOPDIR)/blocker/cloud/azure \
+				-I$(TOPDIR)/blocker/cloud/thingplus \
 
 LDFLAGS:= -Wl,--no-as-needed\
 				-L.\
@@ -43,9 +43,9 @@ LDFLAGS:= -Wl,--no-as-needed\
 				-L$(TOPDIR)/ftom/client/ftom\
 				-L$(TOPDIR)/ftom/client/ftom/net\
 				-L$(TOPDIR)/ftom/client/mqtt\
-				-L$(TOPDIR)/ftom/client/cloud\
-				-L$(TOPDIR)/ftom/client/cloud/azure \
-				-L$(TOPDIR)/ftom/client/cloud/thingplus \
+				-L$(TOPDIR)/blocker/cloud\
+				-L$(TOPDIR)/blocker/cloud/azure \
+				-L$(TOPDIR)/blocker/cloud/thingplus \
 				-L$(TOPDIR)/ftom/node 
 
 ifeq ("$(MODEL)","ftm-50s")

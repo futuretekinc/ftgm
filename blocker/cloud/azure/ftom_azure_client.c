@@ -73,6 +73,23 @@ FTM_VOID_PTR	FTOM_AZURE_CLIENT_threadMain
 	FTM_VOID_PTR	pData
 );
 
+static
+FTM_RET	FTOM_AZURE_CLIENT_start
+(
+	FTOM_AZURE_CLIENT_PTR	pClient
+);
+
+static
+FTM_RET	FTOM_AZURE_CLIENT_stop
+(
+	FTOM_AZURE_CLIENT_PTR	pClient
+);
+
+static
+FTM_RET	FTOM_AZURE_CLIENT_waitingForFinished
+(
+	FTOM_AZURE_CLIENT_PTR	pClient
+);
 
 static	
 FTOM_AZURE_CLIENT_CONFIG	_xDefaultConfig =
@@ -92,6 +109,12 @@ FTM_RET	FTOM_AZURE_CLIENT_create
 
 	FTM_RET	xRet;
 	FTOM_AZURE_CLIENT_PTR	pClient;
+
+	if (platform_init() != 0)
+	{
+		TRACE("Platform initialize failed!\n");	
+		return	0;
+	}
 
 	pClient= (FTOM_AZURE_CLIENT_PTR)FTM_MEM_malloc(sizeof(FTOM_AZURE_CLIENT));
 	if (pClient == NULL)
@@ -330,6 +353,7 @@ FTM_RET	FTOM_AZURE_CLIENT_setNotifyCB
 	return	FTM_RET_OK;
 }
 
+static
 FTM_RET	FTOM_AZURE_CLIENT_start
 (
 	FTOM_AZURE_CLIENT_PTR	pClient
@@ -345,7 +369,6 @@ FTM_RET	FTOM_AZURE_CLIENT_start
 	}
 
 	pClient->bStop = FTM_FALSE;
-
 	if (pthread_create(&pClient->xThreadMain, NULL, FTOM_AZURE_CLIENT_threadMain, pClient) < 0)
 	{
 		xRet = FTM_RET_THREAD_CREATION_ERROR;
@@ -359,6 +382,7 @@ FTM_RET	FTOM_AZURE_CLIENT_start
 
 }
 
+static
 FTM_RET	FTOM_AZURE_CLIENT_stop
 (
 	FTOM_AZURE_CLIENT_PTR	pClient
@@ -374,20 +398,6 @@ FTM_RET	FTOM_AZURE_CLIENT_stop
 	pClient->bStop = FTM_TRUE;
 
 	return	FTOM_AZURE_CLIENT_waitingForFinished(pClient);
-}
-
-FTM_RET	FTOM_AZURE_CLIENT_isRunning
-(
-	FTOM_AZURE_CLIENT_PTR	pClient,
-	FTM_BOOL_PTR			pIsRunning
-)
-{
-	ASSERT(pClient != NULL);
-	ASSERT(pIsRunning != NULL);
-
-	*pIsRunning = (pClient->xThreadMain != 0);
-
-	return	FTM_RET_OK;
 }
 
 FTM_RET	FTOM_AZURE_CLIENT_waitingForFinished
@@ -444,31 +454,78 @@ FTM_RET	FTOM_AZURE_CLIENT_connect
 	FTOM_AZURE_CLIENT_PTR	pClient
 )
 {
-	FTM_CHAR	pConnectionString[256];
+	ASSERT(pClient != NULL);
+	FTM_RET		xRet;
+	FTM_CHAR		pConnectionString[256];
+	FTM_VOID_PTR	hClient;
 
 	sprintf(pConnectionString, "HostName=%s;DeviceId=%s;SharedAccessKey=%s",
 			pClient->xConfig.pHostName,
 			pClient->xConfig.pDeviceID,
 			pClient->xConfig.pSharedAccessKey);
 
-	pClient->hAzureClient = IoTHubClient_CreateFromConnectionString(pConnectionString, MQTT_Protocol);
-	if (pClient->hAzureClient == NULL)
+	hClient = IoTHubClient_CreateFromConnectionString(pConnectionString, MQTT_Protocol);
+	if (hClient == NULL)
 	{
 		ERROR2(FTM_RET_ERROR, "Failed to connect to azure.\n");
 		return	FTM_RET_ERROR;
 	}
 
-	if (IoTHubClient_SetConnectionStatusCallback(pClient->hAzureClient, FTOM_AZURE_CLIENT_connectionStatusCB, pClient) != IOTHUB_CLIENT_OK)
+	if (IoTHubClient_SetConnectionStatusCallback(hClient, FTOM_AZURE_CLIENT_connectionStatusCB, pClient) != IOTHUB_CLIENT_OK)
 	{
 		TRACE("Failed to set connection status callback!\n");
 	}
 
-	if (IoTHubClient_SetMessageCallback(pClient->hAzureClient, FTOM_AZURE_CLIENT_receiveCB, pClient) != IOTHUB_CLIENT_OK)
+	if (IoTHubClient_SetMessageCallback(hClient, FTOM_AZURE_CLIENT_receiveCB, pClient) != IOTHUB_CLIENT_OK)
 	{
 		TRACE("Failed to set message callback!\n");
 	}
 
+	xRet = FTOM_AZURE_CLIENT_start(pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		IoTHubClient_Destroy(hClient);
+
+		ERROR2(xRet, "Failed to start azure client!\n");
+		return	xRet;
+
+	}
+
+	pClient->hAzureClient = hClient;
 	TRACE("Azure connected![%08x]\n", pClient->hAzureClient);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_AZURE_CLIENT_disconnect
+(
+	FTOM_AZURE_CLIENT_PTR	pClient
+)
+{
+	ASSERT(pClient != NULL);
+
+	if (pClient->hAzureClient != NULL)
+	{
+		FTOM_AZURE_CLIENT_stop(pClient);
+
+		IoTHubClient_Destroy(pClient->hAzureClient);	
+		pClient->hAzureClient = NULL;	
+	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTOM_AZURE_CLIENT_isConnected
+(
+	FTOM_AZURE_CLIENT_PTR	pClient,
+	FTM_BOOL_PTR			pConnected
+)
+{
+	ASSERT(pClient != NULL);
+	ASSERT(pConnected != NULL);
+
+	*pConnected = (pClient->hAzureClient != NULL);
+
 	return	FTM_RET_OK;
 }
 
@@ -479,52 +536,16 @@ FTM_VOID_PTR	FTOM_AZURE_CLIENT_threadMain
 {
 	ASSERT(pData != NULL);
 
-	FTM_RET		xRet;
 	FTM_TIMER	xLoopTimer;
 	FTOM_AZURE_CLIENT_PTR	pClient = (FTOM_AZURE_CLIENT_PTR)pData;
-	FTM_ULONG	ulLoopInterval;
-
-	if (platform_init() != 0)
-	{
-		TRACE("Platform initialize failed!\n");	
-		return	0;
-	}
 
 	FTM_TIMER_initMS(&xLoopTimer, pClient->xConfig.ulLoopInterval);
 
 	while(!pClient->bStop)
 	{
-
-        FTOM_MSG_PTR    pBaseMsg;
-
-		FTM_TIMER_remainMS(&xLoopTimer, &ulLoopInterval);
-
-		while (!pClient->bStop)
-		{    
-			xRet = FTOM_MSGQ_timedPop(pClient->pMsgQ, ulLoopInterval, &pBaseMsg);
-			if (xRet != FTM_RET_OK)
-			{    
-				break;  
-			}    
-
-			xRet = FTOM_AZURE_CLIENT_MESSAGE_process(pClient, pBaseMsg);
-			if (xRet != FTM_RET_OK)
-			{   
-				FTOM_MSG_destroy(&pBaseMsg);
-			}   
-		}    
-
-		if (pClient->hAzureClient == NULL)		
+		if (pClient->hAzureClient != NULL)		
 		{
-			xRet = FTOM_AZURE_CLIENT_connect(pClient);	
-			if (xRet != FTM_RET_OK)
-			{
-				FTM_TIMER_addMS(&xLoopTimer, pClient->xConfig.ulReconnectionInterval * 1000);
-			}
-		}
-		else
-		{
-			while(FTM_TIMER_isExpired(&xLoopTimer) == FTM_FALSE)
+			while((!pClient->bStop) && (FTM_TIMER_isExpired(&xLoopTimer) == FTM_FALSE))
 			{
 				FTM_ULONG	ulWaitingEventCount = 0;
 				
@@ -535,11 +556,12 @@ FTM_VOID_PTR	FTOM_AZURE_CLIENT_threadMain
 				}
 
 				IoTHubClient_LL_DoWork(pClient->hAzureClient);
-				usleep(1000);
+				usleep(10000);
 			}
 
-			FTM_TIMER_addMS(&xLoopTimer, pClient->xConfig.ulLoopInterval);
 		}
+
+		FTM_TIMER_addMS(&xLoopTimer, pClient->xConfig.ulLoopInterval);
 
 	}
 

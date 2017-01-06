@@ -3,8 +3,7 @@
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_create
 (
-	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR _PTR_ ppClient
+	FTOM_BLOCKER_PTR		pBlocker
 )
 {
 	ASSERT(pBlocker != NULL);
@@ -14,13 +13,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_create
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fCreate(pBlocker->xConfig.xCloudClient.pName, ppClient);
+	return	pBlocker->pCloudClientModule->fCreate(pBlocker->xConfig.xCloudClient.pName, &pBlocker->pCloudClient);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_destroy
 (
-	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR _PTR_ ppClient
+	FTOM_BLOCKER_PTR		pBlocker
 )
 {
 	ASSERT(pBlocker != NULL);
@@ -30,13 +28,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_destroy
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fDestroy(ppClient);
+	return	pBlocker->pCloudClientModule->fDestroy(&pBlocker->pCloudClient);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_init
 (
-	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient
+	FTOM_BLOCKER_PTR		pBlocker
 )
 {
 	ASSERT(pBlocker != NULL);
@@ -46,13 +43,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_init
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fInit(pClient);
+	return	pBlocker->pCloudClientModule->fInit(pBlocker->pCloudClient);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_final
 (
-	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient
+	FTOM_BLOCKER_PTR		pBlocker
 )
 {
 	ASSERT(pBlocker != NULL);
@@ -62,78 +58,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_final
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fFinal(pClient);
-}
-
-FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_start
-(
-	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient
-)
-{
-	ASSERT(pBlocker != NULL);
-
-	if ((pBlocker->pCloudClientModule == NULL) || (pBlocker->pCloudClientModule->fStart== NULL))
-	{
-		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
-	}
-
-	return	pBlocker->pCloudClientModule->fStart(pClient);
-}
-
-FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_stop
-(
-	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient
-)
-{
-	ASSERT(pBlocker != NULL);
-
-	if ((pBlocker->pCloudClientModule == NULL) || (pBlocker->pCloudClientModule->fStop== NULL))
-	{
-		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
-	}
-
-	return	pBlocker->pCloudClientModule->fStop(pClient);
-}
-
-FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_isRunning
-(
-	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
-	FTM_BOOL_PTR			pIsRunning
-)
-{
-	ASSERT(pBlocker != NULL);
-
-	if ((pBlocker->pCloudClientModule == NULL) || (pBlocker->pCloudClientModule->fIsRunning == NULL))
-	{
-		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
-	}
-
-	return	pBlocker->pCloudClientModule->fIsRunning(pClient, pIsRunning);
-}
-
-FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_waitingForFinished
-(
-	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient
-)
-{
-	ASSERT(pBlocker != NULL);
-
-	if ((pBlocker->pCloudClientModule == NULL) || (pBlocker->pCloudClientModule->fWaitingForFinished == NULL))
-	{
-		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
-	}
-
-	return	pBlocker->pCloudClientModule->fWaitingForFinished(pClient);
+	return	pBlocker->pCloudClientModule->fFinal(pBlocker->pCloudClient);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_load
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_CONFIG_PTR			pConfig
 )
 {
@@ -144,13 +74,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_load
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fConfigLoad(pClient, pConfig);
+	return	pBlocker->pCloudClientModule->fConfigLoad(pBlocker->pCloudClient, pConfig);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_save
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_CONFIG_PTR			pConfig
 )
 {
@@ -161,13 +90,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_save
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fConfigSave(pClient, pConfig);
+	return	pBlocker->pCloudClientModule->fConfigSave(pBlocker->pCloudClient, pConfig);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_show
 (
-	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient
+	FTOM_BLOCKER_PTR		pBlocker
 )
 {
 	ASSERT(pBlocker != NULL);
@@ -177,14 +105,13 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_show
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fConfigShow(pClient);
+	return	pBlocker->pCloudClientModule->fConfigShow(pBlocker->pCloudClient);
 }
 
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTOM_CLIENT_NOTIFY_CB	fNotifyCB,
 	FTM_VOID_PTR			pData
 )
@@ -196,13 +123,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fSetNotifyCB(pClient, fNotifyCB, pData);
+	return	pBlocker->pCloudClientModule->fSetNotifyCB(pBlocker->pCloudClient, fNotifyCB, pData);
 }
 
 FTM_RET FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_send
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTOM_MSG_PTR			pBaseMsg
 )
 {
@@ -213,13 +139,12 @@ FTM_RET FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_send
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fMessageSend(pClient, pBaseMsg);
+	return	pBlocker->pCloudClientModule->fMessageSend(pBlocker->pCloudClient, pBaseMsg);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_process
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTOM_MSG_PTR			pMsg
 )
 {
@@ -230,7 +155,53 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_process
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->fMessageProcess(pClient, pMsg);
+	return	pBlocker->pCloudClientModule->fMessageProcess(pBlocker->pCloudClient, pMsg);
+}
+
+FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_connect
+(
+	FTOM_BLOCKER_PTR		pBlocker
+)
+{
+	ASSERT(pBlocker != NULL);
+
+	if ((pBlocker->pCloudClientModule == NULL) || (pBlocker->pCloudClientModule->fConnect == NULL))
+	{
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
+	}
+
+	return	pBlocker->pCloudClientModule->fConnect(pBlocker->pCloudClient);
+}
+
+FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_disconnect
+(
+	FTOM_BLOCKER_PTR		pBlocker
+)
+{
+	ASSERT(pBlocker != NULL);
+
+	if ((pBlocker->pCloudClientModule == NULL) || (pBlocker->pCloudClientModule->fDisconnect == NULL))
+	{
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
+	}
+
+	return	pBlocker->pCloudClientModule->fDisconnect(pBlocker->pCloudClient);
+}
+
+FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_isConnected
+(
+	FTOM_BLOCKER_PTR		pBlocker,
+	FTM_BOOL_PTR			pConnected
+)
+{
+	ASSERT(pBlocker != NULL);
+
+	if ((pBlocker->pCloudClientModule == NULL) || (pBlocker->pCloudClientModule->fIsConnected == NULL))
+	{
+		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
+	}
+
+	return	pBlocker->pCloudClientModule->fIsConnected(pBlocker->pCloudClient, pConnected);
 }
 
 /**********************************************************
@@ -239,7 +210,6 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_process
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_GATEWAY_updateStatus
 (
 	FTOM_BLOCKER_PTR		pBlocker, 
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_BOOL				bStatus
 )
 {
@@ -250,7 +220,7 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_GATEWAY_updateStatus
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xGateway.fUpdateStatus(pClient, bStatus);
+	return	pBlocker->pCloudClientModule->xGateway.fUpdateStatus(pBlocker->pCloudClient, bStatus);
 }
 
 /**********************************************************
@@ -259,7 +229,6 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_GATEWAY_updateStatus
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_NODE_getCount
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_ULONG_PTR			pulCount
 )
 {
@@ -270,13 +239,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_NODE_getCount
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xNode.fGetCount(pClient, pulCount);
+	return	pBlocker->pCloudClientModule->xNode.fGetCount(pBlocker->pCloudClient, pulCount);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_NODE_register
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_NODE_PTR			pNode
 )
 {
@@ -287,13 +255,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_NODE_register
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xNode.fRegister(pClient, pNode);
+	return	pBlocker->pCloudClientModule->xNode.fRegister(pBlocker->pCloudClient, pNode);
 }
 	
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_NODE_isExist
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR			pID
 )
 {
@@ -304,13 +271,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_NODE_isExist
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xNode.fIsExist(pClient, pID);
+	return	pBlocker->pCloudClientModule->xNode.fIsExist(pBlocker->pCloudClient, pID);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_getCount
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_ULONG_PTR			pulCount
 )
 {
@@ -321,13 +287,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_getCount
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xEP.fGetCount(pClient, pulCount);
+	return	pBlocker->pCloudClientModule->xEP.fGetCount(pBlocker->pCloudClient, pulCount);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_getEPIDAt
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_ULONG				ulIndex,
 	FTM_CHAR_PTR			pBuff,
 	FTM_ULONG				ulBuffLen
@@ -340,13 +305,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_getEPIDAt
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xEP.fGetEPIDAt(pClient, ulIndex, pBuff, ulBuffLen);
+	return	pBlocker->pCloudClientModule->xEP.fGetEPIDAt(pBlocker->pCloudClient, ulIndex, pBuff, ulBuffLen);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_register
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_EP_PTR			pEP
 )
 {
@@ -357,13 +321,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_register
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xEP.fRegister(pClient, pEP);
+	return	pBlocker->pCloudClientModule->xEP.fRegister(pBlocker->pCloudClient, pEP);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_isExist
 (
 	FTOM_BLOCKER_PTR		pBlocker,
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR			pEPID
 )
 {
@@ -374,13 +337,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_isExist
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xEP.fIsExist(pClient, pEPID);
+	return	pBlocker->pCloudClientModule->xEP.fIsExist(pBlocker->pCloudClient, pEPID);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_updateStatus
 (
 	FTOM_BLOCKER_PTR		pBlocker, 
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR			pEPID,
 	FTM_BOOL				bStatus
 )
@@ -393,13 +355,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_updateStatus
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xEP.fUpdateStatus(pClient, pEPID, bStatus);
+	return	pBlocker->pCloudClientModule->xEP.fUpdateStatus(pBlocker->pCloudClient, pEPID, bStatus);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_getLastTime
 (
 	FTOM_BLOCKER_PTR		pBlocker, 
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR			pEPID,
 	FTM_ULONG_PTR			pulLastTime
 )
@@ -411,13 +372,12 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_getLastTime
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xEP.xData.fGetLastTime(pClient, pEPID, pulLastTime);
+	return	pBlocker->pCloudClientModule->xEP.xData.fGetLastTime(pBlocker->pCloudClient, pEPID, pulLastTime);
 }
 
 FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_send
 (
 	FTOM_BLOCKER_PTR		pBlocker, 
-	FTOM_CLOUD_CLIENT_PTR	pClient,
 	FTM_CHAR_PTR			pEPID,
 	FTM_EP_DATA_PTR			pDatas,
 	FTM_ULONG				ulCount
@@ -430,6 +390,6 @@ FTM_RET	FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_send
 		return	FTM_RET_FUNCTION_NOT_SUPPORTED;	
 	}
 
-	return	pBlocker->pCloudClientModule->xEP.xData.fSend(pClient, pEPID, pDatas, ulCount);
+	return	pBlocker->pCloudClientModule->xEP.xData.fSend(pBlocker->pCloudClient, pEPID, pDatas, ulCount);
 }
 

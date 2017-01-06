@@ -47,12 +47,15 @@ FTM_RET	FTOM_DISCOVERY_create
 	pDiscovery = (FTOM_DISCOVERY_PTR)FTM_MEM_malloc(sizeof(FTOM_DISCOVERY));
 	if (pDiscovery == NULL)
 	{
-		return	FTM_RET_NOT_ENOUGH_MEMORY;	
+		xRet = FTM_RET_NOT_ENOUGH_MEMORY;	
+		ERROR2(xRet, "Failed to create discovery!\n");
+		return	xRet;	
 	}
 
 	xRet = FTOM_DISCOVERY_init(pDiscovery);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to initialize discovery!\n");
 		FTM_MEM_free(pDiscovery);
 		return	xRet;	
 	}
@@ -83,8 +86,10 @@ FTM_RET	FTOM_DISCOVERY_init
 	FTOM_DISCOVERY_PTR	pDiscovery
 )
 {
+	FTM_RET	xRet;
 	if (pDiscovery->pMsgQ != NULL)
 	{
+		WARN2(FTM_RET_OK, "The discovery is already initialized!\n");
 		return	FTM_RET_OK;
 	}
 
@@ -93,7 +98,13 @@ FTM_RET	FTOM_DISCOVERY_init
 	pDiscovery->ulTimeout	= 2;
 	pDiscovery->ulRetryCount= 3;
 	pDiscovery->ulLoopCount	= 0;
-	FTOM_MSGQ_create(&pDiscovery->pMsgQ);
+	xRet = FTOM_MSGQ_create(&pDiscovery->pMsgQ);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to create MsgQ!\n");
+		return	xRet;
+	}
+
 	FTM_TIMER_initS(&pDiscovery->xTimer, 0);
 	FTM_LIST_init(&pDiscovery->xNodeList);
 	FTM_LIST_init(&pDiscovery->xEPList);
@@ -112,6 +123,8 @@ FTM_RET	FTOM_DISCOVERY_final
 	FTOM_DISCOVERY_INFO_PTR pInfo = NULL;
 	FTM_EP_PTR		pEPInfo;
 	FTM_NODE_PTR	pNodeInfo;
+
+	FTOM_DISCOVERY_stop(pDiscovery);
 
 	FTM_LIST_iteratorStart(&pDiscovery->xInfoList);
 	while(FTM_LIST_iteratorNext(&pDiscovery->xInfoList, (FTM_VOID_PTR _PTR_)&pInfo) == FTM_RET_OK)
@@ -151,6 +164,7 @@ FTM_RET	FTOM_DISCOVERY_start
 
 	FTM_RET	xRet;
 	FTM_INT	nRet;
+	FTM_TIMER	xTimer;
 
 	TRACE("DISCOVERY start\n");
 	if (!pDiscovery->bStop)
@@ -175,6 +189,20 @@ FTM_RET	FTOM_DISCOVERY_start
 		return	FTM_RET_CANT_CREATE_THREAD;
 	}
 
+	FTM_TIMER_initMS(&xTimer, 1000);
+
+	while(!FTM_TIMER_isExpired(&xTimer))
+	{
+		FTM_BOOL	bRunning = FTM_FALSE;
+
+		FTOM_DISCOVERY_isRunning(pDiscovery, &bRunning);
+
+		if (bRunning)
+		{
+			break;	
+		}
+		usleep(1000);	
+	}
 	return	FTM_RET_OK;
 }
 
@@ -199,6 +227,7 @@ FTM_RET	FTOM_DISCOVERY_stop
 			NULL, 
 			NULL);
 
+	TRACE("DISCOVERY stopped\n");
 	return	FTM_RET_OK;
 }
 
@@ -393,6 +422,20 @@ FTM_RET	FTOM_DISCOVERY_startSearch
 }
 
 
+FTM_RET	FTOM_DISCOVERY_isRunning
+(
+	FTOM_DISCOVERY_PTR	pDiscovery,
+	FTM_BOOL_PTR		pbRunning
+)
+{
+	ASSERT(pDiscovery != NULL);
+	ASSERT(pbRunning != NULL);
+
+	*pbRunning = !pDiscovery->bStop;
+
+	return	FTM_RET_OK;
+}
+	
 FTM_RET	FTOM_DISCOVERY_isFinished
 (
 	FTOM_DISCOVERY_PTR	pDiscovery,

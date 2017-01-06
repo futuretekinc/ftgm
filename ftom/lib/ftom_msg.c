@@ -73,6 +73,7 @@ FTM_RET FTOM_MSG_createInitializeDone
 
 	pMsg->xType = FTOM_MSG_TYPE_INITIALIZE_DONE;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
 	*ppMsg = pMsg;
 
 	return	FTM_RET_OK;
@@ -98,6 +99,7 @@ FTM_RET FTOM_MSG_createQuit
 
 	pMsg->xType = FTOM_MSG_TYPE_QUIT;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
 
 	*ppMsg = pMsg;
 
@@ -128,6 +130,8 @@ FTM_RET	FTOM_MSG_createConnectionStatus
 
 	pMsg->xType 	= FTOM_MSG_TYPE_CONNECTION_STATUS;
 	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	pMsg->xObjectID = xObjectID;
 	pMsg->bConnected= bConnected;
 
@@ -156,6 +160,7 @@ FTM_RET	FTOM_MSG_createConnected
 
 	pMsg->xType 	= FTOM_MSG_TYPE_CONNECTED;
 	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
 
@@ -183,6 +188,7 @@ FTM_RET	FTOM_MSG_createDisconnected
 
 	pMsg->xType 	= FTOM_MSG_TYPE_DISCONNECTED;
 	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
 
@@ -216,6 +222,8 @@ FTM_RET	FTOM_MSG_createGWStatus
 
 	pMsg->xType 	= FTOM_MSG_TYPE_GW_STATUS;
 	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pGatewayID, pGatewayID, FTM_GWID_LEN);
 	pMsg->bStatus 	= bStatus;
 	pMsg->ulTimeout = ulTimeout;
@@ -248,6 +256,8 @@ FTM_RET	FTOM_MSG_createEPStatus
 
 	pMsg->xType 	= FTOM_MSG_TYPE_EP_STATUS;
 	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->bStatus 	= bStatus;
 	pMsg->ulTimeout = ulTimeout;
@@ -279,7 +289,9 @@ FTM_RET	FTOM_MSG_createEPData
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_EP_DATA;
-	pMsg->ulLen = ulMsgLen;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->ulCount	= ulCount;
 	memcpy(pMsg->pData, pData, sizeof(FTM_EP_DATA) * ulCount);
@@ -308,8 +320,10 @@ FTM_RET	FTOM_MSG_createTimeSync
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	pMsg->xType = FTOM_MSG_TYPE_TIME_SYNC;
-	pMsg->ulLen = ulMsgLen;
+	pMsg->xType 	= FTOM_MSG_TYPE_TIME_SYNC;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	pMsg->ulTime= ulTime;
 
 	*ppMsg = pMsg;
@@ -339,7 +353,9 @@ FTM_RET FTOM_MSG_createEPCtrl
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_EP_CTRL;
-	pMsg->ulLen = ulMsgLen;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->xCtrl		= xCtrl;
 	pMsg->ulDuration= ulDuration;
@@ -371,6 +387,8 @@ FTM_RET FTOM_MSG_createEPDataServerTime
 
 	pMsg->xType 	= FTOM_MSG_TYPE_EP_DATA_SERVER_TIME;
 	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->ulTime 	= ulTime;
 
@@ -401,7 +419,9 @@ FTM_RET FTOM_MSG_createRule
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_RULE;
-	pMsg->ulLen = ulMsgLen;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pRuleID, pRuleID, FTM_ID_LEN);
 	pMsg->xRuleState= xRuleState;
 
@@ -431,7 +451,9 @@ FTM_RET FTOM_MSG_createAction
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_ACTION;
-	pMsg->ulLen = ulMsgLen;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pActionID, pActionID, FTM_ID_LEN);
 	pMsg->bActivate = bActivate;
 
@@ -462,7 +484,9 @@ FTM_RET	FTOM_MSG_createAlert
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_ALERT;
-	pMsg->ulLen = ulMsgLen;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	memcpy(&pMsg->xData, pData, sizeof(FTM_EP_DATA));
 
@@ -494,7 +518,9 @@ FTM_RET	FTOM_MSG_createDiscovery
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_DISCOVERY;
-	pMsg->ulLen = ulMsgLen;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	pMsg->pNetwork 	= (FTM_CHAR_PTR)pMsg + sizeof(FTOM_MSG_DISCOVERY);
 	strcpy(pMsg->pNetwork, pNetwork);
 	pMsg->usPort	= usPort;
@@ -531,7 +557,9 @@ FTM_RET	FTOM_MSG_createDiscoveryInfo
 	}
 
 	pMsg->xType 	= FTOM_MSG_TYPE_DISCOVERY_INFO;
-	pMsg->ulLen = ulMsgLen;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	if (pName != NULL)
 	{
 		strncpy(pMsg->pName, pName, FTM_DEVICE_NAME_LEN);
@@ -569,8 +597,10 @@ FTM_RET	FTOM_MSG_createDiscoveryDone
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
 
-	pMsg->xType 		= FTOM_MSG_TYPE_DISCOVERY_DONE;
-	pMsg->ulLen = ulMsgLen;
+	pMsg->xType 	= FTOM_MSG_TYPE_DISCOVERY_DONE;
+	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	pMsg->ulNodeCount	= ulNodeCount;
 	pMsg->pNodeInfos	= (FTM_NODE_PTR)((FTM_CHAR_PTR)pMsg + sizeof(FTOM_MSG_DISCOVERY_DONE));
 	pMsg->ulEPCount		= ulEPInfoCount;
@@ -605,6 +635,8 @@ FTM_RET	FTOM_MSG_createServerSync
 
 	pMsg->xType	= FTOM_MSG_TYPE_SERVER_SYNC;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	pMsg->bAutoRegister = bAutoRegister;
 
 	*ppMsg = pMsg;
@@ -694,6 +726,8 @@ FTM_RET	FTOM_MSG_createEvent
 
 	pMsg->xType	= FTOM_MSG_TYPE_EVENT;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pEventID, pEventID, FTM_ID_LEN);
 	pMsg->bOccurred = bOccurred;
 
@@ -726,6 +760,8 @@ FTM_RET	FTOM_MSG_RULE_createActivation
 
 	pMsg->xType	= FTOM_MSG_TYPE_RULE_ACTIVATION;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pRuleID, pRuleID, FTM_ID_LEN);
 	pMsg->bActivation = bActivation;
 
@@ -758,6 +794,8 @@ FTM_RET	FTOM_MSG_ACTION_createActivation
 
 	pMsg->xType	= FTOM_MSG_TYPE_ACTION_ACTIVATION;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pActionID, pActionID, FTM_ID_LEN);
 	pMsg->bActivation = bActivation;
 
@@ -801,6 +839,8 @@ FTM_RET	FTOM_MSG_SNMPC_createGetEPData
 
 	pMsg->xType	= FTOM_MSG_TYPE_SNMPC_GET_EP_DATA;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pDID, pDID, FTM_DID_LEN);
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	strncpy(pMsg->pURL, pURL, FTM_URL_LEN);
@@ -846,6 +886,8 @@ FTM_RET	FTOM_MSG_SNMPC_createSetEPData
 
 	pMsg->xType	= FTOM_MSG_TYPE_SNMPC_SET_EP_DATA;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strncpy(pMsg->pDID, pDID, FTM_DID_LEN);
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	strncpy(pMsg->pURL, pURL, FTM_URL_LEN);
@@ -877,6 +919,9 @@ FTM_RET	FTOM_MSG_createNetConnected
 	}
 
 	pMsg->xType	= FTOM_MSG_TYPE_NET_STAT;
+	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	pMsg->bConnected = FTM_TRUE;
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
@@ -900,6 +945,9 @@ FTM_RET	FTOM_MSG_createNetDisconnected
 	}
 
 	pMsg->xType	= FTOM_MSG_TYPE_NET_STAT;
+	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	pMsg->bConnected = FTM_FALSE;
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
@@ -932,6 +980,8 @@ FTM_RET	FTOM_MSG_TP_createReqSetReportInterval
 
 	pMsg->xType	= FTOM_MSG_TYPE_TP_REQ_SET_REPORT_INTERVAL;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strcpy(pMsg->pReqID, pReqID);
 	pMsg->ulReportIntervalMS = ulReportIntervalMS;
 
@@ -964,6 +1014,8 @@ FTM_RET FTOM_MSG_TP_createReqControlActuator
 
 	pMsg->xType 	= FTOM_MSG_TYPE_TP_REQ_CONTROL_ACTUATOR;
 	pMsg->ulLen 	= ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strcpy(pMsg->pReqID, pReqID);
 	strncpy(pMsg->pEPID, pEPID, FTM_EPID_LEN);
 	pMsg->xCtrl		= xCtrl;
@@ -1001,6 +1053,8 @@ FTM_RET	FTOM_MSG_TP_createResponse
 
 	pMsg->xType	= FTOM_MSG_TYPE_TP_RESPONSE;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	pMsg->nCode = nCode;
 	strcpy(pMsg->pMsgID, pMsgID);
 	strcpy(pMsg->pMessage, pMessage);
@@ -1032,6 +1086,8 @@ FTM_RET	FTOM_MSG_TP_createReqRestart
 
 	pMsg->xType	= FTOM_MSG_TYPE_TP_REQ_RESTART;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strcpy(pMsg->pReqID, pReqID);
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
@@ -1061,6 +1117,8 @@ FTM_RET	FTOM_MSG_TP_createReqReboot
 
 	pMsg->xType	= FTOM_MSG_TYPE_TP_REQ_REBOOT;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strcpy(pMsg->pReqID, pReqID);
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
@@ -1090,6 +1148,8 @@ FTM_RET	FTOM_MSG_TP_createReqPowerOff
 
 	pMsg->xType	= FTOM_MSG_TYPE_TP_REQ_POWER_OFF;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	strcpy(pMsg->pReqID, pReqID);
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;
@@ -1117,6 +1177,8 @@ FTM_RET	FTOM_MSG_createReport
 
 	pMsg->xType	= FTOM_MSG_TYPE_REPORT;
 	pMsg->ulLen = ulMsgLen;
+	pMsg->xSenderID	= xSenderID;
+
 	pMsg->xSenderID=xSenderID;
 
 	*ppMsg = (FTOM_MSG_PTR)pMsg;

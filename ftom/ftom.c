@@ -31,7 +31,7 @@ typedef	struct
 	FTM_USHORT	usPort;
 }	FTOM_SUBNET, _PTR_ FTOM_SUBNET_PTR;
 	
-FTM_VOID_PTR	FTOM_process
+FTM_VOID_PTR	FTOM_threadMain
 (
 	FTM_VOID_PTR pData
 );
@@ -583,7 +583,7 @@ FTM_RET FTOM_start
 		return	FTM_RET_ALREADY_STARTED;	
 	}
 
-	if (pthread_create(&xThread, NULL, FTOM_process, NULL) < 0)
+	if (pthread_create(&xThread, NULL, FTOM_threadMain, NULL) < 0)
 	{
 		return	FTM_RET_ERROR;	
 	}
@@ -618,7 +618,7 @@ FTM_RET FTOM_waitingForFinished
 	return	FTM_RET_OK;
 }
 
-FTM_VOID_PTR	FTOM_process
+FTM_VOID_PTR	FTOM_threadMain
 (
 	FTM_VOID_PTR 	pData
 )
@@ -687,6 +687,7 @@ FTM_RET	FTOM_TASK_sync
 	FTM_BOOL		bConnected = FTM_FALSE;
 	FTM_ULONG		ulCount = 0, i;
 	FTOM_SERVICE_PTR	pService;
+	FTOM_DISCOVERY_PTR	pDiscovery;
 
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_DMC, &pService);
 	if (xRet != FTM_RET_OK)
@@ -970,6 +971,40 @@ FTM_RET	FTOM_TASK_sync
 		}
 	}
 
+	xRet = FTOM_DISCOVERY_create(&pDiscovery);
+	if (xRet == FTM_RET_OK)
+	{
+		xRet = FTOM_DISCOVERY_start(pDiscovery);
+		if (xRet == FTM_RET_OK)
+		{
+			xRet = FTOM_DISCOVERY_startSearch(pDiscovery, "255.255.255.255", 1234, 3);
+			if (xRet == FTM_RET_OK)
+			{
+				while(1)
+				{
+					FTM_BOOL	bFinished = FTM_FALSE;
+
+					xRet = FTOM_DISCOVERY_isFinished(pDiscovery, &bFinished);
+					if ((xRet != FTM_RET_OK) || (bFinished == FTM_TRUE))
+					{
+						break;	
+					}
+
+				}
+			}
+			else
+			{
+				ERROR2(xRet, "Failed to start search!\n");	
+			}
+		}
+
+		xRet = FTOM_DISCOVERY_destroy(&pDiscovery);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to destroy discovery!\n");	
+		}
+	}
+
 	xState = FTOM_STATE_SYNCHRONIZED;
 	return	FTM_RET_OK;
 }
@@ -980,7 +1015,7 @@ FTM_RET	FTOM_TASK_start
 )
 {
 	FTM_ULONG	i, ulCount;
-	
+
 	FTOM_RULE_start(NULL);
 	FTOM_ACTION_start(NULL);
 	FTOM_EVENT_start(NULL);
@@ -1755,19 +1790,15 @@ FTM_RET	FTOM_discoveryEP
 	if (strlen(pEPInfo->pEPID) == 8)
 	{
 		FTM_INT		nLen;
-		FTM_CHAR	pBuff[FTM_EPID_LEN + FTM_DID_LEN+1];
+		FTM_CHAR	pBuff[FTM_EPID_LEN+1];
 
-		sprintf(pBuff, "%s%s", pEPInfo->pDID, pEPInfo->pEPID);
+		memset(pBuff, 0, sizeof(pBuff));
+		memcpy(pBuff, pEPInfo->pEPID, 6);
+		nLen = 6;
+		nLen += snprintf(&pBuff[nLen], FTM_EPID_LEN - 8, "%s", pEPInfo->pDID);
+		nLen += snprintf(&pBuff[nLen], FTM_EPID_LEN - nLen, "%s", &pEPInfo->pEPID[6]);
 
-		nLen = strlen(pBuff);
-		if (nLen > 14)
-		{
-			strncpy(pEPInfo->pEPID,  &pBuff[nLen - 14], FTM_EPID_LEN); 
-		}
-		else
-		{
-			strcpy(pEPInfo->pEPID, pBuff);
-		}
+		strncpy(pEPInfo->pEPID, pBuff, FTM_EPID_LEN);
 	}
 
 	return	FTM_RET_OK;

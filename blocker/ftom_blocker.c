@@ -74,7 +74,7 @@ FTM_RET	FTOM_BLOCKER_create
 		xRet = FTM_CONFIG_getItem(pConfig, pBlocker->xConfig.pName, &xSection);
 		if (xRet != FTM_RET_OK)
 		{
-			TRACE("Failed to get blocker section!\n");
+			TRACE("Failed to get blocker section[%s]!\n", pBlocker->xConfig.pName);
 			return	xRet;	
 		}
 		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "server", pModuleName, sizeof(pModuleName) - 1);
@@ -114,7 +114,7 @@ FTM_RET	FTOM_BLOCKER_create
 				return	xRet;
 			}
 	
-			xRet = FTOM_BLOCKER_CLOUD_CLIENT_create(pBlocker, &pBlocker->pCloudClient);
+			xRet = FTOM_BLOCKER_CLOUD_CLIENT_create(pBlocker);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR2(xRet, "Failed to create cloud client!\n");
@@ -181,6 +181,8 @@ FTM_RET	FTOM_BLOCKER_init
 		goto error;
 	}
 
+	pBlocker->xState = FTOM_BLOCKER_STATE_INITIALIZED;
+
 	return	FTM_RET_OK;
 
 error:
@@ -221,7 +223,7 @@ FTM_RET	FTOM_BLOCKER_final
 	if (pBlocker->pCloudClient != NULL)
 	{
 		
-		xRet = FTOM_BLOCKER_CLOUD_CLIENT_destroy(pBlocker, &pBlocker->pCloudClient);	
+		xRet = FTOM_BLOCKER_CLOUD_CLIENT_destroy(pBlocker);	
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to destroy cloud client!\n");	
@@ -239,6 +241,7 @@ FTM_RET	FTOM_BLOCKER_start
 	ASSERT(pBlocker != NULL);
 	ASSERT(pBlocker->pServerClient != NULL);
 	ASSERT(pBlocker->pCloudClient != NULL);
+
 	FTM_RET	xRet;
 
     if (pthread_create(&pBlocker->xThreadMain, NULL, FTOM_BLOCKER_threadMain, pBlocker) < 0)
@@ -277,13 +280,13 @@ FTM_RET FTOM_BLOCKER_waitingForFinished
 	FTM_RET	xRet;
 
 	xRet = FTOM_BLOCKER_SERVER_CLIENT_waitingForFinished(pBlocker, pBlocker->pServerClient);
-	if (xRet != FTM_RET_OK)
+	if ((xRet != FTM_RET_FUNCTION_NOT_SUPPORTED) && (xRet != FTM_RET_OK))
 	{
 		ERROR2(xRet, "Exit wait was processed abnormally.\n");
 	}
 
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_waitingForFinished(pBlocker, pBlocker->pCloudClient);
-	if (xRet != FTM_RET_OK)
+	xRet = FTOM_BLOCKER_CLOUD_CLIENT_disconnect(pBlocker);
+	if ((xRet != FTM_RET_FUNCTION_NOT_SUPPORTED) && (xRet != FTM_RET_OK))
 	{
 		ERROR2(xRet, "Exit wait was processed abnormally.\n");
 	}
@@ -392,7 +395,7 @@ FTM_RET	FTOM_BLOCKER_CONFIG_load
 
 	if (pBlocker->pCloudClient != NULL)
 	{
-		xRet = FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_load(pBlocker, pBlocker->pCloudClient, pConfig);
+		xRet = FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_load(pBlocker, pConfig);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR2(xRet, "Failed to load cloud client configuration.\n");
@@ -413,7 +416,7 @@ FTM_RET	FTOM_BLOCKER_CONFIG_save
 	ASSERT(pConfig != NULL);
 	FTM_RET	xRet;
 
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_save(pBlocker, pBlocker->pCloudClient, pConfig);
+	xRet = FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_save(pBlocker, pConfig);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to load cloud client configuration.\n");
@@ -445,7 +448,7 @@ FTM_RET	FTOM_BLOCKER_CONFIG_show
 	MESSAGE("%16s : %lu ms\n", "Interval" ,pBlocker->xConfig.xAutoStatusPublish.ulInterval);
 
 	FTOM_BLOCKER_SERVER_CLIENT_CONFIG_show(pBlocker, pBlocker->pServerClient);
-	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_show(pBlocker, pBlocker->pCloudClient);
+	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_show(pBlocker);
 
 	return	FTM_RET_OK;
 }
@@ -458,10 +461,8 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 	FTOM_BLOCKER_PTR	pBlocker = (FTOM_BLOCKER_PTR)pData;
 	FTM_RET     xRet;
 	FTM_TIMER   xLoopTimer;
-	FTM_ULONG   ulLoopInterval;
+	FTM_TIMER   xConnectionTimer;
 	FTM_EVENT_TIMER_PTR	pEvent;
-
-	FTM_TIMER_initMS(&xLoopTimer, 1000);
 
 	TRACE("The blocker was started!\n");
 
@@ -473,17 +474,17 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 		ERROR2(xRet, "Failed to start server client!\n");
 	}
 
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB(pBlocker, pBlocker->pCloudClient, FTOM_BLOCKER_notifyCB, pBlocker);
+	xRet = FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB(pBlocker, FTOM_BLOCKER_notifyCB, pBlocker);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to set notify callback!\n");	
 	}
 
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_start(pBlocker, pBlocker->pCloudClient);	
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to start cloud client!\n");
-	}
+//	xRet = FTOM_BLOCKER_CLOUD_CLIENT_start(pBlocker);	
+//	if (xRet != FTM_RET_OK)
+//	{
+//		ERROR2(xRet, "Failed to start cloud client!\n");
+//	}
 
 	xRet = FTM_EVENT_TIMER_MANAGER_start(pBlocker->pETM);
 	if (xRet != FTM_RET_OK)
@@ -502,15 +503,23 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 
 	pBlocker->bStop = FTM_FALSE;
 
+	FTM_TIMER_initMS(&xLoopTimer, 0);
+	FTM_TIMER_initMS(&xConnectionTimer, 5000);
+
 	while(!pBlocker->bStop)
 	{    
 		FTOM_MSG_PTR    pBaseMsg;
+		FTM_BOOL		bConnected = FTM_FALSE;
 
-		FTM_TIMER_remainMS(&xLoopTimer, &ulLoopInterval);
+		FTM_TIMER_addMS(&xLoopTimer, 1000);
 
 		while (!pBlocker->bStop)
 		{    
-			xRet = FTOM_MSGQ_timedPop(pBlocker->pMsgQ, ulLoopInterval, &pBaseMsg);
+			FTM_ULONG		ulRemainTime;
+
+			FTM_TIMER_remainMS(&xLoopTimer, &ulRemainTime);
+
+			xRet = FTOM_MSGQ_timedPop(pBlocker->pMsgQ, ulRemainTime, &pBaseMsg);
 			if (xRet != FTM_RET_OK)
 			{    
 				break;  
@@ -523,18 +532,86 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 			}
 		}    
 
-		FTM_TIMER_addMS(&xLoopTimer, 100);
+		if (FTM_TIMER_isExpired(&xConnectionTimer) == FTM_TRUE)
+		{
+			switch(pBlocker->xState)
+			{
+			case	FTOM_BLOCKER_STATE_INITIALIZED:
+			case	FTOM_BLOCKER_STATE_DISCONNECTED:
+				{
+					xRet = FTOM_BLOCKER_CLOUD_CLIENT_connect(pBlocker);			
+					if (xRet == FTM_RET_OK)
+					{
+                    	FTOM_MSG_PTR    pMsg; 
+						
+						TRACE("The blocker is connected to cloud!\n");
+						xRet = FTOM_MSG_createConnected(pBlocker, &pMsg);
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Failed to create message!\n");
+						}
+						else
+						{
+							xRet = FTOM_BLOCKER_MESSAGE_send(pBlocker, pMsg);
+							if (xRet != FTM_RET_OK)
+							{
+								ERROR2(xRet, "Failed to send message!\n");
+								FTOM_MSG_destroy(&pMsg);
+							}
+						}
+					}
+					else
+					{
+						TRACE("Failed to connect to cloud!\n");
+					}
+				}
+				break;
+
+			case	FTOM_BLOCKER_STATE_CONNECTED:
+				{
+					xRet = FTOM_BLOCKER_CLOUD_CLIENT_isConnected(pBlocker, &bConnected);
+					if ((xRet == FTM_RET_OK) && (!bConnected))
+					{
+                    	FTOM_MSG_PTR    pMsg; 
+						
+						xRet = FTOM_MSG_createDisconnected(pBlocker, &pMsg);
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Failed to create message!\n");
+						}
+						else
+						{
+							xRet = FTOM_BLOCKER_MESSAGE_send(pBlocker, pMsg);
+							if (xRet != FTM_RET_OK)
+							{
+								ERROR2(xRet, "Failed to send message!\n");
+								FTOM_MSG_destroy(&pMsg);
+							}
+						}
+					}
+				}
+				break;
+
+			default:
+				{
+					ERROR2(FTM_RET_ERROR, "The blocker is abnormal state!\n");
+				}
+
+			}
+
+			FTM_TIMER_addMS(&xConnectionTimer, 5000);
+		}
 	}    
 
 	FTM_EVENT_TIMER_MANAGER_stop(pBlocker->pETM);
 
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_stop(pBlocker, pBlocker->pCloudClient);
+	xRet = FTOM_BLOCKER_CLOUD_CLIENT_disconnect(pBlocker);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to stop cloud client!\n");	
+		ERROR2(xRet, "Failed to disconnect cloud client!\n");	
 	}
 
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB(pBlocker, pBlocker->pCloudClient, NULL, NULL);
+	xRet = FTOM_BLOCKER_CLOUD_CLIENT_setNotifyCB(pBlocker, NULL, NULL);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to set notify callback!\n");	
@@ -581,16 +658,28 @@ FTM_RET	FTOM_BLOCKER_MESSAGE_process
 	{
 	case	FTOM_MSG_TYPE_CONNECTED:
 		{
-			if (pBaseMsg->xSenderID == pBlocker->pCloudClient)
+			TRACE("SERVER SYNC : %s\n", (pBlocker->xConfig.xServerSync.bEnabled)?"ON":"OFF");
+			if (pBlocker->xConfig.xServerSync.bEnabled)
 			{
-				if (pBlocker->xConfig.xServerSync.bEnabled)
+				xRet = FTOM_BLOCKER_SERVER_sync(pBlocker);
+				if (xRet != FTM_RET_OK)
 				{
-					xRet = FTOM_BLOCKER_SERVER_sync(pBlocker);
-					if (xRet != FTM_RET_OK)
-					{
-						ERROR2(xRet, "Failed  to server sync!\n");	
-					}
+					ERROR2(xRet, "Failed  to server sync!\n");	
 				}
+			}
+
+			pBlocker->xState = FTOM_BLOCKER_STATE_CONNECTED;
+		}
+		break;
+
+	case	FTOM_MSG_TYPE_DISCONNECTED:
+		{
+			pBlocker->xState = FTOM_BLOCKER_STATE_DISCONNECTED;
+
+			xRet = FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_send(pBlocker, pBaseMsg);
+			if (xRet == FTM_RET_OK)
+			{
+				pBaseMsg = NULL;	
 			}
 		}
 		break;
@@ -609,10 +698,13 @@ FTM_RET	FTOM_BLOCKER_MESSAGE_process
 		break;
 
 	default:
-		return	FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_send(pBlocker, pBlocker->pCloudClient, pBaseMsg);
+		return	FTOM_BLOCKER_CLOUD_CLIENT_MESSAGE_process(pBlocker, pBaseMsg);
 	}
 
-	FTOM_MSG_destroy(&pBaseMsg);
+	if (pBaseMsg != NULL)
+	{
+		FTOM_MSG_destroy(&pBaseMsg);
+	}
 
 	return	FTM_RET_OK;
 }
@@ -667,14 +759,15 @@ FTM_RET	FTOM_BLOCKER_SERVER_sync
 	FTM_TIME_toSecs(&xTime, &ulCurrentTime);
 
 
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_NODE_getCount(pBlocker, pBlocker->pCloudClient, &ulRegisteredDeviceCount);
+	TRACE("Start to server sync!\n");
+	xRet = FTOM_BLOCKER_CLOUD_CLIENT_NODE_getCount(pBlocker, &ulRegisteredDeviceCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to get node count in cloud!\n");	
 		return	xRet;
 	}
 
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_getCount(pBlocker, pBlocker->pCloudClient, &ulRegisteredSensorCount);
+	xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_getCount(pBlocker, &ulRegisteredSensorCount);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to get ep count in cloud!\n");	
@@ -700,10 +793,10 @@ FTM_RET	FTOM_BLOCKER_SERVER_sync
 		}
 
 	
-		xRet = FTOM_BLOCKER_CLOUD_CLIENT_NODE_isExist(pBlocker, pBlocker->pCloudClient, xNode.pDID);
+		xRet = FTOM_BLOCKER_CLOUD_CLIENT_NODE_isExist(pBlocker, xNode.pDID);
 		if (xRet != FTM_RET_OK)
 		{
-			xRet = FTOM_BLOCKER_CLOUD_CLIENT_NODE_register(pBlocker, pBlocker->pCloudClient, &xNode);
+			xRet = FTOM_BLOCKER_CLOUD_CLIENT_NODE_register(pBlocker, &xNode);
 			if (xRet != FTM_RET_OK)
 			{
 				ERROR2(xRet, "Failed to register node!\n");
@@ -727,10 +820,10 @@ FTM_RET	FTOM_BLOCKER_SERVER_sync
 					continue;	
 				}
 		
-				xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_isExist(pBlocker, pBlocker->pCloudClient, xEP.pEPID);
+				xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_isExist(pBlocker, xEP.pEPID);
 				if (xRet != FTM_RET_OK)
 				{
-					xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_register(pBlocker, pBlocker->pCloudClient, &xEP);	
+					xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_register(pBlocker, &xEP);	
 					if (xRet != FTM_RET_OK)
 					{
 						ERROR2(xRet, "Failed to register EP!\n");
@@ -754,11 +847,11 @@ FTM_RET	FTOM_BLOCKER_SERVER_updateStatus
 	FTM_TIME	xTime;
 	FTM_ULONG	ulEPCount;
 
-	FTOM_BLOCKER_CLOUD_CLIENT_GATEWAY_updateStatus(pBlocker, pBlocker->pCloudClient, FTM_TRUE);
+	FTOM_BLOCKER_CLOUD_CLIENT_GATEWAY_updateStatus(pBlocker, FTM_TRUE);
 
 	FTM_TIME_getCurrent(&xTime);
 
-	xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_getCount(pBlocker, pBlocker->pCloudClient, &ulEPCount);
+	xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_getCount(pBlocker, &ulEPCount);
 	if (xRet == FTM_RET_OK)
 	{
 		FTM_ULONG			i;
@@ -777,7 +870,7 @@ FTM_RET	FTOM_BLOCKER_SERVER_updateStatus
 		{
 			FTM_CHAR	pEPID[FTM_ID_LEN+1];
 
-			xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_getEPIDAt(pBlocker, pBlocker->pCloudClient, i, pEPID, FTM_ID_LEN);
+			xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_getEPIDAt(pBlocker, i, pEPID, FTM_ID_LEN);
 			if (xRet == FTM_RET_OK)
 			{
 				xRet = FTOM_CLIENT_EP_get((FTOM_CLIENT_PTR)pBlocker->pServerClient, pEPID, &xEPInfo);
@@ -788,7 +881,7 @@ FTM_RET	FTOM_BLOCKER_SERVER_updateStatus
 					xRet = FTOM_CLIENT_EP_isRun((FTOM_CLIENT_PTR)pBlocker->pServerClient, pEPID, &bRun);
 					if (xRet == FTM_RET_OK)
 					{
-						FTOM_BLOCKER_CLOUD_CLIENT_EP_updateStatus(pBlocker, pBlocker->pCloudClient, pEPID, bRun);
+						FTOM_BLOCKER_CLOUD_CLIENT_EP_updateStatus(pBlocker, pEPID, bRun);
 					}
 				}
 
@@ -803,7 +896,7 @@ FTM_RET	FTOM_BLOCKER_SERVER_updateStatus
 					FTM_ULONG	ulSendDataCount = 0;
 					FTM_ULONG	ulStartTime;
 
-					xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_getLastTime(pBlocker, pBlocker->pCloudClient, pEPID, &ulStartTime);
+					xRet = FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_getLastTime(pBlocker, pEPID, &ulStartTime);
 					if (xRet == FTM_RET_OK)
 					{
 						xRet = FTOM_CLIENT_EP_DATA_countWithTime((FTOM_CLIENT_PTR)pBlocker->pServerClient, pEPID, ulStartTime + 1, ulCurrentTime, &ulUnsyncDataCount);
@@ -825,7 +918,7 @@ FTM_RET	FTOM_BLOCKER_SERVER_updateStatus
 									break;
 								}
 
-								FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_send(pBlocker, pBlocker->pCloudClient, pEPID, pData, ulDataCount);
+								FTOM_BLOCKER_CLOUD_CLIENT_EP_DATA_send(pBlocker, pEPID, pData, ulDataCount);
 								if (xRet != FTM_RET_OK)
 								{
 									ERROR2(xRet, "Failed to send EP data!\n");	

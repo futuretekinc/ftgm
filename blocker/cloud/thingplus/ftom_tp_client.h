@@ -49,15 +49,11 @@ typedef	struct FTOM_TP_CLIENT_STRUCT
 {
 	FTOM_TP_CLIENT_CONFIG	xConfig;
 
-	pthread_t				xThreadMain;
-
 	FTOM_CLIENT_NOTIFY_CB	fNotifyCB;
 	FTM_VOID_PTR			pNotifyData;
 
 	FTOM_MSG_QUEUE_PTR		pMsgQ;
 
-	FTM_BOOL				bStop;
-	FTM_BOOL				bConnected;
 	FTM_BOOL				bReportON;
 
 	FTM_TIMER				xReportTimer;
@@ -122,20 +118,20 @@ FTM_RET	FTOM_TP_CLIENT_MESSAGE_send
 	FTOM_MSG_PTR		pMsg
 );
 
-FTM_RET	FTOM_TP_CLIENT_start
+FTM_RET	FTOM_TP_CLIENT_connect
 (
-	FTOM_TP_CLIENT_PTR pClient
+	FTOM_TP_CLIENT_PTR	pClient
 );
 
-FTM_RET	FTOM_TP_CLIENT_stop
+FTM_RET	FTOM_TP_CLIENT_disconnect
 (
-	FTOM_TP_CLIENT_PTR pClient
+	FTOM_TP_CLIENT_PTR	pClient
 );
 
-FTM_RET	FTOM_TP_CLIENT_isRunning
+FTM_RET	FTOM_TP_CLIENT_isConnected
 (
-	FTOM_TP_CLIENT_PTR pClient,
-	FTM_BOOL_PTR		pbRun
+	FTOM_TP_CLIENT_PTR	pClient,
+	FTM_BOOL_PTR		pbConnected
 );
 
 FTM_RET	FTOM_TP_CLIENT_waitingForFinished

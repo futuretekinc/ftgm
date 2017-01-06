@@ -35,6 +35,7 @@ typedef	struct FTOM_NODE_STRUCT
 	FTOM_MSG_QUEUE	xMsgQ;
 	FTM_TIMER		xConnectTimer;
 	FTM_ULONG		ulConnectInterval;
+	FTM_ULONG		ulConnectionRetryCount;
 
 	struct
 	{

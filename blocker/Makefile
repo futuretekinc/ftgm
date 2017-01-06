@@ -34,4 +34,6 @@ BIN_LDFLAGS:=$(LDFLAGS) -L./ \
 		-ldl\
 		-lrt 
 
+SUBDIR=cloud
+
 include $(TOPDIR)/IncludePost.mk

@@ -81,7 +81,7 @@ FTM_INT	main
 		goto finish;
 	}
 
-	xRet = FTOM_BLOCKER_create(FTM_getProgramName(), pConfig, (FTOM_BLOCKER_PTR _PTR_)&pBlocker);
+	xRet = FTOM_BLOCKER_create("blocker", pConfig, (FTOM_BLOCKER_PTR _PTR_)&pBlocker);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Can't create a client.\n");

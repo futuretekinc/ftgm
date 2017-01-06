@@ -6,6 +6,14 @@
 #include "ftom_cloud_client.h"
 #include "ftom_message_queue.h"
 
+typedef	enum
+{
+	FTOM_BLOCKER_STATE_UNINITIALIZED = 0,
+	FTOM_BLOCKER_STATE_INITIALIZED,
+	FTOM_BLOCKER_STATE_CONNECTED,
+	FTOM_BLOCKER_STATE_DISCONNECTED
+}	FTOM_BLOCKER_STATE, _PTR_ FTOM_BLOCKER_STATE_PTR;
+
 typedef	struct
 {
 	FTM_CHAR	pName[FTM_NAME_LEN+1];
@@ -35,6 +43,8 @@ typedef	struct
 typedef	struct
 {
 	FTOM_BLOCKER_CONFIG				xConfig;
+
+	FTOM_BLOCKER_STATE				xState;
 
 	FTOM_SERVER_CLIENT_PTR			pServerClient;
 	FTOM_SERVER_CLIENT_MODULE_PTR	pServerClientModule;

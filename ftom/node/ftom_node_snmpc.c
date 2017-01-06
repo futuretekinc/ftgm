@@ -142,7 +142,6 @@ FTM_RET	FTOM_NODE_SNMPC_init
  	FTM_CHAR			pBuff[64];
 	FTOM_SERVICE_PTR 	pService;
 
-	TRACE("called\n");
 	if (strlen(pNode->pIP) == 0)
 	{
 		if (strlen(pNode->xCommon.xInfo.xOption.xSNMP.pURL) == 0)
@@ -155,7 +154,6 @@ FTM_RET	FTOM_NODE_SNMPC_init
 		strncpy(pNode->pIP, pNode->xCommon.xInfo.xOption.xSNMP.pURL, FTM_URL_LEN);
 	}
 
-	TRACE("NODE[%s] IP : %s\n", pNode->xCommon.xInfo.pDID, pNode->pIP);
 	xRet = FTOM_SERVICE_get(FTOM_SERVICE_SNMP_CLIENT, &pService);
 	if (xRet != FTM_RET_OK)
 	{
@@ -189,15 +187,20 @@ FTM_RET	FTOM_NODE_SNMPC_init
 				&bValid);
 	if (xRet != FTM_RET_OK)
 	{
+		pNode->xCommon.ulConnectionRetryCount++;
+		TRACE("No response from node[%s] : %s\n", pNode->xCommon.xInfo.pDID, pNode->pIP);
 		goto finish;
 	}
 
 	xRet = FTM_VALUE_getSTRING(&xValue, pModel, FTM_NAME_LEN);	
 	if (xRet != FTM_RET_OK)
 	{
+		pNode->xCommon.ulConnectionRetryCount++;
 		ERROR2(xRet, "Failed to read model from value!\n");
 		goto finish;	
 	}
+
+	pNode->xCommon.ulConnectionRetryCount = 0;
 
 	if (strlen(pNode->xCommon.xInfo.pModel) == 0)
 	{
@@ -305,7 +308,9 @@ FTM_RET	FTOM_NODE_SNMPC_getModel
 
 	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		return	FTM_RET_SNMP_TIMEOUT;
+		xRet = FTM_RET_SNMP_TIMEOUT;
+		ERROR2(xRet, "The node[%s] was not connected.\n", pNode->xCommon.xInfo.pDID);
+		return	xRet;
 	} 
 
 	if (pNode->pSNMPC == NULL)
@@ -617,7 +622,9 @@ FTM_RET	FTOM_NODE_SNMPC_setEPDataAsync
 	
 	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		return	FTM_RET_SNMP_TIMEOUT;
+		xRet = FTM_RET_SNMP_TIMEOUT;
+		ERROR2(xRet, "The node[%s] was not connected.\n", pNode->xCommon.xInfo.pDID);
+		return	xRet;
 	} 
 
 	if (pEP->pOpts == NULL)
@@ -831,7 +838,9 @@ FTM_RET	FTOM_NODE_SNMPC_getEPID
 
 	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		return	FTM_RET_SNMP_TIMEOUT;
+		xRet = FTM_RET_SNMP_TIMEOUT;
+		ERROR2(xRet, "The node[%s] was not connected.\n", pNode->xCommon.xInfo.pDID);
+		return	xRet;
 	} 
 
 	if (ulMaxLen < 2)
@@ -914,7 +923,9 @@ FTM_RET	FTOM_NODE_SNMPC_getEPName
 
 	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		return	FTM_RET_SNMP_TIMEOUT;
+		xRet = FTM_RET_SNMP_TIMEOUT;
+		ERROR2(xRet, "The node[%s] was not connected.\n", pNode->xCommon.xInfo.pDID);
+		return	xRet;
 	} 
 
 	if (ulMaxLen < 2)
@@ -996,7 +1007,9 @@ FTM_RET	FTOM_NODE_SNMPC_getEPState
 
 	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		return	FTM_RET_SNMP_TIMEOUT;
+		xRet = FTM_RET_SNMP_TIMEOUT;
+		ERROR2(xRet, "The node[%s] was not connected.\n", pNode->xCommon.xInfo.pDID);
+		return	xRet;
 	} 
 
 	if (pNode->pSNMPC == NULL)
@@ -1070,7 +1083,9 @@ FTM_RET	FTOM_NODE_SNMPC_getEPUpdateInterval
 
 	if (FTOM_NODE_isConnected((FTOM_NODE_PTR)pNode) != FTM_TRUE)
 	{
-		return	FTM_RET_SNMP_TIMEOUT;
+		xRet = FTM_RET_SNMP_TIMEOUT;
+		ERROR2(xRet, "The node[%s] was not connected.\n", pNode->xCommon.xInfo.pDID);
+		return	xRet;
 	} 
 
 	if (pNode->pSNMPC == NULL)

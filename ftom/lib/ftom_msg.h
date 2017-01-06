@@ -258,7 +258,7 @@ typedef	struct
 {
 	FTOM_MSG_TYPE	xType;
 	FTM_ULONG		ulLen;
-	FTOM_MSG_SENDER_ID	xSensorID;
+	FTOM_MSG_SENDER_ID	xSenderID;
 	FTM_CHAR		pActionID[FTM_ID_LEN+1];
 	FTM_BOOL		bActivate;
 }	FTOM_MSG_ACTION, _PTR_ FTOM_MSG_ACTION_PTR;
