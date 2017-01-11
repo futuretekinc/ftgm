@@ -9,8 +9,8 @@
 
 typedef	struct
 {
-	FTDMC_SESSION		xSession;
-	FTDMC_CFG			xConfig;
+	FTDM_CLIENT_PTR		pClient;
+	FTDM_CLIENT_CFG		xConfig;
 	pthread_t			xThread;
 	FTM_BOOL			bStop;
 	FTM_BOOL			bConnected;

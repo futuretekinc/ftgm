@@ -3,7 +3,7 @@
 #include "ftm_config.h"
 #include "ftdm_client_config.h"
 
-FTM_RET	FTDMC_CFG_init(FTDMC_CFG_PTR pConfig)
+FTM_RET	FTDM_CLIENT_CFG_init(FTDM_CLIENT_CFG_PTR pConfig)
 {
 	if (pConfig == NULL)
 	{
@@ -16,9 +16,9 @@ FTM_RET	FTDMC_CFG_init(FTDMC_CFG_PTR pConfig)
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMC_CFG_load
+FTM_RET	FTDM_CLIENT_CFG_load
 (
-	FTDMC_CFG_PTR pConfig, 
+	FTDM_CLIENT_CFG_PTR pConfig, 
 	FTM_CHAR_PTR pFileName
 )
 {
@@ -135,7 +135,7 @@ FTM_RET	FTDMC_CFG_load
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDMC_CFG_final(FTDMC_CFG_PTR pConfig)
+FTM_RET FTDM_CLIENT_CFG_final(FTDM_CLIENT_CFG_PTR pConfig)
 {
 	if (pConfig == NULL)
 	{

@@ -74,11 +74,20 @@ FTM_RET FTOM_DMC_init
 )
 {
 	ASSERT(pDMC != NULL);
+	FTM_RET	xRet;
 
 	memset(pDMC, 0, sizeof(FTOM_DMC));
 
 	strcpy(pDMC->xConfig.xNetwork.pServerIP, FTDM_DEFAULT_SERVER_IP);
 	pDMC->xConfig.xNetwork.usPort = FTDM_DEFAULT_SERVER_PORT;
+
+	xRet = FTDM_CLIENT_create(&pDMC->pClient);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to create FTDM client!\n");
+		return	xRet;
+	}
+
 	FTOM_MSGQ_init(&pDMC->xMsgQ);
 
 	return	FTM_RET_OK;
@@ -90,7 +99,17 @@ FTM_RET FTOM_DMC_final
 )
 {
 	ASSERT(pDMC != NULL);
-	
+	FTM_RET	xRet;
+
+	if (pDMC->pClient != NULL)
+	{
+		xRet = FTDM_CLIENT_destroy(&pDMC->pClient);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to destroy FTDM client!\n");
+		}
+	}
+
 	FTOM_MSGQ_final(&pDMC->xMsgQ);
 
 	return	FTM_RET_OK;
@@ -164,10 +183,10 @@ FTM_VOID_PTR	FTOM_DMC_process
 	{
 		FTM_BOOL	bConnected;
 
-		FTDMC_isConnected(&pDMC->xSession, &bConnected);
+		FTDM_CLIENT_isConnected(pDMC->pClient, &bConnected);
 		if (!bConnected)
 		{
-			xRet = FTDMC_connect(&pDMC->xSession, inet_addr(pDMC->xConfig.xNetwork.pServerIP), pDMC->xConfig.xNetwork.usPort);
+			xRet = FTDM_CLIENT_connect(pDMC->pClient, inet_addr(pDMC->xConfig.xNetwork.pServerIP), pDMC->xConfig.xNetwork.usPort);
 			if (xRet != FTM_RET_OK)
 			{
 				pDMC->bConnected = FTM_FALSE;
@@ -264,7 +283,7 @@ FTM_RET	FTOM_DMC_onEPData
 
 	for(i = 0 ; i < pMsg->ulCount; i++)
 	{
-		FTDMC_EP_DATA_append(&pDMC->xSession, pMsg->pEPID, &pMsg->pData[i]);
+		FTDM_CLIENT_EP_DATA_append(pDMC->pClient, pMsg->pEPID, &pMsg->pData[i]);
 	}
 
 	return	FTM_RET_OK;
@@ -281,7 +300,7 @@ FTM_RET	FTOM_DMC_NODE_add
 	
 	FTM_RET	xRet;
 
-	xRet = FTDMC_NODE_append(&pDMC->xSession, pInfo);
+	xRet = FTDM_CLIENT_NODE_append(pDMC->pClient, pInfo);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to add node to DB!\n");
@@ -299,7 +318,7 @@ FTM_RET	FTOM_DMC_NODE_remove
 	ASSERT(pDMC != NULL);
 	ASSERT(pDID != NULL);
 
-	return	FTDMC_NODE_remove(&pDMC->xSession, pDID);
+	return	FTDM_CLIENT_NODE_remove(pDMC->pClient, pDID);
 }
 
 FTM_RET	FTOM_DMC_NODE_count
@@ -311,7 +330,7 @@ FTM_RET	FTOM_DMC_NODE_count
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_NODE_count(&pDMC->xSession, pulCount);
+	return	FTDM_CLIENT_NODE_count(pDMC->pClient, pulCount);
 }
 
 FTM_RET	FTOM_DMC_NODE_get
@@ -325,7 +344,7 @@ FTM_RET	FTOM_DMC_NODE_get
 	ASSERT(pDID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_NODE_get(&pDMC->xSession, pDID, pInfo);
+	return	FTDM_CLIENT_NODE_get(pDMC->pClient, pDID, pInfo);
 }
 
 FTM_RET	FTOM_DMC_NODE_getAt
@@ -338,7 +357,7 @@ FTM_RET	FTOM_DMC_NODE_getAt
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_NODE_getAt(&pDMC->xSession, ulIndex, pInfo);
+	return	FTDM_CLIENT_NODE_getAt(pDMC->pClient, ulIndex, pInfo);
 }
 
 FTM_RET	FTOM_DMC_NODE_getDIDList
@@ -354,7 +373,7 @@ FTM_RET	FTOM_DMC_NODE_getDIDList
 	ASSERT(pDIDs != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_NODE_getDIDList(&pDMC->xSession, pDIDs, 0, ulCount,  &ulCount);
+	return	FTDM_CLIENT_NODE_getDIDList(pDMC->pClient, pDIDs, 0, ulCount,  &ulCount);
 }
 
 FTM_RET	FTOM_DMC_NODE_set
@@ -369,7 +388,7 @@ FTM_RET	FTOM_DMC_NODE_set
 	ASSERT(pDID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_NODE_set(&pDMC->xSession, pDID, xFields, pInfo);
+	return	FTDM_CLIENT_NODE_set(pDMC->pClient, pDID, xFields, pInfo);
 }
 
 FTM_RET	FTOM_DMC_EP_add
@@ -381,7 +400,7 @@ FTM_RET	FTOM_DMC_EP_add
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EP_append(&pDMC->xSession, pInfo);
+	return	FTDM_CLIENT_EP_append(pDMC->pClient, pInfo);
 }
 
 FTM_RET	FTOM_DMC_EP_remove
@@ -392,7 +411,7 @@ FTM_RET	FTOM_DMC_EP_remove
 {
 	ASSERT(pDMC != NULL);
 
-	return	FTDMC_EP_remove(&pDMC->xSession, pEPID);
+	return	FTDM_CLIENT_EP_remove(pDMC->pClient, pEPID);
 }
 
 FTM_RET	FTOM_DMC_EP_count
@@ -403,7 +422,7 @@ FTM_RET	FTOM_DMC_EP_count
 {
 	ASSERT(pDMC != NULL);
 
-	return	FTDMC_EP_count(&pDMC->xSession, 0, pulCount);
+	return	FTDM_CLIENT_EP_count(pDMC->pClient, 0, pulCount);
 }
 
 FTM_RET	FTOM_DMC_EP_getEPIDList
@@ -419,7 +438,7 @@ FTM_RET	FTOM_DMC_EP_getEPIDList
 	ASSERT(pEPIDs != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_getEPIDList(&pDMC->xSession, pEPIDs, ulIndex, ulMaxCount, pulCount);
+	return	FTDM_CLIENT_EP_getEPIDList(pDMC->pClient, pEPIDs, ulIndex, ulMaxCount, pulCount);
 }
 
 FTM_RET	FTOM_DMC_EP_get
@@ -433,7 +452,7 @@ FTM_RET	FTOM_DMC_EP_get
 	ASSERT(pEPID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EP_get(&pDMC->xSession, pEPID, pInfo);
+	return	FTDM_CLIENT_EP_get(pDMC->pClient, pEPID, pInfo);
 }
 
 FTM_RET	FTOM_DMC_EP_getAt
@@ -446,7 +465,7 @@ FTM_RET	FTOM_DMC_EP_getAt
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EP_getAt(&pDMC->xSession, ulIndex, pInfo);
+	return	FTDM_CLIENT_EP_getAt(pDMC->pClient, ulIndex, pInfo);
 }
 
 FTM_RET	FTOM_DMC_EP_set
@@ -461,7 +480,7 @@ FTM_RET	FTOM_DMC_EP_set
 	ASSERT(pEPID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EP_set(&pDMC->xSession, pEPID, xFields, pInfo);
+	return	FTDM_CLIENT_EP_set(pDMC->pClient, pEPID, xFields, pInfo);
 }
 
 FTM_RET	FTOM_DMC_EP_DATA_add
@@ -474,7 +493,7 @@ FTM_RET	FTOM_DMC_EP_DATA_add
 	ASSERT(pDMC != NULL);
 	ASSERT(pData != NULL);
 
-	return	FTDMC_EP_DATA_append(&pDMC->xSession, pEPID, pData);
+	return	FTDM_CLIENT_EP_DATA_append(pDMC->pClient, pEPID, pData);
 }
 
 FTM_RET	FTOM_DMC_EP_DATA_remove
@@ -490,7 +509,7 @@ FTM_RET	FTOM_DMC_EP_DATA_remove
 	ASSERT(pEPID != NULL);
 	ASSERT(pulDeletedCount != NULL);
 
-	return	FTDMC_EP_DATA_remove(&pDMC->xSession, pEPID, ulIndex, ulCount, pulDeletedCount);
+	return	FTDM_CLIENT_EP_DATA_remove(pDMC->pClient, pEPID, ulIndex, ulCount, pulDeletedCount);
 }
 
 FTM_RET	FTOM_DMC_EP_DATA_removeWithTime
@@ -506,7 +525,7 @@ FTM_RET	FTOM_DMC_EP_DATA_removeWithTime
 	ASSERT(pEPID != NULL);
 	ASSERT(pulDeletedCount != NULL);
 
-	return	FTDMC_EP_DATA_removeWithTime(&pDMC->xSession, pEPID, ulBegin, ulEnd, pulDeletedCount);
+	return	FTDM_CLIENT_EP_DATA_removeWithTime(pDMC->pClient, pEPID, ulBegin, ulEnd, pulDeletedCount);
 }
 
 
@@ -520,7 +539,7 @@ FTM_RET	FTOM_DMC_EP_DATA_count
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_count(&pDMC->xSession, pEPID, pulCount);
+	return	FTDM_CLIENT_EP_DATA_count(pDMC->pClient, pEPID, pulCount);
 }
 
 FTM_RET	FTOM_DMC_EP_DATA_countWithTime
@@ -535,7 +554,7 @@ FTM_RET	FTOM_DMC_EP_DATA_countWithTime
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_countWithTime(&pDMC->xSession, pEPID, ulStart, ulEnd, pulCount);
+	return	FTDM_CLIENT_EP_DATA_countWithTime(pDMC->pClient, pEPID, ulStart, ulEnd, pulCount);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_get
@@ -554,7 +573,7 @@ FTM_RET FTOM_DMC_EP_DATA_get
 	ASSERT(pData != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_get(&pDMC->xSession, pEPID, ulStartIndex, pData, ulMaxCount, pulCount, pbRemain);
+	return	FTDM_CLIENT_EP_DATA_get(pDMC->pClient, pEPID, ulStartIndex, pData, ulMaxCount, pulCount, pbRemain);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_getWithTime
@@ -575,7 +594,7 @@ FTM_RET FTOM_DMC_EP_DATA_getWithTime
 	ASSERT(pData != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_getWithTime(&pDMC->xSession, pEPID, ulBegin, ulEnd, bAscending, pData, ulMaxCount, pulCount, pbRemain);
+	return	FTDM_CLIENT_EP_DATA_getWithTime(pDMC->pClient, pEPID, ulBegin, ulEnd, bAscending, pData, ulMaxCount, pulCount, pbRemain);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_del
@@ -591,7 +610,7 @@ FTM_RET FTOM_DMC_EP_DATA_del
 	ASSERT(pEPID != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_remove(&pDMC->xSession, pEPID, ulIndex, ulCount, pulCount);
+	return	FTDM_CLIENT_EP_DATA_remove(pDMC->pClient, pEPID, ulIndex, ulCount, pulCount);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_delWithTime
@@ -607,7 +626,7 @@ FTM_RET FTOM_DMC_EP_DATA_delWithTime
 	ASSERT(pEPID != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_DATA_removeWithTime(&pDMC->xSession, pEPID, ulStart, ulEnd, pulCount);
+	return	FTDM_CLIENT_EP_DATA_removeWithTime(pDMC->pClient, pEPID, ulStart, ulEnd, pulCount);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_info
@@ -621,7 +640,7 @@ FTM_RET FTOM_DMC_EP_DATA_info
 {
 	ASSERT(pDMC != NULL);
 
-	return	FTDMC_EP_DATA_info(&pDMC->xSession, pEPID, pulBeginTime, pulEndTime, pulCount);
+	return	FTDM_CLIENT_EP_DATA_info(pDMC->pClient, pEPID, pulBeginTime, pulEndTime, pulCount);
 }
 
 FTM_RET FTOM_DMC_EP_DATA_setLimit
@@ -633,7 +652,7 @@ FTM_RET FTOM_DMC_EP_DATA_setLimit
 {
 	ASSERT(pDMC != NULL);
 
-	return	FTDMC_EP_DATA_setLimit(&pDMC->xSession, pEPID, pLimit);
+	return	FTDM_CLIENT_EP_DATA_setLimit(pDMC->pClient, pEPID, pLimit);
 }
 
 FTM_RET	FTOM_DMC_EP_CLASS_count
@@ -645,7 +664,7 @@ FTM_RET	FTOM_DMC_EP_CLASS_count
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EP_CLASS_count(&pDMC->xSession, pulCount);
+	return	FTDM_CLIENT_EP_CLASS_count(pDMC->pClient, pulCount);
 }
 
 FTM_RET	FTOM_DMC_EP_CLASS_getAt
@@ -658,7 +677,7 @@ FTM_RET	FTOM_DMC_EP_CLASS_getAt
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EP_CLASS_getAt(&pDMC->xSession, ulIndex, pInfo);
+	return	FTDM_CLIENT_EP_CLASS_getAt(pDMC->pClient, ulIndex, pInfo);
 }
 
 FTM_RET	FTOM_DMC_EVENT_add
@@ -670,7 +689,7 @@ FTM_RET	FTOM_DMC_EVENT_add
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EVENT_add(&pDMC->xSession, pInfo);
+	return	FTDM_CLIENT_EVENT_add(pDMC->pClient, pInfo);
 }
 
 FTM_RET	FTOM_DMC_EVENT_remove
@@ -682,7 +701,7 @@ FTM_RET	FTOM_DMC_EVENT_remove
 	ASSERT(pDMC != NULL);
 	ASSERT(pID != NULL);
 
-	return	FTDMC_EVENT_del(&pDMC->xSession, pID);
+	return	FTDM_CLIENT_EVENT_del(pDMC->pClient, pID);
 }
 
 FTM_RET	FTOM_DMC_EVENT_count
@@ -694,7 +713,7 @@ FTM_RET	FTOM_DMC_EVENT_count
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 	
-	return	FTDMC_EVENT_count(&pDMC->xSession, pulCount);
+	return	FTDM_CLIENT_EVENT_count(pDMC->pClient, pulCount);
 }
 
 FTM_RET	FTOM_DMC_EVENT_getIDList
@@ -710,7 +729,7 @@ FTM_RET	FTOM_DMC_EVENT_getIDList
 	ASSERT(pIDs != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_EVENT_getIDList(&pDMC->xSession, pIDs, ulIndex, ulMaxCount, pulCount);
+	return	FTDM_CLIENT_EVENT_getIDList(pDMC->pClient, pIDs, ulIndex, ulMaxCount, pulCount);
 }
 
 FTM_RET	FTOM_DMC_EVENT_get
@@ -724,7 +743,7 @@ FTM_RET	FTOM_DMC_EVENT_get
 	ASSERT(pID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EVENT_get(&pDMC->xSession, pID, pInfo);
+	return	FTDM_CLIENT_EVENT_get(pDMC->pClient, pID, pInfo);
 }
 
 FTM_RET	FTOM_DMC_EVENT_getAt
@@ -737,7 +756,7 @@ FTM_RET	FTOM_DMC_EVENT_getAt
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EVENT_getAt(&pDMC->xSession, ulIndex, pInfo);
+	return	FTDM_CLIENT_EVENT_getAt(pDMC->pClient, ulIndex, pInfo);
 }
 
 FTM_RET	FTOM_DMC_EVENT_set
@@ -752,7 +771,7 @@ FTM_RET	FTOM_DMC_EVENT_set
 	ASSERT(pID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_EVENT_set(&pDMC->xSession, pID, xFields, pInfo);
+	return	FTDM_CLIENT_EVENT_set(pDMC->pClient, pID, xFields, pInfo);
 }
 
 FTM_RET	FTOM_DMC_ACTION_add
@@ -764,7 +783,7 @@ FTM_RET	FTOM_DMC_ACTION_add
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_ACTION_add(&pDMC->xSession, pInfo);
+	return	FTDM_CLIENT_ACTION_add(pDMC->pClient, pInfo);
 }
 
 FTM_RET	FTOM_DMC_ACTION_remove
@@ -776,7 +795,7 @@ FTM_RET	FTOM_DMC_ACTION_remove
 	ASSERT(pDMC != NULL);
 	ASSERT(pID != NULL);
 
-	return	FTDMC_ACTION_del(&pDMC->xSession, pID);
+	return	FTDM_CLIENT_ACTION_del(pDMC->pClient, pID);
 }
 
 FTM_RET	FTOM_DMC_ACTION_count
@@ -788,7 +807,7 @@ FTM_RET	FTOM_DMC_ACTION_count
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 	
-	return	FTDMC_ACTION_count(&pDMC->xSession, pulCount);
+	return	FTDM_CLIENT_ACTION_count(pDMC->pClient, pulCount);
 }
 
 FTM_RET	FTOM_DMC_ACTION_get
@@ -802,7 +821,7 @@ FTM_RET	FTOM_DMC_ACTION_get
 	ASSERT(pID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_ACTION_get(&pDMC->xSession, pID, pInfo);
+	return	FTDM_CLIENT_ACTION_get(pDMC->pClient, pID, pInfo);
 }
 
 FTM_RET	FTOM_DMC_ACTION_getAt
@@ -815,7 +834,7 @@ FTM_RET	FTOM_DMC_ACTION_getAt
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_ACTION_getAt(&pDMC->xSession, ulIndex, pInfo);
+	return	FTDM_CLIENT_ACTION_getAt(pDMC->pClient, ulIndex, pInfo);
 }
 
 FTM_RET	FTOM_DMC_ACTION_set
@@ -830,7 +849,7 @@ FTM_RET	FTOM_DMC_ACTION_set
 	ASSERT(pID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_ACTION_set(&pDMC->xSession, pID, xFields, pInfo);
+	return	FTDM_CLIENT_ACTION_set(pDMC->pClient, pID, xFields, pInfo);
 }
 
 FTM_RET	FTOM_DMC_ACTION_getIDList
@@ -846,7 +865,7 @@ FTM_RET	FTOM_DMC_ACTION_getIDList
 	ASSERT(pIDs != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_ACTION_getIDList(&pDMC->xSession, pIDs, ulIndex, ulMaxCount, pulCount);
+	return	FTDM_CLIENT_ACTION_getIDList(pDMC->pClient, pIDs, ulIndex, ulMaxCount, pulCount);
 }
 
 FTM_RET	FTOM_DMC_RULE_add
@@ -858,7 +877,7 @@ FTM_RET	FTOM_DMC_RULE_add
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_RULE_add(&pDMC->xSession, pInfo);
+	return	FTDM_CLIENT_RULE_add(pDMC->pClient, pInfo);
 }
 
 FTM_RET	FTOM_DMC_RULE_remove
@@ -870,7 +889,7 @@ FTM_RET	FTOM_DMC_RULE_remove
 	ASSERT(pDMC != NULL);
 	ASSERT(pID != NULL);
 
-	return	FTDMC_RULE_del(&pDMC->xSession, pID);
+	return	FTDM_CLIENT_RULE_del(pDMC->pClient, pID);
 }
 
 FTM_RET	FTOM_DMC_RULE_count
@@ -882,7 +901,7 @@ FTM_RET	FTOM_DMC_RULE_count
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 	
-	return	FTDMC_RULE_count(&pDMC->xSession, pulCount);
+	return	FTDM_CLIENT_RULE_count(pDMC->pClient, pulCount);
 }
 
 FTM_RET	FTOM_DMC_RULE_get
@@ -896,7 +915,7 @@ FTM_RET	FTOM_DMC_RULE_get
 	ASSERT(pID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_RULE_get(&pDMC->xSession, pID, pInfo);
+	return	FTDM_CLIENT_RULE_get(pDMC->pClient, pID, pInfo);
 }
 
 FTM_RET	FTOM_DMC_RULE_getAt
@@ -909,7 +928,7 @@ FTM_RET	FTOM_DMC_RULE_getAt
 	ASSERT(pDMC != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_RULE_getAt(&pDMC->xSession, ulIndex, pInfo);
+	return	FTDM_CLIENT_RULE_getAt(pDMC->pClient, ulIndex, pInfo);
 }
 
 FTM_RET	FTOM_DMC_RULE_set
@@ -924,7 +943,7 @@ FTM_RET	FTOM_DMC_RULE_set
 	ASSERT(pID != NULL);
 	ASSERT(pInfo != NULL);
 
-	return	FTDMC_RULE_set(&pDMC->xSession, pID, xFields, pInfo);
+	return	FTDM_CLIENT_RULE_set(pDMC->pClient, pID, xFields, pInfo);
 }
 
 FTM_RET	FTOM_DMC_RULE_getIDList
@@ -940,7 +959,7 @@ FTM_RET	FTOM_DMC_RULE_getIDList
 	ASSERT(pIDs != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_RULE_getIDList(&pDMC->xSession, pIDs, ulIndex, ulMaxCount, pulCount);
+	return	FTDM_CLIENT_RULE_getIDList(pDMC->pClient, pIDs, ulIndex, ulMaxCount, pulCount);
 }
 
 /*********************************************************************
@@ -955,7 +974,7 @@ FTM_RET	FTOM_DMC_LOG_add
 	ASSERT(pDMC != NULL);
 	ASSERT(pLog != NULL);
 
-	return	FTDMC_LOG_add(&pDMC->xSession, pLog);
+	return	FTDM_CLIENT_LOG_add(pDMC->pClient, pLog);
 }
 
 FTM_RET	FTOM_DMC_LOG_del
@@ -969,7 +988,7 @@ FTM_RET	FTOM_DMC_LOG_del
 	ASSERT(pDMC != NULL);
 	ASSERT(pulDeletedCount != NULL);
 
-	return	FTDMC_LOG_del(&pDMC->xSession, ulIndex, ulCount, pulDeletedCount);
+	return	FTDM_CLIENT_LOG_del(pDMC->pClient, ulIndex, ulCount, pulDeletedCount);
 }
 
 FTM_RET	FTOM_DMC_LOG_count
@@ -981,7 +1000,7 @@ FTM_RET	FTOM_DMC_LOG_count
 	ASSERT(pDMC != NULL);
 	ASSERT(pulCount != NULL);
 	
-	return	FTDMC_LOG_count(&pDMC->xSession, pulCount);
+	return	FTDM_CLIENT_LOG_count(pDMC->pClient, pulCount);
 }
 
 FTM_RET	FTOM_DMC_LOG_get
@@ -997,7 +1016,7 @@ FTM_RET	FTOM_DMC_LOG_get
 	ASSERT(pLogs != NULL);
 	ASSERT(pulCount != NULL);
 
-	return	FTDMC_LOG_get(&pDMC->xSession, ulIndex, ulCount, pLogs, pulCount);
+	return	FTDM_CLIENT_LOG_get(pDMC->pClient, ulIndex, ulCount, pLogs, pulCount);
 }
 
 FTM_RET	FTOM_DMC_LOG_getAt
@@ -1010,7 +1029,7 @@ FTM_RET	FTOM_DMC_LOG_getAt
 	ASSERT(pDMC != NULL);
 	ASSERT(pLog != NULL);
 
-	return	FTDMC_LOG_getAt(&pDMC->xSession, ulIndex, pLog);
+	return	FTDM_CLIENT_LOG_getAt(pDMC->pClient, ulIndex, pLog);
 }
 
 /*******************************************************************************
@@ -1037,16 +1056,10 @@ FTM_RET FTOM_DMC_loadConfig
 		xRet = FTM_CONFIG_ITEM_getItemString(&xSection, "server_ip", pValue, sizeof(pValue) - 1);
 		if (xRet == FTM_RET_OK)
 		{
-			strncpy(pDMC->xConfig.xNetwork.pServerIP, pValue, FTDMC_SERVER_IP_LEN);
+			strncpy(pDMC->xConfig.xNetwork.pServerIP, pValue, FTDM_CLIENT_SERVER_IP_LEN);
 		}
 	
 		xRet = FTM_CONFIG_ITEM_getItemUSHORT(&xSection, "port", &pDMC->xConfig.xNetwork.usPort);
-	}
-
-	xRet = FTDMC_init(&pDMC->xConfig);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
 	}
 
 	return	FTM_RET_OK;
