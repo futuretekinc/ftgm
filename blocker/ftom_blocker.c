@@ -2,6 +2,7 @@
 #include "ftom_blocker_cb.h"
 #include "ftom_blocker_cloud_client_wrapper.h"
 #include "ftom_blocker_server_client_wrapper.h"
+#include "ftom_blocker_service_interface.h"
 
 #undef	__MODULE__
 #define __MODULE__ FTOM_TRACE_MODULE_CLIENT
@@ -59,6 +60,15 @@ FTM_RET	FTOM_BLOCKER_create
 		ERROR2(xRet, "Failed to create event timer!\n");	
 		goto error;
 	}
+
+	xRet = FTM_SIS_create(pBlocker, &pBlocker->pSIS);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to create service interface!\n");	
+		goto error;
+	}
+
+	FTM_SIS_CMD_appendList(pBlocker->pSIS, pSISCmdSet, ulSISCmdSetCount);
 
 	memcpy(&pBlocker->xConfig, &_xDefaultConfig, sizeof(FTOM_BLOCKER_CONFIG));
 
@@ -137,6 +147,11 @@ FTM_RET	FTOM_BLOCKER_create
 error:
 	if (pBlocker != NULL)
 	{
+		if (pBlocker->pSIS != NULL)
+		{
+			FTM_SIS_destroy(&pBlocker->pSIS);	
+		}
+
 		if (pBlocker->pETM != NULL)
 		{
 			FTM_EVENT_TIMER_MANAGER_destroy(&pBlocker->pETM);	
@@ -157,7 +172,15 @@ FTM_RET	FTOM_BLOCKER_destroy
 
 	FTOM_BLOCKER_final(*ppBlocker);
 
-	FTM_EVENT_TIMER_MANAGER_destroy(&(*ppBlocker)->pETM);
+	if ((*ppBlocker)->pSIS != NULL)
+	{
+		FTM_SIS_destroy(&(*ppBlocker)->pSIS);
+	}
+
+	if ((*ppBlocker)->pETM != NULL)
+	{
+		FTM_EVENT_TIMER_MANAGER_destroy(&(*ppBlocker)->pETM);
+	}
 
 	FTM_MEM_free(*ppBlocker);
 
@@ -367,6 +390,19 @@ FTM_RET	FTOM_BLOCKER_CONFIG_load
 							WARN2(xRet, "The activation setting is missing!\n");	
 						}
 					}
+					else if (strcasecmp(pTypeName, "sis") == 0)
+					{
+						FTM_CONFIG_ITEM	xSIS;
+
+						xRet = FTM_CONFIG_ITEM_getChildItem(&xService, "sis", &xSIS);
+						if (xRet == FTM_RET_OK)
+						{
+							if (pBlocker->pSIS != NULL)
+							{
+								FTM_SIS_CONFIG_load(pBlocker->pSIS, &xSIS);
+							}
+						}
+					}
 					else
 					{
 						WARN2(xRet, "Not supported service[%s]!\n", pTypeName);	
@@ -409,7 +445,7 @@ FTM_RET	FTOM_BLOCKER_CONFIG_load
 FTM_RET	FTOM_BLOCKER_CONFIG_save
 (
 	FTOM_BLOCKER_PTR	pBlocker,
-	FTM_CONFIG_PTR			pConfig
+	FTM_CONFIG_PTR		pConfig
 )
 {
 	ASSERT(pBlocker != NULL);
@@ -446,6 +482,12 @@ FTM_RET	FTOM_BLOCKER_CONFIG_show
 	MESSAGE("# Auto Status Publish \n");
 	MESSAGE("%16s : %s\n", "Activation", (pBlocker->xConfig.xAutoStatusPublish.bEnabled)?"on":"off");
 	MESSAGE("%16s : %lu ms\n", "Interval" ,pBlocker->xConfig.xAutoStatusPublish.ulInterval);
+
+	if (pBlocker->pSIS != NULL)
+	{
+		MESSAGE("# Service Interface Server\n");
+		FTM_SIS_CONFIG_show(pBlocker->pSIS);
+	}
 
 	FTOM_BLOCKER_SERVER_CLIENT_CONFIG_show(pBlocker, pBlocker->pServerClient);
 	FTOM_BLOCKER_CLOUD_CLIENT_CONFIG_show(pBlocker);
@@ -499,6 +541,12 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 		{
 			ERROR2(xRet, "Failed to add event timer!\n");	
 		}
+	}
+
+	xRet = FTM_SIS_start(pBlocker->pSIS);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to start service interface!\n");	
 	}
 
 	pBlocker->bStop = FTM_FALSE;
@@ -603,7 +651,17 @@ FTM_VOID_PTR	FTOM_BLOCKER_threadMain
 		}
 	}    
 
-	FTM_EVENT_TIMER_MANAGER_stop(pBlocker->pETM);
+	xRet = FTM_EVENT_TIMER_MANAGER_stop(pBlocker->pETM);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to stop timer manager!\n");	
+	}
+
+	xRet = FTM_SIS_stop(pBlocker->pSIS);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to stop service interface!\n");	
+	}
 
 	xRet = FTOM_BLOCKER_CLOUD_CLIENT_disconnect(pBlocker);
 	if (xRet != FTM_RET_OK)

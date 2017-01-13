@@ -5,6 +5,7 @@
 #include "ftom_server_client.h"
 #include "ftom_cloud_client.h"
 #include "ftom_message_queue.h"
+#include "ftm_sis.h"
 
 typedef	enum
 {
@@ -51,6 +52,8 @@ typedef	struct
 
 	FTOM_CLOUD_CLIENT_PTR			pCloudClient;
 	FTOM_CLOUD_CLIENT_MODULE_PTR	pCloudClientModule;
+
+	FTM_SIS_PTR						pSIS;
 
 	FTOM_MSG_QUEUE_PTR		pMsgQ;
 

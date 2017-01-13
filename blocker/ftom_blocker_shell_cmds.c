@@ -140,11 +140,31 @@ FTM_RET	FTOM_BLOCKER_SHELL_CMD_server
 	FTM_VOID_PTR 	pData
 )
 {
+	FTM_RET	xRet;
 	FTOM_BLOCKER_PTR	pBlocker = (FTOM_BLOCKER_PTR)pData;
+	FTM_ULONG	ulCount, i;
 	
 	if (pBlocker == NULL)
 	{
 		return	FTM_RET_INVALID_ARGUMENTS;	
+	}
+
+	xRet = FTM_SIS_CMD_count(pBlocker->pSIS, &ulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		MESSAGE("Failed to get service interface command count!\n");	
+		return	xRet;
+	}
+
+	for(i = 0 ; i < ulCount ; i++)
+	{
+		FTM_SIS_CMD_PTR	pCmd;
+
+		xRet = FTM_SIS_CMD_getAt(pBlocker->pSIS, i, &pCmd);	
+		if (xRet == FTM_RET_OK)
+		{
+			MESSAGE("%2lu : %s\n", i+1, pCmd->pName);	
+		}
 	}
 
 	return	FTM_RET_OK;

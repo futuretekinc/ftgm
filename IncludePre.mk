@@ -26,6 +26,8 @@ CFLAGS:= -std=gnu99 -fPIC -c -g -Wall -DDEBUG \
 				-I$(TOPDIR)/ftom/client/ftom/net \
 				-I$(TOPDIR)/ftom/client/mqtt \
 				-I$(TOPDIR)/ftom/node \
+				-I$(TOPDIR)/blocker\
+				-I$(TOPDIR)/blocker/lib\
 				-I$(TOPDIR)/blocker/cloud\
 				-I$(TOPDIR)/blocker/cloud/azure \
 				-I$(TOPDIR)/blocker/cloud/thingplus \
@@ -43,6 +45,7 @@ LDFLAGS:= -Wl,--no-as-needed\
 				-L$(TOPDIR)/ftom/client/ftom\
 				-L$(TOPDIR)/ftom/client/ftom/net\
 				-L$(TOPDIR)/ftom/client/mqtt\
+				-L$(TOPDIR)/blocker/lib\
 				-L$(TOPDIR)/blocker/cloud\
 				-L$(TOPDIR)/blocker/cloud/azure \
 				-L$(TOPDIR)/blocker/cloud/thingplus \

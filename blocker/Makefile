@@ -13,6 +13,7 @@ BIN_CFLAGS:=$(CFLAGS) -std=gnu99 \
 
 BIN_LDFLAGS:=$(LDFLAGS) -L./ \
 		-L/usr/lib/azureiot \
+		-lftblocker\
 		-lftomclient\
 		-lcloudclient \
 		-lmqttclient \
@@ -34,6 +35,6 @@ BIN_LDFLAGS:=$(LDFLAGS) -L./ \
 		-ldl\
 		-lrt 
 
-SUBDIR=cloud
+SUBDIR=lib cloud
 
 include $(TOPDIR)/IncludePost.mk

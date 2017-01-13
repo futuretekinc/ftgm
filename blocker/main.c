@@ -4,6 +4,7 @@
 #include "ftom.h"
 #include "ftom_blocker.h"
 #include "ftom_blocker_shell_cmds.h"
+#include "ftm_sis.h"
 
 #undef	__MODULE__
 #define __MODULE__ FTOM_TRACE_MODULE_CLIENT
@@ -70,9 +71,8 @@ FTM_INT	main
 	}
 
 	FTM_TRACE_setLevel(FTM_TRACE_MAX_MODULES, ulDebugLevel);
-	FTM_TRACE_setInfo2(FTM_TRACE_MODULE_CONFIG,"config", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
-	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_CLIENT,"client", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
-	FTM_TRACE_setInfo2(FTOM_TRACE_MODULE_MQTTC,"mqtt", FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2(FTM_TRACE_MODULE_CONFIG,	"config", 	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
+	FTM_TRACE_setInfo2(100,	"ServiceInterface", 	FTM_TRACE_LEVEL_TRACE, FTM_TRACE_OUT_TERM);
 
 	xRet = FTM_CONFIG_create(pConfigFileName, &pConfig, FTM_FALSE);
 	if (xRet != FTM_RET_OK)
@@ -88,7 +88,12 @@ FTM_INT	main
 		goto finish;
 	}
 
-	FTM_CONFIG_destroy(&pConfig);
+	xRet = FTM_CONFIG_destroy(&pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to destroy config!\n");	
+		goto finish;
+	}
 
 	xRet = FTOM_BLOCKER_init(pBlocker);
 	if (xRet != FTM_RET_OK)
@@ -105,7 +110,12 @@ FTM_INT	main
 		}
 	}
 
-	FTOM_BLOCKER_start(pBlocker);
+	xRet = FTOM_BLOCKER_start(pBlocker);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to start blocker!\n");
+		goto finish;
+	}
 
 	if (!bDaemon)
 	{
@@ -122,24 +132,32 @@ finish:
 
 	if (pBlocker != NULL)
 	{
-		FTOM_BLOCKER_final(pBlocker);
+		xRet = FTOM_BLOCKER_final(pBlocker);
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to finalize blocker.\n");	
+		}
 
 		xRet = FTOM_BLOCKER_destroy(&pBlocker);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR2(xRet, "Remove the Client failed\n");
+			ERROR2(xRet, "Failed to destroy blocker.\n");
 		}
 	}
 
 	if (pConfig != NULL)
 	{
-		FTM_CONFIG_destroy(&pConfig);	
+		xRet = FTM_CONFIG_destroy(&pConfig);	
+		if (xRet != FTM_RET_OK)
+		{
+			ERROR2(xRet, "Failed to destroy config!\n");	
+		}
 	}
 
 	xRet = FTM_MEM_final();
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Memory finalization failed.\n");	
+		ERROR2(xRet, "Failed to finalize memory.\n");	
 	}
 
   	return 0;
