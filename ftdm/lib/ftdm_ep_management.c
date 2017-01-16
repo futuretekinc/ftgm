@@ -8,13 +8,6 @@
 #include "ftdm_sqlite.h"
 #include "ftdm_log.h"
 
-static 
-FTM_BOOL	FTDM_EPM_seekEP
-(
-	const FTM_VOID_PTR pElement,
-	const FTM_VOID_PTR pKey
-);
-
 FTM_RET	FTDM_EPM_init
 (
 	FTDM_EPM_PTR	pEPM
@@ -26,7 +19,7 @@ FTM_RET	FTDM_EPM_init
 	xRet = FTM_LIST_create(&pEPM->pList);
 	if (xRet == FTM_RET_OK)
 	{
-		FTM_LIST_setSeeker(pEPM->pList, FTDM_EPM_seekEP);
+		FTM_LIST_setSeeker(pEPM->pList, FTDM_EP_seeker);
 	}
 	return	xRet;
 }
@@ -53,6 +46,7 @@ FTM_RET FTDM_EPM_final
 
 FTM_RET	FTDM_EPM_create
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EPM_PTR _PTR_ ppEPM
 )
 {
@@ -66,6 +60,8 @@ FTM_RET	FTDM_EPM_create
 		ERROR2(FTM_RET_NOT_ENOUGH_MEMORY, "Not enough memory!\n");
 		return	FTM_RET_NOT_ENOUGH_MEMORY;
 	}
+
+	pEPM->pFTDM = pFTDM;
 
 	xRet = FTDM_EPM_init(pEPM);
 	if (xRet != FTM_RET_OK)
@@ -143,7 +139,7 @@ FTM_RET	FTDM_EPM_loadFromFile
 						{
 							FTDM_EP_PTR	pEP;
 
-							xRet = FTDM_EP_create(&xInfo, &pEP);
+							xRet = FTDM_createEP(pEPM->pFTDM, &xInfo, &pEP);
 							if (xRet != FTM_RET_OK)
 							{
 								ERROR2(xRet, "Can't not append EP[%s]\n", xInfo.pEPID);
@@ -152,7 +148,7 @@ FTM_RET	FTDM_EPM_loadFromFile
 							{
 								xRet = FTDM_EPM_append(pEPM, pEP);
 							}
-							FTDM_LOG_createEP(xInfo.pEPID, xRet);
+							//FTDM_LOG_createEP(xInfo.pEPID, xRet);
 						}
 						else
 						{
@@ -174,52 +170,6 @@ FTM_RET	FTDM_EPM_loadFromFile
 }
 
 
-FTM_RET	FTDM_EPM_loadFromDB
-(
-	FTDM_EPM_PTR	pEPM
-)
-{
-	FTM_RET		xRet;
-	FTM_ULONG	nMaxEPCount = 0;
-
-	if ((FTDM_DBIF_EP_count(&nMaxEPCount) == FTM_RET_OK) &&
-		(nMaxEPCount > 0))
-	{
-
-		FTM_EP_PTR	pInfos;
-		FTM_ULONG	nEPCount = 0;
-		
-		pInfos = (FTM_EP_PTR)FTM_MEM_malloc(nMaxEPCount * sizeof(FTM_EP));
-		if (pInfos == NULL)
-		{
-			return	FTM_RET_NOT_ENOUGH_MEMORY;	
-		}
-	
-		if (FTDM_DBIF_EP_getList(pInfos, nMaxEPCount, &nEPCount) == FTM_RET_OK)
-		{
-			FTM_INT	i;
-
-			for(i = 0 ; i < nEPCount ; i++)
-			{
-				FTDM_EP_PTR	pEP;
-
-				xRet = FTDM_EP_create(&pInfos[i], &pEP);
-				if (xRet == FTM_RET_OK)
-				{
-					xRet = FTDM_EPM_append(pEPM, pEP);
-					if (xRet != FTM_RET_OK)
-					{
-						WARN("EP append failed[%08x]\n", xRet);	
-					}
-				}
-			}
-		}
-
-		FTM_MEM_free(pInfos);
-	}
-
-	return	FTM_RET_OK;
-}
 
 FTM_RET	FTDM_EPM_loadConfig
 (
@@ -242,7 +192,7 @@ FTM_RET	FTDM_EPM_loadConfig
 			{
 				FTDM_EP_PTR	pEP;
 
-				xRet = FTDM_EP_create(&xInfo, &pEP);	
+				xRet = FTDM_createEP(pEPM->pFTDM, &xInfo, &pEP);	
 				if (xRet == FTM_RET_OK)
 				{
 					FTDM_EPM_append(pEPM, pEP);
@@ -259,9 +209,18 @@ FTM_RET	FTDM_EPM_saveToDB
 	FTDM_EPM_PTR	pEPM
 )
 {
+#if 0
 	FTM_RET		xRet;
 	FTM_ULONG	i, ulCount;
 	FTDM_EP_PTR	pEP;
+	FTDM_DBIF_PTR	pDBIF;
+
+	xRet = FTDM_getDBIF(pEPM->pFTDM, &pDBIF);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get DB interface!\n");
+		return	xRet;
+	}
 
 	xRet = FTDM_EPM_count(pEPM, 0, &ulCount);
 	if (xRet != FTM_RET_OK)
@@ -276,10 +235,10 @@ FTM_RET	FTDM_EPM_saveToDB
 		{
 			FTM_EP	xInfo;
 		
-			xRet = FTDM_DBIF_EP_get(pEP->xInfo.pEPID, &xInfo);
+			xRet = FTDM_DBIF_getEP(pDBIF, pEP->xInfo.pEPID, &xInfo);
 			if (xRet != FTM_RET_OK)
 			{
-				xRet = FTDM_DBIF_EP_append(&pEP->xInfo);	
+				xRet = FTDM_DBIF_createEP(pDBIF, &pEP->xInfo);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR2(xRet, "Failed to save the new EP.[%08x]\n", xRet);
@@ -291,187 +250,7 @@ FTM_RET	FTDM_EPM_saveToDB
 			ERROR2(xRet, "Failed to get EP information[%08x]\n", xRet);
 		}
 	}
-
+#endif
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDM_EPM_count
-(
-	FTDM_EPM_PTR	pEPM,
-	FTM_EP_TYPE		xType,
-	FTM_ULONG_PTR	pulCount
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pulCount != NULL);
-
-	FTM_RET		xRet;
-	FTDM_EP_PTR	pEP;
-	FTM_ULONG	i, ulTotalCount = 0, ulCount = 0;
-
-	xRet = FTM_LIST_count(pEPM->pList, &ulTotalCount);
-	if (xType == 0)
-	{
-		*pulCount = ulTotalCount;
-		return	xRet;
-	}
-
-	for(i = 0 ; i < ulTotalCount ; i++)
-	{
-		FTDM_EPM_getAt(pEPM, i, &pEP);
-		if (xType == (pEP->xInfo.xType & FTM_EP_TYPE_MASK))
-		{
-			ulCount++;			
-		}
-	}
-
-	*pulCount = ulCount;
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTDM_EPM_append
-(
-	FTDM_EPM_PTR		pEPM,
-	FTDM_EP_PTR			pEP
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pEP != NULL);
-
-	return	FTM_LIST_append(pEPM->pList, pEP);
-}
-
-FTM_RET FTDM_EPM_remove
-(
-	FTDM_EPM_PTR		pEPM,
-	FTDM_EP_PTR			pEP
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pEP != NULL);
-
-	return	FTM_LIST_remove(pEPM->pList, pEP);
-}
-
-
-FTM_RET	FTDM_EPM_get
-(
-	FTDM_EPM_PTR		pEPM,
-	FTM_CHAR_PTR		pEPID,
-	FTDM_EP_PTR	_PTR_ 	ppEP
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(ppEP != NULL);
-
-	return	FTM_LIST_get(pEPM->pList, pEPID, (FTM_VOID_PTR _PTR_)ppEP);
-}
-
-FTM_RET	FTDM_EPM_getAt
-(
-	FTDM_EPM_PTR		pEPM,
-	FTM_ULONG			ulIndex,
-	FTDM_EP_PTR	_PTR_ 	ppEP
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(ppEP != NULL);
-
-	return	FTM_LIST_getAt(pEPM->pList, ulIndex, (FTM_VOID_PTR _PTR_)ppEP);
-}
-
-FTM_RET	FTDM_EPM_getEPIDList
-(
-	FTDM_EPM_PTR		pEPM,
-	FTM_EPID_PTR		pEPIDs,
-	FTM_ULONG			ulIndex,
-	FTM_ULONG			ulMaxCount,
-	FTM_ULONG_PTR		pulCount
-)
-{
-	ASSERT(pEPM != NULL);
-	ASSERT(pEPIDs != NULL);
-	ASSERT(pulCount != NULL);
-
-	FTM_RET		xRet;
-	FTM_ULONG	i, ulCount;
-
-	xRet = FTDM_EPM_count(pEPM, 0, &ulCount);
-	if (xRet != FTM_RET_OK)
-	{
-		return	xRet;	
-	}
-
-	*pulCount = 0;
-	for(i = 0 ; i < ulMaxCount && (ulIndex + i) < ulCount ; i++)
-	{
-		FTDM_EP_PTR	pEP;
-
-		xRet = FTDM_EPM_getAt(pEPM, ulIndex + i, &pEP);
-		if (xRet != FTM_RET_OK)
-		{
-			break;	
-		}
-
-		strcpy(pEPIDs[(*pulCount)++], pEP->xInfo.pEPID);
-	}
-
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTDM_EPM_showList
-(
-	FTDM_EPM_PTR	pEPM
-)
-{
-	FTM_ULONG	i, ulCount;
-
-	MESSAGE("\n# EP Information\n");
-	MESSAGE("\t%16s %16s %8s %16s %8s %8s %8s %8s %16s %8s %8s\n",
-			"EPID", "NAME", "STATE", "TYPE", "UNIT", "UPDATE", 
-			"REPORT", "TIMEOUT", "DID", "COUNT", "TIME");
-	if (FTDM_EPM_count(pEPM, 0, &ulCount) == FTM_RET_OK)
-	{
-		for(i = 0 ; i < ulCount ; i++)
-		{
-			FTDM_EP_PTR	pEP;
-
-			FTDM_EPM_getAt(pEPM, i, &pEP);
-			MESSAGE("\t%16s %16s %8s %16s %8s ",
-				pEP->xInfo.pEPID,
-				pEP->xInfo.pName,
-				(pEP->xInfo.bEnable)?"Running":"Stopped",
-				FTM_EP_typeString(pEP->xInfo.xType),
-				pEP->xInfo.pUnit);
-
-			MESSAGE("%8lu %8lu %8lu %16s %8lu %10lu %10lu\n",
-				pEP->xInfo.ulUpdateInterval,
-				pEP->xInfo.ulReportInterval,
-				pEP->xInfo.ulTimeout,
-				pEP->xInfo.pDID,
-				pEP->ulCount,
-				pEP->ulFirstTime,
-				pEP->ulLastTime);
-		}
-	}
-
-	return	FTM_RET_OK;
-}
-
-
-FTM_BOOL	FTDM_EPM_seekEP
-(
-	const FTM_VOID_PTR pElement,
-	const FTM_VOID_PTR pKey
-)
-{
-	ASSERT(pElement != NULL);
-	ASSERT(pKey != NULL);
-
-	FTDM_EP_PTR		pEP = (FTDM_EP_PTR)pElement;
-	FTM_CHAR_PTR	pEPID = (FTM_CHAR_PTR)pKey;
-
-	return	strcmp(pEP->xInfo.pEPID, pEPID) == 0;
-
-}

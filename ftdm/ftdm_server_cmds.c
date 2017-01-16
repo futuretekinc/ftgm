@@ -10,6 +10,7 @@
 #include "ftdm_config.h"
 #include "ftdm_server.h"
 #include "ftdm_server_cmds.h"
+#include "ftdm_ep_management.h"
 #include "ftdm_trigger.h"
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
@@ -184,28 +185,36 @@ FTM_RET	FTDMS_SHELL_CMD_object
 	FTM_VOID_PTR	pData
 )
 {
-	FTDM_SERVER_PTR	pServer = (FTDM_SERVER_PTR)pData;
+	FTDM_SIS_PTR	pSIS = (FTDM_SIS_PTR)pData;
 
-	FTM_RET	xRet;
 
-	TRACE("pServer = %08x, pServer->pDM = %08x\n", pServer, pServer->pDM);
+	TRACE("pSIS = %08x, pSIS->pFTDM = %08x\n", pSIS, pSIS->pFTDM);
 	switch (nArgc)
 	{
 	case	1:
 		{
-			FTDM_NODEM_showList(pServer->pDM->pNodeM);
-			FTDM_EPM_showList(pServer->pDM->pEPM);
-			FTDM_RULE_showList();
-			FTDM_TRIGGER_showList();
-			FTDM_ACTION_showList();
+			FTM_CHAR_PTR	pArgv[1];
+			
+			pArgv[0] = "node";
+			FTDMS_SHELL_CMD_node(pShell, 1, pArgv, pData);
+			pArgv[0] = "ep";
+			FTDMS_SHELL_CMD_ep(pShell, 1, pArgv, pData);
+#if 0
+			pArgv[0] = "trigger";
+			FTDMS_SHELL_CMD_trigger(pShell, 1, pArgc, pData);
+			pArgv[0] = "action";
+			FTDMS_SHELL_CMD_action(pShell, 1, pArgv, pData);
+			pArgv[0] = "rule";
+			FTDMS_SHELL_CMD_rule(pShell, 1, pArgv, pData);
+#endif
 		}	
 		break;
-
+#if 0
 	case	3:
 		{
 			if (strcasecmp(pArgv[1], "load") == 0)
 			{
-				xRet = FTDM_loadObjectFromFile(pServer->pDM, pArgv[2]);	
+				xRet = FTDM_loadObjectFromFile(pSIS->pFTDM, pArgv[2]);	
 				if (xRet != FTM_RET_OK)
 				{
 					ERROR("Objects loading failed.[%08x]\n", xRet);
@@ -216,7 +225,7 @@ FTM_RET	FTDMS_SHELL_CMD_object
 			}
 		}
 		break;
-
+#endif
 	default:
 		{
 			return	FTM_RET_INVALID_ARGUMENTS;
@@ -238,29 +247,24 @@ FTM_RET	FTDMS_SHELL_CMD_session
 	FTM_INT			i;
 	FTM_ULONG		ulCount;
 	FTDM_SESSION	xSession;
-	FTDM_SERVER_PTR	pServer;
+	FTDM_SIS_PTR	pSIS = (FTDM_SIS_PTR)pData;
 
-	xRet = FTDM_getServer(&pServer);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR("Can't found server!\n");
-		return	xRet;
-	}
-
-	FTDMS_getSessionCount(pServer, &ulCount);
+	FTDM_SIS_getSessionCount(pSIS, &ulCount);
 	for(i = 0 ; i < ulCount ; i++)
 	{
 		FTM_CHAR	pIPAddr[32];
 
-		FTDMS_getSessionInfo(pServer, i, &xSession);
+		xRet = FTDM_SIS_getSessionInfo(pSIS, i, &xSession);
+		if (xRet == FTM_RET_OK)
+		{
+			sprintf(pIPAddr,"%d.%d.%d.%d", 
+					((xSession.xPeer.sin_addr.s_addr      ) & 0xFF),
+					((xSession.xPeer.sin_addr.s_addr >>  8) & 0xFF),
+					((xSession.xPeer.sin_addr.s_addr >> 16) & 0xFF),
+					((xSession.xPeer.sin_addr.s_addr >> 24) & 0xFF));
 
-		sprintf(pIPAddr,"%d.%d.%d.%d", 
-				((xSession.xPeer.sin_addr.s_addr      ) & 0xFF),
-				((xSession.xPeer.sin_addr.s_addr >>  8) & 0xFF),
-				((xSession.xPeer.sin_addr.s_addr >> 16) & 0xFF),
-				((xSession.xPeer.sin_addr.s_addr >> 24) & 0xFF));
-
-		MESSAGE("%2d : %16s %5d %s\n", i+1, pIPAddr, ntohs(xSession.xPeer.sin_port), FTM_TIME_printf(&xSession.xStartTime, NULL));
+			MESSAGE("%2d : %16s %5d %s\n", i+1, pIPAddr, ntohs(xSession.xPeer.sin_port), FTM_TIME_printf(&xSession.xStartTime, NULL));
+		}
 	}
 
 	return	FTM_RET_OK;
@@ -341,13 +345,82 @@ FTM_RET FTDMS_SHELL_CMD_node
 	FTM_VOID_PTR	pData
 )
 {
-	FTDM_SERVER_PTR	pServer = (FTDM_SERVER_PTR)pData;
+	FTM_RET	xRet;
+	FTDM_SIS_PTR	pSIS = (FTDM_SIS_PTR)pData;
+	FTDM_CONTEXT_PTR	pFTDM = pSIS->pFTDM;
 
 	switch(nArgc)
 	{
 	case	1:
 		{
-			FTDM_SHELL_showNodeList(pServer->pDM->pNodeM);
+			FTM_ULONG	i, ulCount;
+
+			MESSAGE("\n[ Node ]\n");
+			MESSAGE("\t%16s %16s %8s %16s %16s %16s %8s %8s %16s\n",
+					"DID", "NAME", "STATE", "MODEL", "TYPE", "LOCATION", "REPORT", "TIMEOUT", "OPT");
+			xRet = FTDM_getNodeCount(pFTDM, &ulCount);
+			if (xRet == FTM_RET_OK)
+			{
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					FTDM_NODE_PTR	pNode;
+					
+					xRet = FTDM_getNodeAt(pFTDM, i, &pNode);
+					if (xRet == FTM_RET_OK)
+					{
+						FTM_NODE	xInfo;
+
+						xRet = FTDM_NODE_getInfo(pNode, &xInfo);
+						if (xRet == FTM_RET_OK)
+						{
+							MESSAGE("\t%16s %16s %8s %16s %16s %16s %8lu %8lu ",
+									xInfo.pDID, xInfo.pName, "Running", xInfo.pModel, FTM_NODE_typeString(xInfo.xType),
+									xInfo.pLocation, xInfo.ulReportInterval, xInfo.ulTimeout);
+
+							switch(xInfo.xType)
+							{
+							case	FTM_NODE_TYPE_SNMP:
+								{
+									MESSAGE(" %8s %16s %8s %8s\n",
+											FTDM_CFG_SNMP_getVersionString(xInfo.xOption.xSNMP.ulVersion),
+											xInfo.xOption.xSNMP.pURL,
+											xInfo.xOption.xSNMP.pCommunity,
+											xInfo.xOption.xSNMP.pMIB);
+								}
+								break;
+
+
+							case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
+								{
+									MESSAGE(" %16s %16lu %16lu\n",
+											xInfo.xOption.xMB.pURL,
+											xInfo.xOption.xMB.ulPort,
+											xInfo.xOption.xMB.ulSlaveID);
+								}
+								break;
+
+							case	FTM_NODE_TYPE_FINS:
+								{
+									MESSAGE(" %16s %02x:%02x:%02x %02x:%02x:%02x %lu\n",
+											xInfo.xOption.xFINS.pDIP,
+											(FTM_UINT8)((xInfo.xOption.xFINS.ulDA >> 16) & 0xFF), 
+											(FTM_UINT8)((xInfo.xOption.xFINS.ulDA >> 8) & 0xFF), 
+											(FTM_UINT8)((xInfo.xOption.xFINS.ulDA >> 0) & 0xFF), 
+											(FTM_UINT8)((xInfo.xOption.xFINS.ulSA >> 16) & 0xFF), 
+											(FTM_UINT8)((xInfo.xOption.xFINS.ulSA >> 8) & 0xFF), 
+											(FTM_UINT8)((xInfo.xOption.xFINS.ulSA >> 0) & 0xFF), 
+											xInfo.xOption.xFINS.ulServerID);
+								}
+								break;
+
+							default:
+								MESSAGE("\n");
+							}
+						}
+					}
+
+				}
+			}
 		}
 		break;
 
@@ -366,7 +439,29 @@ FTM_RET FTDMS_SHELL_CMD_node
 			}
 			else
 			{
-				FTDM_SHELL_showNodeInfo(pServer->pDM->pNodeM, pArgv[1]);
+				FTDM_NODE_PTR	pNode = NULL;
+
+				xRet = FTDM_getNode(pSIS->pFTDM, pArgv[1], &pNode);
+				if (xRet != FTM_RET_OK)
+				{
+					MESSAGE("Node[%s] not found.\n", pArgv[1]);
+				}
+				else
+				{
+					FTM_NODE	xInfo;
+
+					FTDM_NODE_getInfo(pNode, &xInfo);
+
+					MESSAGE("%-16s : %s\n", "DID", 		xInfo.pDID);	
+					MESSAGE("%-16s : %s\n", "TYPE", 	FTM_NODE_typeString(xInfo.xType)); 
+					MESSAGE("%-16s : %s\n", "LOCATION", xInfo.pLocation);
+					MESSAGE("%-16s : %lu\n", "INTERVAL",xInfo.ulReportInterval);
+					MESSAGE("%-16s : %lu\n", "TIMEOUT", xInfo.ulTimeout);
+					MESSAGE("%-16s : %s\n", "OPT 0", 	FTDM_CFG_SNMP_getVersionString(xInfo.xOption.xSNMP.ulVersion));	
+					MESSAGE("%-16s : %s\n", "OPT 1", 	xInfo.xOption.xSNMP.pURL);	
+					MESSAGE("%-16s : %s\n", "OPT 2", 	xInfo.xOption.xSNMP.pCommunity);	
+
+				}
 			}
 	
 		}
@@ -383,13 +478,59 @@ FTM_RET FTDMS_SHELL_CMD_ep
 	FTM_VOID_PTR	pData
 )
 {
-	FTDM_SERVER_PTR	pServer = (FTDM_SERVER_PTR)pData;
+	FTM_RET	xRet;
+	FTDM_SIS_PTR	pSIS = (FTDM_SIS_PTR)pData;
+	FTDM_CONTEXT_PTR	pFTDM = pSIS->pFTDM;
 
 	switch (nArgc)
 	{
 	case	1:	
 		{
-			FTDM_SHELL_showEPList(pServer->pDM->pEPM);
+			FTM_ULONG	i, ulCount;
+
+			MESSAGE("\n[ Endpoint ]\n");
+			MESSAGE("\t%16s %16s %8s %16s %8s %8s %8s %8s %16s %8s %8s\n",
+					"EPID", "NAME", "STATE", "TYPE", "UNIT", "UPDATE", 
+					"REPORT", "TIMEOUT", "DID", "COUNT", "TIME");
+			if (FTDM_getEPCount(pFTDM, 0, &ulCount) == FTM_RET_OK)
+			{
+				for(i = 0 ; i < ulCount ; i++)
+				{
+					FTM_RET		xRet;
+					FTDM_EP_PTR	pEP;
+					FTM_EP		xInfo;
+
+					xRet = FTDM_getEPAt(pFTDM, i, &pEP);
+					if (xRet == FTM_RET_OK)
+					{
+						xRet = FTDM_EP_getInfo(pEP, &xInfo);
+						if (xRet == FTM_RET_OK)
+						{
+							FTM_ULONG	ulFirstTime, ulLastTime, ulDataCount;
+
+							xRet= FTDM_EP_getDataInfo(pEP, &ulFirstTime, &ulLastTime, &ulDataCount);
+							if (xRet == FTM_RET_OK)
+							{
+								MESSAGE("\t%16s %16s %8s %16s %8s ",
+										xInfo.pEPID,
+										xInfo.pName,
+										(xInfo.bEnable)?"Running":"Stopped",
+										FTM_EP_typeString(xInfo.xType),
+										xInfo.pUnit);
+
+								MESSAGE("%8lu %8lu %8lu %16s %8lu %10lu %10lu\n",
+										xInfo.ulUpdateInterval,
+										xInfo.ulReportInterval,
+										xInfo.ulTimeout,
+										xInfo.pDID,
+										ulCount,
+										ulFirstTime,
+										ulLastTime);
+							}
+						}
+					}
+				}
+			}
 		}
 		break;
 
@@ -409,7 +550,15 @@ FTM_RET FTDMS_SHELL_CMD_ep
 			}
 			else
 			{
-				FTDM_SHELL_showEPInfo(pServer->pDM->pEPM, pArgv[1]);
+				FTDM_EP_PTR	pEP;
+
+				xRet = FTDM_getEP(pSIS->pFTDM, pArgv[1], &pEP);
+				if (xRet == FTM_RET_OK)
+				{
+					FTDM_EP_print(pEP);
+				
+				}
+
 			}
 		}
 			
@@ -419,7 +568,13 @@ FTM_RET FTDMS_SHELL_CMD_ep
 		{
 			if (strcasecmp(pArgv[2], "data") == 0)
 			{
-				FTDM_SHELL_showEPData(pServer->pDM->pEPM, pArgv[1], 0, 100);
+				FTDM_EP_PTR	pEP;
+
+				xRet = FTDM_getEP(pSIS->pFTDM, pArgv[1], &pEP);
+				if (xRet == FTM_RET_OK)
+				{
+					FTDM_EP_showData(pEP, 0, 100);
+				}	
 			}
 		}
 		break;
@@ -428,6 +583,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 		{
 			if (strcasecmp(pArgv[2], "data") == 0)
 			{
+				FTDM_EP_PTR	pEP;
 				FTM_ULONG		ulStart = 0, ulCount = 0;
 
 				ulStart = strtoul(pArgv[3], NULL, 10);
@@ -439,7 +595,11 @@ FTM_RET FTDMS_SHELL_CMD_ep
 					break;
 				}
 
-				FTDM_SHELL_showEPData(pServer->pDM->pEPM, pArgv[1], ulStart - 1, ulCount);
+				xRet = FTDM_getEP(pSIS->pFTDM, pArgv[1], &pEP);
+				if (xRet == FTM_RET_OK)
+				{
+					FTDM_EP_showData(pEP, ulStart - 1, ulCount);
+				}	
 			}
 		}
 		break;
@@ -450,6 +610,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 			{
 				if (strcasecmp(pArgv[3], "del") == 0)
 				{
+					FTDM_EP_PTR	pEP;
 					FTM_INT			nIndex;
 					FTM_ULONG		ulCount = 0;
 
@@ -462,7 +623,11 @@ FTM_RET FTDMS_SHELL_CMD_ep
 						break;
 					}
 
-					FTDM_SHELL_delEPData(pServer->pDM->pEPM, pArgv[1], nIndex, ulCount);
+					xRet = FTDM_getEP(pSIS->pFTDM, pArgv[1], &pEP);
+					if (xRet == FTM_RET_OK)
+					{
+						FTDM_EP_deleteData(pEP, nIndex, ulCount, &ulCount);
+					}
 				}
 			}
 		}
@@ -480,16 +645,16 @@ FTM_RET FTDMS_SHELL_CMD_log
 	FTM_VOID_PTR	pData
 )
 {
+#if 0
 	FTM_RET	xRet;
-	FTDM_SERVER_PTR	pServer = (FTDM_SERVER_PTR)pData;
-
+	FTDM_SIS_PTR	pSIS = (FTDM_SIS_PTR)pData;
 	switch (nArgc)
 	{
 	case	1:	
 		{
 			FTM_ULONG	ulBeginTime, ulEndTime, ulCount;
 
-			xRet = FTDM_LOGGER_info(pServer->pDM->pLogger, &ulBeginTime, &ulEndTime, &ulCount);
+			xRet = FTDM_LOGGER_info(pSIS->pFTDM->pLogger, &ulBeginTime, &ulEndTime, &ulCount);
 			if (xRet != FTM_RET_OK)
 			{
 				MESSAGE("Error : %08lx\n", xRet);	
@@ -528,7 +693,7 @@ FTM_RET FTDMS_SHELL_CMD_log
 					MESSAGE("Error : not enough memory!\n");
 					break;	
 				}
-				xRet = FTDM_LOGGER_get(pServer->pDM->pLogger, 0, pLogs,  100, &ulCount);
+				xRet = FTDM_LOGGER_get(pSIS->pFTDM->pLogger, 0, pLogs,  100, &ulCount);
 				if (xRet != FTM_RET_OK)
 				{
 					MESSAGE("Error : %08lx\n", xRet);	
@@ -553,7 +718,8 @@ FTM_RET FTDMS_SHELL_CMD_log
 		break;
 	}
 
-
+#endif
 	return	FTM_RET_OK;
 }
+
 

@@ -3,17 +3,9 @@
 #include "ftdm_sqlite.h"
 #include "ftdm_logger.h"
 
-static
-FTM_RET FTDM_LOGGER_infoInternal
-(
-	FTM_CHAR_PTR	pTableName,
-	FTM_ULONG_PTR	pulBeginTime,
-	FTM_ULONG_PTR	pulEndTime,
-	FTM_ULONG_PTR	pulCount
-);
-
 FTM_RET	FTDM_LOGGER_create
 (
+	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_LOGGER_PTR	_PTR_ ppLogger
 )
 {
@@ -25,6 +17,8 @@ FTM_RET	FTDM_LOGGER_create
 	{
 		return	FTM_RET_NOT_ENOUGH_MEMORY;	
 	}
+	
+	pLogger->pFTDM = pFTDM;
 
 	strcpy(pLogger->xConfig.pName, "log");
 	pLogger->xConfig.xLimit.xType = FTM_LIMIT_TYPE_COUNT;
@@ -62,8 +56,16 @@ FTM_RET	FTDM_LOGGER_init
 	
 	FTM_RET		xRet;
 	FTM_BOOL	bExist = FTM_FALSE;
+	FTDM_DBIF_PTR	pDBIF;
 
-	xRet = FTDM_DBIF_LOG_isTableExist(pLogger->xConfig.pName, &bExist);
+	xRet = FTDM_getDBIF(pLogger->pFTDM, &pDBIF);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get DB interface!\n");
+		return	xRet;
+	}
+
+	xRet = FTDM_DBIF_isLogTableExist(pDBIF, pLogger->xConfig.pName, &bExist);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
@@ -71,7 +73,7 @@ FTM_RET	FTDM_LOGGER_init
 
 	if (!bExist)
 	{
-		xRet = FTDM_DBIF_LOG_initTable(pLogger->xConfig.pName);
+		xRet = FTDM_DBIF_initLogTable(pDBIF, pLogger->xConfig.pName);
 		if (xRet != FTM_RET_OK)
 		{
 			return	xRet;	
@@ -91,6 +93,14 @@ FTM_RET	FTDM_LOGGER_add
 	ASSERT(pLog != NULL);
 
 	FTM_RET		xRet;
+	FTDM_DBIF_PTR	pDBIF;
+
+	xRet = FTDM_getDBIF(pLogger->pFTDM, &pDBIF);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get DB interface!\n");
+		return	xRet;
+	}
 
 	if (pLogger->xConfig.xLimit.xType == FTM_LIMIT_TYPE_COUNT)
 	{
@@ -99,13 +109,13 @@ FTM_RET	FTDM_LOGGER_add
 		{
 			FTM_ULONG	ulCount = pLogger->ulCount - pLogger->xConfig.xLimit.xParams.ulCount + 1;
 
-			xRet = FTDM_DBIF_LOG_del(pLogger->xConfig.pName, 0, ulCount, &ulCount);
+			xRet = FTDM_DBIF_deleteLog(pDBIF, pLogger->xConfig.pName, 0, ulCount, &ulCount);
 			if (xRet == FTM_RET_OK)
 			{
 				pLogger->ulCount -= ulCount;
 
 				FTM_ULONG	ulBeginTime, ulEndTime;
-				xRet = FTDM_DBIF_LOG_info(pLogger->xConfig.pName, &ulCount, &ulBeginTime, &ulEndTime);
+				xRet = FTDM_DBIF_getLogInfo(pDBIF, pLogger->xConfig.pName, &ulCount, &ulBeginTime, &ulEndTime);
 				if (xRet == FTM_RET_OK)
 				{
 					pLogger->ulCount = ulCount;
@@ -117,7 +127,7 @@ FTM_RET	FTDM_LOGGER_add
 		}
 	}
 
-	xRet = FTDM_DBIF_LOG_append(pLogger->xConfig.pName, pLog);
+	xRet = FTDM_DBIF_addLog(pDBIF, pLogger->xConfig.pName, pLog);
 	if (xRet == FTM_RET_OK)
 	{
 		pLogger->ulCount++;	
@@ -167,8 +177,18 @@ FTM_RET	FTDM_LOGGER_get
 	ASSERT(pLogger != NULL);
 	ASSERT(pLoggerData != NULL);
 	ASSERT(pCount != NULL);
+	FTM_RET	xRet;
+	FTDM_DBIF_PTR	pDBIF;
 
-	return	FTDM_DBIF_LOG_getList(
+	xRet = FTDM_getDBIF(pLogger->pFTDM, &pDBIF);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get DB interface!\n");
+		return	xRet;
+	}
+
+	return	FTDM_DBIF_getLogList(
+				pDBIF,
 				pLogger->xConfig.pName, 
 				nStartIndex,
 				nMaxCount, 
@@ -188,8 +208,18 @@ FTM_RET	FTDM_LOGGER_getWithTime
 {
 	ASSERT(pLogger != NULL);
 	ASSERT(pCount != NULL);
+	FTM_RET	xRet;
+	FTDM_DBIF_PTR	pDBIF;
 
-	return	FTDM_DBIF_LOG_getWithTime(
+	xRet = FTDM_getDBIF(pLogger->pFTDM, &pDBIF);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get DB interface!\n");
+		return	xRet;
+	}
+
+	return	FTDM_DBIF_getLogWithTime(
+				pDBIF,
 				pLogger->xConfig.pName, 
 				nBeginTime, 
 				nEndTime, 
@@ -209,18 +239,26 @@ FTM_RET	FTDM_LOGGER_del
 	FTM_RET		xRet;
 	FTM_ULONG	ulFirstTime, ulLastTime;
 	FTM_ULONG	ulCount1 = 0, ulCount2= 0;
+	FTDM_DBIF_PTR	pDBIF;
 
-	xRet = FTDM_LOGGER_infoInternal(pLogger->xConfig.pName, &ulFirstTime, &ulLastTime, &ulCount1);
+	xRet = FTDM_getDBIF(pLogger->pFTDM, &pDBIF);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get DB interface!\n");
+		return	xRet;
+	}
+
+	xRet = FTDM_DBIF_getLogInfo(pDBIF, pLogger->xConfig.pName, &ulCount1, &ulFirstTime, &ulLastTime);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR("Failed to get log information.\n");
 		return	xRet;	
 	}
 
-	xRet = FTDM_DBIF_LOG_del( pLogger->xConfig.pName, nIndex, nCount, &nCount);
+	xRet = FTDM_DBIF_deleteLog(pDBIF, pLogger->xConfig.pName, nIndex, nCount, &nCount);
 	if (xRet == FTM_RET_OK)
 	{
-		xRet = FTDM_LOGGER_infoInternal(pLogger->xConfig.pName, &ulFirstTime, &ulLastTime, &ulCount2);
+		xRet = FTDM_DBIF_getLogInfo(pDBIF, pLogger->xConfig.pName, &ulCount2, &ulFirstTime, &ulLastTime);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("EP[%s] information update failed.\n", pLogger->xConfig.pName);	
@@ -259,18 +297,26 @@ FTM_RET	FTDM_LOGGER_delWithTime
 	FTM_RET		xRet;
 	FTM_ULONG	ulFirstTime, ulLastTime;
 	FTM_ULONG	ulCount, ulCount1 = 0, ulCount2 = 0;
+	FTDM_DBIF_PTR	pDBIF;
 
-	xRet = FTDM_LOGGER_infoInternal(pLogger->xConfig.pName, &ulFirstTime, &ulLastTime, &ulCount1);
+	xRet = FTDM_getDBIF(pLogger->pFTDM, &pDBIF);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get DB interface!\n");
+		return	xRet;
+	}
+
+	xRet = FTDM_DBIF_getLogInfo(pDBIF, pLogger->xConfig.pName, &ulCount1, &ulFirstTime, &ulLastTime);
 	if (xRet != FTM_RET_OK)
 	{
 		return	xRet;	
 	}
 
-	xRet = FTDM_DBIF_LOG_delWithTime( pLogger->xConfig.pName, nBeginTime, nEndTime, &ulCount);
+	xRet = FTDM_DBIF_deleteLogWithTime(pDBIF, pLogger->xConfig.pName, nBeginTime, nEndTime, &ulCount);
 	if (xRet == FTM_RET_OK)
 	{
 
-		xRet = FTDM_LOGGER_infoInternal(pLogger->xConfig.pName, &ulFirstTime, &ulLastTime, &ulCount2);
+		xRet = FTDM_DBIF_getLogInfo(pDBIF, pLogger->xConfig.pName, &ulCount2, &ulFirstTime, &ulLastTime);
 		if (xRet != FTM_RET_OK)
 		{
 			ERROR("EP[%s] information update failed.\n", pLogger->xConfig.pName);	
@@ -318,23 +364,18 @@ FTM_RET	FTDM_LOGGER_countWithTime
 ) 
 {
 	ASSERT(pulCount != NULL);
+	FTM_RET	xRet;
+	FTDM_DBIF_PTR	pDBIF;
 
-	return	FTDM_DBIF_LOG_countWithTime( pLogger->xConfig.pName, nBeginTime, nEndTime, pulCount);
+	xRet = FTDM_getDBIF(pLogger->pFTDM, &pDBIF);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to get DB interface!\n");
+		return	xRet;
+	}
+
+
+	return	FTDM_DBIF_getLogCountWithTime(pDBIF, pLogger->xConfig.pName, nBeginTime, nEndTime, pulCount);
 }
 
-FTM_RET FTDM_LOGGER_infoInternal
-(
-	FTM_CHAR_PTR	pTableName,
-	FTM_ULONG_PTR	pulBeginTime,
-	FTM_ULONG_PTR	pulEndTime,
-	FTM_ULONG_PTR	pulCount
-)
-{
-	ASSERT(pTableName != NULL);
-	ASSERT(pulBeginTime != NULL);
-	ASSERT(pulEndTime != NULL);
-	ASSERT(pulCount != NULL);
-
-	return	FTDM_DBIF_LOG_info(pTableName, pulCount, pulBeginTime, pulEndTime);
-}
 

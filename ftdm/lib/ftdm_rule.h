@@ -3,79 +3,66 @@
 
 #include "ftm.h"
 
-typedef	struct
-{
-	FTM_RULE	xInfo;
-}	FTDM_RULE, _PTR_ FTDM_RULE_PTR;
-
-FTM_RET	FTDM_RULE_init
-(
-	FTM_VOID
-);
-
-FTM_RET FTDM_RULE_final
-(
-	FTM_VOID
-);
-
-FTM_RET	FTDM_RULE_showList
-(
-	FTM_VOID
-);
-
-FTM_RET	FTDM_RULE_loadConfig
-(
-	FTM_CONFIG_PTR		pConfig
-);
-
-FTM_RET	FTDM_RULE_loadFromFile
-(
-	FTM_CHAR_PTR pFileName
-);
-
-FTM_RET	FTDM_RULE_loadFromDB
-(
-	FTM_VOID
-);
-
-FTM_RET	FTDM_RULE_saveToDB
-(
-	FTM_VOID
-);
+struct FTDM_CONTEXT_STRUCT;
+typedef struct FTDM_RULE_STRUCT _PTR_ FTDM_RULE_PTR;
 
 FTM_RET	FTDM_RULE_create
 (
-	FTM_RULE_PTR pInfo
+	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM,
+	FTM_RULE_PTR pInfo,
+	FTDM_RULE_PTR _PTR_ ppRule
 );
 
 FTM_RET	FTDM_RULE_destroy
 (
-	FTM_CHAR_PTR	pRuleID
+	FTDM_RULE_PTR _PTR_ ppRule
 );
 
-FTM_RET	FTDM_RULE_count
+FTM_RET	FTDM_RULE_init
 (
-	FTM_ULONG_PTR	pnCount
+	FTDM_RULE_PTR pRule
+);
+
+FTM_RET FTDM_RULE_final
+(
+	FTDM_RULE_PTR pRule
 );
 
 FTM_RET	FTDM_RULE_get
 (
-	FTM_CHAR_PTR	pRuleID, 
-	FTDM_RULE_PTR _PTR_ 	ppRule
+	FTDM_RULE_PTR	pRule,
+	FTM_RULE_PTR	pInfo
 );
 
-FTM_RET	FTDM_RULE_getAt
+FTM_RET	FTDM_RULE_set
 (
-	FTM_ULONG	nIndex, 
-	FTDM_RULE_PTR _PTR_	ppRule
+	FTDM_RULE_PTR pRule,
+	FTM_RULE_FIELD	xFields,
+	FTM_RULE_PTR	pInfo
 );
 
-FTM_RET	FTDM_RULE_getIDList
+FTM_RET	FTDM_RULE_getID
 (
-	FTM_ID_PTR		pIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
+	FTDM_RULE_PTR	pRule,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen
+);
+
+FTM_RET	FTDM_RULE_show
+(
+	FTDM_RULE_PTR	pRule	
+);
+
+FTM_BOOL	FTDM_RULE_seeker
+(
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+);
+
+FTM_BOOL	FTDM_RULE_comparator
+(
+	const FTM_VOID_PTR pElement1, 
+	const FTM_VOID_PTR pElement2
 );
 
 #endif

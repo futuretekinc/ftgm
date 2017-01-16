@@ -7,6 +7,7 @@
 typedef	struct 	FTDM_LOGGER_STRUCT
 {
 	FTM_LOGGER_CONFIG	xConfig;
+	struct FTDM_CONTEXT_STRUCT	_PTR_ pFTDM;
 	FTM_ULONG			ulCount;
 	FTM_ULONG			ulFirstTime;
 	FTM_ULONG			ulLastTime;
@@ -14,6 +15,7 @@ typedef	struct 	FTDM_LOGGER_STRUCT
 
 FTM_RET	FTDM_LOGGER_create
 (
+	struct FTDM_CONTEXT_STRUCT	_PTR_ pFTDM,
 	FTDM_LOGGER_PTR	_PTR_ 	ppLogger
 );
 
@@ -23,6 +25,11 @@ FTM_RET	FTDM_LOGGER_destroy
 );
 
 FTM_RET	FTDM_LOGGER_init
+(
+	FTDM_LOGGER_PTR	pLogger
+);
+
+FTM_RET	FTDM_LOGGER_final
 (
 	FTDM_LOGGER_PTR	pLogger
 );

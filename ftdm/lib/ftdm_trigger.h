@@ -5,87 +5,57 @@
 
 typedef	struct
 {
+	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM;
 	FTM_TRIGGER		xInfo;
 	FTM_ULONG		ulIndex;
 }	FTDM_TRIGGER, _PTR_ FTDM_TRIGGER_PTR;
 
-FTM_RET	FTDM_TRIGGER_init
-(
-	FTM_VOID
-);
-
-FTM_RET FTDM_TRIGGER_final
-(
-	FTM_VOID
-);
-
-FTM_RET	FTDM_TRIGGER_loadConfig
-(
-	FTM_CONFIG_PTR		pConfig
-);
-
-FTM_RET	FTDM_TRIGGER_loadFromFile
-(
-	FTM_CHAR_PTR pFileName
-);
-
-FTM_RET	FTDM_TRIGGER_loadFromDB
-(
-	FTM_VOID
-);
-
-FTM_RET	FTDM_TRIGGER_saveToDB
-(
-	FTM_VOID
-);
-
 FTM_RET	FTDM_TRIGGER_create
 (
+	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM,
 	FTM_TRIGGER_PTR pInfo,
 	FTDM_TRIGGER_PTR _PTR_ ppTrigger
 );
 
 FTM_RET	FTDM_TRIGGER_destroy
 (
-	FTM_CHAR_PTR	pID
+	FTDM_TRIGGER_PTR _PTR_ ppTrigger
 );
 
-FTM_RET	FTDM_TRIGGER_count
+FTM_RET	FTDM_TRIGGER_init
 (
-	FTM_ULONG_PTR	pnCount
+	FTDM_TRIGGER_PTR	pTrigger
+);
+
+FTM_RET FTDM_TRIGGER_final
+(
+	FTDM_TRIGGER_PTR	pTrigger
+);
+
+FTM_RET	FTDM_TRIGGER_loadConfig
+(
+	FTDM_TRIGGER_PTR	pTrigger,
+	FTM_CONFIG_ITEM_PTR	xSection
 );
 
 FTM_RET	FTDM_TRIGGER_get
 (
-	FTM_CHAR_PTR	pID,
-	FTDM_TRIGGER_PTR _PTR_ 	ppTrigger
-);
-
-FTM_RET	FTDM_TRIGGER_getAt
-(
-	FTM_ULONG				ulIndex, 
-	FTDM_TRIGGER_PTR _PTR_	ppTrigger
-);
-
-FTM_RET	FTDM_TRIGGER_getIDList
-(
-	FTM_ID_PTR		pIDs,
-	FTM_ULONG		ulIndex,
-	FTM_ULONG		ulMaxCount,
-	FTM_ULONG_PTR	pulCount
-);
-
-FTM_RET	FTDM_TRIGGER_getByIndex
-(
-	FTM_ULONG				ulIndex, 
-	FTDM_TRIGGER_PTR _PTR_	ppTrigger
+	FTDM_TRIGGER_PTR	pTrigger,
+	FTM_TRIGGER_PTR		pInfo
 );
 
 FTM_RET	FTDM_TRIGGER_set
 (
-	FTM_CHAR_PTR		pID,
+	FTDM_TRIGGER_PTR	pTrigger,
 	FTM_TRIGGER_FIELD	xFields,
 	FTM_TRIGGER_PTR		pInfo
+);
+
+FTM_RET	FTDM_TRIGGER_getID
+(
+	FTDM_TRIGGER_PTR	pTrigger,
+	FTM_CHAR_PTR		pBuff,
+	FTM_ULONG			ulBuffLen
 );
 
 FTM_RET	FTDM_TRIGGER_show
@@ -93,9 +63,17 @@ FTM_RET	FTDM_TRIGGER_show
 	FTDM_TRIGGER_PTR	pTrigger
 );
 
-FTM_RET	FTDM_TRIGGER_showList
+
+FTM_BOOL	FTDM_TRIGGER_seeker
 (
-	FTM_VOID
+	const FTM_VOID_PTR pElement, 
+	const FTM_VOID_PTR pIndicator
+);
+
+FTM_BOOL	FTDM_TRIGGER_comparator
+(
+	const FTM_VOID_PTR pElement1, 
+	const FTM_VOID_PTR pElement2
 );
 
 #endif

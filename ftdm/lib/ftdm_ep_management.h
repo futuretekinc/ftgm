@@ -6,9 +6,21 @@
 
 typedef	struct FTDM_EPM_STRUCT
 {
-	FTM_LIST_PTR	pList;
+	struct FTDM_CONTEXT_STRUCT	_PTR_ pFTDM;
+	FTM_LIST_PTR		pList;
 }	FTDM_EPM, _PTR_ FTDM_EPM_PTR;
 	
+FTM_RET	FTDM_EPM_create
+(
+	struct FTDM_CONTEXT_STRUCT	_PTR_ pFTDM,
+	FTDM_EPM_PTR _PTR_ ppEPM
+);
+
+FTM_RET	FTDM_EPM_destroy
+(
+	FTDM_EPM_PTR _PTR_ ppEPM
+);
+
 FTM_RET	FTDM_EPM_init
 (
 	FTDM_EPM_PTR	pEPM
@@ -17,16 +29,6 @@ FTM_RET	FTDM_EPM_init
 FTM_RET FTDM_EPM_final
 (
 	FTDM_EPM_PTR	pEPM
-);
-
-FTM_RET	FTDM_EPM_create
-(
-	FTDM_EPM_PTR _PTR_ ppEPM
-);
-
-FTM_RET	FTDM_EPM_destroy
-(
-	FTDM_EPM_PTR _PTR_ ppEPM
 );
 
 FTM_RET	FTDM_EPM_loadConfig
@@ -74,7 +76,7 @@ FTM_RET	FTDM_EPM_getAt
 	FTDM_EP_PTR	_PTR_ 	ppEP
 );
 
-FTM_RET	FTDM_EPM_getEPIDList
+FTM_RET	FTDM_EPM_getIDList
 (
 	FTDM_EPM_PTR		pEPM,
 	FTM_EPID_PTR		pEPIDs,
@@ -95,7 +97,7 @@ FTM_RET	FTDM_EPM_remove
 	FTDM_EP_PTR		pEP
 );
 
-FTM_RET	FTDM_EPM_showList
+FTM_RET	FTDM_EPM_show
 (
 	FTDM_EPM_PTR	pEPM
 );

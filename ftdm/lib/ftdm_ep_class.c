@@ -56,48 +56,37 @@ FTM_RET	FTDM_EP_CLASS_init
 
 FTM_RET	FTDM_EP_CLASS_loadConfig
 (
-	FTM_CONFIG_PTR	pConfig
+	FTM_CONFIG_ITEM_PTR	pConfig
 )
 {
 	ASSERT(pConfig != NULL);
 	FTM_RET	xRet;
-	FTM_CONFIG_ITEM	xSection;
 
-	xRet = FTM_CONFIG_getItem(pConfig, "ep", &xSection);
+	FTM_ULONG		ulItemCount;
+
+	xRet = FTM_CONFIG_LIST_getItemCount(pConfig, &ulItemCount);	
 	if (xRet == FTM_RET_OK)
 	{
-		FTM_CONFIG_ITEM	xTypeItemList;
+		FTM_ULONG		i;
+		FTM_CONFIG_ITEM	xTypeItem;
 
-		xRet = FTM_CONFIG_ITEM_getChildItem(&xSection, "types", &xTypeItemList);
-		if (xRet == FTM_RET_OK)
+		for(i = 0 ; i < ulItemCount ; i++)
 		{
-			FTM_ULONG		ulItemCount;
-
-			xRet = FTM_CONFIG_LIST_getItemCount(&xTypeItemList, &ulItemCount);	
+			xRet = FTM_CONFIG_LIST_getItemAt(pConfig, i, &xTypeItem);
 			if (xRet == FTM_RET_OK)
 			{
-				FTM_ULONG		i;
-				FTM_CONFIG_ITEM	xTypeItem;
-
-				for(i = 0 ; i < ulItemCount ; i++)
+				FTM_BOOL		bExist;
+				FTM_EP_CLASS	xEPClass;
+				xRet = FTM_CONFIG_ITEM_getEPClass(&xTypeItem, &xEPClass);
+				if (xRet != FTM_RET_OK)
 				{
-					xRet = FTM_CONFIG_LIST_getItemAt(&xTypeItemList, i, &xTypeItem);
-					if (xRet == FTM_RET_OK)
-					{
-						FTM_BOOL		bExist;
-						FTM_EP_CLASS	xEPClass;
-						xRet = FTM_CONFIG_ITEM_getEPClass(&xTypeItem, &xEPClass);
-						if (xRet != FTM_RET_OK)
-						{
-							continue;
-						}
-			
-						FTDM_EP_CLASS_LIST_isExist(xEPClass.xType, &bExist);
-						if (!bExist)
-						{
-							FTDM_EP_CLASS_add(&xEPClass);	
-						}
-					}
+					continue;
+				}
+
+				FTDM_EP_CLASS_LIST_isExist(xEPClass.xType, &bExist);
+				if (!bExist)
+				{
+					FTDM_EP_CLASS_add(&xEPClass);	
 				}
 			}
 		}

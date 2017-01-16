@@ -1,61 +1,56 @@
 #ifndef	__FTDM_EP_H__
 #define	__FTDM_EP_H__
 
-#include "ftdm.h"
-#include "ftdm_config.h"
+#include "ftm.h"
+//#include "ftdm_config.h"
 
-typedef	struct
-{
-	FTM_EP		xInfo;
-	FTM_ULONG	ulCount;
-	FTM_ULONG	ulFirstTime;
-	FTM_ULONG	ulLastTime;
-}	FTDM_EP, _PTR_ FTDM_EP_PTR;
-	
-FTM_RET	FTDM_EP_init
-(
-	FTDM_CONTEXT_PTR	pFTDM,
-	FTDM_EP_PTR	pEP,
-	FTM_EP_PTR	pInfo
-);
-
-FTM_RET FTDM_EP_final
-(
-	FTDM_CONTEXT_PTR	pFTDM,
-	FTDM_EP_PTR	pEP
-);
+struct FTDM_CONTEXT_STRUCT;
+typedef struct FTDM_EP_STRUCT _PTR_ FTDM_EP_PTR;
 
 FTM_RET	FTDM_EP_create
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM,
 	FTM_EP_PTR	pInfo,
 	FTDM_EP_PTR	_PTR_ ppEP
 );
 
 FTM_RET	FTDM_EP_destroy
 (
-	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	_PTR_ ppEP
 );
 
 FTM_RET	FTDM_EP_destroy2
 (
-	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	_PTR_ ppEP
 );
 
-FTM_RET	FTDM_EP_get
+FTM_RET	FTDM_EP_init
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_EP_PTR	pEP
+);
+
+FTM_RET FTDM_EP_final
+(
+	FTDM_EP_PTR	pEP
+);
+
+FTM_RET	FTDM_EP_getInfo
+(
 	FTDM_EP_PTR	pEP,
 	FTM_EP_PTR	pInfo
 );
 
-FTM_RET	FTDM_EP_set
+FTM_RET	FTDM_EP_setInfo
 (
-	FTDM_CONTEXT_PTR	pFTDM,
 	FTDM_EP_PTR	pEP,
 	FTM_EP_PTR	pInfo
+);
+
+FTM_RET	FTDM_EP_isInfoChanged
+(
+	FTDM_EP_PTR		pEP,
+	FTM_EP_PTR		pInfo,
+	FTM_BOOL_PTR	pbChanged
 );
 
 FTM_RET	FTDM_EP_setFields
@@ -65,79 +60,111 @@ FTM_RET	FTDM_EP_setFields
 	FTM_EP_PTR		pInfo
 );
 
-FTM_RET	FTDM_EP_DATA_add
+FTM_RET	FTDM_EP_getType
 (
-	FTDM_EP_PTR			pEP,
-	FTM_EP_DATA_PTR		pData
+	FTDM_EP_PTR		pEP,
+	FTM_EP_TYPE_PTR	pType
 );
 
-FTM_RET FTDM_EP_DATA_info
+FTM_RET	FTDM_EP_getID
+(
+	FTDM_EP_PTR		pEP,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen
+);
+
+FTM_RET	FTDM_EP_addData
+(
+	FTDM_EP_PTR		pEP,
+	FTM_EP_DATA_PTR	pData
+);
+
+FTM_RET	FTDM_EP_deleteData
+(
+	FTDM_EP_PTR		pEP,
+	FTM_INT			nIndex, 
+	FTM_ULONG		nCount,
+	FTM_ULONG_PTR	pulCount
+); 
+
+FTM_RET	FTDM_EP_deleteDataWithTime
 (
 	FTDM_EP_PTR			pEP,
-	FTM_ULONG_PTR		pulBeginTime,
-	FTM_ULONG_PTR		pulEndTime,
+	FTM_ULONG 			nBeginTime, 
+	FTM_ULONG 			nEndTime,
 	FTM_ULONG_PTR		pulCount
+); 
+
+FTM_RET	FTDM_EP_getDataCount
+(
+	FTDM_EP_PTR			pEP,
+	FTM_ULONG_PTR		pCount
+); 
+
+FTM_RET	FTDM_EP_getDataCountWithTime
+(
+	FTDM_EP_PTR			pEP,
+	FTM_ULONG 			nBeginTime, 
+	FTM_ULONG 			nEndTime,
+	FTM_ULONG_PTR		pCount
 );
 
-FTM_RET FTDM_EP_DATA_setLimit
+FTM_RET FTDM_EP_getDataInfo
+(
+	FTDM_EP_PTR		pEP,
+	FTM_ULONG_PTR	pulBeginTime,
+	FTM_ULONG_PTR	pulEndTime,
+	FTM_ULONG_PTR	pulCount
+);
+
+FTM_RET FTDM_EP_setDataLimit
 (	
-	FTDM_EP_PTR			pEP,
+	FTDM_EP_PTR		pEP,
 	FTM_EP_LIMIT_PTR	pLimit
 );
 
-FTM_RET	FTDM_EP_DATA_get
+FTM_RET	FTDM_EP_getData
 (
-	FTDM_EP_PTR			pEP,
-	FTM_ULONG			nStartIndex,
-	FTM_EP_DATA_PTR 	pData,
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pnCount 
+	FTDM_EP_PTR		pEP,
+	FTM_ULONG		nStartIndex,
+	FTM_EP_DATA_PTR pData,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pnCount 
 );
 
-FTM_RET	FTDM_EP_DATA_getWithTime
+FTM_RET	FTDM_EP_getDataWithTime
 (
-	FTDM_EP_PTR			pEP,
-	FTM_ULONG 			nBeginTime, 
-	FTM_ULONG 			nEndTime, 
-	FTM_BOOL			bAscending,
-	FTM_EP_DATA_PTR 	pData,
-	FTM_ULONG			nMaxCount,
-	FTM_ULONG_PTR		pnCount 
+	FTDM_EP_PTR		pEP,
+	FTM_ULONG 		nBeginTime, 
+	FTM_ULONG 		nEndTime, 
+	FTM_BOOL		bAscending,
+	FTM_EP_DATA_PTR pData,
+	FTM_ULONG		nMaxCount,
+	FTM_ULONG_PTR	pnCount 
 );
 
-FTM_RET	FTDM_EP_DATA_del
+FTM_INT	FTDM_EP_seeker
 (
-	FTDM_EP_PTR			pEP,
-	FTM_INT				nIndex, 
-	FTM_ULONG			nCount,
-	FTM_ULONG_PTR		pulCount
-); 
+	const FTM_VOID_PTR	pElement, 
+	const FTM_VOID_PTR	pKey
+);
 
-FTM_RET	FTDM_EP_DATA_delWithTime
+FTM_BOOL FTDM_EP_comparator
 (
-	FTDM_EP_PTR			pEP,
-	FTM_ULONG 			nBeginTime, 
-	FTM_ULONG 			nEndTime,
-	FTM_ULONG_PTR		pulCount
-); 
-
-FTM_RET	FTDM_EP_DATA_count
-(
-	FTDM_EP_PTR			pEP,
-	FTM_ULONG_PTR		pCount
-); 
-
-FTM_RET	FTDM_EP_DATA_countWithTime
-(
-	FTDM_EP_PTR			pEP,
-	FTM_ULONG 			nBeginTime, 
-	FTM_ULONG 			nEndTime,
-	FTM_ULONG_PTR		pCount
+	const FTM_VOID_PTR pElement1,
+	const FTM_VOID_PTR pElement2
 );
 
 FTM_RET	FTDM_EP_print
 (
 	FTDM_EP_PTR			pEP
+);
+
+FTM_RET	FTDM_EP_showData
+(
+	FTDM_EP_PTR 	pEP, 
+	FTM_ULONG 		ulBegin, 
+	FTM_ULONG 		ulCount
 );
 
 #endif
