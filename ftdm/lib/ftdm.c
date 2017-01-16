@@ -542,6 +542,7 @@ FTM_RET 	FTDM_loadObjectFromConfig
 )
 {
 	FTM_RET	xRet;
+	FTM_CONFIG_ITEM	xSection;
 	FTM_CONFIG_ITEM	xItem;
 
 	xRet = FTM_CONFIG_getItem(pConfig, "node", &xItem);
@@ -589,6 +590,56 @@ FTM_RET 	FTDM_loadObjectFromConfig
 		}
 	}
 
+
+	xRet = FTM_CONFIG_getItem(pConfig, "ep", &xSection);
+	if (xRet == FTM_RET_OK)
+	{
+		FTM_ULONG		ulItemCount;
+
+		xRet = FTM_CONFIG_LIST_getItemCount(&xSection, &ulItemCount);	
+		if (xRet == FTM_RET_OK)
+		{
+			FTM_ULONG		i;
+			FTM_CONFIG_ITEM	xItem;
+
+			for(i = 0 ; i < ulItemCount ; i++)
+			{
+				xRet = FTM_CONFIG_LIST_getItemAt(&xSection, i, &xItem);
+				if (xRet == FTM_RET_OK)
+				{
+					FTM_EP	xInfo;
+
+					xRet = FTM_CONFIG_ITEM_getEP(&xItem, &xInfo);
+					if (xRet == FTM_RET_OK)
+					{
+						FTDM_EP_PTR	pEP;
+
+						xRet = FTDM_createEP(pFTDM, &xInfo, &pEP);
+						if (xRet != FTM_RET_OK)
+						{
+							ERROR2(xRet, "Failed to create ep[%s]\n", xInfo.pEPID);
+						}
+						else
+						{
+							xRet = FTM_LIST_append(pFTDM->pEPList, pEP);
+						}
+					}
+					else
+					{
+						ERROR2(xRet, "Failed to get EP configuration.\n");	
+					}
+				}
+				else
+				{
+					ERROR2(xRet, "Failed to get ep informat.\n");	
+				}
+			}
+		}
+		else
+		{
+			ERROR2(xRet, "Failed go get ep count in config!\n");	
+		}
+	}
 	return	FTM_RET_OK;
 }
 
