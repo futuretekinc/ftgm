@@ -1,14 +1,11 @@
 #ifndef	_FTDM_RULE_H_
 #define	_FTDM_RULE_H_
 
-#include "ftm.h"
-
-struct FTDM_CONTEXT_STRUCT;
-typedef struct FTDM_RULE_STRUCT _PTR_ FTDM_RULE_PTR;
+#include "ftdm_types.h"
 
 FTM_RET	FTDM_RULE_create
 (
-	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM,
+	FTDM_PTR pFTDM,
 	FTM_RULE_PTR pInfo,
 	FTDM_RULE_PTR _PTR_ ppRule
 );

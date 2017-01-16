@@ -3,9 +3,18 @@
 #include "ftdm_sqlite.h"
 #include "ftdm_logger.h"
 
+typedef	struct 	FTDM_LOGGER_STRUCT
+{
+	FTM_LOGGER_CONFIG	xConfig;
+	FTDM_PTR			pFTDM;
+	FTM_ULONG			ulCount;
+	FTM_ULONG			ulFirstTime;
+	FTM_ULONG			ulLastTime;
+}	FTDM_LOGGER, _PTR_ FTDM_LOGGER_PTR;
+
 FTM_RET	FTDM_LOGGER_create
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTDM_LOGGER_PTR	_PTR_ ppLogger
 )
 {
@@ -79,6 +88,17 @@ FTM_RET	FTDM_LOGGER_init
 			return	xRet;	
 		}
 	}
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_LOGGER_final
+(
+	FTDM_LOGGER_PTR	pLogger
+)
+{
+	ASSERT(pLogger != NULL);
+	
 
 	return	FTM_RET_OK;
 }
@@ -177,6 +197,7 @@ FTM_RET	FTDM_LOGGER_get
 	ASSERT(pLogger != NULL);
 	ASSERT(pLoggerData != NULL);
 	ASSERT(pCount != NULL);
+
 	FTM_RET	xRet;
 	FTDM_DBIF_PTR	pDBIF;
 
@@ -208,6 +229,7 @@ FTM_RET	FTDM_LOGGER_getWithTime
 {
 	ASSERT(pLogger != NULL);
 	ASSERT(pCount != NULL);
+
 	FTM_RET	xRet;
 	FTDM_DBIF_PTR	pDBIF;
 
@@ -230,12 +252,15 @@ FTM_RET	FTDM_LOGGER_getWithTime
 
 FTM_RET	FTDM_LOGGER_del
 (
-	FTDM_LOGGER_PTR			pLogger,
-	FTM_INT 			nIndex, 
-	FTM_ULONG			nCount,
-	FTM_ULONG_PTR		pulCount
+	FTDM_LOGGER_PTR	pLogger,
+	FTM_INT 		nIndex, 
+	FTM_ULONG		nCount,
+	FTM_ULONG_PTR	pulCount
 ) 
 {
+	ASSERT(pLogger != NULL);
+	ASSERT(pulCount != NULL);
+
 	FTM_RET		xRet;
 	FTM_ULONG	ulFirstTime, ulLastTime;
 	FTM_ULONG	ulCount1 = 0, ulCount2= 0;
@@ -294,6 +319,8 @@ FTM_RET	FTDM_LOGGER_delWithTime
 	FTM_ULONG_PTR		pulCount
 ) 
 {
+	ASSERT(pLogger != NULL);
+
 	FTM_RET		xRet;
 	FTM_ULONG	ulFirstTime, ulLastTime;
 	FTM_ULONG	ulCount, ulCount1 = 0, ulCount2 = 0;
@@ -309,6 +336,7 @@ FTM_RET	FTDM_LOGGER_delWithTime
 	xRet = FTDM_DBIF_getLogInfo(pDBIF, pLogger->xConfig.pName, &ulCount1, &ulFirstTime, &ulLastTime);
 	if (xRet != FTM_RET_OK)
 	{
+		ERROR2(xRet, "Failed to get logger information.\n");
 		return	xRet;	
 	}
 
@@ -319,24 +347,26 @@ FTM_RET	FTDM_LOGGER_delWithTime
 		xRet = FTDM_DBIF_getLogInfo(pDBIF, pLogger->xConfig.pName, &ulCount2, &ulFirstTime, &ulLastTime);
 		if (xRet != FTM_RET_OK)
 		{
-			ERROR("EP[%s] information update failed.\n", pLogger->xConfig.pName);	
-		}
-		else
-		{
 			pLogger->ulFirstTime = ulFirstTime;
 			pLogger->ulLastTime = ulLastTime;
 			pLogger->ulCount = ulCount2;
 
-			if (ulCount1 > ulCount2)
+			if (pulCount != NULL)
 			{
-				*pulCount = ulCount1 - ulCount2;
-			}
-			else
-			{
-				*pulCount = 0;
+				if (ulCount1 > ulCount2)
+				{
+					*pulCount = ulCount1 - ulCount2;
+				}
+				else
+				{
+					*pulCount = 0;
+				}
 			}
 		}
-	
+		else
+		{
+			ERROR2(xRet, "Failed to get logger information.\n");
+		}
 	}
 
 	return	xRet;
@@ -344,8 +374,8 @@ FTM_RET	FTDM_LOGGER_delWithTime
 
 FTM_RET	FTDM_LOGGER_count
 (
-	FTDM_LOGGER_PTR			pLogger,
-	FTM_ULONG_PTR		pulCount
+	FTDM_LOGGER_PTR	pLogger,
+	FTM_ULONG_PTR	pulCount
 ) 
 {
 	ASSERT(pulCount != NULL);
@@ -357,10 +387,10 @@ FTM_RET	FTDM_LOGGER_count
 
 FTM_RET	FTDM_LOGGER_countWithTime
 (
-	FTDM_LOGGER_PTR			pLogger,
-	FTM_ULONG 			nBeginTime, 
-	FTM_ULONG 			nEndTime,
-	FTM_ULONG_PTR		pulCount
+	FTDM_LOGGER_PTR	pLogger,
+	FTM_ULONG 		nBeginTime, 
+	FTM_ULONG 		nEndTime,
+	FTM_ULONG_PTR	pulCount
 ) 
 {
 	ASSERT(pulCount != NULL);
@@ -374,8 +404,13 @@ FTM_RET	FTDM_LOGGER_countWithTime
 		return	xRet;
 	}
 
+	xRet = FTDM_DBIF_getLogCountWithTime(pDBIF, pLogger->xConfig.pName, nBeginTime, nEndTime, pulCount);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed go get log count!\n");
+	}
 
-	return	FTDM_DBIF_getLogCountWithTime(pDBIF, pLogger->xConfig.pName, nBeginTime, nEndTime, pulCount);
+	return	xRet;
 }
 
 

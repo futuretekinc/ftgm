@@ -4,8 +4,8 @@
 #include "ftm_types.h"
 #include "ftm_shell.h"
 
-extern	FTM_SHELL_CMD	FTDMS_pCmdList[];
-extern	FTM_ULONG		FTDMS_ulCmdCount;
-extern	FTM_CHAR_PTR	FTDMS_pPrompt;
+extern	FTM_SHELL_CMD	FTDM_pCmdList[];
+extern	FTM_ULONG		FTDM_ulCmdCount;
+extern	FTM_CHAR_PTR	FTDM_pPrompt;
 
 #endif

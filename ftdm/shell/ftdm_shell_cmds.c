@@ -6,17 +6,15 @@
 #include "ftdm.h"
 #include "ftm_mem.h"
 #include "ftdm_params.h"
-#include "ftdm_shell_cmds.h"
 #include "ftdm_config.h"
 #include "ftdm_server.h"
-#include "ftdm_server_cmds.h"
-#include "ftdm_ep_management.h"
 #include "ftdm_trigger.h"
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
+#include "shell/ftdm_shell_cmds.h"
 
 static
-FTM_RET	FTDMS_SHELL_CMD_config
+FTM_RET	FTDM_SHELL_CMD_config
 (
 	FTM_SHELL_PTR 	pShell, 
 	FTM_INT			nArgc, 
@@ -25,7 +23,7 @@ FTM_RET	FTDMS_SHELL_CMD_config
 );
 
 static
-FTM_RET	FTDMS_SHELL_CMD_object
+FTM_RET	FTDM_SHELL_CMD_object
 (
 	FTM_SHELL_PTR 	pShell, 
 	FTM_INT			nArgc, 
@@ -34,27 +32,7 @@ FTM_RET	FTDMS_SHELL_CMD_object
 );
 
 static
-FTM_RET	FTDMS_SHELL_CMD_session
-(
-	FTM_SHELL_PTR 	pShell, 
-	FTM_INT			nArgc, 
-	FTM_CHAR_PTR	pArgv[], 
-	FTM_VOID_PTR	pData
-);
-
-#if 0
-static
-FTM_RET	FTDMS_SHELL_CMD_trace
-(
-	FTM_SHELL_PTR 	pShell, 
-	FTM_INT			nArgc, 
-	FTM_CHAR_PTR	pArgv[], 
-	FTM_VOID_PTR	pData
-);
-#endif
-
-static
-FTM_RET	FTDMS_SHELL_CMD_node
+FTM_RET	FTDM_SHELL_CMD_session
 (
 	FTM_SHELL_PTR 	pShell, 
 	FTM_INT			nArgc, 
@@ -63,7 +41,7 @@ FTM_RET	FTDMS_SHELL_CMD_node
 );
 
 static
-FTM_RET	FTDMS_SHELL_CMD_ep
+FTM_RET	FTDM_SHELL_CMD_node
 (
 	FTM_SHELL_PTR 	pShell, 
 	FTM_INT			nArgc, 
@@ -72,7 +50,7 @@ FTM_RET	FTDMS_SHELL_CMD_ep
 );
 
 static
-FTM_RET	FTDMS_SHELL_CMD_log
+FTM_RET	FTDM_SHELL_CMD_ep
 (
 	FTM_SHELL_PTR 	pShell, 
 	FTM_INT			nArgc, 
@@ -80,28 +58,29 @@ FTM_RET	FTDMS_SHELL_CMD_log
 	FTM_VOID_PTR	pData
 );
 
-FTM_RET	FTDMS_SHELL_CMD_EP_showData
+static
+FTM_RET	FTDM_SHELL_CMD_log
 (
 	FTM_SHELL_PTR 	pShell, 
-	FTM_CHAR_PTR 	pEPID, 
-	FTM_ULONG 		ulBegin, 
-	FTM_ULONG 		ulCount
+	FTM_INT			nArgc, 
+	FTM_CHAR_PTR	pArgv[], 
+	FTM_VOID_PTR	pData
 );
 
 static 
 FTDM_CFG	xConfig;
-FTM_SHELL_CMD	FTDMS_pCmdList[] =
+FTM_SHELL_CMD	FTDM_pCmdList[] =
 {
 	{
 		.pString	= "config",
-		.function	= FTDMS_SHELL_CMD_config,
+		.function	= FTDM_SHELL_CMD_config,
 		.pShortHelp	= "Configuration Data Manager.",
 		.pHelp		= "\n"\
 					  "\tConfiguration Data Manager.\n"
 	},
 	{
 		.pString	= "ep",
-		.function	= FTDMS_SHELL_CMD_ep,
+		.function	= FTDM_SHELL_CMD_ep,
 		.pShortHelp	= "End Point Manager.",
 		.pHelp		= " [<EPID> [<cmd>] [<index> <count>]]\n"\
 					  "    EP management\n"\
@@ -114,28 +93,28 @@ FTM_SHELL_CMD	FTDMS_pCmdList[] =
 	},
 	{
 		.pString	= "log",
-		.function	= FTDMS_SHELL_CMD_log,
+		.function	= FTDM_SHELL_CMD_log,
 		.pShortHelp	= "Log management.",
 		.pHelp		= "\n"\
 					  "\tLog management.\n"
 	},
 	{
 		.pString	= "node",
-		.function	= FTDMS_SHELL_CMD_node,
+		.function	= FTDM_SHELL_CMD_node,
 		.pShortHelp	= "Node Manager.",
 		.pHelp		= "\n"\
 					  "\tNode Manager.\n"
 	},
 	{
 		.pString	= "object",
-		.function	= FTDMS_SHELL_CMD_object,
+		.function	= FTDM_SHELL_CMD_object,
 		.pShortHelp	= "Object management.",
 		.pHelp		= "\n"\
 					  "\tObject management.\n"
 	},
 	{
 		.pString	= "session",
-		.function	= FTDMS_SHELL_CMD_session,
+		.function	= FTDM_SHELL_CMD_session,
 		.pShortHelp	= "Session Manager.",
 		.pHelp		= "\n"\
 					  "\tSession Manager.\n"
@@ -149,10 +128,10 @@ FTM_SHELL_CMD	FTDMS_pCmdList[] =
 	},
 };
 
-FTM_ULONG		FTDMS_ulCmdCount = sizeof(FTDMS_pCmdList) / sizeof(FTM_SHELL_CMD);
-FTM_CHAR_PTR	FTDMS_pPrompt = "FTDMS";
+FTM_ULONG		FTDM_ulCmdCount = sizeof(FTDM_pCmdList) / sizeof(FTM_SHELL_CMD);
+FTM_CHAR_PTR	FTDM_pPrompt = "ftdm";
 
-FTM_RET	FTDMS_SHELL_CMD_config
+FTM_RET	FTDM_SHELL_CMD_config
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -177,7 +156,7 @@ FTM_RET	FTDMS_SHELL_CMD_config
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMS_SHELL_CMD_object
+FTM_RET	FTDM_SHELL_CMD_object
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -196,16 +175,16 @@ FTM_RET	FTDMS_SHELL_CMD_object
 			FTM_CHAR_PTR	pArgv[1];
 			
 			pArgv[0] = "node";
-			FTDMS_SHELL_CMD_node(pShell, 1, pArgv, pData);
+			FTDM_SHELL_CMD_node(pShell, 1, pArgv, pData);
 			pArgv[0] = "ep";
-			FTDMS_SHELL_CMD_ep(pShell, 1, pArgv, pData);
+			FTDM_SHELL_CMD_ep(pShell, 1, pArgv, pData);
 #if 0
 			pArgv[0] = "trigger";
-			FTDMS_SHELL_CMD_trigger(pShell, 1, pArgc, pData);
+			FTDM_SHELL_CMD_trigger(pShell, 1, pArgc, pData);
 			pArgv[0] = "action";
-			FTDMS_SHELL_CMD_action(pShell, 1, pArgv, pData);
+			FTDM_SHELL_CMD_action(pShell, 1, pArgv, pData);
 			pArgv[0] = "rule";
-			FTDMS_SHELL_CMD_rule(pShell, 1, pArgv, pData);
+			FTDM_SHELL_CMD_rule(pShell, 1, pArgv, pData);
 #endif
 		}	
 		break;
@@ -235,7 +214,7 @@ FTM_RET	FTDMS_SHELL_CMD_object
 	return	FTM_RET_OK;
 }
 
-FTM_RET	FTDMS_SHELL_CMD_session
+FTM_RET	FTDM_SHELL_CMD_session
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -270,74 +249,7 @@ FTM_RET	FTDMS_SHELL_CMD_session
 	return	FTM_RET_OK;
 }
 
-#if 0
-FTM_RET FTDMS_SHELL_CMD_trace
-(
-	FTM_SHELL_PTR	pShell,
-	FTM_INT			nArgc,
-	FTM_CHAR_PTR	pArgv[],
-	FTM_VOID_PTR	pData
-)
-{
-	switch(nArgc)
-	{
-	case	1:
-		{
-			MESSAGE("# Trace Configuration\n");
-			FTM_TRACE_printConfig(&xConfig.xPrint);
-		}
-		break;
-
-	case	2:
-		{
-			if (strcasecmp(pArgv[1], "help") == 0)
-			{
-				MESSAGE("Usage : %s [<cmd> <level>]\n",	pArgv[0]);
-				MESSAGE("    Trace configuration\n");
-				MESSAGE("  Commands:\n");
-				MESSAGE("    %8s   Set trace level\n", "set");
-				MESSAGE("  Parameters:\n");
-				MESSAGE("    %8s   trace level (0 ~ 6)\n", "level");
-			}
-		}
-		break;
-
-	case	4:
-		{
-			FTM_RET					xRet;
-			FTM_TRACE_MODULE_TYPE	xType;
-
-			xRet = FTM_TRACE_getType(pArgv[1], &xType);
-			if (xRet != FTM_RET_OK)
-			{
-				MESSAGE("Invalid module name[%s]!\n", pArgv[1]);
-			}
-			else
-			{
-				if (strcasecmp(pArgv[2], "level") == 0)
-				{
-					FTM_ULONG	ulLevel;
-	
-					xRet = FTM_TRACE_strToLevel(pArgv[3], &ulLevel);
-					if (xRet != FTM_RET_OK)
-					{
-						MESSAGE("Invalid level[%s]!\n", pArgv[3]);
-					}
-					else
-					{
-						FTM_TRACE_setLevel(xType, ulLevel);
-					}
-				}
-			}
-		}
-		break;
-	}
-
-	return	FTM_RET_OK;
-}
-#endif
-
-FTM_RET FTDMS_SHELL_CMD_node
+FTM_RET FTDM_SHELL_CMD_node
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -470,7 +382,7 @@ FTM_RET FTDMS_SHELL_CMD_node
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDMS_SHELL_CMD_ep
+FTM_RET FTDM_SHELL_CMD_ep
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -637,7 +549,7 @@ FTM_RET FTDMS_SHELL_CMD_ep
 	return	FTM_RET_OK;
 }
 
-FTM_RET FTDMS_SHELL_CMD_log
+FTM_RET FTDM_SHELL_CMD_log
 (
 	FTM_SHELL_PTR	pShell,
 	FTM_INT			nArgc,
@@ -645,16 +557,24 @@ FTM_RET FTDMS_SHELL_CMD_log
 	FTM_VOID_PTR	pData
 )
 {
-#if 0
 	FTM_RET	xRet;
 	FTDM_SIS_PTR	pSIS = (FTDM_SIS_PTR)pData;
+	FTDM_LOGGER_PTR	pLogger;
+
+	xRet = FTDM_getLogger(pSIS->pFTDM, &pLogger);
+	if (xRet != FTM_RET_OK)
+	{
+		MESSAGE("Logger is not supported!\n");
+		return	FTM_RET_OK;
+	}
+
 	switch (nArgc)
 	{
 	case	1:	
 		{
 			FTM_ULONG	ulBeginTime, ulEndTime, ulCount;
 
-			xRet = FTDM_LOGGER_info(pSIS->pFTDM->pLogger, &ulBeginTime, &ulEndTime, &ulCount);
+			xRet = FTDM_LOGGER_info(pLogger, &ulBeginTime, &ulEndTime, &ulCount);
 			if (xRet != FTM_RET_OK)
 			{
 				MESSAGE("Error : %08lx\n", xRet);	
@@ -693,7 +613,7 @@ FTM_RET FTDMS_SHELL_CMD_log
 					MESSAGE("Error : not enough memory!\n");
 					break;	
 				}
-				xRet = FTDM_LOGGER_get(pSIS->pFTDM->pLogger, 0, pLogs,  100, &ulCount);
+				xRet = FTDM_LOGGER_get(pLogger, 0, pLogs,  100, &ulCount);
 				if (xRet != FTM_RET_OK)
 				{
 					MESSAGE("Error : %08lx\n", xRet);	
@@ -718,7 +638,6 @@ FTM_RET FTDMS_SHELL_CMD_log
 		break;
 	}
 
-#endif
 	return	FTM_RET_OK;
 }
 

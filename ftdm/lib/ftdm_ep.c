@@ -12,7 +12,7 @@
 typedef	struct FTDM_EP_STRUCT
 {
 	FTM_EP		xInfo;
-	FTDM_CONTEXT_PTR	pFTDM;
+	FTDM_PTR	pFTDM;
 	FTM_ULONG	ulCount;
 	FTM_ULONG	ulFirstTime;
 	FTM_ULONG	ulLastTime;
@@ -21,7 +21,7 @@ typedef	struct FTDM_EP_STRUCT
 
 FTM_RET	FTDM_EP_create
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_EP_PTR	pInfo,
 	FTDM_EP_PTR	_PTR_ ppEP
 )

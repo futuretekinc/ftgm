@@ -3,47 +3,20 @@
 
 #include <sys/socket.h> 
 #include <arpa/inet.h>
-#include "ftm_types.h"
+#include "ftdm_types.h"
 #include "ftdm_params.h"
 
 
 #define	FTDM_PACKET_LEN					2048
 
-struct FTDM_CONTEXT_STRUCT;
-
-typedef	struct
-{
-	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM;
-	FTDM_CFG_SERVER		xConfig;
-	pthread_t 			*pThread ;
-	FTM_BOOL			bStop;
-	sem_t				xSemaphore;
-	pthread_t			xThread;
-	FTM_INT				hSocket;
-	FTM_LIST_PTR		pSessionList;
-}	FTDM_SIS, _PTR_ FTDM_SIS_PTR;
-
-typedef	struct
-{
-	FTDM_SIS_PTR		pServer;
-	pthread_t 			xThread;	
-	FTM_INT				hSocket;
-	FTM_BOOL			bStop;
-	sem_t				xSemaphore;
-	struct sockaddr_in	xPeer;
-	FTM_BYTE_PTR		pReqBuff;
-	FTM_ULONG			ulReqBufferLen;
-	FTM_BYTE_PTR		pRespBuff;
-	FTM_ULONG			ulRespBufferLen;
-	FTM_TIME			xStartTime;
-	FTM_TIME			xLastTime;
-}	FTDM_SESSION, _PTR_ FTDM_SESSION_PTR;
+typedef struct FTDM_SIS_STRUCT _PTR_ FTDM_SIS_PTR;
+typedef struct FTDM_SESSION_STRUCT _PTR_ FTDM_SESSION_PTR;
 
 typedef	FTM_RET	(*FTDM_SERVICE_CALLBACK)(FTDM_SIS_PTR pServer, FTDM_REQ_PARAMS_PTR, FTDM_RESP_PARAMS_PTR);
 
 FTM_RET	FTDM_SIS_create
 (
-	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM,
+	FTDM_PTR	pFTDM,
 	FTDM_SIS_PTR _PTR_ ppSIS
 );
 

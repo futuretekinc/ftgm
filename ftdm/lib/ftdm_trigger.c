@@ -9,6 +9,13 @@
 #include "ftdm_sqlite.h"
 #include "ftdm_log.h"
 
+typedef	struct FTDM_TRIGGER_STRUCT
+{
+	FTDM_PTR pFTDM;
+	FTM_TRIGGER		xInfo;
+	FTM_ULONG		ulIndex;
+}	FTDM_TRIGGER, _PTR_ FTDM_TRIGGER_PTR;
+
 FTM_RET	FTDM_TRIGGER_init
 (
 	FTDM_TRIGGER_PTR	pTrigger
@@ -194,7 +201,7 @@ FTM_RET	FTDM_TRIGGER_loadConfig
 
 FTM_RET	FTDM_TRIGGER_create
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_TRIGGER_PTR 	pInfo,
 	FTDM_TRIGGER_PTR _PTR_ ppTrigger
 )

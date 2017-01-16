@@ -7,26 +7,17 @@
 #include "ftdm_sqlite.h"
 #include "ftdm_log.h"
 
-FTM_RET	FTDM_ACTION_init
-(
-	FTDM_ACTION_PTR	pAction
-)
+typedef	struct FTDM_ACTION_STRUCT
 {
-	return	FTM_RET_OK;
-}
-
-FTM_RET FTDM_ACTION_final
-(
-	FTDM_ACTION_PTR	pAction
-)
-{
-	return	FTM_RET_OK;
-}
+	FTDM_PTR 		pFTDM;
+	FTM_ACTION		xInfo;
+	FTM_ULONG		ulIndex;
+}	FTDM_ACTION, _PTR_ FTDM_ACTION_PTR;
 
 FTM_RET	FTDM_ACTION_create
 (
-	FTDM_CONTEXT_PTR	pFTDM,
-	FTM_ACTION_PTR 		pInfo,
+	FTDM_PTR 		pFTDM,
+	FTM_ACTION_PTR	pInfo,
 	FTDM_ACTION_PTR	_PTR_ ppAction
 )
 {
@@ -115,6 +106,22 @@ FTM_RET	FTDM_ACTION_destroy
 
 	*ppAction = NULL;
 
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_ACTION_init
+(
+	FTDM_ACTION_PTR	pAction
+)
+{
+	return	FTM_RET_OK;
+}
+
+FTM_RET FTDM_ACTION_final
+(
+	FTDM_ACTION_PTR	pAction
+)
+{
 	return	FTM_RET_OK;
 }
 

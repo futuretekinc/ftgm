@@ -1,15 +1,11 @@
 #ifndef	__FTDM_EP_H__
 #define	__FTDM_EP_H__
 
-#include "ftm.h"
-//#include "ftdm_config.h"
-
-struct FTDM_CONTEXT_STRUCT;
-typedef struct FTDM_EP_STRUCT _PTR_ FTDM_EP_PTR;
+#include "ftdm_types.h"
 
 FTM_RET	FTDM_EP_create
 (
-	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_EP_PTR	pInfo,
 	FTDM_EP_PTR	_PTR_ ppEP
 );

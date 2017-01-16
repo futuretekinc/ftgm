@@ -1,18 +1,11 @@
 #ifndef	_FTDM_TRIGGER_H_
 #define	_FTDM_TRIGGER_H_
 
-#include "ftm.h"
-
-typedef	struct
-{
-	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM;
-	FTM_TRIGGER		xInfo;
-	FTM_ULONG		ulIndex;
-}	FTDM_TRIGGER, _PTR_ FTDM_TRIGGER_PTR;
+#include "ftdm_types.h"
 
 FTM_RET	FTDM_TRIGGER_create
 (
-	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM,
+	FTDM_PTR pFTDM,
 	FTM_TRIGGER_PTR pInfo,
 	FTDM_TRIGGER_PTR _PTR_ ppTrigger
 );

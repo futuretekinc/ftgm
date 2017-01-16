@@ -7,16 +7,15 @@
 #include "ftdm.h"
 #include "ftdm_config.h"
 #include "ftdm_ep.h"
-#include "ftdm_ep_management.h"
 #include "ftdm_ep_class.h"
 #include "ftdm_node.h"
 #include "ftdm_params.h"
-#include "ftdm_server_cmds.h"
 #include "ftdm_server.h"
 #include "ftdm_sqlite.h"
 #include "ftdm_trigger.h"
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
+#include "shell/ftdm_shell_cmds.h"
 
 static 
 FTM_VOID	_showUsage(FTM_CHAR_PTR pAppName);
@@ -34,7 +33,7 @@ int main(int nArgc, char *pArgv[])
 	FTM_CHAR	pConfigFileName[1024];
 	FTM_CHAR	pObjectFileName[1024];
 	FTM_CONFIG_PTR		pConfig;
-	FTDM_CONTEXT_PTR	pFTDM;
+	FTDM_PTR	pFTDM;
 	FTDM_DBIF_PTR	pDBIF;
 	FTDM_SIS_PTR	pSIS;
 
@@ -204,7 +203,7 @@ int main(int nArgc, char *pArgv[])
 	else
 	{
 		FTDM_SIS_start(pSIS);
-		FTM_SHELL_run2(FTDMS_pPrompt, FTDMS_pCmdList, FTDMS_ulCmdCount, pSIS);
+		FTM_SHELL_run2(FTDM_pPrompt, FTDM_pCmdList, FTDM_ulCmdCount, pSIS);
 		FTDM_SIS_stop(pSIS);
 	}
 

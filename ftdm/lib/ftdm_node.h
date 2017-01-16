@@ -1,18 +1,14 @@
 #ifndef	__FTDM_NODE_H__
 #define	__FTDM_NODE_H__
 
-#include "ftm.h"
+#include "ftdm_types.h"
 #include "ftdm_config.h"
 
 #define	FTDM_DT_ROOT	0x00000001
 
-struct FTDM_CONTEXT_STRUCT;
-typedef struct FTDM_NODE_STRUCT _PTR_ FTDM_NODE_PTR;
-
-
 FTM_RET	FTDM_NODE_create
 (
-	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM,
+	FTDM_PTR pFTDM,
 	FTM_NODE_PTR		pInfo,
 	FTM_BOOL			bWithDB,
 	FTDM_NODE_PTR _PTR_ ppNode
@@ -47,6 +43,13 @@ FTM_RET	FTDM_NODE_setInfo
 );
 
 FTM_RET	FTDM_NODE_getID
+(
+	FTDM_NODE_PTR	pNode,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen
+);
+
+FTM_RET	FTDM_NODE_getURL
 (
 	FTDM_NODE_PTR	pNode,
 	FTM_CHAR_PTR	pBuff,

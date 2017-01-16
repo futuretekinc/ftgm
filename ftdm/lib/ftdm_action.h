@@ -1,21 +1,12 @@
 #ifndef	_FTDM_ACTION_H_
 #define	_FTDM_ACTION_H_
 
-#include "ftm.h"
-
-struct FTDM_CONTEXT_STRUCT;
-
-typedef	struct
-{
-	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM;
-	FTM_ACTION			xInfo;
-	FTM_ULONG			ulIndex;
-}	FTDM_ACTION, _PTR_ FTDM_ACTION_PTR;
+#include "ftdm_types.h"
 
 FTM_RET	FTDM_ACTION_create
 (
-	struct FTDM_CONTEXT_STRUCT _PTR_ pFTDM,
-	FTM_ACTION_PTR 		pInfo,
+	FTDM_PTR		pFTDM,
+	FTM_ACTION_PTR 	pInfo,
 	FTDM_ACTION_PTR	_PTR_ ppAction
 );
 

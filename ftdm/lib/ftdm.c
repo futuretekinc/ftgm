@@ -10,17 +10,16 @@
 #include "ftdm_ep_class.h"
 #include "ftdm_node.h"
 #include "ftdm_params.h"
-#include "ftdm_server_cmds.h"
 #include "ftdm_server.h"
 #include "ftdm_sqlite.h"
 #include "ftdm_trigger.h"
 #include "ftdm_action.h"
 #include "ftdm_rule.h"
 #include "ftdm.h"
-#include "ftm_log.h"
 #include "ftdm_log.h"
+#include "shell/ftdm_shell_cmds.h"
 
-typedef struct FTDM_CONTEXT_STRUCT
+typedef struct FTDM_STRUCT
 {
 	FTDM_DBIF_PTR		pDBIF;
 	FTM_LIST_PTR		pNodeList;
@@ -30,18 +29,18 @@ typedef struct FTDM_CONTEXT_STRUCT
 	FTM_LIST_PTR		pRuleList;
 	FTDM_LOGGER_PTR		pLogger;
 	FTDM_SIS_PTR		pSIS;
-} FTDM_CONTEXT;
+} FTDM;
 
 FTM_RET	FTDM_create
 (
-	FTDM_CONTEXT_PTR _PTR_	ppFTDM
+	FTDM_PTR _PTR_	ppFTDM
 )
 {
 	ASSERT(ppFTDM != NULL);
 	FTM_RET		xRet;
-	FTDM_CONTEXT_PTR	pFTDM;
+	FTDM_PTR	pFTDM;
 	
-	pFTDM = (FTDM_CONTEXT_PTR)FTM_MEM_malloc(sizeof(FTDM_CONTEXT));
+	pFTDM = (FTDM_PTR)FTM_MEM_malloc(sizeof(FTDM));
 	if (pFTDM == NULL)
 	{
 		xRet = FTM_RET_NOT_ENOUGH_MEMORY;
@@ -174,13 +173,13 @@ error:
 
 FTM_RET	FTDM_destroy
 (
-	FTDM_CONTEXT_PTR _PTR_ ppFTDM
+	FTDM_PTR _PTR_ ppFTDM
 )
 {
 	ASSERT(ppFTDM != NULL);
 
 	FTM_RET	xRet;
-	FTDM_CONTEXT_PTR	pFTDM = *ppFTDM;
+	FTDM_PTR	pFTDM = *ppFTDM;
 
 	if (pFTDM->pSIS != NULL)
 	{
@@ -308,7 +307,7 @@ FTM_RET	FTDM_destroy
 
 FTM_RET 	FTDM_init
 (
-	FTDM_CONTEXT_PTR pFTDM
+	FTDM_PTR pFTDM
 )
 {
 	ASSERT(pFTDM != NULL);
@@ -394,7 +393,7 @@ FTM_RET 	FTDM_init
 
 FTM_RET	FTDM_final
 (	
-	FTDM_CONTEXT_PTR pFTDM
+	FTDM_PTR pFTDM
 )
 {
 	ASSERT(pFTDM != NULL);
@@ -417,13 +416,12 @@ FTM_RET	FTDM_final
 	{
 		ERROR2(xRet, "EP Class management finalization failed.\n");	
 	}
-#if 0
+
 	xRet = FTDM_LOGGER_final(pFTDM->pLogger);
 	if (xRet != FTM_RET_OK)
 	{
 		ERROR2(xRet, "Failed to destroy logger.\n");	
 	}
-#endif
 
 	FTM_LIST_iteratorStart(pFTDM->pRuleList);
 	while(FTM_LIST_iteratorNext(pFTDM->pRuleList, (FTM_VOID_PTR _PTR_)&pRule) == FTM_RET_OK)
@@ -489,7 +487,7 @@ FTM_RET	FTDM_final
 
 FTM_RET 	FTDM_loadConfig
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CONFIG_PTR		pConfig
 )
 {
@@ -537,7 +535,7 @@ FTM_RET 	FTDM_loadConfig
 
 FTM_RET 	FTDM_loadObjectFromConfig
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CONFIG_PTR		pConfig
 )
 {
@@ -645,7 +643,7 @@ FTM_RET 	FTDM_loadObjectFromConfig
 
 FTM_RET	FTDM_loadObjectFromDB
 (	
-	FTDM_CONTEXT_PTR	pFTDM
+	FTDM_PTR	pFTDM
 )
 {
 	FTM_RET	xRet;
@@ -744,7 +742,7 @@ FTM_RET	FTDM_loadObjectFromDB
 
 FTM_RET	FTDM_saveObjectToDB
 (
-	FTDM_CONTEXT_PTR	pFTDM
+	FTDM_PTR	pFTDM
 )
 {
 	ASSERT(pFTDM != NULL);
@@ -904,7 +902,7 @@ FTM_RET	FTDM_saveObjectToDB
 
 FTM_RET	FTDM_loadObjectFromFile
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pFileName
 )
 {
@@ -954,7 +952,7 @@ FTM_RET	FTDM_setDebugLevel
 
 FTM_RET	FTDM_getSIS
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTDM_SIS_PTR _PTR_ ppSIS
 )
 {
@@ -967,7 +965,7 @@ FTM_RET	FTDM_getSIS
 
 FTM_RET	FTDM_getDBIF
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTDM_DBIF_PTR _PTR_ ppDBIF
 )
 {
@@ -978,9 +976,22 @@ FTM_RET	FTDM_getDBIF
 	return	FTM_RET_OK;
 }
 
+FTM_RET	FTDM_getLogger
+(
+	FTDM_PTR	pFTDM,
+	FTDM_LOGGER_PTR _PTR_ ppLogger
+)
+{
+	ASSERT(pFTDM != NULL);
+
+	*ppLogger = pFTDM->pLogger;
+
+	return	FTM_RET_OK;
+}
+
 FTM_RET	FTDM_removeInvalidData
 (
-	FTDM_CONTEXT_PTR pFTDM
+	FTDM_PTR pFTDM
 )
 {
 	ASSERT(pFTDM != NULL);
@@ -1007,7 +1018,7 @@ FTM_RET	FTDM_removeInvalidData
  ******************************************************************/
 FTM_RET	FTDM_createNode
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_NODE_PTR		pInfo,
 	FTDM_NODE_PTR _PTR_ ppNode
 )
@@ -1044,7 +1055,7 @@ FTM_RET	FTDM_createNode
 
 FTM_RET	FTDM_deleteNode
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID
 )
 {
@@ -1079,7 +1090,7 @@ FTM_RET	FTDM_deleteNode
 
 FTM_RET FTDM_isNodeExist
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
  	FTM_CHAR_PTR	pDID,
 	FTM_BOOL_PTR	pExist
 )
@@ -1104,7 +1115,7 @@ FTM_RET FTDM_isNodeExist
 
 FTM_RET	FTDM_getNodeCount
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ULONG_PTR		pulCount
 )
 {
@@ -1124,7 +1135,7 @@ FTM_RET	FTDM_getNodeCount
 
 FTM_RET	FTDM_getNode
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID,
 	FTDM_NODE_PTR _PTR_	ppNode
 )
@@ -1146,7 +1157,7 @@ FTM_RET	FTDM_getNode
 
 FTM_RET	FTDM_getNodeAt
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ULONG			ulIndex,
 	FTDM_NODE_PTR _PTR_	ppNode
 )
@@ -1167,7 +1178,7 @@ FTM_RET	FTDM_getNodeAt
 
 FTM_RET	FTDM_getNodeIDList
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_DID_PTR		pIDList,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulMaxCount,
@@ -1211,7 +1222,7 @@ FTM_RET	FTDM_getNodeIDList
 
 FTM_RET	FTDM_createNodeLog
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR	pDID,
 	FTM_RET			xResult
 )
@@ -1239,7 +1250,7 @@ FTM_RET	FTDM_createNodeLog
  ******************************************************************/
 FTM_RET	FTDM_createEP
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_EP_PTR		pInfo,
 	FTDM_EP_PTR _PTR_ ppEP
 )
@@ -1275,7 +1286,7 @@ FTM_RET	FTDM_createEP
 
 FTM_RET	FTDM_deleteEP
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID
 )
 {
@@ -1309,7 +1320,7 @@ FTM_RET	FTDM_deleteEP
 
 FTM_RET	FTDM_getEPCount
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_EP_TYPE			xType,
 	FTM_ULONG_PTR		pulCount
 )
@@ -1349,7 +1360,7 @@ FTM_RET	FTDM_getEPCount
 
 FTM_RET	FTDM_getEP
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID,
 	FTDM_EP_PTR _PTR_	ppEP
 )
@@ -1371,7 +1382,7 @@ FTM_RET	FTDM_getEP
 
 FTM_RET	FTDM_getEPAt
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ULONG			ulIndex,
 	FTDM_EP_PTR _PTR_	ppEP
 )
@@ -1392,7 +1403,7 @@ FTM_RET	FTDM_getEPAt
 
 FTM_RET	FTDM_getEPIDList
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_DID_PTR		pIDList,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulMaxCount,
@@ -1438,7 +1449,7 @@ FTM_RET	FTDM_getEPIDList
 
 FTM_RET	FTDM_createEPLog
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR	pEPID,
 	FTM_RET			xResult
 )
@@ -1466,7 +1477,7 @@ FTM_RET	FTDM_createEPLog
  ******************************************************************/
 FTM_RET	FTDM_createTrigger
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_TRIGGER_PTR		pInfo,
 	FTDM_TRIGGER_PTR _PTR_ ppTrigger
 )
@@ -1502,7 +1513,7 @@ FTM_RET	FTDM_createTrigger
 
 FTM_RET	FTDM_deleteTrigger
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID
 )
 {
@@ -1536,7 +1547,7 @@ FTM_RET	FTDM_deleteTrigger
 
 FTM_RET	FTDM_getTriggerCount
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ULONG_PTR		pulCount
 )
 {
@@ -1555,7 +1566,7 @@ FTM_RET	FTDM_getTriggerCount
 
 FTM_RET	FTDM_getTrigger
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID,
 	FTDM_TRIGGER_PTR _PTR_	ppTrigger
 )
@@ -1576,7 +1587,7 @@ FTM_RET	FTDM_getTrigger
 
 FTM_RET	FTDM_getTriggerAt
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ULONG			ulIndex,
 	FTDM_TRIGGER_PTR _PTR_	ppTrigger
 )
@@ -1596,7 +1607,7 @@ FTM_RET	FTDM_getTriggerAt
 
 FTM_RET	FTDM_getTriggerIDList
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_DID_PTR		pIDList,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulMaxCount,
@@ -1620,7 +1631,11 @@ FTM_RET	FTDM_getTriggerIDList
 			xRet = FTM_LIST_getAt(pFTDM->pTriggerList, ulIndex + i, (FTM_VOID_PTR _PTR_)&pTrigger);
 			if (xRet == FTM_RET_OK)
 			{
-				strcpy(pIDList[(*pulCount)++], pTrigger->xInfo.pID);
+				xRet= FTDM_TRIGGER_getID(pTrigger, pIDList[*pulCount], sizeof(FTM_DID));
+				if (xRet == FTM_RET_OK)
+				{
+					(*pulCount)++;
+				}
 			}
 		}
 	}
@@ -1630,7 +1645,7 @@ FTM_RET	FTDM_getTriggerIDList
 
 FTM_RET	FTDM_createTriggerLog
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR	pID,
 	FTM_RET			xResult
 )
@@ -1659,7 +1674,7 @@ FTM_RET	FTDM_createTriggerLog
  ******************************************************************/
 FTM_RET	FTDM_createAction
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ACTION_PTR		pInfo,
 	FTDM_ACTION_PTR _PTR_ ppAction
 )
@@ -1695,7 +1710,7 @@ FTM_RET	FTDM_createAction
 
 FTM_RET	FTDM_deleteAction
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID
 )
 {
@@ -1729,7 +1744,7 @@ FTM_RET	FTDM_deleteAction
 
 FTM_RET	FTDM_getActionCount
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ULONG_PTR		pulCount
 )
 {
@@ -1748,7 +1763,7 @@ FTM_RET	FTDM_getActionCount
 
 FTM_RET	FTDM_getAction
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID,
 	FTDM_ACTION_PTR _PTR_	ppAction
 )
@@ -1769,7 +1784,7 @@ FTM_RET	FTDM_getAction
 
 FTM_RET	FTDM_getActionAt
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ULONG			ulIndex,
 	FTDM_ACTION_PTR _PTR_	ppAction
 )
@@ -1789,7 +1804,7 @@ FTM_RET	FTDM_getActionAt
 
 FTM_RET	FTDM_getActionIDList
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_DID_PTR		pIDList,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulMaxCount,
@@ -1834,7 +1849,7 @@ FTM_RET	FTDM_getActionIDList
 	
 FTM_RET	FTDM_createActionLog
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR	pID,
 	FTM_RET			xResult
 )
@@ -1862,7 +1877,7 @@ FTM_RET	FTDM_createActionLog
  ******************************************************************/
 FTM_RET	FTDM_createRule
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_RULE_PTR		pInfo,
 	FTDM_RULE_PTR _PTR_ ppRule
 )
@@ -1898,7 +1913,7 @@ FTM_RET	FTDM_createRule
 
 FTM_RET	FTDM_deleteRule
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID
 )
 {
@@ -1932,7 +1947,7 @@ FTM_RET	FTDM_deleteRule
 
 FTM_RET	FTDM_getRuleCount
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ULONG_PTR		pulCount
 )
 {
@@ -1951,7 +1966,7 @@ FTM_RET	FTDM_getRuleCount
 
 FTM_RET	FTDM_getRule
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR		pID,
 	FTDM_RULE_PTR _PTR_	ppRule
 )
@@ -1972,7 +1987,7 @@ FTM_RET	FTDM_getRule
 
 FTM_RET	FTDM_getRuleAt
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_ULONG			ulIndex,
 	FTDM_RULE_PTR _PTR_	ppRule
 )
@@ -1992,7 +2007,7 @@ FTM_RET	FTDM_getRuleAt
 
 FTM_RET	FTDM_getRuleIDList
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_DID_PTR		pIDList,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulMaxCount,
@@ -2029,7 +2044,7 @@ FTM_RET	FTDM_getRuleIDList
 
 FTM_RET	FTDM_createRuleLog
 (
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_CHAR_PTR	pID,
 	FTM_RET			xResult
 )
@@ -2057,7 +2072,7 @@ FTM_RET	FTDM_createRuleLog
  ************************************************/
 FTM_RET	FTDM_addLog
 (
-	FTDM_CONTEXT_PTR pFTDM,
+	FTDM_PTR pFTDM,
 	FTM_LOG_PTR	pLog
 )
 {
@@ -2069,7 +2084,7 @@ FTM_RET	FTDM_addLog
 
 FTM_RET	FTDM_deleteLog
 (
-	FTDM_CONTEXT_PTR pFTDM,
+	FTDM_PTR pFTDM,
 	FTM_ULONG		ulIndex,
 	FTM_ULONG		ulCount,
 	FTM_ULONG_PTR	pulDeletedCount
@@ -2083,7 +2098,7 @@ FTM_RET	FTDM_deleteLog
 
 FTM_RET	FTDM_getLogCount
 (
-	FTDM_CONTEXT_PTR pFTDM,
+	FTDM_PTR pFTDM,
 	FTM_ULONG_PTR	pulCount
 )
 {
@@ -2095,7 +2110,7 @@ FTM_RET	FTDM_getLogCount
 
 FTM_RET	FTDM_getLog
 (
-	FTDM_CONTEXT_PTR pFTDM,
+	FTDM_PTR pFTDM,
 	FTM_ULONG		ulIndex,
 	FTM_LOG_PTR		pLogList,
 	FTM_ULONG		ulMaxCount,

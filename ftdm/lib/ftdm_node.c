@@ -9,13 +9,13 @@
 
 typedef	struct FTDM_NODE_STRUCT
 {
-	FTDM_CONTEXT_PTR	pFTDM;
+	FTDM_PTR	pFTDM;
 	FTM_NODE	xInfo;
 }	FTDM_NODE, _PTR_ FTDM_NODE_PTR;
 
 FTM_RET    FTDM_NODE_create
 (   
-	FTDM_CONTEXT_PTR	pFTDM,
+	FTDM_PTR	pFTDM,
 	FTM_NODE_PTR	pInfo,
 	FTM_BOOL		bWithDB,
 	FTDM_NODE_PTR _PTR_ ppNode
@@ -237,6 +237,47 @@ FTM_RET	FTDM_NODE_getID
 	}
 
 	strncpy(pBuff, pNode->xInfo.pDID, ulBuffLen);
+
+	return	FTM_RET_OK;
+}
+
+FTM_RET	FTDM_NODE_getURL
+(
+	FTDM_NODE_PTR	pNode,
+	FTM_CHAR_PTR	pBuff,
+	FTM_ULONG		ulBuffLen
+)
+{
+	ASSERT(pNode != NULL);
+	ASSERT(pBuff != NULL);
+
+	switch(pNode->xInfo.xType)
+	{
+	case	FTM_NODE_TYPE_SNMP:
+		{	
+			if (ulBuffLen < strlen(pNode->xInfo.xOption.xSNMP.pURL) + 1)
+			{
+				return	FTM_RET_BUFFER_TOO_SMALL;	
+			}
+
+			strncpy(pBuff, pNode->xInfo.xOption.xSNMP.pURL, ulBuffLen);
+		}
+		break;
+
+	case	FTM_NODE_TYPE_MODBUS_OVER_TCP:
+		{	
+			if (ulBuffLen < strlen(pNode->xInfo.xOption.xMB.pURL) + 1)
+			{
+				return	FTM_RET_BUFFER_TOO_SMALL;	
+			}
+
+			strncpy(pBuff, pNode->xInfo.xOption.xMB.pURL, ulBuffLen);
+		}
+		break;
+
+	default:
+		return	FTM_RET_INVALID_TYPE;
+	}
 
 	return	FTM_RET_OK;
 }

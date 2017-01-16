@@ -1,21 +1,12 @@
 #ifndef	__FTDM_LOGGER_H__
 #define	__FTDM_LOGGER_H__
 
-#include "ftm.h"
+#include "ftdm_types.h"
 #include "ftm_logger.h"
-
-typedef	struct 	FTDM_LOGGER_STRUCT
-{
-	FTM_LOGGER_CONFIG	xConfig;
-	struct FTDM_CONTEXT_STRUCT	_PTR_ pFTDM;
-	FTM_ULONG			ulCount;
-	FTM_ULONG			ulFirstTime;
-	FTM_ULONG			ulLastTime;
-}	FTDM_LOGGER, _PTR_ FTDM_LOGGER_PTR;
 
 FTM_RET	FTDM_LOGGER_create
 (
-	struct FTDM_CONTEXT_STRUCT	_PTR_ pFTDM,
+	FTDM_PTR	pFTDM,
 	FTDM_LOGGER_PTR	_PTR_ 	ppLogger
 );
 
