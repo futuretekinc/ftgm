@@ -609,7 +609,7 @@ FTM_RET	FTDM_loadObjectFromDB
 	}
 
 	xRet = FTDM_DBIF_getNodeCount(pDBIF, &ulMaxCount);
-	if (xRet != FTM_RET_OK)
+	if (xRet == FTM_RET_OK)
 	{
 		if (ulMaxCount > 0)
 		{

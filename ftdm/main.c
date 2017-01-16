@@ -30,7 +30,6 @@ int main(int nArgc, char *pArgv[])
 	FTM_BOOL	bDaemon = FTM_FALSE;
 	FTM_BOOL	bShowUsage = FTM_FALSE;
 	FTM_BOOL	bLoadObjectFromFile = FTM_FALSE;
-	FTM_BOOL	bDBFirst = FTM_TRUE;
 	FTM_BOOL	bDBErase = FTM_FALSE;
 	FTM_CHAR	pConfigFileName[1024];
 	FTM_CHAR	pObjectFileName[1024];
@@ -79,7 +78,6 @@ int main(int nArgc, char *pArgv[])
 
 		case	'i':
 			{
-				bDBFirst = FTM_FALSE;
 				bLoadObjectFromFile = FTM_TRUE;
 				strcpy(pObjectFileName, optarg);
 			}
@@ -143,6 +141,13 @@ int main(int nArgc, char *pArgv[])
 		goto finish1;	
 	}
 
+	xRet = FTM_CONFIG_destroy(&pConfig);
+	if (xRet != FTM_RET_OK)
+	{
+		ERROR2(xRet, "Failed to destroy config object!\n");
+		goto finish1;	
+	}
+
 	xRet = FTDM_getDBIF(pFTDM, &pDBIF);
 	if (xRet != FTM_RET_OK)
 	{
@@ -164,20 +169,11 @@ int main(int nArgc, char *pArgv[])
 		MESSAGE("Erase all data!\n");	
 		FTDM_DBIF_deleteAllTables(pDBIF);
 	}
-
-
-	xRet = FTDM_loadObjectFromConfig(pFTDM, pConfig);
+	
+	xRet = FTDM_loadObjectFromDB(pFTDM);
 	if (xRet != FTM_RET_OK)
 	{
-		ERROR2(xRet, "Failed to load configuration!\n");
-		goto finish1;	
-	}
-
-	xRet = FTM_CONFIG_destroy(&pConfig);
-	if (xRet != FTM_RET_OK)
-	{
-		ERROR2(xRet, "Failed to destroy config object!\n");
-		goto finish1;	
+		ERROR2(xRet, "Failed to load object from DB!\n");
 	}
 
 	if (bLoadObjectFromFile)
@@ -187,15 +183,6 @@ int main(int nArgc, char *pArgv[])
 		{
 			ERROR2(xRet, "Failed to load object from file[%s]\n", pObjectFileName);
 			goto finish1;	
-		}
-	}
-
-	if (bDBFirst)
-	{
-		xRet = FTDM_loadObjectFromDB(pFTDM);
-		if (xRet == FTM_RET_OK)
-		{
-			bLoadObjectFromFile = FTM_FALSE;
 		}
 	}
 
